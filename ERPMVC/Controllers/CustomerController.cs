@@ -1,0 +1,239 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
+using ERPMVC.Helpers;
+using ERPMVC.Models;
+using Kendo.Mvc.UI;
+using Kendo.Mvc;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Protocols;
+using Kendo.Mvc.Extensions;
+using Newtonsoft.Json;
+using ERPMVC.Context;
+using System.Net.Http.Headers;
+
+namespace ERPMVC.Controllers
+{
+    public class CustomerController : Controller
+    {
+        private readonly IOptions<MyConfig> config;
+      //  private readonly ApplicationDbContext _context;
+
+        public CustomerController(IOptions<MyConfig> config)
+        {
+            this.config = config;
+            //this._context = context;
+        }
+        
+
+        // GET: Customer
+        public ActionResult Index()
+        {
+            return View();
+        }
+
+
+        // GET: Customer/Details/5
+        public async Task<ActionResult> Details(Int64 CustomerId)
+        {
+            Customer _customers = new Customer();
+            string baseadress = config.Value.urlbase;
+            HttpClient _client = new HttpClient();
+            var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = "erp@bi-dss.com", Password = "Aa123456!" });
+
+            if (resultlogin.IsSuccessStatusCode)
+            {
+
+                string webtoken = await (resultlogin.Content.ReadAsStringAsync());
+                UserToken _userToken = JsonConvert.DeserializeObject<UserToken>(webtoken);
+
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + _userToken.Token);
+                var result = await _client.GetAsync(baseadress + "api/Customer/GetCustomerById/" + CustomerId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _customers = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
+
+                }
+            }
+
+
+            return View(_customers);
+        }
+
+        // GET: Customer/Create
+        public ActionResult Create()
+        {
+            return View();
+        }
+
+        
+        [HttpGet]
+        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
+        {
+              List<Customer> _customers = new List<Customer>();
+            try
+            {
+              
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = "erp@bi-dss.com", Password = "Aa123456!" });
+
+                if (resultlogin.IsSuccessStatusCode)
+                {
+
+                    string webtoken =   await (resultlogin.Content.ReadAsStringAsync());
+                    UserToken _userToken = JsonConvert.DeserializeObject<UserToken>(webtoken);
+
+
+                     // var header = new AuthenticationHeaderValue("Authorization", "Bearer " + webtoken);
+                    //  _client.DefaultRequestHeaders.Authorization = header;
+
+
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + _userToken.Token);
+                    var result = await _client.GetAsync(baseadress + "api/Customer");
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _customers = JsonConvert.DeserializeObject<List<Customer>>(valorrespuesta);
+
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+        
+      
+            return _customers.ToDataSourceResult(request);
+
+        }
+        // POST: Customer/Create
+        [HttpPost]
+        //[ValidateAntiForgeryToken]
+        public async Task<ActionResult> Post(Customer _customer)
+        {
+            try
+            {
+                // TODO: Add insert logic here
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+                var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = "erp@bi-dss.com", Password = "Aa123456!" });
+
+                if (resultlogin.IsSuccessStatusCode)
+                {
+                    string webtoken = await (resultlogin.Content.ReadAsStringAsync());
+                    UserToken _userToken = JsonConvert.DeserializeObject<UserToken>(webtoken);
+
+                      _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + _userToken.Token);
+                    var result = await _client.PostAsJsonAsync(baseadress + "api/Customer/Insert", _customer);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _customer = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
+                    }
+                }
+               
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+
+            return new ObjectResult(new DataSourceResult { Data = new[] { _customer }, Total = 1 });
+        }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put(int id, Customer _customer)
+        {
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+
+                var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = "erp@bi-dss.com", Password = "Aa123456!" });
+
+                if (resultlogin.IsSuccessStatusCode)
+                {
+                    string webtoken = await (resultlogin.Content.ReadAsStringAsync());
+                    UserToken _userToken = JsonConvert.DeserializeObject<UserToken>(webtoken);
+
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + _userToken.Token);
+
+                    var result = await _client.PutAsJsonAsync(baseadress + "api/Customer/Update", _customer);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _customer = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+
+            return new ObjectResult(new DataSourceResult { Data = new[] { _customer }, Total = 1 });
+        }
+
+            // GET: Customer/Edit/5
+            public ActionResult Edit(int id)
+        {
+            return View();
+        }
+
+        // POST: Customer/Edit/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Edit(int id, IFormCollection collection)
+        {
+            try
+            {
+                // TODO: Add update logic here
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                return View();
+            }
+        }
+
+        [HttpDelete]
+        // GET: Customer/Delete/5
+        public ActionResult Delete(int id)
+        {
+            return View();
+        }
+
+        // POST: Customer/Delete/5
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public ActionResult Delete(int id, IFormCollection collection)
+        {
+            try
+            {
+                // TODO: Add delete logic here
+
+                return RedirectToAction(nameof(Index));
+            }
+            catch
+            {
+                return View();
+            }
+        }
+    }
+}

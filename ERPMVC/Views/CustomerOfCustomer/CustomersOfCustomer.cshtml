@@ -1,0 +1,65 @@
+﻿@{ 
+    Layout = null;
+}
+
+<script>
+
+function error_handler(e) {
+    var errors = $.parseJSON(e.xhr.responseText);
+
+    if (errors) {
+        alert("Errors:\n" + errors.join("\n"));
+    }
+    }
+
+    function Detalles(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        window.location.href = "@Url.Action("Details", "Customer")?CustomerId=" + dataItem.CustomerId;
+    }
+</script>
+
+
+@(Html.Kendo().Grid<ERPMVC.Models.CustomersOfCustomer>()
+                  .Name("grid")
+                  .Columns(columns =>
+                  {
+                      columns.Bound(p => p.CustomerOfId).Width(100);
+                      columns.Bound(p => p.CustomerId).Width(100);
+                      columns.Bound(p => p.CustomerName).Width(150);
+                      columns.Bound(p => p.CustomerTypeId).Width(100);
+                      columns.Bound(p => p.Identidad).Width(100);
+                      columns.Bound(p => p.ContactPerson).Width(100);
+                      columns.Bound(p => p.RTN).Width(100);
+                      columns.Command(command =>
+                      {
+                          command.Custom("Ver detalles").Click("Detalles");
+                          command.Edit(); command.Destroy();
+                      }).Width(250);
+
+                  })
+                  .ToolBar(tools =>
+                  {
+                      tools.Create();
+                  })
+                  .Editable(e => e.Mode(GridEditMode.InLine))
+                  .Sortable()
+                  .Pageable()
+                  .Filterable()
+                  .Scrollable()
+                  .DataSource(dataSource =>
+                      dataSource
+                        .WebApi()
+                        .ServerOperation(true)
+                        .Model(model =>
+                        {
+                            model.Id(p => p.CustomerId);
+                            model.Field(p => p.CustomerId).Editable(false);
+                        })
+                        .Events(events => events.Error("error_handler"))
+                        .Read(read => read.Action("Get", "Customer"))
+                        .Create(create => create.Action("Post", "Customer"))
+                        .Update(update => update.Action("Put", "Customer", new { id = "{0}" }))
+                        .Destroy(destroy => destroy.Action("Delete", "Customer", new { id = "{0}" }))
+                  )
+)
