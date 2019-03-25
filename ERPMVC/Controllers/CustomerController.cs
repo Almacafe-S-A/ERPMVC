@@ -43,7 +43,7 @@ namespace ERPMVC.Controllers
             Customer _customers = new Customer();
             string baseadress = config.Value.urlbase;
             HttpClient _client = new HttpClient();
-            var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = "erp@bi-dss.com", Password = "Aa123456!" });
+            var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = config.Value.UserEmail, Password = config.Value.UserPassword });
 
             if (resultlogin.IsSuccessStatusCode)
             {
@@ -82,7 +82,7 @@ namespace ERPMVC.Controllers
               
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-                var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = "erp@bi-dss.com", Password = "Aa123456!" });
+                var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = config.Value.UserEmail, Password = config.Value.UserPassword });
 
                 if (resultlogin.IsSuccessStatusCode)
                 {
@@ -128,7 +128,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
 
-                var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = "erp@bi-dss.com", Password = "Aa123456!" });
+                var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = config.Value.UserEmail, Password = config.Value.UserPassword });
 
                 if (resultlogin.IsSuccessStatusCode)
                 {
@@ -155,7 +155,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(int id, Customer _customer)
+        public async Task<IActionResult> Put(Int64 id, Customer _customer)
         {
             try
             {
@@ -163,7 +163,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
 
 
-                var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = "erp@bi-dss.com", Password = "Aa123456!" });
+                var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = config.Value.UserEmail, Password =config.Value.UserPassword });
 
                 if (resultlogin.IsSuccessStatusCode)
                 {

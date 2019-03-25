@@ -1,0 +1,141 @@
+﻿
+@{ 
+    Layout = null;
+}
+
+@(Html.Kendo().Grid<ERPMVC.Models.ApplicationUser>()
+              .Name("gridRolesByUser")
+              .Columns(columns =>
+              {
+                  columns.Bound(p => p.Id).Title("Id").Width(150);
+
+                  //.ClientTemplate("#:UserName#").EditorTemplateName("UserId").Width(160)
+                  //   .Filterable(filterable => filterable
+                  //      .Extra(true)
+                  //      .Operators(op => op.ForString(st => st.Clear().Contains("Contiene")))).Width(170);
+                  columns.Bound(p => p.UserName).Title("Nombre").Width(180);
+
+
+
+                  columns.Command(command => {
+                      //command.Custom("Ver detalles").Click("Detalles");
+                     // command.Edit();
+                      command.Destroy();
+                  }).Width(250);
+
+              })
+              .ToolBar(tools =>
+              {
+                  tools.Create();
+                  tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                  tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+              })
+               .Editable(e => e.Mode(GridEditMode.PopUp))//.TemplateName("popupPorUsuario"))
+               .Sortable()
+               .AutoBind(true)
+               .Pageable()
+               .Filterable()
+               .Scrollable()
+               .ClientDetailTemplateId("templateUserId")
+               .Pdf(pdf => pdf.FileName("UsersRolesReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+               + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+               .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                 .Excel(excel => excel.FileName("UsersRolesReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+               + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+               .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+               //.Events(e=>e.Save("onsave"))
+               .DataSource(dataSource =>
+
+                   dataSource
+                   .WebApi()
+                    .ServerOperation(true)
+                    .Model(model =>
+                    {
+                        // model.Id(p => p.RoleId);
+                        // model.Id(p => p.UserId);
+                      //  model.Field(p => p.RoleId).Editable(true);
+                        model.Field(p => p.Id).Editable(true);
+                      //  model.Field(p => p.RoleName).Editable(true);
+                        model.Field(p => p.UserName).Editable(true);
+
+
+                    })
+                    .Events(events => {
+                        events.Error("error_handler");
+                        //events.upda("EditHandler");
+
+                    })
+                    .Read(read => read.Action("GetUsers", "Usuario"))
+                    // .Create(create => create.Action("Insert", "UserRol"))
+                    //.Update(update => update.Action("Update", "UserRol", new { id = "{0}" }))
+                  //  .Destroy(destroy => destroy.Action("Delete", "UserRol", new { id = "{0}" }))
+              )
+)
+
+
+
+<script id="templateUserId" type="text/kendo-tmpl">
+    @(Html.Kendo().TabStrip()
+      .Name("tabStripU_#=Id#")
+      .SelectedIndex(0)
+      .Animation(animation => animation.Open(open => open.Fade(FadeDirection.In)))
+      .Items(items =>
+      {
+          items.Add().Text("Roles").Content(@<text>
+           @(Html.Kendo().Grid<ERPMVC.Models.ApplicationUserRole>()
+             .Name("gridU_#=Id#")
+             .Columns(columns =>
+             {
+                columns.Bound(o => o.RoleId).Title("ID").Width(80);
+                columns.Bound(o => o.RoleName).Title("Nombre de rol").Width(110);
+                  columns.Command(command => {                          
+                          command.Destroy();
+                      }).Width(250);
+             })
+             .DataSource(dataSource => dataSource
+                .WebApi()
+                .PageSize(5)
+                .Read(read => read.Action("GetJsonRolesByUserId", "UserRol", new{ UserId = "#=Id#" }))
+                .Destroy(destroy => destroy.Action("Delete", "UserRol", new { RoleId = "{0}",UserId ="#=Id#" }))
+                )
+                
+            .Pageable()
+            .Sortable()
+            .ToClientTemplate())</text>);      
+      }).ToClientTemplate())
+</script>
+
+<script>
+    function dataBound() {
+        this.expandRow(this.tbody.find("tr.k-master-row").first());
+    }
+</script>
+
+<style>
+    .k-detail-cell .k-tabstrip .k-content {
+        padding: 0.2em;
+    }
+
+    .employee-details ul {
+        list-style: none;
+        font-style: italic;
+        margin: 15px;
+        padding: 0;
+    }
+
+        .employee-details ul li {
+            margin: 0;
+            line-height: 1.7em;
+        }
+
+    .employee-details label {
+        display: inline-block;
+        width: 90px;
+        padding-right: 10px;
+        text-align: right;
+        font-style: normal;
+        font-weight: bold;
+    }
+</style>

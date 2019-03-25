@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
@@ -7,6 +8,7 @@ using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.HttpsPolicy;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -32,6 +34,23 @@ namespace ERPMVC
                 options.CheckConsentNeeded = context => true;
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
+
+            services.Configure<RequestLocalizationOptions>(
+            options =>
+                {
+                    var supportedCultures = new List<CultureInfo>
+                    {
+                            new CultureInfo("en-US"),
+                            new CultureInfo("es-hn"),
+                            new CultureInfo("de-CH"),
+                            new CultureInfo("fr-CH"),
+                            new CultureInfo("it-CH")
+                    };
+
+                    options.DefaultRequestCulture = new RequestCulture(culture: "en-US", uiCulture: "en-US");
+                    options.SupportedCultures = supportedCultures;
+                    options.SupportedUICultures = supportedCultures;
+                });
 
             services.Configure<MyConfig>(Configuration.GetSection("AppSettings"));
          
