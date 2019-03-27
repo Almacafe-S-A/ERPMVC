@@ -12,7 +12,7 @@ namespace ERPMVC.Controllers
     //[CustomAuthorization]
     public class HomeController : Controller
     {
-       // [Authorize(Policy ="Admin")]
+        //[Authorize(Policy ="Admin")]
         public IActionResult Index()
         {
             return View();

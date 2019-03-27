@@ -7,7 +7,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 
-namespace ERPMVC.Helpers
+namespace ERPMVC
 {
          [HtmlTargetElement(Attributes = "policy")]
         public class PolicyTagHelper : TagHelper
