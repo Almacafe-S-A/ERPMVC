@@ -11,8 +11,9 @@ namespace ERPMVC.Models
     {
 
         // [UIHint("UserId")]
+        [Required]
         public string UserId { get; set; }
-        //[Required]
+        [Required]
         //[UIHint("Roledropdown")]
         public string RoleId { get; set; }
         public string UserName { get; set; }
