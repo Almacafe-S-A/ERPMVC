@@ -13,11 +13,13 @@ using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Protocols;
 using Kendo.Mvc.Extensions;
 using Newtonsoft.Json;
-using ERPMVC.Context;
 using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Authorization;
 
 namespace ERPMVC.Controllers
 {
+
+    [Authorize]
     public class CustomerController : Controller
     {
         private readonly IOptions<MyConfig> config;

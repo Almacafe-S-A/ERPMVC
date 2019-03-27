@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ERPMVC.Context;
+using ERPMVC.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ERPMVC.Controllers
@@ -22,7 +22,7 @@ namespace ERPMVC.Controllers
 
         public async Task<ActionResult> pvwSalesOrder()
         {
-
+           // SalesOrder _salesorder = 
 
             return View();
         }
