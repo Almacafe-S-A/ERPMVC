@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
@@ -21,40 +22,80 @@ namespace ERPMVC.Helpers
         public void OnAuthorization(AuthorizationFilterContext filterContext)
         {
             var controllerInfo = filterContext.ActionDescriptor as ControllerActionDescriptor;
-            if (filterContext != null)
-            {
-                string controllerName = controllerInfo.ControllerName;
+            var ses = filterContext.HttpContext.Session.GetString("token");
 
-                if (controllerName != "Home")
-                {
-                    
-                    if (filterContext.HttpContext.Request.Headers["X-Requested-With"] == "XMLHttpRequest")
-                    {
-                        filterContext.Result = new JsonResult("")
-                        {
-                            Value = new
-                            {
-                                Status = "Error"
-                            },
-                        };
-                    }
-                    else
-                    {
-                        filterContext.Result = new RedirectToRouteResult(
-                         new RouteValueDictionary {
-                              {
-                               "Controller",
-                               "Home"
-                              }, {
-                               "Action",
-                               "SessionExpired"
-                              }
-                         });
-                    }
-                }
+
+            if (ses != null)
+            {
+                //filterContext.Result = new RedirectToRouteResult(
+                // new RouteValueDictionary {
+                //     {
+                //      "Controller",
+                //      "Home"
+                //     }, {
+                //      "Action",
+                //      "Index"
+                //     }
+                // });
+
             }
+            else
+            {
+                filterContext.Result = new RedirectToRouteResult(
+                 new RouteValueDictionary {
+                      {
+                       "Controller",
+                       "Account"
+                      }, {
+                       "Action",
+                       "Login"
+                      }
+                 });
+
+            }
+            //if (filterContext != null)
+            //{
+            //    string controllerName = controllerInfo.ControllerName;
+
+            //    if (controllerName != "Home")
+            //    {
+
+            //        if (filterContext.HttpContext.Request.Headers["X-Requested-With"] == "XMLHttpRequest")
+            //        {
+            //            filterContext.Result = new JsonResult("")
+            //            {
+            //                Value = new
+            //                {
+            //                    Status = "Error"
+            //                },
+            //            };
+            //        }
+            //        else
+            //        {
+            //            filterContext.Result = new RedirectToRouteResult(
+            //             new RouteValueDictionary {
+            //                  {
+            //                   "Controller",
+            //                   "Home"
+            //                  }, {
+            //                   "Action",
+            //                   "SessionExpired"
+            //                  }
+            //             });
+            //        }
+            //    }
+            //}
+
+
+
+
         }
+
+
+
     }
+
+
 
 
     //public class CustomAuthorize : AuthorizeAttribute

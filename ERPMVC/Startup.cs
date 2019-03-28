@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using ERP.Contexts;
 using ERPMVC.Helpers;
@@ -19,6 +20,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json.Serialization;
 
 namespace ERPMVC
@@ -35,37 +37,41 @@ namespace ERPMVC
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            services.Configure<CookiePolicyOptions>(options =>
-            {
-                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-                options.CheckConsentNeeded = context => true;
-                options.MinimumSameSitePolicy = SameSiteMode.None;
-            });
+            //services.Configure<CookiePolicyOptions>(options =>
+            //{
+            //    // This lambda determines whether user consent for non-essential cookies is needed for a given request.
+            //    options.CheckConsentNeeded = context => true;
+            //    options.MinimumSameSitePolicy = SameSiteMode.None;
+            //});
 
             services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
-            /*  services.AddAuthentication()
-              .AddCookie(options =>
-              {
-                  options.LoginPath = "/Account/Login/";
-                  options.AccessDeniedPath = "/Account/Forbidden/";
-              })
-              .AddJwtBearer(options =>
-              {
-                  options.Audience = "https://localhost:44347/";
-                  options.Authority = "https://localhost:44347/";
-              });
-              */
+
+            services.AddDistributedMemoryCache();
+            services.AddSession(options =>
+            {
+            // Set a short timeout for easy testing.
+            options.IdleTimeout = TimeSpan.FromHours(10);
+              //  options.Cookie.HttpOnly = true;
+            // Make the session cookie essential
+            options.Cookie.IsEssential = true;
+            });
+
+          //  services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+          //.AddJwtBearer(options =>
+          //options.TokenValidationParameters = new TokenValidationParameters
+          //{
+          //    ValidateIssuer = false,
+          //    ValidateAudience = false,
+          //    ValidateLifetime = true,
+          //    ValidateIssuerSigningKey = true,
+          //    IssuerSigningKey = new SymmetricSecurityKey(
+          //    Encoding.UTF8.GetBytes(Configuration["jwt:key"])),
+          //    ClockSkew = TimeSpan.Zero
+          //});
 
 
-
-
-            //services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer(options =>
-            //{
-            //    options.Audience = "http://localhost:5001/";
-            //    options.Authority = "https://localhost:44347/";
-            //});
 
             services.AddIdentity<ApplicationUser, IdentityRole>(
                   options =>
@@ -110,16 +116,15 @@ namespace ERPMVC
 
 
             services.AddAuthorization(options =>
-        {
+              {
 
-          options.AddPolicy("Admin", policy =>
-          {
+                 options.AddPolicy("Admin", policy =>
+                 {
+                   //policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
+                   //   policy.RequireAuthenticatedUser();
+                   policy.Requirements.Add(new AdminRequirement());
 
-                    //policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
-                    //   policy.RequireAuthenticatedUser();
-                    policy.Requirements.Add(new AdminRequirement());
-
-          });
+                 });
 
                 //options.AddPolicy("RecursosHumanos", policy => policy.Requirements.Add(new CategoriaEmpleadoRequirement()));
                 //options.AddPolicy("RequireRolesLogin", policy
@@ -147,8 +152,8 @@ namespace ERPMVC
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            app.UseCookiePolicy();
-
+           // app.UseCookiePolicy();
+            app.UseSession();
             app.UseAuthentication();
 
             app.UseMvc(routes =>

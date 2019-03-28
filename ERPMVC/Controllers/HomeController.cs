@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ERPMVC.Controllers
 {
-    [Authorize]
-    //[CustomAuthorization]
+    //[Authorize]
+    [CustomAuthorization]
     public class HomeController : Controller
     {
         //[Authorize(Policy ="Admin")]
