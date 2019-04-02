@@ -17,4 +17,9 @@ namespace ERPMVC.Policies
 
     }
 
+    public class UsuarioRequirement : IAuthorizationRequirement
+    {
+
+    }
+
 }

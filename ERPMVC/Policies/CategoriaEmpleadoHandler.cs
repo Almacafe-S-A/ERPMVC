@@ -44,4 +44,20 @@ namespace ERPMVC.Policies
     }
 
 
+    public class UsuarioHandler : AuthorizationHandler<UsuarioRequirement>
+    {
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, UsuarioRequirement requirement)
+        {
+            if (context.User.IsInRole("GG"))
+            {
+                context.Succeed(requirement);
+            }
+
+            return Task.FromResult(0);
+        }
+
+
+    }
+
+
 }

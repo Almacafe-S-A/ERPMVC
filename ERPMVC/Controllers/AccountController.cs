@@ -54,18 +54,19 @@ namespace ERPMVC.Controllers
             {
                 //if (ModelState.IsValid)
                 //{
-                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
+                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
                 //ApplicationUser _appuser = new ApplicationUser { Email = model.Email  };
-              //  var result = await _signInManager.CheckPasswordSignInAsync(_appuser, model.Password, lockoutOnFailure: false);
+                //  var result = await _signInManager.CheckPasswordSignInAsync(_appuser, model.Password, lockoutOnFailure: false);
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-                var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email =model.Email, Password = model.Password});
+                var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = model.Email, Password = model.Password });
 
-                if (resultlogin.IsSuccessStatusCode)
+                if (result.Succeeded)
                 {
                     string webtoken = await (resultlogin.Content.ReadAsStringAsync());
                     UserToken _userToken = JsonConvert.DeserializeObject<UserToken>(webtoken);
                     HttpContext.Session.SetString("token", _userToken.Token);
+                    HttpContext.Session.SetString("user", model.Email);
 
                     return RedirectToAction("Index", "Home");
                     //return Task.Factory.StartNew(()=>_login()).ContinueWith<ActionResult>(

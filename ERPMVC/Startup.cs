@@ -37,12 +37,7 @@ namespace ERPMVC
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            //services.Configure<CookiePolicyOptions>(options =>
-            //{
-            //    // This lambda determines whether user consent for non-essential cookies is needed for a given request.
-            //    options.CheckConsentNeeded = context => true;
-            //    options.MinimumSameSitePolicy = SameSiteMode.None;
-            //});
+
 
             services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
@@ -57,20 +52,6 @@ namespace ERPMVC
             // Make the session cookie essential
             options.Cookie.IsEssential = true;
             });
-
-          //  services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-          //.AddJwtBearer(options =>
-          //options.TokenValidationParameters = new TokenValidationParameters
-          //{
-          //    ValidateIssuer = false,
-          //    ValidateAudience = false,
-          //    ValidateLifetime = true,
-          //    ValidateIssuerSigningKey = true,
-          //    IssuerSigningKey = new SymmetricSecurityKey(
-          //    Encoding.UTF8.GetBytes(Configuration["jwt:key"])),
-          //    ClockSkew = TimeSpan.Zero
-          //});
-
 
 
             services.AddIdentity<ApplicationUser, IdentityRole>(
@@ -115,24 +96,42 @@ namespace ERPMVC
                services.AddKendo();
 
 
+            //List<Product> _listproduct = new List<Product>();
             services.AddAuthorization(options =>
               {
+                  //foreach (var item in _listproduct)
+                  //{
+                  //    options.AddPolicy(item.ProductName, policy =>
+                  //   {
 
-                 options.AddPolicy("Admin", policy =>
-                 {
-                   //policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
-                   //   policy.RequireAuthenticatedUser();
-                   policy.Requirements.Add(new AdminRequirement());
-
-                 });
-
-                //options.AddPolicy("RecursosHumanos", policy => policy.Requirements.Add(new CategoriaEmpleadoRequirement()));
-                //options.AddPolicy("RequireRolesLogin", policy
-                //    => policy.RequireRole(rolestologin));
-            });
+                  //   });
+                  //}
 
 
-            services.AddSingleton<IAuthorizationHandler, AdminHandler>();
+                  //options.AddPolicy("Admin", policy =>
+                  //{
+                  //   //policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
+                  //   //policy.RequireAuthenticatedUser();
+                  //   policy.Requirements.Add(new AdminRequirement());
+                  //});
+
+
+                  //options.AddPolicy("Usuario", policy =>
+                  //{
+                  //    policy.Requirements.Add(new UsuarioRequirement());
+                  //});
+
+
+              });
+
+
+
+
+            //services.AddSingleton<IAuthorizationHandler, AdminHandler>();
+            //services.AddSingleton<IAuthorizationHandler, UsuarioHandler>();
+
+            services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
+            services.AddScoped<IAuthorizationHandler, HasScopeHandler>();
 
         }
 
