@@ -10,8 +10,9 @@ namespace ERPMVC.Policies
     {
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, CategoriaEmpleadoRequirement requirement)
         {
+            
             //Implementar la logica para saber si el usuario cumple o no el requerimiento(CategoriaEmpleadoRequirement)
-            if (context.User.Claims.Any(x => x.Type == "CategoriaEmpleado" && x.Value=="3"))
+            if (context.User.Claims.Any(x => x.Type == "CategoriaEmpleado" && x.Value=="3" ))
             {
                 context.Succeed(requirement);
             }

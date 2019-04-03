@@ -29,15 +29,22 @@ namespace ERPMVC.Policies
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, HasScopeRequirement requirement)
         {
             // If user does not have the scope claim, get out of here
-            //if (!context.User.IsInRole(requirement.Scope))
-            //   return Task.CompletedTask;
+            if (!context.User.HasClaim(c => c.Type == requirement.Type && c.Value == requirement.Value))
+                return Task.CompletedTask;
+
+            // Split the scopes string into an array
+            var scopes = context.User.FindFirst(c => c.Type == requirement.Type && c.Value == requirement.Value).Value.Split(' ');
 
             // Succeed if the scope array contains the required scope
-            //if (requirement._policiesroles.Any(s => s == requirement.Scope))
-            //    context.Succeed(requirement);
+          //  if (scopes.Any(s => s == requirement.Scope))
+          if(scopes.Any(s=>s==1.ToString()))
+                context.Succeed(requirement);
 
             return Task.CompletedTask;
         }
+
+
+
 
 
 

@@ -43,11 +43,13 @@ namespace ERPMVC.Policies
                     List<Policy> _policies = new List<Policy>();
 
                     var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = config.Value.UserEmail, Password = config.Value.UserPassword });
+                    string webtoken = "";
+                    UserToken _userToken = new UserToken();
                     if (resultlogin.IsSuccessStatusCode)
                     {
 
-                        string webtoken = await (resultlogin.Content.ReadAsStringAsync());
-                        UserToken _userToken = JsonConvert.DeserializeObject<UserToken>(webtoken);
+                        webtoken = await (resultlogin.Content.ReadAsStringAsync());
+                        _userToken = JsonConvert.DeserializeObject<UserToken>(webtoken);
 
                         _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + _userToken.Token);
                         var result = await _client.GetAsync(baseadress + "api/Policies/GetPolicies");
@@ -58,35 +60,54 @@ namespace ERPMVC.Policies
                             _policies = JsonConvert.DeserializeObject<List<Policy>>(valorrespuesta);
 
                         }
-                    }
 
-                    foreach (var item in _policies)
-                    {
-                        string valor = "";
-                        valor = await _client.GetAsync(baseadress + "api/Policies/GetRolesByPolicy/" + item.Id).Result.Content.ReadAsStringAsync();
-                        List<IdentityRole> _policiesroles = JsonConvert.DeserializeObject<List<IdentityRole>>(valor);
-                        string[] _rols = _policiesroles.Select(q => q.Name).ToArray<string>();
 
-                        switch (item.type)
+                        foreach (var item in _policies)
                         {
-                            case "Roles":
-                                policy = new AuthorizationPolicyBuilder()
-                                 .RequireRole(_rols)
-                                 
-                               //.AddRequirements(new HasScopeRequirement(policyName, $"https://{_configuration["Auth0:Domain"]}/"))
-                               // .AddRequirements(new HasScopeRequirement(policyName,_policiesroles))
-                               .Build();
-                                break;
-                            case "Requirement":
-                                //policy = new AuthorizationPolicyBuilder()                         
-                                //.AddRequirements(new HasScopeRequirement(policyName))
-                                //.Build();
-                                break;
 
+                            policyName = item.Name;
+                            string valor = "";
+                        
+
+                            switch (item.type)
+                            {
+                                case "Roles":
+                                    valor = await _client.GetAsync(baseadress + "api/Policies/GetRolesByPolicy/" + item.Id).Result.Content.ReadAsStringAsync();
+                                    List<ApplicationRole> _policiesroles = JsonConvert.DeserializeObject<List<ApplicationRole>>(valor);
+                                    string[] _rols = _policiesroles.Select(q => q.Name).ToArray<string>();
+                                    policy = new AuthorizationPolicyBuilder()
+                                     .RequireRole(_rols)
+
+                                   //.AddRequirements(new HasScopeRequirement(policyName, $"https://{_configuration["Auth0:Domain"]}/"))
+                                   // .AddRequirements(new HasScopeRequirement(policyName,_policiesroles))
+                                   .Build();
+                                    break;
+                                case "UserClaimRequirement":
+                                    List<IdentityUserClaim<string>> _userclaims = new List<Microsoft.AspNetCore.Identity.IdentityUserClaim<string>>();
+                                    // _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + _userToken.Token);
+                                     result = await _client.GetAsync(baseadress + "api/Policies/GetUserClaims/" + item.Id);
+                                     valorrespuesta = "";
+                                    if (result.IsSuccessStatusCode)
+                                    {
+                                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                                        _userclaims = JsonConvert.DeserializeObject<List<IdentityUserClaim<string>>>(valorrespuesta);
+
+                                    }
+
+                                    foreach (var _uclaim in _userclaims)
+                                    {
+                                        policy = new AuthorizationPolicyBuilder()
+                                       .AddRequirements(new HasScopeRequirement(policyName, _uclaim.ClaimValue, _uclaim.ClaimType))
+                                       .Build();
+                                    }
+
+                                    break;
+
+                            }
+
+                            // Add policy to the AuthorizationOptions, so we don't have to re-create it each time
+                            _options.AddPolicy(policyName, policy);
                         }
-
-                        // Add policy to the AuthorizationOptions, so we don't have to re-create it each time
-                        _options.AddPolicy(policyName, policy);
                     }
                 }
             }
