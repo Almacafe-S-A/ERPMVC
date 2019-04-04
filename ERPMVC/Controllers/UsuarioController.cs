@@ -7,6 +7,7 @@ using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
@@ -24,6 +25,7 @@ namespace ERPMVC.Controllers
             this.config = config;
         }
 
+        [Authorize(Policy ="Admin")]
         public IActionResult Usuarios()
         {
             return View();
