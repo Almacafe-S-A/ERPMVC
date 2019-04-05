@@ -38,6 +38,11 @@ namespace ERPMVC
         public void ConfigureServices(IServiceCollection services)
         {
 
+           services.Configure<CookiePolicyOptions>(options =>
+           {           
+              options.CheckConsentNeeded = context => true;
+              options.MinimumSameSitePolicy = SameSiteMode.None;
+           });
 
             services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
@@ -89,6 +94,10 @@ namespace ERPMVC
             //    });
 
             services.Configure<MyConfig>(Configuration.GetSection("AppSettings"));
+
+
+
+           // services.AddLogging();
          
             services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
                   .AddJsonOptions(options => options.SerializerSettings.ContractResolver = new DefaultContractResolver());
@@ -127,11 +136,10 @@ namespace ERPMVC
 
 
 
-            //services.AddSingleton<IAuthorizationHandler, AdminHandler>();
-            //services.AddSingleton<IAuthorizationHandler, UsuarioHandler>();
-
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
             services.AddScoped<IAuthorizationHandler, HasScopeHandler>();
+
+          //  services.AddAuthorizationPolicyEvaluator();
 
         }
 
@@ -151,7 +159,7 @@ namespace ERPMVC
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-           // app.UseCookiePolicy();
+            app.UseCookiePolicy();
             app.UseSession();
             app.UseAuthentication();
 

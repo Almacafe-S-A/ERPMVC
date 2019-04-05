@@ -25,7 +25,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        private readonly ILogger<HomeController> _logger;
+       // private readonly ILogger<HomeController> _logger;
         private readonly IOptions<MyConfig> config;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
@@ -39,7 +39,7 @@ namespace ERPMVC.Controllers
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _logger = logger;
+           // _logger = logger;
             this.config = config;
         }
 
@@ -98,6 +98,17 @@ namespace ERPMVC.Controllers
         private void _login()
         {
 
+        }
+
+
+        [HttpGet]
+        // [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Logout()
+        {
+              HttpContext.Session.Clear();    
+            await _signInManager.SignOutAsync();                 
+          //  _logger.LogInformation($"User signed out");
+            return RedirectToAction(nameof(HomeController.Index), "Home");
         }
 
 

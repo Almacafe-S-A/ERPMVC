@@ -62,31 +62,24 @@ namespace ERPMVC.Controllers
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-                //var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = config.Value.UserEmail, Password = config.Value.UserPassword });
 
-                //if (resultlogin.IsSuccessStatusCode)
-                //{
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/UserRol/GetUserRoles");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _roles = JsonConvert.DeserializeObject<List<ApplicationUserRole>>(valorrespuesta);
+                    _roles = _roles.Where(q => q.UserId == UserId).ToList();
 
-                //    string webtoken = await (resultlogin.Content.ReadAsStringAsync());
-                //    UserToken _userToken = JsonConvert.DeserializeObject<UserToken>(webtoken);
-
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " +  HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/UserRol/GetUserRoles");
-                    string valorrespuesta = "";
-                    if (result.IsSuccessStatusCode)
+                    foreach (var item in _roles)
                     {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _roles = JsonConvert.DeserializeObject<List<ApplicationUserRole>>(valorrespuesta);
-                        _roles = _roles.Where(q => q.UserId == UserId).ToList();
 
-                        foreach (var item in _roles)
-                        {
-                           
-                            var resultclient2 = await _client.GetAsync(baseadress + "api/Roles/GetRoleById/" + item.RoleId).Result.Content.ReadAsStringAsync();
-                            item.RoleName = (JsonConvert.DeserializeObject<ApplicationRole>(resultclient2)).Name;
-                        }
+                        var resultclient2 = await _client.GetAsync(baseadress + "api/Roles/GetRoleById/" + item.RoleId).Result.Content.ReadAsStringAsync();
+                        item.RoleName = (JsonConvert.DeserializeObject<ApplicationRole>(resultclient2)).Name;
                     }
-                //}
+                }
+               
             }
             catch (System.Exception myExc)
             {
@@ -104,35 +97,27 @@ namespace ERPMVC.Controllers
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-                //var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = config.Value.UserEmail, Password = config.Value.UserPassword });
 
-                //if (resultlogin.IsSuccessStatusCode)
-                //{
 
-                //    string webtoken = await (resultlogin.Content.ReadAsStringAsync());
-                //    UserToken _userToken = JsonConvert.DeserializeObject<UserToken>(webtoken);
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/UserRol/GetUserRoles");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _roles = JsonConvert.DeserializeObject<List<ApplicationUserRole>>(valorrespuesta);
+                    _roles = _roles.Where(q => q.RoleId == RoleId).ToList();
 
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " +  HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/UserRol/GetUserRoles");
-                    string valorrespuesta = "";
-                    if (result.IsSuccessStatusCode)
+                    foreach (var item in _roles)
                     {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _roles = JsonConvert.DeserializeObject<List<ApplicationUserRole>>(valorrespuesta);
-                        _roles = _roles.Where(q => q.RoleId == RoleId).ToList();
-
-                        foreach (var item in _roles)
-                        {
-                            var resultclient = await _client.GetAsync(baseadress + "api/Usuario/GetUserById/" + item.UserId).Result.Content.ReadAsStringAsync();
-                            item.UserName = (JsonConvert.DeserializeObject<ApplicationUser>(resultclient)).UserName;
-
-                          
-                        }
-
+                        var resultclient = await _client.GetAsync(baseadress + "api/Usuario/GetUserById/" + item.UserId).Result.Content.ReadAsStringAsync();
+                        item.UserName = (JsonConvert.DeserializeObject<ApplicationUser>(resultclient)).UserName;
 
 
                     }
-               // }
+
+                }
+               
             }
             catch (System.Exception myExc)
             {
@@ -150,13 +135,7 @@ namespace ERPMVC.Controllers
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-                //var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = config.Value.UserEmail, Password = config.Value.UserPassword });
-
-                //if (resultlogin.IsSuccessStatusCode)
-                //{
-
-                //    string webtoken = await (resultlogin.Content.ReadAsStringAsync());
-                //    UserToken _userToken = JsonConvert.DeserializeObject<UserToken>(webtoken);
+     
 
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " +  HttpContext.Session.GetString("token"));
                     var result = await _client.GetAsync(baseadress + "api/UserRol/GetUserRoles");
@@ -192,33 +171,25 @@ namespace ERPMVC.Controllers
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-                //var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = config.Value.UserEmail, Password = config.Value.UserPassword });
 
-                //if (resultlogin.IsSuccessStatusCode)
-                //{
 
-                //    string webtoken = await (resultlogin.Content.ReadAsStringAsync());
-                //    UserToken _userToken = JsonConvert.DeserializeObject<UserToken>(webtoken);
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/UserRol/GetUserRoles");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _roles = JsonConvert.DeserializeObject<List<ApplicationUserRole>>(valorrespuesta);
 
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " +  HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/UserRol/GetUserRoles");
-                    string valorrespuesta = "";
-                    if (result.IsSuccessStatusCode)
+                    foreach (var item in _roles)
                     {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _roles = JsonConvert.DeserializeObject<List<ApplicationUserRole>>(valorrespuesta);
-                       // _roles = _roles.Where(q => q.RoleId == RoleId).ToList();
-
-                        foreach (var item in _roles)
-                        {
-                            var resultclient = await _client.GetAsync(baseadress + "api/Usuario/GetUserById/" + item.UserId).Result.Content.ReadAsStringAsync();
-                            item.UserName = (JsonConvert.DeserializeObject<ApplicationUser>(resultclient)).UserName;
-                        }
-
-
-
+                        var resultclient = await _client.GetAsync(baseadress + "api/Usuario/GetUserById/" + item.UserId).Result.Content.ReadAsStringAsync();
+                        item.UserName = (JsonConvert.DeserializeObject<ApplicationUser>(resultclient)).UserName;
                     }
-                //}
+
+
+
+                }
             }
             catch (System.Exception myExc)
             {
@@ -237,14 +208,7 @@ namespace ERPMVC.Controllers
             List<ApplicationUserRole> _roles = new List<ApplicationUserRole>();
             string baseadress = config.Value.urlbase;
             HttpClient _client = new HttpClient();
-            //var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = config.Value.UserEmail, Password = config.Value.UserPassword });
-
-            //if (resultlogin.IsSuccessStatusCode)
-            //{
-
-            //    string webtoken = await(resultlogin.Content.ReadAsStringAsync());
-            //    UserToken _userToken = JsonConvert.DeserializeObject<UserToken>(webtoken);
-
+    
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " +  HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/UserRol/GetUserRoles");
                 string valorrespuesta = "";
@@ -263,7 +227,7 @@ namespace ERPMVC.Controllers
                     }
 
                 }
-           // }
+         
 
 
             return _roles.ToDataSourceResult(request);
@@ -275,24 +239,16 @@ namespace ERPMVC.Controllers
             ApplicationUser _usuario = new ApplicationUser();
             string baseadress = config.Value.urlbase;
             HttpClient _client = new HttpClient();
-            //var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = config.Value.UserEmail, Password = config.Value.UserPassword });
 
-            //if (resultlogin.IsSuccessStatusCode)
-            //{
+            _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+            var result = await _client.GetAsync(baseadress + "api/UserRol/GetUserById/" + UserId);
+            string valorrespuesta = "";
+            if (result.IsSuccessStatusCode)
+            {
+                valorrespuesta = await (result.Content.ReadAsStringAsync());
+                _usuario = JsonConvert.DeserializeObject<ApplicationUser>(valorrespuesta);
 
-            //    string webtoken = await (resultlogin.Content.ReadAsStringAsync());
-            //    UserToken _userToken = JsonConvert.DeserializeObject<UserToken>(webtoken);
-
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " +  HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/UserRol/GetUserById/" + UserId);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _usuario = JsonConvert.DeserializeObject<ApplicationUser>(valorrespuesta);
-
-                }
-            //}
+            }
 
 
             return View(_usuario);
@@ -310,30 +266,23 @@ namespace ERPMVC.Controllers
                     string baseadress = config.Value.urlbase;
                     HttpClient _client = new HttpClient();
 
-                    //var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = config.Value.UserEmail, Password = config.Value.UserPassword });
 
-                    //if (resultlogin.IsSuccessStatusCode)
-                    //{
-                    //    string webtoken = await (resultlogin.Content.ReadAsStringAsync());
-                    //    UserToken _userToken = JsonConvert.DeserializeObject<UserToken>(webtoken);
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.PostAsJsonAsync(baseadress + "api/UserRol/Insert", _role);
 
-                        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " +  HttpContext.Session.GetString("token"));
-                        var result = await _client.PostAsJsonAsync(baseadress + "api/UserRol/Insert", _role);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _role = JsonConvert.DeserializeObject<ApplicationUserRole>(valorrespuesta);
 
-                        string valorrespuesta = "";
-                        if (result.IsSuccessStatusCode)
-                        {
-                            valorrespuesta = await (result.Content.ReadAsStringAsync());
-                            _role = JsonConvert.DeserializeObject<ApplicationUserRole>(valorrespuesta);
-
-                        }
-                        else
-                        {
-                            string request = await result.Content.ReadAsStringAsync();
-                            return BadRequest(request);
-                        }
-
-                   // }
+                    }
+                    else
+                    {
+                        string request = await result.Content.ReadAsStringAsync();
+                        return BadRequest(request);
+                    }
+                 
                 }
                 else
                 {
@@ -358,23 +307,15 @@ namespace ERPMVC.Controllers
                 // TODO: Add insert logic here
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-
-                var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = config.Value.UserEmail, Password = config.Value.UserPassword });
-
-                if (resultlogin.IsSuccessStatusCode)
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PutAsJsonAsync(baseadress + "api/UserRol/Update", _rol);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
                 {
-                    string webtoken = await(resultlogin.Content.ReadAsStringAsync());
-                    UserToken _userToken = JsonConvert.DeserializeObject<UserToken>(webtoken);
-
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + _userToken.Token);
-                    var result = await _client.PutAsJsonAsync(baseadress + "api/UserRol/Update", _rol);
-                    string valorrespuesta = "";
-                    if (result.IsSuccessStatusCode)
-                    {
-                        valorrespuesta = await(result.Content.ReadAsStringAsync());
-                        _rol = JsonConvert.DeserializeObject<ApplicationUserRole>(valorrespuesta);
-                    }
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _rol = JsonConvert.DeserializeObject<ApplicationUserRole>(valorrespuesta);
                 }
+
 
             }
             catch (Exception ex)
@@ -393,25 +334,16 @@ namespace ERPMVC.Controllers
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " +  HttpContext.Session.GetString("token"));
 
-
-                //var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = config.Value.UserEmail, Password = config.Value.UserPassword});
-
-                //if (resultlogin.IsSuccessStatusCode)
-                //{
-                //    string webtoken = await(resultlogin.Content.ReadAsStringAsync());
-                //    UserToken _userToken = JsonConvert.DeserializeObject<UserToken>(webtoken);
-
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " +  HttpContext.Session.GetString("token"));
-
-                    var result = await _client.PostAsJsonAsync(baseadress + "api/UserRol/Delete", _rol);
-                    string valorrespuesta = "";
-                    if (result.IsSuccessStatusCode)
-                    {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _rol = JsonConvert.DeserializeObject<ApplicationUserRole>(valorrespuesta);
-                    }
-               // }
+                var result = await _client.PostAsJsonAsync(baseadress + "api/UserRol/Delete", _rol);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _rol = JsonConvert.DeserializeObject<ApplicationUserRole>(valorrespuesta);
+                }
+      
             }
             catch (Exception ex)
             {

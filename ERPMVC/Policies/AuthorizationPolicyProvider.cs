@@ -61,6 +61,7 @@ namespace ERPMVC.Policies
 
                         }
 
+                     //   _policies = _policies.Where(q => q.Name == policyName).ToList();
 
                         foreach (var item in _policies)
                         {

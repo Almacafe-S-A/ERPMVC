@@ -24,7 +24,7 @@ namespace ERPMVC.Helpers
             var controllerInfo = filterContext.ActionDescriptor as ControllerActionDescriptor;
             var ses = filterContext.HttpContext.Session.GetString("token");
 
-
+           
             if (ses != null)
             {
                 //filterContext.Result = new RedirectToRouteResult(

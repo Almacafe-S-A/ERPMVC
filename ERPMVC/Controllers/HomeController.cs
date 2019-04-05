@@ -9,8 +9,8 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ERPMVC.Controllers
 {
-    //[Authorize]
-    [CustomAuthorization]
+   // [Authorize]
+   [CustomAuthorization]
     public class HomeController : Controller
     {
         //[Authorize(Policy ="Admin")]
