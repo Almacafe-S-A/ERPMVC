@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using AutoMapper;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -15,29 +18,63 @@ using Newtonsoft.Json;
 
 namespace ERPMVC.Controllers
 {
+    //[Authorize]
     public class SalesOrderController : Controller
     {
         //private readonly ApplicationDbContext _context;
        //  private readonly ILogger _logger;
          private readonly IOptions<MyConfig> _config;
+          private readonly IMapper mapper;
 
         //public SalesOrderController(ILogger<SalesOrderController> logger,IOptions<MyConfig> config)
-         public SalesOrderController(IOptions<MyConfig> config)
+         public SalesOrderController(IOptions<MyConfig> config, IMapper mapper)
         {
+            this.mapper = mapper;
            // _logger = logger;
             _config = config;
         }
         public IActionResult Index()
         {
+           // SalesOrderDTO _dto = new SalesOrderDTO();
+            try
+            {
+               
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
 
             return View();
         }
 
-        public async Task<ActionResult> pvwSalesOrder()
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwSalesOrder([FromBody]SalesOrder _salesorder)
         {
-            // SalesOrder _salesorder = 
+            SalesOrderDTO _salesorderf = new SalesOrderDTO();
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
 
-            return View();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/SalesOrder/GetSalesOrderById");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _salesorderf = JsonConvert.DeserializeObject<SalesOrderDTO>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+
+               // throw;
+            }
+
+            return View(_salesorderf);
         }
 
        
@@ -67,41 +104,98 @@ namespace ERPMVC.Controllers
 
             return _SalesOrders.ToDataSourceResult(request);
         }
+         
 
 
-       [HttpPost("[action]")]
-        public async Task<ActionResult<ApplicationUserRole>> Insert(ApplicationUserRole _role)
+        [HttpPost("[action]")]
+        public async Task<ActionResult<SalesOrder>> SaveSalesOrder([FromBody]SalesOrderDTO _SalesOrder)
+        {
+            if (_SalesOrder != null)
+            {
+                SalesOrder _SalesOrdermodel = new SalesOrder();
+                try
+                {
+                  _SalesOrdermodel  = mapper.Map<SalesOrderDTO, SalesOrder>(_SalesOrder);
+                    if (_SalesOrder.SalesOrderId == 0)
+                    {
+                       var resultsalesorder = await Insert(_SalesOrder);
+                        foreach (var item in _SalesOrder._SalesOrderLine)
+                        {
+                            var value = (resultsalesorder.Result as ObjectResult).Value;
+
+                            //var salesorder = (SalesOrder)value; // Convert.ChangeType(value,typeof(SalesOrder)) ;
+                            item.SalesOrderId = ((SalesOrderDTO)(value)).SalesOrderId;
+                            string baseadress = _config.Value.urlbase;
+                            HttpClient _client = new HttpClient();
+
+                            _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                            var result = await _client.PostAsJsonAsync(baseadress + "api/SalesOrderLine/Insert", item);
+
+                            string valorrespuesta = "";
+                            if (result.IsSuccessStatusCode)
+                            {
+                                valorrespuesta = await (result.Content.ReadAsStringAsync());
+                                _SalesOrder = JsonConvert.DeserializeObject<SalesOrderDTO>(valorrespuesta);
+
+                            }
+                            else
+                            {
+                                string request = await result.Content.ReadAsStringAsync();
+                                return BadRequest(request);
+                            }
+
+                        }
+                        return resultsalesorder;
+                    }
+                    else
+                    {
+                      //  return await Update(_SalesOrder.SalesOrderId.ToString(), _SalesOrder);
+                    }
+                }
+
+                catch (Exception ex)
+                {
+                    throw ex;
+                }
+
+            }
+            return BadRequest("No llego correctamente el modelo!");
+        }
+
+
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<SalesOrder>> Insert(SalesOrder _SalesOrder)
         {
             try
             {
-
-                if (_role.RoleId != "" && _role.UserId != "" && _role.RoleId != null && _role.UserId != null)
+                if (_SalesOrder.SalesOrderId == 0)
                 {
                     // TODO: Add insert logic here
                     string baseadress = _config.Value.urlbase;
                     HttpClient _client = new HttpClient();
 
-                        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " +  HttpContext.Session.GetString("token"));
-                        var result = await _client.PostAsJsonAsync(baseadress + "api/SalesOrder/Insert", _role);
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.PostAsJsonAsync(baseadress + "api/SalesOrder/Insert", _SalesOrder);
 
-                        string valorrespuesta = "";
-                        if (result.IsSuccessStatusCode)
-                        {
-                            valorrespuesta = await (result.Content.ReadAsStringAsync());
-                            _role = JsonConvert.DeserializeObject<ApplicationUserRole>(valorrespuesta);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _SalesOrder = JsonConvert.DeserializeObject<SalesOrderDTO>(valorrespuesta);
 
-                        }
-                        else
-                        {
-                            string request = await result.Content.ReadAsStringAsync();
-                            return BadRequest(request);
-                        }
+                    }
+                    else
+                    {
+                        string request = await result.Content.ReadAsStringAsync();
+                        return BadRequest(request);
+                    }
 
-                  
+
                 }
                 else
                 {
-                    return BadRequest("Ingrese todos los datos!");
+                    return BadRequest("Ya existe!");
                 }
 
             }
@@ -111,12 +205,13 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-              return Ok("Datos Guardados Correctamente! ");
-           // return new ObjectResult(new DataSourceResult { Data = new[] { _role }, Total = 1 });
+            return Ok(_SalesOrder);
+            // return new ObjectResult(new DataSourceResult { Data = new[] { _role }, Total = 1 });
         }
 
+
         [HttpPut("[action]")]
-        public async Task<ActionResult<ApplicationUserRole>> Update(string Id, ApplicationUserRole _rol)
+        public async Task<ActionResult<SalesOrder>> Update(Int64 Id, SalesOrderDTO _SalesOrderLine)
         {
             try
             {
@@ -125,28 +220,28 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PutAsJsonAsync(baseadress + "api/SalesOrder/Update", _rol);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/SalesOrder/Update", _SalesOrderLine);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _rol = JsonConvert.DeserializeObject<ApplicationUserRole>(valorrespuesta);
+                    _SalesOrderLine = JsonConvert.DeserializeObject<SalesOrderDTO>(valorrespuesta);
                 }
 
 
             }
             catch (Exception ex)
             {
-               // _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                // _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _rol }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _SalesOrderLine }, Total = 1 });
 
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<ApplicationRole>> Delete([FromBody]ApplicationUserRole _rol)
+        public async Task<ActionResult<SalesOrderDTO>> Delete([FromBody]SalesOrderDTO _rol)
         {
             try
             {
@@ -158,20 +253,21 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _rol = JsonConvert.DeserializeObject<ApplicationUserRole>(valorrespuesta);
+                    _rol = JsonConvert.DeserializeObject<SalesOrderDTO>(valorrespuesta);
                 }
 
             }
             catch (Exception ex)
             {
-              //  _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                //  _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error: {ex.Message}");
             }
 
-
-          //  return new ObjectResult(new DataSourceResult { Data = new[] { RoleId }, Total = 1 });
             return new ObjectResult(new DataSourceResult { Data = new[] { _rol }, Total = 1 });
         }
+
+
+
 
 
 

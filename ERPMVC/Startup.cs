@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
 using ERP.Contexts;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
@@ -47,6 +48,11 @@ namespace ERPMVC
             services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
+
+            services.AddAutoMapper(options =>
+        {
+              //options.CreateMap<AutorCreacionDTO, Autor>();
+          });
 
             services.AddDistributedMemoryCache();
             services.AddSession(options =>

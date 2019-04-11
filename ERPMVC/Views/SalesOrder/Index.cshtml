@@ -1,15 +1,58 @@
-﻿<script>
+﻿
+<script>
     function AddCotizacion() {
-       $('#myModal').modal('show');
+        $('#myModalSalesOrder').find(':input').not(':submit').val('');
+         //$('#myModalSalesOrder').modal('show');
+         var dataObject = ["listadoproductos"];
+         $.ajax({
+            url: '@Url.Action("ClearSession","Common")',          
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                    $('#myModalSalesOrder').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+         });
+
+        RefreshCotizacionesDetail();
+        
+  
     }
+
+    function EditCotizacion(e) {
+         e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));      
+        var dataObject = { SalesOrderId: dataItem.SalesOrderId };
+
+        $.ajax({
+            url: '@Url.Action("pvwSalesOrder","SalesOrder")',          
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#salesorder").html('');
+                $("#salesorder").html(result);
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+     }
 </script>
 
 @(Html.Kendo().Grid<ERPMVC.Models.SalesOrder>()
                   .Name("gridCotizaciones")
                   .Columns(columns =>
                   {
-                      columns.Bound(p => p.SalesOrderId).Title("Fecha Cotizacion").Width(150);  
-                      columns.Bound(p => p.OrderDate).Title("Fecha Cotizacion").Width(150);
+                      columns.Bound(p => p.SalesOrderId).Title("Id").Width(150);  
+                      columns.Bound(p => p.OrderDate).Format("{0:dd/MM/yyyy}").Title("Fecha Cotizacion").Width(150);
                       columns.Bound(p => p.CustomerId).Title("Customer").Width(150);                      
                       columns.Bound(p => p.CustomerRefNumber).Title("Codigo referencia").Width(150);  
                       columns.Bound(p => p.Discount).Title("Descuentos").Width(150);
@@ -70,6 +113,6 @@
               )
     )
 
-
-
-@await Html.PartialAsync("pvwSalesOrder", new ERPMVC.Models.SalesOrder { SalesOrderId=0 , OrderDate=DateTime.Now   })
+ <div id="salesorder">
+      @await Html.PartialAsync("pvwSalesOrder" , new ERPMVC.DTO.SalesOrderDTO { SalesOrderId=0, OrderDate=DateTime.Now, DeliveryDate=DateTime.Now })
+ </div>

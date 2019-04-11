@@ -9,11 +9,11 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ERPMVC.Controllers
 {
-   // [Authorize]
+  //  [Authorize]
    [CustomAuthorization]
     public class HomeController : Controller
     {
-        //[Authorize(Policy ="Admin")]
+       // [Authorize(Policy ="Admin")]
         public IActionResult Index()
         {
             return View();

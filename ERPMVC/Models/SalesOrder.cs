@@ -1,4 +1,6 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -10,17 +12,23 @@ namespace ERPMVC.Models
     public class SalesOrder
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int SalesOrderId { get; set; }
-        [Display(Name = "Order Number")]
-        public string SalesOrderName { get; set; }
-        [Display(Name = "Branch")]
-        public int BranchId { get; set; }
-        [Display(Name = "Customer")]
-        public int CustomerId { get; set; }
-        public DateTimeOffset OrderDate { get; set; }
-        public DateTimeOffset DeliveryDate { get; set; }
 
-        [Display(Name = "Currency")]
+         [Display(Name = "Id")]
+        public int SalesOrderId { get; set; }
+        [Display(Name = "Nombre")]
+        public string SalesOrderName { get; set; }
+        [Display(Name = "Sucursal")]
+        public int BranchId { get; set; }
+        [Display(Name = "Cliente")]
+        public int CustomerId { get; set; }
+
+         [Display(Name = "Fecha de cotizacion")]
+        //[JsonProperty("revisedDate", NullValueHandling = NullValueHandling.Ignore)]
+        //[JsonConverter(typeof(FixedIsoDateTimeOffsetConverter))]
+        public DateTime OrderDate { get; set; }
+         [Display(Name = "Fecha de entrega")]
+        public DateTime DeliveryDate { get; set; }
+        [Display(Name = "Moneda")]
         public int CurrencyId { get; set; }
 
         [Display(Name = "Numero de referencia de cliente")]
@@ -32,11 +40,28 @@ namespace ERPMVC.Models
         [Display(Name = "Monto")]
         public double Amount { get; set; }
         public double SubTotal { get; set; }
+         [Display(Name = "Descuento")]
         public double Discount { get; set; }
+
+         [Display(Name = "Impuesto")]
         public double Tax { get; set; }
         [Display(Name = "Flete")]
         public double Freight { get; set; }
         public double Total { get; set; }
         public List<SalesOrderLine> SalesOrderLines { get; set; } = new List<SalesOrderLine>();
+    }
+
+
+    public class FixedIsoDateTimeOffsetConverter : IsoDateTimeConverter
+    {
+        public override bool CanConvert(Type objectType)
+        {
+            return objectType == typeof(DateTimeOffset) || objectType == typeof(DateTimeOffset?);
+        }
+
+        public FixedIsoDateTimeOffsetConverter() : base()
+        {
+            DateTimeStyles = System.Globalization.DateTimeStyles.AssumeUniversal;
+        }
     }
 }
