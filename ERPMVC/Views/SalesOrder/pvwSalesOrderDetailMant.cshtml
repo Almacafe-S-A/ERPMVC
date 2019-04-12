@@ -21,36 +21,66 @@
     function CalcularTotalDocumento() {
         var freight = $("#Freight").val()===""?0:$("#Freight").val();
       
-         var displayedData = $("#gridCotizacionesDetail").data().kendoGrid.dataSource.view(); 
-         var total = 0,totaldescuento=0,totalimpuesto=0,totalmonto=0;
+        var displayedData = $("#gridCotizacionesDetail").data().kendoGrid.dataSource.view(); 
+        var total = 0, totaldescuento = 0, totalimpuesto = 0, totalmonto = 0;
+        var TotalExento = 0, TotalExonerado = 0, TotalGravado = 0;
+
         $(displayedData).each(function (index, element) {
             var t = JSON.parse(JSON.stringify(element));
-            $.each(t, function (indexb, elementb) {
-                // console.log('indice:'+ indexb +'=>ELEMENTO:'+ elementb);
-                if (indexb === 'Total') {
-                    total = total + elementb;
-                }
-                if (indexb === 'DiscountAmount') {
-                    totaldescuento = totaldescuento + elementb;
-                }
 
-                 if (indexb === 'Amount') {
-                    totalmonto = totalmonto + elementb;
-                }
+            total = total + t["Total"];
+            totaldescuento = totaldescuento  + t["DiscountAmount"];
+            totalmonto = totalmonto +  t["Amount"];
+            totalimpuesto = totalimpuesto +  t["TaxAmount"];
 
-                 if (indexb === 'TaxAmount') {
-                    totalimpuesto = totalimpuesto + elementb;
-                }
+            if (t["TaxCode"] == "1" || t["TaxCode"] == "3") {
+                TotalGravado = TotalGravado + t["Total"];
+                console.log('TotalGravado' + TotalGravado);
+            }
 
+             if (t["TaxCode"] == "4") {
+                 TotalExento = TotalExento + t["Total"];
+                   console.log('TotalExento' + TotalExento);
+            }
+
+            if (t["TaxCode"] == "5") {
+                TotalExonerado = TotalExonerado + t["Total"];
+                  console.log('TotalExonerado' + TotalExonerado);
+            }         
+           
+          
+            //console.log(t["Total"]);
+            //console.log(t);
+            //$.each(t, function (indexb, elementb) {
+            //     console.log('indice:'+ indexb +'=>ELEMENTO:'+ elementb);
+            //    if (indexb === 'Total') {
+                  // total = total + elementob;
+            //    }
+            //    if (indexb === 'DiscountAmount') {
+            //        totaldescuento = totaldescuento + elementb;
+            //    }
+
+            //     if (indexb === 'Amount') {
+            //        totalmonto = totalmonto + elementb;
+            //    }
+
+            //     if (indexb === 'TaxAmount') {
+            //        totalimpuesto = totalimpuesto + elementb;
+            //    }             
                 
-            });
+            //});
         });
        
         var sumatotal = total + totalimpuesto + Number(freight);      
         setearvalor('Amount', total);
+
+        setearvalor('TotalExento', TotalExento);
+        setearvalor('TotalExonerado', TotalExonerado);
+        setearvalor('TotalGravado', TotalGravado);
+
         setearvalor('Discount', totaldescuento);
         setearvalor('Tax', totalimpuesto);
-        setearvalor('SubTotal', total-totalimpuesto);
+        setearvalor('SubTotal', total - (totaldescuento+ totalimpuesto));
         setearvalor('Total', sumatotal);
     }
 

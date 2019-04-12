@@ -10,5 +10,7 @@ namespace ERPMVC.DTO
     {
 
         public List<SalesOrderLine> _SalesOrderLine { get; set; }
+
+        public int editar { get; set; } = 1;
     }
 }

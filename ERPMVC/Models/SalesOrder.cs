@@ -13,10 +13,25 @@ namespace ERPMVC.Models
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
 
-         [Display(Name = "Id")]
+        [Display(Name = "Id")]
         public int SalesOrderId { get; set; }
-        [Display(Name = "Nombre")]
+
+        [Display(Name = "Nombre Solicitante")]
         public string SalesOrderName { get; set; }
+
+        [Display(Name = "RTN")]
+        public string RTN { get; set; }
+
+        [Display(Name = "Telefono")]
+        public string Tefono { get; set; }
+
+        [Display(Name = "Correo")]
+        [EmailAddress]
+        public string Correo { get; set; }
+
+        [Display(Name = "Direccion")]
+        public string Direccion { get; set; }
+
         [Display(Name = "Sucursal")]
         public int BranchId { get; set; }
         [Display(Name = "Cliente")]
@@ -48,6 +63,15 @@ namespace ERPMVC.Models
         [Display(Name = "Flete")]
         public double Freight { get; set; }
         public double Total { get; set; }
+
+        [Display(Name = "Total exento")]
+        public double TotalExento { get; set; }
+
+        [Display(Name = "Total exonerado")]
+        public double TotalExonerado { get; set; }
+
+        [Display(Name = "Total Gravado")]
+        public double TotalGravado { get; set; }
         public List<SalesOrderLine> SalesOrderLines { get; set; } = new List<SalesOrderLine>();
     }
 

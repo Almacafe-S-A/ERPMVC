@@ -1,7 +1,7 @@
 ﻿
 <script>
     function AddCotizacion() {
-        $('#myModalSalesOrder').find(':input').not(':submit').val('');
+       // $('#myModalSalesOrder').find(':input').not(':submit').val('');
          //$('#myModalSalesOrder').modal('show');
          var dataObject = ["listadoproductos"];
          $.ajax({
@@ -12,22 +12,18 @@
             async: false,
             data: JSON.stringify(dataObject),
             success: function (result) {
-                    $('#myModalSalesOrder').modal('show');
+                  //  $('#myModalSalesOrder').modal('show');
             },
              error: function (XMLHttpRequest, textStatus, errorThrown) {
                     alert(textStatus + ": " + XMLHttpRequest.responseText);
               }
          });
 
-        RefreshCotizacionesDetail();
-        
-  
-    }
 
-    function EditCotizacion(e) {
-         e.preventDefault();
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));      
-        var dataObject = { SalesOrderId: dataItem.SalesOrderId };
+         var dataObject = {
+            SalesOrderId: 0,
+            editar : 1
+        };
 
         $.ajax({
             url: '@Url.Action("pvwSalesOrder","SalesOrder")',          
@@ -39,6 +35,43 @@
             success: function (result) {
                 $("#salesorder").html('');
                 $("#salesorder").html(result);
+
+                RefreshCotizacionesDetail();
+                 $("#btnSaveCotizacion").show();
+                 $('#myModalSalesOrder').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+
+        //RefreshCotizacionesDetail();
+        
+  
+    }
+
+    function EditCotizacion(e) {
+         e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));      
+        var dataObject = {
+            SalesOrderId: dataItem.SalesOrderId,
+            editar : 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwSalesOrder","SalesOrder")',          
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#salesorder").html('');
+                $("#salesorder").html(result);
+
+              //  RefreshCotizacionesDetail();
+                 $("#btnSaveCotizacion").hide();
+                 $('#myModalSalesOrder').modal('show');
             },
              error: function (XMLHttpRequest, textStatus, errorThrown) {
                     alert(textStatus + ": " + XMLHttpRequest.responseText);
@@ -51,12 +84,17 @@
                   .Name("gridCotizaciones")
                   .Columns(columns =>
                   {
-                      columns.Bound(p => p.SalesOrderId).Title("Id").Width(150);  
+                      columns.Command(command => {
+                          command.Custom("Editar").Click("EditCotizacion");
+                        //  command.Edit(); command.Destroy();
+                      }).Width(250);
+
+                      columns.Bound(p => p.SalesOrderId).Title("Id").Width(150);
                       columns.Bound(p => p.OrderDate).Format("{0:dd/MM/yyyy}").Title("Fecha Cotizacion").Width(150);
-                      columns.Bound(p => p.CustomerId).Title("Customer").Width(150);                      
-                      columns.Bound(p => p.CustomerRefNumber).Title("Codigo referencia").Width(150);  
+                      columns.Bound(p => p.CustomerId).Title("Customer").Width(150);
+                      columns.Bound(p => p.CustomerRefNumber).Title("Codigo referencia").Width(150);
                       columns.Bound(p => p.Discount).Title("Descuentos").Width(150);
-                      columns.Bound(p => p.BranchId).Title("Branch Id").Width(150);                     
+                      columns.Bound(p => p.BranchId).Title("Branch Id").Width(150);
                       columns.Bound(p => p.Freight).Title("Flete").Width(150);
                       columns.Bound(p => p.SubTotal).Title("Sub Total").Width(150);
                       columns.Bound(p => p.Tax).Title("Total Impuesto").Width(150);
@@ -64,9 +102,9 @@
                   })
                   .ToolBar(tools =>
                   {
-                       //tools.Create();
-                     tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                  .HtmlAttributes(new { @class="k-i-plus-sm", onclick = "AddCotizacion();" });
+                      //tools.Create();
+                      tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                   .HtmlAttributes(new { @class="k-i-plus-sm", onclick = "AddCotizacion();" });
 
                       tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
                       tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
@@ -79,7 +117,7 @@
                     .Pageable()
                     .Filterable()
                     .Scrollable()
-                   // .ClientDetailTemplateId("template")
+                    // .ClientDetailTemplateId("template")
                     .Pdf(pdf => pdf.FileName("CotizacionReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                     + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
                     .ProxyURL(Url.Action("Export", "Home")).AllPages())

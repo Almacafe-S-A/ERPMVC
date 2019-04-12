@@ -18,7 +18,8 @@ using Newtonsoft.Json;
 
 namespace ERPMVC.Controllers
 {
-    //[Authorize]
+    [Authorize]
+     [CustomAuthorization]
     public class SalesOrderController : Controller
     {
         //private readonly ApplicationDbContext _context;
@@ -50,7 +51,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult> pvwSalesOrder([FromBody]SalesOrder _salesorder)
+        public async Task<ActionResult> pvwSalesOrder([FromBody]SalesOrderDTO _salesorder)
         {
             SalesOrderDTO _salesorderf = new SalesOrderDTO();
             try
@@ -58,8 +59,9 @@ namespace ERPMVC.Controllers
                 string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
 
+
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/SalesOrder/GetSalesOrderById");
+                var result = await _client.GetAsync(baseadress + "api/SalesOrder/GetById/"+_salesorder.SalesOrderId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -67,11 +69,16 @@ namespace ERPMVC.Controllers
                     _salesorderf = JsonConvert.DeserializeObject<SalesOrderDTO>(valorrespuesta);
                 }
 
+                if (_salesorderf == null) { _salesorderf = new SalesOrderDTO { DeliveryDate=DateTime.Now,OrderDate=DateTime.Now, editar = _salesorder.editar, SalesOrderId = _salesorder.SalesOrderId }; }
+                _salesorderf.editar = _salesorder.editar;             
+
+
+
             }
             catch (Exception ex)
             {
 
-               // throw;
+                throw ex;
             }
 
             return View(_salesorderf);

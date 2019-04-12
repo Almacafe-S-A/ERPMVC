@@ -20,6 +20,7 @@ namespace ERPMVC.Controllers
 {
 
     [Authorize]
+    [CustomAuthorization]
     public class CustomerController : Controller
     {
         private readonly IOptions<MyConfig> config;
@@ -94,7 +95,7 @@ namespace ERPMVC.Controllers
 
 
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token")) ;
-                    var result = await _client.GetAsync(baseadress + "api/Customer");
+                    var result = await _client.GetAsync(baseadress + "api/Customer/GetCustomer");
                     string valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {

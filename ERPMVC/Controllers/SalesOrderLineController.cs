@@ -15,7 +15,7 @@ using Newtonsoft.Json;
 
 namespace ERPMVC.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [Route("[controller]")]
     public class SalesOrderLineController : Controller
     {
@@ -58,7 +58,7 @@ namespace ERPMVC.Controllers
                     _client.DefaultRequestHeaders.Add("SalesOrderId", _SalesOrderLine.SalesOrderId.ToString());
 
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/SalesOrderLine/GetSalesOrderLine");
+                    var result = await _client.GetAsync(baseadress + "api/SalesOrderLine/");
                     string valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {

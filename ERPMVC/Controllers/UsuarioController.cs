@@ -15,6 +15,8 @@ using Newtonsoft.Json;
 
 namespace ERPMVC.Controllers
 {
+     [Authorize]
+      [CustomAuthorization]
     public class UsuarioController : Controller
     {
 
