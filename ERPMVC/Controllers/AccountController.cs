@@ -60,7 +60,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = model.Email, Password = model.Password });
-
+              //  _signInManager.
                 if (result.Succeeded)
                 {
                     string webtoken = await (resultlogin.Content.ReadAsStringAsync());

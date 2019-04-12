@@ -15,40 +15,37 @@ using Newtonsoft.Json;
 
 namespace ERPMVC.Controllers
 {
-
-     [Authorize]
-      [CustomAuthorization]
-    public class EstadosController : Controller
+    [Authorize]
+    [CustomAuthorization]
+    public class BranchController : Controller
     {
         private readonly IOptions<MyConfig> config;
 
-        public EstadosController(IOptions<MyConfig> config)
+        public BranchController(IOptions<MyConfig> config)
         {
             this.config = config;
-          
+
         }
 
         [HttpGet]
         public async Task<JsonResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<Estados> _customers = new List<Estados>();
+            List<Branch> _customers = new List<Branch>();
             string baseadress = config.Value.urlbase;
             HttpClient _client = new HttpClient();
               _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-            var result = await _client.GetAsync(baseadress + "api/estados");
+            var result = await _client.GetAsync(baseadress + "api/Branch/GetBranch");
             string valorrespuesta = "";
             if (result.IsSuccessStatusCode)
             {
                 valorrespuesta = await (result.Content.ReadAsStringAsync());
-                _customers = JsonConvert.DeserializeObject<List<Estados>>(valorrespuesta);
+                _customers = JsonConvert.DeserializeObject<List<Branch>>(valorrespuesta);
 
             }
 
 
-           return Json(_customers); 
+               return Json(_customers.ToDataSourceResult(request));
 
         }
-
-
     }
 }

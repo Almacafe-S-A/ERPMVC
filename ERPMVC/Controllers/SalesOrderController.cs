@@ -130,7 +130,7 @@ namespace ERPMVC.Controllers
                         {
                             var value = (resultsalesorder.Result as ObjectResult).Value;
 
-                            //var salesorder = (SalesOrder)value; // Convert.ChangeType(value,typeof(SalesOrder)) ;
+                            SalesOrderLine _SalesOrderlineresponse = new SalesOrderLine();
                             item.SalesOrderId = ((SalesOrderDTO)(value)).SalesOrderId;
                             string baseadress = _config.Value.urlbase;
                             HttpClient _client = new HttpClient();
@@ -142,7 +142,7 @@ namespace ERPMVC.Controllers
                             if (result.IsSuccessStatusCode)
                             {
                                 valorrespuesta = await (result.Content.ReadAsStringAsync());
-                                _SalesOrder = JsonConvert.DeserializeObject<SalesOrderDTO>(valorrespuesta);
+                                _SalesOrderlineresponse = JsonConvert.DeserializeObject<SalesOrderLine>(valorrespuesta);
 
                             }
                             else
