@@ -112,7 +112,53 @@ namespace ERPMVC.Controllers
             return _SalesOrders.ToDataSourceResult(request);
         }
          
+        public async Task<ActionResult> EnviarCotizacionA([DataSourceRequest]DataSourceRequest request , SalesOrderDTO _SalesOrderDTO)
+        {
 
+            try
+            {
+                SalesOrderDTO _salesorderf = new SalesOrderDTO();
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/SalesOrder/GetById/" + _SalesOrderDTO.SalesOrderId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _salesorderf = JsonConvert.DeserializeObject<SalesOrderDTO>(valorrespuesta);
+                }
+
+                _salesorderf.IdEstado = _SalesOrderDTO.IdEstado;
+
+                var resultado = await Update(_SalesOrderDTO.SalesOrderId, _salesorderf);
+                var value = (resultado.Result as ObjectResult).Value;
+                SalesOrder _result = (SalesOrder)value;
+
+                switch (_salesorderf.IdEstado)
+                {
+                    //Factura proforma
+                    case 3:
+
+                        break;
+                    //Factura fiscal
+                    case 4:
+                    case 6: 
+                        break;
+
+                  
+                }
+
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+
+            return RedirectToAction("", "");
+        }
 
         [HttpPost("[action]")]
         public async Task<ActionResult<SalesOrder>> SaveSalesOrder([FromBody]SalesOrderDTO _SalesOrder)
@@ -275,7 +321,14 @@ namespace ERPMVC.Controllers
 
 
 
+        [HttpGet("{SalesOrderId}")]
+       public  ActionResult AR(Int32 SalesOrderId)
+        {
 
+            SalesOrderDTO _salesorderdto = new SalesOrderDTO { SalesOrderId = SalesOrderId, token = HttpContext.Session.GetString("token") };
+
+            return View(_salesorderdto);
+        }
 
 
 

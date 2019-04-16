@@ -1,12 +1,11 @@
-﻿using ERPMVC.Models;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace ERPMVC.Models
+namespace ERPAPI.Models
 {
     public class SalesOrder
     {
@@ -21,7 +20,6 @@ namespace ERPMVC.Models
         [Display(Name = "Telefono")]
         public string Tefono { get; set; }
 
-        [EmailAddress]
         [Display(Name = "Correo")]
         public string Correo { get; set; }
 

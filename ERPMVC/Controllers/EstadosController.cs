@@ -20,11 +20,11 @@ namespace ERPMVC.Controllers
       [CustomAuthorization]
     public class EstadosController : Controller
     {
-        private readonly IOptions<MyConfig> config;
+        private readonly IOptions<MyConfig> _config;
 
         public EstadosController(IOptions<MyConfig> config)
         {
-            this.config = config;
+            this._config = config;
           
         }
 
@@ -32,7 +32,7 @@ namespace ERPMVC.Controllers
         public async Task<JsonResult> Get([DataSourceRequest]DataSourceRequest request)
         {
             List<Estados> _customers = new List<Estados>();
-            string baseadress = config.Value.urlbase;
+            string baseadress = _config.Value.urlbase;
             HttpClient _client = new HttpClient();
               _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
             var result = await _client.GetAsync(baseadress + "api/estados");
@@ -47,6 +47,33 @@ namespace ERPMVC.Controllers
 
            return Json(_customers); 
 
+        }
+
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> GetEnviosCotizacion([DataSourceRequest]DataSourceRequest request)
+        {
+            List<Estados> _clientes = new List<Estados>();
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/estados/GetEstadosByGrupo/"+2);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _clientes = JsonConvert.DeserializeObject<List<Estados>>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+
+            return Json(_clientes.ToDataSourceResult(request));
         }
 
 

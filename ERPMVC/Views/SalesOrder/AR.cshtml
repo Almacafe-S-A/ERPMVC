@@ -1,0 +1,87 @@
+﻿@model ERPMVC.DTO.SalesOrderDTO
+
+@*@{
+    ViewData["Title"] = "AR";
+}*@
+
+
+<h2>Cotización</h2>
+
+
+<div class="container">
+    <div id="settingsContainer">
+        <div class="settings-row">
+
+            <label>Choose report :</label>
+            <div id="btnReport" class="btn-group">
+                @* <button type="button" class="btn btn-default" data-bind="Reports/BillingInvoice.rdlx">Page Report</button>
+                   <button type="button" class="btn btn-default" data-bind="Reports/Orders.rdlx">RDL Report</button>*@
+                <button type="button" id="btnrptCotizacion" class="btn btn-default" data-bind="Reports/cotizacion.rdlx">Cotización</button>
+                @*<button type="button" class="btn btn-default" data-bind="Reports/Invoice.rpx" onclick="btnRPX(this);" >RPX Report</button>*@
+            </div>
+
+        </div>
+        <div class="settings-row">
+            <label>Choose UI type :</label>
+            <div id="btnUIType" class="btn-group" data-toggle="buttons-checkbox">
+                <button class="btn btn-default active" data-bind="desktop">Desktop</button>
+                <button class="btn btn-default" data-bind="mobile">Mobile</button>
+            </div>
+        </div>
+    </div>
+    <div id="viewer" style="width:100%; height:600pt;"></div>
+</div>
+
+<script type="text/javascript">
+    var options = {
+        element: '#viewer', // id of element that will contain  the viewer
+        uiType: 'desktop',
+        //reportService: { url: 'http://localhost:62533/ActiveReports.ReportService.asmx' },
+        reportService: { url: 'http://localhost:62533/CustomReportService.asmx' },
+        uiType: 'desktop',
+        reportLoaded: function () {
+            reportsButtons.prop('disabled', false);
+        }
+
+    };
+
+    var viewer = GrapeCity.ActiveReports.Viewer(options);
+    //console.log(viewer);
+
+    $(window).bind('beforeunload', function () {
+        viewer.destroy();
+    });
+
+    var uiTypeButtons = $('#btnUIType button');
+
+    uiTypeButtons.bind('click', function (ev) {
+        ev.stopImmediatePropagation();
+        uiTypeButtons.removeClass('active');
+        var target = $(ev.target);
+        target.addClass('active');
+        viewer.option('uiType', target.attr('data-bind'));
+    });
+
+
+    var reportsButtons = $('#btnReport button');
+
+    reportsButtons.bind('click', function (ev) {
+        ev.stopImmediatePropagation();
+        reportsButtons.removeClass('active');
+        var target = $(ev.target);
+        target.addClass('active');
+        var reportOption = {
+            id: target.attr('data-bind')
+        };
+
+       // if (reportOption.id.indexOf("rpx") != -1) {
+            reportOption.id += ',SalesOrderId:@Model.SalesOrderId,token=@Model.token';
+        //}
+        reportsButtons.prop('disabled', true);
+        viewer.option('report', reportOption);
+    });
+
+
+    $("#btnrptCotizacion").click();
+
+</script>

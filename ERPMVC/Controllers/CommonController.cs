@@ -28,6 +28,12 @@ namespace ERPMVC.Controllers
             _config = config;
         }
 
+
+
+
+      
+
+
         [HttpPost("[controller]/[action]")]
         public  ActionResult ClearSession([FromBody]List<string> sesiones)
         {
