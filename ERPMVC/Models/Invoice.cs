@@ -68,9 +68,11 @@ namespace ERPMVC.Models
 
         [Display(Name = "Sucursal")]
         public int BranchId { get; set; }
-        [Display(Name = "Customer")]
-        public int CustomerId { get; set; }
+        [Display(Name = "Cliente")]
+        public Int64 CustomerId { get; set; }
+        [Display(Name = "Fecha factura")]
         public DateTime OrderDate { get; set; }
+        [Display(Name = "Fecha de entrega")]
         public DateTime DeliveryDate { get; set; }
 
         [Display(Name = "Currency")]
