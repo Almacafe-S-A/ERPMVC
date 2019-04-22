@@ -15,4 +15,6 @@ namespace ERPMVC.DTO
 
         public string token { get; set; }
     }
+
+
 }

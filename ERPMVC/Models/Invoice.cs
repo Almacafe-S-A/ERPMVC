@@ -66,7 +66,7 @@ namespace ERPMVC.Models
         [Display(Name = "Direccion")]
         public string Direccion { get; set; }
 
-        [Display(Name = "Branch")]
+        [Display(Name = "Sucursal")]
         public int BranchId { get; set; }
         [Display(Name = "Customer")]
         public int CustomerId { get; set; }
@@ -123,7 +123,7 @@ namespace ERPMVC.Models
         public string UsuarioCreacion { get; set; }
         public string UsuarioModificacion { get; set; }
 
-        public List<SalesOrderLine> SalesOrderLines { get; set; } = new List<SalesOrderLine>();
+        public List<InvoiceLine> InvoiceLines { get; set; } = new List<InvoiceLine>();
 
     }
 }

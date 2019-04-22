@@ -28,14 +28,14 @@ namespace ERPMVC.Models
         [Display(Name = "Direccion")]
         public string Direccion { get; set; }
 
-        [Display(Name = "Branch")]
+        [Display(Name = "Sucursal")]
         public int BranchId { get; set; }
-        [Display(Name = "Customer")]
+        [Display(Name = "Cliente")]
         public int CustomerId { get; set; }
         public DateTime OrderDate { get; set; }
         public DateTime DeliveryDate { get; set; }
 
-        [Display(Name = "Currency")]
+        [Display(Name = "Moneda")]
         public int CurrencyId { get; set; }
 
         [Display(Name = "Numero de referencia de cliente")]
