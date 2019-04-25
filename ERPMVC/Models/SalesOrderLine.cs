@@ -19,7 +19,14 @@ namespace ERPMVC.Models
         public Int64 ProductId { get; set; }
          [Display(Name = "Descripcion")]
         public string Description { get; set; }
-         [Display(Name = "Cantidad")]
+
+        [Display(Name = "SubProducto")]
+        public Int64 SubProductId { get; set; }
+
+        [Display(Name = "Nombre SubProducto")]
+        public string SubProductName { get; set; }
+
+        [Display(Name = "Cantidad")]
         public double Quantity { get; set; }
          [Display(Name = "Precio")]
         public double Price { get; set; }
