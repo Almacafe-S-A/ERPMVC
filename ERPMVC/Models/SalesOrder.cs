@@ -12,7 +12,7 @@ namespace ERPMVC.Models
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int SalesOrderId { get; set; }
-        [Display(Name = "Order Number")]
+        [Display(Name = "Nombre Orden")]
         public string SalesOrderName { get; set; }
 
         [Display(Name = "RTN")]

@@ -9,9 +9,9 @@ namespace ERPMVC.Models
 {
     public class ApplicationRole : IdentityRole<Guid>
     {
-        public string UserName { get; set; }
+        //public string UserName { get; set; }
 
-        public string RoleName { get; set; }
+        //public string RoleName { get; set; }
 
         [Required]
         public string UsuarioCreacion { get; set; }
@@ -24,6 +24,7 @@ namespace ERPMVC.Models
 
         [Required]
         public DateTime FechaModificacion { get; set; }
+
 
     }
 }

@@ -11,20 +11,26 @@ namespace ERPMVC.Models
     {
 
         // [UIHint("UserId")]
-        [Required]
-        public Guid UserId { get; set; }
-        [Required]
-        //[UIHint("Roledropdown")]
-        public Guid RoleId { get; set; }
+        //[Required]
+        //public Guid UserId { get; set; }
+        //[Required]
+        ////[UIHint("Roledropdown")]
+        //public Guid RoleId { get; set; }
         public string UserName { get; set; }
 
         public string RoleName { get; set; }
 
-      
-        //public ApplicationRole Role { get; set; }
+        [Required]
+        public string UsuarioCreacion { get; set; }
 
-  
-        //public ApplicationRole User { get; set; }
+        [Required]
+        public string UsuarioModificacion { get; set; }
+
+        [Required]
+        public DateTime FechaCreacion { get; set; }
+
+        [Required]
+        public DateTime FechaModificacion { get; set; }
 
     }
 
