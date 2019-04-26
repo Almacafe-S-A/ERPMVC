@@ -8,7 +8,11 @@ using ERPMVC.Models;
 
 namespace ERP.Contexts
 {
-    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
+
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser,
+        ApplicationRole, Guid, ApplicationUserClaim, ApplicationUserRole, AspNetUserLogins,
+        AspNetRoleClaims, AspNetUserTokens>
+    // public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
 
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)

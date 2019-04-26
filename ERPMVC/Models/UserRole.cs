@@ -7,15 +7,15 @@ using System.Threading.Tasks;
 
 namespace ERPMVC.Models
 {
-    public class ApplicationUserRole : IdentityUserRole<string>
+    public class ApplicationUserRole : IdentityUserRole<Guid>
     {
 
         // [UIHint("UserId")]
         [Required]
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
         [Required]
         //[UIHint("Roledropdown")]
-        public string RoleId { get; set; }
+        public Guid RoleId { get; set; }
         public string UserName { get; set; }
 
         public string RoleName { get; set; }

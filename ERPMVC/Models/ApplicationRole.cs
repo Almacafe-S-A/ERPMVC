@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ERPMVC.Models
 {
-    public class ApplicationRole : IdentityRole
+    public class ApplicationRole : IdentityRole<Guid>
     {
         
        

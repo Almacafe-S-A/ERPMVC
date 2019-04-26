@@ -65,7 +65,7 @@ namespace ERPMVC
             });
 
 
-            services.AddIdentity<ApplicationUser, IdentityRole>(
+            services.AddIdentity<ApplicationUser, ApplicationRole>(
                   options =>
                   {
                       options.Lockout.MaxFailedAccessAttempts = 6;

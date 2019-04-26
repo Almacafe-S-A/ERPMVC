@@ -6,11 +6,17 @@ using System.Threading.Tasks;
 
 namespace ERPMVC.Models
 {
-    public class ApplicationUserClaim : IdentityUserClaim<int>
+    public class ApplicationUserClaim : IdentityUserClaim<Guid>
     {
 
-        public string UserId { get; set; }
+        public Guid UserId { get; set; }
 
         public Guid PolicyId { get; set; }
     }
+
+    public class AspNetUserTokens : IdentityUserToken<Guid> { /*your code here*/ }
+    public class AspNetRoleClaims : IdentityRoleClaim<Guid> { /*your code here*/ }
+    public class AspNetUserLogins : IdentityUserLogin<Guid> { /*your code here*/ }
+
+
 }

@@ -58,7 +58,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet("[action]")]
-        public async Task<DataSourceResult> GetRolesByUserId([DataSourceRequest]DataSourceRequest request, string UserId)
+        public async Task<DataSourceResult> GetRolesByUserId([DataSourceRequest]DataSourceRequest request, Guid UserId)
         {
             List<ApplicationUserRole> _roles = new List<ApplicationUserRole>();
             try
@@ -93,7 +93,7 @@ namespace ERPMVC.Controllers
         }
 
           [HttpGet("[action]")]
-        public async Task<DataSourceResult> GetUsersByRoleId([DataSourceRequest]DataSourceRequest request, string RoleId)
+        public async Task<DataSourceResult> GetUsersByRoleId([DataSourceRequest]DataSourceRequest request, Guid RoleId)
         {
             List<ApplicationUserRole> _roles = new List<ApplicationUserRole>();
             try
@@ -263,7 +263,7 @@ namespace ERPMVC.Controllers
             try
             {
 
-                if (_role.RoleId != "" && _role.UserId != "" && _role.RoleId != null && _role.UserId != null)
+                if (_role.RoleId.ToString() != "" && _role.UserId.ToString() != "" && _role.RoleId != null && _role.UserId != null)
                 {
                     // TODO: Add insert logic here
                     string baseadress = config.Value.urlbase;
