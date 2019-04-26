@@ -171,7 +171,9 @@ namespace ERPMVC.Controllers
                   _SalesOrdermodel  = mapper.Map<SalesOrderDTO, SalesOrder>(_SalesOrder);
                     if (_SalesOrder.SalesOrderId == 0)
                     {
-                       var resultsalesorder = await Insert(_SalesOrder);
+                        _SalesOrder.UsuarioCreacion = HttpContext.Session.GetString("user");
+                        _SalesOrder.UsuarioModificacion = HttpContext.Session.GetString("user");
+                        var resultsalesorder = await Insert(_SalesOrder);
                         foreach (var item in _SalesOrder._SalesOrderLine)
                         {
                             var value = (resultsalesorder.Result as ObjectResult).Value;

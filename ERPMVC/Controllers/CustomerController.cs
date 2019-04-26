@@ -109,6 +109,8 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                _customer.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _customer.UsuarioModificacion = HttpContext.Session.GetString("user");
                 var result = await _client.PostAsJsonAsync(baseadress + "api/Customer/Insert", _customer);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)

@@ -17,13 +17,22 @@ namespace ERPMVC.Models
         public string Barcode { get; set; }
         public string Description { get; set; }
         public string ProductImageUrl { get; set; }
-        [Display(Name = "UOM")]
+        [Display(Name = "Unidad de medida")]
         public int UnitOfMeasureId { get; set; }
         public double DefaultBuyingPrice { get; set; } = 0.0;
         public double DefaultSellingPrice { get; set; } = 0.0;
-        [Display(Name = "Branch")]
+        [Display(Name = "Sucursal")]
         public int BranchId { get; set; }
-        [Display(Name = "Currency")]
+        [Display(Name = "Moneda")]
         public int CurrencyId { get; set; }
+        [Required]
+        public string UsuarioCreacion { get; set; }
+        [Required]
+        public string UsuarioModificacion { get; set; }
+        [Required]
+        public DateTime FechaCreacion { get; set; }
+
+        [Required]
+        public DateTime FechaModificacion { get; set; }
     }
 }

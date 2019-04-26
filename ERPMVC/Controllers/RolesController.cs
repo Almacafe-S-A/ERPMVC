@@ -118,6 +118,10 @@ namespace ERPMVC.Controllers
                 // TODO: Add insert logic here
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
+                _role.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _role.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _role.FechaCreacion = DateTime.Now;
+                _role.FechaModificacion = DateTime.Now;
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.PostAsJsonAsync(baseadress + "api/Roles/CreateRole", _role);
                 string valorrespuesta = "";
@@ -146,13 +150,16 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                _rol.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _rol.FechaModificacion = DateTime.Now;
                 var result = await _client.PutAsJsonAsync(baseadress + "api/Roles/PutRol", _rol);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _rol = JsonConvert.DeserializeObject<ApplicationRole>(valorrespuesta);
-                }            
+                }
 
             }
             catch (Exception ex)
