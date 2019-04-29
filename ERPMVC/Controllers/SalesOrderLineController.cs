@@ -10,6 +10,7 @@ using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
@@ -20,11 +21,11 @@ namespace ERPMVC.Controllers
     public class SalesOrderLineController : Controller
     {
          private readonly IOptions<MyConfig> _config;
-          //  private readonly ILogger _logger;
-        public SalesOrderLineController(IOptions<MyConfig> config)
+          private readonly ILogger _logger;
+        public SalesOrderLineController(ILogger<SalesOrderLineController> logger, IOptions<MyConfig> config)
         {
-             // _logger = logger;
-             _config = config;
+              this._logger = logger;
+             this._config = config;
         }
 
       [HttpGet("[action]")]
@@ -79,7 +80,8 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-              // _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+               _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
             }
 
 
@@ -139,7 +141,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                //_logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
@@ -169,7 +171,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-               // _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
@@ -196,7 +198,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-              //  _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error: {ex.Message}");
             }
         

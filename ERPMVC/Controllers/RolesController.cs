@@ -11,6 +11,7 @@ using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
@@ -21,10 +22,12 @@ namespace ERPMVC.Controllers
     public class RolesController : Controller
     {
          private readonly IOptions<MyConfig> config;
+        private readonly ILogger _logger;
 
-        public RolesController(IOptions<MyConfig> config)
+        public RolesController(ILogger<RolesController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
+            this._logger = logger;
         }
 
         public IActionResult Roles()
@@ -42,7 +45,6 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
 
-
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/Roles/GetJsonRoles");
                 string valorrespuesta = "";
@@ -52,11 +54,12 @@ namespace ERPMVC.Controllers
                     _users = JsonConvert.DeserializeObject<List<ApplicationRole>>(valorrespuesta);
 
                 }
-                //}
+                
             }
-            catch (System.Exception myExc)
+            catch (System.Exception ex)
             {
-                throw (new Exception(myExc.Message));
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw (new Exception(ex.Message));
             }
             return Json(_users);
         }
@@ -67,25 +70,30 @@ namespace ERPMVC.Controllers
         public async Task<DataSourceResult> GetRoles([DataSourceRequest]DataSourceRequest request)
         {
             List<ApplicationRole> _roles = new List<ApplicationRole>();
-            string baseadress = config.Value.urlbase;
-            HttpClient _client = new HttpClient();
 
-            string token = "";
-            token = HttpContext.Session.GetString("token");
-
-            // _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Token", token);
-            _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
-            // _client.DefaultRequestHeaders.Add("Authorization",  token);
-            var result = await _client.GetAsync(baseadress + "api/Roles/GetRoles");
-            string valorrespuesta = "";
-            if (result.IsSuccessStatusCode)
+            try
             {
-                valorrespuesta = await (result.Content.ReadAsStringAsync());
-                _roles = JsonConvert.DeserializeObject<List<ApplicationRole>>(valorrespuesta);
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
 
+                string token = "";
+                token = HttpContext.Session.GetString("token");
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
+                var result = await _client.GetAsync(baseadress + "api/Roles/GetRoles");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _roles = JsonConvert.DeserializeObject<List<ApplicationRole>>(valorrespuesta);
+
+                }
             }
-            // }
-
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                //return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+           
 
             return _roles.ToDataSourceResult(request);
         }
@@ -94,18 +102,27 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult> Details(Int64 UserId)
         {
             ApplicationUser _usuario = new ApplicationUser();
-            string baseadress = config.Value.urlbase;
-            HttpClient _client = new HttpClient();
-
-            _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-            var result = await _client.GetAsync(baseadress + "api/Usuario/GetUserById/" + UserId);
-            string valorrespuesta = "";
-            if (result.IsSuccessStatusCode)
+            try
             {
-                valorrespuesta = await (result.Content.ReadAsStringAsync());
-                _usuario = JsonConvert.DeserializeObject<ApplicationUser>(valorrespuesta);
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
 
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Usuario/GetUserById/" + UserId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _usuario = JsonConvert.DeserializeObject<ApplicationUser>(valorrespuesta);
+
+                }
             }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+           
 
             return View(_usuario);
         }
@@ -134,6 +151,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
@@ -164,6 +182,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
@@ -191,6 +210,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 

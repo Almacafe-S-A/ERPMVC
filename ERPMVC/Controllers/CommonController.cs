@@ -10,6 +10,7 @@ using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
@@ -20,18 +21,14 @@ namespace ERPMVC.Controllers
     [CustomAuthorization]
     public class CommonController : Controller
     {
-           private readonly IOptions<MyConfig> _config;
+        private readonly IOptions<MyConfig> _config;
+        private readonly ILogger _logger;
 
-
-        public CommonController(IOptions<MyConfig> config)
+        public CommonController(ILogger<CommonController> logger, IOptions<MyConfig> config)
         {
             _config = config;
+            this._logger = logger;
         }
-
-
-
-
-      
 
 
         [HttpPost("[controller]/[action]")]
@@ -65,7 +62,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
 
@@ -95,7 +92,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
 
