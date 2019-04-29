@@ -78,7 +78,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _customer = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
+                    _CAI = JsonConvert.DeserializeObject<CAI>(valorrespuesta);
                 }
 
             }
@@ -88,7 +88,7 @@ namespace ERPMVC.Controllers
             }
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _CAI }, Total = 1 });
-        }
+        }           
 
         [HttpDelete("[action]")]
         public async Task<ActionResult<ApplicationRole>> DeleteCAI(ApplicationRole _CAI)
@@ -104,7 +104,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _rol = JsonConvert.DeserializeObject<ApplicationRole>(valorrespuesta);
+                    _CAI = JsonConvert.DeserializeObject<ApplicationRole>(valorrespuesta);
                 }
 
             }
@@ -121,10 +121,5 @@ namespace ERPMVC.Controllers
 
 
 
- ///----------------------------------------------------------------------------------------
-    //    public IActionResult Index()
-    //    {
-    //        return View();
-    //    }
-    //}
+    }
 }
