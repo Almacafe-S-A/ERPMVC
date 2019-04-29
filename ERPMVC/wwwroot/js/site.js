@@ -1,4 +1,6 @@
-﻿// Write your Javascript code.
+﻿
+
+// Write your Javascript code.
 var options = {
     element: '#viewer', // id of element that will contain  the viewer
     uiType: 'desktop',
