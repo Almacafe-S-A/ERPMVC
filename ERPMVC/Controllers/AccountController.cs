@@ -17,18 +17,12 @@ namespace ERPMVC.Controllers
 {
     public class AccountController : Controller
     {
-
-
-        public IActionResult login()
-        {
-            return View();
-        }
-
-
-       // private readonly ILogger<HomeController> _logger;
+        private readonly ILogger _logger;     
         private readonly IOptions<MyConfig> config;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
+
+
 
         public AccountController(
         UserManager<ApplicationUser> userManager,
@@ -37,12 +31,17 @@ namespace ERPMVC.Controllers
             IOptions<MyConfig> config
                )
         {
-            _userManager = userManager;
-            _signInManager = signInManager;
-           // _logger = logger;
+            this._userManager = userManager;
+            this._signInManager = signInManager;
+            this._logger = logger;
             this.config = config;
         }
 
+
+        public IActionResult login()
+        {
+            return View();
+        }
 
         [HttpPost]
         [AllowAnonymous]
@@ -56,11 +55,10 @@ namespace ERPMVC.Controllers
                 //{
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
                 //ApplicationUser _appuser = new ApplicationUser { Email = model.Email  };
-                //  var result = await _signInManager.CheckPasswordSignInAsync(_appuser, model.Password, lockoutOnFailure: false);
+                //var result = await _signInManager.CheckPasswordSignInAsync(_appuser, model.Password, lockoutOnFailure: false);
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = model.Email, Password = model.Password });
-              //  _signInManager.
                 if (result.Succeeded)
                 {
                     string webtoken = await (resultlogin.Content.ReadAsStringAsync());
@@ -85,7 +83,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
 
@@ -95,10 +93,6 @@ namespace ERPMVC.Controllers
 
         }
 
-        private void _login()
-        {
-
-        }
 
 
         [HttpGet]

@@ -26,13 +26,14 @@ namespace ERPMVC.Controllers
        //  private readonly ILogger _logger;
          private readonly IOptions<MyConfig> _config;
           private readonly IMapper mapper;
+        private readonly ILogger _logger;
 
         //public SalesOrderController(ILogger<SalesOrderController> logger,IOptions<MyConfig> config)
-         public SalesOrderController(IOptions<MyConfig> config, IMapper mapper)
+        public SalesOrderController(ILogger<SalesOrderController> logger, IOptions<MyConfig> config, IMapper mapper)
         {
             this.mapper = mapper;
-           // _logger = logger;
-            _config = config;
+            this._logger = logger;
+            this._config = config;
         }
         public IActionResult Index()
         {
@@ -77,7 +78,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
 
@@ -105,7 +106,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-              // _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+               _logger.LogError($"Ocurrio un error: { ex.ToString() }");
             }
 
 
@@ -153,7 +154,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
 
@@ -210,6 +211,7 @@ namespace ERPMVC.Controllers
 
                 catch (Exception ex)
                 {
+                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                     throw ex;
                 }
 
@@ -256,7 +258,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                //_logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
@@ -287,7 +289,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                // _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
@@ -314,7 +316,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                //  _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                  _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error: {ex.Message}");
             }
 

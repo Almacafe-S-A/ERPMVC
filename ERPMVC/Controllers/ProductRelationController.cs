@@ -10,6 +10,7 @@ using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
@@ -20,8 +21,10 @@ namespace ERPMVC.Controllers
     public class ProductRelationController : Controller
     {
         private readonly IOptions<MyConfig> _config;
+        private readonly ILogger _logger;
 
-        public ProductRelationController(IOptions<MyConfig> config)
+        public ProductRelationController(ILogger<ProductRelationController> logger
+            , IOptions<MyConfig> config)
         {
             _config = config;
         }
@@ -54,7 +57,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
 

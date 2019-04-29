@@ -9,6 +9,7 @@ using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
@@ -19,10 +20,11 @@ namespace ERPMVC.Controllers
     public class ConditionsController : Controller
     {
         private readonly IOptions<MyConfig> config;
-        public ConditionsController(IOptions<MyConfig> config)
+        private readonly ILogger _logger;
+        public ConditionsController(ILogger<ConditionsController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
-
+            this._logger = logger;
         }
 
         public IActionResult Index()
@@ -33,22 +35,31 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult> pvwConditions(Int64 ConditionId=0)
         {
             Conditions _Conditions = new Conditions();
-            string baseadress = config.Value.urlbase;
-            HttpClient _client = new HttpClient();
-            _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-            var result = await _client.GetAsync(baseadress + "api/Conditions/GetConditionsById/" + ConditionId);
-            string valorrespuesta = "";
-            if (result.IsSuccessStatusCode)
+            try
             {
-                valorrespuesta = await (result.Content.ReadAsStringAsync());
-                _Conditions = JsonConvert.DeserializeObject<Conditions>(valorrespuesta);
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Conditions/GetConditionsById/" + ConditionId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Conditions = JsonConvert.DeserializeObject<Conditions>(valorrespuesta);
 
+                }
+
+                if (_Conditions == null)
+                {
+                    _Conditions = new Conditions();
+                }
             }
-
-            if(_Conditions==null)
+            catch (Exception ex)
             {
-                _Conditions = new Conditions();
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw;
             }
+           
 
 
             return PartialView(_Conditions);
@@ -90,7 +101,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
 
@@ -121,6 +132,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
@@ -147,6 +159,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
@@ -173,6 +186,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error: {ex.Message}");
             }
 

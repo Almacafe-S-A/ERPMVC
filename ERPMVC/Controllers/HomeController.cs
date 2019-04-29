@@ -6,6 +6,8 @@ using ERPMVC.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
 
 namespace ERPMVC.Controllers
 {
@@ -13,7 +15,18 @@ namespace ERPMVC.Controllers
    [CustomAuthorization]
     public class HomeController : Controller
     {
-       // [Authorize(Policy ="Admin")]
+        // [Authorize(Policy ="Admin")]
+
+        private readonly IOptions<MyConfig> _config;
+        private readonly ILogger _logger;
+
+        public HomeController(ILogger<HomeController> logger, IOptions<MyConfig> config)
+        {
+            this._config = config;
+            this._logger = logger;
+
+        }
+
         public IActionResult Index()
         {
             return View();

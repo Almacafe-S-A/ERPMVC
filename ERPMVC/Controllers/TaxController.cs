@@ -10,6 +10,7 @@ using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
@@ -20,11 +21,14 @@ namespace ERPMVC.Controllers
     public class TaxController : Controller
     {
 
-         private readonly IOptions<MyConfig> _config;
+        private readonly IOptions<MyConfig> _config;
+        private readonly ILogger _logger;
 
-        public TaxController(IOptions<MyConfig> config)
+        public TaxController(ILogger<TaxController> logger
+            ,IOptions<MyConfig> config)
         {
-            _config = config;
+            this._config = config;
+            this._logger = logger;
         }
 
         public IActionResult Index()
@@ -53,7 +57,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
 
@@ -68,6 +72,7 @@ namespace ERPMVC.Controllers
             Tax _Taxes = new Tax();
             try
             {
+             
                 
                 string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
@@ -83,7 +88,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-
+                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
 

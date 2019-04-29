@@ -144,9 +144,6 @@ namespace ERPMVC
 
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
             services.AddScoped<IAuthorizationHandler, HasScopeHandler>();
-
-          //  services.AddAuthorizationPolicyEvaluator();
-
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
