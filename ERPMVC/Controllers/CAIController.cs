@@ -10,6 +10,7 @@ using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
@@ -20,12 +21,12 @@ namespace ERPMVC.Controllers
     public class CAIController : Controller
     {
         private readonly IOptions<MyConfig> config;
-        //  private readonly ApplicationDbContext _context;
+        private readonly ILogger _logger;
 
-        public CAIController(IOptions<MyConfig> config)
+        public CAIController(ILogger<CAIController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
-            //this._context = context;
+            this._logger = logger;
         }
 
         // GET: Customer
@@ -37,16 +38,20 @@ namespace ERPMVC.Controllers
         // POST: CAI/Create
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public async Task<ActionResult> Post(CAI _CAI)
+        public async Task<ActionResult> Insert(CAI _CAIp)
         {
+            CAI _CAI = _CAIp;
             try
             {
                 // TODO: Add insert logic here
+              
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 _CAI.UsuarioCreacion = HttpContext.Session.GetString("user");
                 _CAI.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _CAI.FechaCreacion = DateTime.Now;
+                _CAI.FechaModificacion = DateTime.Now;
                 var result = await _client.PostAsJsonAsync(baseadress + "api/CAI/Insert", _CAI);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -65,7 +70,7 @@ namespace ERPMVC.Controllers
         }
                      
         [HttpPut("{id}")]
-        public async Task<IActionResult> Put(Int64 id, CAI _CAI)
+        public async Task<IActionResult> Update(Int64 id, CAI _CAI)
         {
             try
             {
@@ -91,7 +96,7 @@ namespace ERPMVC.Controllers
         }           
 
         [HttpDelete("[action]")]
-        public async Task<ActionResult<ApplicationRole>> DeleteCAI(ApplicationRole _CAI)
+        public async Task<ActionResult<ApplicationRole>> Delete(ApplicationRole _CAI)
         {
             try
             {
