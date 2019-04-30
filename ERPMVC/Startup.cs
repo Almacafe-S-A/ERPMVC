@@ -22,6 +22,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 
 namespace ERPMVC
@@ -82,22 +83,23 @@ namespace ERPMVC
                   .AddEntityFrameworkStores<ApplicationDbContext>()
              .AddDefaultTokenProviders();
 
-            //services.Configure<RequestLocalizationOptions>(
-            //options =>
-            //    {
-            //        var supportedCultures = new List<CultureInfo>
-            //        {
-            //                new CultureInfo("en-US"),
-            //                new CultureInfo("es-hn"),
-            //                new CultureInfo("de-CH"),
-            //                new CultureInfo("fr-CH"),
-            //                new CultureInfo("it-CH")
-            //        };
+            services.Configure<RequestLocalizationOptions>(
+            options =>
+                {
+                    var supportedCultures = new List<CultureInfo>
+                    {
+                            new CultureInfo("es-HN"),
+                            new CultureInfo("en-US"),
+                           // new CultureInfo("es-hn"),
+                            new CultureInfo("de-CH"),
+                            new CultureInfo("fr-CH"),
+                            new CultureInfo("it-CH")
+                    };
 
-            //        options.DefaultRequestCulture = new RequestCulture(culture: "en-US", uiCulture: "en-US");
-            //        options.SupportedCultures = supportedCultures;
-            //        options.SupportedUICultures = supportedCultures;
-            //    });
+                    options.DefaultRequestCulture = new RequestCulture(culture: "en-US", uiCulture: "en-US");
+                    options.SupportedCultures = supportedCultures;
+                    options.SupportedUICultures = supportedCultures;
+                });
 
             services.Configure<MyConfig>(Configuration.GetSection("AppSettings"));
 
@@ -105,8 +107,13 @@ namespace ERPMVC
 
            services.AddLogging();
          
-            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
-                  .AddJsonOptions(options => options.SerializerSettings.ContractResolver = new DefaultContractResolver());
+            services.AddMvc(options=> {
+                options.ModelBinderProviders.Insert(0, new MyViewModelBinderProvider());
+            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+                  .AddJsonOptions(options => { options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+                      options.SerializerSettings.DateFormatString = "dd/MM/yyyy";
+                      options.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
+                  });
 
                services.AddKendo();
 
