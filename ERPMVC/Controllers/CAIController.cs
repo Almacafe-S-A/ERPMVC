@@ -74,9 +74,7 @@ namespace ERPMVC.Controllers
         {
             CAI _CAI = _CAIp;
             try
-            {
-                // TODO: Add insert logic here
-              
+            {                          
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
