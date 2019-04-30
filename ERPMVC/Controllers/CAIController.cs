@@ -35,6 +35,38 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        [HttpGet]
+        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
+        {
+            List<CAI> _cais = new List<CAI>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CAI/GetCAI");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                  _cais  = JsonConvert.DeserializeObject<List<CAI>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _cais.ToDataSourceResult(request);
+
+        }
+
         // POST: CAI/Create
         [HttpPost]
         //[ValidateAntiForgeryToken]
