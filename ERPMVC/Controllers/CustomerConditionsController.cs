@@ -18,11 +18,12 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
-    public class ConditionsController : Controller
+    public class CustomerConditionsController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public ConditionsController(ILogger<ConditionsController> logger, IOptions<MyConfig> config)
+        public CustomerConditionsController(ILogger<CustomerConditionsController> logger
+            , IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
@@ -33,37 +34,37 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwConditions(Int64 ConditionId=0)
+        public async Task<ActionResult> pvwCustomerConditions(Int64 Id = 0)
         {
-            Conditions _Conditions = new Conditions();
+            CustomerConditions _CustomerConditions = new CustomerConditions();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Conditions/GetConditionsById/" + ConditionId);
+                var result = await _client.GetAsync(baseadress + "api/CustomerConditions/GetCustomerConditionsById/" + Id);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Conditions = JsonConvert.DeserializeObject<Conditions>(valorrespuesta);
+                    _CustomerConditions = JsonConvert.DeserializeObject<CustomerConditions>(valorrespuesta);
 
                 }
 
-                if (_Conditions == null)
+                if (_CustomerConditions == null)
                 {
-                    _Conditions = new Conditions();
+                    _CustomerConditions = new CustomerConditions();
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw;
+                throw ex;
             }
-           
 
 
-            return PartialView(_Conditions);
+
+            return PartialView(_CustomerConditions);
 
         }
 
@@ -71,19 +72,19 @@ namespace ERPMVC.Controllers
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<Conditions> _conditions = new List<Conditions>();
+            List<CustomerConditions> _CustomerConditions = new List<CustomerConditions>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Conditions/GetCAI");
+                var result = await _client.GetAsync(baseadress + "api/CustomerConditions/GetCustomerConditions");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _conditions = JsonConvert.DeserializeObject<List<Conditions>>(valorrespuesta);
+                    _CustomerConditions = JsonConvert.DeserializeObject<List<CustomerConditions>>(valorrespuesta);
 
                 }
 
@@ -96,42 +97,42 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _conditions.ToDataSourceResult(request);
+            return _CustomerConditions.ToDataSourceResult(request);
 
         }
 
 
-        public async Task<ActionResult<Conditions>> SaveConditions([FromBody]Conditions _condition)
+        public async Task<ActionResult<CustomerConditions>> SaveCustomerConditions([FromBody]CustomerConditions _CustomerConditions)
         {
 
             try
             {
-                Conditions _listcondi = new Conditions();
+                CustomerConditions _listCustomerConditions = new CustomerConditions();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Conditions/GetConditionsById/"+ _condition.ConditionId);
-                string valorrespuesta = "";            
-                _condition.FechaModificacion = DateTime.Now;
-                _condition.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.GetAsync(baseadress + "api/CustomerConditions/GetCustomerConditionsById/" + _CustomerConditions.CustomerConditionId);
+                string valorrespuesta = "";
+                _CustomerConditions.FechaModificacion = DateTime.Now;
+                _CustomerConditions.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
-                  
+
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listcondi = JsonConvert.DeserializeObject<Conditions>(valorrespuesta);
+                    _listCustomerConditions = JsonConvert.DeserializeObject<CustomerConditions>(valorrespuesta);
                 }
 
-                if(_listcondi.ConditionId==0)
+                if (_listCustomerConditions.CustomerConditionId == 0)
                 {
-                    _condition.FechaCreacion = DateTime.Now;
-                    _condition.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_condition);
+                    _CustomerConditions.FechaCreacion = DateTime.Now;
+                    _CustomerConditions.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_CustomerConditions);
                 }
                 else
                 {
-                    var updateresult = await Update(_condition.ConditionId,_condition);
+                    var updateresult = await Update(_CustomerConditions.CustomerConditionId, _CustomerConditions);
                 }
-               
+
             }
             catch (Exception ex)
             {
@@ -139,13 +140,13 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_condition);
+            return Json(_CustomerConditions);
         }
 
-        // POST: Customer/Create
+        // POST: CustomerConditions/Insert
         [HttpPost]
-        //[ValidateAntiForgeryToken]
-        public async Task<ActionResult<Conditions>> Insert(Conditions _condition)
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult<CustomerConditions>> Insert(CustomerConditions _CustomerConditions)
         {
             try
             {
@@ -153,14 +154,14 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _condition.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _condition.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Conditions/Insert", _condition);
+                _CustomerConditions.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _CustomerConditions.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/CustomerConditions/Insert", _CustomerConditions);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _condition = JsonConvert.DeserializeObject<Conditions>(valorrespuesta);
+                    _CustomerConditions = JsonConvert.DeserializeObject<CustomerConditions>(valorrespuesta);
                 }
 
             }
@@ -170,11 +171,11 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _condition }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerConditions }, Total = 1 });
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<Conditions>> Update(Int64 id, Conditions _condition)
+        public async Task<ActionResult<CustomerConditions>> Update(Int64 id, CustomerConditions _CustomerConditions)
         {
             try
             {
@@ -182,12 +183,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PutAsJsonAsync(baseadress + "api/Conditions/Update", _condition);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/CustomerConditions/Update", _CustomerConditions);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _condition = JsonConvert.DeserializeObject<Conditions>(valorrespuesta);
+                    _CustomerConditions = JsonConvert.DeserializeObject<CustomerConditions>(valorrespuesta);
                 }
 
             }
@@ -197,11 +198,11 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _condition }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerConditions }, Total = 1 });
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<Conditions>> Delete([FromBody]Conditions _condition)
+        public async Task<ActionResult<CustomerConditions>> Delete([FromBody]CustomerConditions _CustomerConditions)
         {
             try
             {
@@ -209,12 +210,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Conditions/Delete", _condition);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/CustomerConditions/Delete", _CustomerConditions);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _condition = JsonConvert.DeserializeObject<Conditions>(valorrespuesta);
+                    _CustomerConditions = JsonConvert.DeserializeObject<CustomerConditions>(valorrespuesta);
                 }
 
             }
@@ -225,8 +226,8 @@ namespace ERPMVC.Controllers
             }
 
 
-            //  return new ObjectResult(new DataSourceResult { Data = new[] { RoleId }, Total = 1 });
-            return new ObjectResult(new DataSourceResult { Data = new[] { _condition }, Total = 1 });
+
+            return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerConditions }, Total = 1 });
         }
 
 

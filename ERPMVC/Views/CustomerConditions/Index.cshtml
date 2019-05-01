@@ -1,0 +1,64 @@
+﻿
+@(Html.Kendo().Grid<ERPMVC.Models.CustomerConditions>()
+                .Name("gridCustomerCondition")
+                .Columns(columns =>
+                {
+                    columns.Bound(p => p.CustomerConditionId).Width(100);
+                    columns.Bound(p => p.ConditionId).Width(100);
+                    columns.Bound(p => p.CustomerConditionName).Width(100);
+                    columns.Bound(p => p.LogicalCondition).Width(150);
+                    columns.Bound(p => p.ValueDecimal).Width(150);
+                    //columns.Bound(p => p.FechaCreacion).ClientTemplate("#= kendo.toString(kendo.parseDate(FechaCreacion), 'dd/MM/yyyy') #").Width(170);
+                    //columns.Bound(p => p.FechaModificacion).ClientTemplate("#= kendo.toString(kendo.parseDate(FechaModificacion), 'dd/MM/yyyy') #").Width(170);
+                    columns.Command(command =>
+                    {
+                        command.Edit(); command.Destroy();
+                    }).Width(250);
+                })
+                .ToolBar(tools =>
+                {
+                    tools.Create();
+                    tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                    tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                })
+                .Editable(e => e.Mode(GridEditMode.PopUp))
+                .Sortable()
+                .Pageable()
+                .Filterable()
+                .Scrollable()
+                .Pdf(pdf => pdf.FileName("ConditionReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                    .Excel(excel => excel.FileName("ConditionReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                .DataSource(dataSource =>
+                    dataSource
+                    .WebApi()
+
+                    .ServerOperation(true)
+                    .Model(model =>
+                    {
+                        model.Id(p => p.ConditionId);
+                        model.Field(p => p.ConditionId).Editable(false);
+                        model.Field(p => p.FechaCreacion).Editable(false);
+                        model.Field(p => p.FechaModificacion).Editable(false);
+                        model.Field(p => p.CustomerConditionId).Editable(false);
+
+                    })
+                    .Events(events => events.Error("error_handler"))
+                    .Read(read => read.Action("Get", "CustomerConditions"))
+                    .Create(create => create.Action("Insert", "CustomerConditions").Type(HttpVerbs.Post).Data("caidata"))
+                    .Update(update => update.Action("Update", "CustomerConditions", new { id = "{0}" }).Data("caidata"))
+                    .Destroy(destroy => destroy.Action("Delete", "CustomerConditions", new { id = "{0}" }).Data("caidata"))
+
+                )
+                .Events(e =>
+                {
+                    e.Save("onsave");
+
+                })
+)
