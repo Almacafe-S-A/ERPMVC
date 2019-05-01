@@ -67,7 +67,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        // POST: CAI/Create
+        // POST: CAI/Insert
         [HttpPost]
         //[ValidateAntiForgeryToken]
         public async Task<ActionResult> Insert(CAI _CAIp)
@@ -99,19 +99,21 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _CAI }, Total = 1 });
         }
                      
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Int64 id, CAI _CAI)
+        [HttpPost]
+        public async Task<IActionResult> Update( CAI _CAIp)
         {
+            CAI _CAI = _CAIp;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-
-                var result = await _client.PutAsJsonAsync(baseadress + "api/CAI/Update", _CAI);
+                _CAI.FechaModificacion = DateTime.Now;
+                _CAI.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/CAI/Update", _CAI);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
-                {
+                {                    
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CAI = JsonConvert.DeserializeObject<CAI>(valorrespuesta);
                 }
@@ -126,7 +128,7 @@ namespace ERPMVC.Controllers
         }           
 
         [HttpDelete("[action]")]
-        public async Task<ActionResult<ApplicationRole>> Delete(ApplicationRole _CAI)
+        public async Task<ActionResult<CAI>> Delete(CAI _CAI)
         {
             try
             {
@@ -134,12 +136,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Roles/Delete", _CAI);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/CAI/Delete", _CAI);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CAI = JsonConvert.DeserializeObject<ApplicationRole>(valorrespuesta);
+                    _CAI = JsonConvert.DeserializeObject<CAI>(valorrespuesta);
                 }
 
             }

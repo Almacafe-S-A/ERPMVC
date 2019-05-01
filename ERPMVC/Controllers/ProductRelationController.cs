@@ -27,6 +27,7 @@ namespace ERPMVC.Controllers
             , IOptions<MyConfig> config)
         {
             _config = config;
+            this._logger = logger;
         }
         public IActionResult Index()
         {

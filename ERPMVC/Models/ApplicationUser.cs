@@ -8,8 +8,11 @@ namespace ERPMVC.Models
 {
     public class ApplicationUser :IdentityUser<Guid>
     {
+        public DateTime FechaCreacion { get; set; }
+        public DateTime FechaModificacion { get; set; }
+        public string UsuarioCreacion { get; set; }
+        public string UsuarioModificacion { get; set; }
 
-     
 
     }
 }
