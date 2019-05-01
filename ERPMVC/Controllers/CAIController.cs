@@ -100,8 +100,10 @@ namespace ERPMVC.Controllers
         }
                      
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Int64 id, CAI _CAI)
+        public async Task<IActionResult> Update(Int64 id, CAI _CAIp)
         {
+            CAI _CAI = _CAIp;
+
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -126,20 +128,21 @@ namespace ERPMVC.Controllers
         }           
 
         [HttpDelete("[action]")]
-        public async Task<ActionResult<ApplicationRole>> Delete(ApplicationRole _CAI)
+        public async Task<ActionResult<CAI>> Delete(CAI _CAIp)
         {
+            CAI _CAI = _CAIp;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Roles/Delete", _CAI);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/CAI/Delete", _CAI);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CAI = JsonConvert.DeserializeObject<ApplicationRole>(valorrespuesta);
+                    _CAI = JsonConvert.DeserializeObject<CAI>(valorrespuesta);
                 }
 
             }
