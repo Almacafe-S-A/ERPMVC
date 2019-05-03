@@ -1,64 +1,114 @@
-﻿
-@(Html.Kendo().Grid<ERPMVC.Models.CustomerConditions>()
-                .Name("gridCustomerCondition")
-                .Columns(columns =>
-                {
-                    columns.Bound(p => p.CustomerConditionId).Width(100);
-                    columns.Bound(p => p.ConditionId).Width(100);
-                    columns.Bound(p => p.CustomerConditionName).Width(100);
-                    columns.Bound(p => p.LogicalCondition).Width(150);
-                    columns.Bound(p => p.ValueDecimal).Width(150);
-                    //columns.Bound(p => p.FechaCreacion).ClientTemplate("#= kendo.toString(kendo.parseDate(FechaCreacion), 'dd/MM/yyyy') #").Width(170);
-                    //columns.Bound(p => p.FechaModificacion).ClientTemplate("#= kendo.toString(kendo.parseDate(FechaModificacion), 'dd/MM/yyyy') #").Width(170);
-                    columns.Command(command =>
-                    {
-                        command.Edit(); command.Destroy();
-                    }).Width(250);
-                })
-                .ToolBar(tools =>
-                {
-                    tools.Create();
-                    tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
-                    tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+﻿<script>
+
+    function closecustomercondition() {
+        $("#myModalCustomerConditions").modal('hide');
+    }
+
+    function closecustomerconditionMant() {
+        $("#myModalCustomerConditionsMant").modal('hide');
+    }
+
+    function AddCustomerCondition() {
+
+       // console.log('Intenta levantar Customer Condition');
+
+        console.log('Cliente:' + $("#CustomerId").val());
+        $("#CustomerId_CC").val($("#CustomerId").val());
+        console.log('Cliente_CC:' + $("#CustomerId_CC").val());
+        $("#myModalCustomerConditionsMant").modal('show');
+        
+    }
+
+    function caidata() {
+
+    }
+</script>
+
+@await Html.PartialAsync("~/Views/CustomerConditions/pvwCustomerConditions.cshtml", new ERPMVC.Models.CustomerConditions ())
+
+<div id="myModalCustomerConditions" class="modal fade" role="dialog" style="z-index:99999">
+    <div class="modal-dialog">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" onclick="closecustomercondition();">&times;</button>
+                <h4 class="modal-title">Detalle de condición</h4>
+            </div>
+            <div class="modal-body">
+
+                <div class="row" id="validationcondition">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            @(Html.Kendo().Grid<ERPMVC.Models.CustomerConditions>()
+                                                .Name("gridCustomerCondition")
+                                                .Columns(columns =>
+                                                {
+                                                    columns.Bound(p => p.CustomerConditionId).Width(100);
+                                                    columns.Bound(p => p.ConditionId).Width(100);
+                                                    columns.Bound(p => p.CustomerConditionName).Width(100);
+                                                    columns.Bound(p => p.LogicalCondition).Width(150);
+                                                    columns.Bound(p => p.ValueDecimal).Width(150);
+                                                    columns.Command(command =>
+                                                    {
+                                                        // command.Edit();
+                                                        //command.Destroy();
+                                                    }).Width(250);
+                                                })
+                                                .ToolBar(tools =>
+                                                {
+                                                    //tools.Create();
+                                                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                    .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerCondition();" });
+                                                    tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                                                    tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
 
 
+                                                })
+                                                .Editable(e => e.Mode(GridEditMode.PopUp))
+                                                .Sortable()
+                                                .Pageable()
+                                                .Filterable()
+                                                .Scrollable()
+                                                .Pdf(pdf => pdf.FileName("CustomerConditionReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                                    .Excel(excel => excel.FileName("CustomerConditionReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                                .DataSource(dataSource =>
+                                                    dataSource
+                                                    .WebApi()
 
-                })
-                .Editable(e => e.Mode(GridEditMode.PopUp))
-                .Sortable()
-                .Pageable()
-                .Filterable()
-                .Scrollable()
-                .Pdf(pdf => pdf.FileName("ConditionReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                    .Excel(excel => excel.FileName("ConditionReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                .DataSource(dataSource =>
-                    dataSource
-                    .WebApi()
+                                                    .ServerOperation(true)
+                                                    .Model(model =>
+                                                    {
+                                                        model.Id(p => p.CustomerConditionId);
+                                                        model.Field(p => p.CustomerConditionId).Editable(false);
+                                                        model.Field(p => p.ConditionId).Editable(true);
+                                                        model.Field(p => p.FechaCreacion).Editable(false);
+                                                        model.Field(p => p.FechaModificacion).Editable(false);
+                                                        model.Field(p => p.CustomerConditionId).Editable(false);
 
-                    .ServerOperation(true)
-                    .Model(model =>
-                    {
-                        model.Id(p => p.ConditionId);
-                        model.Field(p => p.ConditionId).Editable(false);
-                        model.Field(p => p.FechaCreacion).Editable(false);
-                        model.Field(p => p.FechaModificacion).Editable(false);
-                        model.Field(p => p.CustomerConditionId).Editable(false);
+                                                    })
+                                                    .Events(events => events.Error("error_handler"))
+                                                    .Read(read => read.Action("Get", "CustomerConditions"))
+                                                    .Create(create => create.Action("Insert", "CustomerConditions").Type(HttpVerbs.Post))
+                                                    .Update(update => update.Action("Update", "CustomerConditions", new { id = "{0}" }))
+                                                    .Destroy(destroy => destroy.Action("Delete", "CustomerConditions", new { id = "{0}" }))
 
-                    })
-                    .Events(events => events.Error("error_handler"))
-                    .Read(read => read.Action("Get", "CustomerConditions"))
-                    .Create(create => create.Action("Insert", "CustomerConditions").Type(HttpVerbs.Post).Data("caidata"))
-                    .Update(update => update.Action("Update", "CustomerConditions", new { id = "{0}" }).Data("caidata"))
-                    .Destroy(destroy => destroy.Action("Delete", "CustomerConditions", new { id = "{0}" }).Data("caidata"))
+                                                )
+                                                .Events(e =>
+                                                {
+                                                    // e.Save("onsave");
 
-                )
-                .Events(e =>
-                {
-                    e.Save("onsave");
+                                                })
+                            )
 
-                })
-)
+                            </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>

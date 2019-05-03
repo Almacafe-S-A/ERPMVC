@@ -1,55 +1,190 @@
 ﻿@using Kendo.Mvc.UI
+@using ERPMVC.DTO
 
-@{
-    ViewData["Title"] = "Home Page";
-}
+@*@{
+        ViewData["Title"] = "Home Page";
+    }*@
 
 <script>
 
-function error_handler(e) {
-    var errors = $.parseJSON(e.xhr.responseText);
+    function error_handler(e) {
+        var errors = $.parseJSON(e.xhr.responseText);
 
-    if (errors) {
-        alert("Errors:\n" + errors.join("\n"));
+        if (errors) {
+            alert("Errors:\n" + errors.join("\n"));
+        }
     }
-}
+
+    function onAverageSalesDataBound(e) {
+        var data = this.dataSource.aggregates()
+        // console.log(data);
+        if (data.Facturacion) {
+            $("#EmployeeAverageSalesLabel").text(kendo.toString(data.Facturacion.average, "c2"));
+        } else {
+            $("#EmployeeAverageSalesLabel").text(kendo.toString(0, "c2"));
+        }
+    }
+
+
+    function paramtersfindchartFactMensual() {
+        return parameters = {
+            'FechaInicio': $("#FechaInicio2").val(),
+            'FechaFin': $("#FechaFin2").val(),
+
+        }
+    }
+
 </script>
 
+<div class="row">
+    <div class="col-md-4">
+    </div>
+    <div class="col-md-4">
+        @*<h2 class="darkblue limelight" style="text-align:center">ALMACAFE</h2>*@
+        @*<h2 class="black">ALMACAFE</h2>*@
+        <h2 class="darkblue">ALMACAFE</h2>
+    </div>
 
-
-<div policy="Admin" >
-    @(Html.Kendo().PanelBar()
-                    .Name("IntroPanelBar")
-                    .Items(items =>
-                    {
-                        items.Add()
-                            .Text("Grafica de ventas")
-                            .Selected(true)
-                            .Expanded(true)
-                            .Content(@<text>
-                                <p style="padding:1em 2em">
-                                    Learn how to build ASP.NET apps that can run anywhere.
-                                    <a target="_blank" href="http://go.microsoft.com/fwlink/?LinkID=525028&clcid=0x409">Learn More</a>
-                                </p>
-                            </text>);
-                                items.Add()
-                                    .Text("Conceptos ERP")
-                                    .Content(@<text>
-                                        <p style="padding:1em 2em">
-                                            There are powerful new features in Visual Studio for building modern web apps.
-                                            <a target="_blank" href="http://go.microsoft.com/fwlink/?LinkID=525030&clcid=0x409">Learn More</a>
-                                        </p>
-                                    </text>);
-                                                                items.Add()
-                                                        .Text("Contactenos")
-                                                        .Content(@<text>
-                                                            <p style="padding:1em 2em">
-                                                                Bring in libraries from NuGet, Bower, and npm, and automate tasks using Grunt or Gulp.
-                                                                <a target="_blank" href="http://go.microsoft.com/fwlink/?LinkID=525029&clcid=0x409">Learn More</a>
-                                                            </p>
-                                                        </text>);
-                                                                                })
-    )
-
+    <div class="col-md-4">
+    </div>
 
 </div>
+<br/><br/>
+
+
+         <div class="container">
+             <div class="row">
+                 <div class="col-md-4">
+                     <div class="card-base">
+                         <div class="card-icon">
+                             <a href="#" title="Widgets" id="widgetCardIcon" class="imagecard">
+                                 <span class="fa fa-file-invoice"></span>
+                             </a>
+                             <div class="card-data widgetCardData">
+                                 <h2 class="box-title" style="color: #3c8dbc;">Facturación por mes</h2>
+                                 @*<p class="card-block text-center">Rich, Adaptive, Mobile-First Widgets. Driven by deep User Centered Analysis and Research.</p>*@
+                                 <a href="#" title="Style Builder" class="anchor btn btn-default" style="background: #3c8dbc; border: #bb7824;"> <i class="fa fa-paper-plane" aria-hidden="true"></i>  Crear Facturas </a>
+
+                                 @await Html.PartialAsync("MDate2")
+                                 <br />
+                                 @*<div class="demo-section k-content wide"></div>*@
+                                 @(Html.Kendo().Chart<FacturacionMensual>()
+                                                            .Name("EmployeeAverageSales")
+                                                            .Theme("metro")
+                                                            .HtmlAttributes(new { style = "height:100%; width:100%;" })
+                                                            .AutoBind(true)
+                                                            .Events(e => e.DataBound("onAverageSalesDataBound"))
+                                                            .DataSource(ds => ds
+                                                                .Aggregates(a => a.Add(s => s.Facturacion).Average())
+                                                                .Read(read => read.Action("FacturacionMes", "Dashboard").Type(HttpVerbs.Post).Data("paramtersfindchartFactMensual"))
+                                                            )
+                                                            .Series(series =>
+                                                            {
+                                                                series.Line(model => model.Facturacion, categoryExpression: model => model.Date).Width(1.5).Markers(m => m.Visible(true))
+                                                                .Aggregate(ChartSeriesAggregate.Avg)
+                                                                .Tooltip(t => t.Template("#=kendo.toString(Facturacion, 'c2')#"));
+                                                            })
+                                                            .CategoryAxis(c => c
+                                                                .Date()
+                                                                 .BaseUnit(ChartAxisBaseUnit.Months)
+                                                                .Categories(x => x.Date)
+                                                                .Visible(true).MajorGridLines(m => m.Visible(true)).MajorTicks(mT => mT.Visible(true))
+                                                            )
+
+                                                            .Legend(leg => leg.Visible(false))
+                                                            .ValueAxis(val => val.Numeric().Visible(true).Labels(lab => lab.Visible(true)).MajorGridLines(m => m.Visible(true)).MajorTicks(mT => mT.Visible(true)))
+                                 )
+                             </div>
+
+                         </div>
+                         <div class="space"></div>
+                     </div>
+                 </div>
+                 <div class="col-md-4">
+                     <div class="card-base">
+                         <div class="card-icon">
+                             <a href="#" title="Widgets" id="widgetCardIcon" class="imagecard">
+                                 <span class="glyphicon glyphicon-user"></span>
+                             </a>
+                             <div class="card-data widgetCardData">
+                                 <h2 class="box-title" style="color:#3c8dbc;">Usuarios</h2>
+                                 <p class="card-block text-center">Cantidad de usuarios.</p>
+                                 @*<a href="#" title="Style Builder" class="anchor btn btn-default" style="background: #bb7824; border: #bb7824;"> <i class="fa fa-paper-plane" aria-hidden="true"></i>  Explore More </a>*@
+                             </div>
+                         </div>
+                         <div class="space"></div>
+                     </div>
+                 </div>
+                 <div class="col-md-4">
+                     <div class="card-base">
+                         <div class="card-icon">
+                             <a href="#" title="Widgets" id="widgetCardIcon" class="imagecard">
+                                 <span class="fa fa-file-alt"></span>
+                             </a>
+                             <div class="card-data widgetCardData">
+                                 <h2 class="box-title" style="color: #3c8dbc;">Ordenes</h2>
+                                 <p class="card-block text-center">OC</p>
+                                 <a href="#" title="Style Builder" class="anchor btn btn-default" style="background: #3c8dbc; border: #bb7824;"> <i class="fa fa-paper-plane" aria-hidden="true"></i>  Ir a ordenes </a>
+                             </div>
+                         </div>
+                         <div class="space"></div>
+                     </div>
+                 </div>
+             </div>
+
+         </div>
+
+
+         @*<div class="col-lg-4">
+            <section id="profile" class="well">
+                <h2 class="ra-well-title">Profile</h2>
+                <div class="row">
+                    <div class="col-lg-5 col-sm-2">
+                        <img src="/aspnet-core/bootstrap/assets/avatar.jpg" class="ra-avatar img-responsive">
+                    </div>
+
+                    <div class="col-lg-7 col-sm-2">
+                        <span class="ra-first-name">Jonathan</span>
+                        <span class="ra-last-name">Dodsworth</span>
+                        <div class="ra-position">Inside Sales Coordinator</div>
+                    </div>
+                </div>
+            </section>
+        </div>*@
+         <br /><br /><br /><br />
+         <div policy="Admin">
+             @(Html.Kendo().PanelBar()
+                                   .Name("IntroPanelBar")
+                                   .Items(items =>
+                                   {
+                                       items.Add()
+                                           .Text("Grafica de ventas")
+                                           .Selected(true)
+                                           .Expanded(true)
+                                           .Content(@<text>
+                                             <p style="padding:1em 2em">
+                                                 Learn how to build ASP.NET apps that can run anywhere.
+                                                 <a target="_blank" href="http://go.microsoft.com/fwlink/?LinkID=525028&clcid=0x409">Learn More</a>
+                                             </p>
+                                         </text>);
+                                                               items.Add()
+.Text("Conceptos ERP")
+.Content(@<text>
+                                 <p style="padding:1em 2em">
+                                     There are powerful new features in Visual Studio for building modern web apps.
+                                     <a target="_blank" href="http://go.microsoft.com/fwlink/?LinkID=525030&clcid=0x409">Learn More</a>
+                                 </p>
+     </text>);
+                                       items.Add()
+.Text("Contactenos")
+.Content(@<text>
+         <p style="padding:1em 2em">
+             Bring in libraries from NuGet, Bower, and npm, and automate tasks using Grunt or Gulp.
+             <a target="_blank" href="http://go.microsoft.com/fwlink/?LinkID=525029&clcid=0x409">Learn More</a>
+         </p>
+     </text>);
+                                   })
+             )
+
+
+         </div>

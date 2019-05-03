@@ -30,7 +30,7 @@ namespace ERPMVC.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            return PartialView();
         }
 
         public async Task<ActionResult> pvwConditions(Int64 ConditionId=0)
@@ -58,7 +58,7 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw;
+                throw ex;
             }
            
 
@@ -78,7 +78,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Conditions/GetCAI");
+                var result = await _client.GetAsync(baseadress + "api/Conditions/GetConditions");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -97,6 +97,39 @@ namespace ERPMVC.Controllers
 
 
             return _conditions.ToDataSourceResult(request);
+
+        }
+
+
+        [HttpGet("[action]")]
+        public async Task<ActionResult> GetJson([DataSourceRequest]DataSourceRequest request)
+        {
+            List<Conditions> _conditions = new List<Conditions>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Conditions/GetConditions");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _conditions = JsonConvert.DeserializeObject<List<Conditions>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return Json(_conditions.ToDataSourceResult(request));
 
         }
 

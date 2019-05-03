@@ -31,7 +31,7 @@ namespace ERPMVC.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            return PartialView();
         }
 
         public async Task<ActionResult> pvwCustomerConditions(Int64 Id = 0)
