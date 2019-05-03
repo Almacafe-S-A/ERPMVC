@@ -128,10 +128,10 @@ namespace ERPMVC.Controllers
         }           
 
         [HttpDelete("[action]")]
-        public async Task<ActionResult<CAI>> Delete(CAI _CAIp)
+        public async Task<ActionResult<IActionResult>> Delete(CAI _CAIp)
         {
             CAI _CAI = _CAIp;
-            try
+            try   
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();

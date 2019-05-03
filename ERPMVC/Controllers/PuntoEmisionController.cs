@@ -18,40 +18,40 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
-    public class PuntoEmisorController : Controller
+    public class PuntoEmisionController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
 
-        public PuntoEmisorController(ILogger<CAIController> logger, IOptions<MyConfig> config)
+        public PuntoEmisionController(ILogger<PuntoEmisionController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
         }
 
-        // GET: PuntoEmisor
+        // GET: PuntoEmision
         public ActionResult Index()
         {
             return View();
         }
 
-        // GET: PuntoEmisor
+        // GET: PuntoEmision
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<PuntoEmisor> _cais = new List<PuntoEmisor>();
+            List<PuntoEmision> _cais = new List<PuntoEmision>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/PuntoEmisor/GetCAI");
+                var result = await _client.GetAsync(baseadress + "api/PuntoEmision/GetPuntoEmision");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _cais = JsonConvert.DeserializeObject<List<PuntoEmisor>>(valorrespuesta);
+                    _cais = JsonConvert.DeserializeObject<List<PuntoEmision>>(valorrespuesta);
 
                 }
 
@@ -68,27 +68,27 @@ namespace ERPMVC.Controllers
 
         }
 
-        // POST: CAI/Insert
+        // POST: PuntoEmision/Insert
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public async Task<ActionResult> Insert(PuntoEmisor _PuntoEmisorp)
+        public async Task<ActionResult> Insert(PuntoEmision _PuntoEmisionp)
         {
-            PuntoEmisor _PuntoEmisor = _PuntoEmisorp;
+            PuntoEmision _PuntoEmision = _PuntoEmisionp;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _PuntoEmisor.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _PuntoEmisor.UsuarioModificacion = HttpContext.Session.GetString("user");
-                _PuntoEmisor.FechaCreacion = DateTime.Now;
-                _PuntoEmisor.FechaModificacion = DateTime.Now;
-                var result = await _client.PostAsJsonAsync(baseadress + "api/CAI/Insert", _PuntoEmisor);
+                _PuntoEmision.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _PuntoEmision.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _PuntoEmision.FechaCreacion = DateTime.Now;
+                _PuntoEmision.FechaModificacion = DateTime.Now;
+                var result = await _client.PostAsJsonAsync(baseadress + "api/PuntoEmision/Insert", _PuntoEmision);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PuntoEmisor = JsonConvert.DeserializeObject<PuntoEmisor>(valorrespuesta);
+                    _PuntoEmision = JsonConvert.DeserializeObject<PuntoEmision>(valorrespuesta);
                 }
 
             }
@@ -97,28 +97,28 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _PuntoEmisor }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _PuntoEmision }, Total = 1 });
         }
 
 
-        // POST: PuntoEmisor/Update
+        // POST: PuntoEmision/Update
         [HttpPost]
-        public async Task<IActionResult> Update(PuntoEmisor _PuntoEmisorp)
+        public async Task<IActionResult> Update(PuntoEmision _PuntoEmisionp)
         {
-            PuntoEmisor _PuntoEmisor = _PuntoEmisorp;
+            PuntoEmision _PuntoEmision = _PuntoEmisionp;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _PuntoEmisor.FechaModificacion = DateTime.Now;
-                _PuntoEmisor.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/CAI/Update", _PuntoEmisor);
+                _PuntoEmision.FechaModificacion = DateTime.Now;
+                _PuntoEmision.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/PuntoEmision/Update", _PuntoEmision);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PuntoEmisor = JsonConvert.DeserializeObject<PuntoEmisor>(valorrespuesta);
+                    _PuntoEmision = JsonConvert.DeserializeObject<PuntoEmision>(valorrespuesta);
                 }
 
             }
@@ -127,28 +127,28 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _PuntoEmisor }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _PuntoEmision }, Total = 1 });
         }
 
 
 
-        // GET: PuntoEmisor/Delete
+        // GET: PuntoEmision/Delete
         [HttpDelete("[action]")]
-        public async Task<ActionResult<PuntoEmisor>> Delete(PuntoEmisor _PuntoEmisorp)
+        public async Task<ActionResult<PuntoEmision>> Delete(PuntoEmision _PuntoEmisionp)
         {
-            PuntoEmisor _PuntoEmisor = _PuntoEmisorp;
+            PuntoEmision _PuntoEmision = _PuntoEmisionp;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/CAI/Delete", _PuntoEmisor);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/PuntoEmision/Delete", _PuntoEmision);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PuntoEmisor = JsonConvert.DeserializeObject<PuntoEmisor>(valorrespuesta);
+                    _PuntoEmision = JsonConvert.DeserializeObject<PuntoEmision>(valorrespuesta);
                 }
 
             }
@@ -157,9 +157,9 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _PuntoEmisor }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _PuntoEmision }, Total = 1 });
         }
 
-       
+
     }
 }

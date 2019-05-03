@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace ERPMVC.Models
 {
-    public class PuntoEmisor
+    public class PuntoEmision
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Int64 IdPuntoEmision { get; set; }
