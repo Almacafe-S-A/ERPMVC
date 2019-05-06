@@ -18,35 +18,41 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
-    public class BranchController : Controller
+    public class NumeracionSARController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-
-
-        public BranchController(ILogger<HomeController> logger, IOptions<MyConfig> config)
+        public NumeracionSARController(ILogger<NumeracionSARController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
         }
 
-        [HttpGet]
-        public async Task<JsonResult> Get([DataSourceRequest]DataSourceRequest request)
+        public IActionResult Index()
         {
-            List<Branch> _customers = new List<Branch>();
+            return View();
+        }
 
+        public async Task<ActionResult> pvwNumeracionSAR(Int64 Id = 0)
+        {
+            NumeracionSAR _NumeracionSAR = new NumeracionSAR();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Branch/GetBranch");
+                var result = await _client.GetAsync(baseadress + "api/NumeracionSAR/GetNumeracionSARById/" + Id);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _customers = JsonConvert.DeserializeObject<List<Branch>>(valorrespuesta);
+                    _NumeracionSAR = JsonConvert.DeserializeObject<NumeracionSAR>(valorrespuesta);
 
+                }
+
+                if (_NumeracionSAR == null)
+                {
+                    _NumeracionSAR = new NumeracionSAR();
                 }
             }
             catch (Exception ex)
@@ -54,43 +60,76 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-         
 
 
-               return Json(_customers.ToDataSourceResult(request));
+
+            return PartialView(_NumeracionSAR);
 
         }
 
 
-        public async Task<ActionResult<Branch>> SaveBranch([FromBody]Branch _Branch)
+        [HttpGet]
+        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
+        {
+            List<NumeracionSAR> _NumeracionSAR = new List<NumeracionSAR>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/NumeracionSAR/GetNumeracionSAR");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _NumeracionSAR = JsonConvert.DeserializeObject<List<NumeracionSAR>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _NumeracionSAR.ToDataSourceResult(request);
+
+        }
+
+
+        public async Task<ActionResult<NumeracionSAR>> SaveNumeracionSAR([FromBody]NumeracionSAR _NumeracionSAR)
         {
 
             try
             {
-                Branch _listBranch = new Branch();
+                NumeracionSAR _listNumeracionSAR = new NumeracionSAR();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Branch/GetBranchById/" + _Branch.BranchId);
+                var result = await _client.GetAsync(baseadress + "api/NumeracionSAR/GetNumeracionSARById/" + _NumeracionSAR.IdNumeracion);
                 string valorrespuesta = "";
-                _Branch.FechaModificacion = DateTime.Now;
-                _Branch.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _NumeracionSAR.FechaModificacion = DateTime.Now;
+                _NumeracionSAR.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listBranch = JsonConvert.DeserializeObject<Branch>(valorrespuesta);
+                    _listNumeracionSAR = JsonConvert.DeserializeObject<NumeracionSAR>(valorrespuesta);
                 }
 
-                if (_listBranch.BranchId == 0)
+                if (_listNumeracionSAR.IdNumeracion == 0)
                 {
-                    _Branch.FechaCreacion = DateTime.Now;
-                    _Branch.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_Branch);
+                    _NumeracionSAR.FechaCreacion = DateTime.Now;
+                    _NumeracionSAR.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_NumeracionSAR);
                 }
                 else
                 {
-                    var updateresult = await Update(_Branch.BranchId, _Branch);
+                    var updateresult = await Update(_NumeracionSAR.IdNumeracion, _NumeracionSAR);
                 }
 
             }
@@ -100,13 +139,13 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_Branch);
+            return Json(_NumeracionSAR);
         }
 
-        // POST: Branch/Insert
+        // POST: NumeracionSAR/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<Branch>> Insert(Branch _Branch)
+        public async Task<ActionResult<NumeracionSAR>> Insert(NumeracionSAR _NumeracionSAR)
         {
             try
             {
@@ -114,14 +153,14 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _Branch.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _Branch.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Branch/Insert", _Branch);
+                _NumeracionSAR.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _NumeracionSAR.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/NumeracionSAR/Insert", _NumeracionSAR);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Branch = JsonConvert.DeserializeObject<Branch>(valorrespuesta);
+                    _NumeracionSAR = JsonConvert.DeserializeObject<NumeracionSAR>(valorrespuesta);
                 }
 
             }
@@ -131,11 +170,11 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Branch }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _NumeracionSAR }, Total = 1 });
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<Branch>> Update(Int64 id, Branch _Branch)
+        public async Task<ActionResult<NumeracionSAR>> Update(Int64 id, NumeracionSAR _NumeracionSAR)
         {
             try
             {
@@ -143,12 +182,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PutAsJsonAsync(baseadress + "api/Branch/Update", _Branch);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/NumeracionSAR/Update", _NumeracionSAR);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Branch = JsonConvert.DeserializeObject<Branch>(valorrespuesta);
+                    _NumeracionSAR = JsonConvert.DeserializeObject<NumeracionSAR>(valorrespuesta);
                 }
 
             }
@@ -158,11 +197,11 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Branch }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _NumeracionSAR }, Total = 1 });
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<Branch>> Delete([FromBody]Branch _Branch)
+        public async Task<ActionResult<NumeracionSAR>> Delete([FromBody]NumeracionSAR _NumeracionSAR)
         {
             try
             {
@@ -170,12 +209,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Branch/Delete", _Branch);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/NumeracionSAR/Delete", _NumeracionSAR);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Branch = JsonConvert.DeserializeObject<Branch>(valorrespuesta);
+                    _NumeracionSAR = JsonConvert.DeserializeObject<NumeracionSAR>(valorrespuesta);
                 }
 
             }
@@ -187,7 +226,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Branch }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _NumeracionSAR }, Total = 1 });
         }
 
 
