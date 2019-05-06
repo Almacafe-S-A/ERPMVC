@@ -4,8 +4,7 @@
 
 <script>   
     completedorderlinemant = function (xhr) {  
-        // RefreshCotizacionesDetail();
-        // alert(` ${xhr.responseText}!`);
+        
         $('#myModalSalesOrderLine').find(':input').not(':submit').val('');
         CalcularTotalDocumento();    
         $("#btnActualizarCotizacionLinea").prop("disabled", false);
@@ -69,10 +68,11 @@
     }
 
     function AddConceptoCotizacion(e) {
+       // e.preventDefault();
+
          $("#btnActualizarCotizacionLinea").prop("disabled", true); 
         RefreshCotizacionesDetail();
-       // var grid = $('#gridCotizacionesDetail').getKendoGrid();
-        //grid.dataSource.read();
+      
     }
 
     function setearvalor(nombrenumerico,valor) {
@@ -152,6 +152,8 @@
     }
 
     function AgregarCustomerCondition() {
+        var notification = $("#notification").data("kendoNotification");
+
          @*var dataObject = { 'ConditionId': $("#ConditionId").val() };
 
            $.ajax({
@@ -173,8 +175,15 @@
               }
          });*@
 
-     
-        $('#myModalCustomerConditions').modal('show');
+        if ($("#SalesOrderId").val() > 0) {
+            $('#myModalCustomerConditions').modal('show');
+        }
+        else {
+            notification.show({
+                title: "Validación",
+                message: "Para agregar una condición debe generar el documento!"
+            }, "info");
+        }
     }
 
 </script>
@@ -217,7 +226,7 @@
                           @*<a href="#" title="Style Builder" class="anchor btn btn-default" style="background: #bb7824; border: #bb7824;"> <i class="fa fa-paper-plane" aria-hidden="true"></i>  Explore More </a>*@
                       </div>
                   </div>
-                  @*<div class="space"></div>*@
+                
               </div>
           </div>
           </div>
@@ -253,11 +262,21 @@
                           <div class="form-group">
                           <label asp-for="SubProductId" class="col-md-2 control-label" style="width:100%"></label>
 
+                              <script>
+                                  function setsubproductname(e) {
+                                      console.log(e);
+                                      var dataItem = e.dataItem;
+                                      $("#subproductname").val(dataItem.ProductName);
+                                  }
+                              </script>
+                              <input type="hidden" id="subproductname" />
                           <kendo-combobox name="SubProductId" filter="FilterType.Contains"
                           placeholder="Select SubProductId"
+                            for="SubProductId"
                           datatextfield="ProductName"
                           datavaluefield="SubproductId"
-                          auto-bind="false"
+                          auto-bind="true"
+                           on-select="setsubproductname"
                           required
                           style="width: 100%;">
                           <datasource type="DataSourceTagHelperType.WebApi">
@@ -265,12 +284,11 @@
                           <read url="@Url.Action("GetSubProductByProductId", "ProductRelation")" data="GetProductIdS()" />
                           </transport>
                           </datasource>
+                            
                           </kendo-combobox>
                           <span asp-validation-for="SubProductId" class="text-danger"></span>
                           </div>
                           </div>
-
-
 
 
                           <div class="col-md-4">

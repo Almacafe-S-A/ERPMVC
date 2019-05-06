@@ -69,8 +69,8 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpGet]
-        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
+        [HttpPost]
+        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request, CustomerConditions _Ccq)
         {
             List<CustomerConditions> _CustomerConditions = new List<CustomerConditions>();
             try
@@ -79,7 +79,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CustomerConditions/GetCustomerConditions");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/CustomerConditions/GetCustomerConditionsByClass", _Ccq);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -102,6 +102,7 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpPost]
         public async Task<ActionResult<CustomerConditions>> SaveCustomerConditions([FromBody]CustomerConditions _CustomerConditions)
         {
 
@@ -127,6 +128,7 @@ namespace ERPMVC.Controllers
                     _CustomerConditions.FechaCreacion = DateTime.Now;
                     _CustomerConditions.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_CustomerConditions);
+
                 }
                 else
                 {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -28,7 +29,42 @@ namespace ERPMVC.Controllers
              this._config = config;
         }
 
-      [HttpGet("[action]")]
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwSalesOrderDetailMant([FromBody]SalesOrderLine _salesorderline)
+        {
+            SalesOrderLine _salesorderf = new SalesOrderLine();
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/SalesOrderLine/GetSalesOrderLineById/" ,_salesorderline);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _salesorderf = JsonConvert.DeserializeObject<SalesOrderLine>(valorrespuesta);
+                }
+
+                if (_salesorderf == null) { _salesorderf = new SalesOrderLine { Description = ""  }; }
+                //_salesorderf.editar = _salesorderline.editar;
+
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return PartialView("~/Views/SalesOrder/pvwSalesOrderDetailMant.cshtml",_salesorderf);
+        }
+
+
+        [HttpGet("[action]")]
         public async Task<DataSourceResult> GetSalesOrderLine([DataSourceRequest]DataSourceRequest request,SalesOrderLine _SalesOrderLine)
         {
             List<SalesOrderLine> _SalesOrders = new List<SalesOrderLine>();
@@ -39,7 +75,7 @@ namespace ERPMVC.Controllers
                 if (HttpContext.Session.Get("listadoproductos") == null 
                     || HttpContext.Session.GetString("listadoproductos") =="")
                 {
-                    if (_SalesOrderLine.ProductId > 0)
+                    if (_SalesOrderLine.SubProductId > 0)
                     {
                         string serialzado = JsonConvert.SerializeObject(_SalesOrders).ToString();
                         HttpContext.Session.SetString("listadoproductos", serialzado);
@@ -69,7 +105,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    if (_SalesOrderLine.ProductId > 0)
+                    if (_SalesOrderLine.SubProductId > 0)
                     {
                         _SalesOrders.Add(_SalesOrderLine);
                         HttpContext.Session.SetString("listadoproductos", JsonConvert.SerializeObject(_SalesOrders).ToString());
