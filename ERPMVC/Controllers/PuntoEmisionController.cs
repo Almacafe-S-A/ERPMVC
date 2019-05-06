@@ -39,7 +39,7 @@ namespace ERPMVC.Controllers
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<PuntoEmision> _cais = new List<PuntoEmision>();
+            List<PuntoEmision> _PuntoEmision = new List<PuntoEmision>();
             try
             {
 
@@ -51,7 +51,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _cais = JsonConvert.DeserializeObject<List<PuntoEmision>>(valorrespuesta);
+                    _PuntoEmision = JsonConvert.DeserializeObject<List<PuntoEmision>>(valorrespuesta);
 
                 }
 
@@ -64,7 +64,7 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _cais.ToDataSourceResult(request);
+            return _PuntoEmision.ToDataSourceResult(request);
 
         }
 
@@ -133,8 +133,8 @@ namespace ERPMVC.Controllers
 
 
         // GET: PuntoEmision/Delete
-        [HttpDelete("[action]")]
-        public async Task<ActionResult<PuntoEmision>> Delete(PuntoEmision _PuntoEmisionp)
+        [HttpDelete("{IdPuntoEmision}")]
+        public async Task<ActionResult<PuntoEmision>> Delete(Int64 IdPuntoEmision, PuntoEmision _PuntoEmisionp)
         {
             PuntoEmision _PuntoEmision = _PuntoEmisionp;
             try
