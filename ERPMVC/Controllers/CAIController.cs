@@ -127,8 +127,8 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _CAI }, Total = 1 });
         }           
 
-        [HttpDelete("[action]")]
-        public async Task<ActionResult<IActionResult>> Delete(CAI _CAIp)
+        [HttpDelete("{IdCAI}")]
+        public async Task<ActionResult<CAI>> Delete(Int64 IdCAI, CAI _CAIp)
         {
             CAI _CAI = _CAIp;
             try   
