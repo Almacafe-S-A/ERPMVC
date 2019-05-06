@@ -18,34 +18,75 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
-    public class TiposDocumentoController : Controller
+    public class WarehouseController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-
-        public TiposDocumentoController(ILogger<TiposDocumentoController> logger, IOptions<MyConfig> _config)
+        public WarehouseController(ILogger<WarehouseController> logger, IOptions<MyConfig> config)
         {
-            config = _config;
+            this.config = config;
             this._logger = logger;
         }
 
-
-        [HttpGet("[controller]/[action]")]
-        public async Task<ActionResult> GetTiposDocumento([DataSourceRequest]DataSourceRequest request)
+        public IActionResult Index()
         {
-            List<TiposDocumento> _clientes = new List<TiposDocumento>();
+            return View();
+        }
+
+        public async Task<ActionResult> pvwWarehouse(Int64 Id = 0)
+        {
+            Warehouse _Warehouse = new Warehouse();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/TiposDocumento/GetTipoDocumento");
+                var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouseById/" + Id);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _clientes = JsonConvert.DeserializeObject<List<TiposDocumento>>(valorrespuesta);
+                    _Warehouse = JsonConvert.DeserializeObject<Warehouse>(valorrespuesta);
+
                 }
+
+                if (_Warehouse == null)
+                {
+                    _Warehouse = new Warehouse();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return PartialView(_Warehouse);
+
+        }
+
+
+        [HttpGet]
+        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
+        {
+            List<Warehouse> _Warehouse = new List<Warehouse>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouse");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Warehouse = JsonConvert.DeserializeObject<List<Warehouse>>(valorrespuesta);
+
+                }
+
 
             }
             catch (Exception ex)
@@ -54,40 +95,41 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_clientes.ToDataSourceResult(request));
+
+            return _Warehouse.ToDataSourceResult(request);
 
         }
 
 
-        public async Task<ActionResult<TiposDocumento>> SaveTiposDocumento([FromBody]TiposDocumento _TiposDocumento)
+        public async Task<ActionResult<Warehouse>> SaveWarehouse([FromBody]Warehouse _Warehouse)
         {
 
             try
             {
-                TiposDocumento _listTiposDocumento = new TiposDocumento();
+                Warehouse _listWarehouse = new Warehouse();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/TiposDocumento/GetTiposDocumentoById/" + _TiposDocumento.IdTipoDocumento);
+                var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouseById/" + _Warehouse.WarehouseId);
                 string valorrespuesta = "";
-                _TiposDocumento.FechaModificacion = DateTime.Now;
-                _TiposDocumento.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _Warehouse.FechaModificacion = DateTime.Now;
+                _Warehouse.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listTiposDocumento = JsonConvert.DeserializeObject<TiposDocumento>(valorrespuesta);
+                    _listWarehouse = JsonConvert.DeserializeObject<Warehouse>(valorrespuesta);
                 }
 
-                if (_listTiposDocumento.IdTipoDocumento == 0)
+                if (_listWarehouse.WarehouseId == 0)
                 {
-                    _TiposDocumento.FechaCreacion = DateTime.Now;
-                    _TiposDocumento.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_TiposDocumento);
+                    _Warehouse.FechaCreacion = DateTime.Now;
+                    _Warehouse.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_Warehouse);
                 }
                 else
                 {
-                    var updateresult = await Update(_TiposDocumento.IdTipoDocumento, _TiposDocumento);
+                    var updateresult = await Update(_Warehouse.WarehouseId, _Warehouse);
                 }
 
             }
@@ -97,13 +139,13 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_TiposDocumento);
+            return Json(_Warehouse);
         }
 
-        // POST: TiposDocumento/Insert
+        // POST: Warehouse/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<TiposDocumento>> Insert(TiposDocumento _TiposDocumento)
+        public async Task<ActionResult<Warehouse>> Insert(Warehouse _Warehouse)
         {
             try
             {
@@ -111,14 +153,14 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _TiposDocumento.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _TiposDocumento.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/TiposDocumento/Insert", _TiposDocumento);
+                _Warehouse.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _Warehouse.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Warehouse/Insert", _Warehouse);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _TiposDocumento = JsonConvert.DeserializeObject<TiposDocumento>(valorrespuesta);
+                    _Warehouse = JsonConvert.DeserializeObject<Warehouse>(valorrespuesta);
                 }
 
             }
@@ -128,11 +170,11 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _TiposDocumento }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _Warehouse }, Total = 1 });
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<TiposDocumento>> Update(Int64 id, TiposDocumento _TiposDocumento)
+        public async Task<ActionResult<Warehouse>> Update(Int64 id, Warehouse _Warehouse)
         {
             try
             {
@@ -140,12 +182,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PutAsJsonAsync(baseadress + "api/TiposDocumento/Update", _TiposDocumento);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/Warehouse/Update", _Warehouse);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _TiposDocumento = JsonConvert.DeserializeObject<TiposDocumento>(valorrespuesta);
+                    _Warehouse = JsonConvert.DeserializeObject<Warehouse>(valorrespuesta);
                 }
 
             }
@@ -155,11 +197,11 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _TiposDocumento }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _Warehouse }, Total = 1 });
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<TiposDocumento>> Delete([FromBody]TiposDocumento _TiposDocumento)
+        public async Task<ActionResult<Warehouse>> Delete([FromBody]Warehouse _Warehouse)
         {
             try
             {
@@ -167,12 +209,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/TiposDocumento/Delete", _TiposDocumento);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Warehouse/Delete", _Warehouse);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _TiposDocumento = JsonConvert.DeserializeObject<TiposDocumento>(valorrespuesta);
+                    _Warehouse = JsonConvert.DeserializeObject<Warehouse>(valorrespuesta);
                 }
 
             }
@@ -184,12 +226,8 @@ namespace ERPMVC.Controllers
 
 
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _TiposDocumento }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _Warehouse }, Total = 1 });
         }
-
-
-
-
 
 
 
