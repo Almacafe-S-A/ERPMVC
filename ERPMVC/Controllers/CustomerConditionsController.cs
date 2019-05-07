@@ -69,8 +69,9 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpPost]
-        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request, CustomerConditions _Ccq)
+        //[HttpPost("[action]")]
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request,CustomerConditions _Ccq)
         {
             List<CustomerConditions> _CustomerConditions = new List<CustomerConditions>();
             try
@@ -121,6 +122,11 @@ namespace ERPMVC.Controllers
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _listCustomerConditions = JsonConvert.DeserializeObject<CustomerConditions>(valorrespuesta);
+                }
+
+                if (_listCustomerConditions == null)
+                {
+                    _listCustomerConditions = new CustomerConditions();
                 }
 
                 if (_listCustomerConditions.CustomerConditionId == 0)
