@@ -102,8 +102,8 @@ namespace ERPMVC.Controllers
 
 
         // POST: PuntoEmision/Update
-        [HttpPost]
-        public async Task<IActionResult> Update(PuntoEmision _PuntoEmisionp)
+        [HttpPost("{IdPuntoEmision}")]
+        public async Task<IActionResult> Update(Int64 IdPuntoEmision, PuntoEmision _PuntoEmisionp)
         {
             PuntoEmision _PuntoEmision = _PuntoEmisionp;
             try
