@@ -133,10 +133,9 @@ namespace ERPMVC.Controllers
 
 
         // GET: PuntoEmision/Delete
-        [HttpDelete("{IdPuntoEmision}")]
-        public async Task<ActionResult<PuntoEmision>> Delete(Int64 IdPuntoEmision, PuntoEmision _PuntoEmisionp)
+        [HttpDelete("Delete")]
+        public async Task<ActionResult<PuntoEmision>> Delete(Int64 IdPuntoEmision, PuntoEmision _PuntoEmision)
         {
-            PuntoEmision _PuntoEmision = _PuntoEmisionp;
             try
             {
                 string baseadress = config.Value.urlbase;

@@ -29,6 +29,11 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        public ActionResult TiposDocumento()
+        {
+            return View();
+        }
+
 
         [HttpGet("[controller]/[action]")]
         public async Task<ActionResult> GetTiposDocumento([DataSourceRequest]DataSourceRequest request)
