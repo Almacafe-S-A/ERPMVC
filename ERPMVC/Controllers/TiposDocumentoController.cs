@@ -107,8 +107,8 @@ namespace ERPMVC.Controllers
 
         // POST: TiposDocumento/Insert
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult<TiposDocumento>> Insert(TiposDocumento _TiposDocumento)
+        //[ValidateAntiForgeryToken]
+        public async Task<ActionResult> Insert(TiposDocumento _TiposDocumento)
         {
             try
             {
@@ -136,8 +136,8 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _TiposDocumento }, Total = 1 });
         }
 
-        [HttpPut("{id}")]
-        public async Task<ActionResult<TiposDocumento>> Update(Int64 id, TiposDocumento _TiposDocumento)
+        [HttpPut("IdTipoDocumento")]
+        public async Task<IActionResult> Update(Int64 IdTipoDocumento, TiposDocumento _TipoDocumento)
         {
             try
             {
@@ -145,12 +145,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PutAsJsonAsync(baseadress + "api/TiposDocumento/Update", _TiposDocumento);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/TiposDocumento/Update", _TipoDocumento);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _TiposDocumento = JsonConvert.DeserializeObject<TiposDocumento>(valorrespuesta);
+                    _TipoDocumento = JsonConvert.DeserializeObject<TiposDocumento>(valorrespuesta);
                 }
 
             }
@@ -160,7 +160,7 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _TiposDocumento }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _TipoDocumento }, Total = 1 });
         }
 
         [HttpPost("[action]")]
