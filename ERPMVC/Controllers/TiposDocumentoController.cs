@@ -163,8 +163,8 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _TipoDocumento }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult<TiposDocumento>> Delete([FromBody]TiposDocumento _TiposDocumento)
+        [HttpDelete ("IdTipoDocumento")]
+        public async Task<ActionResult<TiposDocumento>> Delete(Int64 IdTipoDocumento, TiposDocumento _TiposDocumento)
         {
             try
             {
