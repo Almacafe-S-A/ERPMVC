@@ -173,8 +173,8 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _NumeracionSAR }, Total = 1 });
         }
 
-        [HttpPut("{id}")]
-        public async Task<ActionResult<NumeracionSAR>> Update(Int64 id, NumeracionSAR _NumeracionSAR)
+        [HttpPut("IdNumeracion")]
+        public async Task<IActionResult> Update(Int64 IdNumeracion, NumeracionSAR _NumeracionSAR)
         {
             try
             {
@@ -200,8 +200,8 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _NumeracionSAR }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult<NumeracionSAR>> Delete([FromBody]NumeracionSAR _NumeracionSAR)
+        [HttpDelete("IdNumeracion")]
+        public async Task<ActionResult<NumeracionSAR>> Delete(Int64 IdNumeracion, NumeracionSAR _NumeracionSAR)
         {
             try
             {
