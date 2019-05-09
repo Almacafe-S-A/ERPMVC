@@ -28,7 +28,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-        public IActionResult Index()
+        public IActionResult NumeracionSAR()
         {
             return View();
         }
@@ -69,7 +69,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet]
-        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
+        public async Task<DataSourceResult> GetNumeracioSAR([DataSourceRequest]DataSourceRequest request)
         {
             List<NumeracionSAR> _NumeracionSAR = new List<NumeracionSAR>();
             try
@@ -78,7 +78,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/NumeracionSAR/GetNumeracionSAR");
+                var result = await _client.GetAsync(baseadress + "api/NumeracionSAR/GetNumeracion");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -144,7 +144,7 @@ namespace ERPMVC.Controllers
 
         // POST: NumeracionSAR/Insert
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         public async Task<ActionResult<NumeracionSAR>> Insert(NumeracionSAR _NumeracionSAR)
         {
             try
