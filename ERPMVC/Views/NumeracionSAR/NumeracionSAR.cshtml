@@ -1,0 +1,97 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "NUMERACION SAR";
+}
+
+<script>
+
+    function onsave(e) {
+     //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+       // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+    function caidata(data) {
+        data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+        data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    }
+
+</script>
+
+
+@(Html.Kendo().Grid<ERPMVC.Models.NumeracionSAR>
+        ()
+        .Name("gridNumeracionSAR")
+        .Columns(columns =>
+        {
+            columns.Bound(p => p.IdNumeracion).Width(100);
+            columns.Bound(p => p.IdCAI).Width(100);
+            columns.Bound(p => p.NoInicio).Width(150);
+            columns.Bound(p => p.NoFin).Width(150);
+            columns.Bound(p => p.FechaLimite).Width(170);
+            columns.Bound(p => p.CantidadOtorgada).Width(100);
+            columns.Bound(p => p.SiguienteNumero).Width(100);
+            columns.Bound(p => p.PuntoEmision).Width(100);
+            columns.Bound(p => p.DocType).Width(100);
+            columns.Bound(p => p.DocSubType).Width(100);
+            columns.Bound(p => p.Estado).Width(170);
+            columns.Bound(p => p.FechaCreacion).Width(100);
+            columns.Bound(p => p.FechaModificacion).Width(100);
+            columns.Bound(p => p.UsuarioCreacion).Width(100);
+            columns.Bound(p => p.UsuarioModificacion).Width(100);
+
+            columns.Command(command =>
+            {
+                //command.Custom("Ver detalles").Click("Detalles");
+                command.Edit(); command.Destroy();
+            }).Width(250);
+
+        })
+        .ToolBar(tools =>
+        {
+            tools.Create();
+            tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+            tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+        })
+        .Editable(e => e.Mode(GridEditMode.PopUp))
+        .Sortable()
+        .Pageable()
+        .Filterable()
+        .Scrollable()
+        .Pdf(pdf => pdf.FileName("NumeracionSARReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+            .Excel(excel => excel.FileName("NumeracionSARReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+        .DataSource(dataSource =>
+            dataSource
+            .WebApi()
+
+            .ServerOperation(true)
+            .Model(model =>
+            {
+                model.Id(p => p.IdNumeracion);
+                model.Field(p => p.IdNumeracion).Editable(false);
+                model.Field(p => p.FechaCreacion).Editable(true);
+                model.Field(p => p.FechaLimite).Editable(true);
+                model.Field(p => p.UsuarioCreacion).Editable(false);
+                model.Field(p => p.UsuarioModificacion).Editable(false);
+
+            })
+            .Events(events => events.Error("error_handler"))
+            .Read(read => read.Action("GetNumeracioSAR", "NumeracionSAR"))
+            .Create(create => create.Action("Insert", "NumeracionSAR").Type(HttpVerbs.Post))
+            .Update(update => update.Action("Update", "NumeracionSAR", new { IdNumeracion = "{0}" }).Type(HttpVerbs.Put))
+            .Destroy(destroy => destroy.Action("Delete", "NumeracionSAR", new { IdNumeracion = "{0}" }).Type(HttpVerbs.Delete))
+
+        )
+        .Events(e =>
+        {
+            e.Save("onsave");
+
+        })
+)
