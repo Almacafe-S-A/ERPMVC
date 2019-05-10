@@ -15,6 +15,13 @@ namespace ERPMVC.Models
         [Display(Name = "Nombre Orden")]
         public string SalesOrderName { get; set; }
 
+        [Display(Name = "Tipo de contrato")]
+        public Int64 TypeContractId { get; set; }
+
+        [Display(Name = "Nombre de contrato")]
+        public string NameContract { get; set; }
+
+
         [Display(Name = "RTN")]
         public string RTN { get; set; }
 

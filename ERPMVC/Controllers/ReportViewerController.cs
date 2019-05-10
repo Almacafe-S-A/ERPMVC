@@ -155,8 +155,6 @@ namespace ERPMVC.Controllers
             //    reportOption.ReportModel.DataSources.Add(new ReportDataSource { Name = "StoreSales", Value = StoreSales.GetData(Convert.ToInt32("29825")) });
             //}
         }
-
-
        
 
 
