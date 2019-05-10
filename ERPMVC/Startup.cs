@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,13 +25,18 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using Syncfusion.Licensing;
 
 namespace ERPMVC
 {
     public class Startup
     {
-        public Startup(IConfiguration configuration)
+        public Startup(IHostingEnvironment env, IConfiguration configuration)
         {
+
+            string License = File.ReadAllText(System.IO.Path.Combine(env.ContentRootPath, "SyncfusionLicense.txt"), Encoding.UTF8);
+            SyncfusionLicenseProvider.RegisterLicense(License);
+
             Configuration = configuration;
         }
 

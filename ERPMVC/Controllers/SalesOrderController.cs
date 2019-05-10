@@ -272,6 +272,7 @@ namespace ERPMVC.Controllers
         {
             try
             {
+
                 // TODO: Add insert logic here
                 string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
@@ -325,11 +326,23 @@ namespace ERPMVC.Controllers
 
 
 
-        [HttpGet("{SalesOrderId}")]
-       public  ActionResult AR(Int32 SalesOrderId)
+       // [HttpGet("{SalesOrderId}")]
+       //public  ActionResult AR(Int32 SalesOrderId)
+       // {
+
+       //     SalesOrderDTO _salesorderdto = new SalesOrderDTO { SalesOrderId = SalesOrderId, token = HttpContext.Session.GetString("token") };
+
+       //     return View(_salesorderdto);
+       // }
+
+
+       // [HttpGet("[controller]/[action]/{SalesOrderId}")]
+   //    [HttpGet("{SalesOrderId}")]
+        [HttpGet]
+        public ActionResult SFCotizacion(Int32 id)
         {
 
-            SalesOrderDTO _salesorderdto = new SalesOrderDTO { SalesOrderId = SalesOrderId, token = HttpContext.Session.GetString("token") };
+            SalesOrderDTO _salesorderdto = new SalesOrderDTO { SalesOrderId = id, token = HttpContext.Session.GetString("token") };
 
             return View(_salesorderdto);
         }
