@@ -69,7 +69,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet]
-        public async Task<DataSourceResult> GetNumeracioSAR([DataSourceRequest]DataSourceRequest request)
+        public async Task<DataSourceResult> GetNumeracion([DataSourceRequest]DataSourceRequest request)
         {
             List<NumeracionSAR> _NumeracionSAR = new List<NumeracionSAR>();
             try
