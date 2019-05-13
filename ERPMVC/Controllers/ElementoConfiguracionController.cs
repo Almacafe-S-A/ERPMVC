@@ -71,7 +71,7 @@ namespace ERPMVC.Controllers
         [HttpGet("[controller]/[action]")]
         public async Task<ActionResult> GetElementoByIdConfiguracion([DataSourceRequest]DataSourceRequest request,Int64 Id)
         {
-            List<Product> _clientes = new List<Product>();
+            List<ElementoConfiguracion> _clientes = new List<ElementoConfiguracion>();
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -82,7 +82,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _clientes = JsonConvert.DeserializeObject<List<Product>>(valorrespuesta);
+                    _clientes = JsonConvert.DeserializeObject<List<ElementoConfiguracion>>(valorrespuesta);
                 }
 
             }

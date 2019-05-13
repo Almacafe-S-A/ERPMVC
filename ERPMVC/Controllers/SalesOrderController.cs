@@ -70,7 +70,7 @@ namespace ERPMVC.Controllers
                     _salesorderf = JsonConvert.DeserializeObject<SalesOrderDTO>(valorrespuesta);
                 }
 
-                if (_salesorderf == null) { _salesorderf = new SalesOrderDTO { DeliveryDate=DateTime.Now,OrderDate=DateTime.Now, editar = _salesorder.editar, SalesOrderId = _salesorder.SalesOrderId }; }
+                if (_salesorderf == null) { _salesorderf = new SalesOrderDTO { ExpirationDate=DateTime.Now.AddDays(30), DeliveryDate=DateTime.Now,OrderDate=DateTime.Now, editar = _salesorder.editar, SalesOrderId = _salesorder.SalesOrderId }; }
                 _salesorderf.editar = _salesorder.editar;             
 
 

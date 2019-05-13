@@ -10,8 +10,10 @@ namespace ERPMVC.Models
     public class InvoiceLine
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Display(Name = "Id")]
         public Int64 SalesOrderLineId { get; set; }
-        [Display(Name = "Sales Order")]
+
+        [Display(Name = "Númeracion Cotización ")]
         public int SalesOrderId { get; set; }
         [Display(Name = "Cotizacion")]
         public SalesOrder SalesOrder { get; set; }
