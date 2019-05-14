@@ -97,7 +97,9 @@ namespace ERPMVC.Controllers
 
             //reportOption.ReportModel.Parameters = parameters;
             if (parameters != null && parameters.Count > 0)
-            {
+            {               
+
+               // reportOption.ReportModel.Parameters = ;
 
                 reportOption.ReportModel.DataSources.Clear();
                 var salesorder = SalesOrderQ.GetData(parameters[0].Values[0], _config.Value.urlbase, HttpContext.Session.GetString("token"));
@@ -117,26 +119,25 @@ namespace ERPMVC.Controllers
 
                 CustomerConditions _cc = new CustomerConditions
                 {
-                    IdTipoDocumento = 12
-                    ,
-                    FechaCreacion = DateTime.Now,
-                    FechaModificacion = DateTime.Now
-                    ,
-                    ConditionId = 0,
-                    CustomerConditionId = 0,
-                    CustomerId = 0
-                     ,
-                    LogicalCondition = ">",
-                    UsuarioCreacion = "admin",
-                    UsuarioModificacion = "admin",
-                    CustomerConditionName = "asad"
-                     ,
-                    ValueDecimal = 0,
-                    ValueString = "0",
-                    ValueToEvaluate = "0"
-                      ,
+                    IdTipoDocumento = 12,                  
                     DocumentId = Convert.ToInt64(parameters[0].Values[0]),
-                    ProductId = 0
+                    ProductId = 0,                     
+                    //FechaCreacion = DateTime.Now,
+                    //FechaModificacion = DateTime.Now
+                    //,
+                    //ConditionId = 0,
+                    //CustomerConditionId = 0,
+                    //CustomerId = 0
+                    // ,
+                    //LogicalCondition = ">",
+                    //UsuarioCreacion = "admin",
+                    //UsuarioModificacion = "admin",
+                    //CustomerConditionName = "asad"
+                    // ,
+                    //ValueDecimal = 0,
+                    //ValueString = "0",
+                    //ValueToEvaluate = "0"
+                      
                 };
                 var CustomerConditions = SalesOrderQ.GetDataCustomerConditions(_cc, _config.Value.urlbase, HttpContext.Session.GetString("token"));
                 reportOption.ReportModel.DataSources.Add(new Syncfusion.Report.ReportDataSource
@@ -184,6 +185,8 @@ namespace ERPMVC.Controllers
                 //  var des = (List<SalesOrder>)Newtonsoft.Json.JsonConvert.DeserializeObject(valorrespuesta, typeof(List<SalesOrder>));
 
                 SalesOrder _SalesOrder1 = JsonConvert.DeserializeObject<SalesOrder>(valorrespuesta);
+                _SalesOrder1.CustomerName = (_SalesOrder1.CustomerName == "0" || _SalesOrder1.CustomerName == "")
+                                               ? _SalesOrder1.SalesOrderName : _SalesOrder1.CustomerName;
                 _SalesOrder.Add(_SalesOrder1);
             }
             
