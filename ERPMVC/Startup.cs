@@ -112,16 +112,31 @@ namespace ERPMVC
 
 
            services.AddLogging();
-         
-            services.AddMvc(options=> {
-                options.ModelBinderProviders.Insert(0, new MyViewModelBinderProvider());
-            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
-                  .AddJsonOptions(options => { options.SerializerSettings.ContractResolver = new DefaultContractResolver();
-                      options.SerializerSettings.DateFormatString = "dd/MM/yyyy";
-                      options.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
-                  });
 
-               services.AddKendo();
+            services.AddMvc(options =>
+            {
+                //   options.ModelBinderProviders.Insert(0, new MyViewModelBinderProvider());
+            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+            //.AddJsonOptions(options => {
+            //    // send back a ISO date
+            //    var settings = options.SerializerSettings;
+            //    settings.DateFormatHandling = Newtonsoft.Json.DateFormatHandling.IsoDateFormat;
+            //    // dont mess with case of properties
+            //    var resolver = options.SerializerSettings.ContractResolver as DefaultContractResolver;
+            //    resolver.NamingStrategy = null;
+            //});
+
+            .AddJsonOptions(options =>
+             {
+                 // options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                  options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+                  options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
+                   options.SerializerSettings.DateFormatString = "dd/MM/yyyy hh:MM:ss";
+                   options.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
+                   options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+             });
+
+            services.AddKendo();
 
 
             //List<Product> _listproduct = new List<Product>();

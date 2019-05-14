@@ -117,7 +117,7 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="SalesOrderName" class="col-md-2 control-label" style="width:100%"></label>
-                                                    <input asp-for="SalesOrderName" class="form-control" style="width:100%" />
+                                                    <input asp-for="SalesOrderName"  required class="form-control" style="width:100%" />
                                                     @*<textarea asp-for="SalesOrderName" class="form-control required " style="width: 100%;"></textarea>*@
                                                     <span asp-validation-for="SalesOrderName" class="text-danger"></span>
                                                 </div>
@@ -166,13 +166,25 @@
 
                                             <div class="col-md-4">
                                                 <div class="form-group">
+                                                    <script>
+                                                        function SetCustomerName(e) {
+                                                           // console.log(e);
+                                                            if ($("#CustomerId").val() > 0) {
+                                                                $("#SalesOrderName").prop('disabled', true);
+                                                                $("#SalesOrderName").val($("#CustomerId").data("kendoComboBox").text());
+                                                            }
+                                                            else {
+                                                                $("#SalesOrderName").prop('disabled', false);
+                                                            }
+                                                        }
+                                                    </script>
                                                     <label asp-for="CustomerId" class="col-md-2 control-label"></label>
 
                                                     <kendo-combobox name="CustomerId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                     placeholder="Select CustomerId"
                                                                     datatextfield="CustomerName"
                                                                     datavaluefield="CustomerId"
-                                                                    required
+                                                                    onchange="SetCustomerName();"
                                                                     style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
                                                             <transport>
@@ -180,7 +192,7 @@
                                                             </transport>
                                                         </datasource>
                                                     </kendo-combobox>
-                                                    <span asp-validation-for="CustomerId" class="text-danger"></span>
+                                                    @*<span asp-validation-for="CustomerId" class="text-danger"></span>*@
                                                 </div>
                                             </div>
 
@@ -210,8 +222,6 @@
                                                 </div>
                                             </div>
                                         </div>
-
-
 
 
                                         <div class="row">
@@ -282,6 +292,9 @@
                                                     <label asp-for="OrderDate" class="col-md-2 control-label" style="width: 100%;"></label>
                                                     <kendo-datetimepicker name="OrderDate"
                                                                           style="width: 100%;"
+                                                                         format="dd/MM/yyyy hh:mm:ss"
+                                                                         time-format="hh:mm:ss"
+                                                                       
                                                                           data-val-required="La fecha es requerida"
                                                                           value="Model.OrderDate"></kendo-datetimepicker>
                                                     <span asp-validation-for="OrderDate" class="text-danger"></span>
@@ -293,6 +306,8 @@
                                                     <label asp-for="DeliveryDate" class="col-md-2 control-label" style="width: 100%;"></label>
                                                     <kendo-datetimepicker name="DeliveryDate"
                                                                           style="width: 100%;"
+                                                                         format="dd/MM/yyyy hh:mm:ss"
+                                                                         time-format="hh:mm:ss"
                                                                           value="Model.DeliveryDate"></kendo-datetimepicker>
                                                     <span asp-validation-for="DeliveryDate" class="text-danger"></span>
                                                 </div>
@@ -303,6 +318,8 @@
                                                     <label asp-for="ExpirationDate" class="col-md-2 control-label" style="width: 100%;"></label>
                                                     <kendo-datetimepicker name="ExpirationDate"
                                                                           style="width: 100%;"
+                                                                            format="dd/MM/yyyy hh:mm:ss"
+                                                                         time-format="hh:mm:ss"
                                                                           value="Model.ExpirationDate">
                                                     </kendo-datetimepicker>
                                                     <span asp-validation-for="ExpirationDate" class="text-danger"></span>
@@ -618,12 +635,14 @@
                        'CustomerName': $("#CustomerId").data("kendoComboBox").text(),
                        'ProductId': $("#ProductId").val(),
                        'ProductName': $("#ProductId").data("kendoComboBox").text(),
-			           'OrderDate':$("#OrderDate").val(),
-                       'DeliveryDate': $("#DeliveryDate").val(),
-                       'ExpirationDate': $("#ExpirationDate").val(),            
-                       'CurrencyId': $("#CurrencyId").val(),
+                       'OrderDate': $("#OrderDate").val().toUTCString(),
+                       'DeliveryDate': $("#DeliveryDate").val().toUTCString(),
+                       'ExpirationDate': $("#ExpirationDate").val().toUTCString(),            
+                       'CurrencyId': Number($("#CurrencyId").val()),
 			           'CustomerRefNumber':$("#CustomerRefNumber").val(),
-			           'SalesTypeId':$("#SalesTypeId").val(),
+                       'SalesTypeId': $("#SalesTypeId").val(),
+                      'TypeContractId': Number($("#TypeContractId").val()),
+                      'NameContract': $("#TypeContractId").data("kendoComboBox").text(),
 			           'Remarks':$("#Remarks").val(),
 			           'Amount':$("#Amount").val(),
 			           'SubTotal':$("#SubTotal").val(),
@@ -647,7 +666,11 @@
 
         var validator = $("#frmSalesOrder").data("kendoValidator");
         var validator2 = $("#TotalesDocumento").data("kendoValidator");
-             var status = $(".status");
+        var status = $(".status");
+
+        console.log(JSON.stringify(dataObject));
+
+        //console.log(dataObject);
 
         if (displayedData.length > 0) {
             if (validator.validate() && validator2.validate()) {
@@ -656,19 +679,18 @@
                     url: '@Url.Action("SaveSalesOrder", "SalesOrder")',
                     method: 'POST',
                     datatype: "json",
+                  //  contentType: "application/x-www-form-urlencoded; charset=UTF-8", 
                     contentType: 'application/json',
                     async: false,
-                    data: JSON.stringify(dataObject),
+                    data: JSON.stringify( dataObject),
                     success: function (data) {
 
                         notification.show({
                             message: "Guardado correctamente!"
                         }, "upload-success");
 
-                        RefreshCotizaciones();
-                        
+                        RefreshCotizaciones();                        
                         $('#myModalSalesOrder').modal('hide');
-
 
                     },
                     error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -694,8 +716,7 @@
                 title: "Validacion",
                 message: "Debe agregar los productos!"
             }, "error");
-           // notification.show("New E-mail","Debe agregar los productos", "info");
-            //alert('Debe agregar los productos!!');
+   
         }
 
         $("#btnSaveCotizacion").show();

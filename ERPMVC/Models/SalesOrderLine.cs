@@ -14,8 +14,8 @@ namespace ERPMVC.Models
         public Int64 SalesOrderLineId { get; set; }
         [Display(Name = "Cotizacion Id")]
         public int SalesOrderId { get; set; }
-        [Display(Name = "Cotizacion")]
-        public SalesOrder SalesOrder { get; set; }
+       // [Display(Name = "Cotizacion")]
+      //  public SalesOrder SalesOrder { get; set; }
         [Display(Name = "Producto")]
         public Int64 ProductId { get; set; }
          [Display(Name = "Descripción")]

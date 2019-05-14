@@ -24,9 +24,13 @@ namespace ERPMVC.Models
         [Display(Name = "Id Documento")]
         public Int64 DocumentId { get; set; }
 
-        [Display(Name = "Nombre condicion")]
+        [Display(Name = "Nombre condición")]
         public string CustomerConditionName { get; set; }
-        [Display(Name = "Condicion logica")]
+
+        [Display(Name = "Descripción de la condicion")]
+        public string Description { get; set; }
+
+        [Display(Name = "Condición logica")]
         public string LogicalCondition { get; set; }
         [Display(Name = "Valor a evaluar")]
         public string ValueToEvaluate { get; set; }
