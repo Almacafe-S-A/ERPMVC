@@ -162,32 +162,28 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
-       // public async Task<ActionResult<SalesOrder>> SaveSalesOrder([FromBody]SalesOrderDTO dto)
-       public async Task<ActionResult<SalesOrder>> SaveSalesOrder([FromBody]dynamic dto)
+        public async Task<ActionResult<SalesOrder>> SaveSalesOrder([FromBody]SalesOrderDTO _SalesOrder)
+     //  public async Task<ActionResult<SalesOrder>> SaveSalesOrder([FromBody]dynamic dto)
       // public async Task<ActionResult<SalesOrder>> SaveSalesOrder(Newtonsoft.Json.Linq.JObject datos)
         {
-            SalesOrderDTO _SalesOrder = new SalesOrderDTO();
-            string s = dto.ToString();
-            try
-            {
+           // SalesOrderDTO _SalesOrder = new SalesOrderDTO();
+           //// string s = dto.ToString();
+           // try
+           // {
               
-                _SalesOrder = JsonConvert.DeserializeObject<SalesOrderDTO>(dto.ToString());
-            }
-            catch (Exception ex)
-            {
-                 _SalesOrder = JsonConvert.DeserializeObject<SalesOrderDTO>(s);
-                throw ex;
-            }
+           //     _SalesOrder = JsonConvert.DeserializeObject<SalesOrderDTO>(dto.ToString());
+           // }
+           // catch (Exception ex)
+           // {
+           //    //  _SalesOrder = JsonConvert.DeserializeObject<SalesOrderDTO>(s);
+           //     throw ex;
+           // }
           
 
              //SalesOrderDTO _SalesOrder = mapper.Map<SalesOrderDTO>(dto);
            
             
-            // SalesOrder _SalesOrdera = datos["usuario"].ToObject<SalesOrder>();
-            //List<SalesOrderLine> empresa = datos["_SalesOrderLine"].ToObject<List<SalesOrderLine>>();
-            //SalesOrderDTO _SalesOrder = mapper.Map<SalesOrderDTO>(_SalesOrdera);
-           // _SalesOrder._SalesOrderLine = empresa;
-
+   
 
             if (_SalesOrder != null)
             {
