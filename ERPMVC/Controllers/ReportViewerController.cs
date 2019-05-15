@@ -101,50 +101,50 @@ namespace ERPMVC.Controllers
 
                // reportOption.ReportModel.Parameters = ;
 
-                reportOption.ReportModel.DataSources.Clear();
-                var salesorder = SalesOrderQ.GetData(parameters[0].Values[0], _config.Value.urlbase, HttpContext.Session.GetString("token"));
+                //reportOption.ReportModel.DataSources.Clear();
+                //var salesorder = SalesOrderQ.GetData(parameters[0].Values[0], _config.Value.urlbase, HttpContext.Session.GetString("token"));
 
-                reportOption.ReportModel.DataSources.Add(new Syncfusion.Report.ReportDataSource
-                {
-                    Name = "SalesOrder",
-                    Value = salesorder,
-                });
+                //reportOption.ReportModel.DataSources.Add(new Syncfusion.Report.ReportDataSource
+                //{
+                //    Name = "SalesOrder",
+                //    Value = salesorder,
+                //});
 
-                var salesorderline = SalesOrderQ.GetDataOrderLine(parameters[0].Values[0], _config.Value.urlbase, HttpContext.Session.GetString("token"));
-                reportOption.ReportModel.DataSources.Add(new Syncfusion.Report.ReportDataSource
-                {
-                    Name = "SalesOrderLine",
-                    Value = salesorderline,
-                });
+                //var salesorderline = SalesOrderQ.GetDataOrderLine(parameters[0].Values[0], _config.Value.urlbase, HttpContext.Session.GetString("token"));
+                //reportOption.ReportModel.DataSources.Add(new Syncfusion.Report.ReportDataSource
+                //{
+                //    Name = "SalesOrderLine",
+                //    Value = salesorderline,
+                //});
 
-                CustomerConditions _cc = new CustomerConditions
-                {
-                    IdTipoDocumento = 12,                  
-                    DocumentId = Convert.ToInt64(parameters[0].Values[0]),
-                    ProductId = 0,                     
-                    //FechaCreacion = DateTime.Now,
-                    //FechaModificacion = DateTime.Now
-                    //,
-                    //ConditionId = 0,
-                    //CustomerConditionId = 0,
-                    //CustomerId = 0
-                    // ,
-                    //LogicalCondition = ">",
-                    //UsuarioCreacion = "admin",
-                    //UsuarioModificacion = "admin",
-                    //CustomerConditionName = "asad"
-                    // ,
-                    //ValueDecimal = 0,
-                    //ValueString = "0",
-                    //ValueToEvaluate = "0"
+                //CustomerConditions _cc = new CustomerConditions
+                //{
+                //    IdTipoDocumento = 12,                  
+                //    DocumentId = Convert.ToInt64(parameters[0].Values[0]),
+                //    ProductId = 0,                     
+                //    //FechaCreacion = DateTime.Now,
+                //    //FechaModificacion = DateTime.Now
+                //    //,
+                //    //ConditionId = 0,
+                //    //CustomerConditionId = 0,
+                //    //CustomerId = 0
+                //    // ,
+                //    //LogicalCondition = ">",
+                //    //UsuarioCreacion = "admin",
+                //    //UsuarioModificacion = "admin",
+                //    //CustomerConditionName = "asad"
+                //    // ,
+                //    //ValueDecimal = 0,
+                //    //ValueString = "0",
+                //    //ValueToEvaluate = "0"
                       
-                };
-                var CustomerConditions = SalesOrderQ.GetDataCustomerConditions(_cc, _config.Value.urlbase, HttpContext.Session.GetString("token"));
-                reportOption.ReportModel.DataSources.Add(new Syncfusion.Report.ReportDataSource
-                {
-                    Name = "Condiciones",
-                    Value = CustomerConditions,
-                });
+                //};
+                //var CustomerConditions = SalesOrderQ.GetDataCustomerConditions(_cc, _config.Value.urlbase, HttpContext.Session.GetString("token"));
+                //reportOption.ReportModel.DataSources.Add(new Syncfusion.Report.ReportDataSource
+                //{
+                //    Name = "Condiciones",
+                //    Value = CustomerConditions,
+                //});
 
 
 

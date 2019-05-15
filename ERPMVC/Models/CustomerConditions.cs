@@ -18,11 +18,14 @@ namespace ERPMVC.Models
         public Int64 CustomerId { get; set; }
         [Display(Name = "Producto")]
         public Int64 ProductId { get; set; }
+        [Display(Name = "Sub Producto")]
+        public Int64 SubProductId { get; set; }
+
+        [Display(Name = "Documento")]
+        public Int64 DocumentId { get; set; }
+
         [Display(Name = "Tipo Documento")]
         public Int64 IdTipoDocumento { get; set; }
-
-        [Display(Name = "Id Documento")]
-        public Int64 DocumentId { get; set; }
 
         [Display(Name = "Nombre condición")]
         public string CustomerConditionName { get; set; }
