@@ -41,6 +41,35 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpGet("[action]")]
+        public async Task<ActionResult> GetCustomerById(Int64 CustomerId)
+        {
+            Customer _customers = new Customer();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Customer/GetCustomerById/" + CustomerId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _customers = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return Json(_customers);
+        }
+
         // GET: Customer/Details/5
         public async Task<ActionResult> Details(Int64 CustomerId)
         {

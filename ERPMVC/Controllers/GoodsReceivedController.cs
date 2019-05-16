@@ -16,129 +16,78 @@ using Newtonsoft.Json;
 
 namespace ERPMVC.Controllers
 {
-     [Authorize]
-      [CustomAuthorization]
-    public class UsuarioController : Controller
+    [Authorize]
+    [CustomAuthorization]
+    public class GoodsReceivedController : Controller
     {
-
-         private readonly IOptions<MyConfig> config;
+        private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-
-        public UsuarioController(ILogger<UserRolController> logger
-            , IOptions<MyConfig> config)
+        public GoodsReceivedController(ILogger<GoodsReceivedController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
         }
 
-        [Authorize(Policy ="Admin")]
-        public IActionResult Usuarios()
+        public IActionResult Index()
         {
             return View();
         }
 
-        
-        [HttpGet("[action]")]
-        public async Task<JsonResult> GetQuantityUsuario()
+        public async Task<ActionResult> pvwGoodsReceived(Int64 Id = 0)
         {
-            Int32 _users = 0;
+            GoodsReceived _GoodsReceived = new GoodsReceived();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Usuario/GetQuantityUsuario");
+                var result = await _client.GetAsync(baseadress + "api/GoodsReceived/GetGoodsReceivedById/" + Id);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _users = JsonConvert.DeserializeObject<Int32>(valorrespuesta);
+                    _GoodsReceived = JsonConvert.DeserializeObject<GoodsReceived>(valorrespuesta);
 
                 }
 
-            }
-            catch (System.Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw (new Exception(ex.Message));
-            }
-            return Json(_users);
-        }
-
-        [HttpGet("[action]")]
-        public async Task<JsonResult> GetUsuarios()
-        {
-            List<ApplicationUser> _users = new List<ApplicationUser>();
-            try
-            {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Usuario/GetUsuarios");
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
+                if (_GoodsReceived == null)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _users = JsonConvert.DeserializeObject<List<ApplicationUser>>(valorrespuesta);
-
-                }
-
-            }
-            catch (System.Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw (new Exception(ex.Message));
-            }
-            return Json(_users);
-        }
-
-        [HttpGet("GetUsers")]
-        public async Task<DataSourceResult> GetUsers([DataSourceRequest]DataSourceRequest request)
-        {
-            List<ApplicationUser> _users = new List<ApplicationUser>();
-
-            try
-            {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Usuario/GetUsers");
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _users = JsonConvert.DeserializeObject<List<ApplicationUser>>(valorrespuesta);
-
+                    _GoodsReceived = new GoodsReceived();
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
-            }           
+            }
 
-            return _users.ToDataSourceResult(request);
+
+
+            return PartialView(_GoodsReceived);
+
         }
+
 
         [HttpGet]
-        public async Task<ActionResult> Details(Int64 UserId)
+        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            ApplicationUser _usuario = new ApplicationUser();
+            List<GoodsReceived> _GoodsReceived = new List<GoodsReceived>();
             try
             {
+
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Usuario/GetUserById/" + UserId);
+                var result = await _client.GetAsync(baseadress + "api/GoodsReceived/GetGoodsReceived");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _usuario = JsonConvert.DeserializeObject<ApplicationUser>(valorrespuesta);
+                    _GoodsReceived = JsonConvert.DeserializeObject<List<GoodsReceived>>(valorrespuesta);
 
                 }
+
+
             }
             catch (Exception ex)
             {
@@ -147,11 +96,56 @@ namespace ERPMVC.Controllers
             }
 
 
-            return View(_usuario);
+            return _GoodsReceived.ToDataSourceResult(request);
+
         }
 
-        [HttpPost("PostUsuario")]
-        public async Task<ActionResult<ApplicationUser>> PostUsuario(ApplicationUser _usuario)
+
+        public async Task<ActionResult<GoodsReceived>> SaveGoodsReceived([FromBody]GoodsReceived _GoodsReceived)
+        {
+
+            try
+            {
+                GoodsReceived _listGoodsReceived = new GoodsReceived();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/GoodsReceived/GetGoodsReceivedById/" + _GoodsReceived.GoodsReceivedId);
+                string valorrespuesta = "";
+                _GoodsReceived.FechaModificacion = DateTime.Now;
+                _GoodsReceived.UsuarioModificacion = HttpContext.Session.GetString("user");
+                if (result.IsSuccessStatusCode)
+                {
+
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _listGoodsReceived = JsonConvert.DeserializeObject<GoodsReceived>(valorrespuesta);
+                }
+
+                if (_listGoodsReceived.GoodsReceivedId == 0)
+                {
+                    _GoodsReceived.FechaCreacion = DateTime.Now;
+                    _GoodsReceived.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_GoodsReceived);
+                }
+                else
+                {
+                    var updateresult = await Update(_GoodsReceived.GoodsReceivedId, _GoodsReceived);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_GoodsReceived);
+        }
+
+        // POST: GoodsReceived/Insert
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult<GoodsReceived>> Insert(GoodsReceived _GoodsReceived)
         {
             try
             {
@@ -159,12 +153,14 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Usuario/PostUsuario", _usuario);
+                _GoodsReceived.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _GoodsReceived.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/GoodsReceived/Insert", _GoodsReceived);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _usuario = JsonConvert.DeserializeObject<ApplicationUser>(valorrespuesta);
+                    _GoodsReceived = JsonConvert.DeserializeObject<GoodsReceived>(valorrespuesta);
                 }
 
             }
@@ -174,52 +170,24 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsReceived }, Total = 1 });
         }
 
-        [HttpPut("PutUsuario")]
-        public async Task<ActionResult<ApplicationUser>> PutUsuario(string Id, ApplicationUser _usuario)
-        {
-            try
-            {
-                // TODO: Add insert logic here
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PutAsJsonAsync(baseadress + "api/Usuario/PutUsuario", _usuario);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _usuario = JsonConvert.DeserializeObject<ApplicationUser>(valorrespuesta);
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error{ex.Message}");
-            }
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
-
-        }
-
-        [HttpDelete("DeleteUsuario")]
-        public async Task<ActionResult<ApplicationUser>> DeleteUsuario(ApplicationUser _user)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<GoodsReceived>> Update(Int64 id, GoodsReceived _GoodsReceived)
         {
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Usuario/DeleteUsuario", _user);
+
+                var result = await _client.PutAsJsonAsync(baseadress + "api/GoodsReceived/Update", _GoodsReceived);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _user = JsonConvert.DeserializeObject<ApplicationUser>(valorrespuesta);
+                    _GoodsReceived = JsonConvert.DeserializeObject<GoodsReceived>(valorrespuesta);
                 }
 
             }
@@ -229,8 +197,38 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _user }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsReceived }, Total = 1 });
         }
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<GoodsReceived>> Delete([FromBody]GoodsReceived _GoodsReceived)
+        {
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                var result = await _client.PostAsJsonAsync(baseadress + "api/GoodsReceived/Delete", _GoodsReceived);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _GoodsReceived = JsonConvert.DeserializeObject<GoodsReceived>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error: {ex.Message}");
+            }
+
+
+
+            return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsReceived }, Total = 1 });
+        }
+
 
 
 
