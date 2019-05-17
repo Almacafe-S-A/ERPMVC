@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -32,27 +33,28 @@ namespace ERPMVC.Controllers
         {
             return View();
         }
-
-        public async Task<ActionResult> pvwNumeracionSAR(Int64 Id = 0)
+   
+        [HttpPost("[action]")]
+        public async Task<ActionResult> GripEditar([FromBody]DTO_NumeracionSAR _sarpara)
         {
-            NumeracionSAR _NumeracionSAR = new NumeracionSAR();
+            DTO_NumeracionSAR _NumeracionSAR = new DTO_NumeracionSAR();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/NumeracionSAR/GetNumeracionSARById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/NumeracionSAR/GetNumeracionById/" + _sarpara.IdNumeracion);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _NumeracionSAR = JsonConvert.DeserializeObject<NumeracionSAR>(valorrespuesta);
+                    _NumeracionSAR = JsonConvert.DeserializeObject<DTO_NumeracionSAR>(valorrespuesta);
 
                 }
 
                 if (_NumeracionSAR == null)
                 {
-                    _NumeracionSAR = new NumeracionSAR();
+                    _NumeracionSAR = new DTO_NumeracionSAR();
                 }
             }
             catch (Exception ex)
@@ -100,7 +102,7 @@ namespace ERPMVC.Controllers
 
         }
 
-
+        [HttpPost]
         public async Task<ActionResult<NumeracionSAR>> SaveNumeracionSAR([FromBody]NumeracionSAR _NumeracionSAR)
         {
 
