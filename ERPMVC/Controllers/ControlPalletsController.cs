@@ -121,7 +121,7 @@ namespace ERPMVC.Controllers
                     _listControlPallets = JsonConvert.DeserializeObject<ControlPallets>(valorrespuesta);
                 }
 
-
+                if(_listControlPallets == null) { _listControlPallets = new ControlPallets();  }
                 if(_listControlPallets.ControlPalletsId==0)
                 {
                     _ControlPalletsDTO.FechaCreacion = DateTime.Now;
@@ -143,13 +143,13 @@ namespace ERPMVC.Controllers
                          valorrespuesta = "";
                         if (result2.IsSuccessStatusCode)
                         {
-                            valorrespuesta = await (result.Content.ReadAsStringAsync());
+                            valorrespuesta = await (result2.Content.ReadAsStringAsync());
                             _ControlPalletsLineResponse = JsonConvert.DeserializeObject<ControlPalletsLine>(valorrespuesta);
 
                         }
                         else
                         {
-                            string request = await result.Content.ReadAsStringAsync();
+                            string request = await result2.Content.ReadAsStringAsync();
                             return BadRequest(request);
                         }
                     }
@@ -173,7 +173,7 @@ namespace ERPMVC.Controllers
         // POST: ControlPallets/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<ControlPallets>> Insert(ControlPallets _ControlPallets)
+        public async Task<ActionResult<ControlPalletsDTO>> Insert(ControlPalletsDTO _ControlPallets)
         {
             try
             {
@@ -188,7 +188,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ControlPallets = JsonConvert.DeserializeObject<ControlPallets>(valorrespuesta);
+                    _ControlPallets = JsonConvert.DeserializeObject<ControlPalletsDTO>(valorrespuesta);
                 }
 
             }
@@ -198,7 +198,8 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _ControlPallets }, Total = 1 });
+            return Ok(_ControlPallets);
+            // return new ObjectResult(new DataSourceResult { Data = new[] { _ControlPallets }, Total = 1 });
         }
 
         [HttpPut("{id}")]
