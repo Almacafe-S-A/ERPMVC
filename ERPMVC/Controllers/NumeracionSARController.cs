@@ -103,12 +103,12 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<NumeracionSAR>> SaveNumeracionSAR([FromBody]NumeracionSAR _NumeracionSAR)
+        public async Task<ActionResult<NumeracionSAR>> SaveNumeracionSAR([FromBody]DTO_NumeracionSAR _NumeracionSAR)
         {
 
             try
             {
-                NumeracionSAR _listNumeracionSAR = new NumeracionSAR();
+                DTO_NumeracionSAR _listNumeracionSAR = new DTO_NumeracionSAR();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -120,7 +120,7 @@ namespace ERPMVC.Controllers
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listNumeracionSAR = JsonConvert.DeserializeObject<NumeracionSAR>(valorrespuesta);
+                    _listNumeracionSAR = JsonConvert.DeserializeObject<DTO_NumeracionSAR>(valorrespuesta);
                 }
 
                 if (_listNumeracionSAR.IdNumeracion == 0)
