@@ -47,6 +47,9 @@
     }
 </script>
 
+@await  Html.PartialAsync("~/Views/OFAC/Index.cshtml")
+
+
 <div id="myModalSalesOrder" class="modal fade" role="dialog">
     <div class="modal-dialog">
 
@@ -115,9 +118,47 @@
                                             </div>
 
                                             <div class="col-md-4">
+                                                <script>
+                                                    function buscarofacNombre() {
+                                                        var dataObject = {
+                                                            firstName: $("#SalesOrderName").val(),
+                                                            lastName: $("#SalesOrderName").val()
+                                                        };
+
+                                                        var notification = $("#notification").data("kendoNotification");
+                                                        $.ajax({
+                                                            url: '@Url.Action("GetPersonByName", "OFAC")',
+                                                            method: 'POST',
+                                                            datatype: "json",
+                                                            contentType: 'application/json',
+                                                            async: false,
+                                                            data: JSON.stringify(dataObject),
+                                                            success: function (result) {
+
+
+                                                                notification.show({
+                                                                    title: "Validacion",
+                                                                    message: "Se encuentra en los listados de ofac"
+                                                                }, "error");
+
+
+                                                                //console.log(result);
+                                                                //setearvalor("TaxPercentage", result.TaxPercentage);
+                                                                //$("#RTN").val(result.RTN);
+                                                                //$("#Correo").val(result.Email);
+                                                                //$("#Tefono").val(result.Phone);
+
+                                                            },
+                                                            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                                                alert(textStatus + ": " + XMLHttpRequest.responseText);
+                                                            }
+                                                        });
+                                                    }
+                                                </script>
                                                 <div class="form-group">
                                                     <label asp-for="SalesOrderName" class="col-md-2 control-label" style="width:100%"></label>
                                                     <input asp-for="SalesOrderName"  required class="form-control" style="width:100%" />
+                                                    <button onclick="RefreshOFAC();">Buscar OFAC <i class="fa fa-search"></i></button>
                                                     @*<textarea asp-for="SalesOrderName" class="form-control required " style="width: 100%;"></textarea>*@
                                                     <span asp-validation-for="SalesOrderName" class="text-danger"></span>
                                                 </div>
@@ -702,7 +743,7 @@
                     async: false,
                     data: JSON.stringify( dataObject),
                     success: function (data) {
-
+                     
                         notification.show({
                             message: "Guardado correctamente!"
                         }, "upload-success");

@@ -12,20 +12,20 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Display(Name = "Nombre")]
         public int ProformaId { get; set; }
-        [Display(Name = "Nombre")]
+        [Display(Name = "Nombre Cliente")]
         public string ProformaName { get; set; }
 
         [Display(Name = "RTN")]
         public string RTN { get; set; }
 
-        [Display(Name = "Telefono")]
+        [Display(Name = "Teléfono")]
         public string Tefono { get; set; }
 
         [Display(Name = "Correo")]
         [EmailAddress]
         public string Correo { get; set; }
 
-        [Display(Name = "Direccion")]
+        [Display(Name = "Dirección")]
         public string Direccion { get; set; }
 
         [Display(Name = "Sucursal")]
@@ -55,7 +55,7 @@ namespace ERPMVC.Models
         [Display(Name = "Moneda")]
         public int CurrencyId { get; set; }
 
-        [Display(Name = "Numero de referencia de cliente")]
+        [Display(Name = "Número de referencia de cliente")]
         public string CustomerRefNumber { get; set; }
         [Display(Name = "Tipo de ventas")]
         public int SalesTypeId { get; set; }
@@ -63,8 +63,9 @@ namespace ERPMVC.Models
 
         [Display(Name = "Monto")]
         public double Amount { get; set; }
-        public double SubTotal { get; set; }     
+        public double SubTotal { get; set; }
 
+        [Display(Name = "Descuento")]
         public double Discount { get; set; }
 
         [Display(Name = "Impuesto%")]

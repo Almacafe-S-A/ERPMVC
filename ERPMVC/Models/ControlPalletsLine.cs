@@ -10,7 +10,9 @@ namespace ERPMVC.Models
     public class ControlPalletsLine
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Display(Name = "Id Linea")]
         public Int64 ControlPalletsLineId { get; set; }
+        [Display(Name = "Id estiba")]
         public Int64 ControlPalletsId { get; set; }
         public int Alto { get; set; }
         public int Ancho { get; set; }
