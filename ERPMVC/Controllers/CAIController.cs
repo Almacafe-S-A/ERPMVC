@@ -36,7 +36,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet]
-        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
+        public async Task<JsonResult> Get([DataSourceRequest]DataSourceRequest request)
         {
             List<CAI> _cais = new List<CAI>();
             try
@@ -63,10 +63,44 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _cais.ToDataSourceResult(request);
+             return Json(_cais.ToDataSourceResult(request));
+
+        }
+        //--------------------------------------------------------------------------------------
+        [HttpGet]
+        public async Task<JsonResult> GetBOX([DataSourceRequest]DataSourceRequest request)
+        {
+            List<CAI> _cais = new List<CAI>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CAI/GetCAI");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _cais = JsonConvert.DeserializeObject<List<CAI>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return Json(_cais);
 
         }
 
+
+        //--------------------------------------------------------------------------------------
         // POST: CAI/Insert
         [HttpPost]
         //[ValidateAntiForgeryToken]

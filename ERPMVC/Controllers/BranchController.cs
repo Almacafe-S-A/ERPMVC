@@ -30,8 +30,15 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+
+        // GET: Branch
+        public ActionResult Brach()
+        {
+            return View();
+        }
+
         [HttpGet]
-        public async Task<JsonResult> Get([DataSourceRequest]DataSourceRequest request)
+        public async Task<JsonResult> GetBranch([DataSourceRequest]DataSourceRequest request)
         {
             List<Branch> _customers = new List<Branch>();
 
@@ -105,8 +112,8 @@ namespace ERPMVC.Controllers
 
         // POST: Branch/Insert
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult<Branch>> Insert(Branch _Branch)
+        //[ValidateAntiForgeryToken]
+        public async Task<ActionResult> Insert(Branch _Branch)
         {
             try
             {
@@ -134,8 +141,8 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _Branch }, Total = 1 });
         }
 
-        [HttpPut("{id}")]
-        public async Task<ActionResult<Branch>> Update(Int64 id, Branch _Branch)
+        [HttpPut("BranchId")]
+        public async Task<IActionResult> Update(Int64 BranchId, Branch _Branch)
         {
             try
             {
@@ -161,8 +168,8 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _Branch }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult<Branch>> Delete([FromBody]Branch _Branch)
+        [HttpDelete("BranchId")]
+        public async Task<ActionResult<Branch>> Delete(Int64 BranchId, Branch _Branch)
         {
             try
             {

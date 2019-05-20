@@ -4,11 +4,13 @@
     ViewData["Title"] = "NUMERACION SAR";
 }
 
+
+
 <script>
 
     function onsave(e) {
-     //   console.log(new Date(e.model.FechaRecepcion).toISOString());
-       // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+        //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+        // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
     }
 
     function caidata(data) {
@@ -16,82 +18,290 @@
         data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
     }
 
+    function AddCai() {
+
+        $('#myModalNumeracion').modal('show');
+
+
+
+    }
+
+         function EditNumeracion(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                IdNumeracion: dataItem.IdNumeracion,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("GripEditar","NumeracionSAR")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#numsar").html('');
+                    $("#numsar").html(result);
+
+                  //  RefreshCotizacionesDetail();
+                    $("#btnNunsar").hide();
+                    $('#myModalNumeracion').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+        }
+
 </script>
-
-
+    
 @(Html.Kendo().Grid<ERPMVC.Models.NumeracionSAR>
-        ()
-        .Name("gridNumeracionSAR")
-        .Columns(columns =>
-        {
-            columns.Bound(p => p.IdNumeracion).Width(100);
-            columns.Bound(p => p.IdCAI).Width(100);
-            columns.Bound(p => p.NoInicio).Width(150);
-            columns.Bound(p => p.NoFin).Width(150);
-            columns.Bound(p => p.FechaLimite).Width(170);
-            columns.Bound(p => p.CantidadOtorgada).Width(100);
-            columns.Bound(p => p.SiguienteNumero).Width(100);
-            columns.Bound(p => p.PuntoEmision).Width(100);
-            columns.Bound(p => p.DocType).Width(100);
-            columns.Bound(p => p.DocSubType).Width(100);
-            columns.Bound(p => p.Estado).Width(170);
-            columns.Bound(p => p.FechaCreacion).Width(100);
-            columns.Bound(p => p.FechaModificacion).Width(100);
-            columns.Bound(p => p.UsuarioCreacion).Width(100);
-            columns.Bound(p => p.UsuarioModificacion).Width(100);
+                                    ()
+                                    .Name("gridNumeracionSAR")
+                                    .Columns(columns =>
+                                    {
+                                        columns.Command(command =>
+                                        {
+                                            //command.Custom("Ver detalles").Click("Detalles");
+                                            command.Custom("Editar").Click("EditNumeracion");
+                                            command.Destroy();
+                                        }).Width(250);
 
-            columns.Command(command =>
-            {
-                //command.Custom("Ver detalles").Click("Detalles");
-                command.Edit(); command.Destroy();
-            }).Width(250);
-
-        })
-        .ToolBar(tools =>
-        {
-            tools.Create();
-            tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
-            tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+                                        columns.Bound(p => p.IdNumeracion).Width(200);
+                                        columns.Bound(p => p.IdCAI).Width(100);
+                                        columns.Bound(p => p.NoInicio).Width(130);
+                                        columns.Bound(p => p.NoFin).Width(130);
+                                        columns.Bound(p => p.FechaLimite).Format("{0:dd/MM/yyyy}").Width(250);
+                                        columns.Bound(p => p.CantidadOtorgada).Width(200);
+                                        columns.Bound(p => p.SiguienteNumero).Width(200);
+                                        columns.Bound(p => p.PuntoEmision).Width(200);
+                                        columns.Bound(p => p.DocType).Width(150);
+                                        columns.Bound(p => p.DocSubType).Width(170);
+                                        columns.Bound(p => p.Estado).Width(100);
+                                        //columns.Bound(p => p.FechaCreacion).Width(300);
+                                        //columns.Bound(p => p.FechaModificacion).Width(300);
+                                        //columns.Bound(p => p.UsuarioCreacion).Width(200);
+                                        //columns.Bound(p => p.UsuarioModificacion).Width(200);
 
 
 
-        })
-        .Editable(e => e.Mode(GridEditMode.PopUp))
-        .Sortable()
-        .Pageable()
-        .Filterable()
-        .Scrollable()
-        .Pdf(pdf => pdf.FileName("NumeracionSARReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-        .ProxyURL(Url.Action("Export", "Home")).AllPages())
-            .Excel(excel => excel.FileName("NumeracionSARReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-        .DataSource(dataSource =>
-            dataSource
-            .WebApi()
+                                    })
+                                    .ToolBar(tools =>
+                                    {
+                                        //tools.Create();
+                                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCai()" });
 
-            .ServerOperation(true)
-            .Model(model =>
-            {
-                model.Id(p => p.IdNumeracion);
-                model.Field(p => p.IdNumeracion).Editable(false);
-                model.Field(p => p.FechaCreacion).Editable(true);
-                model.Field(p => p.FechaLimite).Editable(true);
-                model.Field(p => p.UsuarioCreacion).Editable(false);
-                model.Field(p => p.UsuarioModificacion).Editable(false);
+                                        tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                                        tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
 
-            })
-            .Events(events => events.Error("error_handler"))
-            .Read(read => read.Action("GetNumeracioSAR", "NumeracionSAR"))
-            .Create(create => create.Action("Insert", "NumeracionSAR").Type(HttpVerbs.Post))
-            .Update(update => update.Action("Update", "NumeracionSAR", new { IdNumeracion = "{0}" }).Type(HttpVerbs.Put))
-            .Destroy(destroy => destroy.Action("Delete", "NumeracionSAR", new { IdNumeracion = "{0}" }).Type(HttpVerbs.Delete))
+                                    })
+                                    .Editable(e => e.Mode(GridEditMode.PopUp))
+                                    .Sortable()
+                                    .Pageable()
+                                    .Filterable()
+                                    .Scrollable()
+                                    .Pdf(pdf => pdf.FileName("NumeracionSARReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                        .Excel(excel => excel.FileName("NumeracionSARReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                    .DataSource(dataSource =>
+                                        dataSource
+                                        .WebApi()
 
-        )
-        .Events(e =>
-        {
-            e.Save("onsave");
+                                        .ServerOperation(true)
+                                        .Model(model =>
+                                        {
+                                            model.Id(p => p.IdNumeracion);
+                                            model.Field(p => p.IdNumeracion).Editable(false);
+                                            model.Field(p => p.FechaCreacion).Editable(true);
+                                            model.Field(p => p.FechaLimite).Editable(true);
+                                            model.Field(p => p.UsuarioCreacion).Editable(false);
+                                            model.Field(p => p.UsuarioModificacion).Editable(false);
 
-        })
+                                        })
+                                        .Events(events => events.Error("error_handler"))
+                                        .Read(read => read.Action("GetNumeracion", "NumeracionSAR"))
+                                        .Create(create => create.Action("Insert", "NumeracionSAR").Type(HttpVerbs.Post))
+                                        .Update(update => update.Action("Update", "NumeracionSAR", new { IdNumeracion = "{0}" }).Type(HttpVerbs.Put))
+                                        .Destroy(destroy => destroy.Action("Delete", "NumeracionSAR", new { IdNumeracion = "{0}" }).Type(HttpVerbs.Delete))
+
+                                    )
+                                    .Events(e =>
+                                    {
+                                        e.Save("onsave");
+
+                                    })
 )
+
+<div id="numsar">
+    @await Html.PartialAsync("GripEditar", new ERPMVC.DTO.DTO_NumeracionSAR { IdNumeracion = 0, IdCAI = 0})
+</div>
+
+   /@* <div id="pruebaModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Numeracion Sar</h4>
+                </div>
+                <div class="modal-body">
+
+                    <form class="form-signin" asp-controller="NumeracionSAR" asp-action="Insert"
+                          data-ajax-method="post"
+                          data-ajax-complete="completed"
+                          data-ajax="true">
+                        <div class="row">
+                            <div class="col-md-12">
+                                @Html.Label("CAI")
+                                @(Html.Kendo().DropDownList()
+                                                 // .HtmlAttributes(new { data_bind="value:RoleId"})
+                                                 .Name("IdCAI")
+                                                 .DataValueField("IdCAI")
+                                                 .DataTextField("_cai")
+                                                 .Filter(FilterType.Contains)
+                                                 .HtmlAttributes(new { @style = "width:50%" })
+                                                 .OptionLabel("Seleccione un CAI")
+                                                 //.Events(e=>e.Select("rolf"))
+                                                 //.AutoBind(true)
+                                                 .Enable(true)
+                                                 .DataSource(Source => Source.Read(r => r.Action("Get", "CAI")))
+                                )
+
+                            </div>
+                        </div>
+
+                        <br />
+
+                        <div class="form-group">
+                            <div class="col-md-4">
+                                <label for="no_inicio">N° Inicio</label>
+                                <input class="form-control" planceholder="N° Inicio" id="NoInicio" name="NoInicio" type="text">
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="no_fin">N° Final</label>
+                                <input class="form-control" planceholder="Num Fin" id="NoFin" name="NoFin" type="text">
+                            </div>
+
+
+                            <div class="col-md-4">
+                                <label for="Fecha_limite">Fecha Limite</label>
+                                <input class="form-control" planceholder="Fecha Limite" id="FechaLimite" name="FechaLimite" type="date">
+                            </div>
+                        </div>
+
+                        <br />
+                        <br />
+                        <br />
+
+                        <div class="form-group">
+                            <div class="col-md-4">
+                                <label for="no_inicio">Cantidad Otorgada</label>
+                                <input class="form-control" planceholder="Cantidad Otorgada" id="CantidadOtorgada" name="CantidadOtorgada" type="text">
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="no_fin">Siguente Numero</label>
+                                <input class="form-control" planceholder="Siguiente Numero" id="SiguienteNumero" name="SiguienteNumero" type="text">
+                            </div>
+
+
+                            <div class="col-md-4">
+                                <label for="Fecha_limite">Punto Emision</label>
+                                <input class="form-control" planceholder="Punto Emision" id="PuntoEmision" name="PuntoEmision" type="text">
+                            </div>
+                        </div>
+
+                        <br />
+                        <br />
+                        <br />
+
+                        <div class="form-group">
+                            <div class="col-md-4">
+                                <label for="no_inicio">Doc Type</label>
+                                <input class="form-control" planceholder="Doc Type" id="DocType" name="DocType" type="text">
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="no_fin">Doc Sub Type</label>
+                                <input class="form-control" planceholder="Doc Sub Type" id="DocsubType" name="DocsubType" type="text">
+                            </div>
+
+
+                            <div class="col-md-4">
+                                <label for="Fecha_limite">Estado</label>
+                                <input class="form-control" planceholder="Estado" id="Estado" name="Estado" type="text">
+                            </div>
+                        </div>
+
+                        <br />
+                        <br />
+                        <br />
+
+                        <div class="form-group">
+                            <div class="col-md-4">
+                                <label for="no_inicio">Fecha Creacion</label>
+                                <input class="form-control" planceholder="Fecha Creacion" id="FechaCreacion" name="FechaCreacion" type="date">
+                            </div>
+
+                            <div class="col-md-4">
+                                <label for="no_fin">Fecha Modificacion</label>
+                                <input class="form-control" planceholder="fecha_modificacion" id="FechaModificacion" name="FechaModificacion" type="date">
+                            </div>
+
+
+                            <div class="col-md-4">
+                                <label for="Fecha_limite">Usuario Creacion</label>
+                                <input class="form-control" planceholder="Usuario Creacion" id="UsuarioCreacion" name="UsuarioCreacion" type="text">
+                            </div>
+                        </div>
+
+                        <br />
+                        <br />
+                        <br />
+
+                        <div class="form-group">
+                            <div class="col-md-4">
+                                <label for="no_inicio">Usuario Modificacion</label>
+                                <input class="form-control" planceholder="Usuario Modificacion" id="UsuarioModificacion" type="text">
+                            </div>
+                        </div>
+
+
+                        <br />
+                        <br />
+                        <br />
+                        <br />
+                        <br />
+                        <br />
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <button id="btnumeracion" class="btn btn-lg btn-primary btn-block" type="submit">
+                                    Guardar
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+
+                </div>
+                <div class="modal-footer">
+
+                    <button type="button" class="btn btn-primary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+*@
+
+
+
+
