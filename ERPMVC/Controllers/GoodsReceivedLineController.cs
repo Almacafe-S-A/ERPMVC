@@ -18,11 +18,11 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
-    public class WarehouseController : Controller
+    public class GoodsReceivedLineController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public WarehouseController(ILogger<WarehouseController> logger, IOptions<MyConfig> config)
+        public GoodsReceivedLineController(ILogger<GoodsReceivedLineController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
@@ -33,26 +33,26 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwWarehouse(Int64 Id = 0)
+        public async Task<ActionResult> pvwGoodsReceivedLine(Int64 Id = 0)
         {
-            Warehouse _Warehouse = new Warehouse();
+            GoodsReceivedLine _GoodsReceivedLine = new GoodsReceivedLine();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouseById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/GoodsReceivedLine/GetGoodsReceivedLineById/" + Id);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Warehouse = JsonConvert.DeserializeObject<Warehouse>(valorrespuesta);
+                    _GoodsReceivedLine = JsonConvert.DeserializeObject<GoodsReceivedLine>(valorrespuesta);
 
                 }
 
-                if (_Warehouse == null)
+                if (_GoodsReceivedLine == null)
                 {
-                    _Warehouse = new Warehouse();
+                    _GoodsReceivedLine = new GoodsReceivedLine();
                 }
             }
             catch (Exception ex)
@@ -63,26 +63,27 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_Warehouse);
+            return PartialView(_GoodsReceivedLine);
 
         }
 
 
         [HttpGet]
-        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request,Warehouse _BranchId)
+        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<Warehouse> _Warehouse = new List<Warehouse>();
+            List<GoodsReceivedLine> _GoodsReceivedLine = new List<GoodsReceivedLine>();
             try
             {
+
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouseByBranchId/" + _BranchId.BranchId);
+                var result = await _client.GetAsync(baseadress + "api/GoodsReceivedLine/GetGoodsReceivedLine");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Warehouse = JsonConvert.DeserializeObject<List<Warehouse>>(valorrespuesta);
+                    _GoodsReceivedLine = JsonConvert.DeserializeObject<List<GoodsReceivedLine>>(valorrespuesta);
 
                 }
 
@@ -95,40 +96,40 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _Warehouse.ToDataSourceResult(request);
+            return _GoodsReceivedLine.ToDataSourceResult(request);
 
         }
 
 
-        public async Task<ActionResult<Warehouse>> SaveWarehouse([FromBody]Warehouse _Warehouse)
+        public async Task<ActionResult<GoodsReceivedLine>> SaveGoodsReceivedLine([FromBody]GoodsReceivedLine _GoodsReceivedLine)
         {
 
             try
             {
-                Warehouse _listWarehouse = new Warehouse();
+                GoodsReceivedLine _listGoodsReceivedLine = new GoodsReceivedLine();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouseById/" + _Warehouse.WarehouseId);
+                var result = await _client.GetAsync(baseadress + "api/GoodsReceivedLine/GetGoodsReceivedLineById/" + _GoodsReceivedLine.GoodsReceiveLinedId);
                 string valorrespuesta = "";
-                _Warehouse.FechaModificacion = DateTime.Now;
-                _Warehouse.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _GoodsReceivedLine.FechaModificacion = DateTime.Now;
+                _GoodsReceivedLine.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listWarehouse = JsonConvert.DeserializeObject<Warehouse>(valorrespuesta);
+                    _listGoodsReceivedLine = JsonConvert.DeserializeObject<GoodsReceivedLine>(valorrespuesta);
                 }
 
-                if (_listWarehouse.WarehouseId == 0)
+                if (_listGoodsReceivedLine.GoodsReceiveLinedId == 0)
                 {
-                    _Warehouse.FechaCreacion = DateTime.Now;
-                    _Warehouse.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_Warehouse);
+                    _GoodsReceivedLine.FechaCreacion = DateTime.Now;
+                    _GoodsReceivedLine.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_GoodsReceivedLine);
                 }
                 else
                 {
-                    var updateresult = await Update(_Warehouse.WarehouseId, _Warehouse);
+                    var updateresult = await Update(_GoodsReceivedLine.GoodsReceiveLinedId, _GoodsReceivedLine);
                 }
 
             }
@@ -138,13 +139,13 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_Warehouse);
+            return Json(_GoodsReceivedLine);
         }
 
-        // POST: Warehouse/Insert
+        // POST: GoodsReceivedLine/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<Warehouse>> Insert(Warehouse _Warehouse)
+        public async Task<ActionResult<GoodsReceivedLine>> Insert(GoodsReceivedLine _GoodsReceivedLine)
         {
             try
             {
@@ -152,14 +153,14 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _Warehouse.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _Warehouse.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Warehouse/Insert", _Warehouse);
+                _GoodsReceivedLine.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _GoodsReceivedLine.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/GoodsReceivedLine/Insert", _GoodsReceivedLine);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Warehouse = JsonConvert.DeserializeObject<Warehouse>(valorrespuesta);
+                    _GoodsReceivedLine = JsonConvert.DeserializeObject<GoodsReceivedLine>(valorrespuesta);
                 }
 
             }
@@ -169,11 +170,11 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Warehouse }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsReceivedLine }, Total = 1 });
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<Warehouse>> Update(Int64 id, Warehouse _Warehouse)
+        public async Task<ActionResult<GoodsReceivedLine>> Update(Int64 id, GoodsReceivedLine _GoodsReceivedLine)
         {
             try
             {
@@ -181,12 +182,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PutAsJsonAsync(baseadress + "api/Warehouse/Update", _Warehouse);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/GoodsReceivedLine/Update", _GoodsReceivedLine);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Warehouse = JsonConvert.DeserializeObject<Warehouse>(valorrespuesta);
+                    _GoodsReceivedLine = JsonConvert.DeserializeObject<GoodsReceivedLine>(valorrespuesta);
                 }
 
             }
@@ -196,11 +197,11 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Warehouse }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsReceivedLine }, Total = 1 });
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<Warehouse>> Delete([FromBody]Warehouse _Warehouse)
+        public async Task<ActionResult<GoodsReceivedLine>> Delete([FromBody]GoodsReceivedLine _GoodsReceivedLine)
         {
             try
             {
@@ -208,12 +209,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Warehouse/Delete", _Warehouse);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/GoodsReceivedLine/Delete", _GoodsReceivedLine);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Warehouse = JsonConvert.DeserializeObject<Warehouse>(valorrespuesta);
+                    _GoodsReceivedLine = JsonConvert.DeserializeObject<GoodsReceivedLine>(valorrespuesta);
                 }
 
             }
@@ -225,7 +226,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Warehouse }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsReceivedLine }, Total = 1 });
         }
 
 

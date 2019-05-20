@@ -12,6 +12,9 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Int64 SubproductId { get; set; }
         public string ProductName { get; set; }
+        public Int64 ProductTypeId { get; set; }
+        public string ProductTypeName { get; set; }
+
         public string ProductCode { get; set; }
         public string Barcode { get; set; }
         public string Description { get; set; }      

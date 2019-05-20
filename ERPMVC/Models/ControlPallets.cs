@@ -10,12 +10,26 @@ namespace ERPMVC.Models
     {
         [Display(Name = "Estiba Id")]
         public Int64 ControlPalletsId { get; set; }
-        public string Motorista { get; set; }
+        public string Motorista { get; set; }      
+
+        [Display(Name = "Sucursal")]
+        public Int64 BranchId { get; set; }
+
+        [Display(Name = "Bodega")]
         public int WarehouseId { get; set; }
+        [Display(Name = "Fecha control de estiba")]
         public DateTime DocumentDate { get; set; }
+
+        [Display(Name = "Producto Cliente")]
+        public Int64 SubProductId { get; set; }
+
+        [Display(Name = "Producto")]
         public Int64 ProductId { get; set; }
         [Display(Name = "Cliente")]
         public Int64 CustomerId { get; set; }
+        [Display(Name = "Nombre de Cliente")]
+        public string CustomerName { get; set; }
+        [Display(Name = "Descripción de producto")]
         public string DescriptionProduct { get; set; }
         public string Placa { get; set; }
         public string Marca { get; set; }

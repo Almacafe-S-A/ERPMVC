@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -18,11 +19,11 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
-    public class WarehouseController : Controller
+    public class ControlPalletsController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public WarehouseController(ILogger<WarehouseController> logger, IOptions<MyConfig> config)
+        public ControlPalletsController(ILogger<ControlPalletsController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
@@ -33,26 +34,26 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwWarehouse(Int64 Id = 0)
+        public async Task<ActionResult> pvwControlPallets(Int64 Id=0)
         {
-            Warehouse _Warehouse = new Warehouse();
+            ControlPalletsDTO _ControlPallets = new ControlPalletsDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouseById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPalletsById/" + Id);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Warehouse = JsonConvert.DeserializeObject<Warehouse>(valorrespuesta);
+                    _ControlPallets = JsonConvert.DeserializeObject<ControlPalletsDTO>(valorrespuesta);
 
                 }
 
-                if (_Warehouse == null)
+                if (_ControlPallets == null)
                 {
-                    _Warehouse = new Warehouse();
+                    _ControlPallets = new ControlPalletsDTO { DocumentDate=DateTime.Now     };
                 }
             }
             catch (Exception ex)
@@ -60,29 +61,30 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
+           
 
 
-
-            return PartialView(_Warehouse);
+            return PartialView(_ControlPallets);
 
         }
 
 
         [HttpGet]
-        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request,Warehouse _BranchId)
+        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<Warehouse> _Warehouse = new List<Warehouse>();
+            List<ControlPallets> _ControlPallets = new List<ControlPallets>();
             try
             {
+
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouseByBranchId/" + _BranchId.BranchId);
+                var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPallets");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Warehouse = JsonConvert.DeserializeObject<List<Warehouse>>(valorrespuesta);
+                    _ControlPallets = JsonConvert.DeserializeObject<List<ControlPallets>>(valorrespuesta);
 
                 }
 
@@ -95,42 +97,69 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _Warehouse.ToDataSourceResult(request);
+            return _ControlPallets.ToDataSourceResult(request);
 
         }
 
 
-        public async Task<ActionResult<Warehouse>> SaveWarehouse([FromBody]Warehouse _Warehouse)
+        public async Task<ActionResult<ControlPallets>> SaveControlPallets([FromBody]ControlPalletsDTO _ControlPalletsDTO)
         {
 
             try
             {
-                Warehouse _listWarehouse = new Warehouse();
+                ControlPallets _listControlPallets = new ControlPallets();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouseById/" + _Warehouse.WarehouseId);
+                var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPalletsById/"+ _ControlPalletsDTO.ControlPalletsId);
                 string valorrespuesta = "";
-                _Warehouse.FechaModificacion = DateTime.Now;
-                _Warehouse.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _ControlPalletsDTO.FechaModificacion = DateTime.Now;
+                _ControlPalletsDTO.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
-                {
-
+                {                  
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listWarehouse = JsonConvert.DeserializeObject<Warehouse>(valorrespuesta);
+                    _listControlPallets = JsonConvert.DeserializeObject<ControlPallets>(valorrespuesta);
                 }
 
-                if (_listWarehouse.WarehouseId == 0)
+
+                if(_listControlPallets.ControlPalletsId==0)
                 {
-                    _Warehouse.FechaCreacion = DateTime.Now;
-                    _Warehouse.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_Warehouse);
+                    _ControlPalletsDTO.FechaCreacion = DateTime.Now;
+                    _ControlPalletsDTO.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_ControlPalletsDTO);
+
+                    foreach (var item in _ControlPalletsDTO._ControlPalletsLine)
+                    {
+                        var value = (insertresult.Result as ObjectResult).Value;
+
+                        ControlPalletsLine _ControlPalletsLineResponse = new ControlPalletsLine();
+                        item.ControlPalletsId = ((ControlPalletsDTO)(value)).ControlPalletsId;
+                       // string baseadress = config.Value.urlbase;
+                        HttpClient _client2 = new HttpClient();
+
+                        _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                        var result2 = await _client2.PostAsJsonAsync(baseadress + "api/ControlPalletsLine/Insert", item);
+
+                         valorrespuesta = "";
+                        if (result2.IsSuccessStatusCode)
+                        {
+                            valorrespuesta = await (result.Content.ReadAsStringAsync());
+                            _ControlPalletsLineResponse = JsonConvert.DeserializeObject<ControlPalletsLine>(valorrespuesta);
+
+                        }
+                        else
+                        {
+                            string request = await result.Content.ReadAsStringAsync();
+                            return BadRequest(request);
+                        }
+                    }
+
                 }
                 else
                 {
-                    var updateresult = await Update(_Warehouse.WarehouseId, _Warehouse);
+                    //var updateresult = await Update(_ControlPalletsDTO.ControlPalletsId, _ControlPalletsDTO);
                 }
-
+               
             }
             catch (Exception ex)
             {
@@ -138,13 +167,13 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_Warehouse);
+            return Json(_ControlPalletsDTO);
         }
 
-        // POST: Warehouse/Insert
+        // POST: ControlPallets/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<Warehouse>> Insert(Warehouse _Warehouse)
+        public async Task<ActionResult<ControlPallets>> Insert(ControlPallets _ControlPallets)
         {
             try
             {
@@ -152,14 +181,14 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _Warehouse.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _Warehouse.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Warehouse/Insert", _Warehouse);
+                _ControlPallets.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _ControlPallets.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/ControlPallets/Insert", _ControlPallets);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Warehouse = JsonConvert.DeserializeObject<Warehouse>(valorrespuesta);
+                    _ControlPallets = JsonConvert.DeserializeObject<ControlPallets>(valorrespuesta);
                 }
 
             }
@@ -169,11 +198,11 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Warehouse }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _ControlPallets }, Total = 1 });
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<Warehouse>> Update(Int64 id, Warehouse _Warehouse)
+        public async Task<ActionResult<ControlPallets>> Update(Int64 id, ControlPallets _ControlPallets)
         {
             try
             {
@@ -181,12 +210,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PutAsJsonAsync(baseadress + "api/Warehouse/Update", _Warehouse);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/ControlPallets/Update", _ControlPallets);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Warehouse = JsonConvert.DeserializeObject<Warehouse>(valorrespuesta);
+                    _ControlPallets = JsonConvert.DeserializeObject<ControlPallets>(valorrespuesta);
                 }
 
             }
@@ -196,11 +225,11 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Warehouse }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _ControlPallets }, Total = 1 });
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<Warehouse>> Delete([FromBody]Warehouse _Warehouse)
+        public async Task<ActionResult<ControlPallets>> Delete([FromBody]ControlPallets _ControlPallets)
         {
             try
             {
@@ -208,12 +237,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Warehouse/Delete", _Warehouse);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/ControlPallets/Delete", _ControlPallets);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Warehouse = JsonConvert.DeserializeObject<Warehouse>(valorrespuesta);
+                    _ControlPallets = JsonConvert.DeserializeObject<ControlPallets>(valorrespuesta);
                 }
 
             }
@@ -224,8 +253,8 @@ namespace ERPMVC.Controllers
             }
 
 
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Warehouse }, Total = 1 });
+         
+            return new ObjectResult(new DataSourceResult { Data = new[] { _ControlPallets }, Total = 1 });
         }
 
 
