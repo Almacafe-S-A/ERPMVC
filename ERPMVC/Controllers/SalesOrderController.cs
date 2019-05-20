@@ -70,7 +70,7 @@ namespace ERPMVC.Controllers
                     _salesorderf = JsonConvert.DeserializeObject<SalesOrderDTO>(valorrespuesta);
                 }
 
-                if (_salesorderf == null) { _salesorderf = new SalesOrderDTO { DeliveryDate=DateTime.Now,OrderDate=DateTime.Now, editar = _salesorder.editar, SalesOrderId = _salesorder.SalesOrderId }; }
+                if (_salesorderf == null) { _salesorderf = new SalesOrderDTO { ExpirationDate=DateTime.Now.AddDays(30), DeliveryDate=DateTime.Now,OrderDate=DateTime.Now, editar = _salesorder.editar, SalesOrderId = _salesorder.SalesOrderId }; }
                 _salesorderf.editar = _salesorder.editar;             
 
 
@@ -163,7 +163,12 @@ namespace ERPMVC.Controllers
 
         [HttpPost("[action]")]
         public async Task<ActionResult<SalesOrder>> SaveSalesOrder([FromBody]SalesOrderDTO _SalesOrder)
-        {
+     //  public async Task<ActionResult<SalesOrder>> SaveSalesOrder([FromBody]dynamic dto)
+      // public async Task<ActionResult<SalesOrder>> SaveSalesOrder(Newtonsoft.Json.Linq.JObject datos)
+        {     
+              
+           //     _SalesOrder = JsonConvert.DeserializeObject<SalesOrderDTO>(dto.ToString());           
+
             if (_SalesOrder != null)
             {
                 SalesOrder _SalesOrdermodel = new SalesOrder();
@@ -272,6 +277,7 @@ namespace ERPMVC.Controllers
         {
             try
             {
+
                 // TODO: Add insert logic here
                 string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
@@ -325,11 +331,23 @@ namespace ERPMVC.Controllers
 
 
 
-        [HttpGet("{SalesOrderId}")]
-       public  ActionResult AR(Int32 SalesOrderId)
+       // [HttpGet("{SalesOrderId}")]
+       //public  ActionResult AR(Int32 SalesOrderId)
+       // {
+
+       //     SalesOrderDTO _salesorderdto = new SalesOrderDTO { SalesOrderId = SalesOrderId, token = HttpContext.Session.GetString("token") };
+
+       //     return View(_salesorderdto);
+       // }
+
+
+       // [HttpGet("[controller]/[action]/{SalesOrderId}")]
+   //    [HttpGet("{SalesOrderId}")]
+        [HttpGet]
+        public ActionResult SFCotizacion(Int32 id)
         {
 
-            SalesOrderDTO _salesorderdto = new SalesOrderDTO { SalesOrderId = SalesOrderId, token = HttpContext.Session.GetString("token") };
+            SalesOrderDTO _salesorderdto = new SalesOrderDTO { SalesOrderId = id, }; //token = HttpContext.Session.GetString("token") };
 
             return View(_salesorderdto);
         }

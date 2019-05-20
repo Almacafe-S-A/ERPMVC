@@ -69,16 +69,15 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet]
-        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
+        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request,Warehouse _BranchId)
         {
             List<Warehouse> _Warehouse = new List<Warehouse>();
             try
             {
-
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouse");
+                var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouseByBranchId/" + _BranchId.BranchId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {

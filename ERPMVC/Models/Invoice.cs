@@ -9,7 +9,8 @@ namespace ERPMVC.Models
     public class Invoice
     {
         [Display(Name = "Id")]
-        public int InvoiceId { get; set; }       
+        public int InvoiceId { get; set; }
+        [Display(Name = "Nombre")]
         public string InvoiceName { get; set; }
         [Display(Name = "Envio")]
         public int ShipmentId { get; set; }

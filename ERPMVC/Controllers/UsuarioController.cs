@@ -37,8 +37,34 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-
         
+        [HttpGet("[action]")]
+        public async Task<JsonResult> GetQuantityUsuario()
+        {
+            Int32 _users = 0;
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Usuario/GetQuantityUsuario");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _users = JsonConvert.DeserializeObject<Int32>(valorrespuesta);
+
+                }
+
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw (new Exception(ex.Message));
+            }
+            return Json(_users);
+        }
+
         [HttpGet("[action]")]
         public async Task<JsonResult> GetUsuarios()
         {

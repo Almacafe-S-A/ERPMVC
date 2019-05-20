@@ -5,7 +5,7 @@
 <script>   
     completedorderlinemant = function (xhr) {  
         
-        $('#myModalSalesOrderLine').find(':input').not(':submit').val('');
+        $('#myModalSalesOrderLine').find(':input').not('#SalesOrderId :submit').val('0');
         CalcularTotalDocumento();    
         $("#btnActualizarCotizacionLinea").prop("disabled", false);
        closesaleorderline();
@@ -69,10 +69,26 @@
 
     function AddConceptoCotizacion(e) {
        // e.preventDefault();
+        var notification = $("#notification").data("kendoNotification");
+        if ($("#SubProductId").val() > 0) {
+            try {
+                $("#btnActualizarCotizacionLinea").prop("disabled", true);
+                RefreshCotizacionesDetail();
 
-         $("#btnActualizarCotizacionLinea").prop("disabled", true); 
-        RefreshCotizacionesDetail();
-      
+            } catch (e) {
+                $("#btnActualizarCotizacionLinea").prop("disabled", false);
+            }
+        }
+        else {
+            notification.show({
+                title: "Validación",
+                message: "Seleccione el SubProducto!"
+            }, "error");
+
+            return;
+        }
+
+       
     }
 
     function setearvalor(nombrenumerico,valor) {
@@ -259,43 +275,44 @@
 
 
                           <div class="col-md-4">
-                          <div class="form-group">
-                          <label asp-for="SubProductId" class="col-md-2 control-label" style="width:100%"></label>
+                              
+                              <div class="form-group">
+                                  <label asp-for="SubProductId" class="col-md-2 control-label" style="width:100%"></label>
+                                  <script>
+                                      function setsubproductname(e) {
+                                          // console.log(e);
+                                          var dataItem = e.dataItem;
+                                          if (dataItem != null)
+                                              $("#subproductname").val(dataItem.ProductName);
+                                      }
+                                  </script>
+                                  <input type="hidden" id="subproductname" />
+                                  <kendo-combobox name="SubProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                  placeholder="Select SubProductId"
+                                                  for="SubProductId"
+                                                  datatextfield="ProductName"
+                                                  datavaluefield="SubproductId"                                                
+                                                  auto-bind="false"
+                                                  on-select="setsubproductname"
+                                                 required
+                                                  style="width: 100%;">
+                                      <datasource type="DataSourceTagHelperType.WebApi">
+                                          <transport>
+                                              <read url="@Url.Action("GetSubProductByProductId", "ProductRelation")" data="GetProductIdS()" />
+                                          </transport>
+                                      </datasource>
 
-                              <script>
-                                  function setsubproductname(e) {
-                                     // console.log(e);
-                                      var dataItem = e.dataItem;
-                                      if (dataItem != null)
-                                      $("#subproductname").val(dataItem.ProductName);
-                                  }
-                              </script>
-                              <input type="hidden" id="subproductname" />
-                          <kendo-combobox name="SubProductId" filter="FilterType.Contains"
-                          placeholder="Select SubProductId"
-                            for="SubProductId"
-                          datatextfield="ProductName"
-                          datavaluefield="SubproductId"
-                          auto-bind="false"
-                           on-select="setsubproductname"
-                          required
-                          style="width: 100%;">
-                          <datasource type="DataSourceTagHelperType.WebApi">
-                          <transport>
-                          <read url="@Url.Action("GetSubProductByProductId", "ProductRelation")" data="GetProductIdS()" />
-                          </transport>
-                          </datasource>
-                            
-                          </kendo-combobox>
-                          <span asp-validation-for="SubProductId" class="text-danger"></span>
-                          </div>
+                                  </kendo-combobox>
+                                  <span asp-validation-for="SubProductId" class="text-danger"></span>
+                              </div>
                           </div>
 
 
                           <div class="col-md-4">
                           <div class="form-group">
                           <label asp-for="Description" class="col-md-2 control-label" style="width:100%"></label>
-                          <textarea asp-for="Description" class="form-control required " style="width:100%"></textarea>
+                           <input type="text" id="DescriptionDetail" asp-for="Description" class="form-control" style="width:100%" />
+                      
                           <span asp-validation-for="Description" class="text-danger"></span>
                           </div>
                           </div>
@@ -412,7 +429,7 @@
                           <div class="form-group">
                           <label asp-for="TaxCode" class="col-md-2 control-label" style="width:100%"></label>
 
-                          <kendo-combobox name="TaxCode" filter="FilterType.Contains"
+                          <kendo-combobox name="TaxCode" filter="Kendo.Mvc.UI.FilterType.Contains"
                           placeholder="Select TaxId"
                           datatextfield="TaxCode"
                           datavaluefield="TaxId"

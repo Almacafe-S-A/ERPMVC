@@ -13,7 +13,7 @@ namespace ERPMVC.DTO
 
         public int editar { get; set; } = 1;
 
-        public string token { get; set; }
+      //  public string token { get; set; } = "";
     }
 
 

@@ -34,6 +34,61 @@ namespace ERPMVC.Controllers
             return PartialView();
         }
 
+        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request)
+        {
+            var res = await GetCustomersConditions();
+            return Json(res.ToDataSourceResult(request));
+        }
+
+        public async Task<ActionResult> Orders_ValueMapper(Int64[] values)
+        {
+            var indices = new List<Int64>();
+
+            if (values != null && values.Any())
+            {
+                var index = 0;
+
+                foreach (var order in  await GetCustomersConditions())
+                {
+                    if (values.Contains(order.CustomerConditionId))
+                    {
+                        indices.Add(index);
+                    }
+
+                    index += 1;
+                }
+            }
+
+            return Json(indices);
+        }
+
+        private async Task<IEnumerable<CustomerConditions>> GetCustomersConditions()
+        {
+            List<CustomerConditions> _CustomerConditions = new List<CustomerConditions>();
+
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CustomerConditions/GetCustomerConditions");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await(result.Content.ReadAsStringAsync());
+                    _CustomerConditions = JsonConvert.DeserializeObject<List<CustomerConditions>>(valorrespuesta);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            return _CustomerConditions;
+
+        }
+
         public async Task<ActionResult> pvwCustomerConditions(Int64 Id = 0)
         {
             CustomerConditions _CustomerConditions = new CustomerConditions();
@@ -68,6 +123,37 @@ namespace ERPMVC.Controllers
 
         }
 
+
+        public async Task<ActionResult> GetCustomerConditionsById(Int64 Id)
+        {
+            CustomerConditions _CustomerConditions = new CustomerConditions();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CustomerConditions/GetCustomerConditionsById/" + Id);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerConditions = JsonConvert.DeserializeObject<CustomerConditions>(valorrespuesta);
+
+                }
+
+                if (_CustomerConditions == null)
+                {
+                    _CustomerConditions = new CustomerConditions();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_CustomerConditions);
+        }
 
         //[HttpPost("[action]")]
         [HttpGet("[action]")]

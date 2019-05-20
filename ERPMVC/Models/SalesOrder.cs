@@ -11,9 +11,16 @@ namespace ERPMVC.Models
     public class SalesOrder
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Display(Name = "Número de cotización")]
         public int SalesOrderId { get; set; }
         [Display(Name = "Nombre Orden")]
         public string SalesOrderName { get; set; }
+
+        [Display(Name = "Tipo de contrato")]
+        public Int64 TypeContractId { get; set; }
+
+        [Display(Name = "Nombre de contrato")]
+        public string NameContract { get; set; }
 
         [Display(Name = "RTN")]
         public string RTN { get; set; }
@@ -41,7 +48,7 @@ namespace ERPMVC.Models
         public DateTime ExpirationDate { get; set; }
 
         [Display(Name ="Cliente")]
-       public string CustomerName { get; set; }
+        public string CustomerName { get; set; }
 
         [Display(Name = "Fecha de orden")]
         public DateTime OrderDate { get; set; }
@@ -94,9 +101,10 @@ namespace ERPMVC.Models
 
         public double Total { get; set; }
 
+        [Display(Name = "Estado")]
         public int IdEstado { get; set; }
 
-        public List<SalesOrderLine> SalesOrderLines { get; set; } = new List<SalesOrderLine>();
+      //  public List<SalesOrderLine> SalesOrderLines { get; set; } = new List<SalesOrderLine>();
 
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
