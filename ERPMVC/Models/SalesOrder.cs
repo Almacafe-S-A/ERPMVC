@@ -13,7 +13,7 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Display(Name = "Número de cotización")]
         public int SalesOrderId { get; set; }
-        [Display(Name = "Nombre Orden")]
+        [Display(Name = "Nombre Cliente")]
         public string SalesOrderName { get; set; }
 
         [Display(Name = "Tipo de contrato")]
@@ -28,7 +28,7 @@ namespace ERPMVC.Models
         [Display(Name = "Teléfono")]
         public string Tefono { get; set; }
 
-        [EmailAddress]
+        [EmailAddress(ErrorMessage ="Agregue una dirección de correo valida")]
         [Display(Name = "Correo")]
         public string Correo { get; set; }
 
