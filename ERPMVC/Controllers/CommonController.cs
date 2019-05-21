@@ -41,6 +41,33 @@ namespace ERPMVC.Controllers
            
             return Ok();
         }
+
+        [HttpGet("GetUserByEmail")]
+        public async Task<ActionResult> GetUserByEmail()
+        {
+            UserInfo _UserInfo = new UserInfo();
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Usuario/GetUserByEmail/" + HttpContext.Session.GetString("user"));
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _UserInfo = JsonConvert.DeserializeObject<UserInfo>(valorrespuesta);
+                }
+            }
+            catch (Exception ex)
+            {
+
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_UserInfo);
+        }
            
         [HttpGet("[controller]/[action]")]
         public async Task<ActionResult> GetCustomer([DataSourceRequest]DataSourceRequest request)

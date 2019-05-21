@@ -64,7 +64,9 @@ namespace ERPMVC.Controllers
                     string webtoken = await (resultlogin.Content.ReadAsStringAsync());
                     UserToken _userToken = JsonConvert.DeserializeObject<UserToken>(webtoken);
                     HttpContext.Session.SetString("token", _userToken.Token);
+                    HttpContext.Session.SetString("Expiration", _userToken.Expiration.ToString());
                     HttpContext.Session.SetString("user", model.Email);
+                   
 
                     return RedirectToAction("Index", "Home");
                     //return Task.Factory.StartNew(()=>_login()).ContinueWith<ActionResult>(

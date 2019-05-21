@@ -11,11 +11,13 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Syncfusion.EJ.ReportViewer;
 using Syncfusion.JavaScript.Models.ReportViewer;
+
 
 namespace ERPMVC.Controllers
 {
@@ -29,13 +31,15 @@ namespace ERPMVC.Controllers
 
         public string DefaultParam = null;
         public ReportViewerController(IMemoryCache memoryCache, IHostingEnvironment hostingEnvironment
-            , ILogger<SalesOrderController> logger, IOptions<MyConfig> config, IMapper mapper)
+            , ILogger<SalesOrderController> logger, IOptions<MyConfig> config, IMapper mapper
+            , IConfiguration configuration)
         {
             _cache = memoryCache;
             _hostingEnvironment = hostingEnvironment;
             this.mapper = mapper;
             this._logger = logger;
             this._config = config;
+            Configuration = configuration;
         }
 
         public ActionResult Index()
@@ -77,14 +81,29 @@ namespace ERPMVC.Controllers
         {
             return ReportHelper.ProcessReport(null, this, this._cache);
         }
-
+        public IConfiguration Configuration { get; }
         public void OnInitReportOptions(ReportViewerOptions reportOption)
         {
+
+            //Syncfusion.Report.DataSourceCredentials dsc = new Syncfusion.Report.DataSourceCredentials();
+            //dsc.ConnectionString = "Data Source=DESKTOP-RFQ3R0I;Initial Catalog=ERP;";//Configuration.GetConnectionString("DefaultConnection");
+            //dsc.IntegratedSecurity = false;
+            //dsc.UserId = "sa";
+            //dsc.Password = "sql20.15";
+            //dsc.Name = "DefaultConnection";
+            //if (reportOption.ReportModel.DataSourceCredentials == null)
+            //{ reportOption.ReportModel.DataSourceCredentials = new List<Syncfusion.Report.DataSourceCredentials>(); }
+            //reportOption.ReportModel.DataSourceCredentials.Add(dsc);
+            //var res = reportOption.ReportModel.DataSourceCredentials.Select(q => q.ConnectionString);
             //reportOption.ReportModel.DataSourceCredentials.Add(new DataSourceCredentials("AdventureWorks", "sa", "sql20.14"));
             string basePath = _hostingEnvironment.WebRootPath;
             FileStream inputStream = new FileStream(basePath + reportOption.ReportModel.ReportPath, FileMode.Open, FileAccess.Read);
             reportOption.ReportModel.Stream = inputStream;
-            // reportOption.ReportModel.ProcessingMode = Syncfusion.EJ.ReportViewer.ProcessingMode.Local;
+
+
+
+            //reportOption.ReportModel.ProcessingMode = Syncfusion.EJ.ReportViewer.ProcessingMode.Local;
+            //reportOption.ReportModel.ProcessingMode = Syncfusion.EJ.ReportViewer.ProcessingMode.Remote;
         }
 
         public  void OnReportLoaded(ReportViewerOptions reportOption)
@@ -97,9 +116,9 @@ namespace ERPMVC.Controllers
 
             //reportOption.ReportModel.Parameters = parameters;
             if (parameters != null && parameters.Count > 0)
-            {               
-
-               // reportOption.ReportModel.Parameters = ;
+            {
+               
+                // reportOption.ReportModel.Parameters = ;
 
                 //reportOption.ReportModel.DataSources.Clear();
                 //var salesorder = SalesOrderQ.GetData(parameters[0].Values[0], _config.Value.urlbase, HttpContext.Session.GetString("token"));
@@ -137,7 +156,7 @@ namespace ERPMVC.Controllers
                 //    //ValueDecimal = 0,
                 //    //ValueString = "0",
                 //    //ValueToEvaluate = "0"
-                      
+
                 //};
                 //var CustomerConditions = SalesOrderQ.GetDataCustomerConditions(_cc, _config.Value.urlbase, HttpContext.Session.GetString("token"));
                 //reportOption.ReportModel.DataSources.Add(new Syncfusion.Report.ReportDataSource

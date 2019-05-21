@@ -35,6 +35,8 @@ namespace ERPMVC.Controllers
             this._logger = logger;
             this._config = config;
         }
+
+        [CustomAuthorization]
         public IActionResult Index()
         {
            // SalesOrderDTO _dto = new SalesOrderDTO();

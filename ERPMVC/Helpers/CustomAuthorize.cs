@@ -15,7 +15,7 @@ namespace ERPMVC.Helpers
 {
 
 
-    [AttributeUsage(AttributeTargets.Class)]
+    [AttributeUsage(AttributeTargets.All)]  
     public sealed class CustomAuthorization : Attribute, IAuthorizationFilter
     {
 
@@ -25,8 +25,22 @@ namespace ERPMVC.Helpers
             var ses = filterContext.HttpContext.Session.GetString("token");
 
            
-            if (ses != null)
+            if (ses != null )
             {
+                var expira = Convert.ToDateTime(filterContext.HttpContext.Session.GetString("Expiration"));
+                if (expira <= DateTime.Now)
+                {
+                    filterContext.Result = new RedirectToRouteResult(
+                  new RouteValueDictionary {
+                      {
+                       "Controller",
+                       "Account"
+                      }, {
+                       "Action",
+                       "Login"
+                      }
+                   });
+                }
                 //filterContext.Result = new RedirectToRouteResult(
                 // new RouteValueDictionary {
                 //     {
