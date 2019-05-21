@@ -33,9 +33,17 @@ namespace ERPMVC.Models
         public string DescriptionProduct { get; set; }
         public string Placa { get; set; }
         public string Marca { get; set; }
+
+        [Display(Name = "Estiba No.")]
         public int PalletId { get; set; }
+        
+        [Display(Name = "Es Ingreso")]
         public int EsIngreso { get; set; }
+
+        [Display(Name = "Es Salida")]
         public int EsSalida { get; set; }
+
+
         public int SubTotal { get; set; }
         public int TotalSacos { get; set; }
         public int SacosDevueltos { get; set; }

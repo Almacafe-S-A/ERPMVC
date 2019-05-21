@@ -25,14 +25,14 @@ namespace ERPMVC.Models
         [Display(Name = "RTN")]
         public string RTN { get; set; }
 
-        [Display(Name = "Telefono")]
+        [Display(Name = "Teléfono")]
         public string Tefono { get; set; }
 
         [EmailAddress]
         [Display(Name = "Correo")]
         public string Correo { get; set; }
 
-        [Display(Name = "Direccion")]
+        [Display(Name = "Dirección")]
         public string Direccion { get; set; }
 
         [Display(Name = "Sucursal")]
@@ -65,7 +65,7 @@ namespace ERPMVC.Models
         [Display(Name = "Nombre Producto")]
         public string ProductName { get; set; }
 
-        [Display(Name = "Numero de referencia de cliente")]
+        [Display(Name = "Número de referencia de cliente")]
         public string CustomerRefNumber { get; set; }
         [Display(Name = "Tipo de ventas")]
         public int SalesTypeId { get; set; }
