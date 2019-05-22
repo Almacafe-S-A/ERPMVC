@@ -108,7 +108,7 @@ namespace ERPMVC.Controllers
 
             try
             {
-                DTO_NumeracionSAR _listNumeracionSAR = new DTO_NumeracionSAR();
+               // DTO_NumeracionSAR _liNumeracionSAR = new DTO_NumeracionSAR();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -120,10 +120,10 @@ namespace ERPMVC.Controllers
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listNumeracionSAR = JsonConvert.DeserializeObject<DTO_NumeracionSAR>(valorrespuesta);
+                    _NumeracionSAR = JsonConvert.DeserializeObject<DTO_NumeracionSAR>(valorrespuesta);
                 }
 
-                if (_listNumeracionSAR.IdNumeracion == 0)
+                if (_NumeracionSAR.IdNumeracion == 0)
                 {
                     _NumeracionSAR.FechaCreacion = DateTime.Now;
                     _NumeracionSAR.UsuarioCreacion = HttpContext.Session.GetString("user");
@@ -233,7 +233,7 @@ namespace ERPMVC.Controllers
 
 
 
-
+ 
 
     }
 }
