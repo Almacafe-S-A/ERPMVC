@@ -10,27 +10,55 @@ $(function () {
     // Newsletter
     // ============================================================== 
     
+    //var chart = new Chartist.Line('.campaign', {
+    //      labels: [1, 2, 3, 4, 5, 6, 7, 8],
+    //      series: [
+    //        [0, 5000, 15000, 8000, 15000, 9000, 30000, 0]
+    //        , [0, 3000, 5000, 2000, 8000, 1000, 5000, 0]
+    //      ]}, {
+    //      low: 0,
+    //      high: 28000,
+    //      showArea: true,
+    //      fullWidth: true,
+    //      plugins: [
+    //        Chartist.plugins.tooltip()
+    //      ],
+    //        axisY: {
+    //        onlyInteger: true
+    //        , scaleMinSpace: 40    
+    //        , offset: 20
+    //        , labelInterpolationFnc: function (value) {
+    //            return (value / 1000) + 'k';
+    //        }
+    //    },
+    //    });
+
+
+
+
     var chart = new Chartist.Line('.campaign', {
-          labels: [1, 2, 3, 4, 5, 6, 7, 8],
-          series: [
-            [0, 5000, 15000, 8000, 15000, 9000, 30000, 0]
-            , [0, 3000, 5000, 2000, 8000, 1000, 5000, 0]
-          ]}, {
-          low: 0,
-          high: 28000,
-          showArea: true,
-          fullWidth: true,
-          plugins: [
-            Chartist.plugins.tooltip()
-          ],
+        labels: [1, 2, 3, 4, 5, 6, 7, 8,9,10,11,12],
+        series: [facturacionA,
+            facturacionB
+            //[0, 5000, 15000, 8000, 15000, 9000, 30000, 0]
+            //, [0, 3000, 5000, 2000, 8000, 1000, 5000, 0]
+        ]
+    }, {
+            low: 0,
+            high: 28000,
+            showArea: true,
+            fullWidth: true,
+            plugins: [
+                Chartist.plugins.tooltip()
+            ],
             axisY: {
-            onlyInteger: true
-            , scaleMinSpace: 40    
-            , offset: 20
-            , labelInterpolationFnc: function (value) {
-                return (value / 1000) + 'k';
-            }
-        },
+                onlyInteger: true
+                , scaleMinSpace: 40
+                , offset: 20
+                , labelInterpolationFnc: function (value) {
+                    return (value / 1000) + 'k';
+                }
+            },
         });
 
         // Offset x1 a tiny amount so that the straight stroke gets a bounding box
