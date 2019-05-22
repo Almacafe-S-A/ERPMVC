@@ -107,57 +107,64 @@ namespace ERPMVC.Controllers
 
             try
             {
-                ControlPallets _listControlPallets = new ControlPallets();
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPalletsById/"+ _ControlPalletsDTO.ControlPalletsId);
-                string valorrespuesta = "";
-                _ControlPalletsDTO.FechaModificacion = DateTime.Now;
-                _ControlPalletsDTO.UsuarioModificacion = HttpContext.Session.GetString("user");
-                if (result.IsSuccessStatusCode)
-                {                  
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listControlPallets = JsonConvert.DeserializeObject<ControlPallets>(valorrespuesta);
-                }
-
-                if(_listControlPallets == null) { _listControlPallets = new ControlPallets();  }
-                if(_listControlPallets.ControlPalletsId==0)
+                if (_ControlPalletsDTO != null)
                 {
-                    _ControlPalletsDTO.FechaCreacion = DateTime.Now;
-                    _ControlPalletsDTO.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_ControlPalletsDTO);
-
-                    foreach (var item in _ControlPalletsDTO._ControlPalletsLine)
+                    ControlPallets _listControlPallets = new ControlPallets();
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPalletsById/" + _ControlPalletsDTO.ControlPalletsId);
+                    string valorrespuesta = "";
+                    _ControlPalletsDTO.FechaModificacion = DateTime.Now;
+                    _ControlPalletsDTO.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    if (result.IsSuccessStatusCode)
                     {
-                        var value = (insertresult.Result as ObjectResult).Value;
-
-                        ControlPalletsLine _ControlPalletsLineResponse = new ControlPalletsLine();
-                        item.ControlPalletsId = ((ControlPalletsDTO)(value)).ControlPalletsId;
-                       // string baseadress = config.Value.urlbase;
-                        HttpClient _client2 = new HttpClient();
-
-                        _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                        var result2 = await _client2.PostAsJsonAsync(baseadress + "api/ControlPalletsLine/Insert", item);
-
-                         valorrespuesta = "";
-                        if (result2.IsSuccessStatusCode)
-                        {
-                            valorrespuesta = await (result2.Content.ReadAsStringAsync());
-                            _ControlPalletsLineResponse = JsonConvert.DeserializeObject<ControlPalletsLine>(valorrespuesta);
-
-                        }
-                        else
-                        {
-                            string request = await result2.Content.ReadAsStringAsync();
-                            return BadRequest(request);
-                        }
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _listControlPallets = JsonConvert.DeserializeObject<ControlPallets>(valorrespuesta);
                     }
 
+                    if (_listControlPallets == null) { _listControlPallets = new ControlPallets(); }
+                    if (_listControlPallets.ControlPalletsId == 0)
+                    {
+                        _ControlPalletsDTO.FechaCreacion = DateTime.Now;
+                        _ControlPalletsDTO.UsuarioCreacion = HttpContext.Session.GetString("user");
+                        var insertresult = await Insert(_ControlPalletsDTO);
+
+                        foreach (var item in _ControlPalletsDTO._ControlPalletsLine)
+                        {
+                            var value = (insertresult.Result as ObjectResult).Value;
+
+                            ControlPalletsLine _ControlPalletsLineResponse = new ControlPalletsLine();
+                            item.ControlPalletsId = ((ControlPalletsDTO)(value)).ControlPalletsId;
+                            // string baseadress = config.Value.urlbase;
+                            HttpClient _client2 = new HttpClient();
+
+                            _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                            var result2 = await _client2.PostAsJsonAsync(baseadress + "api/ControlPalletsLine/Insert", item);
+
+                            valorrespuesta = "";
+                            if (result2.IsSuccessStatusCode)
+                            {
+                                valorrespuesta = await (result2.Content.ReadAsStringAsync());
+                                _ControlPalletsLineResponse = JsonConvert.DeserializeObject<ControlPalletsLine>(valorrespuesta);
+
+                            }
+                            else
+                            {
+                                string request = await result2.Content.ReadAsStringAsync();
+                                return BadRequest(request);
+                            }
+                        }
+
+                    }
+                    else
+                    {
+                        //var updateresult = await Update(_ControlPalletsDTO.ControlPalletsId, _ControlPalletsDTO);
+                    }
                 }
                 else
                 {
-                    //var updateresult = await Update(_ControlPalletsDTO.ControlPalletsId, _ControlPalletsDTO);
+                    return BadRequest("No llego correctamente el modelo!");
                 }
                
             }

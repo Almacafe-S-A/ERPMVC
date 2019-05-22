@@ -10,7 +10,9 @@ namespace ERPMVC.Models
     public class Conditions
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Display(Name = "Id")]
         public Int64 ConditionId { get; set; }
+        [Display(Name = "Nombre de la condición")]
         public string ConditionName { get; set; }    
 
         public DateTime FechaCreacion { get; set; }

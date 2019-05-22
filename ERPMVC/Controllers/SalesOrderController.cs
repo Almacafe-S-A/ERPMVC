@@ -105,6 +105,10 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _SalesOrders = JsonConvert.DeserializeObject<List<SalesOrder>>(valorrespuesta);
                 }
+                //else if(result.StatusCode== 401)
+                //{
+
+                //}
             }
             catch (Exception ex)
             {

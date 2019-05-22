@@ -153,12 +153,17 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _listcondi = JsonConvert.DeserializeObject<Conditions>(valorrespuesta);
                 }
+                if (_listcondi == null) { _listcondi =  new Conditions(); }
 
                 if(_listcondi.ConditionId==0)
                 {
                     _condition.FechaCreacion = DateTime.Now;
                     _condition.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_condition);
+                    var value = (insertresult.Result as ObjectResult).Value;
+                    _condition.ConditionId = ((Conditions)(value)).ConditionId;
+                  
+
                 }
                 else
                 {
@@ -203,7 +208,8 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _condition }, Total = 1 });
+            return Ok(_condition);
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _condition }, Total = 1 });
         }
 
         [HttpPut("{id}")]

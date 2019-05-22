@@ -28,7 +28,11 @@ namespace ERPMVC.Models
         [Display(Name = "Teléfono")]
         public string Tefono { get; set; }
 
-        [EmailAddress(ErrorMessage ="Agregue una dirección de correo valida")]
+
+        //[EmailAddress(ErrorMessage ="Agregue una direccion de correo valida")]
+        [EmailAddress]
+        [RegularExpression(@"\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*", ErrorMessage = "Correo invalido")]
+        [DataType(DataType.EmailAddress)]
         [Display(Name = "Correo")]
         public string Correo { get; set; }
 
@@ -41,7 +45,7 @@ namespace ERPMVC.Models
         [Display(Name = "Sucursal Nombre")]
         public string BranchName { get; set; }
 
-        [Display(Name = "Id Cliente")]
+        [Display(Name = "Cliente")]
         public Int64 CustomerId { get; set; }
 
         [Display(Name = "Fecha de vencimiento")]
@@ -65,7 +69,7 @@ namespace ERPMVC.Models
         [Display(Name = "Nombre Producto")]
         public string ProductName { get; set; }
 
-        [Display(Name = "Número de referencia de cliente")]
+        [Display(Name = "No. Ref. Cliente")]
         public string CustomerRefNumber { get; set; }
         [Display(Name = "Tipo de ventas")]
         public int SalesTypeId { get; set; }
