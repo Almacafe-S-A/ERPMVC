@@ -108,7 +108,7 @@ namespace ERPMVC.Models
         [Display(Name = "Estado")]
         public int IdEstado { get; set; }
 
-      //  public List<SalesOrderLine> SalesOrderLines { get; set; } = new List<SalesOrderLine>();
+       public List<SalesOrderLine> SalesOrderLines { get; set; } = new List<SalesOrderLine>();
 
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }

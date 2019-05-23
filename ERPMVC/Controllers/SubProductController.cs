@@ -68,6 +68,8 @@ namespace ERPMVC.Controllers
             List<SubProduct> _SubProducto = new List<SubProduct>();
             try
             {
+               // CustomerTypeSubProduct _CustomerTypeSubProduct = new CustomerTypeSubProduct();
+                _CustomerTypeSubProduct.ProductTypeId= _CustomerTypeSubProduct.ProductTypeId ==0 ? 2 : _CustomerTypeSubProduct.ProductTypeId;
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));

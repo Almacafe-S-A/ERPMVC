@@ -19,14 +19,30 @@ namespace ERPMVC.Models
         [Display(Name = "Sucursal")]
         public Int64 BranchId { get; set; }
 
+        [Display(Name = "Sucursal")]
+        public Int64 BranchName { get; set; }
+
         [Display(Name = "Bodega")]
         public int WarehouseId { get; set; }
+
+        [Display(Name = "Bodega")]
+        public int WarehouseName { get; set; }
 
         [Display(Name = "Producto")]
         public Int64 ProductId { get; set; }
 
+        [Display(Name = "Producto")]
+        public string ProductName { get; set; }
+
+        [Display(Name = "Producto Cliente")]
+        public Int64 SubProductId { get; set; }
+
+        [Display(Name = "Producto Cliente")]
+        public string SubProductName { get; set; }
+
         [Display(Name = "Fecha")]
         public DateTime OrderDate { get; set; }
+
         [Display(Name = "Fecha de documento")]
         public DateTime DocumentDate { get; set; }     
         [Display(Name = "Recibimos de")]
@@ -42,7 +58,7 @@ namespace ERPMVC.Models
         public DateTime? FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
         public string UsuarioModificacion { get; set; }
-     
 
+        public List<GoodsReceivedLine> _GoodsReceivedLine = new List<GoodsReceivedLine>();
     }
 }

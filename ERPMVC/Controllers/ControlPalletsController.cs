@@ -34,7 +34,8 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwControlPallets(Int64 Id=0)
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwControlPallets([FromBody]ControlPalletsDTO _ControlPalletsId )
         {
             ControlPalletsDTO _ControlPallets = new ControlPalletsDTO();
             try
@@ -42,7 +43,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPalletsById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPalletsById/" + _ControlPalletsId.ControlPalletsId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -130,31 +131,34 @@ namespace ERPMVC.Controllers
                         _ControlPalletsDTO.UsuarioCreacion = HttpContext.Session.GetString("user");
                         var insertresult = await Insert(_ControlPalletsDTO);
 
-                        foreach (var item in _ControlPalletsDTO._ControlPalletsLine)
-                        {
-                            var value = (insertresult.Result as ObjectResult).Value;
+                        var value = (insertresult.Result as ObjectResult).Value;
+                        _ControlPalletsDTO = ((ControlPalletsDTO)(value));
 
-                            ControlPalletsLine _ControlPalletsLineResponse = new ControlPalletsLine();
-                            item.ControlPalletsId = ((ControlPalletsDTO)(value)).ControlPalletsId;
-                            // string baseadress = config.Value.urlbase;
-                            HttpClient _client2 = new HttpClient();
+                        //foreach (var item in _ControlPalletsDTO._ControlPalletsLine)
+                        //{
+                        //    var value = (insertresult.Result as ObjectResult).Value;
 
-                            _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                            var result2 = await _client2.PostAsJsonAsync(baseadress + "api/ControlPalletsLine/Insert", item);
+                        //    ControlPalletsLine _ControlPalletsLineResponse = new ControlPalletsLine();
+                        //    item.ControlPalletsId = ((ControlPalletsDTO)(value)).ControlPalletsId;
+                        //    // string baseadress = config.Value.urlbase;
+                        //    HttpClient _client2 = new HttpClient();
 
-                            valorrespuesta = "";
-                            if (result2.IsSuccessStatusCode)
-                            {
-                                valorrespuesta = await (result2.Content.ReadAsStringAsync());
-                                _ControlPalletsLineResponse = JsonConvert.DeserializeObject<ControlPalletsLine>(valorrespuesta);
+                        //    _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                        //    var result2 = await _client2.PostAsJsonAsync(baseadress + "api/ControlPalletsLine/Insert", item);
 
-                            }
-                            else
-                            {
-                                string request = await result2.Content.ReadAsStringAsync();
-                                return BadRequest(request);
-                            }
-                        }
+                        //    valorrespuesta = "";
+                        //    if (result2.IsSuccessStatusCode)
+                        //    {
+                        //        valorrespuesta = await (result2.Content.ReadAsStringAsync());
+                        //        _ControlPalletsLineResponse = JsonConvert.DeserializeObject<ControlPalletsLine>(valorrespuesta);
+
+                        //    }
+                        //    else
+                        //    {
+                        //        string request = await result2.Content.ReadAsStringAsync();
+                        //        return BadRequest(request);
+                        //    }
+                        //}
 
                     }
                     else
