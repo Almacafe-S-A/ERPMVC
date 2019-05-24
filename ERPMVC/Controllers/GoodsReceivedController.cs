@@ -54,7 +54,11 @@ namespace ERPMVC.Controllers
 
                 if (_GoodsReceived == null)
                 {
-                    _GoodsReceived = new GoodsReceivedDTO {  DocumentDate=DateTime.Now,OrderDate=DateTime.Now, };
+                    _GoodsReceived = new GoodsReceivedDTO {  DocumentDate=DateTime.Now,OrderDate=DateTime.Now,editar=1 };
+                }
+                else
+                {
+                    _GoodsReceived.editar = 0;
                 }
             }
             catch (Exception ex)

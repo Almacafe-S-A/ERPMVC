@@ -195,7 +195,7 @@ namespace ERPMVC.Controllers
                 }
 
 
-                if (_GoodsReceivedLinep.ControlPalletsId > 0)
+                if (_GoodsReceivedLinep.GoodsReceivedId > 0)
                 {
 
                     string baseadress = config.Value.urlbase;

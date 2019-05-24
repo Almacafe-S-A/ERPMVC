@@ -96,6 +96,122 @@
                                         <hr>
 
                                         <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label for="cbxBuscar" class="control-label" style="width:100%">Asociar control de estiba</label>
+                                                    <script>
+                                                        function valueMapper(options) {
+                                                            $.ajax({
+                                                                url: "@Url.Action("Orders_ValueMapper", "ControlPallets")",
+                                                                data: convertValues(options.value),
+                                                                success: function (data) {
+                                                                    options.success(data);
+                                                                }
+                                                            });
+                                                        }
+
+                                                        function convertValues(value) {
+                                                            var data = {};
+                                                            value = $.isArray(value) ? value : [value];
+
+                                                            for (var idx = 0; idx < value.length; idx++) {
+                                                                data["values[" + idx + "]"] = value[idx];
+                                                            }
+
+                                                            return data;
+                                                        }
+                                                        function changesetearvalues() {
+                                                            var dataObject = { 'Id': $("#cbxBuscar").val() };
+
+                                                               $.ajax({
+                                                                     url: '@Url.Action("GetControlPalletsById", "ControlPallets")',
+                                                                     method: 'GET',
+                                                                     datatype: "json",
+                                                                     contentType: 'application/json',
+                                                                     async: false,
+                                                                     data: dataObject,
+                                                                     success: function (data) {
+                                                                       console.log(data);
+                                                                         //$("#CustomerId").val(data.CustomerId);
+                                                                         $("#CustomerId").data("kendoDropDownList").select(data.CustomerId);
+                                                                         //$("#BranchId").val(data.BranchId);
+                                                                         $("#BranchId").data("kendoDropDownList").select(data.BranchId);
+                                                                         $("#BranchId").data("kendoDropDownList").trigger('change');
+
+                                                                        // $("#WarehouseId").data("kendoDropDownList").dataSource.read();
+                                                                         $("#WarehouseId").data("kendoDropDownList").select(data.WarehouseId);
+                                                                         $("#WarehouseId").data("kendoDropDownList").value(data.WarehouseId);
+                                                                         $("#WarehouseId").data("kendoDropDownList").trigger('change');
+                                                                        //$("#ProductId").val(data.ProductId);
+                                                                         $("#ProductId").data("kendoDropDownList").select(data.ProductId);
+                                                                         $("#SubProductId").data("kendoDropDownList").select(data.SubProductId);
+
+                                                                       //var numeric = $("#ValueDecimal").data("kendoNumericTextBox");
+                                                                       //numeric.value(data.ValueDecimal);
+                                                                       //numeric.trigger('change');
+
+                                                                     },
+                                                                     error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                                                                       //  $("#btngenerarfactura").show();
+                                                                         notification.show({
+                                                                             title: "Validacion",
+                                                                             message: textStatus + ": " + XMLHttpRequest.responseText
+                                                                         }, "error");
+
+                                                                     }
+                                                                 });
+                                                        }
+
+                                                        function applyFilterCustomer(e) {
+                                                            e.preventDefault();
+                                                            $("#cbxBuscar").data("kendoDropDownList").dataSource.read();
+                                                            var newFilter = {
+                                                                logic: "or",
+                                                                filters: [
+                                                                    { field: "ControlPalletsId", operator: "contains", value: $("#cbxBuscar").data("kendoDropDownList").filterInput[0].value },
+                                                                    { field: "CustomerName", operator: "contains", value: $("#cbxBuscar").data("kendoDropDownList").filterInput[0].value }
+                                                                  //  { field: "Motorista", operator: "contains", value: $("#cbxBuscar").data("kendoDropDownList").filterInput[0].value }
+                                                                ]
+                                                            };
+                                                            $("#cbxBuscar").data("kendoDropDownList").dataSource.filter(newFilter);
+
+                                                            //});
+                                                        }
+
+                                                    </script>
+                                                    @(Html.Kendo().DropDownList()
+                                                               .Name("cbxBuscar")
+                                                               .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                                                               .OptionLabel("Buscar")
+                                                               .DataTextField("CustomerName")
+                                                               .DataValueField("ControlPalletsId")
+                                                               .HtmlAttributes(new { style = "width:100%" })
+                                                               .Template("#: data.CustomerName # || Estiba No.: <b>#: data.ControlPalletsId #</b>")
+                                                               // .Template("#= data.ControlPalletsId   # | Cliente: #= CustomerName # | #= DescriptionProduct # | #=Motorista#")
+                                                               .ValueTemplate("<span>#:data.CustomerName#</span>")
+                                                               .Height(290)
+                                                               .Events(e => {
+                                                                   e.Change("changesetearvalues");
+                                                                  // e.Filtering("applyFilterCustomer");
+                                                               })
+                                                               .AutoBind(true)
+                                                               .DataSource(source =>
+                                                               {
+                                                                   source.Ajax()
+                                                                   .PageSize(80)
+
+                                                                   .Read("Virtualization_Read", "ControlPallets");
+                                                               })
+                                                               .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapper"))
+                                                    )
+
+
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="GoodsReceivedId" class="control-label" style="width:100%"></label>
@@ -419,7 +535,7 @@
                                 </form>
 
                                 <div class="row">
-                                    @if (Convert.ToBoolean(Model.editar))
+                                    @if (Model.editar==1)
                                     {
                                         <button id="btnSaveControlEstiba" type="submit" class="form-control btn-miboton" onclick="SaveGoodsReceived(this);">Guardar</button>
                                     }
