@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -29,6 +30,11 @@ namespace ERPMVC.Controllers
             this._config = config;
             this._logger = logger;
             
+        }
+
+        public IActionResult Estados()
+        {
+            return View();
         }
 
         public async Task<ActionResult> pvwEstados(Int64 Id = 0)
@@ -72,33 +78,34 @@ namespace ERPMVC.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<JsonResult> Get([DataSourceRequest]DataSourceRequest request)
+        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<Estados> _customers = new List<Estados>();
-
+            List<Estados> _Estados = new List<Estados>();
             try
             {
+
                 string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/estados");
+                var result = await _client.GetAsync(baseadress + "api/Estados/Get");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _customers = JsonConvert.DeserializeObject<List<Estados>>(valorrespuesta);
+                    _Estados = JsonConvert.DeserializeObject<List<Estados>>(valorrespuesta);
 
                 }
+
+
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-        
 
 
-           return Json(_customers); 
+            return _Estados.ToDataSourceResult(request);
 
         }
 
@@ -146,9 +153,10 @@ namespace ERPMVC.Controllers
 
         // POST: Estados/Insert
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult<Estados>> Insert(Estados _Estados)
+        //[ValidateAntiForgeryToken]
+        public async Task<ActionResult<Estados>> Insert(Estados _Estadosp)
         {
+             Estados _Estados = _Estadosp;
             try
             {
                 // TODO: Add insert logic here
@@ -157,6 +165,8 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 _Estados.UsuarioCreacion = HttpContext.Session.GetString("user");
                 _Estados.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _Estados.FechaCreacion = DateTime.Now;
+                _Estados.FechaModificacion = DateTime.Now;
                 var result = await _client.PostAsJsonAsync(baseadress + "api/Estados/Insert", _Estados);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -176,8 +186,8 @@ namespace ERPMVC.Controllers
             //return new ObjectResult(new DataSourceResult { Data = new[] { _Estados }, Total = 1 });
         }
 
-        [HttpPut("{id}")]
-        public async Task<ActionResult<Estados>> Update(Int64 id, Estados _Estados)
+        [HttpPut("IdEstado")]
+        public async Task<ActionResult<Estados>> Update(Int64 IdEstado, Estados _Estados)
         {
             try
             {
@@ -204,8 +214,8 @@ namespace ERPMVC.Controllers
             //return new ObjectResult(new DataSourceResult { Data = new[] { _Estados }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult<Estados>> Delete([FromBody]Estados _Estados)
+        [HttpDelete("IdEstado")]
+        public async Task<ActionResult<Estados>> Delete(Estados _Estados)
         {
             try
             {
