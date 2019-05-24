@@ -88,14 +88,9 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
-
-
           
 
         }
-
-
 
         [HttpGet]
         // [ValidateAntiForgeryToken]

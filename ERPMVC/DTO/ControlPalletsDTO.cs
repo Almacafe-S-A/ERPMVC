@@ -9,6 +9,6 @@ namespace ERPMVC.DTO
     public class ControlPalletsDTO : ControlPallets
     {
         public int editar { get; set; } = 1;
-        public List<ControlPalletsLine> _ControlPalletsLine = new List<ControlPalletsLine>();
+       
     }
 }

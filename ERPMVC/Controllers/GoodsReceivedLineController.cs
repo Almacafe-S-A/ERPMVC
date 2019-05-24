@@ -112,7 +112,7 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/GoodsReceivedLine/GetGoodsReceivedLineById/" + _GoodsReceivedLine.GoodsReceiveLinedId);
                 string valorrespuesta = "";
-                _GoodsReceivedLine.FechaModificacion = DateTime.Now;
+                //_GoodsReceivedLine.FechaModificacion = DateTime.Now;
                 _GoodsReceivedLine.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
@@ -123,7 +123,7 @@ namespace ERPMVC.Controllers
 
                 if (_listGoodsReceivedLine.GoodsReceiveLinedId == 0)
                 {
-                    _GoodsReceivedLine.FechaCreacion = DateTime.Now;
+                   // _GoodsReceivedLine.FechaCreacion = DateTime.Now;
                     _GoodsReceivedLine.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_GoodsReceivedLine);
                 }
@@ -172,6 +172,82 @@ namespace ERPMVC.Controllers
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsReceivedLine }, Total = 1 });
         }
+
+
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetGoodsReceivedLineByGoodsReceivedId([DataSourceRequest]DataSourceRequest request, GoodsReceivedLine _GoodsReceivedLinep)
+        {
+            List<GoodsReceivedLine> _GoodsReceivedLine = new List<GoodsReceivedLine>();
+            try
+            {
+                if (HttpContext.Session.Get("listadoproductos") == null
+                   || HttpContext.Session.GetString("listadoproductos") == "")
+                {
+                    if (_GoodsReceivedLinep.ControlPalletsId > 0)
+                    {
+                        string serialzado = JsonConvert.SerializeObject(_GoodsReceivedLinep).ToString();
+                        HttpContext.Session.SetString("listadoproductos", serialzado);
+                    }
+                }
+                else
+                {
+                    _GoodsReceivedLine = JsonConvert.DeserializeObject<List<GoodsReceivedLine>>(HttpContext.Session.GetString("listadoproductos"));
+                }
+
+
+                if (_GoodsReceivedLinep.GoodsReceivedId > 0)
+                {
+
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+
+                    //_client.DefaultRequestHeaders.Add("SalesOrderId", _salesorder.SalesOrderId.ToString());
+                    //_client.DefaultRequestHeaders.Add("SalesOrderId", _SalesOrderLine.SalesOrderId.ToString());
+
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/GoodsReceivedLine/GetGoodsReceivedLineByGoodsReceivedId/" + _GoodsReceivedLinep.GoodsReceivedId);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _GoodsReceivedLine = JsonConvert.DeserializeObject<List<GoodsReceivedLine>>(valorrespuesta);
+                    }
+                }
+                else
+                {
+                    if (_GoodsReceivedLinep.Quantity > 0)
+                    {
+                        _GoodsReceivedLine.Add(_GoodsReceivedLinep);
+                        HttpContext.Session.SetString("listadoproductos", JsonConvert.SerializeObject(_GoodsReceivedLine).ToString());
+                    }
+                }
+
+                //string baseadress = config.Value.urlbase;
+                //HttpClient _client = new HttpClient();
+                //_client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                //var result = await _client.GetAsync(baseadress + "api/ControlPalletsLine/GetControlPalletsLine");
+                //string valorrespuesta = "";
+                //if (result.IsSuccessStatusCode)
+                //{
+                //    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                //    _ControlPalletsLine = JsonConvert.DeserializeObject<List<ControlPalletsLine>>(valorrespuesta);
+
+                //}
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _GoodsReceivedLine.ToDataSourceResult(request);
+
+        }
+
+
 
         [HttpPut("{id}")]
         public async Task<ActionResult<GoodsReceivedLine>> Update(Int64 id, GoodsReceivedLine _GoodsReceivedLine)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -33,26 +34,31 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwGoodsReceived(Int64 Id = 0)
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwGoodsReceived([FromBody]GoodsReceivedDTO _GoodsReceivedDTO)
         {
-            GoodsReceived _GoodsReceived = new GoodsReceived();
+            GoodsReceivedDTO _GoodsReceived = new GoodsReceivedDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/GoodsReceived/GetGoodsReceivedById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/GoodsReceived/GetGoodsReceivedById/" + _GoodsReceivedDTO.GoodsReceivedId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _GoodsReceived = JsonConvert.DeserializeObject<GoodsReceived>(valorrespuesta);
+                    _GoodsReceived = JsonConvert.DeserializeObject<GoodsReceivedDTO>(valorrespuesta);
 
                 }
 
                 if (_GoodsReceived == null)
                 {
-                    _GoodsReceived = new GoodsReceived();
+                    _GoodsReceived = new GoodsReceivedDTO {  DocumentDate=DateTime.Now,OrderDate=DateTime.Now,editar=1 };
+                }
+                else
+                {
+                    _GoodsReceived.editar = 0;
                 }
             }
             catch (Exception ex)
@@ -100,36 +106,50 @@ namespace ERPMVC.Controllers
 
         }
 
-
-        public async Task<ActionResult<GoodsReceived>> SaveGoodsReceived([FromBody]GoodsReceived _GoodsReceived)
+        [HttpPost("[action]")]
+       public async Task<ActionResult<GoodsReceived>> SaveGoodsReceived([FromBody]GoodsReceived _GoodsReceived)
+           //public async Task<ActionResult<GoodsReceived>> SaveGoodsReceived([FromBody]dynamic _GoodsReceived)
         {
-
             try
             {
-                GoodsReceived _listGoodsReceived = new GoodsReceived();
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/GoodsReceived/GetGoodsReceivedById/" + _GoodsReceived.GoodsReceivedId);
-                string valorrespuesta = "";
-                _GoodsReceived.FechaModificacion = DateTime.Now;
-                _GoodsReceived.UsuarioModificacion = HttpContext.Session.GetString("user");
-                if (result.IsSuccessStatusCode)
+                if (_GoodsReceived != null)
                 {
+                    GoodsReceived _listGoodsReceived = new GoodsReceived();
+                   // _listGoodsReceived = JsonConvert.DeserializeObject<GoodsReceived>(_GoodsReceived.ToString());
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/GoodsReceived/GetGoodsReceivedById/" + _GoodsReceived.GoodsReceivedId);
+                    string valorrespuesta = "";
+                    _GoodsReceived.FechaModificacion = DateTime.Now;
+                    _GoodsReceived.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _listGoodsReceived = JsonConvert.DeserializeObject<GoodsReceived>(valorrespuesta);
+                    }
 
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listGoodsReceived = JsonConvert.DeserializeObject<GoodsReceived>(valorrespuesta);
-                }
+                    if (_listGoodsReceived == null)
+                    {
+                        _listGoodsReceived = new GoodsReceived();
+                    }
 
-                if (_listGoodsReceived.GoodsReceivedId == 0)
-                {
-                    _GoodsReceived.FechaCreacion = DateTime.Now;
-                    _GoodsReceived.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_GoodsReceived);
-                }
-                else
-                {
-                    var updateresult = await Update(_GoodsReceived.GoodsReceivedId, _GoodsReceived);
+                    if (_listGoodsReceived.GoodsReceivedId == 0)
+                    {
+                        _GoodsReceived.FechaCreacion = DateTime.Now;
+                        _GoodsReceived.UsuarioCreacion = HttpContext.Session.GetString("user");
+                        var insertresult = await Insert(_GoodsReceived);
+                        var value = (insertresult.Result as ObjectResult).Value;
+                        _GoodsReceived = ((GoodsReceived)(value));
+
+                        return _GoodsReceived;
+                    }
+                    else
+                    {
+                        //var updateresult = await Update(_GoodsReceived.GoodsReceivedId, _GoodsReceived);
+                    }
+
+                   
                 }
 
             }
@@ -139,7 +159,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_GoodsReceived);
+            return BadRequest("No llego correctamente el modelo!");
         }
 
         // POST: GoodsReceived/Insert
@@ -170,7 +190,8 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsReceived }, Total = 1 });
+            return Ok(_GoodsReceived);
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsReceived }, Total = 1 });
         }
 
         [HttpPut("{id}")]

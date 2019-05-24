@@ -34,7 +34,130 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwControlPallets(Int64 Id=0)
+
+        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request)
+        {
+            var res = await GetControlPallets();
+            return Json(res.ToDataSourceResult(request));
+        }
+
+        public async Task<ActionResult> Orders_ValueMapper(Int64[] values)
+        {
+            var indices = new List<Int64>();
+
+            if (values != null && values.Any())
+            {
+                var index = 0;
+
+                foreach (var order in await GetControlPallets())
+                {
+                    if (values.Contains(order.ControlPalletsId))
+                    {
+                        indices.Add(index);
+                    }
+
+                    index += 1;
+                }
+            }
+
+            return Json(indices);
+        }
+
+        private async Task<List<ControlPallets>> GetControlPallets()
+        {
+            List<ControlPallets> _CustomerConditions = new List<ControlPallets>();
+
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPallets");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerConditions = JsonConvert.DeserializeObject<List<ControlPallets>>(valorrespuesta);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            // return Json(_CustomerConditions.ToDataSourceResult(request));
+            return _CustomerConditions;
+        }
+
+        public async Task<ActionResult> GetControlPalletsById(Int64 Id)
+        {
+            ControlPallets _ControlPallets = new ControlPallets();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPalletsById/" + Id);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _ControlPallets = JsonConvert.DeserializeObject<ControlPallets>(valorrespuesta);
+
+                }
+
+                if (_ControlPallets == null)
+                {
+                    _ControlPallets = new ControlPallets();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_ControlPallets);
+        }
+
+
+        [HttpGet]
+        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
+        {
+            List<ControlPallets> _ControlPallets = new List<ControlPallets>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPallets");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _ControlPallets = JsonConvert.DeserializeObject<List<ControlPallets>>(valorrespuesta);
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _ControlPallets.ToDataSourceResult(request);
+
+        }
+
+
+
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwControlPallets([FromBody]ControlPalletsDTO _ControlPalletsId )
         {
             ControlPalletsDTO _ControlPallets = new ControlPalletsDTO();
             try
@@ -42,7 +165,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPalletsById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPalletsById/" + _ControlPalletsId.ControlPalletsId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -69,39 +192,8 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpGet]
-        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
-        {
-            List<ControlPallets> _ControlPallets = new List<ControlPallets>();
-            try
-            {
 
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPallets");
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ControlPallets = JsonConvert.DeserializeObject<List<ControlPallets>>(valorrespuesta);
-
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-
-            return _ControlPallets.ToDataSourceResult(request);
-
-        }
-
-
+        [HttpPost("[action]")]
         public async Task<ActionResult<ControlPallets>> SaveControlPallets([FromBody]ControlPalletsDTO _ControlPalletsDTO)
         {
 
@@ -130,31 +222,9 @@ namespace ERPMVC.Controllers
                         _ControlPalletsDTO.UsuarioCreacion = HttpContext.Session.GetString("user");
                         var insertresult = await Insert(_ControlPalletsDTO);
 
-                        foreach (var item in _ControlPalletsDTO._ControlPalletsLine)
-                        {
-                            var value = (insertresult.Result as ObjectResult).Value;
-
-                            ControlPalletsLine _ControlPalletsLineResponse = new ControlPalletsLine();
-                            item.ControlPalletsId = ((ControlPalletsDTO)(value)).ControlPalletsId;
-                            // string baseadress = config.Value.urlbase;
-                            HttpClient _client2 = new HttpClient();
-
-                            _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                            var result2 = await _client2.PostAsJsonAsync(baseadress + "api/ControlPalletsLine/Insert", item);
-
-                            valorrespuesta = "";
-                            if (result2.IsSuccessStatusCode)
-                            {
-                                valorrespuesta = await (result2.Content.ReadAsStringAsync());
-                                _ControlPalletsLineResponse = JsonConvert.DeserializeObject<ControlPalletsLine>(valorrespuesta);
-
-                            }
-                            else
-                            {
-                                string request = await result2.Content.ReadAsStringAsync();
-                                return BadRequest(request);
-                            }
-                        }
+                        var value = (insertresult.Result as ObjectResult).Value;
+                        _ControlPalletsDTO = ((ControlPalletsDTO)(value));
+                    
 
                     }
                     else
@@ -233,7 +303,8 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _ControlPallets }, Total = 1 });
+            return Ok(_ControlPallets);
+            //  return new ObjectResult(new DataSourceResult { Data = new[] { _ControlPallets }, Total = 1 });
         }
 
         [HttpPost("[action]")]
