@@ -102,7 +102,7 @@ namespace ERPMVC.Controllers
 
         }
 
-
+        [HttpPost("[action]")]
         public async Task<ActionResult<ControlPallets>> SaveControlPallets([FromBody]ControlPalletsDTO _ControlPalletsDTO)
         {
 
