@@ -20,13 +20,13 @@ namespace ERPMVC.Models
         public Int64 BranchId { get; set; }
 
         [Display(Name = "Sucursal")]
-        public Int64 BranchName { get; set; }
+        public string BranchName { get; set; }
 
         [Display(Name = "Bodega")]
         public int WarehouseId { get; set; }
 
         [Display(Name = "Bodega")]
-        public int WarehouseName { get; set; }
+        public string WarehouseName { get; set; }
 
         [Display(Name = "Producto")]
         public Int64 ProductId { get; set; }

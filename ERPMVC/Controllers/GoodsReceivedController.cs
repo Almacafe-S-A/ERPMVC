@@ -103,13 +103,15 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<GoodsReceived>> SaveGoodsReceived([FromBody]GoodsReceived _GoodsReceived)
+       public async Task<ActionResult<GoodsReceived>> SaveGoodsReceived([FromBody]GoodsReceived _GoodsReceived)
+           //public async Task<ActionResult<GoodsReceived>> SaveGoodsReceived([FromBody]dynamic _GoodsReceived)
         {
             try
             {
                 if (_GoodsReceived != null)
                 {
                     GoodsReceived _listGoodsReceived = new GoodsReceived();
+                   // _listGoodsReceived = JsonConvert.DeserializeObject<GoodsReceived>(_GoodsReceived.ToString());
                     string baseadress = config.Value.urlbase;
                     HttpClient _client = new HttpClient();
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -121,6 +123,11 @@ namespace ERPMVC.Controllers
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _listGoodsReceived = JsonConvert.DeserializeObject<GoodsReceived>(valorrespuesta);
+                    }
+
+                    if (_listGoodsReceived == null)
+                    {
+                        _listGoodsReceived = new GoodsReceived();
                     }
 
                     if (_listGoodsReceived.GoodsReceivedId == 0)
@@ -179,7 +186,8 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsReceived }, Total = 1 });
+            return Ok(_GoodsReceived);
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsReceived }, Total = 1 });
         }
 
         [HttpPut("{id}")]
