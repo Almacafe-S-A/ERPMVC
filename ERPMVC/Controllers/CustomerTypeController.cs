@@ -18,20 +18,20 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
-    public class CurrencyController : Controller
+    public class CustomerTypeController : Controller
     {
 
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
 
-        public CurrencyController(ILogger<CurrencyController> logger, IOptions<MyConfig> config)
+        public CustomerTypeController(ILogger<CustomerTypeController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
-            
+
         }
 
-        public ActionResult Currency()
+        public ActionResult CustomerType()
         {
             return View();
         }
@@ -41,18 +41,18 @@ namespace ERPMVC.Controllers
         [HttpGet("[controller]/[action]")]
         public async Task<ActionResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<Currency> _Currency = new List<Currency>();
+            List<CustomerType> _CustomerType = new List<CustomerType>();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Currency/GetCurrency");
+                var result = await _client.GetAsync(baseadress + "api/CustomerType/Get");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Currency = JsonConvert.DeserializeObject<List<Currency>>(valorrespuesta);
+                    _CustomerType = JsonConvert.DeserializeObject<List<CustomerType>>(valorrespuesta);
                 }
 
             }
@@ -62,30 +62,30 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_Currency.ToDataSourceResult(request));
+            return Json(_CustomerType.ToDataSourceResult(request));
 
         }
 
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public async Task<ActionResult> Insert(Currency _Currencyp)
+        public async Task<ActionResult> Insert(CustomerType _CustomerTypep)
         {
-            Currency _Currency = _Currencyp;
+            CustomerType _CustomerType = _CustomerTypep;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _Currency.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _Currency.UsuarioModificacion = HttpContext.Session.GetString("user");
-                _Currency.FechaCreacion = DateTime.Now;
-                _Currency.FechaModificacion = DateTime.Now;
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Currency/Insert", _Currency);
+                _CustomerType.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _CustomerType.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _CustomerType.FechaCreacion = DateTime.Now;
+                _CustomerType.FechaModificacion = DateTime.Now;
+                var result = await _client.PostAsJsonAsync(baseadress + "api/CustomerType/Insert", _CustomerType);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Currency = JsonConvert.DeserializeObject<Currency>(valorrespuesta);
+                    _CustomerType = JsonConvert.DeserializeObject<CustomerType>(valorrespuesta);
                 }
 
             }
@@ -94,28 +94,28 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Currency }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerType }, Total = 1 });
         }
 
 
 
-        [HttpPost]
-        public async Task<IActionResult> Update(Currency _Currencyp)
+        [HttpPut]
+        public async Task<IActionResult> Update(CustomerType _customertype)
         {
-            Currency _Currency = _Currencyp;
+           
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _Currency.FechaModificacion = DateTime.Now;
-                _Currency.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Currency/Update", _Currency);
+                _customertype.FechaModificacion = DateTime.Now;
+                _customertype.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PutAsJsonAsync(baseadress + "api/CustomerType/Update", _customertype);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Currency = JsonConvert.DeserializeObject<Currency>(valorrespuesta);
+                    _customertype = JsonConvert.DeserializeObject<CustomerType>(valorrespuesta);
                 }
 
             }
@@ -124,26 +124,26 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Currency }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _customertype }, Total = 1 });
         }
 
 
-        [HttpDelete("CurrencyId")]
-        public async Task<ActionResult<Currency>> Delete(Int64 CurrencyId, Currency _Currencyp)
+        [HttpDelete("CustomerTypeId")]
+        public async Task<ActionResult<CustomerType>> Delete(Int64 CustomerTypeId, CustomerType _CustomerTypep)
         {
-            Currency _Currency = _Currencyp;
+            CustomerType _CustomerType = _CustomerTypep;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Currency/Delete", _Currency);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/CustomerType/Delete", _CustomerType);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Currency = JsonConvert.DeserializeObject<Currency>(valorrespuesta);
+                    _CustomerType = JsonConvert.DeserializeObject<CustomerType>(valorrespuesta);
                 }
 
             }
@@ -152,7 +152,7 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Currency }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerType }, Total = 1 });
         }
 
 
