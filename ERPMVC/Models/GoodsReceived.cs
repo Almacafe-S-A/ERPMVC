@@ -52,6 +52,10 @@ namespace ERPMVC.Models
 
         [Display(Name = "Boleta de salida")]
         public Int64 ExitTicket { get; set; }
+
+        [Display(Name = "Boleta de peso")]
+        public Int64 WeightBallot { get; set; }
+
         [Display(Name = "Comentarios")]
         public string Comments { get; set; }
         public DateTime? FechaCreacion { get; set; }

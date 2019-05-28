@@ -176,8 +176,13 @@ namespace ERPMVC.Controllers
 
                 if (_ControlPallets == null)
                 {
-                    _ControlPallets = new ControlPalletsDTO { DocumentDate=DateTime.Now     };
+                    _ControlPallets = new ControlPalletsDTO { DocumentDate=DateTime.Now  , editar=1   };
                 }
+                else
+                {
+                    _ControlPallets.editar = 0;
+                }
+
             }
             catch (Exception ex)
             {
