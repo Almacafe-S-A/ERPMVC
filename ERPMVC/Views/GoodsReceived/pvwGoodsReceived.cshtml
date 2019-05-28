@@ -98,7 +98,8 @@
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <div class="form-group">
-                                                    <label for="cbxBuscar" class="control-label" style="width:100%">Asociar control de estiba</label>
+                                                    @*<label for="cbxBuscar" class="control-label" style="width:100%">Asociar control de estiba</label>*@
+                                                    <label for="cbxBuscar" class="control-label" style="width:100%">Asociar control de ingresos</label>
                                                     <script>
                                                         function valueMapper(options) {
                                                             $.ajax({
@@ -132,24 +133,31 @@
                                                                      data: dataObject,
                                                                      success: function (data) {
                                                                     //   console.log(data);
-                                                                       
-                                                                         $("#CustomerId").data("kendoDropDownList").value(data.CustomerId);   
-                                                                         $("#CustomerId").data("kendoDropDownList").select(data.CustomerId);  
-                                                                         $("#CustomerId").data("kendoDropDownList").trigger('change');  
+
+                                                                         $("#CustomerId").data("kendoDropDownList").value(data.CustomerId);
+                                                                         $("#CustomerId").data("kendoDropDownList").select(data.CustomerId);
+                                                                         $("#CustomerId").data("kendoDropDownList").trigger('change');
                                                                          $("#BranchId").data("kendoDropDownList").value(data.BranchId);
                                                                         // $("#BranchId").data("kendoDropDownList").trigger('change');
                                                                          $("#WarehouseId").data("kendoDropDownList").value(data.WarehouseId);
                                                                          $("#WarehouseId").data("kendoDropDownList").value(data.WarehouseId);
-                                                                         $("#WarehouseId").data("kendoDropDownList").trigger('change');                                                             
+                                                                         $("#WarehouseId").data("kendoDropDownList").trigger('change');
                                                                          $("#ProductId").data("kendoDropDownList").value(data.ProductId);
                                                                          hcustom = data.CustomerId;
                                                                          GetProductTypeIdS();
                                                                          $("#SubProductId").data("kendoDropDownList").dataSource.read();
-                                                                         $("#SubProductId").data("kendoDropDownList").value(data.SubProductId);                                                                      
+                                                                         $("#SubProductId").data("kendoDropDownList").value(data.SubProductId);
                                                                          $("#Name").val(data.Motorista);
 
                                                                          var grid = $("#gridGoodsReceivedDetail").data("kendoGrid");
-                                                                         var datasource = grid.dataSource;
+                                                                         var datasource = grid.dataSource;                                                                        
+                                                                         var raw = datasource._data;                                                                      
+                                                                         for (i = datasource._data.length - 1; i >= 0; i--) {                                                                           
+                                                                             item = raw[i];                                                                           
+                                                                             datasource.remove(item);                                                                          
+                                                                         }
+
+                                                              
                                                                          datasource.insert({
                                                                              GoodsReceiveLinedId: 0, GoodsReceivedId: 0, Quantity: 0
                                                                              , UnitOfMeasureName: '', UnitOfMeasureId: 0
@@ -197,29 +205,30 @@
                                                     </script>
                                                     <input type="hidden" id="singuardar" value="0" />
                                                     @(Html.Kendo().DropDownList()
-                                                               .Name("cbxBuscar")
-                                                               .Filter(Kendo.Mvc.UI.FilterType.Contains)
-                                                               .OptionLabel("Buscar")
-                                                               .DataTextField("CustomerName")
-                                                               .DataValueField("ControlPalletsId")
-                                                               .HtmlAttributes(new { style = "width:100%" })
-                                                               .Template("#: data.CustomerName # || Estiba No.: <b>#: data.ControlPalletsId #</b>")
-                                                               // .Template("#= data.ControlPalletsId   # | Cliente: #= CustomerName # | #= DescriptionProduct # | #=Motorista#")
-                                                               .ValueTemplate("<span>#:data.CustomerName#</span>")
-                                                               .Height(290)
-                                                               .Events(e => {
-                                                                   e.Change("changesetearvalues");
-                                                                  // e.Filtering("applyFilterCustomer");
-                                                               })
-                                                               .AutoBind(true)
-                                                               .DataSource(source =>
-                                                               {
-                                                                   source.Ajax()
-                                                                   .PageSize(80)
+                                                                       .Name("cbxBuscar")
+                                                                       .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                                                                       .OptionLabel("Buscar")
+                                                                       .DataTextField("CustomerName")
+                                                                       .DataValueField("ControlPalletsId")
+                                                                       .HtmlAttributes(new { style = "width:100%" })
+                                                                       .Template("#: data.CustomerName # || Estiba No.: <b>#: data.ControlPalletsId #</b>")
+                                                                       // .Template("#= data.ControlPalletsId   # | Cliente: #= CustomerName # | #= DescriptionProduct # | #=Motorista#")
+                                                                       .ValueTemplate("<span>#:data.CustomerName#</span>")
+                                                                       .Height(290)
+                                                                       .Events(e =>
+                                                                       {
+                                                                           e.Change("changesetearvalues");
+                                                                                                               // e.Filtering("applyFilterCustomer");
+                                                                                                           })
+                                                                       .AutoBind(true)
+                                                                       .DataSource(source =>
+                                                                       {
+                                                                           source.Ajax()
+                                                                           .PageSize(80)
 
-                                                                   .Read("Virtualization_Read", "ControlPallets");
-                                                               })
-                                                               .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapper"))
+                                                                           .Read("Virtualization_Read", "ControlPallets");
+                                                                       })
+                                                                       .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapper"))
                                                     )
 
 
@@ -446,14 +455,46 @@
                                                 <input type="text" id="Name" required class="form-control" style="min-width:100%;" asp-for="Name" />
                                             </div>
                                         </div>
-                                        @*<div class="col-md-4">
+
+
+                                        <div class="col-md-4">
                                             <div class="form-group">
-                                                <label asp-for="Marca" class="control-label" style="width: 100%;"></label>
-                                                <input type="text" id="Marca" required class="form-control" style="min-width: 100%;" asp-for="Marca" />
+                                                <label asp-for="ExitTicket" class="control-label" style="width:100%"></label>
+                                                <kendo-numerictextbox name="ExitTicket"
+                                                                      format="n"
+                                                                      min="0"
+                                                                      
+                                                                      max="99999999"
+                                                                      step="1"
+                                                                      style="width: 100%;"
+                                                                      value="Model.ExitTicket"></kendo-numerictextbox>
+                                                <span asp-validation-for="ExitTicket" class="text-danger"></span>
                                             </div>
-                                        </div>*@
-                                     
+
+                                        </div>
+
                                     </div>
+
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label asp-for="WeightBallot" class="control-label" style="width:100%"></label>
+                                                <kendo-numerictextbox name="WeightBallot"
+                                                                      format="n"
+                                                                      min="0"
+                                                                      spinners="false"
+                                                                      
+                                                                      max="99999999"
+                                                                      step="1"
+                                                                      style="width: 100%;"
+                                                                      value="Model.WeightBallot"></kendo-numerictextbox>
+                                                <span asp-validation-for="WeightBallot" class="text-danger"></span>
+                                            </div>
+
+                                        </div>
+
+                                    </div>
+                                    
 
                                     @*<div class="row">
                                         <div class="col-md-4">
