@@ -216,20 +216,37 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<SalesOrderLine>> Delete([FromBody]SalesOrderLine _rol)
+        public async Task<ActionResult<SalesOrderLine>> Delete([FromBody]SalesOrderLine _salesorder)
         {
             try
             {
-                string baseadress = _config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/SalesOrderLine/Delete", _rol);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
+                List<SalesOrderLine> _salesorderLIST =
+                 JsonConvert.DeserializeObject<List<SalesOrderLine>>(HttpContext.Session.GetString("listadoproductos"));
+
+                if (_salesorderLIST != null)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _rol = JsonConvert.DeserializeObject<SalesOrderLine>(valorrespuesta);
+                    _salesorderLIST = _salesorderLIST
+                           .Where(q => q.Quantity != _salesorder.Quantity)
+                           .Where(q => q.Amount != _salesorder.Amount)
+                           .Where(q => q.Total != _salesorder.Total)
+                           .Where(q => q.Price != _salesorder.Price)
+                           .Where(q => q.SubProductId != _salesorder.SubProductId)
+                          .ToList();
+
+                    HttpContext.Session.SetString("listadoproductos", JsonConvert.SerializeObject(_salesorderLIST));
                 }
+
+
+                //string baseadress = _config.Value.urlbase;
+                //HttpClient _client = new HttpClient();
+                //_client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                //var result = await _client.PostAsJsonAsync(baseadress + "api/SalesOrderLine/Delete", _rol);
+                //string valorrespuesta = "";
+                //if (result.IsSuccessStatusCode)
+                //{
+                //    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                //    _rol = JsonConvert.DeserializeObject<SalesOrderLine>(valorrespuesta);
+                //}
 
             }
             catch (Exception ex)
@@ -237,8 +254,9 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error: {ex.Message}");
             }
-        
-            return new ObjectResult(new DataSourceResult { Data = new[] { _rol }, Total = 1 });
+
+            return Ok(_salesorder);
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _salesorder }, Total = 1 });
         }
 
 

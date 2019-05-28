@@ -180,18 +180,18 @@ namespace ERPMVC.Controllers
             List<GoodsReceivedLine> _GoodsReceivedLine = new List<GoodsReceivedLine>();
             try
             {
-                if (HttpContext.Session.Get("listadoproductos") == null
-                   || HttpContext.Session.GetString("listadoproductos") == "")
+                if (HttpContext.Session.Get("listadoproductosgoodsreceived") == null
+                   || HttpContext.Session.GetString("listadoproductosgoodsreceived") == "")
                 {
                     if (_GoodsReceivedLinep.GoodsReceivedId > 0)
                     {
                         string serialzado = JsonConvert.SerializeObject(_GoodsReceivedLinep).ToString();
-                        HttpContext.Session.SetString("listadoproductos", serialzado);
+                        HttpContext.Session.SetString("listadoproductosgoodsreceived", serialzado);
                     }
                 }
                 else
                 {
-                    _GoodsReceivedLine = JsonConvert.DeserializeObject<List<GoodsReceivedLine>>(HttpContext.Session.GetString("listadoproductos"));
+                    _GoodsReceivedLine = JsonConvert.DeserializeObject<List<GoodsReceivedLine>>(HttpContext.Session.GetString("listadoproductosgoodsreceived"));
                 }
 
 
@@ -218,7 +218,7 @@ namespace ERPMVC.Controllers
                     if (_GoodsReceivedLinep.Quantity > 0)
                     {
                         _GoodsReceivedLine.Add(_GoodsReceivedLinep);
-                        HttpContext.Session.SetString("listadoproductos", JsonConvert.SerializeObject(_GoodsReceivedLine).ToString());
+                        HttpContext.Session.SetString("listadoproductosgoodsreceived", JsonConvert.SerializeObject(_GoodsReceivedLine).ToString());
                     }
                 }
 
@@ -284,7 +284,7 @@ namespace ERPMVC.Controllers
                           // .Where(q => q.UnitOfMeasureId != _GoodsReceivedLine.UnitOfMeasureId)
                            .ToList();
                         
-                    HttpContext.Session.SetString("listadoproductos", JsonConvert.SerializeObject(_GoodsReceivedLineLIST));
+                    HttpContext.Session.SetString("listadoproductosgoodsreceived", JsonConvert.SerializeObject(_GoodsReceivedLineLIST));
                 }
                 //string baseadress = config.Value.urlbase;
                 //HttpClient _client = new HttpClient();

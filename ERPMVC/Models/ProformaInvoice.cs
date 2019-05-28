@@ -10,7 +10,7 @@ namespace ERPMVC.Models
     public class ProformaInvoice
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Display(Name = "Nombre")]
+        [Display(Name = "Número de Proforma")]
         public int ProformaId { get; set; }
         [Display(Name = "Nombre Cliente")]
         public string ProformaName { get; set; }
@@ -21,8 +21,11 @@ namespace ERPMVC.Models
         [Display(Name = "Teléfono")]
         public string Tefono { get; set; }
 
-        [Display(Name = "Correo")]
+       
         [EmailAddress]
+        [RegularExpression(@"\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*", ErrorMessage = "Correo invalido")]
+        [DataType(DataType.EmailAddress)]
+        [Display(Name = "Correo")]
         public string Correo { get; set; }
 
         [Display(Name = "Dirección")]
@@ -36,6 +39,9 @@ namespace ERPMVC.Models
 
         [Display(Name = "Cliente")]
         public int CustomerId { get; set; }
+
+        [Display(Name = "Fecha de vencimiento")]
+        public DateTime ExpirationDate { get; set; }
 
         [Display(Name = "Nombre Cliente")]
         public string CustomerName { get; set; }
@@ -54,6 +60,8 @@ namespace ERPMVC.Models
 
         [Display(Name = "Moneda")]
         public int CurrencyId { get; set; }
+
+       
 
         [Display(Name = "Número de referencia de cliente")]
         public string CustomerRefNumber { get; set; }

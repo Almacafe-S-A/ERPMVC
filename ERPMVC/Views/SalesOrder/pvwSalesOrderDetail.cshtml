@@ -40,6 +40,7 @@
 
             llenarsubproduct();
             $("#frmSalesOrderLine :input").not('#SalesOrderId').prop("disabled", false);
+            $('#TaxCode').val(0);
             $('#myModalSalesOrderLine').modal('show');
         } else {
             var notification = $("#notification").data("kendoNotification");
@@ -121,6 +122,47 @@
         $('#myModalSalesOrderLine').modal('show');
        
     }
+
+
+        function Delete(e) {
+
+        e.preventDefault();
+        if (confirm('Esta seguro que desea eliminar la fila?')) {
+            var notification = $("#notification").data("kendoNotification");
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+            $.ajax({
+                url: '@Url.Action("Delete", "SalesOrderLine")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataItem),
+                success: function (data) {
+                    //$("#ControlPalletsLineMant").html('');
+                    //$("#ControlPalletsLineMant").html(data);
+                    //var txt = $(data);
+                    //var found = $("#SubProductId", txt);
+                    //subproducto = $(found).val();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    //  $("#btngenerarfactura").show();
+                    notification.show({
+                        title: "Validacion",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+
+                }
+            });
+
+            var grid = $("#gridCotizacionesDetail").data("kendoGrid");     
+            grid.dataSource.remove(dataItem);
+            //Sync it with the grid
+            //grid.dataSource.sync();
+        }
+    }
+
 </script>
 
 
@@ -134,7 +176,11 @@
                                           {
                                               columns.Command(command =>
                                               {
-                                                  command.Custom("Editar").Click("EditCotizacionDetalle");
+                                                  if (Model.editar == 1)
+                                                  {
+                                                      command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+                                                  }
+                                                  command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCotizacionDetalle");
                                                   // command.Custom("Imprimir").Click("ImprimirCotizacion");
                                                   //  command.Edit(); command.Destroy();
                                               }).Width(150);

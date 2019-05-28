@@ -66,6 +66,35 @@ namespace ERPMVC.Controllers
 
         }
 
+
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> GetCurrency([DataSourceRequest]DataSourceRequest request)
+        {
+            List<Currency> _Currency = new List<Currency>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Currency/GetCurrency");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Currency = JsonConvert.DeserializeObject<List<Currency>>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+
+            return Json(_Currency.ToDataSourceResult(request));
+
+        }
+
         [HttpPost]
         //[ValidateAntiForgeryToken]
         public async Task<ActionResult> Insert(Currency _Currencyp)

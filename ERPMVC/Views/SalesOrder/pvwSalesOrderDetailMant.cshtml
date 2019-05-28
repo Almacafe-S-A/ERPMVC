@@ -6,6 +6,10 @@
     completedorderlinemant = function (xhr) {  
         
         $('#myModalSalesOrderLine').find(':input').not('#SalesOrderId :submit').val('0');
+        $('#TaxCode').val('0');
+        $('#TaxCode').data("kendoDropDownList").value('0');
+        $('#TaxCode').data("kendoDropDownList").value(0);
+        $('Description').val('');
         CalcularTotalDocumento();    
         $("#btnActualizarCotizacionLinea").prop("disabled", false);
        closesaleorderline();
@@ -51,7 +55,9 @@
             }         
            
         });
-       
+
+        console.log(TotalGravado); console.log(TotalGravado18); console.log(TotalExento);
+        console.log(TotalExonerado); console.log(totalimpuesto18); console.log(totalimpuesto); console.log(Number(freight));
         var sumatotal = TotalGravado + TotalGravado18 + TotalExento + TotalExonerado + totalimpuesto18+  totalimpuesto + Number(freight);      
         setearvalor('Amount', total);
 
@@ -102,22 +108,24 @@
 
     function GetPercentage()
     {
-        var dataObject = { TaxId: $("#TaxCode").val()};
-         $.ajax({
-            url: '@Url.Action("GetTaxById","Tax")',          
-            method: 'GET',
-            datatype: "json",
-            contentType: 'application/json',
-            async: false,
-            data: dataObject,
-             success: function (result) {          
-                 setearvalor("TaxPercentage", result.TaxPercentage);
-                 CalcularTotal();
-            },
-             error: function (XMLHttpRequest, textStatus, errorThrown) {
+        if ($("#TaxCode").val() != null) {
+            var dataObject = { TaxId: $("#TaxCode").val() };
+            $.ajax({
+                url: '@Url.Action("GetTaxById","Tax")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: dataObject,
+                success: function (result) {
+                    setearvalor("TaxPercentage", result.TaxPercentage);
+                    CalcularTotal();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
                     alert(textStatus + ": " + XMLHttpRequest.responseText);
-              }
-         });
+                }
+            });
+        }
          
     }
 
@@ -288,7 +296,7 @@
                                   </script>
                                   <input type="hidden" id="subproductname" />
                                   <kendo-dropdownlist name="SubProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                  placeholder="Select SubProductId"
+                                                  option-label="Seleccione el subproducto"
                                                   for="SubProductId"
                                                   datatextfield="ProductName"
                                                   datavaluefield="SubproductId"                                                
@@ -430,7 +438,7 @@
                           <label asp-for="TaxCode" class="control-label" style="width:100%"></label>
 
                           <kendo-dropdownlist name="TaxCode" filter="Kendo.Mvc.UI.FilterType.Contains"
-                          placeholder="Select TaxId"
+                           option-label="Seleccione el Impuestos"
                           datatextfield="TaxCode"
                           datavaluefield="TaxId"
                           required
