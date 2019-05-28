@@ -19,7 +19,7 @@
             }
         }
         return {
-            'GoodsReceiveLinedId': $("#UnitOfMeasureId").val(),
+            'GoodsReceiveLinedId': $("#GoodsReceiveLinedId").val(),
             'GoodsReceivedId':@Model.GoodsReceivedId,
             'UnitOfMeasureId': $("#UnitOfMeasureId").val(),
             'UnitOfMeasureName': unidaddemedida ,
@@ -99,42 +99,132 @@
         var notification = $("#notification").data("kendoNotification");
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
 
-        var subproducto = 0;
-        var dataObject = { 'SalesOrderLineId': dataItem.SalesOrderLineId };
-              $.ajax({
-                    url: '@Url.Action("pvwGoodsReceivedMant", "GoodsReceivedLine")',
-                    method: 'POST',
-                    datatype: "json",
-                    contentType: 'application/json',
-                    async: false,
-                    data: JSON.stringify(dataObject),
-                    success: function (data) {
-                        $("#ControlPalletsLineMant").html('');
-                        $("#ControlPalletsLineMant").html(data);
-                        var txt = $(data);
-                        var found = $("#SubProductId", txt);
-                        subproducto = $(found).val();
-                    },
-                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+        if (dataItem.SalesOrderLineId > 0) {
+            var subproducto = 0;
+            var dataObject = { 'SalesOrderLineId': dataItem.SalesOrderLineId };
+            $.ajax({
+                url: '@Url.Action("pvwGoodsReceivedMant", "GoodsReceivedLine")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    $("#ControlPalletsLineMant").html('');
+                    $("#ControlPalletsLineMant").html(data);
+                    var txt = $(data);
+                    var found = $("#SubProductId", txt);
+                    subproducto = $(found).val();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
 
-                      //  $("#btngenerarfactura").show();
-                        notification.show({
-                            title: "Validacion",
-                            message: textStatus + ": " + XMLHttpRequest.responseText
-                        }, "error");
+                    //  $("#btngenerarfactura").show();
+                    notification.show({
+                        title: "Validacion",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
 
-                    }
-              });
+                }
+            });
+
+            $("#frmGoodsReceivedLine :input").prop("disabled", true);
+            //llenarsubproduct();
+            var combobox = $('#SubProductId').getKendoDropDownList();
+            combobox.value(subproducto);
+            combobox.trigger('change'); 
+        }
+        else {
+            $("#GoodsReceiveLinedId").val(dataItem.GoodsReceiveLinedId);
+            $("#GoodsReceivedId").val(dataItem.GoodsReceivedId);
+           
+            $("#UnitOfMeasureName").val(dataItem.UnitOfMeasureName);
+            $("#UnitOfMeasureId").val(dataItem.UnitOfMeasureId);
+
+            $("#SubProductIddetail").data("kendoDropDownList").dataSource.read();
+            console.log(dataItem.SubProductId);
+            console.log(dataItem.SubProductName);
+            $("#SubProductIddetail").data("kendoDropDownList").value(dataItem.SubProductId);
+            //$("#SubProductName").val(dataItem.SubProductName);
+
+            var quantity = $("#Quantity").data("kendoNumericTextBox");   
+            quantity.value(dataItem.Quantity);
+            quantity.trigger('change');
+
+            var Price = $("#Price").data("kendoNumericTextBox");
+            Price.value(dataItem.Price);
+            Price.trigger('change');
+
+            var Total = $("#Total").data("kendoNumericTextBox");
+            Total.value(dataItem.Total);
+            Total.trigger('change');
+
+            var quantitysacos= $("#QuantitySacos").data("kendoNumericTextBox");          
+            if (quantitysacos !== null && dataItem.QuantitySacos != null)
+                quantitysacos.value(dataItem.QuantitySacos);
+                quantitysacos.trigger('change');
+
+            var total = $("#Total").data("kendoNumericTextBox");
+            if (total !== null)
+                total.value(dataItem.TotalSacos);
+                  total.trigger('change');
+
+            $("#WareHouseId").val(dataItem.WareHouseId);
+          //  data.WarehouseId
+            var ControlPalletsId = $("#ControlPalletsId").data("kendoNumericTextBox");
+            ControlPalletsId.value(dataItem.ControlPalletsId);
+            ControlPalletsId.trigger('change');
+        }
 
 
      
-        $("#frmGoodsReceivedLine :input").prop("disabled", true);
-        //llenarsubproduct();
-        var combobox = $('#SubProductId').getKendoDropDownList();
-        combobox.value(subproducto);
-        combobox.trigger('change');      
+           
         $('#myModalGoodsReceivedLine').modal('show');
        
+    }
+
+    function Delete(e) {
+
+        e.preventDefault();
+        var notification = $("#notification").data("kendoNotification");
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+
+       
+
+         $.ajax({
+                url: '@Url.Action("Delete", "GoodsReceivedLine")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                 data: JSON.stringify(dataItem),
+                 success: function (data) {
+                    //$("#ControlPalletsLineMant").html('');
+                    //$("#ControlPalletsLineMant").html(data);
+                    //var txt = $(data);
+                    //var found = $("#SubProductId", txt);
+                    //subproducto = $(found).val();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    //  $("#btngenerarfactura").show();
+                    notification.show({
+                        title: "Validacion",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+
+                }
+        });
+
+        var grid = $("#gridGoodsReceivedDetail").data("kendoGrid");
+        ////Get the selected grid
+        //var tr = $(e.target).closest("tr");
+        ////Get the item from the grid
+        //var data = this.dataItem(dataItem);
+        //Remove the item from the datasource
+        grid.dataSource.remove(dataItem);
+        //Sync it with the grid
+        //grid.dataSource.sync();
     }
 </script>
 
@@ -149,7 +239,8 @@
                                           {
                                               columns.Command(command =>
                                               {
-                                                  command.Custom("Editar").Click("EditGoodsReceivedDetalle");
+                                                  command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+                                                  command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditGoodsReceivedDetalle");
                                                   // command.Custom("Imprimir").Click("ImprimirCotizacion");
                                                   //  command.Edit(); command.Destroy();
                                               }).Width(150);
@@ -160,11 +251,12 @@
                                               columns.Bound(p => p.UnitOfMeasureName).Title("Unidad de medida").Width(150);
                                               columns.Bound(p => p.UnitOfMeasureId).Hidden().Title("Unidad de medida").Width(0);
                                               columns.Bound(p => p.SubProductId).Title("Producto").Hidden().Width(0);
+                                              columns.Bound(p => p.Price).Title("Precio").Width(100);
                                               columns.Bound(p => p.SubProductName).Title("Producto").Width(150);
                                               columns.Bound(p => p.QuantitySacos).Title("Sacos").Width(150);
                                               columns.Bound(p => p.WareHouseId).Title("Bodega").Width(150);
                                               columns.Bound(p => p.ControlPalletsId).Title("Estiba No.").Width(150);
-
+                                              columns.Bound(p => p.Total).Title("Total").Width(100);
                                           })
                                           .ToolBar(tools =>
                                           {
@@ -217,7 +309,7 @@
                                             .Read(read => read.Action("GetGoodsReceivedLineByGoodsReceivedId", "GoodsReceivedLine").Data("GetGoodsReceivedLineId"))
                                             //.Create(create => create.Action("Insert", "SalesOrderLine"))
                                             //.Update(update => update.Action("Update", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
-                                            //.Destroy(destroy => destroy.Action("Delete", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
+                                            .Destroy(destroy => destroy.Action("Delete", "GoodsReceivedLine").Type(HttpVerbs.Post))
                                       )
         )
 
