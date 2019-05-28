@@ -183,7 +183,7 @@ namespace ERPMVC.Controllers
                 if (HttpContext.Session.Get("listadoproductos") == null
                    || HttpContext.Session.GetString("listadoproductos") == "")
                 {
-                    if (_GoodsReceivedLinep.ControlPalletsId > 0)
+                    if (_GoodsReceivedLinep.GoodsReceivedId > 0)
                     {
                         string serialzado = JsonConvert.SerializeObject(_GoodsReceivedLinep).ToString();
                         HttpContext.Session.SetString("listadoproductos", serialzado);
@@ -222,18 +222,7 @@ namespace ERPMVC.Controllers
                     }
                 }
 
-                //string baseadress = config.Value.urlbase;
-                //HttpClient _client = new HttpClient();
-                //_client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                //var result = await _client.GetAsync(baseadress + "api/ControlPalletsLine/GetControlPalletsLine");
-                //string valorrespuesta = "";
-                //if (result.IsSuccessStatusCode)
-                //{
-                //    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                //    _ControlPalletsLine = JsonConvert.DeserializeObject<List<ControlPalletsLine>>(valorrespuesta);
-
-                //}
-
+             
 
             }
             catch (Exception ex)
@@ -276,22 +265,38 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsReceivedLine }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[Controller]/[action]")]
         public async Task<ActionResult<GoodsReceivedLine>> Delete([FromBody]GoodsReceivedLine _GoodsReceivedLine)
         {
             try
             {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/GoodsReceivedLine/Delete", _GoodsReceivedLine);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
+                List<GoodsReceivedLine> _GoodsReceivedLineLIST =
+                    JsonConvert.DeserializeObject<List<GoodsReceivedLine>>(HttpContext.Session.GetString("listadoproductos"));
+
+                if (_GoodsReceivedLineLIST != null)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _GoodsReceivedLine = JsonConvert.DeserializeObject<GoodsReceivedLine>(valorrespuesta);
+                    _GoodsReceivedLineLIST = _GoodsReceivedLineLIST
+                           .Where(q => q.Quantity != _GoodsReceivedLine.Quantity)
+                           .Where(q=>q.QuantitySacos!=_GoodsReceivedLine.QuantitySacos)
+                           .Where(q => q.Total != _GoodsReceivedLine.Total)
+                           .Where(q => q.Price != _GoodsReceivedLine.Price)
+                          // .Where(q => q.UnitOfMeasureId != _GoodsReceivedLine.UnitOfMeasureId)
+                           .ToList();
+                        
+                    HttpContext.Session.SetString("listadoproductos", JsonConvert.SerializeObject(_GoodsReceivedLineLIST));
                 }
+                //string baseadress = config.Value.urlbase;
+                //HttpClient _client = new HttpClient();
+                //_client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                //var result = await _client.PostAsJsonAsync(baseadress + "api/GoodsReceivedLine/Delete", _GoodsReceivedLine);
+                //string valorrespuesta = "";
+                //if (result.IsSuccessStatusCode)
+                //{
+                //    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                //    _GoodsReceivedLine = JsonConvert.DeserializeObject<GoodsReceivedLine>(valorrespuesta);
+                //}
 
             }
             catch (Exception ex)
