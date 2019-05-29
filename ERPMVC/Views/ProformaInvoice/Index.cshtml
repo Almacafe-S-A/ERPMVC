@@ -1,0 +1,221 @@
+﻿
+<script>
+    function AddCotizacion() {
+       // $('#myModalSalesOrder').find(':input').not(':submit').val('');
+         //$('#myModalSalesOrder').modal('show');
+         var dataObject = ["listadoproductos"];
+         $.ajax({
+            url: '@Url.Action("ClearSession","Common")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                  //  $('#myModalSalesOrder').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+         });
+
+
+         var dataObject = {
+            SalesOrderId: 0,
+            editar : 1
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwProformaInvoice","ProformaInvoice")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#salesorder").html('');
+                $("#salesorder").html(result);
+
+                RefreshCotizacionesDetail();
+                 $("#btnSaveCotizacion").show();
+                 $('#myModalSalesOrder').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+
+
+    }
+
+    function EditCotizacion(e) {
+         e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            SalesOrderId: dataItem.SalesOrderId,
+            editar : 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwProformaInvoice", "ProformaInvoice")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#salesorder").html('');
+                $("#salesorder").html(result);
+
+              //  RefreshCotizacionesDetail();
+                 $("#btnSaveCotizacion").hide();
+                 $('#myModalSalesOrder').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+    }
+
+    function ImprimirCotizacion(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+
+        window.location.href = '@Url.Action("SFProformaInvoice", "ProformaInvoice")/' + dataItem.ProformaId;
+
+      
+
+
+    }
+
+
+    function closecondition() {
+        $('#myModalConditions').modal('hide');
+    }
+
+
+</script>
+
+<h3 class="text-themecolor">Facturas proforma</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.ProformaInvoice>()
+                          .Name("gridCotizaciones")
+                          .Columns(columns =>
+                          {
+                              columns.Command(command =>
+                              {
+                                  command.Custom("Editar").Click("EditCotizacion");
+                                  command.Custom("Imprimir").Click("ImprimirCotizacion");
+                                  //  command.Edit(); command.Destroy();
+                              }).Width(250);
+
+                              columns.Bound(p => p.ProformaId).Title("Id").Width(150);
+                              columns.Bound(p => p.OrderDate).Format("{0:dd/MM/yyyy}").Title("Fecha Cotizacion").Width(150);
+                              columns.Bound(p => p.CustomerName).Title("Cliente").Width(150);
+                              columns.Bound(p => p.CustomerRefNumber).Title("Codigo referencia").Width(150);
+                              columns.Bound(p => p.Discount).Title("Descuentos").Width(150);
+                              //columns.Bound(p => p.BranchId).Title("Branch Id").Width(150);
+                              columns.Bound(p => p.BranchName).Title("Sucursal").Width(150);
+                              columns.Bound(p => p.Freight).Title("Flete").Width(150);
+                              columns.Bound(p => p.SubTotal).Title("Sub Total").Width(150);
+                              columns.Bound(p => p.Tax).Title("Total Impuesto").Width(150);
+                              columns.Bound(p => p.Total).Title("Total").Width(150);
+                          })
+                              .Filterable(f => f.Operators(o => o.ForString(s => s
+                                       .Clear()
+                                       .Contains("Contiene")
+                                       .DoesNotContain("No contiene")
+                                       .EndsWith("Termina con")
+                                       .IsEqualTo("Es igual a")
+                                       .IsNotEqualTo("No es igual a")
+                                       .IsNull("Es nulo")
+                                       .StartsWith("Inicia con")
+
+
+                                 )
+                                 .ForNumber(n => n
+                                   .Clear()
+                                   .IsEqualTo("Es igual a")
+                                   .IsGreaterThan("Es mayor que")
+                                   .IsLessThan("Es menor que")
+                                   .IsNull("Es nulo")
+                                   .IsLessThanOrEqualTo("Es menor o igual que")
+                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                 )
+                                 .ForDate(d => d
+                                 .Clear()
+                                 .IsEqualTo("Es igual que")
+                                 .IsGreaterThan("Es mayor que")
+                                 .IsLessThan("Es menor que")
+                                 .IsLessThanOrEqualTo("Es menor o igual que")
+                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                 .IsNotEqualTo("No es igual que")
+                                  )
+                               ))
+                          .ToolBar(tools =>
+                          {
+                              // tools.Create();
+                              tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                             .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
+
+                              tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                              tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+                          })
+                           .Editable(e => e.Mode(GridEditMode.PopUp))
+                            .Sortable()
+                            .AutoBind(true)
+                            .Pageable()
+                            .Filterable()
+                            .Scrollable()
+                            // .ClientDetailTemplateId("template")
+                            .Pdf(pdf => pdf.FileName("CotizacionReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                              .Excel(excel => excel.FileName("CotizacionReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                            //.Events(e=>e.Save("onsave"))
+                            .DataSource(dataSource =>
+
+                           dataSource
+                           //.Ajax()
+                           .WebApi()
+                            .ServerOperation(true)
+                            .Model(model =>
+                            {
+                                model.Id(p => p.ProductId);
+                                model.Field(p => p.ProductId).Editable(true);
+                                model.Field(p => p.ProductId).Editable(true);
+
+
+                            })
+                            .Events(events =>
+                            {
+                                events.Error("error_handler");
+                                //events.upda("EditHandler");
+
+                            })
+                            .Read(read => read.Action("GetSalesOrder", "ProformaInvoice") )
+                            .Create(create => create.Action("Insert", "ProformaInvoice"))
+                            .Update(update => update.Action("Update", "ProformaInvoice", new { id = "{0}" }))
+                            .Destroy(destroy => destroy.Action("Delete", "ProformaInvoice", new { id = "{0}" }))
+                      )
+)
+
+<div id="salesorder">
+    @await Html.PartialAsync("pvwProformaInvoice", new ERPMVC.DTO.ProformaInvoiceDTO { ProformaId = 0, OrderDate = DateTime.Now, DeliveryDate = DateTime.Now , ExpirationDate =DateTime.Now.AddDays(30) })
+</div>
+
+
+
+
+
+<div id="ConditionView">
+    @*  @await Html.PartialAsync("~/Views/Conditions/pvwConditions.cshtml", new ERPMVC.Models.Conditions { ConditionId = 0 });*@
+</div>
+
+<div id="CustomerConditionView">
+</div>

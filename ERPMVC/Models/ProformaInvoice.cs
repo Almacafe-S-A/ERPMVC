@@ -20,7 +20,6 @@ namespace ERPMVC.Models
 
         [Display(Name = "Teléfono")]
         public string Tefono { get; set; }
-
        
         [EmailAddress]
         [RegularExpression(@"\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*", ErrorMessage = "Correo invalido")]
@@ -59,9 +58,7 @@ namespace ERPMVC.Models
         public DateTime DeliveryDate { get; set; }
 
         [Display(Name = "Moneda")]
-        public int CurrencyId { get; set; }
-
-       
+        public int CurrencyId { get; set; }       
 
         [Display(Name = "Número de referencia de cliente")]
         public string CustomerRefNumber { get; set; }
