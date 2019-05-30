@@ -17,6 +17,10 @@ namespace ERPMVC.Models
         public string Barcode { get; set; }
         public string Description { get; set; }
         public string ProductImageUrl { get; set; }
+
+        public Int64 IdEstado { get; set; }
+        public string Estado { get; set; }
+
         [Display(Name = "Unidad de medida")]
         public int UnitOfMeasureId { get; set; }
         public double DefaultBuyingPrice { get; set; } = 0.0;

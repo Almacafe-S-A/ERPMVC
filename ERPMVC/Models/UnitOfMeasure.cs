@@ -16,6 +16,9 @@ namespace ERPMVC.Models
         public string UnitOfMeasureName { get; set; }
         public string Description { get; set; }
 
+        public Int64 IdEstado { get; set; }
+        public string Estado { get; set; }
+
         [Required]
         public string UsuarioCreacion { get; set; }
         [Required]

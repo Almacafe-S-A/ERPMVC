@@ -13,6 +13,8 @@ namespace ERPAPI.Models
         public Int64 RelationProductId { get; set; }
         public Int64 ProductId { get; set; }
         public Int64 SubProductId { get; set; }
+        public Int64 IdEstado { get; set; }
+        public string Estado { get; set; }
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }

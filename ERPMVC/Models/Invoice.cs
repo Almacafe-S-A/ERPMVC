@@ -122,7 +122,8 @@ namespace ERPMVC.Models
 
         public double Total { get; set; }
 
-        public int IdEstado { get; set; }
+        public Int64 IdEstado { get; set; }
+        public string Estado { get; set; }
 
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
