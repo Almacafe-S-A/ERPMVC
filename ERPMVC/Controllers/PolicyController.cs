@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -63,10 +64,62 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-
+            
             return Json(_cais.ToDataSourceResult(request));
 
         }
+
+        [HttpPost]
+        public async Task<ActionResult<Policy>> SavePolicy([FromBody]DTO_Policy _Policy)
+        {
+
+            try
+            {
+                // DTO_NumeracionSAR _liNumeracionSAR = new DTO_NumeracionSAR();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Policies/GetPoliciesSARById/" + _Policy.Id);
+                string valorrespuesta = "";
+                _Policy.FechaModificacion = DateTime.Now;
+                _Policy.UsuarioModificacion = HttpContext.Session.GetString("user");
+                if (result.IsSuccessStatusCode)
+                {
+
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Policy = JsonConvert.DeserializeObject<DTO_Policy>(valorrespuesta);
+                }
+
+                //_Policy.Id.ToString("N");
+                // _Policy = _Policy.Where(q => q.Id == Id).ToList();
+
+
+                if(_Policy.Id.ToString() == "00000000-0000-0000-0000-000000000000")
+                
+                {
+                    _Policy.FechaCreacion = DateTime.Now;
+                    _Policy.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_Policy);
+                }
+                else
+                {
+                  
+                   
+                   // var updateresult = await Update(_Policy.Id, _Policy);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_Policy);
+            
+        }
+
+
 
         [HttpPost]
         public async Task<ActionResult> Insert(Policy _Policyp)
@@ -99,9 +152,9 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update(Policy _Policyp)
+        public async Task<IActionResult> Update(Int64 id, Policy _Policy)
         {
-            Policy _Policy = _Policyp;
+  
             try
             {
                 string baseadress = config.Value.urlbase;
