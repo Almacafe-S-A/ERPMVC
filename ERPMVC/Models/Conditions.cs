@@ -13,8 +13,9 @@ namespace ERPMVC.Models
         [Display(Name = "Id")]
         public Int64 ConditionId { get; set; }
         [Display(Name = "Nombre de la condición")]
-        public string ConditionName { get; set; }    
-
+        public string ConditionName { get; set; }
+        public Int64 IdEstado { get; set; }
+        public string Estado { get; set; }
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }

@@ -34,6 +34,9 @@ namespace ERPMVC.Models
         public string Placa { get; set; }
         public string Marca { get; set; }
 
+        public Int64 IdEstado { get; set; }
+        public string Estado { get; set; }
+
         [Display(Name = "Estiba No.")]
         public int PalletId { get; set; }
         

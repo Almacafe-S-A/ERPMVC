@@ -147,6 +147,38 @@ namespace ERPMVC.Controllers
             return _SalesOrders.ToDataSourceResult(request);
         }
 
+        public async Task<ActionResult> GetSalesOrderById(Int64 Id)
+        {
+            SalesOrder _ControlPallets = new SalesOrder();
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/SalesOrder/GetSalesOrderById/" + Id);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _ControlPallets = JsonConvert.DeserializeObject<SalesOrder>(valorrespuesta);
+
+                }
+
+                if (_ControlPallets == null)
+                {
+                    _ControlPallets = new SalesOrder();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_ControlPallets);
+        }
+
+
 
         public async Task<ActionResult> EnviarCotizacionA([DataSourceRequest]DataSourceRequest request , SalesOrderDTO _SalesOrderDTO)
         {
@@ -388,6 +420,73 @@ namespace ERPMVC.Controllers
 
             return View(_salesorderdto);
         }
+
+
+
+
+        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request)
+        {
+            var res = await GetSalesOrder();
+            return Json(res.ToDataSourceResult(request));
+        }
+
+        public async Task<ActionResult> Orders_ValueMapper(Int64[] values)
+        {
+            var indices = new List<Int64>();
+
+            if (values != null && values.Any())
+            {
+                var index = 0;
+
+                foreach (var order in await GetSalesOrder())
+                {
+                    if (values.Contains(order.SalesOrderId))
+                    {
+                        indices.Add(index);
+                    }
+
+                    index += 1;
+                }
+            }
+
+            return Json(indices);
+        }
+
+        private async Task<List<SalesOrder>> GetSalesOrder()
+        {
+            List<SalesOrder> _SalesOrder = new List<SalesOrder>();
+
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/SalesOrder/GetSalesOrder");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _SalesOrder = JsonConvert.DeserializeObject<List<SalesOrder>>(valorrespuesta);
+                    _SalesOrder = (from c in _SalesOrder
+                                   select new SalesOrder
+                                   {
+                                      RTN = c.RTN,
+                                      SalesOrderId =c.SalesOrderId,
+                                      SalesOrderName = "Id:"+c.SalesOrderId +"|| Nombre:"+ c.SalesOrderName+"|| Fecha:"+c.OrderDate+"|| Total:"+ c.Total,
+                                      OrderDate = c.OrderDate,
+                                   }).ToList();
+
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            return _SalesOrder;
+        }
+
+
 
 
 

@@ -106,39 +106,79 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpPost("[action]")]
-        [ValidateAntiForgeryToken]
-        public async Task<ActionResult<ProformaInvoice>> SaveProformaInvoice([FromBody]ProformaInvoice _ProformaInvoice)
-        {
 
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetProformaInvoice([DataSourceRequest]DataSourceRequest request)
+        {
+            List<ProformaInvoice> _ProformaInvoice = new List<ProformaInvoice>();
             try
             {
-                ProformaInvoice _listProformaInvoice = new ProformaInvoice();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
+
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ProformaInvoice/GetProformaInvoiceById/" + _ProformaInvoice.ProformaId);
+                var result = await _client.GetAsync(baseadress + "api/ProformaInvoice/GetProformaInvoice");
                 string valorrespuesta = "";
-                _ProformaInvoice.FechaModificacion = DateTime.Now;
-                _ProformaInvoice.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
-
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listProformaInvoice = JsonConvert.DeserializeObject<ProformaInvoice>(valorrespuesta);
+                    _ProformaInvoice = JsonConvert.DeserializeObject<List<ProformaInvoice>>(valorrespuesta);
                 }
+                //else if(result.StatusCode== 401)
+                //{
+                //}
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+            }
 
-                if (_listProformaInvoice.ProformaId == 0)
+
+            return _ProformaInvoice.ToDataSourceResult(request);
+        }
+
+
+        [HttpPost("[action]")]
+       // [ValidateAntiForgeryToken]
+         public async Task<ActionResult<ProformaInvoice>> SaveProformaInvoice([FromBody]ProformaInvoice _ProformaInvoice)
+      //  public async Task<ActionResult<SalesOrder>> SaveProformaInvoice([FromBody]dynamic dto)
+        {
+           // ProformaInvoice _ProformaInvoice = JsonConvert.DeserializeObject<ProformaInvoice>(dto.ToString());
+            try
+            {
+                if (_ProformaInvoice != null)
                 {
-                    _ProformaInvoice.FechaCreacion = DateTime.Now;
-                    _ProformaInvoice.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_ProformaInvoice);
+                    ProformaInvoice _listProformaInvoice = new ProformaInvoice();
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/ProformaInvoice/GetProformaInvoiceById/" + _ProformaInvoice.ProformaId);
+                    string valorrespuesta = "";
+                    _ProformaInvoice.FechaModificacion = DateTime.Now;
+                    _ProformaInvoice.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    if (result.IsSuccessStatusCode)
+                    {
+
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _listProformaInvoice = JsonConvert.DeserializeObject<ProformaInvoice>(valorrespuesta);
+                    }
+
+                    if (_listProformaInvoice == null) { _listProformaInvoice = new ProformaInvoice(); }
+                    if (_listProformaInvoice.ProformaId == 0)
+                    {
+                        _ProformaInvoice.FechaCreacion = DateTime.Now;
+                        _ProformaInvoice.UsuarioCreacion = HttpContext.Session.GetString("user");
+                        var insertresult = await Insert(_ProformaInvoice);
+                    }
+                    else
+                    {
+                        var updateresult = await Update(_ProformaInvoice.ProformaId, _ProformaInvoice);
+                    }
                 }
                 else
                 {
-                    var updateresult = await Update(_ProformaInvoice.ProformaId, _ProformaInvoice);
-                }
 
+                }
             }
             catch (Exception ex)
             {
@@ -237,7 +277,6 @@ namespace ERPMVC.Controllers
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _ProformaInvoice }, Total = 1 });
         }
-
 
 
 

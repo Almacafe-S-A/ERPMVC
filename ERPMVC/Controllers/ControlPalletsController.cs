@@ -65,7 +65,7 @@ namespace ERPMVC.Controllers
 
         private async Task<List<ControlPallets>> GetControlPallets()
         {
-            List<ControlPallets> _CustomerConditions = new List<ControlPallets>();
+            List<ControlPallets> _ControlPallets = new List<ControlPallets>();
 
             try
             {
@@ -77,8 +77,16 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CustomerConditions = JsonConvert.DeserializeObject<List<ControlPallets>>(valorrespuesta);
+                    _ControlPallets = JsonConvert.DeserializeObject<List<ControlPallets>>(valorrespuesta);
+                    _ControlPallets = (from c in _ControlPallets
+                                       select new ControlPallets
+                                       {
+                                            ControlPalletsId = c.ControlPalletsId,
+                                            CustomerName = "Nombre:"+c.CustomerName+"|| Fecha: "+c.DocumentDate+" || Total:"+c.TotalSacos,
+                                            DocumentDate = c.DocumentDate,
 
+                                       }
+                                      ).ToList();
                 }
             }
             catch (Exception ex)
@@ -87,7 +95,7 @@ namespace ERPMVC.Controllers
             }
 
             // return Json(_CustomerConditions.ToDataSourceResult(request));
-            return _CustomerConditions;
+            return _ControlPallets;
         }
 
         public async Task<ActionResult> GetControlPalletsById(Int64 Id)
@@ -104,7 +112,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ControlPallets = JsonConvert.DeserializeObject<ControlPallets>(valorrespuesta);
-
+                   
                 }
 
                 if (_ControlPallets == null)

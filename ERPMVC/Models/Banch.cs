@@ -35,7 +35,10 @@ namespace ERPMVC.Models
 
         [Display(Name = "Persona de contacto")]
         public string ContactPerson { get; set; }
-        
+
+        public Int64 IdEstado { get; set; }
+        public string Estado { get; set; }
+
         [Required]
         public string UsuarioCreacion { get; set; }
         [Required]

@@ -24,6 +24,9 @@ namespace ERPMVC.Models
         [Display(Name = "Documento")]
         public Int64 DocumentId { get; set; }
 
+        public Int64 IdEstado { get; set; }
+        public string Estado { get; set; }
+
         [Display(Name = "Tipo Documento")]
         public Int64 IdTipoDocumento { get; set; }
 

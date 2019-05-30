@@ -20,6 +20,9 @@ namespace ERPMVC.Models
         [Required]
         public string Description { get; set; }
 
+        public Int64 IdEstado { get; set; }
+        public string Estado { get; set; }
+
         [Required]
         public string type { get; set; }
 

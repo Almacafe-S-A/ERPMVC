@@ -21,6 +21,9 @@ namespace ERPMVC.Models
         [Display(Name = "Tipo de Factura")]
         public int InvoiceTypeId { get; set; }
 
+        [Display(Name = "Cotización Asociada")]
+        public Int64 SalesOrderId { get; set; }
+
         [Display(Name = "Sucursal")]
         public string Sucursal { get; set; }
 
@@ -119,7 +122,8 @@ namespace ERPMVC.Models
 
         public double Total { get; set; }
 
-        public int IdEstado { get; set; }
+        public Int64 IdEstado { get; set; }
+        public string Estado { get; set; }
 
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }

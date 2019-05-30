@@ -13,6 +13,8 @@ namespace ERPMVC.Models
         public Int64 IdTipoDocumento { get; set; }
         public string Codigo { get; set; }
         public string Descripcion { get; set; }
+        public Int64 IdEstado { get; set; }
+        public string Estado { get; set; }
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
