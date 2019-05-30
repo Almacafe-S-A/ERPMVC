@@ -7,12 +7,25 @@
 
     function GetSalesOrderId() {
        // console.log($("#DescriptionDetail").val());
+        var subproductname = '', unidaddemedida = '';
+        if ($("#UnitOfMeasureId") != null) {
+            if ($("#UnitOfMeasureId").data("kendoDropDownList") != null) {
+                unidaddemedida = $("#UnitOfMeasureId").data("kendoDropDownList").text();
+            }
+        }
 
+        if ($("#SubProductIddetail") != null) {
+            if ($("#SubProductIddetail").data("kendoDropDownList") != null) {
+                subproductname = $("#SubProductIddetail").data("kendoDropDownList").text();
+            }
+        }
             return {
                 ProformaInvoiceId: @Model.ProformaId,
                 /*ProductId: $("#ProductId").val(),*/
-                SubProductId: $("#SubProductId").val(),
-                SubProductName: $("#subproductname").val(),
+                SubProductId: $("#SubProductId").val(),              
+                SubProductName: subproductname,
+                UnitOfMeasureId: $("#UnitOfMeasureId").val(),
+                UnitOfMeasureName: unidaddemedida,
                 Description: $("#DescriptionDetail").val(),
                 Quantity: $("#Quantity").val(),
                 Price: $("#Price").val(),
@@ -28,7 +41,7 @@
         }
 
     function RefreshCotizacionesDetail() {
-        var grid = $("#gridCotizacionesDetail").getKendoGrid();
+        var grid = $("#gridProformaInvoiceDetail").getKendoGrid();
         grid.dataSource.read();
     }
 
@@ -55,28 +68,29 @@
 
     function llenarsubproduct() {
         var combobox = $('#SubProductId').getKendoDropDownList();
-
+        if (combobox != null) {
             var dataObject = { 'ProductId': $("#ProductId").val() };
-              $.ajax({
-                    url: '@Url.Action("GetSubProductByProductId", "ProductRelation")',
-                    method: 'GET',
-                    datatype: "json",
-                    contentType: 'application/json',
-                    async: false,
-                    data: dataObject,
-                    success: function (data) {
-                        combobox.setDataSource(data);
-                    },
-                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+            $.ajax({
+                url: '@Url.Action("GetSubProductByProductId", "ProductRelation")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: dataObject,
+                success: function (data) {
+                    combobox.setDataSource(data);
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
 
-                      //  $("#btngenerarfactura").show();
-                        notification.show({
-                            title: "Validacion",
-                            message: textStatus + ": " + XMLHttpRequest.responseText
-                        }, "error");
+                    //  $("#btngenerarfactura").show();
+                    notification.show({
+                        title: "Validacion",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
 
-                    }
-                });
+                }
+            });
+        }
     }
 
     function EditCotizacionDetalle(e) {
@@ -84,41 +98,66 @@
         e.preventDefault();
         var notification = $("#notification").data("kendoNotification");
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        debugger;
+        if (dataItem.ProformaLineId > 0) {
+            var subproducto = 0;
+            var dataObject = { 'Id': dataItem.ProformaLineId };
+            $.ajax({
+                url: '@Url.Action("pvwProformaInvoiceLine", "ProformaInvoiceLine")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    $("#SalesOrderLineMant").html('');
+                    $("#SalesOrderLineMant").html(data);
+                    var txt = $(data);
 
-        var subproducto = 0;
-        var dataObject = { 'SalesOrderLineId': dataItem.SalesOrderLineId };
-              $.ajax({
-                    url: '@Url.Action("pvwSalesOrderDetailMant", "SalesOrderLine")',
-                    method: 'POST',
-                    datatype: "json",
-                    contentType: 'application/json',
-                    async: false,
-                    data: JSON.stringify(dataObject),
-                    success: function (data) {
-                      $("#SalesOrderLineMant").html('');
-                        $("#SalesOrderLineMant").html(data);
-                        var txt = $(data);
+                    var combobox = $('#SubProductId').getKendoDropDownList();
+                    if (combobox != null) {
                         var found = $("#SubProductId", txt);
                         subproducto = $(found).val();
-                    },
-                    error: function (XMLHttpRequest, textStatus, errorThrown) {
-
-                      //  $("#btngenerarfactura").show();
-                        notification.show({
-                            title: "Validacion",
-                            message: textStatus + ": " + XMLHttpRequest.responseText
-                        }, "error");
-
                     }
-              });
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    //  $("#btngenerarfactura").show();
+                    notification.show({
+                        title: "Validacion",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+
+                }
+            });
+
+            $("#frmSalesOrderLine :input").prop("disabled", true);
+            llenarsubproduct();
+            var combobox = $('#SubProductId').getKendoDropDownList();
+            if (combobox != null) {
+                combobox.value(subproducto);
+                combobox.trigger('change');
+
+            }
+        }
+        else {
+            llenarsubproduct();
+            $("#SubProductId").data("kendoDropDownList").value(dataItem.SubProductId);
+            $("#UnitOfMeasureId").data("kendoDropDownList").value(dataItem.UnitOfMeasureId);
+            $("#UnitOfMeasureId").data("kendoDropDownList").value(dataItem.UnitOfMeasureId);
+            $("#TaxCode").data("kendoDropDownList").value(dataItem.TaxCode);
+            $("#DescriptionDetail").val(dataItem.Description);
+
+            $("#Quantity").data("kendoNumericTextBox").value(dataItem.Quantity);
+            $("#Price").data("kendoNumericTextBox").value(dataItem.Price);
+            $("#Amount").data("kendoNumericTextBox").value(dataItem.Amount);
+            $("#SubTotal").data("kendoNumericTextBox").value(dataItem.SubTotal);
+            $("#Total").data("kendoNumericTextBox").value(dataItem.Total);
+        }
 
 
 
-        $("#frmSalesOrderLine :input").prop("disabled", true);
-        llenarsubproduct();
-        var combobox = $('#SubProductId').getKendoDropDownList();
-        combobox.value(subproducto);
-        combobox.trigger('change');
+    
         $('#myModalSalesOrderLine').modal('show');
 
     }
@@ -132,7 +171,7 @@
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
 
             $.ajax({
-                url: '@Url.Action("Delete", "SalesOrderLine")',
+                url: '@Url.Action("Delete", "ProformaInvoiceLine")',
                 method: 'POST',
                 datatype: "json",
                 contentType: 'application/json',
@@ -156,7 +195,7 @@
                 }
             });
 
-            var grid = $("#gridCotizacionesDetail").data("kendoGrid");
+            var grid = $("#gridProformaInvoiceDetail").data("kendoGrid");
             grid.dataSource.remove(dataItem);
             //Sync it with the grid
             //grid.dataSource.sync();
@@ -171,7 +210,7 @@
     <div class="box-body">
 
         @(Html.Kendo().Grid<ERPMVC.Models.ProformaInvoiceLine>()
-                                          .Name("gridCotizacionesDetail")
+                                          .Name("gridProformaInvoiceDetail")
                                           .Columns(columns =>
                                           {
                                               columns.Command(command =>
@@ -192,12 +231,14 @@
                                               columns.Bound(p => p.Description).Title("Descripcion").Width(150);
                                               columns.Bound(p => p.Quantity).Title("Cantidad").Width(150);
                                               columns.Bound(p => p.Price).Title("Precio").Width(150);
+                                              columns.Bound(p => p.UnitOfMeasureId).Title("Unidad de medida");
                                               //  columns.Bound(p => p.TaxPercentage).Title("Porcentaje impuestos").Width(150);
                                               columns.Bound(p => p.SubTotal).Title("Sub Total").Width(150);
                                               columns.Bound(p => p.DiscountAmount).Title("Descuentos").Width(150);
                                               columns.Bound(p => p.TaxCode).Title("Tipo Impuesto").Width(150);
                                               // columns.Bound(p => p.tax).Title("Tipo Impuesto").Width(150);
                                               columns.Bound(p => p.TaxAmount).Title("Impuestos").Width(150);
+
                                               columns.Bound(p => p.Total).Title("Total").Width(150);
 
                                           })

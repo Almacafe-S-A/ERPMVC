@@ -27,6 +27,16 @@ namespace ERPMVC.Models
         [Display(Name = "Nombre SubProducto")]
         public string SubProductName { get; set; }
 
+        [Display(Name = "Unidad de Medida")]
+        public Int64 UnitOfMeasureId { get; set; }
+
+        [Display(Name = "Unidad de Medida")]
+        public string UnitOfMeasureName { get; set; }
+
+        public Int64 WareHouseId { get; set; }
+        [Display(Name = "Centro de costos")]
+        public Int64 CenterCostId { get; set; }
+
         [Display(Name = "Cantidad")]
         public double Quantity { get; set; }
         [Display(Name = "Precio")]

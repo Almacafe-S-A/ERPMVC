@@ -33,7 +33,8 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwProformaInvoiceLine(Int64 Id = 0)
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwProformaInvoiceLine([FromBody]ProformaInvoiceLine _salesorderline)
         {
             ProformaInvoiceLine _ProformaInvoiceLine = new ProformaInvoiceLine();
             try
@@ -41,7 +42,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ProformaInvoiceLine/GetProformaInvoiceLineById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/ProformaInvoiceLine/GetProformaInvoiceLineById/" + _salesorderline.ProformaInvoiceId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -62,8 +63,8 @@ namespace ERPMVC.Controllers
             }
 
 
-
-            return PartialView(_ProformaInvoiceLine);
+            return PartialView("~/Views/ProformaInvoice/pvwProformaInvoiceDetailMant.cshtml", _ProformaInvoiceLine);
+          //  return PartialView(_ProformaInvoiceLine);
 
         }
 
