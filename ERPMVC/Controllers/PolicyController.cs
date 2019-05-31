@@ -69,6 +69,45 @@ namespace ERPMVC.Controllers
 
         }
 
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> GripPolicy([FromBody]DTO_Policy _sarpara)
+        {
+            DTO_Policy _Policy = new DTO_Policy();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Policies/GetPoliciesById/" + _sarpara.Id);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Policy = JsonConvert.DeserializeObject<DTO_Policy>(valorrespuesta);
+
+                }
+
+                if (_Policy == null)
+                {
+                    _Policy = new DTO_Policy();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return PartialView(_Policy);
+
+        }
+
+
+
+
         [HttpPost]
         public async Task<ActionResult<Policy>> SavePolicy([FromBody]DTO_Policy _Policy)
         {
@@ -105,7 +144,7 @@ namespace ERPMVC.Controllers
                 {
                   
                    
-                   // var updateresult = await Update(_Policy.Id, _Policy);
+                    //var updateresult = await Update(_Policy.Id, _Policy);
                 }
 
             }
