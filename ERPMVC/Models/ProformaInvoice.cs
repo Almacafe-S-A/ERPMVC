@@ -62,6 +62,11 @@ namespace ERPMVC.Models
 
         [Display(Name = "Número de referencia de cliente")]
         public string CustomerRefNumber { get; set; }
+
+
+        [Display(Name = "Cotización Asociada")]
+        public Int64 SalesOrderId { get; set; }
+
         [Display(Name = "Tipo de ventas")]
         public int SalesTypeId { get; set; }
         public string Remarks { get; set; }
