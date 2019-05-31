@@ -16,10 +16,22 @@ namespace ERPMVC.Models
         public Int64 NoCD { get; set; }
         [Display(Name = "Cliente")]
         public Int64 CustomerId { get; set; }
+
+        [Display(Name = "Cliente")]
+        public string CustomerName { get; set; }
+
+        public Int64 IdEstado { get; set; }
+        public string Estado { get; set; }
+
         [Display(Name = "Bodega")]
         public Int64 WarehouseId { get; set; }
+        [Display(Name = "Bodega")]
+        public string WarehouseName { get; set; }
         [Display(Name = "Tipo Servicio")]
         public Int64 ServicioId { get; set; }
+
+        [Display(Name = "Servicio")]
+        public Int64 ServicioName { get; set; }
 
         [Display(Name = "Dirección")]
         public string Direccion { get; set; }

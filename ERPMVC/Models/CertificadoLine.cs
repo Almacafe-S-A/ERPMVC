@@ -12,15 +12,14 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Int64 CertificadoLineId { get; set; }
         [Display(Name = "Sales Order")]
-        public int CertificadoId { get; set; }
-        [Display(Name = "Cotizacion")]
-        public Int64 ProductId { get; set; }
+        public Int64 CertificadoId { get; set; }
+        [Display(Name = "Producto")]
+        public Int64 SubProductId { get; set; }
         [Display(Name = "Nombre producto")]
-        public string ProductName { get; set; }
+        public string SubProductName { get; set; }
 
         [Display(Name = "Unidad de medida")]
         public Int64 UnitMeasureId { get; set; }
-
 
         [Display(Name = "Descripcion")]
         public string Description { get; set; }

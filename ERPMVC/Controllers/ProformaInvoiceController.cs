@@ -158,7 +158,6 @@ namespace ERPMVC.Controllers
                     _ProformaInvoice.UsuarioModificacion = HttpContext.Session.GetString("user");
                     if (result.IsSuccessStatusCode)
                     {
-
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _listProformaInvoice = JsonConvert.DeserializeObject<ProformaInvoice>(valorrespuesta);
                     }
