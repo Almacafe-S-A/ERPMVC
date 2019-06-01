@@ -82,6 +82,7 @@ namespace ERPMVC.Policies
                                    //.AddRequirements(new HasScopeRequirement(policyName, $"https://{_configuration["Auth0:Domain"]}/"))
                                    // .AddRequirements(new HasScopeRequirement(policyName,_policiesroles))
                                    .Build();
+                                    _options.AddPolicy(policyName, policy);
                                     break;
                                 case "UserClaimRequirement":
                                     List<IdentityUserClaim<string>> _userclaims = new List<Microsoft.AspNetCore.Identity.IdentityUserClaim<string>>();
@@ -101,13 +102,14 @@ namespace ERPMVC.Policies
                                        .AddRequirements(new HasScopeRequirement(policyName, _uclaim.ClaimValue, _uclaim.ClaimType))
                                        .Build();
                                     }
-
+                                    _options.AddPolicy(policyName, policy);
                                     break;
+                                    
 
                             }
 
                             // Add policy to the AuthorizationOptions, so we don't have to re-create it each time
-                            _options.AddPolicy(policyName, policy);
+                         
                         }
                     }
                 }

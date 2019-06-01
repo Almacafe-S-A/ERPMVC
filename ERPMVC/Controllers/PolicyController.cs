@@ -69,17 +69,56 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpPost]
-        public async Task<ActionResult<Policy>> SavePolicy([FromBody]DTO_Policy _Policy)
-        {
 
+        [HttpPost("[action]")]
+        public async Task<ActionResult> GripPolicy([FromBody]DTO_Policy _sarpara)
+        {
+            DTO_Policy _Policy = new DTO_Policy();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Policies/GetPoliciesById/" + _sarpara.Id);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Policy = JsonConvert.DeserializeObject<DTO_Policy>(valorrespuesta);
+
+                }
+
+                if (_Policy == null)
+                {
+                    _Policy = new DTO_Policy();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return PartialView(_Policy);
+
+        }
+
+
+
+
+        [HttpPost]
+        public async Task<ActionResult<Policy>> SavePolicy([FromBody]DTO_Policy _Policyp)
+        {
+            Policy _Policy = _Policyp;
             try
             {
                 // DTO_NumeracionSAR _liNumeracionSAR = new DTO_NumeracionSAR();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Policies/GetPoliciesSARById/" + _Policy.Id);
+                var result = await _client.GetAsync(baseadress + "api/Policies/GetPoliciesById/" + _Policy.Id);
                 string valorrespuesta = "";
                 _Policy.FechaModificacion = DateTime.Now;
                 _Policy.UsuarioModificacion = HttpContext.Session.GetString("user");
@@ -87,25 +126,25 @@ namespace ERPMVC.Controllers
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Policy = JsonConvert.DeserializeObject<DTO_Policy>(valorrespuesta);
+                    _Policy = JsonConvert.DeserializeObject<Policy>(valorrespuesta);
                 }
 
+                if (_Policy == null) { _Policy = new Models.Policy(); }
                 //_Policy.Id.ToString("N");
                 // _Policy = _Policy.Where(q => q.Id == Id).ToList();
 
 
-                if(_Policy.Id.ToString() == "00000000-0000-0000-0000-000000000000")
+                if(_Policyp.Id.ToString() == "00000000-0000-0000-0000-000000000000")
                 
                 {
                     _Policy.FechaCreacion = DateTime.Now;
                     _Policy.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_Policy);
+                    var insertresult = await Insert(_Policyp);
                 }
                 else
-                {
-                  
+                {                  
                    
-                   // var updateresult = await Update(_Policy.Id, _Policy);
+                    var updateresult = await Update(_Policyp.Id, _Policyp);
                 }
 
             }
@@ -152,7 +191,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update(Int64 id, Policy _Policy)
+        public async Task<IActionResult> Update(Guid id, Policy _Policy)
         {
   
             try
