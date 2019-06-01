@@ -100,6 +100,72 @@ namespace ERPMVC.Controllers
 
         }
 
+
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetSalesOrderLine([DataSourceRequest]DataSourceRequest request, CertificadoLine _CertificadoLine)
+        {
+            List<CertificadoLine> _CertificadoLinelist = new List<CertificadoLine>();
+
+            try
+            {
+
+                if (HttpContext.Session.Get("listadoproductoscertificadodeposito") == null
+                    || HttpContext.Session.GetString("listadoproductoscertificadodeposito") == "")
+                {
+                    if (_CertificadoLine.SubProductId > 0)
+                    {
+                        string serialzado = JsonConvert.SerializeObject(_CertificadoLinelist).ToString();
+                        HttpContext.Session.SetString("listadoproductoscertificadodeposito", serialzado);
+                    }
+                }
+                else
+                {
+                    _CertificadoLinelist = JsonConvert.DeserializeObject<List<CertificadoLine>>(HttpContext.Session.GetString("listadoproductoscertificadodeposito"));
+                }
+                if (_CertificadoLine.IdCD > 0)
+                {
+
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+
+                    //_client.DefaultRequestHeaders.Add("SalesOrderId", _salesorder.SalesOrderId.ToString());
+                  //  _client.DefaultRequestHeaders.Add("SalesOrderId", _CertificadoLine.IdCD.ToString());
+
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/CertificadoLine/");
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _CertificadoLinelist = JsonConvert.DeserializeObject<List<CertificadoLine>>(valorrespuesta);
+                    }
+                }
+                else
+                {
+                    if (_CertificadoLine.SubProductId > 0)
+                    {
+                        _CertificadoLinelist.Add(_CertificadoLine);
+                        HttpContext.Session.SetString("listadoproductoscertificadodeposito", JsonConvert.SerializeObject(_CertificadoLinelist).ToString());
+                    }
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _CertificadoLinelist.ToDataSourceResult(request);
+        }
+
+
+
+
+
+
         [HttpPost("[action]")]
         public async Task<ActionResult<CertificadoLine>> SaveCertificadoLine([FromBody]CertificadoLine _CertificadoLine)
         {
@@ -141,6 +207,9 @@ namespace ERPMVC.Controllers
 
             return Json(_CertificadoLine);
         }
+
+
+
 
         // POST: CertificadoLine/Insert
         [HttpPost]
