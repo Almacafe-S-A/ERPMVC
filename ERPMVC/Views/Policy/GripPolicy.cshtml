@@ -16,6 +16,8 @@
             }
                    
         }
+
+        //$('#btnprueba').val("");
     </script>
 
 
@@ -25,7 +27,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
                 <h4 class="modal-title">Politicas</h4>
             </div>
             <div class="modal-body">
@@ -33,7 +35,11 @@
                     <div class="col-lg-12">
                         <div class="card">
                             <div class="card-body">
-                                <form id="frmPolicy" kendo-validator="true" class="validation-wizard wizard-circle">
+                                <form id="frmPolicy" kendo-validator="true"
+                                    data-ajax="true"
+                                    data-ajax-method="post"
+                                    data-ajax-begin="SavePolicy"
+                                   class="validation-wizard wizard-circle">
                                     <div class="form-body">
                                         <h3 class="card-title">Politicas</h3>
                                         <hr>
@@ -41,7 +47,7 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Id" class="control-label" style="width:100%"></label>
-                                                    <input type="text" asp-for="Id" name="Id" class="form-control" disabled="disabled" style="width:100%" />
+                                                    <input type="text" asp-for="Id" name="Id" class="form-control"  disabled="disabled" style="width:100%" />
                                                     <span asp-validation-for="Id" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -49,7 +55,7 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Name" class="control-label" style="width:100%"></label>
-                                                    <input type="text" asp-for="Name" name="Name" class="form-control" autocomplete="off"  style="width:100%" />
+                                                    <input type="text" asp-for="Name" name="Name"   autocomplete="off" class="form-control"  style="width:100%" />
                                                     <span asp-validation-for="Name" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -58,7 +64,7 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Description" class="control-label" style="width:100%"></label>
-                                                    <input type="text" asp-for="Description" name="Description" autocomplete="off" class="form-control" style="width:100%" />
+                                                    <input type="text" asp-for="Description" name="Description"  autocomplete="off"  class="form-control" style="width:100%" />
                                                     <span asp-validation-for="Description" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -90,45 +96,14 @@
                                                                 <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
                                                             </transport>
                                                         </datasource>
-                                                    </kendo-dropdownlist>
-                                                    @*@Html.Label("Estados")
-        @(Html.Kendo().DropDownListFor(m=>m.IdEstado)
-                        // .HtmlAttributes(new { data_bind="value:RoleId"})
-                        //.Name("IdEstado")
-                        .DataValueField("IdEstado")
-                        .DataTextField("NombreEstado")
-                        .Filter(Kendo.Mvc.UI.FilterType.Contains)
-                        .HtmlAttributes(new { @class = "form-control", style = "width:100%" })
-                        .OptionLabel("Seleccione un Estado")
-                        //.Events(e=>e.Select("rolf"))
-                        //.AutoBind(true)
-                        .Enable(true)
-                        .DataSource(Source =>
-                        {
-
-                            Source
-                            .Custom()
-                                  .Transport(transport => transport
-                           .Read(read =>
-                           {
-                               read.Action("GetGrupoEstadoUno", "Estados")
-                                   .DataType("jsonp");
-                           })
-                                    );
-                        })
-
-                           )*@
-
-
-                        
+                                                    </kendo-dropdownlist>             
 
                                                 </div>
                                             </div>
                                         </div>
-
                                         <div class="row">
                                             <div class="col-md-12">
-                                                <button id="btnPolicy" class="form-control btn-miboton" type="submit" onclick="SavePolicy(this);"> Guardar </button>
+                                                <button id="btPolicy" class="form-control btn-miboton"  type="submit" > Guardar </button>
                                             </div>
                                         </div>
                                     </div>
@@ -149,14 +124,16 @@
 
             var notification = $("#notification").data("kendoNotification");
            // e.preventDefault();
-            $("#btnPolicy").hide();
-            $("#btnPolicy").prop("disabled", true);
+            $("#btPolicy").hide();
+            $("#btPolicy").prop("disabled", true);
 
             var displayedData = $("#gridCPolicy").data().kendoGrid.dataSource.view();
 
             var dataObject = {  'Id': $("#Id").val()===""?"0":$("#Id").val(),
                            'Name':$("#Name").val(),
                            'Description': $("#Description").val(),
+                           'IdEstado': $("#IdEstado").val(),
+                           'Estado': $("#IdEstado").data("kendoDropDownList").text(),
                            'type': $("#type").val(),
                            'FechaCreacion': $("#FechaCreacion").val(),
                            'FechaModificacion':$("#FechaModificacion").val(),
@@ -184,9 +161,18 @@
                         data: JSON.stringify(dataObject),
                         success: function (data) {
 
-                            notification.show({
-                                message: "Guardado correctamente!"
-                            }, "upload-success");
+                            //notification.show({
+                            //    message: "Guardado correctamente!"
+                            //}, "upload-success");
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: 'Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
 
                             RefreshCotizaciones();
 
@@ -220,7 +206,7 @@
                 //alert('Debe agregar los productos!!');
             }
 
-        $("#btnPolicy").show();
-        $("#btnPolicy").prop("disabled", false);
+            $("#btPolicy").show();
+            $("#btPolicy").prop("disabled", false);
     }
 </script>

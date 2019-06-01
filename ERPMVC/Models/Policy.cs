@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace ERPMVC.Models
 {
-    public class Policy: IdentityUser
+    public class Policy
     {
 
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
