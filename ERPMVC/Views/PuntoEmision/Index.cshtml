@@ -16,6 +16,50 @@
         data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
     }
 
+    function AddPuntoEmision() {
+
+       
+
+         $('#ModalPuntoEmision').find(':input').not(':submit').val('');
+
+         $('#ModalPuntoEmision').modal('show');
+         $("#IdPuntoEmision").val('0');
+
+
+
+
+    }
+
+    
+         function EditPuntoEmision(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                IdPuntoEmision: dataItem.IdPuntoEmision,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddPuntoEmision", "PuntoEmision")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#numPuntoEmision").html('');
+                    $("#numPuntoEmision").html(result);
+
+                
+                    //$("#btnCAI").hide();
+                    $('#ModalPuntoEmision').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+         }
+
 </script>
 
 <h3 class="text-themecolor">Punto Emisión</h3>
@@ -26,14 +70,15 @@
 
             .Columns(columns =>
             {
-                columns.Bound(p => p.IdPuntoEmision).Width(150);
-                columns.Bound(p => p.PuntoEmisionCod).Width(150);
-                //columns.Bound(p => p.UsuarioCreacion).Width(200);
+                columns.Bound(p => p.IdPuntoEmision).Width(200);
+                columns.Bound(p => p.PuntoEmisionCod).Width(200);
+                columns.Bound(p => p.Estado).Width(200);
                 //columns.Bound(p => p.UsuarioModificacion).Width(200);
                 columns.Command(command =>
                 {
                     //command.Custom("Ver detalles").Click("Detalles");
-                    command.Edit(); command.Destroy();
+                    command.Custom("Editar").Click("EditPuntoEmision");
+                    command.Destroy();
                 }).Width(250);
 
             })
@@ -70,7 +115,9 @@
                                ))
             .ToolBar(tools =>
             {
-                tools.Create();
+                //tools.Create();
+                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                         .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddPuntoEmision()" });
                 tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
                 tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
 
@@ -116,3 +163,7 @@
 
             })
 )
+
+<div id="numPuntoEmision">
+    @await Html.PartialAsync("pvwAddPuntoEmision", new ERPMVC.DTO.PuntoEmisionDTO { IdPuntoEmision = 0 })
+</div>

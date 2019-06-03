@@ -219,10 +219,10 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpDelete("{Id}")]
-        public async Task<ActionResult<Policy>> Delete(Int64 Id, Policy _Policyp)
+        [HttpDelete("Id")]
+        public async Task<ActionResult<Policy>> Delete(Int64 Id, Policy _Policy)
         {
-            Policy _Policy = _Policyp;
+           
             try
             {
                 string baseadress = config.Value.urlbase;

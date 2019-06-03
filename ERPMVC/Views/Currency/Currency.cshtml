@@ -17,6 +17,48 @@
         data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
     }
 
+     function AddCurrency() {
+
+         $('#ModalCurrency').find(':input').not(':submit').val('');
+         $('#ModalCurrency').modal('show');
+         $("#CurrencyId").val('0');
+
+
+
+
+    }
+
+    
+         function EditCurrency(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                CurrencyId: dataItem.CurrencyId,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddCurrency", "Currency")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#numCurrency").html('');
+                    $("#numCurrency").html(result);
+
+                
+                    //$("#btnCAI").hide();
+                    $('#ModalCurrency').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+         }
+
+
 </script>
 
 <h3 class="text-themecolor">Moneda</h3>
@@ -28,17 +70,19 @@
 
             .Columns(columns =>
             {
-                columns.Bound(p => p.CurrencyId).Width(100);
+                columns.Bound(p => p.CurrencyId).Width(150);
                 columns.Bound(p => p.CurrencyName).Width(170);
                 columns.Bound(p => p.CurrencyCode).Width(170);
                 columns.Bound(p => p.Description).Width(200);
-               
-    //columns.Bound(p => p.UsuarioCreacion).Width(170);
-    //columns.Bound(p => p.UsuarioModificacion).Width(190);
-    columns.Command(command =>
+                columns.Bound(p => p.Estado).Width(150);
+
+                //columns.Bound(p => p.UsuarioCreacion).Width(170);
+                //columns.Bound(p => p.UsuarioModificacion).Width(190);
+                columns.Command(command =>
                 {
-        //command.Custom("Ver detalles").Click("Detalles");
-        command.Edit(); command.Destroy();
+                    //command.Custom("Ver detalles").Click("Detalles");
+                    command.Custom("Editar").Click("EditCurrency");
+                    command.Destroy();
                 }).Width(250);
 
             })
@@ -47,7 +91,9 @@
             .ToolBar(tools =>
             {
 
-                tools.Create();
+                //tools.Create();
+                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                              .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCurrency()" });
                 tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
                 tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
 
@@ -74,7 +120,7 @@
             {
                 model.Id(p => p.CurrencyId);
                 model.Field(p => p.CurrencyId).Editable(false);
-           
+
 
             })
             .Events(events => events.Error("error_handler"))
@@ -90,3 +136,7 @@
 
             })
 )
+
+<div id="numCurrency">
+    @await Html.PartialAsync("pvwAddCurrency", new ERPMVC.DTO.CurrencyDTO { CurrencyId = 0 })
+</div>

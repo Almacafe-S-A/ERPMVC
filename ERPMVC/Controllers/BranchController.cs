@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -68,6 +69,7 @@ namespace ERPMVC.Controllers
 
         }
 
+        
         [HttpGet]
         public async Task<JsonResult> Get([DataSourceRequest]DataSourceRequest request)
         {
@@ -100,9 +102,9 @@ namespace ERPMVC.Controllers
         }
 
 
-        public async Task<ActionResult<Branch>> SaveBranch([FromBody]Branch _Branch)
+        public async Task<ActionResult<Branch>> SaveBranch([FromBody]BranchDTO _BranchP)
         {
-
+            Branch _Branch = _BranchP;
             try
             {
                 Branch _listBranch = new Branch();
@@ -117,18 +119,20 @@ namespace ERPMVC.Controllers
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listBranch = JsonConvert.DeserializeObject<Branch>(valorrespuesta);
+                    _Branch = JsonConvert.DeserializeObject<Branch>(valorrespuesta);
                 }
 
-                if (_listBranch.BranchId == 0)
+                if (_Branch == null) { _Branch = new Models.Branch(); }
+
+                if (_BranchP.BranchId == 0)
                 {
                     _Branch.FechaCreacion = DateTime.Now;
                     _Branch.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_Branch);
+                    var insertresult = await Insert(_BranchP);
                 }
                 else
                 {
-                    var updateresult = await Update(_Branch.BranchId, _Branch);
+                    var updateresult = await Update(_Branch.BranchId, _BranchP);
                 }
 
             }
@@ -139,6 +143,42 @@ namespace ERPMVC.Controllers
             }
 
             return Json(_Branch);
+        }
+
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwAddBranch([FromBody]BranchDTO _sarpara)
+        {
+            BranchDTO _Branch = new BranchDTO();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Branch/GetBranchById/" + _sarpara.BranchId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Branch = JsonConvert.DeserializeObject<BranchDTO>(valorrespuesta);
+
+                }
+
+                if (_Branch == null)
+                {
+                    _Branch = new BranchDTO();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return PartialView(_Branch);
+
         }
 
         // POST: Branch/Insert
@@ -153,6 +193,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 _Branch.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _Branch.FechaCreacion = DateTime.Now;
                 _Branch.UsuarioModificacion = HttpContext.Session.GetString("user");
                 var result = await _client.PostAsJsonAsync(baseadress + "api/Branch/Insert", _Branch);
                 string valorrespuesta = "";

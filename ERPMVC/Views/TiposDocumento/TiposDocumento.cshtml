@@ -15,6 +15,49 @@
         data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
     }
 
+    function AddTipoDocuemnto() {
+
+       
+
+        $('#ModalTiposDocumento').find(':input').not(':submit').val('');
+        $('#ModalTiposDocumento').modal('show');
+        $("#IdTipoDocumento").val('0');
+
+
+
+
+    }
+
+    
+         function EditTipoDocumento(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                IdTipoDocumento: dataItem.IdTipoDocumento,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddTiposDocumentos", "TiposDocumento")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#numTipoDocumento").html('');
+                    $("#numTipoDocumento").html(result);
+
+                
+                    //$("#btnTiposDocumento").hide();
+                    $('#ModalTiposDocumento').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+         }
+
 </script>
 
 <h3 class="text-themecolor">Tipos Documentos</h3>
@@ -24,21 +67,25 @@
     .Name("gridTiposDocumento")
     .Columns(columns =>
     {
-        columns.Bound(p => p.IdTipoDocumento).Width(170);
-        columns.Bound(p => p.Codigo).Width(100);
-        columns.Bound(p => p.Descripcion).Width(170);
-        //columns.Bound(p => p.UsuarioCreacion).Width(200);
-        //columns.Bound(p => p.UsuarioModificacion).Width(200);
         columns.Command(command =>
         {
             //command.Custom("Ver detalles").Click("Detalles");
-            command.Edit(); command.Destroy();
+            command.Custom("Editar").Click("EditTipoDocumento");
+            command.Destroy();
         }).Width(250);
 
+        columns.Bound(p => p.IdTipoDocumento).Width(170);
+        columns.Bound(p => p.Codigo).Width(200);
+        columns.Bound(p => p.Descripcion).Width(170);
+        columns.Bound(p => p.Estado).Width(200);
+        //columns.Bound(p => p.UsuarioModificacion).Width(200);
+      
     })
     .ToolBar(tools =>
     {
-        tools.Create();
+        //tools.Create();
+        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                      .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddTipoDocuemnto()" });
         tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
         tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
 
@@ -84,4 +131,6 @@
 
     })
     )
-
+<div id="numTipoDocumento">
+    @await Html.PartialAsync("pvwAddTiposDocumentos", new ERPMVC.DTO.TiposDocumentoDTO { IdTipoDocumento = 0 })
+</div>

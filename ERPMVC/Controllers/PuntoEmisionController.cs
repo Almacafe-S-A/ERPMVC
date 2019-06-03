@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using ERPMVC.DTO;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -65,6 +66,87 @@ namespace ERPMVC.Controllers
 
 
             return _PuntoEmision.ToDataSourceResult(request);
+
+        }
+
+        [HttpPost]
+        public async Task<ActionResult<PuntoEmision>> SavePuntoEmision([FromBody]PuntoEmisionDTO _PuntoEmisionS)
+        {
+
+            PuntoEmision _PuntoEmision = _PuntoEmisionS;
+            try
+            {
+                
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/PuntoEmision/GetPuntoEmisionById/" + _PuntoEmision.IdPuntoEmision);
+                string valorrespuesta = "";
+                _PuntoEmision.FechaModificacion = DateTime.Now;
+                _PuntoEmision.UsuarioModificacion = HttpContext.Session.GetString("user");
+                if (result.IsSuccessStatusCode)
+                {
+
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _PuntoEmision = JsonConvert.DeserializeObject<PuntoEmisionDTO>(valorrespuesta);
+                }
+
+                if (_PuntoEmision == null) { _PuntoEmision = new Models.PuntoEmision(); }
+
+                if (_PuntoEmisionS.IdPuntoEmision == 0)
+                {
+                    _PuntoEmision.FechaCreacion = DateTime.Now;
+                    _PuntoEmision.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_PuntoEmisionS);
+                }
+                else
+                {
+                    var updateresult = await Update(_PuntoEmision.IdPuntoEmision, _PuntoEmisionS);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_PuntoEmision);
+        }
+
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwAddPuntoEmision([FromBody]PuntoEmisionDTO _sarpara)
+        {
+            PuntoEmisionDTO _PuntoEmision = new PuntoEmisionDTO();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/PuntoEmision/GetPuntoEmisionById/" + _sarpara.IdPuntoEmision);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _PuntoEmision = JsonConvert.DeserializeObject<PuntoEmisionDTO>(valorrespuesta);
+
+                }
+
+                if (_PuntoEmision == null)
+                {
+                    _PuntoEmision = new PuntoEmisionDTO();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return PartialView(_PuntoEmision);
 
         }
 

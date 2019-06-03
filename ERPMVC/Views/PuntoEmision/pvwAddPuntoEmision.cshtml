@@ -1,0 +1,190 @@
+﻿@model ERPMVC.DTO.PuntoEmisionDTO
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+                   // {"required","Valor requerido" }
+                };
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<script>
+
+        function customFunction(input) {
+
+            if (input.attr('name') === "BranchId" && input.val() === "0") {
+                return false;
+            }
+
+        }
+
+        //$('#btnprueba').val("");
+</script>
+
+
+
+<div id="ModalPuntoEmision" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Punto Emision</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmPuntoEmision" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SavePuntoEmision"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <h3 class="card-title">Punto Emision</h3>
+                                        <hr>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="IdPuntoEmision" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="IdPuntoEmision" name="IdPuntoEmision" class="form-control" disabled="disabled" style="width:100%" />
+                                                    <span asp-validation-for="IdPuntoEmision" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="PuntoEmisionCod" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="PuntoEmisionCod" name="PuntoEmisionCod" class="form-control" style="width:100%" />
+                                                    <span asp-validation-for="PuntoEmisionCod" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Estado" class="control-label"></label>
+                                                    <kendo-dropdownlist name="IdEstado"
+                                                                        for="@Model.IdEstado"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar Estado"
+                                                                        datatextfield="NombreEstado"
+                                                                        datavaluefield="IdEstado"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button id="btnPuntoEmision" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+        function SavePuntoEmision(e) {
+
+            var notification = $("#notification").data("kendoNotification");
+           // e.preventDefault();
+            $("#btnPuntoEmision").hide();
+            $("#btnPuntoEmision").prop("disabled", true);
+
+            var displayedData = $("#gridPuntoEmision").data().kendoGrid.dataSource.view();
+
+            var dataObject = {  'IdPuntoEmision': $("#IdPuntoEmision").val()===""?"0":$("#IdPuntoEmision").val(),
+                           'PuntoEmisionCod': $("#PuntoEmisionCod").val(),
+                           'IdEstado': $("#IdEstado").val(),
+                           'Estado': $("#IdEstado").data("kendoDropDownList").text(),
+                           'FechaCreacion': $("#FechaCreacion").val(),
+                           'FechaModificacion':$("#FechaModificacion").val(),
+                           'UsuarioCreacion':$("#UsuarioCreacion").val(),
+                           'UsuarioModificacion':$("#UsuarioModificacion").val(),
+                           '_PuntoEmision': displayedData
+            };
+
+           // console.log(JSON.stringify(dataObject));
+            //var form = $("#frmNumeracion");
+           // form.validate();
+
+            var validator = $("#frmPuntoEmision").data("kendoValidator");
+                 var status = $(".status");
+
+            if (displayedData.length > 0) {
+                if (validator.validate()) {
+
+                    $.ajax({
+                        url: '@Url.Action("SavePuntoEmision", "PuntoEmision")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+
+                            //notification.show({
+                            //    message: "Guardado correctamente!"
+                            //}, "upload-success");
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: 'Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+
+                            RefreshCotizaciones();
+
+                            $('#ModalPuntoEmision').modal('hide');
+
+
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                            notification.show({
+                                title: "Validacion",
+                                message: textStatus + ": " + XMLHttpRequest.responseText
+                            }, "error");
+
+                        }
+                    });
+
+                }
+                else {
+                    status.text("Oops! There is invalid data in the form.")
+                        .removeClass("valid")
+                        .addClass("invalid");
+                }
+            }
+            else {
+                notification.show({
+                    title: "Validacion",
+                    message: "Debe agregar los productos!"
+                }, "error");
+               // notification.show("New E-mail","Debe agregar los productos", "info");
+                //alert('Debe agregar los productos!!');
+            }
+
+            $("#btnPuntoEmision").show();
+            $("#btnPuntoEmision").prop("disabled", false);
+    }
+</script>
