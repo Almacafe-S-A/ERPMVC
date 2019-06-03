@@ -16,6 +16,9 @@ namespace ERPMVC.Models
         [Display(Name = "Cliente")]
         public Int64 CustomerId { get; set; }
 
+        [Display(Name = "Cliente")]
+        public Int64 CustomerName { get; set; }
+
         [Display(Name = "Sucursal")]
         public Int64 BranchId { get; set; }
 
@@ -44,7 +47,11 @@ namespace ERPMVC.Models
         public DateTime OrderDate { get; set; }
 
         [Display(Name = "Fecha de documento")]
-        public DateTime DocumentDate { get; set; }     
+        public DateTime DocumentDate { get; set; }
+
+        [Display(Name = "Fecha de vencimiento")]
+        public DateTime ExpirationDate { get; set; }
+
         [Display(Name = "Recibimos de")]
         public string Name { get; set; }
         [Display(Name = "Referencia")]

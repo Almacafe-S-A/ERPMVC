@@ -20,6 +20,8 @@ namespace ERPMVC.Models
         public string Description { get; set; }
         [Display(Name = "Moneda")]
         public int CurrencyId { get; set; }
+        [Display(Name = "Moneda")]
+        public string CurrencyName { get; set; }
         [Display(Name = "Direccion")]
         public string Address { get; set; }
         [Display(Name = "Ciudad")]

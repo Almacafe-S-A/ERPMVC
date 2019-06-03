@@ -6,9 +6,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Controllers;
 using Microsoft.AspNetCore.Mvc.Filters;
 using Microsoft.AspNetCore.Routing;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace ERPMVC.Helpers
@@ -18,15 +20,27 @@ namespace ERPMVC.Helpers
     [AttributeUsage(AttributeTargets.All)]  
     public sealed class CustomAuthorization : Attribute, IAuthorizationFilter
     {
+      
 
-        public void OnAuthorization(AuthorizationFilterContext filterContext)
+        public  void OnAuthorization(AuthorizationFilterContext filterContext)
         {
             var controllerInfo = filterContext.ActionDescriptor as ControllerActionDescriptor;
             var ses = filterContext.HttpContext.Session.GetString("token");
 
-           
-            if (ses != null )
+
+
+            if (ses != null)
             {
+
+                //string baseadress = "";
+                //HttpClient _client = new HttpClient();
+                //_client.DefaultRequestHeaders.Add("Authorization", "Bearer " + filterContext.HttpContext.Session.GetString("token"));
+                //var result =  _client.GetAsync(baseadress + "api/customer");
+                //string valorrespuesta = "";
+                //if (result.co)
+                //{
+                //}
+
                 var expira = Convert.ToDateTime(filterContext.HttpContext.Session.GetString("Expiration"));
                 if (expira <= DateTime.Now)
                 {
