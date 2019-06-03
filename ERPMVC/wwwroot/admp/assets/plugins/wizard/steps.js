@@ -4,7 +4,9 @@ $(".tab-wizard").steps({
     transitionEffect: "fade",
     titleTemplate: '<span class="step">#index#</span> #title#',
     labels: {
-        finish: "Submit"
+        next: 'Siguiente <i class="fa fa-chevron-right"></i>',
+        previous: '<i class="fa fa-chevron-left"></i> Anterior',
+        finish: "Enviar"
     }, 
     onFinished: function (event, currentIndex) {
         var form = $(this);
@@ -22,7 +24,9 @@ $(".validation-wizard").steps({
     , transitionEffect: "fade"
     , titleTemplate: '<span class="step">#index#</span> #title#'
     , labels: {
-        finish: "Submit"
+        finish: "Enviar",
+        next: 'Siguiente <i class="fa fa-chevron-right"></i>',
+        previous: '<i class="fa fa-chevron-left"></i> Anterior'
     }
     , onStepChanging: function (event, currentIndex, newIndex) {
         return currentIndex > newIndex || !(3 === newIndex && Number($("#age-2").val()) < 18) && (currentIndex < newIndex && (form.find(".body:eq(" + newIndex + ") label.error").remove(), form.find(".body:eq(" + newIndex + ") .error").removeClass("error")), form.validate().settings.ignore = ":disabled,:hidden", form.valid())

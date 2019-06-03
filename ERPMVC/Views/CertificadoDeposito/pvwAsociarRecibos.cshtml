@@ -1,188 +1,220 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit http://go.microsoft.com/fwlink/?LinkID=397860
-*@
-<div class="row">
+﻿
+<script src="~/admp/assets/plugins/wizard/steps.js"></script>
+
+<script>
+    function AsociarRecibos() {
+        $("#CustomerId").val($("#CustomerIdAsociarRecibo").val());
+        $("#CustomerName").val($("#CustomerIdAsociarRecibo").data("kendoDropDownList").text());
+
+
+        var grid = $("#gridCertificadoDepositoDetail").data("kendoGrid");
+        var datasource = grid.dataSource;
+        var raw = datasource._data;
+        for (i = datasource._data.length - 1; i >= 0; i--) {
+            item = raw[i];
+            datasource.remove(item);
+        }
+
+        
+
+        datasource.insert({
+             CertificadoLineId: 0, IdCD: 0,
+            , UnitOfMeasureName: data.UnitOfMeasureName, UnitOfMeasureId: 0
+            , SubProductId: data.SubProductId, SubProductName: data.SubProductName
+            , Description: data.Description, Quantity: data.Quantity
+            , Price: data.Price
+        });
+
+    }
+</script>
+
+<!-- Validation wizard -->
+<div class="row" id="validation">
     <div class="col-12">
-        <div class="card">
-            <div class="card-body wizard-content ">
-                <h4 class="card-title">Step wizard</h4>
-                <h6 class="card-subtitle">You can find the <a href="http://www.jquery-steps.com" target="_blank">offical website</a></h6>
-                <form action="#" class="tab-wizard vertical wizard-circle">
+        <div class="card wizard-content">
+            <div class="card-body">
+                <h4 class="card-title">Asociar recibos a certificado de deposito</h4>
+                <h6 class="card-subtitle">Solo seleccionar 8 productos</h6>
+                <form action="#" class="validation-wizard wizard-circle"
+                    data-ajax="true"
+                    data-ajax-begin="AsociarRecibos"
+                    >
                     <!-- Step 1 -->
-                    <h6>Personal Info</h6>
+                    <h6>Seleccione el Cliente</h6>
                     <section>
+
                         <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="firstName1">First Name :</label>
-                                    <input type="text" class="form-control" id="firstName1">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="lastName1">Last Name :</label>
-                                    <input type="text" class="form-control" id="lastName1">
-                                </div>
+                        <div class="col-md-12">
+                            <div class="form-group">
+                                <script>
+
+                                    function GetSubProduct(e) {
+                                        var dataItem = e.dataItem;
+                                        $("#hcustomerid").val(dataItem.CustomerId);
+                                        hcustom = dataItem.CustomerId;
+                                        $("#SubProductId").data("kendoDropDownList").dataSource.read();
+
+                                    }
+
+                                </script>
+
+
+                                <label  class="control-label"></label>
+                      
+                                <kendo-dropdownlist name="CustomerIdAsociarRecibo" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                    option-label="Select CustomerId"
+                                                    required
+                                                    datatextfield="CustomerName"
+                                                    datavaluefield="CustomerId"        
+                                                    class="required"                                          
+                                                    style="width: 100%;">
+                                    <datasource type="DataSourceTagHelperType.WebApi">
+                                        <transport>
+                                            <read url="@Url.Action("GetCustomer", "Common")"  />
+                                        </transport>
+                                    </datasource>
+                                </kendo-dropdownlist>
+                  
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="emailAddress1">Email Address :</label>
-                                    <input type="email" class="form-control" id="emailAddress1">
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="phoneNumber1">Phone Number :</label>
-                                    <input type="tel" class="form-control" id="phoneNumber1">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="location1">Select City :</label>
-                                    <select class="custom-select form-control" id="location1" name="location">
-                                        <option value="">Select City</option>
-                                        <option value="Amsterdam">India</option>
-                                        <option value="Berlin">USA</option>
-                                        <option value="Frankfurt">Dubai</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="date1">Date of Birth :</label>
-                                    <input type="date" class="form-control" id="date1">
-                                </div>
-                            </div>
-                        </div>
+                       </div>
+
+                    
                     </section>
                     <!-- Step 2 -->
-                    <h6>Job Status</h6>
+                    <h6>Seleccione los recibos de mercadería</h6>
                     <section>
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-8">
                                 <div class="form-group">
-                                    <label for="jobTitle1">Job Title :</label>
-                                    <input type="text" class="form-control" id="jobTitle1">
+                                    @*<label for="cbxBuscarGoodsReceived" class="control-label" style="width:100%">Asociar control de estiba</label>*@
+
+                                    <script>
+                                          function valueMapper(options) {
+                                              $.ajax({
+                                                  url: "@Url.Action("Orders_ValueMapper", "GoodsReceived")",
+                                                  data: convertValues(options.value),
+                                                  //data: { 'CustomerId': $("#CustomerIdAsociarRecibo").val() , 'values': convertValues(options.value) },
+                                                  success: function (data) {
+                                                      options.success(data);
+                                                  }
+                                              });
+                                          }
+
+                                          function convertValues(value) {
+                                              var data = {};
+                                              value = $.isArray(value) ? value : [value];
+
+                                              for (var idx = 0; idx < value.length; idx++) {
+                                                  data["values[" + idx + "]"] = value[idx];
+                                              }
+
+                                              return data;
+                                        }
+
+                                          function changesetearvalues() {
+                                             // var dataObject = { 'Id': $("#cbxBuscarGoodsReceived").val() };
+
+                                              LlenarRecibo();
+                                          }
+
+                                        function AddRecibos() {
+                                            $('#ddlRecibosAsociados').append('<option value="' + $("#cbxBuscarGoodsReceived").val() + '">' + '' + $("#cbxBuscarGoodsReceived").data("kendoDropDownList").text() + '</option>');
+                                        }
+
+                                        function GetCustomerIdP() {
+                                            return { 'CustomerId': $("#CustomerIdAsociarRecibo").val() }
+                                        }
+
+
+                                    </script>
+
+                                    @*<kendo-dropdownlist name="orders" style="width:100%"
+                                                        datatextfield="ProductName"
+                                                        datavaluefield="GoodsReceivedId"
+                                                        min-length="3"
+                                                        auto-bind="false"
+                                                        cascade-from="CustomerIdAsociarRecibo"
+                                                        height="290"
+                                                        filter="Kendo.Mvc.UI.FilterType.Contains">
+                                        <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                                            <transport>
+                                                <read url="@Url.Action("Virtualization_Read", "GoodsReceived")"   />
+                                            </transport>
+                                        </datasource>
+                                        <virtual item-height="26" value-mapper="valueMapper"  data="GetCustomerIdP" />
+                                        <popup-animation>
+                                            <open duration="500" />
+                                            <close duration="500" />
+                                        </popup-animation>
+                                    </kendo-dropdownlist>*@
+                                    @(Html.Kendo().DropDownList()
+                                              .Name("cbxBuscarGoodsReceived")
+                                              .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                                              .OptionLabel("Buscar")
+                                              .DataTextField("ProductName")
+                                              .DataValueField("GoodsReceivedId")
+                                              .HtmlAttributes(new { style = "width:100%" })
+                                              .Height(290)
+                                              .Events(e =>
+                                              {
+                                                  e.Change("changesetearvalues");
+                                                  // e.Filtering("applyFilterCustomer");
+                                               })
+                                              .AutoBind(true)
+                                              .DataSource(source =>
+                                              {
+                                                  source.Ajax()
+                                                  .PageSize(80)
+
+                                                  .Read("Virtualization_Read", "GoodsReceived");
+                                              })
+                                              .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapper"))
+                                    )
                                 </div>
                             </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="videoUrl1">Company Name :</label>
-                                    <input type="text" class="form-control" id="videoUrl1">
-                                </div>
+                          
+                            <div class="col-md-4">                               
+                                    <input type="button" class="btn waves-effect waves-light btn-primary" onclick="AddRecibos();"  value="Agregar Recibo" />
+                                    @*<button id="btnAgregarRecibo" onclick="AddRecibos();" style="width:100%;height:100%;" class="btn-google-plus">Agregar Recibo</button>*@
+                              
                             </div>
-                            <div class="col-md-12">
-                                <div class="form-group">
-                                    <label for="shortDescription1">Job Description :</label>
-                                    <textarea name="shortDescription" id="shortDescription1" rows="6" class="form-control"></textarea>
-                                </div>
+
                             </div>
-                        </div>
-                    </section>
+
+                            <div class="row">
+
+                            </div>
+
+                            @await Html.PartialAsync("pvwReciboMercaderiaRead")
+</section>
                     <!-- Step 3 -->
-                    <h6>Interview</h6>
+                    <h6>Recibos Asociados</h6>
                     <section>
                         <div class="row">
                             <div class="col-md-6">
+                                @*<div class="form-group">
+                                    <label for="wint1">Recibos asociados :</label>
+                                    <input type="text" class="form-control required" id="wint1">
+                                </div>*@
                                 <div class="form-group">
-                                    <label for="int1">Interview For :</label>
-                                    <input type="text" class="form-control" id="int1">
-                                </div>
-                                <div class="form-group">
-                                    <label for="intType1">Interview Type :</label>
-                                    <select class="custom-select form-control" id="intType1" data-placeholder="Type to search cities" name="intType1">
-                                        <option value="Banquet">Normal</option>
+                                    <label for="wintType1">Recibos Asociados :</label>
+                                    <select class="custom-select form-control required" id="ddlRecibosAsociados" data-placeholder="Type to search cities" name="wintType1">
+                                        @*<option value="Banquet">Normal</option>
                                         <option value="Fund Raiser">Difficult</option>
-                                        <option value="Dinner Party">Hard</option>
+                                        <option value="Dinner Party">Hard</option>*@
                                     </select>
                                 </div>
-                                <div class="form-group">
-                                    <label for="Location1">Location :</label>
-                                    <select class="custom-select form-control" id="Location1" name="location">
-                                        <option value="">Select City</option>
-                                        <option value="India">India</option>
-                                        <option value="USA">USA</option>
-                                        <option value="Dubai">Dubai</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="jobTitle2">Interview Date :</label>
-                                    <input type="date" class="form-control" id="jobTitle2">
-                                </div>
-                                <div class="form-group">
-                                    <label>Requirements :</label>
-                                    <div class="c-inputs-stacked">
-                                        <label class="inline custom-control custom-checkbox block">
-                                            <input type="checkbox" class="custom-control-input"> <span class="custom-control-indicator"></span> <span class="custom-control-description ml-0">Employee</span>
-                                        </label>
-                                        <label class="inline custom-control custom-checkbox block">
-                                            <input type="checkbox" class="custom-control-input"> <span class="custom-control-indicator"></span> <span class="custom-control-description ml-0">Contract</span>
-                                        </label>
-                                    </div>
-                                </div>
+                 
                             </div>
                         </div>
                     </section>
-                    <!-- Step 4 -->
-                    <h6>Remark</h6>
-                    <section>
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="behName1">Behaviour :</label>
-                                    <input type="text" class="form-control" id="behName1">
-                                </div>
-                                <div class="form-group">
-                                    <label for="participants1">Confidance</label>
-                                    <input type="text" class="form-control" id="participants1">
-                                </div>
-                                <div class="form-group">
-                                    <label for="participants1">Result</label>
-                                    <select class="custom-select form-control" id="participants1" name="location">
-                                        <option value="">Select Result</option>
-                                        <option value="Selected">Selected</option>
-                                        <option value="Rejected">Rejected</option>
-                                        <option value="Call Second-time">Call Second-time</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="form-group">
-                                    <label for="decisions1">Comments</label>
-                                    <textarea name="decisions" id="decisions1" rows="4" class="form-control"></textarea>
-                                </div>
-                                <div class="form-group">
-                                    <label>Rate Interviwer :</label>
-                                    <div class="c-inputs-stacked">
-                                        <label class="inline custom-control custom-checkbox block">
-                                            <input type="checkbox" class="custom-control-input"> <span class="custom-control-indicator"></span> <span class="custom-control-description ml-0">1 star</span>
-                                        </label>
-                                        <label class="inline custom-control custom-checkbox block">
-                                            <input type="checkbox" class="custom-control-input"> <span class="custom-control-indicator"></span> <span class="custom-control-description ml-0">2 star</span>
-                                        </label>
-                                        <label class="inline custom-control custom-checkbox block">
-                                            <input type="checkbox" class="custom-control-input"> <span class="custom-control-indicator"></span> <span class="custom-control-description ml-0">3 star</span>
-                                        </label>
-                                        <label class="inline custom-control custom-checkbox block">
-                                            <input type="checkbox" class="custom-control-input"> <span class="custom-control-indicator"></span> <span class="custom-control-description ml-0">4 star</span>
-                                        </label>
-                                        <label class="inline custom-control custom-checkbox block">
-                                            <input type="checkbox" class="custom-control-input"> <span class="custom-control-indicator"></span> <span class="custom-control-description ml-0">5 star</span>
-                                        </label>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
+          
                 </form>
             </div>
         </div>
     </div>
 </div>
-<!-- ============================================================== -->
+<!-- vertical wizard -->
+
+<br/>
