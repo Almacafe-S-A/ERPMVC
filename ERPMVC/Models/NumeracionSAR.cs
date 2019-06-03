@@ -27,6 +27,8 @@ namespace ERPMVC.Models
         public string PuntoEmision { get; set; }
         public string DocType { get; set; }
         public string DocSubType { get; set; }
+        
+        public Int64 IdEstado { get; set; }
 
         public string Estado { get; set; }
 
