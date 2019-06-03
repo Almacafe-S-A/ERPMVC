@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using ERPMVC.DTO;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -95,6 +96,88 @@ namespace ERPMVC.Controllers
 
         }
 
+
+        [HttpPost]
+        public async Task<ActionResult<Currency>> SaveCurrency([FromBody]CurrencyDTO _CurrencyS)
+        {
+
+            Currency _Currency = _CurrencyS;
+            try
+            {
+                // DTO_NumeracionSAR _liNumeracionSAR = new DTO_NumeracionSAR();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Currency/GetCurrencyById/" + _Currency.CurrencyId);
+                string valorrespuesta = "";
+                _Currency.FechaModificacion = DateTime.Now;
+                _Currency.UsuarioModificacion = HttpContext.Session.GetString("user");
+                if (result.IsSuccessStatusCode)
+                {
+
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Currency = JsonConvert.DeserializeObject<CurrencyDTO>(valorrespuesta);
+                }
+
+                if (_Currency == null) { _Currency = new Models.Currency(); }
+
+                if (_CurrencyS.CurrencyId == 0)
+                {
+                    _Currency.FechaCreacion = DateTime.Now;
+                    _Currency.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_CurrencyS);
+                }
+                else
+                {
+                    var updateresult = await Update(_Currency.CurrencyId, _CurrencyS);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_Currency);
+        }
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwAddCurrency([FromBody]CurrencyDTO _sarpara)
+        {
+            CurrencyDTO _Currency = new CurrencyDTO();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Currency/GetCurrencyById/" + _sarpara.CurrencyId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Currency = JsonConvert.DeserializeObject<CurrencyDTO>(valorrespuesta);
+
+                }
+
+                if (_Currency == null)
+                {
+                    _Currency = new CurrencyDTO();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return PartialView(_Currency);
+
+        }
+
+
         [HttpPost]
         //[ValidateAntiForgeryToken]
         public async Task<ActionResult> Insert(Currency _Currencyp)
@@ -129,7 +212,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> Update(Currency _Currencyp)
+        public async Task<IActionResult> Update(Int64 CurrencyId, Currency _Currencyp)
         {
             Currency _Currency = _Currencyp;
             try
@@ -184,6 +267,37 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _Currency }, Total = 1 });
         }
 
+
+        public async Task<ActionResult> GetCurrencyP([DataSourceRequest]DataSourceRequest request)
+        {
+            List<Currency> _cais = new List<Currency>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Currency/GetCurrency");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _cais = JsonConvert.DeserializeObject<List<Currency>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return Json(_cais.ToDataSourceResult(request));
+
+        }
 
 
     }

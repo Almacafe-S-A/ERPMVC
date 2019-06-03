@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using ERPMVC.DTO;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -63,36 +64,37 @@ namespace ERPMVC.Controllers
 
         }
 
-
-        public async Task<ActionResult<TiposDocumento>> SaveTiposDocumento([FromBody]TiposDocumento _TiposDocumento)
+        [HttpPost]
+        public async Task<ActionResult<TiposDocumento>> SaveTiposDocumento([FromBody]TiposDocumentoDTO _TiposDocumentoS)
         {
-
+            TiposDocumento _TiposDocumento = _TiposDocumentoS;
             try
             {
-                TiposDocumento _listTiposDocumento = new TiposDocumento();
+                //TiposDocumento _listTiposDocumento = new TiposDocumento();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/TiposDocumento/GetTiposDocumentoById/" + _TiposDocumento.IdTipoDocumento);
+                var result = await _client.GetAsync(baseadress + "api/TiposDocumento/GetTipoDocumentoById/" + _TiposDocumento.IdTipoDocumento);
                 string valorrespuesta = "";
                 _TiposDocumento.FechaModificacion = DateTime.Now;
                 _TiposDocumento.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
-
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listTiposDocumento = JsonConvert.DeserializeObject<TiposDocumento>(valorrespuesta);
+                    _TiposDocumento = JsonConvert.DeserializeObject<TiposDocumentoDTO>(valorrespuesta);
                 }
 
-                if (_listTiposDocumento.IdTipoDocumento == 0)
+                if (_TiposDocumento == null) { _TiposDocumento = new Models.TiposDocumento(); }
+
+                if (_TiposDocumentoS.IdTipoDocumento == 0)
                 {
                     _TiposDocumento.FechaCreacion = DateTime.Now;
                     _TiposDocumento.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_TiposDocumento);
+                    var insertresult = await Insert(_TiposDocumentoS);
                 }
                 else
                 {
-                    var updateresult = await Update(_TiposDocumento.IdTipoDocumento, _TiposDocumento);
+                    var updateresult = await Update(_TiposDocumento.IdTipoDocumento, _TiposDocumentoS);
                 }
 
             }
@@ -104,6 +106,43 @@ namespace ERPMVC.Controllers
 
             return Json(_TiposDocumento);
         }
+
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwAddTiposDocumentos([FromBody]TiposDocumentoDTO _sarpara)
+        {
+            TiposDocumentoDTO _TiposDocumento = new TiposDocumentoDTO();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/TiposDocumento/GetTipoDocumentoById/" + _sarpara.IdTipoDocumento);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _TiposDocumento = JsonConvert.DeserializeObject<TiposDocumentoDTO>(valorrespuesta);
+
+                }
+
+                if (_TiposDocumento == null)
+                {
+                    _TiposDocumento = new TiposDocumentoDTO();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return PartialView(_TiposDocumento);
+
+        }
+
 
         // POST: TiposDocumento/Insert
         [HttpPost]

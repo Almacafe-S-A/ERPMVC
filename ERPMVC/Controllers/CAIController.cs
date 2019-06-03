@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using ERPMVC.DTO;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -99,6 +100,86 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwAddCAI([FromBody]CAIDTO _sarpara)
+        {
+            CAIDTO _CAI = new CAIDTO();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CAI/GetCAIById/" + _sarpara.IdCAI);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CAI = JsonConvert.DeserializeObject<CAIDTO>(valorrespuesta);
+
+                }
+
+                if (_CAI == null)
+                {
+                    _CAI = new CAIDTO();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return PartialView(_CAI);
+
+        }
+
+
+        [HttpPost]
+        public async Task<ActionResult<CAI>> SaveCAI([FromBody]CAIDTO _CAIS)
+        {
+
+            CAI _CAI = _CAIS;
+            try
+            {
+                // DTO_NumeracionSAR _liNumeracionSAR = new DTO_NumeracionSAR();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CAI/GetCAIById/" + _CAI.IdCAI);
+                string valorrespuesta = "";
+                _CAI.FechaModificacion = DateTime.Now;
+                _CAI.UsuarioModificacion = HttpContext.Session.GetString("user");
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CAI = JsonConvert.DeserializeObject<CAIDTO>(valorrespuesta);
+                }
+
+                if (_CAI == null) { _CAI = new Models.CAI(); }
+
+                if (_CAIS.IdCAI == 0)
+                {
+                    _CAI.FechaCreacion = DateTime.Now;
+                    _CAI.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_CAIS);
+                }
+                else
+                {
+                    var updateresult = await Update(_CAI.IdCAI, _CAIS);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_CAI);
+        }
+
 
         //--------------------------------------------------------------------------------------
         // POST: CAI/Insert
@@ -134,7 +215,7 @@ namespace ERPMVC.Controllers
         }
                      
         [HttpPost]
-        public async Task<IActionResult> Update( CAI _CAIp)
+        public async Task<IActionResult> Update( Int64 IdCAI, CAI _CAIp)
         {
             CAI _CAI = _CAIp;
             try
