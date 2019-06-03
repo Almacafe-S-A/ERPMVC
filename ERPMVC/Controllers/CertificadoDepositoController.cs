@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -33,26 +34,38 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwCertificadoDeposito(Int64 Id = 0)
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwCertificadoDeposito([FromBody]CertificadoDepositoDTO _CertificadoDepositoDTO)
         {
-            CertificadoDeposito _CertificadoDeposito = new CertificadoDeposito();
+            CertificadoDepositoDTO _CertificadoDeposito = new CertificadoDepositoDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoById/" + _CertificadoDepositoDTO.IdCD);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDeposito>(valorrespuesta);
+                    _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDepositoDTO>(valorrespuesta);
 
                 }
 
                 if (_CertificadoDeposito == null)
                 {
-                    _CertificadoDeposito = new CertificadoDeposito();
+                    _CertificadoDeposito = new CertificadoDepositoDTO {
+                        IdCD = 0,
+                        FechaCertificado = DateTime.Now,
+                        FechaVencimiento = DateTime.Now.AddDays(60),
+                        FechaVencimientoDeposito = DateTime.Now.AddDays(30),
+                        FechaFirma = DateTime.Now,
+                        FechaInicioComputo = DateTime.Now
+                    };
+                }
+                else
+                {
+                    _CertificadoDeposito.editar = 0;
                 }
             }
             catch (Exception ex)
@@ -68,8 +81,8 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpGet]
-        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetCertificadoDeposito([DataSourceRequest]DataSourceRequest request)
         {
             List<CertificadoDeposito> _CertificadoDeposito = new List<CertificadoDeposito>();
             try

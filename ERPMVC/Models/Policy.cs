@@ -20,6 +20,7 @@ namespace ERPMVC.Models
         [Required]
         public string Description { get; set; }
 
+        [Display(Name = "Estado")]
         public Int64 IdEstado { get; set; }
         public string Estado { get; set; }
 

@@ -20,6 +20,7 @@ namespace ERPMVC.Models
         [Display(Name = "Cliente")]
         public string CustomerName { get; set; }
 
+        [Display(Name = "Estado")]
         public Int64 IdEstado { get; set; }
         public string Estado { get; set; }
 
@@ -105,7 +106,7 @@ namespace ERPMVC.Models
         /// Totales de Detalle de Linea
         /// </summary>
 
-
+        public List<CertificadoLine> _CertificadoLine { get; set; } = new List<CertificadoLine>();
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }

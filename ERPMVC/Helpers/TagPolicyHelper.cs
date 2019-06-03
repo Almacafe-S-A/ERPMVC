@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.TagHelpers;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.AspNetCore.Razor.TagHelpers;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,29 +12,45 @@ using System.Threading.Tasks;
 
 namespace ERPMVC
 {
-         [HtmlTargetElement(Attributes = "policy")]
-        public class PolicyTagHelper : TagHelper
+    [HtmlTargetElement(Attributes = "policy")]
+    public class PolicyTagHelper : TagHelper
+    {
+        private readonly IAuthorizationService _authService;
+        private readonly ClaimsPrincipal _principal;
+        private readonly ILogger _logger;
+
+        public PolicyTagHelper(IAuthorizationService authService
+            , ILogger<PolicyTagHelper> logger
+            , IHttpContextAccessor httpContextAccessor)
         {
-            private readonly IAuthorizationService _authService;
-            private readonly ClaimsPrincipal _principal;
+            _authService = authService;
+            _principal = httpContextAccessor.HttpContext.User;
+            this._logger = logger;
 
-            public PolicyTagHelper(IAuthorizationService authService, IHttpContextAccessor httpContextAccessor)
+        }
+
+        public string Policy { get; set; }
+
+        public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
+        {
+            try
             {
-                _authService = authService;
-                _principal = httpContextAccessor.HttpContext.User;
-            }
-
-            public string Policy { get; set; }
-
-            public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
-            {
-                // if (!await _authService.AuthorizeAsync(_principal, Policy)) ASP.NET Core 1.x
                 if (!(await _authService.AuthorizeAsync(_principal, Policy)).Succeeded)
                     output.SuppressOutput();
-
-                  
             }
+            catch (Exception ex)
+            {
+                output.SuppressOutput();
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+
+                // throw ex;
+            }
+            // if (!await _authService.AuthorizeAsync(_principal, Policy)) ASP.NET Core 1.x
+
+
+
         }
+    }
 
 
 
