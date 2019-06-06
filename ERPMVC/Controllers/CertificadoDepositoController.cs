@@ -60,7 +60,9 @@ namespace ERPMVC.Controllers
                         FechaVencimiento = DateTime.Now.AddDays(60),
                         FechaVencimientoDeposito = DateTime.Now.AddDays(30),
                         FechaFirma = DateTime.Now,
-                        FechaInicioComputo = DateTime.Now
+                        FechaInicioComputo = DateTime.Now,
+                        FechaPagoBanco = DateTime.Now,
+                        
                     };
                 }
                 else
@@ -111,6 +113,38 @@ namespace ERPMVC.Controllers
 
             return _CertificadoDeposito.ToDataSourceResult(request);
 
+        }
+
+
+        public async Task<ActionResult> GetCertificadoDepositoById(Int64 Id)
+        {
+            CertificadoDeposito _CertificadoDeposito = new CertificadoDeposito();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoById/" + Id);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDeposito>(valorrespuesta);
+
+                }
+
+                if (_CertificadoDeposito == null)
+                {
+                    _CertificadoDeposito = new CertificadoDeposito();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_CertificadoDeposito);
         }
 
         [HttpPost("[action]")]
@@ -245,6 +279,68 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _CertificadoDeposito }, Total = 1 });
         }
 
+
+        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request)
+        {
+            var res = await GetCertificados();
+            return Json(res.ToDataSourceResult(request));
+        }
+
+        public async Task<ActionResult> Orders_ValueMapper(Int64[] values)
+        {
+            var indices = new List<Int64>();
+
+            if (values != null && values.Any())
+            {
+                var index = 0;
+
+                foreach (var order in await GetCertificados())
+                {
+                    if (values.Contains(order.IdCD))
+                    {
+                        indices.Add(index);
+                    }
+
+                    index += 1;
+                }
+            }
+
+            return Json(indices);
+        }
+
+        private async Task<List<CertificadoDeposito>> GetCertificados()
+        {
+            List<CertificadoDeposito> _CertificadoDeposito = new List<CertificadoDeposito>();
+
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDeposito");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CertificadoDeposito = JsonConvert.DeserializeObject<List<CertificadoDeposito>>(valorrespuesta);
+                    _CertificadoDeposito = (from c in _CertificadoDeposito
+                                            select new CertificadoDeposito
+                                   {                                       
+                                        IdCD = c.IdCD,
+                                        CustomerName = "Número de certificado:" + c.NoCD + "|| Nombre:" + c.CustomerName + "|| Fecha:" + c.FechaCertificado + "|| Total:" + c.Total,
+                                        
+                                   }).ToList();
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return _CertificadoDeposito;
+        }
 
 
 

@@ -7,35 +7,46 @@
 
     function GetSalesOrderId() {
         var subproductname = '', unidaddemedida = '';
-        if ($("#UnitOfMeasureId") != null) {
-            if ($("#UnitOfMeasureId").data("kendoDropDownList") != null) {
-                unidaddemedida = $("#UnitOfMeasureId").data("kendoDropDownList").text();
+        if ($("#UnitMeasureId") != null) {
+            if ($("#UnitMeasureId").data("kendoDropDownList") != null) {
+                unidaddemedida = $("#UnitMeasureId").data("kendoDropDownList").text();
             }
         }
-        if ($("#SubProductIddetail") != null) {
-            if ($("#SubProductIddetail").data("kendoDropDownList") != null) {
-                subproductname = $("#SubProductIddetail").data("kendoDropDownList").text();
+        if ($("#SubProductId") != null) {
+            if ($("#SubProductId").data("kendoDropDownList") != null) {
+                subproductname = $("#SubProductId").data("kendoDropDownList").text();
             }
         }
 
             return {
-                SalesOrderId: @Model.IdCD,
-                /*ProductId: $("#ProductId").val(),*/
-                UnitOfMeasureId : $("#UnitOfMeasureId").val(),
-                UnitOfMeasureName: unidaddemedida,
-                SubProductId: $("#SubProductId").val(),
-                SubProductName: subproductname,
-                Description: $("#DescriptionDetail").val(),
-                Quantity: $("#Quantity").val(),
-                Price: $("#Price").val(),
-                Amount: $("#AmountLine").val(),
-                DiscountPercentage: $("#DiscountPercentage").val(),
-                DiscountAmount: $("#DiscountAmount").val(),
-                SubTotal: $("#SubTotalLine").val(),
-                TaxPercentage: $("#TaxPercentage").val(),
-                TaxCode: $("#TaxCode").val(),
-                TaxAmount: $("#TaxAmount").val(),
-                Total: $("#TotalLine").val(),
+                @*'IdCD': @Model.IdCD,              
+                'UnitOfMeasureId' : $("#UnitOfMeasureId").val(),
+                'UnitOfMeasureName': unidaddemedida,
+                'SubProductId': $("#SubProductId").val(),
+                'SubProductName': subproductname,
+                'Description': $("#DescriptionDetail").val(),
+                'Quantity': $("#Quantity").val(),
+                'Price': $("#Price").val(),
+                'Amount': $("#AmountLine").val(),
+                'DiscountPercentage': $("#DiscountPercentage").val(),
+                'DiscountAmount': $("#DiscountAmount").val(),
+                'SubTotal': $("#SubTotalLine").val(),
+                'TaxPercentage': $("#TaxPercentage").val(),            
+                'TaxAmount': $("#TaxAmount").val(),
+                'Total': $("#TotalLine").val(),*@
+
+                'IdCD': @Model.IdCD,
+                'CertificadoLineId': $("#CertificadoLineId").val(),
+                'SubProductId': $("#SubProductId").val(),
+                'SubProductName': subproductname,
+                'Description': $("#DescriptionDetail").val(),
+                'Quantity': $("#Quantity").val(),
+                'Price': $("#Price").val(),
+                'Amount': $("#Amount").val(),
+                'UnitMeasureId': $("#UnitMeasureId").val(),               
+                'UnitMeasurName': unidaddemedida,
+                'TotalCantidad': $("#TotalCantidad").val() 
+
             }
         }
 
@@ -48,7 +59,7 @@
     function AddCotizacionDetalle() {
         var notification = $("#notification").data("kendoNotification");
       //  console.log($("#ProductId").val());
-        if ($("#ProductId").val() !== '' && $("#ProductId").val() !== '0'  ) {
+        if ($("#ServicioId").val() !== '' && $("#ServicioId").val() !== '0'  ) {
 
             llenarsubproduct();
             $("#frmCertificadoDepositoLine :input").not('#SalesOrderId').prop("disabled", false);
@@ -68,7 +79,7 @@
     function llenarsubproduct() {
         var combobox = $('#SubProductId').getKendoDropDownList();
 
-            var dataObject = { 'ProductId': $("#ProductId").val() };
+        var dataObject = { 'ProductId': $("#ServicioId").val() };
               $.ajax({
                     url: '@Url.Action("GetSubProductByProductId", "ProductRelation")',
                     method: 'GET',
@@ -92,22 +103,23 @@
     }
 
     function EditCotizacionDetalle(e) {
-     
-        e.preventDefault();
-        var notification = $("#notification").data("kendoNotification");
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-
-        var subproducto = 0;
-        var dataObject = { 'SalesOrderLineId': dataItem.SalesOrderLineId };
-              $.ajax({
-                    url: '@Url.Action("pvwCertificadoDepositoDetailMant", "SalesOrderLine")',
+        if ($("#ServicioId").val() !== '' && $("#ServicioId").val() !== '0') {
+            e.preventDefault();
+            var notification = $("#notification").data("kendoNotification");
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            console.log(dataItem);
+            var subproducto = 0;
+            var dataObject = { 'CertificadoLineId': dataItem.CertificadoLineId };
+            if (dataItem.CertificadoLineId > 0) {
+                $.ajax({
+                    url: '@Url.Action("pvwCertificadoLine", "CertificadoLine")',
                     method: 'POST',
                     datatype: "json",
                     contentType: 'application/json',
                     async: false,
                     data: JSON.stringify(dataObject),
                     success: function (data) {
-                      $("#SalesOrderLineMant").html('');
+                        $("#SalesOrderLineMant").html('');
                         $("#SalesOrderLineMant").html(data);
                         var txt = $(data);
                         var found = $("#SubProductId", txt);
@@ -115,23 +127,52 @@
                     },
                     error: function (XMLHttpRequest, textStatus, errorThrown) {
 
-                      //  $("#btngenerarfactura").show();
+                        //  $("#btngenerarfactura").show();
                         notification.show({
                             title: "Validacion",
                             message: textStatus + ": " + XMLHttpRequest.responseText
                         }, "error");
 
                     }
-              });
+                });
 
+                $("#frmCertificadoDepositoLine :input").prop("disabled", true);
+                llenarsubproduct();
+                var combobox = $('#SubProductId').getKendoDropDownList();
+                combobox.value(subproducto);
+                combobox.trigger('change');
 
-     
-        $("#frmCertificadoDepositoLine :input").prop("disabled", true);
-        llenarsubproduct();
-        var combobox = $('#SubProductId').getKendoDropDownList();
-        combobox.value(subproducto);
-        combobox.trigger('change');      
-        $('#myModalCertificadoDepositoLine').modal('show');
+            }
+            else {
+                $("#IdCD").val(0);
+                $("#DescriptionDetail").val(dataItem.Description);
+                var quantity = $("#Quantity").data("kendoNumericTextBox");
+                quantity.value(dataItem.Quantity);
+                quantity.trigger('change');
+
+                var Price = $("#Price").data("kendoNumericTextBox");
+                Price.value(dataItem.Price);
+                Price.trigger('change');
+
+                var Amount = $("#AmountLine").data("kendoNumericTextBox");
+                Amount.value(dataItem.Amount);
+                Amount.trigger('change');
+
+                llenarsubproduct();
+            }
+
+            $('#myModalCertificadoDepositoLine').modal('show');
+        }
+        else {
+            var notification = $("#notification").data("kendoNotification");
+            notification.show({
+                title: "Validacion",
+                message: "Debe seleccionar un producto!"
+            }, "error");
+
+        }
+      
+      
        
     }
 
@@ -295,7 +336,7 @@
                                                 //events.upda("EditHandler");
 
                                             })
-                                            .Read(read => read.Action("GetSalesOrderLine", "CertificadoDepositoLine").Data("GetSalesOrderId"))
+                                            .Read(read => read.Action("GetSalesOrderLine", "CertificadoLine").Data("GetSalesOrderId"))
                                       //.Create(create => create.Action("Insert", "SalesOrderLine"))
                                       //.Update(update => update.Action("Update", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
                                       //.Destroy(destroy => destroy.Action("Delete", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
