@@ -114,11 +114,14 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]CertificadoDeposito _CertificadoDeposito)
+             public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]CertificadoDepositoDTO _CertificadoDeposito)
+           // public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]dynamic dto)
         {
-
+            //CertificadoDepositoDTO _CertificadoDeposito = new CertificadoDepositoDTO(); 
             try
             {
+               // _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDepositoDTO>(dto.ToString());
+
                 CertificadoDeposito _listCertificadoDeposito = new CertificadoDeposito();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
@@ -129,11 +132,11 @@ namespace ERPMVC.Controllers
                 _CertificadoDeposito.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
-
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _listCertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDeposito>(valorrespuesta);
                 }
 
+                if (_listCertificadoDeposito == null) { _listCertificadoDeposito = new CertificadoDeposito();  }
                 if (_listCertificadoDeposito.IdCD == 0)
                 {
                     _CertificadoDeposito.FechaCreacion = DateTime.Now;
@@ -158,7 +161,7 @@ namespace ERPMVC.Controllers
         // POST: CertificadoDeposito/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<CertificadoDeposito>> Insert(CertificadoDeposito _CertificadoDeposito)
+        public async Task<ActionResult<CertificadoDepositoDTO>> Insert(CertificadoDepositoDTO _CertificadoDeposito)
         {
             try
             {
@@ -173,7 +176,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDeposito>(valorrespuesta);
+                    _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDepositoDTO>(valorrespuesta);
                 }
 
             }
