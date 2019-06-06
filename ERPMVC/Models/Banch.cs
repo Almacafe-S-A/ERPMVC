@@ -14,6 +14,7 @@ namespace ERPMVC.Models
         public int BranchId { get; set; }
         [Required]
         [Display(Name = "Nombre Sucursal")]
+
         public string BranchName { get; set; }
 
         [Display(Name = "Descripcion")]
