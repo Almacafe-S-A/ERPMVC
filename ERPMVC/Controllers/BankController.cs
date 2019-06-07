@@ -33,6 +33,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        [HttpGet("[controller]/[action]")]
         public async Task<ActionResult> pvwBank(Int64 Id = 0)
         {
             Bank _Bank = new Bank();
@@ -68,7 +69,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpGet("[action]")]
+        [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
             List<Bank> _Bank = new List<Bank>();

@@ -59,52 +59,154 @@
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
                 <h4 class="modal-title">Información Factura proforma</h4>
             </div>
-            <div class="modal-body">
+            <div class="modal-body">             
 
-                @*@if (!Convert.ToBoolean(Model.editar))
-        {
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <div class="box demo-description wide">
-                                    <h4>Enviar a:</h4>
-                                    <div class="row">
-                                        <div class="col-md-8">
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="form-group">
 
-                                            <kendo-dropdownlist name="IdEstado" for="@Model.IdEstado" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                option-label="Select Estado"
-                                                                datatextfield="NombreEstado"
-                                                                datavaluefield="IdEstado"
-                                                                required
-                                                                style="width: 100%;">
-                                                <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
-                                                    <transport>
-                                                        <read url="@Url.Action("GetEnviosCotizacion", "Estados")" />
-                                                    </transport>
-                                                </datasource>
-                                            </kendo-dropdownlist>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <button id="btnEnviarA" type="submit" class="k-button k-primary"  onclick="EnviarCotizacionA(this);">Enviar</button>
-                                        </div>
 
-                                    </div>
-                                </div>
+                                <script>
+                                       function valueMapperCertificado(options) {
+                                           $.ajax({
+                                               url: "@Url.Action("Orders_ValueMapper", "CertificadoDeposito")",
+                                               data: convertValues(options.value),
+                                               success: function (data) {
+                                                   options.success(data);
+                                               }
+                                           });
+                                       }
+
+                                       function convertValuesCertificado(value) {
+                                           var data = {};
+                                           value = $.isArray(value) ? value : [value];
+
+                                           for (var idx = 0; idx < value.length; idx++) {
+                                               data["values[" + idx + "]"] = value[idx];
+                                           }
+
+                                           return data;
+                                    }
+
+                                       function changesetearvaluesCertificado() {
+                                           var dataObject = { 'Id': $("#cbxBuscarCertificadosDeposito").val() };
+
+                                              $.ajax({
+                                                    url: '@Url.Action("GetCertificadoDepositoById", "CertificadoDeposito")',
+                                                    method: 'GET',
+                                                    datatype: "json",
+                                                    contentType: 'application/json',
+                                                    async: false,
+                                                    data: dataObject,
+                                                    success: function (data) {
+                                                       console.log(data);
+
+                                                        $("#BranchId").data("kendoDropDownList").value(data.BranchId);
+                                                        $("#CustomerId").data("kendoDropDownList").value(data.CustomerId);
+                                                        $("#ProformaName").val(data.CustomerName);
+                                                        $("#ProductId").data("kendoDropDownList").value(data.ServicioId);
+                                                        $("#CurrencyId").data("kendoDropDownList").value(data.CustomerId);
+                                                        $("#SalesTypeId").data("kendoDropDownList").value(data.CustomerId);
+                                                        $("#BranchId").data("kendoDropDownList").value(data.BranchId);
+
+                                                        $("#OrderDate").val(data.OrderDate);
+                                                        $("#DeliveryDate").val(data.DeliveryDate);
+                                                        $("#ExpirationDate").val(data.ExpirationDate);
+                                                        $("#CustomerRefNumber").val(data.CustomerRefNumber);
+                                                        $("#Remarks").val(data.Remarks);
+                                                        $("#Amount").val(data.Amount);
+                                                        $("#Correo").val(data.Correo);
+                                                        $("#Direccion").val(data.Direccion);
+                                                        $("#RTN").val(data.RTN);
+                                                        $("#Tefono").val(data.Tefono);
+                                                        $("#ProformaName").val(data.SalesOrderName);
+
+                                                        $("#SubTotal").data("kendoNumericTextBox").value(data.SubTotal);
+                                                        $("#Discount").data("kendoNumericTextBox").value(data.Discount);
+                                                        $("#Tax").data("kendoNumericTextBox").value(data.Tax);
+                                                        $("#Freight").data("kendoNumericTextBox").value(data.Freight);
+                                                        $("#TotalExento").data("kendoNumericTextBox").value(data.TotalExento);
+                                                        $("#TotalExonerado").data("kendoNumericTextBox").value(data.Freight);
+                                                        $("#TotalGravado").data("kendoNumericTextBox").value(data.TotalGravado);
+                                                        $("#Total").data("kendoNumericTextBox").value(data.Total);
+
+                                                       // $("#Name").val(data.Motorista);
+
+                                                        var grid = $("#gridProformaInvoiceDetail").data("kendoGrid");
+                                                        var datasource = grid.dataSource;
+                                                        var raw = datasource._data;
+                                                        for (i = datasource._data.length - 1; i >= 0; i--) {
+                                                            item = raw[i];
+                                                            datasource.remove(item);
+                                                        }
+
+                                                        for (i = 0; i < data._CertificadoLine.length; i++) {
+                                                            datasource.insert({
+                                                                ProformaLineId: 0, ProformaInvoiceId: 0
+                                                                , UnitOfMeasureName: data._CertificadoLine[i].UnitMeasurName, UnitOfMeasureId: data._CertificadoLine[i].UnitMeasureId
+                                                                , SubProductId: data._CertificadoLine[i].SubProductId, SubProductName: data._CertificadoLine[i].SubProductName
+                                                                , SubTotal: data._CertificadoLine[i].SubTotal, Price: data._CertificadoLine[i].Price
+                                                                , DiscountAmount: data._CertificadoLine[i].DiscountAmount, TaxCode: data._CertificadoLine[i].TaxCode
+                                                                , TaxAmount: data._CertificadoLine[i].TaxAmount, Total: data._CertificadoLine[i].Total
+                                                                , Quantity: data._CertificadoLine[i].Quantity, WareHouseId: data._CertificadoLine[i].WarehouseId
+                                                                , ControlPalletsId: $("#cbxBuscarCotizaciones").val()
+                                                            });
+                                                        }
+
+                                                      // $("#singuardar").val(1);
+
+
+                                                    },
+                                                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                                                      //  $("#btngenerarfactura").show();
+                                                        notification.show({
+                                                            title: "Validacion",
+                                                            message: textStatus + ": " + XMLHttpRequest.responseText
+                                                        }, "error");
+
+                                                    }
+                                                });
+                                       }
+
+
+                                </script>
+
+
+                                <input type="hidden" id="singuardar" value="0" />
+                                <label for="cbxBuscar" class="control-label" style="width:100%">Asociar certificado de depósito con proforma</label>
+                                @(Html.Kendo().DropDownList()
+                                              .Name("cbxBuscarCertificadosDeposito")
+                                              .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                                              .OptionLabel("Buscar Certificado")
+                                              .DataTextField("CustomerName")
+                                              .DataValueField("IdCD")
+                                              .HtmlAttributes(new { style = "width:100%" })
+                                              .Height(290)
+                                              .Events(e =>
+                                              {
+                                                  e.Change("changesetearvaluesCertificado");
+                                              })
+                                              .AutoBind(true)
+
+                                              .DataSource(source =>
+                                              {
+                                                  source.Ajax()
+                                                  .PageSize(80)
+
+                                                  .Read("Virtualization_Read", "CertificadoDeposito");
+                                                  source.ServerFiltering(true);
+                                              })
+                                              .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapperCertificado"))
+                                )
+
+
                             </div>
                         </div>
                     </div>
-                </div>
-            </div>
-        }*@
 
 
-                @*<hr class="style18">*@
-                @*<hr class="style13">*@
-                @*<hr class="style14">*@
-
-                <div class="container-fluid">
                     <div class="row">
                         <div class="col-md-12">
                             <div class="form-group">
@@ -179,28 +281,31 @@
 
                                                                          $("#Name").val(data.Motorista);
 
-                                                                         var grid = $("#gridProformaInvoiceDetail").data("kendoGrid");
-                                                                         var datasource = grid.dataSource;
-                                                                         var raw = datasource._data;
-                                                                         for (i = datasource._data.length - 1; i >= 0; i--) {
-                                                                             item = raw[i];
-                                                                             datasource.remove(item);
+                                                                         if ($("#cbxBuscarCertificadosDeposito").val() === '' || $("#cbxBuscarCertificadosDeposito").val() ===null) {
+                                                                             var grid = $("#gridProformaInvoiceDetail").data("kendoGrid");
+                                                                             var datasource = grid.dataSource;
+                                                                             var raw = datasource._data;
+                                                                             for (i = datasource._data.length - 1; i >= 0; i--) {
+                                                                                 item = raw[i];
+                                                                                 datasource.remove(item);
+                                                                             }
+
+                                                                             for (i = 0; i < data.SalesOrderLines.length; i++) {
+                                                                                 datasource.insert({
+                                                                                     ProformaLineId: 0, ProformaInvoiceId: 0
+                                                                                     , TaxCode: data.SalesOrderLines[i].TaxCode
+                                                                                     , UnitOfMeasureName: data.SalesOrderLines[i].UnitOfMeasureName, UnitOfMeasureId: data.SalesOrderLines[i].UnitOfMeasureId
+                                                                                     , SubProductId: data.SalesOrderLines[i].SubProductId, SubProductName: data.SalesOrderLines[i].SubProductName
+                                                                                     , SubTotal: data.SalesOrderLines[i].SubTotal, Price: data.SalesOrderLines[i].Price
+                                                                                     , DiscountAmount: data.SalesOrderLines[i].DiscountAmount, TaxCode: data.SalesOrderLines[i].TaxCode
+                                                                                     , TaxAmount: data.SalesOrderLines[i].TaxAmount, Total: data.SalesOrderLines[i].Total
+                                                                                     , Quantity: data.SalesOrderLines[i].Quantity, WareHouseId: data.SalesOrderLines[i].WarehouseId
+                                                                                     , ControlPalletsId: $("#cbxBuscarCotizaciones").val()
+                                                                                 });
+                                                                             }
                                                                          }
 
-                                                                         for (i = 0; i < data.SalesOrderLines.length; i++) {
-                                                                             datasource.insert({
-                                                                                 ProformaLineId: 0, ProformaInvoiceId: 0
-                                                                                 , UnitOfMeasureName: data.SalesOrderLines[i].UnitOfMeasureName, UnitOfMeasureId: data.SalesOrderLines[i].UnitOfMeasureId
-                                                                                 , SubProductId: data.SalesOrderLines[i].SubProductId, SubProductName: data.SalesOrderLines[i].SubProductName
-                                                                                 , SubTotal: data.SalesOrderLines[i].SubTotal, Price: data.SalesOrderLines[i].Price
-                                                                                 , DiscountAmount: data.SalesOrderLines[i].DiscountAmount, TaxCode: data.SalesOrderLines[i].TaxCode
-                                                                                 , TaxAmount: data.SalesOrderLines[i].TaxAmount, Total: data.SalesOrderLines[i].Total
-                                                                                 , Quantity: data.SalesOrderLines[i].Quantity, WareHouseId: data.SalesOrderLines[i].WarehouseId
-                                                                                 , ControlPalletsId: $("#cbxBuscarCotizaciones").val()
-                                                                             });
-                                                                         }
-
-                                                                         $("#singuardar").val(1);
+                                                                       //  $("#singuardar").val(1);
 
 
                                                                      },
@@ -221,7 +326,7 @@
                                                             //$("#cbxBuscarCotizaciones").data("kendoDropDownList").dataSource.read();
                                                             var newFilter = {
                                                                 logic: "or",
-                                                                filters: [                                                               
+                                                                filters: [
                                                                     { field: "SalesOrderId", operator: "contains", value: $("#cbxBuscarCotizaciones").data("kendoDropDownList").value() },
                                                                     { field: "SalesOrderName", operator: "contains", value: $("#cbxBuscarCotizaciones").data("kendoDropDownList").value() },
                                                                     { field: "RTN", operator: "contains", value: $("#cbxBuscarCotizaciones").data("kendoDropDownList").value() }
@@ -236,33 +341,30 @@
                                 <input type="hidden" id="singuardar" value="0" />
                                 <label for="cbxBuscar" class="control-label" style="width:100%">Asociar cotización con proforma</label>
                                 @(Html.Kendo().DropDownList()
-                                                                                   .Name("cbxBuscarCotizaciones")
-                                                                                   .Filter(Kendo.Mvc.UI.FilterType.Contains)
-                                                                                   .OptionLabel("Buscar")
+                                    .Name("cbxBuscarCotizaciones")
+                                    .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                                    .OptionLabel("Buscar Cotización")
 
-                                                                                   .DataTextField("SalesOrderName")
-                                                                                   .DataValueField("SalesOrderId")
-                                                                                   .HtmlAttributes(new { style = "width:100%" })
-                                                                                   //.Template("#:data.SalesOrderId # || #:data.SalesOrderName # || R.T.N : <b>#: data.RTN #</b>")
-                                                                                   // .Template("#= data.ControlPalletsId   # | Cliente: #= CustomerName # | #= DescriptionProduct # | #=Motorista#")
-                                                                                   // .ValueTemplate("<span>#:data.SalesOrderId#</span>")
-                                                                                   .Height(290)
-                                                                                   .Events(e =>
-                                                                                   {
-                                                                                       e.Change("changesetearvalues");
-                                                                                                       //e.Filtering("applyFilterCustomer");
-                                                                                                   })
-                                                                                   .AutoBind(true)
+                                    .DataTextField("SalesOrderName")
+                                    .DataValueField("SalesOrderId")
+                                    .HtmlAttributes(new { style = "width:100%" })                    
+                                    .Height(290)
+                                    .Events(e =>
+                                    {
+                                        e.Change("changesetearvalues");
+                                                        //e.Filtering("applyFilterCustomer");
+                                                    })
+                                    .AutoBind(true)
 
-                                                                                   .DataSource(source =>
-                                                                                   {
-                                                                                       source.Ajax()
-                                                                                       .PageSize(80)
+                                    .DataSource(source =>
+                                    {
+                                        source.Ajax()
+                                        .PageSize(80)
 
-                                                                                       .Read("Virtualization_Read", "SalesOrder");
-                                                                                       source.ServerFiltering(true);
-                                                                                   })
-                                                                                   .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapper"))
+                                        .Read("Virtualization_Read", "SalesOrder");
+                                        source.ServerFiltering(true);
+                                    })
+                                    .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapper"))
                                 )
 
 
@@ -271,147 +373,7 @@
                     </div>
 
 
-                    <div class="row">
-                        <div class="col-md-12">
-                            <div class="form-group">
 
-
-                                <script>
-                                       function valueMapperCertificado(options) {
-                                           $.ajax({
-                                               url: "@Url.Action("Orders_ValueMapper", "CertificadoDeposito")",
-                                               data: convertValues(options.value),
-                                               success: function (data) {
-                                                   options.success(data);
-                                               }
-                                           });
-                                       }
-
-                                       function convertValuesCertificado(value) {
-                                           var data = {};
-                                           value = $.isArray(value) ? value : [value];
-
-                                           for (var idx = 0; idx < value.length; idx++) {
-                                               data["values[" + idx + "]"] = value[idx];
-                                           }
-
-                                           return data;
-                                       }
-                                       function changesetearvaluesCertificado() {
-                                           var dataObject = { 'Id': $("#cbxBuscarCertificadosDeposito").val() };
-
-                                              $.ajax({
-                                                    url: '@Url.Action("GetCertificadoDepositoById", "CertificadoDeposito")',
-                                                    method: 'GET',
-                                                    datatype: "json",
-                                                    contentType: 'application/json',
-                                                    async: false,
-                                                    data: dataObject,
-                                                    success: function (data) {
-                                                       console.log(data);
-
-                                                        $("#BranchId").data("kendoDropDownList").value(data.BranchId);
-                                                        $("#CustomerId").data("kendoDropDownList").value(data.CustomerId);
-                                                        $("#ProductId").data("kendoDropDownList").value(data.ProductId);
-                                                        $("#CurrencyId").data("kendoDropDownList").value(data.CustomerId);
-                                                        $("#SalesTypeId").data("kendoDropDownList").value(data.CustomerId);
-                                                        $("#BranchId").data("kendoDropDownList").value(data.BranchId);                                                                       
-
-                                                        $("#OrderDate").val(data.OrderDate);
-                                                        $("#DeliveryDate").val(data.DeliveryDate);
-                                                        $("#ExpirationDate").val(data.ExpirationDate);
-                                                        $("#CustomerRefNumber").val(data.CustomerRefNumber);
-                                                        $("#Remarks").val(data.Remarks);
-                                                        $("#Amount").val(data.Amount);
-                                                        $("#Correo").val(data.Correo);
-                                                        $("#Direccion").val(data.Direccion);
-                                                        $("#RTN").val(data.RTN);
-                                                        $("#Tefono").val(data.Tefono);
-                                                        $("#ProformaName").val(data.SalesOrderName);
-
-                                                        $("#SubTotal").data("kendoNumericTextBox").value(data.SubTotal);
-                                                        $("#Discount").data("kendoNumericTextBox").value(data.Discount);
-                                                        $("#Tax").data("kendoNumericTextBox").value(data.Tax);
-                                                        $("#Freight").data("kendoNumericTextBox").value(data.Freight);
-                                                        $("#TotalExento").data("kendoNumericTextBox").value(data.TotalExento);
-                                                        $("#TotalExonerado").data("kendoNumericTextBox").value(data.Freight);
-                                                        $("#TotalGravado").data("kendoNumericTextBox").value(data.TotalGravado);
-                                                        $("#Total").data("kendoNumericTextBox").value(data.Total);
-
-                                                        $("#Name").val(data.Motorista);
-
-                                                        var grid = $("#gridProformaInvoiceDetail").data("kendoGrid");
-                                                        var datasource = grid.dataSource;
-                                                        var raw = datasource._data;
-                                                        for (i = datasource._data.length - 1; i >= 0; i--) {
-                                                            item = raw[i];
-                                                            datasource.remove(item);
-                                                        }
-
-                                                        for (i = 0; i < data.SalesOrderLines.length; i++) {
-                                                            datasource.insert({
-                                                                ProformaLineId: 0, ProformaInvoiceId: 0
-                                                                , UnitOfMeasureName: data._CertificadoLine[i].UnitOfMeasureName, UnitOfMeasureId: data._CertificadoLine[i].UnitOfMeasureId
-                                                                , SubProductId: data._CertificadoLine[i].SubProductId, SubProductName: data._CertificadoLine[i].SubProductName
-                                                                , SubTotal: data._CertificadoLine[i].SubTotal, Price: data._CertificadoLine[i].Price
-                                                                , DiscountAmount: data._CertificadoLine[i].DiscountAmount, TaxCode: data._CertificadoLine[i].TaxCode
-                                                                , TaxAmount: data._CertificadoLine[i].TaxAmount, Total: data._CertificadoLine[i].Total
-                                                                , Quantity: data._CertificadoLine[i].Quantity, WareHouseId: data._CertificadoLine[i].WarehouseId
-                                                                , ControlPalletsId: $("#cbxBuscarCotizaciones").val()
-                                                            });
-                                                        }
-
-                                                        $("#singuardar").val(1);
-
-
-                                                    },
-                                                    error: function (XMLHttpRequest, textStatus, errorThrown) {
-
-                                                      //  $("#btngenerarfactura").show();
-                                                        notification.show({
-                                                            title: "Validacion",
-                                                            message: textStatus + ": " + XMLHttpRequest.responseText
-                                                        }, "error");
-
-                                                    }
-                                                });
-                                       }
-                                    
-
-                                </script>
-
-
-                                <input type="hidden" id="singuardar" value="0" />
-                                <label for="cbxBuscar" class="control-label" style="width:100%">Asociar cotización con proforma</label>
-                                @(Html.Kendo().DropDownList()
-                                      .Name("cbxBuscarCertificadosDeposito")
-                                      .Filter(Kendo.Mvc.UI.FilterType.Contains)
-                                      .OptionLabel("Buscar Certificado")
-                                      .DataTextField("CustomerName")
-                                      .DataValueField("IdCD")
-                                      .HtmlAttributes(new { style = "width:100%" })                                                                                  
-                                      .Height(290)
-                                      .Events(e =>
-                                      {
-                                          e.Change("changesetearvaluesCertificado");                                                                                                    
-                                      })
-                                      .AutoBind(true)
-
-                                      .DataSource(source =>
-                                      {
-                                          source.Ajax()
-                                          .PageSize(80)
-
-                                          .Read("Virtualization_Read", "CertificadoDeposito");
-                                          source.ServerFiltering(true);
-                                      })
-                                      .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapperCertificado"))
-                                )
-
-
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
 
@@ -1058,20 +1020,38 @@
 			           'TotalExonerado':$("#TotalExonerado").val(),
                        'TotalGravado': $("#TotalGravado").val(),
                        'SalesOrderId': $("#cbxBuscarCotizaciones").val(),
+                       'CertificadoDepositoId': $("#cbxBuscarCertificadosDeposito").val(),
                        'ProformaInvoiceLine': displayedData,
 
-        };
-
-        //console.log(JSON.stringify(dataObject));
-        //var form = $("#frmSalesOrder");
-        //form.validate();
+        };     
 
         var validator = $("#frmSalesOrder").data("kendoValidator");
         var validator2 = $("#TotalesDocumento").data("kendoValidator");
         var status = $(".status");
 
-        //console.log(JSON.stringify(dataObject));
-        //console.log(dataObject);
+
+     //   console.log(displayedData);
+        for (var i = 0; i < displayedData.length; i++) {
+            console.log(displayedData[i].TaxCode);
+            if (displayedData[i].TaxCode === '' || displayedData[i].TaxCode === null
+                || displayedData[i].TaxCode === undefined
+                || displayedData[i].Total === undefined
+            ) {
+                $.toast({
+                    heading: 'Advertencia ',
+                    text: '\n Actualice los datos del detalle.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'warning',
+                    hideAfter: 30000,
+                    stack: 6
+                });
+                $("#btnSaveCotizacion").show();
+                $("#btnSaveCotizacion").prop("disabled", false);
+                return;
+            }
+        }
+      
 
         if (displayedData.length > 0) {
             if (validator.validate() && validator2.validate()) {
