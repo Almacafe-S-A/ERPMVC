@@ -167,6 +167,8 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
+                    _CAIS.UsuarioCreacion = _CAI.UsuarioCreacion;
+                    _CAIS.FechaCreacion = _CAI.FechaCreacion;
                     var updateresult = await Update(_CAI.IdCAI, _CAIS);
                 }
 

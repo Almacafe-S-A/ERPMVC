@@ -17,6 +17,50 @@
         data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
     }
 
+
+    function AddCustomerType() {
+
+         $('#ModalCustomerType').find(':input').not(':submit').val('');
+         $('#ModalCustomerType').modal('show');
+         $("#CustomerTypeId").val('0');
+
+
+
+
+    }
+
+    
+         function EditCustomerType(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                CustomerTypeId: dataItem.CustomerTypeId,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddCustomerType", "CustomerType")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumCustomerType").html('');
+                    $("#NumCustomerType").html(result);
+
+                
+                    //$("#btnCAI").hide();
+                    $('#ModalCustomerType').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+         }
+
+
+
 </script>
 
 <h3 class="text-themecolor">Tipo Empleado</h3>
@@ -25,20 +69,21 @@
               ()
 
                 .Name("gridCustomerType")
-
                 .Columns(columns =>
                 {
-                    columns.Bound(p => p.CustomerTypeId).Width(100);
-                    columns.Bound(p => p.CustomerTypeName).Width(170);
-                    columns.Bound(p => p.Description).Width(200);
 
-                    //columns.Bound(p => p.UsuarioCreacion).Width(170);
-                    //columns.Bound(p => p.UsuarioModificacion).Width(190);
                     columns.Command(command =>
                     {
                         //command.Custom("Ver detalles").Click("Detalles");
-                        command.Edit(); command.Destroy();
-                    }).Width(250);
+                        command.Custom("Editar").Click("EditCustomerType");
+                        command.Destroy();
+                    }).Width(200);
+
+                    columns.Bound(p => p.CustomerTypeId).Width(170);
+                    columns.Bound(p => p.CustomerTypeName).Width(170);
+                    columns.Bound(p => p.Description).Width(200);
+                    columns.Bound(p => p.Estado).Width(200);
+
 
                 })
                     .Filterable(f => f.Operators(o => o.ForString(s => s
@@ -75,8 +120,9 @@
 
                 .ToolBar(tools =>
                 {
-
-                    tools.Create();
+                    // tools.Create();
+                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                           .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerType()" });
                     tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
                     tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
 
@@ -119,3 +165,7 @@
 
                 })
 )
+
+<div id="NumCustomerType">
+    @await Html.PartialAsync("pvwAddCustomerType", new ERPMVC.DTO.CustomerTypeDTO { CustomerTypeId = 0})
+</div>

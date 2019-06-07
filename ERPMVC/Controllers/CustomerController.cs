@@ -144,6 +144,41 @@ namespace ERPMVC.Controllers
             return _customers.ToDataSourceResult(request);
 
         }
+
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetUsuario([DataSourceRequest]DataSourceRequest request)
+        {
+            List<Customer> _customers = new List<Customer>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Customer/GetCustomer");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _customers = JsonConvert.DeserializeObject<List<Customer>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _customers.ToDataSourceResult(request);
+
+        }
+
+
+
         // POST: Customer/Create
         [HttpPost]
         //[ValidateAntiForgeryToken]

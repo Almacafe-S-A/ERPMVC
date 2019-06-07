@@ -24,10 +24,13 @@ namespace ERPMVC.Models
         public int CantidadOtorgada { get; set; }
 
         public string SiguienteNumero { get; set; }
+        public Int64 IdPuntoEmision { get; set; }
         public string PuntoEmision { get; set; }
+        public Int64 DocTypeId { get; set; }
         public string DocType { get; set; }
+        public Int64 DocSubTypeId { get; set; }
         public string DocSubType { get; set; }
-        
+
         public Int64 IdEstado { get; set; }
 
         public string Estado { get; set; }

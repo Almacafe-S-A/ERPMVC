@@ -37,26 +37,27 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwEstados(Int64 Id = 0)
+        public async Task<ActionResult> pvwAddEstado([FromBody]EstadoDTO _sarpara)
         {
-            Estados _Estados = new Estados();
+            
+                EstadoDTO _Estados = new EstadoDTO();
             try
             {
                 string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Estados/GetEstadosById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/Estados/GetEstadosById/" + _sarpara.IdEstado);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Estados = JsonConvert.DeserializeObject<Estados>(valorrespuesta);
+                    _Estados = JsonConvert.DeserializeObject<EstadoDTO>(valorrespuesta);
 
                 }
 
                 if (_Estados == null)
                 {
-                    _Estados = new Estados();
+                    _Estados = new EstadoDTO();
                 }
             }
             catch (Exception ex)
@@ -109,10 +110,10 @@ namespace ERPMVC.Controllers
 
         }
 
-
-        public async Task<ActionResult<Estados>> SaveEstados([FromBody]Estados _Estados)
+        [HttpPost]
+        public async Task<ActionResult<Estados>> SaveEstados([FromBody]EstadoDTO _EstadosP)
         {
-
+            Estados _Estados = _EstadosP;
             try
             {
                 Estados _listEstados = new Estados();
@@ -127,18 +128,23 @@ namespace ERPMVC.Controllers
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listEstados = JsonConvert.DeserializeObject<Estados>(valorrespuesta);
+                    _Estados = JsonConvert.DeserializeObject<Estados>(valorrespuesta);
                 }
 
-                if (_listEstados.IdEstado == 0)
+                if (_Estados == null) { _Estados = new Models.Estados(); }
+
+
+                if (_EstadosP.IdEstado == 0)
                 {
-                    _Estados.FechaCreacion = DateTime.Now;
-                    _Estados.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_Estados);
+                    _EstadosP.FechaCreacion = DateTime.Now;
+                    _EstadosP.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_EstadosP);
                 }
                 else
                 {
-                    var updateresult = await Update(_Estados.IdEstado, _Estados);
+                    _EstadosP.UsuarioCreacion = _Estados.UsuarioCreacion;
+                    _EstadosP.FechaCreacion = _Estados.FechaCreacion;
+                    var updateresult = await Update(_Estados.IdEstado, _EstadosP);
                 }
 
             }

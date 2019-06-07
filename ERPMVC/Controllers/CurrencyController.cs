@@ -129,6 +129,8 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
+                    _CurrencyS.UsuarioCreacion = _Currency.UsuarioCreacion;
+                    _CurrencyS.FechaCreacion = _Currency.FechaCreacion;
                     var updateresult = await Update(_Currency.CurrencyId, _CurrencyS);
                 }
 
