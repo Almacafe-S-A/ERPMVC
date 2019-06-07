@@ -107,24 +107,25 @@ namespace ERPMVC.Controllers
         }
 
 
-        //public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request,Int64 CustomerId)
+        //public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request, Int64 CustomerId)
         //{
         //    var res = await GetGoodsReceived(CustomerId);
-        //   // var res = await GetGoodsReceived();
+        //    // var res = await GetGoodsReceived();
         //    return Json(res.ToDataSourceResult(request));
         //}
 
-        //public async Task<ActionResult> Orders_ValueMapper(GoodsReceivedParams _goods)
+        //public async Task<ActionResult> Orders_ValueMapper(GoodsReceivedParams _goodsparm)
+        ////public async Task<ActionResult> Orders_ValueMapper(Int64[] values,Int64 CustomerId)
         //{
         //    var indices = new List<Int64>();
 
-        //    if (_goods.values != null && _goods.values.Any())
+        //    if (_goodsparm.values != null && _goodsparm.values.Any())
         //    {
         //        var index = 0;
 
-        //        foreach (var order in await GetGoodsReceived(_goods.CustomerId))
+        //        foreach (var order in await GetGoodsReceived(_goodsparm.CustomerId))
         //        {
-        //            if (_goods.values.Contains(order.GoodsReceivedId))
+        //            if (_goodsparm.values.Contains(order.GoodsReceivedId))
         //            {
         //                indices.Add(index);
         //            }
@@ -136,29 +137,51 @@ namespace ERPMVC.Controllers
         //    return Json(indices);
         //}
 
-        //public async Task<ActionResult> Orders_ValueMapper(Int64[] values)
+        //private async Task<List<GoodsReceived>> GetGoodsReceived(Int64 CustomerId)
         //{
-        //    var indices = new List<Int64>();
+        //    List<GoodsReceived> _ControlPallets = new List<GoodsReceived>();
 
-        //    if (values != null && values.Any())
+        //    try
         //    {
-        //        var index = 0;
-
-        //        foreach (var order in await GetGoodsReceived(_goods.CustomerId))
+        //        string baseadress = config.Value.urlbase;
+        //        HttpClient _client = new HttpClient();
+        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+        //        var result = await _client.GetAsync(baseadress + "api/GoodsReceived/GetGoodsReceivedNoSelected");
+        //        string valorrespuesta = "";
+        //        if (result.IsSuccessStatusCode)
         //        {
-        //            if (values.Contains(order.GoodsReceivedId))
-        //            {
-        //                indices.Add(index);
-        //            }
+        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
+        //            _ControlPallets = JsonConvert.DeserializeObject<List<GoodsReceived>>(valorrespuesta);
+        //            _ControlPallets = (from c in _ControlPallets
+        //                                    .Where(q => q.CustomerId == CustomerId)
+        //                               select new GoodsReceived
+        //                               {
+        //                                   GoodsReceivedId = c.GoodsReceivedId,
+        //                                   ProductName = "Nombre:" + c.ProductName + "|| Fecha: " + c.DocumentDate + " || Total:" + c.WarehouseName,
+        //                                   DocumentDate = c.DocumentDate,
 
-        //            index += 1;
+        //                               }
+        //                              ).ToList();
         //        }
         //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw ex;
+        //    }
 
-        //    return Json(indices);
+        //    // return Json(_CustomerConditions.ToDataSourceResult(request));
+        //    return _ControlPallets;
         //}
 
-        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request, Int64 CustomerId)
+
+        /// <summary>
+        /// Posible
+        /// </summary>
+        /// <param name="_params"></param>
+        /// <returns></returns>
+      
+
+        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request)
         {
             //var res = await GetGoodsReceived(CustomerId);
             var res = await GetGoodsReceived();
@@ -173,7 +196,7 @@ namespace ERPMVC.Controllers
             {
                 var index = 0;
 
-                foreach (var order in await  GetGoodsReceived())//GetGoodsReceived(_goods.CustomerId))
+                foreach (var order in await GetGoodsReceived())
                 {
                     if (values.Contains(order.GoodsReceivedId))
                     {
@@ -186,8 +209,8 @@ namespace ERPMVC.Controllers
 
             return Json(indices);
         }
-               
-        
+
+
         private async Task<List<GoodsReceived>> GetGoodsReceived()
         {
             List<GoodsReceived> _ControlPallets = new List<GoodsReceived>();
@@ -204,12 +227,13 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ControlPallets = JsonConvert.DeserializeObject<List<GoodsReceived>>(valorrespuesta);
                     _ControlPallets = (from c in _ControlPallets
-                                      // .Where(q => q.CustomerId == CustomerId)
+                                           // .Where(q => q.CustomerId == CustomerId)
                                        select new GoodsReceived
                                        {
                                            GoodsReceivedId = c.GoodsReceivedId,
                                            ProductName = "Nombre:" + c.ProductName + "|| Fecha: " + c.DocumentDate + " || Total:" + c.WarehouseName,
-                                           DocumentDate = c.DocumentDate,
+                                           //DocumentDate = c.DocumentDate,
+                                           CustomerId = c.CustomerId,
                                        }
                                       ).ToList();
                 }
@@ -223,79 +247,45 @@ namespace ERPMVC.Controllers
             return _ControlPallets;
         }
 
+        [HttpPost("[action]")]
+        public async Task<ActionResult<List<GoodsReceived>>> AgruparRecibos([FromBody]GoodsReceivedParams _params)
+        {
+            GoodsReceived _GoodsReceived = new GoodsReceived();
+            if(_params!=null)
+            if (_params.RecibosSeleccionados != null)
+            {
+            
+                try
+                {
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.PostAsJsonAsync(baseadress + "api/GoodsReceived/AgruparRecibos", _params.RecibosSeleccionados);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _GoodsReceived = JsonConvert.DeserializeObject<GoodsReceived>(valorrespuesta);
+                      
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                    throw ex;
+                }
+            }
+            else
+            {
 
-        //private async Task<List<GoodsReceived>> GetGoodsReceived(Int64 CustomerId)
-        //{
-        //    List<GoodsReceived> _ControlPallets = new List<GoodsReceived>();
+            }
 
-        //    try
-        //    {
-        //        string baseadress = config.Value.urlbase;
-        //        HttpClient _client = new HttpClient();
-        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-        //        var result = await _client.GetAsync(baseadress + "api/GoodsReceived/GetGoodsReceivedNoSelected");
-        //        string valorrespuesta = "";
-        //        if (result.IsSuccessStatusCode)
-        //        {
-        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
-        //            _ControlPallets = JsonConvert.DeserializeObject<List<GoodsReceived>>(valorrespuesta);
-        //            _ControlPallets = (from c in _ControlPallets
-        //                                   // .Where(q => q.CustomerId == CustomerId)
-        //                               select new GoodsReceived
-        //                               {
-        //                                   GoodsReceivedId = c.GoodsReceivedId,
-        //                                   ProductName = "Nombre:" + c.ProductName + "|| Fecha: " + c.DocumentDate + " || Total:" + c.WarehouseName,
-        //                                   DocumentDate = c.DocumentDate,
-
-        //                               }
-        //                              ).ToList();
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-
-        //    // return Json(_CustomerConditions.ToDataSourceResult(request));
-        //    return _ControlPallets;
-        //}
+            return Json(_GoodsReceived);
+        }
 
 
-        //private async Task<List<GoodsReceived>> GetGoodsReceived(Int64 CustomerId)
-        //{
-        //    List<GoodsReceived> _ControlPallets = new List<GoodsReceived>();
+      
 
-        //    try
-        //    {
-        //        string baseadress = config.Value.urlbase;
-        //        HttpClient _client = new HttpClient();
-        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-        //        var result = await _client.GetAsync(baseadress + "api/GoodsReceived/GetGoodsReceivedNoSelected");
-        //        string valorrespuesta = "";
-        //        if (result.IsSuccessStatusCode)
-        //        {
-        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
-        //            _ControlPallets = JsonConvert.DeserializeObject<List<GoodsReceived>>(valorrespuesta);
-        //            _ControlPallets = (from c in _ControlPallets
-        //                               .Where(q=>q.CustomerId==CustomerId)
-        //                               select new GoodsReceived
-        //                               {
-        //                                   GoodsReceivedId = c.GoodsReceivedId,
-        //                                   ProductName = "Nombre:" + c.ProductName + "|| Fecha: " + c.DocumentDate + " || Total:" + c.WarehouseName,
-        //                                   DocumentDate = c.DocumentDate,
-
-        //                               }
-        //                              ).ToList();
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw ex;
-        //    }
-
-        //    // return Json(_CustomerConditions.ToDataSourceResult(request));
-        //    return _ControlPallets;
-        //}
 
 
 
@@ -488,7 +478,11 @@ namespace ERPMVC.Controllers
 
         public Int64 CustomerId { get; set; } 
 
+        public List<Int64> RecibosSeleccionados { get; set; }
+
     }
+
+    
 
 
 }

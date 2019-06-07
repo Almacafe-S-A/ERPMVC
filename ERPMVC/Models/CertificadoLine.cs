@@ -17,9 +17,11 @@ namespace ERPMVC.Models
         public Int64 SubProductId { get; set; }
         [Display(Name = "Nombre producto")]
         public string SubProductName { get; set; }
-
         [Display(Name = "Unidad de medida")]
         public Int64 UnitMeasureId { get; set; }
+
+        [Display(Name = "Unidad de medida")]
+        public string UnitMeasurName { get; set; }
 
         [Display(Name = "Descripcion")]
         public string Description { get; set; }
@@ -27,8 +29,10 @@ namespace ERPMVC.Models
         public double Quantity { get; set; }
         [Display(Name = "Precio")]
         public double Price { get; set; }
-        [Display(Name = "Monto")]
+        [Display(Name = "Total")]
         public double Amount { get; set; }
+        [Display(Name = "Total Cantidad")]
+        public double TotalCantidad { get; set; }
 
     }
 }
