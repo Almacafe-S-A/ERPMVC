@@ -33,7 +33,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwCertificadoLine(Int64 Id = 0)
+        public async Task<ActionResult> pvwCertificadoDepositoDetailMant(Int64 CertificadoLineId = 0)
         {
             CertificadoLine _CertificadoLine = new CertificadoLine();
             try
@@ -41,7 +41,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CertificadoLine/GetCertificadoLineById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/CertificadoLine/GetCertificadoLineById/" + CertificadoLineId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -63,7 +63,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_CertificadoLine);
+            return PartialView("~/Views/CertificadoDeposito/pvwCertificadoDepositoDetailMant.cshtml", _CertificadoLine);
 
         }
 
