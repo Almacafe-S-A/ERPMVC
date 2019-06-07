@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace ERPMVC.DTO
 {
-    public class DTO_UserClaim:ApplicationUserClaim
+    public class PolicyRolesDTO:PolicyRoles
     {
-        public List<ApplicationUserClaim> _UserClaim { get; set; }
+        public List<PolicyRoles> _PolicyRoles { get; set; }
 
         public int editar { get; set; } = 1;
 

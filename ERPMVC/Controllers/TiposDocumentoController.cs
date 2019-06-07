@@ -64,6 +64,39 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpGet]
+        public async Task<ActionResult> GetTipoDocumento([DataSourceRequest]DataSourceRequest request)
+        {
+            List<TiposDocumento> _clientes = new List<TiposDocumento>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/TiposDocumento/GetTipoDocumento");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _clientes = JsonConvert.DeserializeObject<List<TiposDocumento>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+           
+            return Json(_clientes.ToDataSourceResult(request));
+
+        }
+
         [HttpPost]
         public async Task<ActionResult<TiposDocumento>> SaveTiposDocumento([FromBody]TiposDocumentoDTO _TiposDocumentoS)
         {
@@ -88,12 +121,14 @@ namespace ERPMVC.Controllers
 
                 if (_TiposDocumentoS.IdTipoDocumento == 0)
                 {
-                    _TiposDocumento.FechaCreacion = DateTime.Now;
-                    _TiposDocumento.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    _TiposDocumentoS.FechaCreacion = DateTime.Now;
+                    _TiposDocumentoS.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_TiposDocumentoS);
                 }
                 else
                 {
+                    _TiposDocumentoS.UsuarioCreacion = _TiposDocumento.UsuarioCreacion;
+                    _TiposDocumentoS.FechaCreacion = _TiposDocumento.FechaCreacion;
                     var updateresult = await Update(_TiposDocumento.IdTipoDocumento, _TiposDocumentoS);
                 }
 

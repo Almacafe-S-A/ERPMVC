@@ -15,44 +15,45 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
+
 namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
-    public class PuntoEmisionController : Controller
+    public class PolicyRolesController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
 
-        public PuntoEmisionController(ILogger<PuntoEmisionController> logger, IOptions<MyConfig> config)
+        public PolicyRolesController(ILogger<PolicyRolesController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
+
         }
 
-        // GET: PuntoEmision
-        public ActionResult Index()
+        public ActionResult PolicyRoles()
         {
             return View();
         }
 
-        // GET: PuntoEmision
-        [HttpGet]
-        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
+
+        [HttpGet ]
+        public async Task<JsonResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<PuntoEmision> _PuntoEmision = new List<PuntoEmision>();
+            List<PolicyRoles> _cais = new List<PolicyRoles>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/PuntoEmision/GetPuntoEmision");
+                var result = await _client.GetAsync(baseadress + "api/PolicyRoles/GetPolicyRoles");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PuntoEmision = JsonConvert.DeserializeObject<List<PuntoEmision>>(valorrespuesta);
+                    _cais = JsonConvert.DeserializeObject<List<PolicyRoles>>(valorrespuesta);
 
                 }
 
@@ -65,73 +66,117 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _PuntoEmision.ToDataSourceResult(request);
+            return Json(_cais.ToDataSourceResult(request));
 
         }
 
-        [HttpGet("[controller]/[action]")]
-        public async Task<ActionResult> GetPuntoEmision([DataSourceRequest]DataSourceRequest request)
+        [HttpGet]
+        public async Task<ActionResult> GetPolicyRole([DataSourceRequest]DataSourceRequest request)
         {
-            List<PuntoEmision> _PuntoEmision = new List<PuntoEmision>();
+            List<PolicyRoles> _PolicyRoles = new List<PolicyRoles>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/PolicyRoles/GetPolicyRoles");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _PolicyRoles = JsonConvert.DeserializeObject<List<PolicyRoles>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return Json(_PolicyRoles.ToDataSourceResult(request));
+
+        }
+
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwAddPolicyRoles([FromBody]PolicyRolesDTO _sarpara)
+        {
+            PolicyRolesDTO _Policy = new PolicyRolesDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/PuntoEmision/GetPuntoEmision");
+                var result = await _client.GetAsync(baseadress + "api/PolicyRoles/GetPolicyRolesById/" + _sarpara.Id);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PuntoEmision = JsonConvert.DeserializeObject<List<PuntoEmision>>(valorrespuesta);
+                    _Policy = JsonConvert.DeserializeObject<PolicyRolesDTO>(valorrespuesta);
+
                 }
 
+                if (_Policy == null)
+                {
+                    _Policy = new PolicyRolesDTO();
+                }
             }
             catch (Exception ex)
             {
-
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
 
-            return Json(_PuntoEmision.ToDataSourceResult(request));
+
+
+            return PartialView(_Policy);
 
         }
 
-        [HttpPost]
-        public async Task<ActionResult<PuntoEmision>> SavePuntoEmision([FromBody]PuntoEmisionDTO _PuntoEmisionS)
-        {
 
-            PuntoEmision _PuntoEmision = _PuntoEmisionS;
+
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<PolicyRoles>> SavePolicyRoles([FromBody]PolicyRolesDTO _PolicyRolesp)
+        {
+            PolicyRoles _PolicyRoles = _PolicyRolesp;
             try
             {
                 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/PuntoEmision/GetPuntoEmisionById/" + _PuntoEmision.IdPuntoEmision);
-                string valorrespuesta = "";
-                _PuntoEmision.FechaModificacion = DateTime.Now;
-                _PuntoEmision.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.GetAsync(baseadress + "api/PolicyRoles/GetPolicyRolesById/" + _PolicyRoles.Id);
+                string valorrespuesta = "";              
+                _PolicyRoles.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PuntoEmision = JsonConvert.DeserializeObject<PuntoEmisionDTO>(valorrespuesta);
+                    _PolicyRoles = JsonConvert.DeserializeObject<PolicyRoles>(valorrespuesta);
                 }
 
-                if (_PuntoEmision == null) { _PuntoEmision = new Models.PuntoEmision(); }
+                if (_PolicyRoles == null) { _PolicyRoles = new Models.PolicyRoles(); }
+              
 
-                if (_PuntoEmisionS.IdPuntoEmision == 0)
+
+                if (_PolicyRolesp.Id.ToString() == "00000000-0000-0000-0000-000000000000")
+
                 {
-                    _PuntoEmision.FechaCreacion = DateTime.Now;
-                    _PuntoEmision.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_PuntoEmisionS);
+
+                    _PolicyRoles.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_PolicyRolesp);
                 }
                 else
                 {
-                    _PuntoEmisionS.UsuarioCreacion = _PuntoEmision.UsuarioCreacion;
-                    _PuntoEmisionS.FechaCreacion = _PuntoEmision.FechaCreacion;
-                    var updateresult = await Update(_PuntoEmision.IdPuntoEmision, _PuntoEmisionS);
+                    _PolicyRolesp.UsuarioCreacion = _PolicyRoles.UsuarioCreacion;                    
+                    var updateresult = await Update(_PolicyRolesp.Id, _PolicyRolesp);
                 }
 
             }
@@ -141,66 +186,29 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_PuntoEmision);
-        }
-
-
-        [HttpPost("[action]")]
-        public async Task<ActionResult> pvwAddPuntoEmision([FromBody]PuntoEmisionDTO _sarpara)
-        {
-            PuntoEmisionDTO _PuntoEmision = new PuntoEmisionDTO();
-            try
-            {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/PuntoEmision/GetPuntoEmisionById/" + _sarpara.IdPuntoEmision);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PuntoEmision = JsonConvert.DeserializeObject<PuntoEmisionDTO>(valorrespuesta);
-
-                }
-
-                if (_PuntoEmision == null)
-                {
-                    _PuntoEmision = new PuntoEmisionDTO();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-
-
-            return PartialView(_PuntoEmision);
+            return Json(_PolicyRoles);
 
         }
 
-        // POST: PuntoEmision/Insert
+
+
         [HttpPost]
-        //[ValidateAntiForgeryToken]
-        public async Task<ActionResult> Insert(PuntoEmision _PuntoEmisionp)
+        public async Task<ActionResult> Insert(PolicyRoles _PolicyRoles)
         {
-            PuntoEmision _PuntoEmision = _PuntoEmisionp;
+           
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _PuntoEmision.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _PuntoEmision.UsuarioModificacion = HttpContext.Session.GetString("user");
-                _PuntoEmision.FechaCreacion = DateTime.Now;
-                _PuntoEmision.FechaModificacion = DateTime.Now;
-                var result = await _client.PostAsJsonAsync(baseadress + "api/PuntoEmision/Insert", _PuntoEmision);
+                _PolicyRoles.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _PolicyRoles.UsuarioModificacion = HttpContext.Session.GetString("user");             
+                var result = await _client.PostAsJsonAsync(baseadress + "api/PolicyRoles/Insert", _PolicyRoles);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PuntoEmision = JsonConvert.DeserializeObject<PuntoEmision>(valorrespuesta);
+                    _PolicyRoles = JsonConvert.DeserializeObject<PolicyRoles>(valorrespuesta);
                 }
 
             }
@@ -209,28 +217,26 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _PuntoEmision }, Total = 1 });
+            return Ok(_PolicyRoles);
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _PolicyRoles }, Total = 1 });
         }
 
-
-        // POST: PuntoEmision/Update
-        [HttpPost("{IdPuntoEmision}")]
-        public async Task<IActionResult> Update(Int64 IdPuntoEmision, PuntoEmision _PuntoEmisionp)
+        [HttpPut("[action]")]
+        public async Task<IActionResult> Update(Guid id, PolicyRoles _PolicyRoles)
         {
-            PuntoEmision _PuntoEmision = _PuntoEmisionp;
+
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _PuntoEmision.FechaModificacion = DateTime.Now;
-                _PuntoEmision.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/PuntoEmision/Update", _PuntoEmision);
+                _PolicyRoles.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PutAsJsonAsync(baseadress + "api/PolicyRoles/Update", _PolicyRoles);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PuntoEmision = JsonConvert.DeserializeObject<PuntoEmision>(valorrespuesta);
+                    _PolicyRoles = JsonConvert.DeserializeObject<PolicyRoles>(valorrespuesta);
                 }
 
             }
@@ -239,27 +245,26 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _PuntoEmision }, Total = 1 });
+            return Ok(_PolicyRoles);//new ObjectResult(new DataSourceResult { Data = new[] { _PolicyRoles }, Total = 1 });
         }
 
 
-
-        // GET: PuntoEmision/Delete
-        [HttpDelete("Delete")]
-        public async Task<ActionResult<PuntoEmision>> Delete(Int64 IdPuntoEmision, PuntoEmision _PuntoEmision)
+        [HttpPost]
+        public async Task<ActionResult<PolicyRoles>> Delete(Int64 Id, PolicyRoles _PolicyRoles)
         {
+
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/PuntoEmision/Delete", _PuntoEmision);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/PolicyRoles/Delete", _PolicyRoles);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PuntoEmision = JsonConvert.DeserializeObject<PuntoEmision>(valorrespuesta);
+                    _PolicyRoles = JsonConvert.DeserializeObject<PolicyRoles>(valorrespuesta);
                 }
 
             }
@@ -268,9 +273,7 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _PuntoEmision }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _PolicyRoles }, Total = 1 });
         }
-
-
     }
 }

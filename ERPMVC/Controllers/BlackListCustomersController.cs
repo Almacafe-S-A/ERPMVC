@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using ERPMVC.DTO;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -28,44 +29,12 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-        public IActionResult Index()
+        public IActionResult BlackListCustomers()
         {
             return View();
         }
 
-        public async Task<ActionResult> pvwBlackListCustomers(Int64 Id = 0)
-        {
-            BlackListCustomers _BlackListCustomers = new BlackListCustomers();
-            try
-            {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/BlackListCustomers/GetBlackListCustomersById/" + Id);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _BlackListCustomers = JsonConvert.DeserializeObject<BlackListCustomers>(valorrespuesta);
-
-                }
-
-                if (_BlackListCustomers == null)
-                {
-                    _BlackListCustomers = new BlackListCustomers();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-
-
-            return PartialView(_BlackListCustomers);
-
-        }
+      
 
 
         [HttpGet]
@@ -101,9 +70,44 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<BlackListCustomers>> SaveBlackListCustomers([FromBody]BlackListCustomers _BlackListCustomers)
+        public async Task<ActionResult> pvwAddBlackList([FromBody]BlackListCustomersDTO _sar)
         {
+            BlackListCustomersDTO _BlackListCustomers = new BlackListCustomersDTO();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/BlackListCustomers/GetBlackListCustomersById/" + _sar.BlackListId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _BlackListCustomers = JsonConvert.DeserializeObject<BlackListCustomersDTO>(valorrespuesta);
 
+                }
+
+                if (_BlackListCustomers == null)
+                {
+                    _BlackListCustomers = new BlackListCustomersDTO();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return PartialView(_BlackListCustomers);
+
+        }
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<BlackListCustomers>> SaveBlackListCustomers([FromBody]BlackListCustomersDTO _BlackListCustomersP)
+        {
+            BlackListCustomers _BlackListCustomers = _BlackListCustomersP;
             try
             {
                 BlackListCustomers _listBlackListCustomers = new BlackListCustomers();
@@ -118,18 +122,22 @@ namespace ERPMVC.Controllers
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listBlackListCustomers = JsonConvert.DeserializeObject<BlackListCustomers>(valorrespuesta);
+                    _BlackListCustomers = JsonConvert.DeserializeObject<BlackListCustomers>(valorrespuesta);
                 }
 
-                if (_listBlackListCustomers.BlackListId == 0)
+                if (_BlackListCustomers == null) { _BlackListCustomers = new Models.BlackListCustomers(); }
+
+                if (_BlackListCustomersP.BlackListId == 0)
                 {
-                    _BlackListCustomers.FechaCreacion = DateTime.Now;
-                    _BlackListCustomers.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_BlackListCustomers);
+                    _BlackListCustomersP.FechaCreacion = DateTime.Now;
+                    _BlackListCustomersP.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_BlackListCustomersP);
                 }
                 else
                 {
-                    var updateresult = await Update(_BlackListCustomers.BlackListId, _BlackListCustomers);
+                    _BlackListCustomersP.UsuarioCreacion = _BlackListCustomers.UsuarioCreacion;
+                    _BlackListCustomersP.FechaCreacion = _BlackListCustomers.FechaCreacion;
+                    var updateresult = await Update(_BlackListCustomersP.BlackListId, _BlackListCustomersP);
                 }
 
             }
@@ -200,8 +208,8 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _BlackListCustomers }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult<BlackListCustomers>> Delete([FromBody]BlackListCustomers _BlackListCustomers)
+        [HttpPost]
+        public async Task<ActionResult<BlackListCustomers>> Delete(Int64 BlackListId, BlackListCustomers _BlackListCustomers)
         {
             try
             {

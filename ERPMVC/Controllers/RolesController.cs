@@ -98,6 +98,38 @@ namespace ERPMVC.Controllers
             return _roles.ToDataSourceResult(request);
         }
 
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetPolicyRoles([DataSourceRequest]DataSourceRequest request)
+        {
+            List<ApplicationRole> _roles = new List<ApplicationRole>();
+
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+                string token = "";
+                token = HttpContext.Session.GetString("token");
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
+                var result = await _client.GetAsync(baseadress + "api/Roles/GetRoles");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _roles = JsonConvert.DeserializeObject<List<ApplicationRole>>(valorrespuesta);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                //return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+
+
+            return _roles.ToDataSourceResult(request);
+        }
+
         [HttpGet]
         public async Task<ActionResult> Details(Int64 UserId)
         {

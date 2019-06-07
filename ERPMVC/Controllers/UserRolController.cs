@@ -61,6 +61,40 @@ namespace ERPMVC.Controllers
         }
 
 
+
+        [HttpGet]
+        public async Task<DataSourceResult> GetUserRol([DataSourceRequest]DataSourceRequest request)
+        {
+            List<ApplicationUserRole> _UserRrol = new List<ApplicationUserRole>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/UserRol/GetUserRoles");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _UserRrol = JsonConvert.DeserializeObject<List<ApplicationUserRole>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _UserRrol.ToDataSourceResult(request);
+
+        }
+
+
         [HttpGet("[action]")]
         public async Task<DataSourceResult> GetRolesByUserId([DataSourceRequest]DataSourceRequest request, Guid UserId)
         {
@@ -137,6 +171,7 @@ namespace ERPMVC.Controllers
           //  return Json(_roles);
         }
 
+        [HttpGet("[action]")]
         public async Task<JsonResult> GetJsonRoles([DataSourceRequest]DataSourceRequest request)
         {
             List<ApplicationUserRole> _roles = new List<ApplicationUserRole>();
@@ -171,6 +206,43 @@ namespace ERPMVC.Controllers
             }
              return Json(_roles);
         //    return _roles.ToDataSourceResult(request);
+        }
+        [HttpGet("[action]")]
+        public async Task<JsonResult> GetJsonUsersApi([DataSourceRequest]DataSourceRequest request)
+        {
+            List<ApplicationUserRole> _roles = new List<ApplicationUserRole>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/UserRol/GetUserRoles");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _roles = JsonConvert.DeserializeObject<List<ApplicationUserRole>>(valorrespuesta);
+
+                    foreach (var item in _roles)
+                    {
+                        var resultclient = await _client.GetAsync(baseadress + "api/Usuario/GetUserById/" + item.UserId).Result.Content.ReadAsStringAsync();
+                        item.UserName = (JsonConvert.DeserializeObject<ApplicationUser>(resultclient)).UserName;
+                    }
+
+
+
+                }
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw (new Exception(ex.Message));
+            }
+
+            //  return _roles.ToDataSourceResult(request);
+            return Json(_roles.ToDataSourceResult(request));
         }
 
         [HttpGet("[action]")]

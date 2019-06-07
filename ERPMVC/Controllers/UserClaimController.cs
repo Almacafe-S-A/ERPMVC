@@ -47,7 +47,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/UserClaim/Get");
+                var result = await _client.GetAsync(baseadress + "api/UserClaims/GetApplicationUserClaim");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -66,34 +66,71 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpPost]
-        public async Task<ActionResult<ApplicationUserClaim>> SaveUserClaim([FromBody]DTO_UserClaim _UserClaim)
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwAddUserClaim([FromBody]UserClaimDTO _sarpara)
         {
-
+            UserClaimDTO _UserClaim = new UserClaimDTO();
             try
             {
-                DTO_UserClaim _li_UserClaim = new DTO_UserClaim();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/UserClaim/Get/" + _UserClaim.Id);
+                var result = await _client.GetAsync(baseadress + "api/UserClaims/GetAspNetUserClaimsById/" + _sarpara.Id);
                 string valorrespuesta = "";
-              
                 if (result.IsSuccessStatusCode)
                 {
-
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _UserClaim = JsonConvert.DeserializeObject<DTO_UserClaim>(valorrespuesta);
+                    _UserClaim = JsonConvert.DeserializeObject<UserClaimDTO>(valorrespuesta);
+
                 }
+
+                if (_UserClaim == null)
+                {
+                    _UserClaim = new UserClaimDTO();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return PartialView(_UserClaim);
+
+        }
+
+
+        [HttpPost]
+        public async Task<ActionResult<ApplicationUserClaim>> SaveUserClaim([FromBody]UserClaimDTO _UserClaimS)
+        {
+            ApplicationUserClaim _UserClaim = _UserClaimS;
+            try
+            {
+               // UserClaimDTO _li_UserClaim = new UserClaimDTO();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/UserClaims/GetAspNetUserClaimsById/" + _UserClaim.Id);
+                string valorrespuesta = "";              
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _UserClaim = JsonConvert.DeserializeObject<UserClaimDTO>(valorrespuesta);
+                }
+
+                if (_UserClaim == null) { _UserClaim = new Models.ApplicationUserClaim(); }
 
                 if (_UserClaim.Id == 0)
                 {
                   
-                    var insertresult = await Insert(_UserClaim);
+                    var insertresult = await Insert(_UserClaimS);
+
                 }
                 else
                 {
-                    var updateresult = await Update(_UserClaim.Id, _UserClaim);
+                    var updateresult = await Update(_UserClaim.Id, _UserClaimS);
                 }
 
             }
@@ -116,7 +153,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/NumeracionSAR/Insert", _UserClaim);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/UserClaims/Insert", _UserClaim);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -134,8 +171,8 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _UserClaim }, Total = 1 });
         }
 
-        [HttpPut("Id")]
-        public async Task<IActionResult> Update(Int64 IdNumeracion, ApplicationUserClaim _UserClaim)
+        [HttpPut("{IdNumeracion}")]
+        public async Task<IActionResult> Update(Int64 Id, ApplicationUserClaim _AspNetUserClaims)
         {
             try
             {
@@ -143,12 +180,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PutAsJsonAsync(baseadress + "api/NumeracionSAR/Update", _UserClaim);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/UserClaims/Update", _AspNetUserClaims);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _UserClaim = JsonConvert.DeserializeObject<ApplicationUserClaim>(valorrespuesta);
+                    _AspNetUserClaims = JsonConvert.DeserializeObject<ApplicationUserClaim>(valorrespuesta);
                 }
 
             }
@@ -158,10 +195,10 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _UserClaim }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _AspNetUserClaims }, Total = 1 });
         }
 
-        [HttpDelete("IdNumeracion")]
+        [HttpPost ("Id")]
         public async Task<ActionResult<ApplicationUserClaim>> Delete(Int64 Id, ApplicationUserClaim _UserClaim)
         {
             try
@@ -170,7 +207,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/NumeracionSAR/Delete", _UserClaim);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/UserClaims/Delete", _UserClaim);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {

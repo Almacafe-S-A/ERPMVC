@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -28,31 +29,32 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-        public IActionResult Index()
+        public IActionResult PEPS()
         {
             return View();
         }
 
-        public async Task<ActionResult> pvwPEPS(Int64 Id = 0)
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwAddPEPS([FromBody]PESPDTO _sarpara)
         {
-            PEPS _PEPS = new PEPS();
+            PESPDTO _PEPS = new PESPDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/PEPS/GetPEPSById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/PEPS/GetPEPSById/" + _sarpara.PEPSId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PEPS = JsonConvert.DeserializeObject<PEPS>(valorrespuesta);
+                    _PEPS = JsonConvert.DeserializeObject<PESPDTO>(valorrespuesta);
 
                 }
 
                 if (_PEPS == null)
                 {
-                    _PEPS = new PEPS();
+                    _PEPS = new PESPDTO();
                 }
             }
             catch (Exception ex)
@@ -101,9 +103,9 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<PEPS>> SavePEPS([FromBody]PEPS _PEPS)
+        public async Task<ActionResult<PEPS>> SavePEPS([FromBody]PESPDTO _PEPSP)
         {
-
+            PEPS _PEPS = _PEPSP;
             try
             {
                 PEPS _listPEPS = new PEPS();
@@ -118,18 +120,22 @@ namespace ERPMVC.Controllers
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listPEPS = JsonConvert.DeserializeObject<PEPS>(valorrespuesta);
+                    _PEPS = JsonConvert.DeserializeObject<PEPS>(valorrespuesta);
                 }
 
-                if (_listPEPS.PEPSId == 0)
+                if (_PEPS == null) { _PEPS = new Models.PEPS(); }
+
+                if (_PEPSP.PEPSId == 0)
                 {
-                    _PEPS.FechaCreacion = DateTime.Now;
-                    _PEPS.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_PEPS);
+                    _PEPSP.FechaCreacion = DateTime.Now;
+                    _PEPSP.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_PEPSP);
                 }
                 else
                 {
-                    var updateresult = await Update(_PEPS.PEPSId, _PEPS);
+                    _PEPSP.UsuarioCreacion = _PEPS.UsuarioCreacion;
+                    _PEPSP.FechaCreacion = _PEPS.FechaCreacion;
+                    var updateresult = await Update(_PEPS.PEPSId, _PEPSP);
                 }
 
             }
@@ -201,8 +207,8 @@ namespace ERPMVC.Controllers
            // return new ObjectResult(new DataSourceResult { Data = new[] { _PEPS }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult<PEPS>> Delete([FromBody]PEPS _PEPS)
+        [HttpPost]
+        public async Task<ActionResult<PEPS>> Delete(Int64 PEPSId, PEPS _PEPS)
         {
             try
             {
