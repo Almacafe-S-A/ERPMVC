@@ -24,6 +24,9 @@ namespace ERPMVC.Models
         [Display(Name = "Cotización Asociada")]
         public Int64 SalesOrderId { get; set; }
 
+        [Display(Name = "Certificado depósito")]
+        public Int64 CertificadoDepositoId { get; set; }
+
         [Display(Name = "Sucursal")]
         public string Sucursal { get; set; }
 

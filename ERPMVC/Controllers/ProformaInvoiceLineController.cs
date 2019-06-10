@@ -76,18 +76,28 @@ namespace ERPMVC.Controllers
             List<ProformaInvoiceLine> _GoodsReceivedLine = new List<ProformaInvoiceLine>();
             try
             {
-                if (HttpContext.Session.Get("listadoproductosgoodsreceived") == null
-                   || HttpContext.Session.GetString("listadoproductosgoodsreceived") == "")
+                if (HttpContext.Session.Get("listadoproductosproformainvoice") == null
+                   || HttpContext.Session.GetString("listadoproductosproformainvoice") == "")
                 {
                     if (_ProformaInvoiceLinep.ProformaInvoiceId > 0)
                     {
                         string serialzado = JsonConvert.SerializeObject(_ProformaInvoiceLinep).ToString();
-                        HttpContext.Session.SetString("listadoproductosgoodsreceived", serialzado);
+                        HttpContext.Session.SetString("listadoproductosproformainvoice", serialzado);
                     }
                 }
                 else
                 {
-                    _GoodsReceivedLine = JsonConvert.DeserializeObject<List<ProformaInvoiceLine>>(HttpContext.Session.GetString("listadoproductosgoodsreceived"));
+                    var result = HttpContext.Session.GetString("listadoproductosproformainvoice");
+                    try
+                    {
+                        _GoodsReceivedLine = JsonConvert.DeserializeObject<List<ProformaInvoiceLine>>(HttpContext.Session.GetString("listadoproductosproformainvoice"));
+                    }
+                    catch (Exception ex)
+                    {
+
+                        //throw;
+                    }
+                   
                 }
 
 
@@ -114,7 +124,7 @@ namespace ERPMVC.Controllers
                     if (_ProformaInvoiceLinep.Quantity > 0)
                     {
                         _GoodsReceivedLine.Add(_ProformaInvoiceLinep);
-                        HttpContext.Session.SetString("listadoproductosgoodsreceived", JsonConvert.SerializeObject(_GoodsReceivedLine).ToString());
+                        HttpContext.Session.SetString("listadoproductosproformainvoice", JsonConvert.SerializeObject(_GoodsReceivedLine).ToString());
                     }
                 }
 
