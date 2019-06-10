@@ -1,0 +1,168 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "Bank";
+}
+
+
+<script>
+
+    function onsave(e) {
+     //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+       // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+    function caidata(data) {
+        data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+        data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    }
+
+    function AddBank() {
+
+          $('#ModalBank').find(':input').not(':submit').val('');
+          $('#ModalBank').modal('show');
+          $("#BankId").val('0');
+    }
+
+
+         function EditBank(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                BankId: dataItem.BankId,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddBank", "Bank")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumBank").html('');
+                    $("#NumBank").html(result);
+
+
+                    //$("#btnBlackListCustomers").hide();
+                    $('#ModalBank').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+         }
+
+
+
+</script>
+
+<h3 class="text-themecolor">Bancos</h3>
+@(Html.Kendo().Grid<ERPMVC.Models.Bank>
+                        ()
+                        .Name("gridBank")
+                        .Columns(columns =>
+                        {
+
+                            columns.Command(command =>
+                            {
+                    //command.Custom("Ver detalles").Click("Detalles");
+                    command.Custom("Editar").Click("EditBank");
+                                command.Destroy();
+                            }).Width(250);
+
+                            columns.Bound(p => p.BankId).Width(100);
+                            columns.Bound(p => p.BankName).Width(200);
+                            columns.Bound(p => p.Description).Width(150);
+                          
+
+
+
+
+                        })
+                            .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                   .Clear()
+                                                   .Contains("Contiene")
+                                                   .DoesNotContain("No contiene")
+                                                   .EndsWith("Termina con")
+                                                   .IsEqualTo("Es igual a")
+                                                   .IsNotEqualTo("No es igual a")
+                                                   .IsNull("Es nulo")
+                                                   .StartsWith("Inicia con")
+
+
+                                             )
+                                             .ForNumber(n => n
+                                               .Clear()
+                                               .IsEqualTo("Es igual a")
+                                               .IsGreaterThan("Es mayor que")
+                                               .IsLessThan("Es menor que")
+                                               .IsNull("Es nulo")
+                                               .IsLessThanOrEqualTo("Es menor o igual que")
+                                               .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                             )
+                                             .ForDate(d => d
+                                             .Clear()
+                                             .IsEqualTo("Es igual que")
+                                             .IsGreaterThan("Es mayor que")
+                                             .IsLessThan("Es menor que")
+                                             .IsLessThanOrEqualTo("Es menor o igual que")
+                                             .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                             .IsNotEqualTo("No es igual que")
+                                              )
+                                           ))
+                        .ToolBar(tools =>
+                        {
+                // tools.Create();
+                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                   .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddBank()" });
+                            tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                            tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                        })
+                        .Editable(e => e.Mode(GridEditMode.PopUp))
+                        .Sortable()
+                        .Pageable()
+                        .Filterable()
+                        .Scrollable()
+                        .Pdf(pdf => pdf.FileName("BankReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                            .Excel(excel => excel.FileName("BankReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                        .DataSource(dataSource =>
+                            dataSource
+                            .WebApi()
+
+                            .ServerOperation(true)
+                            .Model(model =>
+                            {
+                                model.Id(p => p.BankId);
+                                model.Field(p => p.BankId).Editable(false);
+                                model.Field(p => p.FechaCreacion).Editable(true);
+                                model.Field(p => p.UsuarioCreacion).Editable(false);
+                                model.Field(p => p.UsuarioModificacion).Editable(false);
+
+                            })
+                            .Events(events => events.Error("error_handler"))
+                            .Read(read => read.Action("GetBank", "Bank"))
+                            .Create(create => create.Action("Insert", "Bank"))
+                            .Update(update => update.Action("Update", "Bank").Type(HttpVerbs.Put))
+                            .Destroy(destroy => destroy.Action("Delete", "Bank").Type(HttpVerbs.Post))
+
+                        )
+                        .Events(e =>
+                        {
+                            e.Save("onsave");
+
+                        })
+)
+
+<div id="NumBank">
+    @await Html.PartialAsync("pvwAddBank", new ERPMVC.DTO.BankDTO { BankId = 0 })
+</div>
+

@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using ERPMVC.DTO;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -28,31 +29,31 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-        public IActionResult Index()
+        public IActionResult Bank()
         {
             return View();
         }
 
-        public async Task<ActionResult> pvwBank(Int64 Id = 0)
+        public async Task<ActionResult> pvwAddBank([FromBody]BankDTO _sarpara)
         {
-            Bank _Bank = new Bank();
+            BankDTO _Bank = new BankDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Bank/GetBankById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/Bank/GetBankById/" + _sarpara.BankId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Bank = JsonConvert.DeserializeObject<Bank>(valorrespuesta);
+                    _Bank = JsonConvert.DeserializeObject<BankDTO>(valorrespuesta);
 
                 }
 
                 if (_Bank == null)
                 {
-                    _Bank = new Bank();
+                    _Bank = new BankDTO();
                 }
             }
             catch (Exception ex)
@@ -69,7 +70,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet("[action]")]
-        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
+        public async Task<DataSourceResult> GetBank([DataSourceRequest]DataSourceRequest request)
         {
             List<Bank> _Bank = new List<Bank>();
             try
@@ -133,9 +134,9 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<Bank>> SaveBank([FromBody]Bank _Bank)
+        public async Task<ActionResult<Bank>> SaveBank([FromBody]BankDTO _BankS)
         {
-
+            Bank _Bank = _BankS;
             try
             {
                 Bank _listBank = new Bank();
@@ -150,18 +151,22 @@ namespace ERPMVC.Controllers
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listBank = JsonConvert.DeserializeObject<Bank>(valorrespuesta);
+                    _Bank = JsonConvert.DeserializeObject<Bank>(valorrespuesta);
                 }
 
-                if (_listBank.BankId == 0)
+                if (_Bank == null) { _Bank = new Models.Bank(); }
+
+                if (_BankS.BankId == 0)
                 {
-                    _Bank.FechaCreacion = DateTime.Now;
-                    _Bank.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_Bank);
+                    _BankS.FechaCreacion = DateTime.Now;
+                    _BankS.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_BankS);
                 }
                 else
                 {
-                    var updateresult = await Update(_Bank.BankId, _Bank);
+                    _BankS.UsuarioCreacion = _Bank.UsuarioCreacion;
+                    _BankS.FechaCreacion = _Bank.FechaCreacion;
+                    var updateresult = await Update(_Bank.BankId, _BankS);
                 }
 
             }
@@ -171,7 +176,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_Bank);
+            return Json(_BankS);
         }
 
         // POST: Bank/Insert
@@ -187,6 +192,7 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 _Bank.UsuarioCreacion = HttpContext.Session.GetString("user");
                 _Bank.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _Bank.FechaModificacion = DateTime.Now;
                 var result = await _client.PostAsJsonAsync(baseadress + "api/Bank/Insert", _Bank);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -232,8 +238,8 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _Bank }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult<Bank>> Delete([FromBody]Bank _Bank)
+        [HttpPost]
+        public async Task<ActionResult<Bank>> Delete(Int64 BankId, Bank _Bank)
         {
             try
             {
