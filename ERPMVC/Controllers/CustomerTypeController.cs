@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using ERPMVC.DTO;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -66,6 +67,89 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwAddCustomerType([FromBody]CustomerTypeDTO _sarpara)
+        {
+            CustomerTypeDTO _CustomerType = new CustomerTypeDTO();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CustomerType/GetCustomerTypeById/" + _sarpara.CustomerTypeId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerType = JsonConvert.DeserializeObject<CustomerTypeDTO>(valorrespuesta);
+
+                }
+
+                if (_CustomerType == null)
+                {
+                    _CustomerType = new CustomerTypeDTO();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return PartialView(_CustomerType);
+        }
+
+
+        [HttpPost]
+        public async Task<ActionResult<CustomerType>> SaveCustomerType([FromBody]CustomerTypeDTO _CustomerTypeS)
+        {
+
+            CustomerType _CustomerType = _CustomerTypeS;
+            try
+            {                
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CustomerType/GetCustomerTypeById/" + _CustomerType.CustomerTypeId);
+                string valorrespuesta = "";
+                _CustomerType.FechaModificacion = DateTime.Now;
+                _CustomerType.UsuarioModificacion = HttpContext.Session.GetString("user");
+                if (result.IsSuccessStatusCode)
+                {
+
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerType = JsonConvert.DeserializeObject<CustomerTypeDTO>(valorrespuesta);
+                }
+
+                if (_CustomerType == null) { _CustomerType = new Models.CustomerType(); }
+
+                if (_CustomerTypeS.CustomerTypeId == 0)
+                {
+                    _CustomerType.FechaCreacion = DateTime.Now;
+                    _CustomerType.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_CustomerTypeS);
+                }
+                else
+                {
+                    _CustomerTypeS.UsuarioCreacion = _CustomerType.UsuarioCreacion;
+                    _CustomerTypeS.FechaCreacion = _CustomerType.FechaCreacion;
+                    var updateresult = await Update(_CustomerType.CustomerTypeId, _CustomerTypeS);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_CustomerType);
+        }
+
+
+
         [HttpPost]
         //[ValidateAntiForgeryToken]
         public async Task<ActionResult> Insert(CustomerType _CustomerTypep)
@@ -100,7 +184,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpPut]
-        public async Task<IActionResult> Update(CustomerType _customertype)
+        public async Task<IActionResult> Update(Int64 CustomerTypeId, CustomerType _customertype)
         {
            
             try

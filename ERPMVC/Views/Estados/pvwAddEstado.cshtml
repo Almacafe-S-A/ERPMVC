@@ -1,0 +1,188 @@
+﻿@model ERPMVC.DTO.EstadoDTO
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+           // {"required","Valor requerido" }
+        };
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<script>
+
+        function customFunction(input) {
+
+            if (input.attr('name') === "BranchId" && input.val() === "0") {
+                return false;
+            }
+
+        }
+
+        //$('#btnprueba').val("");
+</script>
+
+
+
+<div id="ModalEstado" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Estado</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmEstado" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveEstado"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <h3 class="card-title">Estado</h3>
+                                        <hr>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="IdEstado" class=" control-label" style="width:100%">Id Estado</label>
+                                                    <input type="text" asp-for="IdEstado" name="Estado" class="form-control" disabled="disabled" style="width:100%" />
+                                                    <span asp-validation-for="IdEstado" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="NombreEstado" class=" control-label" style="width:100%">Nombre Estado</label>
+                                                    <input type="text" asp-for="NombreEstado" name="Codigo" class="form-control" autocomplete="off" style="width:100%" />
+                                                    <span asp-validation-for="NombreEstado" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="DescripcionEstado" class=" control-label" style="width:100%">Descripcion Estado</label>
+                                                    <input type="text" asp-for="DescripcionEstado" name="DescripcionEstado" class="form-control" autocomplete="off" style="width:100%" />
+                                                    <span asp-validation-for="DescripcionEstado" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    
+                                                    <label asp-for="IdGrupoEstado" class=" control-label" style="width:100%">Grupo Estado</label>
+                                                    <input type="number" asp-for="IdGrupoEstado" name="IdGrupoEstado" class="form-control" autocomplete="off" style="width:100%" />
+                                                    <span asp-validation-for="IdGrupoEstado" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button id="btnEstado" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+        function SaveEstado(e) {
+
+            var notification = $("#notification").data("kendoNotification");
+           // e.preventDefault();
+            $("#btnEstado").hide();
+            $("#btnEstado").prop("disabled", true);
+
+            var displayedData = $("#gridEstados").data().kendoGrid.dataSource.view();
+
+            var dataObject = {  'IdEstado': $("#IdEstado").val()===""?"0":$("#IdEstado").val(),
+                           'NombreEstado': $("#NombreEstado").val(),
+                           'DescripcionEstado': $("#DescripcionEstado").val(),
+                           'IdGrupoEstado': $("#IdGrupoEstado").val(),                          
+                           'FechaCreacion': $("#FechaCreacion").val(),
+                           'FechaModificacion':$("#FechaModificacion").val(),
+                           'UsuarioCreacion':$("#UsuarioCreacion").val(),
+                           'UsuarioModificacion':$("#UsuarioModificacion").val(),
+                           '_Estados': displayedData
+            };
+
+           // console.log(JSON.stringify(dataObject));
+            //var form = $("#frmNumeracion");
+           // form.validate();
+
+            var validator = $("#frmEstado").data("kendoValidator");
+                 var status = $(".status");
+
+            if (displayedData.length > 0) {
+                if (validator.validate()) {
+
+                    $.ajax({
+                        url: '@Url.Action("SaveEstados", "Estados")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+
+                            //notification.show({
+                            //    message: "Guardado correctamente!"
+                            //}, "upload-success");
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: 'Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+
+                            RefreshCotizaciones();
+
+                            $('#ModalEstado').modal('hide');
+
+
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                            notification.show({
+                                title: "Validacion",
+                                message: textStatus + ": " + XMLHttpRequest.responseText
+                            }, "error");
+
+                        }
+                    });
+
+                }
+                else {
+                    status.text("Oops! There is invalid data in the form.")
+                        .removeClass("valid")
+                        .addClass("invalid");
+                }
+            }
+            else {
+                notification.show({
+                    title: "Validacion",
+                    message: "Debe agregar los productos!"
+                }, "error");
+               // notification.show("New E-mail","Debe agregar los productos", "info");
+                //alert('Debe agregar los productos!!');
+            }
+
+            $("#btnEstado").show();
+            $("#btnEstado").prop("disabled", false);
+    }
+</script>

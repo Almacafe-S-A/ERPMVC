@@ -69,13 +69,12 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpGet]
-        public async Task<JsonResult> GetDro([DataSourceRequest]DataSourceRequest request)
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> GetPuntoEmision([DataSourceRequest]DataSourceRequest request)
         {
-            List<PuntoEmision> _cais = new List<PuntoEmision>();
+            List<PuntoEmision> _PuntoEmision = new List<PuntoEmision>();
             try
             {
-
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -84,20 +83,17 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _cais = JsonConvert.DeserializeObject<List<PuntoEmision>>(valorrespuesta);
-
+                    _PuntoEmision = JsonConvert.DeserializeObject<List<PuntoEmision>>(valorrespuesta);
                 }
-
 
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+
                 throw ex;
             }
 
-
-            return Json(_cais);
+            return Json(_PuntoEmision.ToDataSourceResult(request));
 
         }
 
@@ -133,6 +129,8 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
+                    _PuntoEmisionS.UsuarioCreacion = _PuntoEmision.UsuarioCreacion;
+                    _PuntoEmisionS.FechaCreacion = _PuntoEmision.FechaCreacion;
                     var updateresult = await Update(_PuntoEmision.IdPuntoEmision, _PuntoEmisionS);
                 }
 

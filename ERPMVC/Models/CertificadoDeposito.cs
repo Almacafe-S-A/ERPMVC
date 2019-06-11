@@ -32,7 +32,7 @@ namespace ERPMVC.Models
         public Int64 ServicioId { get; set; }
 
         [Display(Name = "Servicio")]
-        public Int64 ServicioName { get; set; }
+        public string ServicioName { get; set; }
 
         [Display(Name = "Dirección")]
         public string Direccion { get; set; }
@@ -42,7 +42,7 @@ namespace ERPMVC.Models
         [Display(Name = "Empresa")]
         public string NombreEmpresa { get; set; }
 
-        [Display(Name = "Seguro")]
+        [Display(Name = "Empresa Seguro")]
         public string EmpresaSeguro { get; set; }
 
         [Display(Name = "No. Poliza")]

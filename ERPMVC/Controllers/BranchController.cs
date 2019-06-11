@@ -132,6 +132,8 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
+                    _BranchP.UsuarioCreacion = _Branch.UsuarioCreacion;
+                    _BranchP.FechaCreacion = _Branch.FechaCreacion;
                     var updateresult = await Update(_Branch.BranchId, _BranchP);
                 }
 

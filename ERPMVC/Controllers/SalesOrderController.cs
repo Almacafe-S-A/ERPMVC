@@ -249,32 +249,7 @@ namespace ERPMVC.Controllers
                         var resultsalesorder = await Insert(_SalesOrder);
                         var value = (resultsalesorder.Result as ObjectResult).Value;
                         resultsalesorder = ((SalesOrder)(value));
-                        //foreach (var item in _SalesOrder.SalesOrderLines)
-                        //{
-                        //    var value = (resultsalesorder.Result as ObjectResult).Value;
-
-                        //    SalesOrderLine _SalesOrderlineresponse = new SalesOrderLine();
-                        //    item.SalesOrderId = ((SalesOrderDTO)(value)).SalesOrderId;
-                        //    string baseadress = _config.Value.urlbase;
-                        //    HttpClient _client = new HttpClient();
-
-                        //    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                        //    var result = await _client.PostAsJsonAsync(baseadress + "api/SalesOrderLine/Insert", item);
-
-                        //    string valorrespuesta = "";
-                        //    if (result.IsSuccessStatusCode)
-                        //    {
-                        //        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        //        _SalesOrderlineresponse = JsonConvert.DeserializeObject<SalesOrderLine>(valorrespuesta);
-
-                        //    }
-                        //    else
-                        //    {
-                        //        string request = await result.Content.ReadAsStringAsync();
-                        //        return BadRequest(request);
-                        //    }
-
-                        //}
+                 
                         return resultsalesorder;
                     }
                     else

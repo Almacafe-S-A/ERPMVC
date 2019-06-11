@@ -34,7 +34,8 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwProformaInvoice(Int64 Id = 0)
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> pvwProformaInvoice([FromBody]ProformaInvoiceDTO _ProformaId)
         {
             ProformaInvoiceDTO _ProformaInvoice = new ProformaInvoiceDTO();
             try
@@ -42,7 +43,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ProformaInvoice/GetProformaInvoiceById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/ProformaInvoice/GetProformaInvoiceById/" + _ProformaId.ProformaId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -137,6 +138,126 @@ namespace ERPMVC.Controllers
             return _ProformaInvoice.ToDataSourceResult(request);
         }
 
+        [HttpPost("[action]")]
+        public async Task<ActionResult> CalcularConCertificado([FromBody]ProformaInvoice _proformap)
+        {
+            ProformaInvoice _pinvoice = new ProformaInvoice();
+            CertificadoDeposito _CertificadoDeposito = new CertificadoDeposito();
+            SalesOrder _SalesOrder = new SalesOrder();
+            List<CustomerConditions> _CustomerConditions = new List<CustomerConditions>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoById/" + _proformap.CertificadoDepositoId);
+                string valorrespuesta = "";
+                _proformap.FechaModificacion = DateTime.Now;
+                _proformap.UsuarioModificacion = HttpContext.Session.GetString("user");
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDeposito>(valorrespuesta);
+                }
+
+
+                _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result2 = await _client.GetAsync(baseadress + "api/SalesOrder/GetSalesOrderById/" + _proformap.SalesOrderId);
+                 valorrespuesta = "";
+                _proformap.FechaModificacion = DateTime.Now;
+                _proformap.UsuarioModificacion = HttpContext.Session.GetString("user");
+                if (result2.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result2.Content.ReadAsStringAsync());
+                    _SalesOrder = JsonConvert.DeserializeObject<SalesOrder>(valorrespuesta);
+                }
+
+
+                _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                CustomerConditions _custo = new CustomerConditions { DocumentId = _proformap.SalesOrderId, IdTipoDocumento = 12 };
+                var result3 = await _client.PostAsJsonAsync(baseadress + "api/CustomerConditions/GetCustomerConditionsByClass" , _custo);
+                valorrespuesta = "";
+                _proformap.FechaModificacion = DateTime.Now;
+                _proformap.UsuarioModificacion = HttpContext.Session.GetString("user");
+                if (result3.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result3.Content.ReadAsStringAsync());
+                    _CustomerConditions = JsonConvert.DeserializeObject<List<CustomerConditions>>(valorrespuesta);
+                }
+
+
+                int dias = 0;
+                if (_proformap.OrderDate.Month == _CertificadoDeposito.FechaCertificado.Month
+                    && _proformap.OrderDate.Year == _CertificadoDeposito.FechaCertificado.Year)
+                {
+                    if(_CertificadoDeposito.FechaCertificado.Day<=15)
+                    {
+                        dias = 30;
+                    }
+                    else
+                    {
+                        dias = 15;
+                    }
+                }
+                else if(_proformap.OrderDate.Month > _CertificadoDeposito.FechaCertificado.Month 
+                    && _proformap.OrderDate.Year > _CertificadoDeposito.FechaCertificado.Year)
+                {
+                    dias = 30;
+                }
+                else
+                {
+                    dias = 30;
+                }
+
+
+                double totalfacturar = 0;
+                foreach (var item in _CustomerConditions)
+                {
+                    foreach (var lineascertificadas in _CertificadoDeposito._CertificadoLine)
+                    {
+
+                        switch (item.LogicalCondition)
+                        {
+                            case ">=":
+                                if(_proformap.SubTotal>=Convert.ToDouble(item.ValueToEvaluate))
+                                totalfacturar += ((item.ValueDecimal * (_proformap.Discount * _proformap.SubTotal) )/30)*dias;
+                                break;
+                            case "<=":
+                                if (_proformap.SubTotal <= Convert.ToDouble(item.ValueToEvaluate))
+                                    totalfacturar += ((item.ValueDecimal * (_proformap.Discount * _proformap.SubTotal)) / 30) * dias;
+                                break;
+                            case ">":
+                                if (_proformap.SubTotal > Convert.ToDouble(item.ValueToEvaluate))
+                                    totalfacturar += ((item.ValueDecimal * (_proformap.Discount * _proformap.SubTotal)) / 30) * dias;
+                                break;
+                            case "<":
+                                if (_proformap.SubTotal < Convert.ToDouble(item.ValueToEvaluate))
+                                    totalfacturar += ((item.ValueDecimal * (_proformap.Discount * _proformap.SubTotal)) / 30) * dias;
+                                break;
+                            case "=":
+                                if (_proformap.SubTotal == Convert.ToDouble(item.ValueToEvaluate))
+                                    totalfacturar += ((item.ValueDecimal * (_proformap.Discount * _proformap.SubTotal)) / 30) * dias;
+                                break;
+                            default:
+                                break;
+                        }
+                    }
+                }
+
+                _pinvoice.Amount = totalfacturar;
+                _pinvoice.Total = totalfacturar;
+
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+
+            return Json(_pinvoice);
+        }
 
         [HttpPost("[action]")]
        // [ValidateAntiForgeryToken]

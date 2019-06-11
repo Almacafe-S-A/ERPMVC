@@ -34,12 +34,14 @@ namespace ERPMVC.Controllers
             return PartialView();
         }
 
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request)
         {
             var res = await GetCustomersConditions();
             return Json(res.ToDataSourceResult(request));
         }
 
+        [HttpGet("[controller]/[action]")]
         public async Task<ActionResult> Orders_ValueMapper(Int64[] values)
         {
             var indices = new List<Int64>();
@@ -62,6 +64,7 @@ namespace ERPMVC.Controllers
             return Json(indices);
         }
 
+        [HttpGet("[controller]/[action]")]
         private async Task<IEnumerable<CustomerConditions>> GetCustomersConditions()
         {
             List<CustomerConditions> _CustomerConditions = new List<CustomerConditions>();
@@ -89,6 +92,7 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpGet("[controller]/[action]")]
         public async Task<ActionResult> pvwCustomerConditions(Int64 Id = 0)
         {
             CustomerConditions _CustomerConditions = new CustomerConditions();
@@ -123,7 +127,7 @@ namespace ERPMVC.Controllers
 
         }
 
-
+        [HttpGet("[controller]/[action]")]
         public async Task<ActionResult> GetCustomerConditionsById(Int64 Id)
         {
             CustomerConditions _CustomerConditions = new CustomerConditions();
@@ -156,7 +160,7 @@ namespace ERPMVC.Controllers
         }
 
         //[HttpPost("[action]")]
-        [HttpGet("[action]")]
+        [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request,CustomerConditions _Ccq)
         {
             List<CustomerConditions> _CustomerConditions = new List<CustomerConditions>();
@@ -189,7 +193,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<CustomerConditions>> SaveCustomerConditions([FromBody]CustomerConditions _CustomerConditions)
         {
 

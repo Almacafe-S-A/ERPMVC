@@ -9,7 +9,7 @@ namespace ERPMVC.Models
     public class ApplicationUserClaim : IdentityUserClaim<Guid>
     {
 
-        public Guid UserId { get; set; }
+      //  public Guid UserId { get; set; }
 
         public Guid PolicyId { get; set; }
     }

@@ -69,6 +69,39 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpGet]
+        public async Task<ActionResult> GetPolicy([DataSourceRequest]DataSourceRequest request)
+        {
+            List<Policy> _Policy = new List<Policy>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Policies/GetPolicies");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Policy = JsonConvert.DeserializeObject<List<Policy>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return Json(_Policy.ToDataSourceResult(request));
+
+        }
+
 
         [HttpPost("[action]")]
         public async Task<ActionResult> GripPolicy([FromBody]DTO_Policy _sarpara)
@@ -142,8 +175,9 @@ namespace ERPMVC.Controllers
                     var insertresult = await Insert(_Policyp);
                 }
                 else
-                {                  
-                   
+                {
+                    _Policyp.UsuarioCreacion = _Policy.UsuarioCreacion;
+                    _Policyp.FechaCreacion = _Policy.FechaCreacion;
                     var updateresult = await Update(_Policyp.Id, _Policyp);
                 }
 

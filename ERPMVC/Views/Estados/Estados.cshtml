@@ -16,6 +16,42 @@
         data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
     }
 
+    function AddEstados() {
+
+          $('#ModalEstado').find(':input').not(':submit').val('');
+          $('#ModalEstado').modal('show');
+          $("#IdEstado").val('0');
+    }
+
+
+         function EditBlackList(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                IdEstado: dataItem.IdEstado,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddEstado", "Estados")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumEstados").html('');
+                    $("#NumEstados ").html(result);
+
+
+                    //$("#btnBlackListCustomers").hide();
+                    $('#ModalEstado').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+         }
    
     
 </script>
@@ -26,6 +62,14 @@
     .Name("gridEstados")
     .Columns(columns =>
     {
+
+        columns.Command(command =>
+        {
+            //command.Custom("Ver detalles").Click("Detalles");
+            command.Custom("Editar").Click("EditBlackList");
+            command.Destroy();
+        }).Width(250);
+
         columns.Bound(p => p.IdEstado).Width(150);
         columns.Bound(p => p.NombreEstado).Width(200);
         columns.Bound(p => p.DescripcionEstado).Width(240);
@@ -34,9 +78,7 @@
         //columns.Bound(p => p.UsuarioModificacion).Width(230);
         //columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy}").Width(190);
         //columns.Bound(p => p.FechaModificacion).Format("{0:dd/MM/yyyy}").Width(220);
-        @columns.Command(command => {
-            command.Edit(); command.Destroy();
-        }).Width(250);
+
 
 
     })
@@ -73,7 +115,9 @@
                                ))
     .ToolBar(tools =>
     {
-        tools.Create();
+        // tools.Create();
+        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                               .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddEstados()" });
         tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
         tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
 
@@ -118,3 +162,6 @@
     })
     )
 
+<div id="NumEstados">
+    @await Html.PartialAsync("pvwAddEstado", new ERPMVC.DTO.EstadoDTO { IdEstado = 0})
+</div>
