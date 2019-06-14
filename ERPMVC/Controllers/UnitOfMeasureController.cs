@@ -29,7 +29,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-        public IActionResult Index()
+        public IActionResult UnitOfMeasure()
         {
             return View();
         }
@@ -70,7 +70,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet("[controller]/[action]")]
-        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
+        public async Task<DataSourceResult> GetUoM([DataSourceRequest]DataSourceRequest request)
         {
             List<UnitOfMeasure> _UnitOfMeasure = new List<UnitOfMeasure>();
             try
@@ -145,7 +145,7 @@ namespace ERPMVC.Controllers
         }
 
         // POST: UnitOfMeasure/Insert
-        [HttpPost]
+        [HttpPost("[action]")]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult<UnitOfMeasure>> Insert(UnitOfMeasure _UnitOfMeasure)
         {
@@ -176,7 +176,7 @@ namespace ERPMVC.Controllers
             //  return new ObjectResult(new DataSourceResult { Data = new[] { _UnitOfMeasure }, Total = 1 });
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("[controller]/[action]/{id}")]
         public async Task<ActionResult<UnitOfMeasure>> Update(Int64 id, UnitOfMeasure _UnitOfMeasure)
         {
             try
@@ -230,7 +230,7 @@ namespace ERPMVC.Controllers
 
 
             return Ok(_UnitOfMeasure);
-          //  return new ObjectResult(new DataSourceResult { Data = new[] { _UnitOfMeasure }, Total = 1 });
+            //  return new ObjectResult(new DataSourceResult { Data = new[] { _UnitOfMeasure }, Total = 1 });
         }
 
 

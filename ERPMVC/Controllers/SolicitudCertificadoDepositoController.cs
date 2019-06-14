@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -34,26 +35,39 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwSolicitudCertificadoDeposito(Int64 Id = 0)
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwSolicitudCertificadoDeposito([FromBody]DTO.SolicitudCertificadoDepositoDTO _SolicitidCertificadoDeposito)
         {
-            SolicitudCertificadoDeposito _SolicitudCertificadoDeposito = new SolicitudCertificadoDeposito();
+            DTO.SolicitudCertificadoDepositoDTO _SolicitudCertificadoDeposito = new DTO.SolicitudCertificadoDepositoDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/SolicitudCertificadoDeposito/GetSolicitudCertificadoDepositoById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/SolicitudCertificadoDeposito/GetSolicitudCertificadoDepositoById/" + _SolicitudCertificadoDeposito.IdCD);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _SolicitudCertificadoDeposito = JsonConvert.DeserializeObject<SolicitudCertificadoDeposito>(valorrespuesta);
+                    _SolicitudCertificadoDeposito = JsonConvert.DeserializeObject<DTO.SolicitudCertificadoDepositoDTO>(valorrespuesta);
 
                 }
 
                 if (_SolicitudCertificadoDeposito == null)
                 {
-                    _SolicitudCertificadoDeposito = new SolicitudCertificadoDeposito();
+                    _SolicitudCertificadoDeposito = new DTO.SolicitudCertificadoDepositoDTO
+                    {
+                        IdCD = 0,
+                        FechaCertificado = DateTime.Now,
+                        FechaVencimiento = DateTime.Now.AddDays(60),
+                        FechaVencimientoDeposito = DateTime.Now.AddDays(30),
+                        FechaFirma = DateTime.Now,
+                        FechaInicioComputo = DateTime.Now,
+                        FechaPagoBanco = DateTime.Now,
+
+                    };
+                }else { 
+                    _SolicitudCertificadoDeposito.editar = 0;
                 }
             }
             catch (Exception ex)
