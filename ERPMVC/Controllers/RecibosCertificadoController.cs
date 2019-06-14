@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ERPMVC.Controllers
 {
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class RecibosCertificadoController : Controller
     {
         public IActionResult Index()

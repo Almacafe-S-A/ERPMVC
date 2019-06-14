@@ -19,6 +19,7 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class BlackListCustomersController : Controller
     {
         private readonly IOptions<MyConfig> config;

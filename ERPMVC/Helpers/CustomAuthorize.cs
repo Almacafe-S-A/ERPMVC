@@ -19,17 +19,16 @@ namespace ERPMVC.Helpers
 
     [AttributeUsage(AttributeTargets.All)]  
     public sealed class CustomAuthorization : Attribute, IAuthorizationFilter
-    {
-      
+    {      
 
         public  void OnAuthorization(AuthorizationFilterContext filterContext)
         {
             var controllerInfo = filterContext.ActionDescriptor as ControllerActionDescriptor;
             var ses = filterContext.HttpContext.Session.GetString("token");
 
+            var user = filterContext.HttpContext.User;
 
-
-            if (ses != null)
+            if (ses != null )
             {
 
                 //string baseadress = "";
@@ -55,16 +54,7 @@ namespace ERPMVC.Helpers
                       }
                    });
                 }
-                //filterContext.Result = new RedirectToRouteResult(
-                // new RouteValueDictionary {
-                //     {
-                //      "Controller",
-                //      "Home"
-                //     }, {
-                //      "Action",
-                //      "Index"
-                //     }
-                // });
+              
 
             }
             else

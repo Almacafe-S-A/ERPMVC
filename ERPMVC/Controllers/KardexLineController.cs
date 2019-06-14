@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -20,42 +19,41 @@ namespace ERPMVC.Controllers
     [Authorize]
     [CustomAuthorization]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-    public class PEPSController : Controller
+    public class KardexLineController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public PEPSController(ILogger<PEPSController> logger, IOptions<MyConfig> config)
+        public KardexLineController(ILogger<KardexLineController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
         }
 
-        public IActionResult PEPS()
+        public IActionResult Index()
         {
             return View();
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult> pvwAddPEPS([FromBody]PESPDTO _sarpara)
+        public async Task<ActionResult> pvwKardexLine(Int64 Id = 0)
         {
-            PESPDTO _PEPS = new PESPDTO();
+            KardexLine _KardexLine = new KardexLine();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/PEPS/GetPEPSById/" + _sarpara.PEPSId);
+                var result = await _client.GetAsync(baseadress + "api/KardexLine/GetKardexLineById/" + Id);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PEPS = JsonConvert.DeserializeObject<PESPDTO>(valorrespuesta);
+                    _KardexLine = JsonConvert.DeserializeObject<KardexLine>(valorrespuesta);
 
                 }
 
-                if (_PEPS == null)
+                if (_KardexLine == null)
                 {
-                    _PEPS = new PESPDTO();
+                    _KardexLine = new KardexLine();
                 }
             }
             catch (Exception ex)
@@ -66,7 +64,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_PEPS);
+            return PartialView(_KardexLine);
 
         }
 
@@ -74,19 +72,19 @@ namespace ERPMVC.Controllers
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<PEPS> _PEPS = new List<PEPS>();
+            List<KardexLine> _KardexLine = new List<KardexLine>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/PEPS/GetPEPS");
+                var result = await _client.GetAsync(baseadress + "api/KardexLine/GetKardexLine");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PEPS = JsonConvert.DeserializeObject<List<PEPS>>(valorrespuesta);
+                    _KardexLine = JsonConvert.DeserializeObject<List<KardexLine>>(valorrespuesta);
 
                 }
 
@@ -99,44 +97,40 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _PEPS.ToDataSourceResult(request);
+            return _KardexLine.ToDataSourceResult(request);
 
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<PEPS>> SavePEPS([FromBody]PESPDTO _PEPSP)
+        public async Task<ActionResult<KardexLine>> SaveKardexLine([FromBody]KardexLine _KardexLine)
         {
-            PEPS _PEPS = _PEPSP;
+
             try
             {
-                PEPS _listPEPS = new PEPS();
+                KardexLine _listKardexLine = new KardexLine();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/PEPS/GetPEPSById/" + _PEPS.PEPSId);
+                var result = await _client.GetAsync(baseadress + "api/KardexLine/GetKardexLineById/" + _KardexLine.KardexLineId);
                 string valorrespuesta = "";
-                _PEPS.FechaModificacion = DateTime.Now;
-                _PEPS.UsuarioModificacion = HttpContext.Session.GetString("user");
+              //  _KardexLine.FechaModificacion = DateTime.Now;
+               // _KardexLine.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PEPS = JsonConvert.DeserializeObject<PEPS>(valorrespuesta);
+                    _listKardexLine = JsonConvert.DeserializeObject<KardexLine>(valorrespuesta);
                 }
 
-                if (_PEPS == null) { _PEPS = new Models.PEPS(); }
-
-                if (_PEPSP.PEPSId == 0)
+                if (_listKardexLine.KardexLineId == 0)
                 {
-                    _PEPSP.FechaCreacion = DateTime.Now;
-                    _PEPSP.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_PEPSP);
+                 //   _KardexLine.FechaCreacion = DateTime.Now;
+                   // _KardexLine.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_KardexLine);
                 }
                 else
                 {
-                    _PEPSP.UsuarioCreacion = _PEPS.UsuarioCreacion;
-                    _PEPSP.FechaCreacion = _PEPS.FechaCreacion;
-                    var updateresult = await Update(_PEPS.PEPSId, _PEPSP);
+                    var updateresult = await Update(_KardexLine.KardexLineId, _KardexLine);
                 }
 
             }
@@ -146,13 +140,13 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_PEPS);
+            return Json(_KardexLine);
         }
 
-        // POST: PEPS/Insert
+        // POST: KardexLine/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<PEPS>> Insert(PEPS _PEPS)
+        public async Task<ActionResult<KardexLine>> Insert(KardexLine _KardexLine)
         {
             try
             {
@@ -160,14 +154,14 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _PEPS.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _PEPS.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/PEPS/Insert", _PEPS);
+              //  _KardexLine.UsuarioCreacion = HttpContext.Session.GetString("user");
+               // _KardexLine.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/KardexLine/Insert", _KardexLine);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PEPS = JsonConvert.DeserializeObject<PEPS>(valorrespuesta);
+                    _KardexLine = JsonConvert.DeserializeObject<KardexLine>(valorrespuesta);
                 }
 
             }
@@ -176,12 +170,12 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-            return Ok(_PEPS);
-            // return new ObjectResult(new DataSourceResult { Data = new[] { _PEPS }, Total = 1 });
+            return Ok(_KardexLine);
+            // return new ObjectResult(new DataSourceResult { Data = new[] { _KardexLine }, Total = 1 });
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PEPS>> Update(Int64 id, PEPS _PEPS)
+        public async Task<ActionResult<KardexLine>> Update(Int64 id, KardexLine _KardexLine)
         {
             try
             {
@@ -189,12 +183,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PutAsJsonAsync(baseadress + "api/PEPS/Update", _PEPS);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/KardexLine/Update", _KardexLine);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PEPS = JsonConvert.DeserializeObject<PEPS>(valorrespuesta);
+                    _KardexLine = JsonConvert.DeserializeObject<KardexLine>(valorrespuesta);
                 }
 
             }
@@ -204,12 +198,11 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return Ok(_PEPS);
-           // return new ObjectResult(new DataSourceResult { Data = new[] { _PEPS }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _KardexLine }, Total = 1 });
         }
 
-        [HttpPost]
-        public async Task<ActionResult<PEPS>> Delete(Int64 PEPSId, PEPS _PEPS)
+        [HttpPost("[action]")]
+        public async Task<ActionResult<KardexLine>> Delete([FromBody]KardexLine _KardexLine)
         {
             try
             {
@@ -217,12 +210,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/PEPS/Delete", _PEPS);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/KardexLine/Delete", _KardexLine);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PEPS = JsonConvert.DeserializeObject<PEPS>(valorrespuesta);
+                    _KardexLine = JsonConvert.DeserializeObject<KardexLine>(valorrespuesta);
                 }
 
             }
@@ -234,7 +227,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _PEPS }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _KardexLine }, Total = 1 });
         }
 
 

@@ -20,6 +20,7 @@ namespace ERPMVC.Controllers
 
     [Authorize]
     [CustomAuthorization]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class EstadosController : Controller
     {
         private readonly IOptions<MyConfig> _config;

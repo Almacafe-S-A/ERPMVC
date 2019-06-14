@@ -19,6 +19,7 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [Route("[controller]")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class SalesOrderLineController : Controller
     {
          private readonly IOptions<MyConfig> _config;

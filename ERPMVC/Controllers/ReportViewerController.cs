@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using AutoMapper;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -21,6 +22,9 @@ using Syncfusion.JavaScript.Models.ReportViewer;
 
 namespace ERPMVC.Controllers
 {
+    [Authorize]
+    [CustomAuthorization]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class ReportViewerController : Controller , IReportController
     {
         private IMemoryCache _cache;

@@ -7,6 +7,7 @@ using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,9 @@ using Newtonsoft.Json;
 
 namespace ERPMVC.Controllers
 {
+    [Authorize]
+    [CustomAuthorization]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class DashBoardController : Controller
     {
 
@@ -26,7 +30,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-        [HttpPost]
+        [HttpPost("[controller]/[action]")]
         public async  Task<ActionResult> FacturacionMes(Fechas _Fecha)
         {
             List<FacturacionMensual> _Facturacionmensual = new List<FacturacionMensual>();
@@ -93,7 +97,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpGet("[action]")]
+        [HttpGet("[controller]/[action]")]
         public async Task<JsonResult> GetQuantitySalesOrders()
         {
             Int32 _users = 0;
@@ -120,7 +124,7 @@ namespace ERPMVC.Controllers
             return Json(_users);
         }
 
-        [HttpGet("[action]")]
+        [HttpGet("[controller]/[action]")]
         public async Task<JsonResult> GetQuantityInvoices()
         {
             Int32 _users = 0;
@@ -148,7 +152,7 @@ namespace ERPMVC.Controllers
         }
 
         
-        [HttpGet("[action]")]
+        [HttpGet("[controller]/[action]")]
         public async Task<JsonResult> GetQuantityCertificadoDeposito()
         {
             Int32 _users = 0;

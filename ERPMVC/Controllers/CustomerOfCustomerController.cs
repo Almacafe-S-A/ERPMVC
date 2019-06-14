@@ -9,8 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ERPMVC.Controllers
 {
-     [Authorize]
-      [CustomAuthorization]
+    [Authorize]
+    [CustomAuthorization]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class CustomerOfCustomerController : Controller
     {
         // GET: CustomerOfCustomer

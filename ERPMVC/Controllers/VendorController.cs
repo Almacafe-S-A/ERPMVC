@@ -11,6 +11,7 @@ namespace ERPMVC.Controllers
 {
      [Authorize]
      [CustomAuthorization]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class VendorController : Controller
     {
         // GET: Vendor
