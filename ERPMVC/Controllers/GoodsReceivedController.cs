@@ -30,6 +30,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [HttpGet("[controller]/[action]")]
         public IActionResult Index()
         {
             return View();
@@ -107,6 +108,15 @@ namespace ERPMVC.Controllers
 
         }
 
+       // [HttpGet("[controller]/[action]/{id}")]
+        public ActionResult SFGoodsReceived(Int32 id)
+        {
+
+            GoodsReceivedDTO _GoodsReceivedDTO = new GoodsReceivedDTO { GoodsReceivedId = id, }; //token = HttpContext.Session.GetString("token") };
+
+            return View(_GoodsReceivedDTO);
+        }
+
 
         //public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request, Int64 CustomerId)
         //{
@@ -180,7 +190,7 @@ namespace ERPMVC.Controllers
         /// </summary>
         /// <param name="_params"></param>
         /// <returns></returns>
-      
+
 
         public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request)
         {

@@ -35,7 +35,23 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        [HttpGet]
+        public ActionResult SFControlPallets(Int32 id)
+        {
+            try
+            {
+                ControlPalletsDTO _ControlPalletsDTO = new ControlPalletsDTO { ControlPalletsId = id, }; //token = HttpContext.Session.GetString("token") };
 
+                return View(_ControlPalletsDTO);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+          
+        }
         public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request)
         {
             var res = await GetControlPallets();

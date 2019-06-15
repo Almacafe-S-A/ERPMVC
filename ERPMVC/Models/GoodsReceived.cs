@@ -59,6 +59,8 @@ namespace ERPMVC.Models
 
         [Display(Name = "Boleta de salida")]
         public Int64 ExitTicket { get; set; }
+        public string Placa { get; set; }
+        public string Marca { get; set; }
 
         [Display(Name = "Estado")]
         public Int64 IdEstado { get; set; }
