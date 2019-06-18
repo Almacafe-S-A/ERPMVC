@@ -1,0 +1,226 @@
+﻿
+<script>
+    function AddGoodsDelivered() {
+
+        var dataObject = ["listadoproductosGoodsDelivered"];
+         $.ajax({
+            url: '@Url.Action("ClearSession","Common")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                  //  $('#myModalSalesOrder').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+         });
+
+
+         var dataObject = {
+             GoodsDeliveredId: 0,
+            editar : 1
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwGoodsDelivered", "GoodsDelivered")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#GoodsDelivered").html('');
+                $("#GoodsDelivered").html(result);
+
+                //RefreshCotizacionesDetail();
+                 //$("#btnSaveCotizacion").show();
+                $('#myModalGoodsDelivered').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+
+
+    }
+
+    function EditGoodsDelivered(e) {
+         e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            GoodsDeliveredId: dataItem.GoodsDeliveredId,
+            editar : 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwGoodsDelivered", "GoodsDelivered")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#GoodsDelivered").html('');
+                $("#GoodsDelivered").html(result);
+                var customer = $("#CustomerId").val();
+                $("#CustomerId").val(0);
+                $("#CustomerId").data("kendoDropDownList").select(customer);
+                $("#CustomerId").data("kendoDropDownList").value(customer);
+            
+                hcustom = customer;
+                GetProductTypeIdS();
+                $("#SubProductId").data("kendoDropDownList").dataSource.read();
+               // var sapProject = $("#CustomerId").data("kendoDropDownList").bind("select", onChange(customer));
+
+                $('#myModalGoodsDelivered').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+    }
+
+    function onChange(CustomerId) {
+        $("#CustomerId").val(CustomerId);
+    }
+
+    function ImprimirGoodsDelivered(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        window.location.href = '@Url.Action("SFGoodsDelivered", "GoodsDelivered")/' + dataItem.GoodsDeliveredId;
+    }
+
+
+    function closecondition() {
+        $('#myModalConditions').modal('hide');
+    }
+
+
+</script>
+
+<h3 class="text-themecolor">Entrega de mercadería</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.GoodsDelivered>()
+                              .Name("gridGoodsDelivered")
+                              .Columns(columns =>
+                              {
+                                  columns.Command(command =>
+                                  {
+                                      command.Custom("Editar").Click("EditGoodsDelivered");
+                                      command.Custom("Imprimir").Click("ImprimirGoodsDelivered");
+                                        //  command.Edit(); command.Destroy();
+                                   }).Width(250);
+
+                                  columns.Bound(p => p.GoodsDeliveredId).Title("Id").Width(150);
+                                  columns.Bound(p => p.DocumentDate).Format("{0:dd/MM/yyyy}").ClientTemplate("#=kendo.toString(DocumentDate,'dd/MM/yyyy')#").Title("Fecha Documento").Width(150);
+                                  //columns.Bound(p => p.OrderDate).Format("{0:dd/MM/yyyy}").Width(150);
+                                  columns.Bound(p => p.Name).Width(150);
+                                  columns.Bound(p => p.ProductId).Title("Producto").Width(150);
+                                  columns.Bound(p => p.ProductName).Title("Descripcion").Width(150);
+                                   //columns.Bound(p => p.BranchId).Title("Branch Id").Width(150);
+                                  columns.Bound(p => p.BranchName).Title("Sucursal").Width(150);
+                                  columns.Bound(p => p.WarehouseName).Title("Bodega").Width(150);
+                                  columns.Bound(p => p.ExitTicket).Title("Ticket de salida").Width(150);
+                                  columns.Bound(p => p.Reference).Title("Referencia").Width(150);
+
+                              })
+                              .Filterable(f=>f.Operators(o=>o.ForString(s=>s
+                                   .Clear()                                   
+                                   .Contains("Contiene")
+                                   .DoesNotContain("No contiene")
+                                   .EndsWith("Termina con")
+                                   .IsEqualTo("Es igual a")
+                                   .IsNotEqualTo("No es igual a")                           
+                                   .IsNull("Es nulo")
+                                   .StartsWith("Inicia con")
+                                  
+                                  
+                               )
+                               .ForNumber(n=>n
+                                 .Clear()
+                                 .IsEqualTo("Es igual a")
+                                 .IsGreaterThan("Es mayor que")
+                                 .IsLessThan("Es menor que")
+                                 .IsNull("Es nulo")
+                                 .IsLessThanOrEqualTo("Es menor o igual que")
+                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                               )
+                               .ForDate(d=>d
+                               .Clear()
+                               .IsEqualTo("Es igual que")
+                               .IsGreaterThan("Es mayor que")
+                               .IsLessThan("Es menor que")
+                               .IsLessThanOrEqualTo("Es menor o igual que")
+                               .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                               .IsNotEqualTo("No es igual que")
+                                )
+                               ))
+                               
+                              .ToolBar(tools =>
+                              {
+                                 //tools.Create();
+                                 tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                  .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddGoodsDelivered();" });
+
+                                  tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                                  tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+                              })
+                               .Editable(e => e.Mode(GridEditMode.PopUp))
+                                .Sortable()
+                                .AutoBind(true)
+                                .Pageable()
+                                .Filterable()
+                                .Scrollable()
+                                // .ClientDetailTemplateId("template")
+                                .Pdf(pdf => pdf.FileName("GoodsDeliveredReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                  .Excel(excel => excel.FileName("GoodsDeliveredReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                //.Events(e=>e.Save("onsave"))
+                                .DataSource(dataSource =>
+
+                               dataSource
+                               //.Ajax()
+                               .WebApi()
+                                .ServerOperation(true)
+                                .Model(model =>
+                                {
+                                    model.Id(p => p.GoodsDeliveredId);
+                                    model.Field(p => p.GoodsDeliveredId).Editable(true);
+                                    model.Field(p => p.CustomerId).Editable(true);
+
+
+                                })
+                                .Events(events =>
+                                {
+                                    events.Error("error_handler");
+                        //events.upda("EditHandler");
+
+                    })
+                                .Read(read => read.Action("Get", "GoodsDelivered"))
+                                .Create(create => create.Action("Insert", "GoodsDelivered"))
+                                .Update(update => update.Action("Update", "GoodsDelivered", new { id = "{0}" }))
+                                .Destroy(destroy => destroy.Action("Delete", "GoodsDelivered", new { id = "{0}" }))
+                          )
+)
+
+<div id="GoodsDelivered">
+    @await Html.PartialAsync("pvwGoodsDelivered", new ERPMVC.DTO.GoodsDeliveredDTO { GoodsDeliveredId = 0, DocumentDate = DateTime.Now, OrderDate = DateTime.Now })
+</div>
+
+
+
+
+<div id="ConditionView">
+</div>
+
+<div id="CustomerConditionView">
+</div>
