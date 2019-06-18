@@ -68,6 +68,33 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> Get([DataSourceRequest]DataSourceRequest request)
+        {
+            List<UnitOfMeasure> _clientes = new List<UnitOfMeasure>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/UnitOfMeasure/GetUnitOfMeasure");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _clientes = JsonConvert.DeserializeObject<List<UnitOfMeasure>>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_clientes.ToDataSourceResult(request));
+
+        }
 
         [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> GetUoM([DataSourceRequest]DataSourceRequest request)
