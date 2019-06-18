@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using ERPMVC.DTO;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -38,24 +38,24 @@ namespace ERPMVC.Controllers
         [HttpPost("[action]")]
         public async Task<ActionResult> pvwSolicitudCertificadoDeposito([FromBody]DTO.SolicitudCertificadoDepositoDTO _SolicitidCertificadoDeposito)
         {
-            DTO.SolicitudCertificadoDepositoDTO _SolicitudCertificadoDeposito = new DTO.SolicitudCertificadoDepositoDTO();
+            //DTO.SolicitudCertificadoDepositoDTO _SolicitudCertificadoDeposito = new DTO.SolicitudCertificadoDepositoDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/SolicitudCertificadoDeposito/GetSolicitudCertificadoDepositoById/" + _SolicitudCertificadoDeposito.IdCD);
+                var result = await _client.GetAsync(baseadress + "api/SolicitudCertificadoDeposito/GetSolicitudCertificadoDepositoById/" + _SolicitidCertificadoDeposito.IdCD);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _SolicitudCertificadoDeposito = JsonConvert.DeserializeObject<DTO.SolicitudCertificadoDepositoDTO>(valorrespuesta);
+                    _SolicitidCertificadoDeposito = JsonConvert.DeserializeObject<DTO.SolicitudCertificadoDepositoDTO>(valorrespuesta);
 
                 }
 
-                if (_SolicitudCertificadoDeposito == null)
+                if (_SolicitidCertificadoDeposito == null)
                 {
-                    _SolicitudCertificadoDeposito = new DTO.SolicitudCertificadoDepositoDTO
+                    _SolicitidCertificadoDeposito = new DTO.SolicitudCertificadoDepositoDTO
                     {
                         IdCD = 0,
                         FechaCertificado = DateTime.Now,
@@ -66,8 +66,8 @@ namespace ERPMVC.Controllers
                         FechaPagoBanco = DateTime.Now,
 
                     };
-                }else { 
-                    _SolicitudCertificadoDeposito.editar = 0;
+                }else {
+                    _SolicitidCertificadoDeposito.editar = 0;
                 }
             }
             catch (Exception ex)
@@ -78,7 +78,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_SolicitudCertificadoDeposito);
+            return PartialView(_SolicitidCertificadoDeposito);
 
         }
 
@@ -116,12 +116,12 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<SolicitudCertificadoDeposito>> SaveSolicitudCertificadoDeposito([FromBody]SolicitudCertificadoDeposito _SolicitudCertificadoDeposito)
+        public async Task<ActionResult<SolicitudCertificadoDeposito>> SaveSolicitudCertificadoDeposito([FromBody]DTO.SolicitudCertificadoDepositoDTO _SolicitudCertificadoDepositoP)
         {
-
+            SolicitudCertificadoDeposito _SolicitudCertificadoDeposito = _SolicitudCertificadoDepositoP;
             try
             {
-                SolicitudCertificadoDeposito _listSolicitudCertificadoDeposito = new SolicitudCertificadoDeposito();
+                //SolicitudCertificadoDeposito _listSolicitudCertificadoDeposito = new SolicitudCertificadoDeposito();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -133,18 +133,18 @@ namespace ERPMVC.Controllers
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listSolicitudCertificadoDeposito = JsonConvert.DeserializeObject<SolicitudCertificadoDeposito>(valorrespuesta);
+                    _SolicitudCertificadoDeposito = JsonConvert.DeserializeObject<SolicitudCertificadoDeposito>(valorrespuesta);
                 }
 
-                if (_listSolicitudCertificadoDeposito.IdCD == 0)
+                if (_SolicitudCertificadoDepositoP.IdCD == 0)
                 {
                     _SolicitudCertificadoDeposito.FechaCreacion = DateTime.Now;
                     _SolicitudCertificadoDeposito.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_SolicitudCertificadoDeposito);
+                    var insertresult = await Insert(_SolicitudCertificadoDepositoP);
                 }
                 else
                 {
-                    var updateresult = await Update(_SolicitudCertificadoDeposito.IdCD, _SolicitudCertificadoDeposito);
+                    var updateresult = await Update(_SolicitudCertificadoDeposito.IdCD, _SolicitudCertificadoDepositoP);
                 }
 
             }
