@@ -95,8 +95,7 @@ namespace ERPMVC.Controllers
                     }
                     catch (Exception ex)
                     {
-
-                        //throw;
+                        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                     }
                    
                 }

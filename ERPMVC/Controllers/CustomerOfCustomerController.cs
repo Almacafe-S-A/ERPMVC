@@ -23,7 +23,7 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult> CustomersOfCustomer()
         {
 
-            return View();
+            return await Task.Run(() => View());
         }
 
         // GET: CustomerOfCustomer/Details/5

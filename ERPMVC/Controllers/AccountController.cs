@@ -108,10 +108,10 @@ namespace ERPMVC.Controllers
         // [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-              HttpContext.Session.Clear();    
-          //  await _signInManager.SignOutAsync();                 
-          //  _logger.LogInformation($"User signed out");
-            return RedirectToAction(nameof(HomeController.Index), "Home");
+              HttpContext.Session.Clear();
+            //  await _signInManager.SignOutAsync();                 
+            //  _logger.LogInformation($"User signed out");
+            return await Task.Run(() => RedirectToAction(nameof(HomeController.Index), "Home"));
         }
 
 

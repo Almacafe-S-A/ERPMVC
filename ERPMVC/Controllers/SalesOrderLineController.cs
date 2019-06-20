@@ -256,7 +256,7 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error: {ex.Message}");
             }
 
-            return Ok(_salesorder);
+            return await Task.Run(() => Ok(_salesorder));
             //return new ObjectResult(new DataSourceResult { Data = new[] { _salesorder }, Total = 1 });
         }
 

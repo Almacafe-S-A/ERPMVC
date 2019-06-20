@@ -308,7 +308,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsReceivedLine }, Total = 1 });
+            return await Task.Run(() => new ObjectResult(new DataSourceResult { Data = new[] { _GoodsReceivedLine }, Total = 1 }));
         }
 
 
