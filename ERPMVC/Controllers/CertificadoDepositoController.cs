@@ -150,37 +150,43 @@ namespace ERPMVC.Controllers
 
         [HttpPost("[action]")]
              public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]CertificadoDepositoDTO _CertificadoDeposito)
-           // public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]dynamic dto)
+          //  public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]dynamic dto)
         {
-            //CertificadoDepositoDTO _CertificadoDeposito = new CertificadoDepositoDTO(); 
+           // CertificadoDepositoDTO _CertificadoDeposito = new CertificadoDepositoDTO(); 
             try
             {
-               // _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDepositoDTO>(dto.ToString());
-
-                CertificadoDeposito _listCertificadoDeposito = new CertificadoDeposito();
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoById/" + _CertificadoDeposito.IdCD);
-                string valorrespuesta = "";
-                _CertificadoDeposito.FechaModificacion = DateTime.Now;
-                _CertificadoDeposito.UsuarioModificacion = HttpContext.Session.GetString("user");
-                if (result.IsSuccessStatusCode)
+                // _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDepositoDTO>(dto.ToString());
+                if (_CertificadoDeposito != null)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listCertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDeposito>(valorrespuesta);
-                }
+                    CertificadoDeposito _listCertificadoDeposito = new CertificadoDeposito();
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoById/" + _CertificadoDeposito.IdCD);
+                    string valorrespuesta = "";
+                    _CertificadoDeposito.FechaModificacion = DateTime.Now;
+                    _CertificadoDeposito.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _listCertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDeposito>(valorrespuesta);
+                    }
 
-                if (_listCertificadoDeposito == null) { _listCertificadoDeposito = new CertificadoDeposito();  }
-                if (_listCertificadoDeposito.IdCD == 0)
-                {
-                    _CertificadoDeposito.FechaCreacion = DateTime.Now;
-                    _CertificadoDeposito.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_CertificadoDeposito);
+                    if (_listCertificadoDeposito == null) { _listCertificadoDeposito = new CertificadoDeposito(); }
+                    if (_listCertificadoDeposito.IdCD == 0)
+                    {
+                        _CertificadoDeposito.FechaCreacion = DateTime.Now;
+                        _CertificadoDeposito.UsuarioCreacion = HttpContext.Session.GetString("user");
+                        var insertresult = await Insert(_CertificadoDeposito);
+                    }
+                    else
+                    {
+                        var updateresult = await Update(_CertificadoDeposito.IdCD, _CertificadoDeposito);
+                    }
                 }
                 else
                 {
-                    var updateresult = await Update(_CertificadoDeposito.IdCD, _CertificadoDeposito);
+                    return BadRequest("No llego correctamente el modelo!");
                 }
 
             }

@@ -29,12 +29,14 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [HttpGet("[controller]/[action]")]
         public IActionResult Index()
         {
             return View();
         }
 
-        public async Task<ActionResult> pvwGoodsDeliveryAuthorization(Int64 Id = 0)
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> pvwGoodsDeliveryAuthorization([FromBody]GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorizationDTO )
         {
             GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorizationDTO();
             try
@@ -42,7 +44,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/GoodsDeliveryAuthorization/GetGoodsDeliveryAuthorizationById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/GoodsDeliveryAuthorization/GetGoodsDeliveryAuthorizationById/" + _GoodsDeliveryAuthorizationDTO.GoodsDeliveryAuthorizationId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -53,8 +55,13 @@ namespace ERPMVC.Controllers
 
                 if (_GoodsDeliveryAuthorization == null)
                 {
-                    _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorizationDTO { AuthorizationDate = DateTime.Now, DocumentDate = DateTime.Now };
+                    _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorizationDTO { AuthorizationDate = DateTime.Now, DocumentDate = DateTime.Now, editar = 1 };
                 }
+                else
+                {
+                    _GoodsDeliveryAuthorization.editar = 0;
+                }
+
 
 
             }
@@ -71,7 +78,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpGet]
+        [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
             List<GoodsDeliveryAuthorization> _GoodsDeliveryAuthorization = new List<GoodsDeliveryAuthorization>();
@@ -89,8 +96,6 @@ namespace ERPMVC.Controllers
                     _GoodsDeliveryAuthorization = JsonConvert.DeserializeObject<List<GoodsDeliveryAuthorization>>(valorrespuesta);
 
                 }
-
-
             }
             catch (Exception ex)
             {
@@ -103,37 +108,84 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult<GoodsDeliveryAuthorization>> SaveGoodsDeliveryAuthorization([FromBody]GoodsDeliveryAuthorization _GoodsDeliveryAuthorization)
+       // [HttpGet("[controller]/[action]/{Id}")]
+        public async Task<ActionResult> GetDeliveryAuthorizationById(Int64 Id)
         {
-
+            GoodsDeliveryAuthorization _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorization();
             try
             {
-                GoodsDeliveryAuthorization _listGoodsDeliveryAuthorization = new GoodsDeliveryAuthorization();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/GoodsDeliveryAuthorization/GetGoodsDeliveryAuthorizationById/" + _GoodsDeliveryAuthorization.GoodsDeliveryAuthorizationId);
+                var result = await _client.GetAsync(baseadress + "api/GoodsDeliveryAuthorization/GetGoodsDeliveryAuthorizationById/" + Id);
                 string valorrespuesta = "";
-                _GoodsDeliveryAuthorization.FechaModificacion = DateTime.Now;
-                _GoodsDeliveryAuthorization.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
-
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listGoodsDeliveryAuthorization = JsonConvert.DeserializeObject<GoodsDeliveryAuthorization>(valorrespuesta);
+                    _GoodsDeliveryAuthorization = JsonConvert.DeserializeObject<GoodsDeliveryAuthorization>(valorrespuesta);
+
                 }
 
-                if (_listGoodsDeliveryAuthorization.GoodsDeliveryAuthorizationId == 0)
+                if (_GoodsDeliveryAuthorization == null)
                 {
-                    _GoodsDeliveryAuthorization.FechaCreacion = DateTime.Now;
-                    _GoodsDeliveryAuthorization.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_GoodsDeliveryAuthorization);
+                    _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorization();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_GoodsDeliveryAuthorization);
+        }
+
+
+
+        [HttpPost("[controller]/[action]")]
+          public async Task<ActionResult<GoodsDeliveryAuthorization>> SaveGoodsDeliveryAuthorization([FromBody]GoodsDeliveryAuthorization _GoodsDeliveryAuthorization)
+        //public async Task<ActionResult<GoodsDeliveryAuthorization>> SaveGoodsDeliveryAuthorization([FromBody]dynamic dto)
+        {
+          //  GoodsDeliveryAuthorization _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorization();
+
+            try
+            {
+            //    _GoodsDeliveryAuthorization = JsonConvert.DeserializeObject<GoodsDeliveryAuthorization>(dto.ToString());
+                if (_GoodsDeliveryAuthorization != null)
+                {
+                    GoodsDeliveryAuthorization _listGoodsDeliveryAuthorization = new GoodsDeliveryAuthorization();
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/GoodsDeliveryAuthorization/GetGoodsDeliveryAuthorizationById/" + _GoodsDeliveryAuthorization.GoodsDeliveryAuthorizationId);
+                    string valorrespuesta = "";
+                    _GoodsDeliveryAuthorization.FechaModificacion = DateTime.Now;
+                    _GoodsDeliveryAuthorization.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    if (result.IsSuccessStatusCode)
+                    {
+
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _listGoodsDeliveryAuthorization = JsonConvert.DeserializeObject<GoodsDeliveryAuthorization>(valorrespuesta);
+                    }
+
+                    if (_listGoodsDeliveryAuthorization == null) { _listGoodsDeliveryAuthorization = new GoodsDeliveryAuthorization(); }
+
+                    if (_listGoodsDeliveryAuthorization.GoodsDeliveryAuthorizationId == 0)
+                    {
+                        _GoodsDeliveryAuthorization.FechaCreacion = DateTime.Now;
+                        _GoodsDeliveryAuthorization.UsuarioCreacion = HttpContext.Session.GetString("user");
+                        var insertresult = await Insert(_GoodsDeliveryAuthorization);
+                    }
+                    else
+                    {
+                        //var updateresult = await Update(_GoodsDeliveryAuthorization.GoodsDeliveryAuthorizationId, _GoodsDeliveryAuthorization);
+                    }
                 }
                 else
                 {
-                    var updateresult = await Update(_GoodsDeliveryAuthorization.GoodsDeliveryAuthorizationId, _GoodsDeliveryAuthorization);
+                    return BadRequest("No llego correctamente el modelo!");
                 }
+
 
             }
             catch (Exception ex)
@@ -145,8 +197,75 @@ namespace ERPMVC.Controllers
             return Json(_GoodsDeliveryAuthorization);
         }
 
+
+
+        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request)
+        {
+            var res = await GetGoodsDeliveryAuthorization();
+            return Json(res.ToDataSourceResult(request));
+        }
+
+        public async Task<ActionResult> Orders_ValueMapper(Int64[] values)
+        {
+            var indices = new List<Int64>();
+
+            if (values != null && values.Any())
+            {
+                var index = 0;
+
+                foreach (var order in await GetGoodsDeliveryAuthorization())
+                {
+                    if (values.Contains(order.GoodsDeliveryAuthorizationId))
+                    {
+                        indices.Add(index);
+                    }
+
+                    index += 1;
+                }
+            }
+
+            return Json(indices);
+        }
+
+        private async Task<List<GoodsDeliveryAuthorization>> GetGoodsDeliveryAuthorization()
+        {
+            List<GoodsDeliveryAuthorization> _GoodsDeliveryAuthorization = new List<GoodsDeliveryAuthorization>();
+
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/GoodsDeliveryAuthorization/GetGoodsDeliveryAuthorizationNoSelected");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _GoodsDeliveryAuthorization = JsonConvert.DeserializeObject<List<GoodsDeliveryAuthorization>>(valorrespuesta);
+                    _GoodsDeliveryAuthorization = (from c in _GoodsDeliveryAuthorization
+                                                   select new GoodsDeliveryAuthorization
+                                       {
+                                           GoodsDeliveryAuthorizationId = c.GoodsDeliveryAuthorizationId,
+                                           CustomerName ="Numero de autorización"+ c.GoodsDeliveryAuthorizationId + "|| Nombre:" + c.CustomerName + "|| Fecha: " + c.DocumentDate + " ||Fecha de autorización:"+c.AuthorizationDate + " || Total:" + c.TotalCertificado,
+                                           DocumentDate = c.DocumentDate,
+
+                                       }
+                                      ).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            // return Json(_CustomerConditions.ToDataSourceResult(request));
+            return _GoodsDeliveryAuthorization;
+        }
+
+
+
         // POST: GoodsDeliveryAuthorization/Insert
-        [HttpPost]
+        [HttpPost("[controller]/[action]")]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult<GoodsDeliveryAuthorization>> Insert(GoodsDeliveryAuthorization _GoodsDeliveryAuthorization)
         {
@@ -203,7 +322,7 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsDeliveryAuthorization }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<GoodsDeliveryAuthorization>> Delete([FromBody]GoodsDeliveryAuthorization _GoodsDeliveryAuthorization)
         {
             try

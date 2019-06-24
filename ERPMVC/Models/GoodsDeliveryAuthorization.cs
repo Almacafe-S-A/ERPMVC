@@ -20,7 +20,7 @@ namespace ERPMVC.Models
         [Display(Name = "Fecha de autorizacion")]
         public DateTime AuthorizationDate { get; set; }
 
-        [Display(Name = "Fecha de documento")]
+        [Display(Name = "Número de certificado de deposito")]
         public Int64 NoCD { get; set; }
 
         [Display(Name = "Descripción")]
@@ -68,6 +68,6 @@ namespace ERPMVC.Models
         [Display(Name = "Fecha de Creacion")]
         public string UsuarioModificacion { get; set; }
 
-
+        public List<GoodsDeliveryAuthorizationLine> GoodsDeliveryAuthorizationLine { get; set; } = new List<GoodsDeliveryAuthorizationLine>();
     }
 }

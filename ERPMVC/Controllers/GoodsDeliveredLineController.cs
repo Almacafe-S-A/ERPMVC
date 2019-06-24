@@ -103,7 +103,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet("[action]")]
-        public async Task<DataSourceResult> GetGoodsReceivedLineByGoodsReceivedId([DataSourceRequest]DataSourceRequest request, GoodsDeliveredLine _GoodsDeliveredLinep)
+        public async Task<DataSourceResult> GetGoodsDeliveredLineByGoodsDeliveredId([DataSourceRequest]DataSourceRequest request, GoodsDeliveredLine _GoodsDeliveredLinep)
         {
             List<GoodsDeliveredLine> _GoodsDeliveredLine = new List<GoodsDeliveredLine>();
             try

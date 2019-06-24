@@ -13,6 +13,11 @@ namespace ERPMVC.Models
         [Display(Name = "Id")]
         public Int64 KardexId { get; set; }
 
+        [Display(Name = "Cliente")]
+        public Int64 CustomerId { get; set; }
+        [Display(Name = "Cliente")]
+        public string CustomerName { get; set; }
+
         [Display(Name = "Fecha")]
         public DateTime KardexDate { get; set; }
 

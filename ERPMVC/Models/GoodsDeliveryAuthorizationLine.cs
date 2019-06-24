@@ -15,8 +15,10 @@ namespace ERPMVC.Models
         [Display(Name = "Autorizacion Id")]
         public Int64 GoodsDeliveryAuthorizationId { get; set; }
         [Display(Name = "Número de certificado")]
+        [Required]
         public Int64 NoCertificadoDeposito { get; set; }
 
+        [Required]
         [Display(Name = "Producto cliente")]
         public Int64 SubProductId { get; set; }
         [Display(Name = "Producto cliente")]
@@ -28,10 +30,10 @@ namespace ERPMVC.Models
         [Display(Name = "Unidad de medida")]
         public string UnitOfMeasureName { get; set; }
 
-        [Display(Name = "Unidad de medida")]
+        [Display(Name = "Bodega")]
         public Int64 WarehouseId { get; set; }
 
-        [Display(Name = "Unidad de medida")]
+        [Display(Name = "Bodega")]
         public string WarehouseName { get; set; }
 
         [Display(Name = "Cantidad")]

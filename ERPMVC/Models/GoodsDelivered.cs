@@ -13,10 +13,10 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Int64 GoodsDeliveredId { get; set; }
 
-        [Display(Name = "Cliente")]
+        [Display(Name = "Por cuenta de")]
         public Int64 CustomerId { get; set; }
 
-        [Display(Name = "Cliente")]
+        [Display(Name = "Por cuenta de ")]
         public string CustomerName { get; set; }
 
         [Display(Name = "Fecha")]
@@ -64,9 +64,9 @@ namespace ERPMVC.Models
         [Display(Name = "Producto")]
         public string ProductName { get; set; }
 
-        [Display(Name = "Recibimos de")]
+        [Display(Name = "Entregamos a")]
         public string Name { get; set; }
-        [Display(Name = "Referencia")]
+        [Display(Name = "Transportado")]
         public string Reference { get; set; }
 
         [Display(Name = "Boleta de salida")]

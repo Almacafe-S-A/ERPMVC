@@ -10,9 +10,17 @@ namespace ERPMVC.Models
     public class GoodsDeliveredLine
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Display(Name = "Linea Id")]
         public Int64 GoodsDeliveredLinedId { get; set; }
         [Display(Name = "Recibo de mercaderia")]
         public Int64 GoodsDeliveredId { get; set; }
+
+        [Display(Name = "Número de certificado de depósito")]
+        public Int64 NoCD { get; set; }
+
+        [Display(Name = "Número de autorización de retiro")]
+        public Int64 NoAR { get; set; }
+
         [Display(Name = "Unidad de Medida")]
         public Int64 UnitOfMeasureId { get; set; }
 

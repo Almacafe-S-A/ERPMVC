@@ -68,7 +68,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpGet]
+        [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
             List<GoodsDeliveryAuthorizationLine> _GoodsDeliveryAuthorizationLine = new List<GoodsDeliveryAuthorizationLine>();
@@ -100,7 +100,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<GoodsDeliveryAuthorizationLine>> SaveGoodsDeliveryAuthorizationLine([FromBody]GoodsDeliveryAuthorizationLine _GoodsDeliveryAuthorizationLine)
         {
 
@@ -142,7 +142,7 @@ namespace ERPMVC.Controllers
             return Json(_GoodsDeliveryAuthorizationLine);
         }
 
-        [HttpGet("[action]")]
+        [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> GetGoodsDeliveryAuthorizationLineById([DataSourceRequest]DataSourceRequest request, GoodsDeliveryAuthorizationLine _GoodsReceivedLinep)
         {
             List<GoodsDeliveryAuthorizationLine> _GoodsReceivedLine = new List<GoodsDeliveryAuthorizationLine>();
@@ -262,22 +262,40 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsDeliveryAuthorizationLine }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/s[action]")]
         public async Task<ActionResult<GoodsDeliveryAuthorizationLine>> Delete([FromBody]GoodsDeliveryAuthorizationLine _GoodsDeliveryAuthorizationLine)
         {
             try
             {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/GoodsDeliveryAuthorizationLine/Delete", _GoodsDeliveryAuthorizationLine);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
+                List<GoodsDeliveryAuthorizationLine> _salesorderLIST =
+             JsonConvert.DeserializeObject<List<GoodsDeliveryAuthorizationLine>>(HttpContext.Session.GetString("listadoproductosGoodsDeliveryAuthorization"));
+
+                if (_salesorderLIST != null)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _GoodsDeliveryAuthorizationLine = JsonConvert.DeserializeObject<GoodsDeliveryAuthorizationLine>(valorrespuesta);
+                    _salesorderLIST = _salesorderLIST
+                           .Where(q => q.Quantity != _GoodsDeliveryAuthorizationLine.Quantity)
+                           .Where(q => q.SubProductId != _GoodsDeliveryAuthorizationLine.SubProductId)
+                           .Where(q => q.UnitOfMeasureId != _GoodsDeliveryAuthorizationLine.UnitOfMeasureId)
+                           .Where(q => q.valorcertificado != _GoodsDeliveryAuthorizationLine.valorcertificado)
+                           //.Where(q => q.SubProductId != _GoodsDeliveryAuthorizationLine.SubProductId)
+                          .ToList();
+
+                    HttpContext.Session.SetString("listadoproductosGoodsDeliveryAuthorization", JsonConvert.SerializeObject(_salesorderLIST));
                 }
+
+
+                //string baseadress = config.Value.urlbase;
+                //HttpClient _client = new HttpClient();
+                //_client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                //var result = await _client.PostAsJsonAsync(baseadress + "api/GoodsDeliveryAuthorizationLine/Delete", _GoodsDeliveryAuthorizationLine);
+                //string valorrespuesta = "";
+                //if (result.IsSuccessStatusCode)
+                //{
+                //    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                //    _GoodsDeliveryAuthorizationLine = JsonConvert.DeserializeObject<GoodsDeliveryAuthorizationLine>(valorrespuesta);
+                //}
 
             }
             catch (Exception ex)
