@@ -70,6 +70,17 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet]
+        public ActionResult SFKardex(Int32 id)
+        {
+
+            Kardex _salesorderdto = new Kardex { KardexId = id, }; //token = HttpContext.Session.GetString("token") };
+
+            return View(_salesorderdto);
+        }
+
+
+
+        [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
             List<Kardex> _Kardex = new List<Kardex>();
