@@ -35,6 +35,12 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        public IActionResult IndexSalida()
+        {
+
+            return View();
+        }
+
         [HttpGet]
         public ActionResult SFControlPallets(Int32 id)
         {
@@ -201,11 +207,11 @@ namespace ERPMVC.Controllers
 
                 if (_ControlPallets == null)
                 {
-                    _ControlPallets = new ControlPalletsDTO { DocumentDate=DateTime.Now  , editar=1   };
+                    _ControlPallets = new ControlPalletsDTO { DocumentDate=DateTime.Now  , editar=1 , EsIngreso = _ControlPalletsId.EsIngreso };
                 }
                 else
                 {
-                    _ControlPallets.editar = 0;
+                    _ControlPallets.editar = 0;_ControlPallets.EsIngreso = _ControlPalletsId.EsIngreso;
                 }
 
             }
@@ -254,7 +260,7 @@ namespace ERPMVC.Controllers
 
                         var value = (insertresult.Result as ObjectResult).Value;
                         _ControlPalletsDTO = ((ControlPalletsDTO)(value));
-                    
+                      
 
                     }
                     else
