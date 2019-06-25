@@ -95,10 +95,12 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex);
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 model.Failed = true;
                 return View(model);
                 // throw ex;
+                
             }
 
 
