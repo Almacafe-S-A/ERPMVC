@@ -10,6 +10,7 @@ using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -33,7 +34,9 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwUnitOfMeasure(Int64 Id = 0)
+        //Vista de Edición/Ingreso
+        [HttpPost("[action]")]
+        public async Task<ActionResult> Unidad([FromBody]UnitOfMeasure _unidad)
         {
             UnitOfMeasure _UnitOfMeasure = new UnitOfMeasure();
             try
@@ -41,28 +44,41 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/UnitOfMeasure/GetUnitOfMeasureById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/UnitOfMeasure/GetUnitOfMeasureById/" + _unidad.UnitOfMeasureId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _UnitOfMeasure = JsonConvert.DeserializeObject<UnitOfMeasure>(valorrespuesta);
-
+                    //
+                    //Obtener los estados. (Activo/Inactivo)
+                    var result2 = await _client.GetAsync(baseadress + "api/Estados/GetEstadosByGrupo/" + 1);
+                    if (result2.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result2.Content.ReadAsStringAsync());
+                        var estados = JsonConvert.DeserializeObject<List<Estados>>(valorrespuesta);
+                        if (_UnitOfMeasure == null)
+                        {
+                            ViewData["estados"] = new SelectList(estados, "IdEstado", "NombreEstado");
+                            _UnitOfMeasure = new UnitOfMeasure();
+                        }
+                        else
+                        {
+                            ViewData["estados"] = new SelectList(estados, "IdEstado", "NombreEstado", _UnitOfMeasure.IdEstado);
+                            //ViewData["estadoUnidad"] = _UnitOfMeasure.IdEstado;
+                        }
+                            
+                    }
                 }
 
-                if (_UnitOfMeasure == null)
-                {
-                    _UnitOfMeasure = new UnitOfMeasure();
-                }
+                
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
-
-
+            
             return PartialView(_UnitOfMeasure);
 
         }

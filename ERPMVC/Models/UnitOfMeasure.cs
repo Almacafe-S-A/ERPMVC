@@ -10,9 +10,9 @@ namespace ERPMVC.Models
     public class UnitOfMeasure
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Display(Name = "Id")]
+        
         public int UnitOfMeasureId { get; set; }
-        [Required]
+        
         public string UnitOfMeasureName { get; set; }
         public string Description { get; set; }
 
@@ -27,5 +27,7 @@ namespace ERPMVC.Models
         public DateTime FechaCreacion { get; set; }
         [Required]
         public DateTime FechaModificacion { get; set; }
+
+        
     }
 }
