@@ -10,6 +10,7 @@ using ERP.Contexts;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using ERPMVC.Policies;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -19,6 +20,7 @@ using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -42,35 +44,39 @@ namespace ERPMVC
 
         public IConfiguration Configuration { get; }
 
-        // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-
-           services.Configure<CookiePolicyOptions>(options =>
-           {           
-              options.CheckConsentNeeded = context => true;
-              options.MinimumSameSitePolicy = SameSiteMode.None;
-           });
+            services.AddDistributedMemoryCache();
+            services.AddCors();
+            services.AddSession(options =>
+            {
+                // Set a short timeout for easy testing.
+                options.IdleTimeout = TimeSpan.FromMinutes(30);
+                //options.IdleTimeout = TimeSpan.FromSeconds(20);
+               // options.Cookie.HttpOnly = true;
+                // Make the session cookie essential
+                options.Cookie.IsEssential = true;
+            });
 
             services.AddDbContext<ApplicationDbContext>(options =>
             options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
-
-            services.AddAutoMapper(options =>
-        {
-              //options.CreateMap<AutorCreacionDTO, Autor>();
-          });
-
-            services.AddDistributedMemoryCache();
-            services.AddSession(options =>
+            services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+            .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme,
+            options =>
             {
-            // Set a short timeout for easy testing.
-            options.IdleTimeout = TimeSpan.FromHours(10);
-              //  options.Cookie.HttpOnly = true;
-            // Make the session cookie essential
-            options.Cookie.IsEssential = true;
+                options.LoginPath = new PathString("/Account/login/");
+                options.AccessDeniedPath = new PathString("/Account/Forbidden/");
             });
 
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                // This lambda determines whether user consent for non-essential cookies is needed for a given request.
+                options.CheckConsentNeeded = context => true;
+                options.MinimumSameSitePolicy = SameSiteMode.None;
+            });
+
+              services.Configure<MyConfig>(Configuration.GetSection("AppSettings"));
 
             services.AddIdentity<ApplicationUser, ApplicationRole>(
                   options =>
@@ -85,98 +91,214 @@ namespace ERPMVC
 
                       options.SignIn.RequireConfirmedEmail = false;
                       options.User.RequireUniqueEmail = true;
+
                   })
                   .AddEntityFrameworkStores<ApplicationDbContext>()
-             .AddDefaultTokenProviders();
+                  .AddDefaultTokenProviders();
 
-            services.Configure<RequestLocalizationOptions>(
-            options =>
-                {
-                    var supportedCultures = new List<CultureInfo>
-                    {
-                            new CultureInfo("es-HN"),
-                            new CultureInfo("en-US"),
-                           // new CultureInfo("es-hn"),
-                            new CultureInfo("de-CH"),
-                            new CultureInfo("fr-CH"),
-                            new CultureInfo("it-CH")
-                    };
+            //services.AddScoped<Filters.SessionsAuthorizationFilter>();
 
-                    options.DefaultRequestCulture = new RequestCulture(culture: "en-US", uiCulture: "en-US");
-                    options.SupportedCultures = supportedCultures;
-                    options.SupportedUICultures = supportedCultures;
-                });
-
-            services.Configure<MyConfig>(Configuration.GetSection("AppSettings"));
-
-
-
-           services.AddLogging();
-
-            services.AddMvc(options =>
+            services.AddMvc(config =>
             {
-                //   options.ModelBinderProviders.Insert(0, new MyViewModelBinderProvider());
-            }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
-            //.AddJsonOptions(options => {
-            //    // send back a ISO date
-            //    var settings = options.SerializerSettings;
-            //    settings.DateFormatHandling = Newtonsoft.Json.DateFormatHandling.IsoDateFormat;
-            //    // dont mess with case of properties
-            //    var resolver = options.SerializerSettings.ContractResolver as DefaultContractResolver;
-            //    resolver.NamingStrategy = null;
-            //});
-
-            .AddJsonOptions(options =>
-             {
-                 // options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
-                  options.SerializerSettings.ContractResolver = new DefaultContractResolver();
-                  options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
-                   options.SerializerSettings.DateFormatString = "dd/MM/yyyy hh:MM:ss";
-                   options.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
-                   options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
-             });
+                //var policy = new AuthorizationPolicyBuilder()
+                //.RequireAuthenticatedUser()
+                //.Build();
+                //config.Filters.Add(new AuthorizeFilter(policy));
+            })
+            .AddJsonOptions(options => options.SerializerSettings.ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver())
+            .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
+            services.AddAutoMapper();
 
             services.AddKendo();
 
-
-            //List<Product> _listproduct = new List<Product>();
-            services.AddAuthorization(options =>
-              {
-                  //foreach (var item in _listproduct)
-                  //{
-                  //    options.AddPolicy(item.ProductName, policy =>
-                  //   {
-
-                  //   });
-                  //}
-
-
-                  //options.AddPolicy("Admin", policy =>
-                  //{
-                  //   //policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
-                  //   //policy.RequireAuthenticatedUser();
-                  //   policy.Requirements.Add(new AdminRequirement());
-                  //});
-
-
-                  //options.AddPolicy("Usuario", policy =>
-                  //{
-                  //    policy.Requirements.Add(new UsuarioRequirement());
-                  //});
-
-
-              });
-
-
-
-
+            services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
             services.AddScoped<IAuthorizationHandler, HasScopeHandler>();
         }
 
+        //// This method gets called by the runtime. Use this method to add services to the container.
+        //public void ConfigureServices(IServiceCollection services)
+        //{
+
+        //   services.Configure<CookiePolicyOptions>(options =>
+        //   {           
+        //      options.CheckConsentNeeded = context => true;
+        //      options.MinimumSameSitePolicy = SameSiteMode.None;
+        //   });
+
+        //    services.AddDbContext<ApplicationDbContext>(options =>
+        //    options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
+
+
+        //    services.AddAutoMapper(options =>
+        //   {
+        //      //options.CreateMap<AutorCreacionDTO, Autor>();
+        //  });
+
+        //    services.AddDistributedMemoryCache();
+        //    services.AddSession(options =>
+        //    {
+        //    // Set a short timeout for easy testing.
+        //    options.IdleTimeout = TimeSpan.FromHours(10);
+        //      //  options.Cookie.HttpOnly = true;
+        //    // Make the session cookie essential
+        //    options.Cookie.IsEssential = true;
+        //    });
+
+
+        //    services.AddIdentity<ApplicationUser, ApplicationRole>(
+        //          options =>
+        //          {
+        //              options.Lockout.MaxFailedAccessAttempts = 6;
+
+        //              options.Password.RequiredLength = 6;
+        //              options.Password.RequiredUniqueChars = 3;
+        //              options.Password.RequireLowercase = false;
+        //              options.Password.RequireNonAlphanumeric = false;
+        //              options.Password.RequireUppercase = true;
+
+        //              options.SignIn.RequireConfirmedEmail = false;
+        //              options.User.RequireUniqueEmail = true;
+
+        //          })
+        //          .AddEntityFrameworkStores<ApplicationDbContext>()
+        //          .AddDefaultTokenProviders();
+
+        //    services.Configure<RequestLocalizationOptions>(
+        //    options =>
+        //        {
+        //            var supportedCultures = new List<CultureInfo>
+        //            {
+        //                    new CultureInfo("es-HN"),
+        //                    new CultureInfo("en-US"),
+        //                   // new CultureInfo("es-hn"),
+        //                    new CultureInfo("de-CH"),
+        //                    new CultureInfo("fr-CH"),
+        //                    new CultureInfo("it-CH")
+        //            };
+
+        //            options.DefaultRequestCulture = new RequestCulture(culture: "en-US", uiCulture: "en-US");
+        //            options.SupportedCultures = supportedCultures;
+        //            options.SupportedUICultures = supportedCultures;
+        //        });
+
+        //    services.Configure<MyConfig>(Configuration.GetSection("AppSettings"));
+
+        //    services.AddAuthorization(options =>
+        //        {
+
+        //        });
+
+        //        services.AddLogging();
+
+
+        //    //services.AddAuthentication(sharedOptions =>
+        //    //{
+        //    //    sharedOptions.DefaultAuthenticateScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        //    //    sharedOptions.DefaultSignInScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+        //    //    // sharedOptions.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+        //    //})
+        //    //.AddCookie(
+        //    //    CookieAuthenticationDefaults.AuthenticationScheme,
+        //    //    options =>
+        //    //    {
+        //    //        options.LoginPath = "/Account/login"; ;
+        //    //        options.AccessDeniedPath = new PathString("/account/login");
+        //    //        options.Cookie.Name = "AUTHCOOKIE";
+        //    //        options.ExpireTimeSpan = new TimeSpan(365, 0, 0, 0);
+        //    //        options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+        //    //        options.Cookie.SameSite = SameSiteMode.None;
+
+        //    //    }
+        //    //);
+
+        //    services.Configure<CookiePolicyOptions>(options =>
+        //    {
+        //        // This lambda determines whether user consent for non-essential cookies is needed for a given request.
+        //        options.CheckConsentNeeded = context => true;
+        //        options.MinimumSameSitePolicy = SameSiteMode.None;
+        //    });
+
+        //    services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+        //    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme,
+        //    options =>
+        //    {
+        //        options.LoginPath = new PathString("/Account/Login/");
+        //        options.AccessDeniedPath = new PathString("/Account/Forbidden/");
+        //    });
+
+
+        //    services.AddMvc(options =>
+        //    {
+        //        //   options.ModelBinderProviders.Insert(0, new MyViewModelBinderProvider());
+        //    }).SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
+        //    //.AddJsonOptions(options => {
+        //    //    // send back a ISO date
+        //    //    var settings = options.SerializerSettings;
+        //    //    settings.DateFormatHandling = Newtonsoft.Json.DateFormatHandling.IsoDateFormat;
+        //    //    // dont mess with case of properties
+        //    //    var resolver = options.SerializerSettings.ContractResolver as DefaultContractResolver;
+        //    //    resolver.NamingStrategy = null;
+        //    //});
+
+        //    .AddJsonOptions(options =>
+        //     {
+        //         // options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+        //          options.SerializerSettings.ContractResolver = new DefaultContractResolver();
+        //          options.SerializerSettings.NullValueHandling = Newtonsoft.Json.NullValueHandling.Ignore;
+        //           options.SerializerSettings.DateFormatString = "dd/MM/yyyy hh:MM:ss";
+        //           options.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
+        //           options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore;
+        //     });
+
+        //    services.AddKendo();
+
+
+        //    //List<Product> _listproduct = new List<Product>();
+        //    //services.AddAuthorization(options =>
+        //    //  {
+        //    //      //foreach (var item in _listproduct)
+        //    //      //{
+        //    //      //    options.AddPolicy(item.ProductName, policy =>
+        //    //      //   {
+
+        //    //      //   });
+        //    //      //}
+
+
+        //    //      //options.AddPolicy("Admin", policy =>
+        //    //      //{
+        //    //      //   //policy.AuthenticationSchemes.Add(JwtBearerDefaults.AuthenticationScheme);
+        //    //      //   //policy.RequireAuthenticatedUser();
+        //    //      //   policy.Requirements.Add(new AdminRequirement());
+        //    //      //});
+
+
+        //    //      //options.AddPolicy("Usuario", policy =>
+        //    //      //{
+        //    //      //    policy.Requirements.Add(new UsuarioRequirement());
+        //    //      //});
+
+
+        //    //  });
+
+
+
+
+        //    services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
+        //    services.AddScoped<IAuthorizationHandler, HasScopeHandler>();
+        //}
+
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
+            app.UseCors(x => x
+                .AllowAnyOrigin()
+                .AllowAnyMethod()
+                .AllowAnyHeader());
+
+            app.UseAuthentication();
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -190,9 +312,16 @@ namespace ERPMVC
 
             app.UseHttpsRedirection();
             app.UseStaticFiles();
-            app.UseCookiePolicy();
+
+            var cookiePolicyOptions = new CookiePolicyOptions
+            {
+                Secure = CookieSecurePolicy.SameAsRequest,
+                MinimumSameSitePolicy = SameSiteMode.None
+            };
+
+            app.UseCookiePolicy(cookiePolicyOptions);
             app.UseSession();
-            app.UseAuthentication();
+           
 
             app.UseMvc(routes =>
             {

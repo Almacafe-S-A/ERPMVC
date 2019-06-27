@@ -18,6 +18,7 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class ProformaInvoiceLineController : Controller
     {
         private readonly IOptions<MyConfig> config;
@@ -94,8 +95,7 @@ namespace ERPMVC.Controllers
                     }
                     catch (Exception ex)
                     {
-
-                        //throw;
+                        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                     }
                    
                 }

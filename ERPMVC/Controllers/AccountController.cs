@@ -2,9 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -54,8 +56,19 @@ namespace ERPMVC.Controllers
                 //if (ModelState.IsValid)
                 //{
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
-                //ApplicationUser _appuser = new ApplicationUser { Email = model.Email  };
-                //var result = await _signInManager.CheckPasswordSignInAsync(_appuser, model.Password, lockoutOnFailure: false);
+                // ApplicationUser _appuser = new ApplicationUser { Email = model.Email  };
+                //var user = _userManager.FindByEmailAsync(model.Email);
+                //var claims = new List<Claim>
+                //{
+                //    new Claim("user", ""),
+                //    new Claim("role", "Member")
+                //};
+
+                //var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
+                //identity.AddClaim(new Claim(ClaimTypes.Name, _userManager.Users.Username));
+                //  await _signInManager.SignInAsync(new ClaimsPrincipal(new ClaimsIdentity(claims, "Cookies", "user", "role")));
+                // await _signInManager.SignInAsync(_appuser,model.RememberMe);
+                var res = HttpContext.User.Identity.IsAuthenticated;
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = model.Email, Password = model.Password });
@@ -66,18 +79,15 @@ namespace ERPMVC.Controllers
                     HttpContext.Session.SetString("token", _userToken.Token);
                     HttpContext.Session.SetString("Expiration", _userToken.Expiration.ToString());
                     HttpContext.Session.SetString("user", model.Email);
-                   
+
 
                     return RedirectToAction("Index", "Home");
-                    //return Task.Factory.StartNew(()=>_login()).ContinueWith<ActionResult>(
-                    //  t =>
-                    //  {
-                    //      return RedirectToAction("Index", "Home");
-                    //  });
+                
                 }
                 else
                 {
                     _message.Add(new MessageClassUtil { key = "Login", name = "error", mensaje = "Error en login" });
+                    model.Failed = true;
                     return View(model);
                 }
 
@@ -85,10 +95,14 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
+                Console.WriteLine(ex);
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
+                model.Failed = true;
+                return View(model);
+                // throw ex;
+                
             }
-          
+
 
         }
 
@@ -96,10 +110,10 @@ namespace ERPMVC.Controllers
         // [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-              HttpContext.Session.Clear();    
-          //  await _signInManager.SignOutAsync();                 
-          //  _logger.LogInformation($"User signed out");
-            return RedirectToAction(nameof(HomeController.Index), "Home");
+              HttpContext.Session.Clear();
+            //  await _signInManager.SignOutAsync();                 
+            //  _logger.LogInformation($"User signed out");
+            return await Task.Run(() => RedirectToAction(nameof(HomeController.Index), "Home"));
         }
 
 

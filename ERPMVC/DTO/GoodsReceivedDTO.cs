@@ -9,6 +9,7 @@ namespace ERPMVC.DTO
     public class GoodsReceivedDTO : GoodsReceived
     {
         public int editar { get; set; } = 1;
-       
+
+        public Kardex Kardex { get; set; } = new Kardex();
     }
 }

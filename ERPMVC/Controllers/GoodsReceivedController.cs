@@ -19,6 +19,7 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class GoodsReceivedController : Controller
     {
         private readonly IOptions<MyConfig> config;
@@ -29,12 +30,13 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [HttpGet("[controller]/[action]")]
         public IActionResult Index()
         {
             return View();
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> pvwGoodsReceived([FromBody]GoodsReceivedDTO _GoodsReceivedDTO)
         {
             GoodsReceivedDTO _GoodsReceived = new GoodsReceivedDTO();
@@ -54,7 +56,7 @@ namespace ERPMVC.Controllers
 
                 if (_GoodsReceived == null)
                 {
-                    _GoodsReceived = new GoodsReceivedDTO {  DocumentDate=DateTime.Now,OrderDate=DateTime.Now,editar=1 };
+                    _GoodsReceived = new GoodsReceivedDTO {  DocumentDate=DateTime.Now, ExpirationDate=DateTime.Now,OrderDate=DateTime.Now,editar=1 };
                 }
                 else
                 {
@@ -74,7 +76,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpGet]
+        [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
             List<GoodsReceived> _GoodsReceived = new List<GoodsReceived>();
@@ -104,6 +106,15 @@ namespace ERPMVC.Controllers
 
             return _GoodsReceived.ToDataSourceResult(request);
 
+        }
+
+       // [HttpGet("[controller]/[action]/{id}")]
+        public ActionResult SFGoodsReceived(Int32 id)
+        {
+
+            GoodsReceivedDTO _GoodsReceivedDTO = new GoodsReceivedDTO { GoodsReceivedId = id, }; //token = HttpContext.Session.GetString("token") };
+
+            return View(_GoodsReceivedDTO);
         }
 
 
@@ -179,7 +190,7 @@ namespace ERPMVC.Controllers
         /// </summary>
         /// <param name="_params"></param>
         /// <returns></returns>
-      
+
 
         public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request)
         {
@@ -210,7 +221,7 @@ namespace ERPMVC.Controllers
             return Json(indices);
         }
 
-
+        [HttpGet("[controller]/[action]")]
         private async Task<List<GoodsReceived>> GetGoodsReceived()
         {
             List<GoodsReceived> _ControlPallets = new List<GoodsReceived>();
@@ -247,7 +258,7 @@ namespace ERPMVC.Controllers
             return _ControlPallets;
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<List<GoodsReceived>>> AgruparRecibos([FromBody]GoodsReceivedParams _params)
         {
             GoodsReceived _GoodsReceived = new GoodsReceived();
@@ -289,7 +300,7 @@ namespace ERPMVC.Controllers
 
 
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> GetGoodsReceivedById([DataSourceRequest]DataSourceRequest request,[FromBody] GoodsReceived _GoodsReceivedId)
         {
             GoodsReceived _GoodsReceived = new GoodsReceived();
@@ -322,9 +333,9 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpPost("[action]")]
-       public async Task<ActionResult<GoodsReceived>> SaveGoodsReceived([FromBody]GoodsReceived _GoodsReceived)
-           //public async Task<ActionResult<GoodsReceived>> SaveGoodsReceived([FromBody]dynamic _GoodsReceived)
+        [HttpPost("[controller]/[action]")]
+       public async Task<ActionResult<GoodsReceived>> SaveGoodsReceived([FromBody]GoodsReceivedDTO _GoodsReceived)
+          // public async Task<ActionResult<GoodsReceived>> SaveGoodsReceived([FromBody]dynamic _GoodsReceived)
         {
             try
             {
@@ -356,7 +367,7 @@ namespace ERPMVC.Controllers
                         _GoodsReceived.UsuarioCreacion = HttpContext.Session.GetString("user");
                         var insertresult = await Insert(_GoodsReceived);
                         var value = (insertresult.Result as ObjectResult).Value;
-                        _GoodsReceived = ((GoodsReceived)(value));
+                        _GoodsReceived = ((GoodsReceivedDTO)(value));
 
                         return _GoodsReceived;
                     }
@@ -381,7 +392,7 @@ namespace ERPMVC.Controllers
         // POST: GoodsReceived/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<GoodsReceived>> Insert(GoodsReceived _GoodsReceived)
+        public async Task<ActionResult<GoodsReceived>> Insert(GoodsReceivedDTO _GoodsReceived)
         {
             try
             {
@@ -396,7 +407,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _GoodsReceived = JsonConvert.DeserializeObject<GoodsReceived>(valorrespuesta);
+                    _GoodsReceived = JsonConvert.DeserializeObject<GoodsReceivedDTO>(valorrespuesta);
                 }
 
             }

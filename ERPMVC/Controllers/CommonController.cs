@@ -17,8 +17,9 @@ using Newtonsoft.Json;
 namespace ERPMVC.Controllers
 {
     
-   [Authorize]
+    [Authorize]
     [CustomAuthorization]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class CommonController : Controller
     {
         private readonly IOptions<MyConfig> _config;
@@ -42,7 +43,7 @@ namespace ERPMVC.Controllers
             return Ok();
         }
 
-        [HttpGet("GetUserByEmail")]
+        [HttpGet("[controller]/GetUserByEmail")]
         public async Task<ActionResult> GetUserByEmail()
         {
             UserInfo _UserInfo = new UserInfo();

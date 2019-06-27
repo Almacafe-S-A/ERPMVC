@@ -11,8 +11,10 @@ using Microsoft.Extensions.Options;
 
 namespace ERPMVC.Controllers
 {
-  //  [Authorize]
-   [CustomAuthorization]
+    // [Authorize(Policy ="Admin")]
+    [Authorize]
+    [CustomAuthorization]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class HomeController : Controller
     {
         // [Authorize(Policy ="Admin")]

@@ -102,14 +102,14 @@ namespace ERPMVC.Policies
                                        .AddRequirements(new HasScopeRequirement(policyName, _uclaim.ClaimValue, _uclaim.ClaimType))
                                        .Build();
                                     }
-                                    _options.AddPolicy(policyName, policy);
+                                   _options.AddPolicy(policyName, policy);
                                     break;
                                     
 
                             }
 
                             // Add policy to the AuthorizationOptions, so we don't have to re-create it each time
-                         
+                         //   _options.AddPolicy(policyName, policy);
                         }
                     }
                 }

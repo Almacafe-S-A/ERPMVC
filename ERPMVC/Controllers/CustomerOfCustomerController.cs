@@ -9,8 +9,9 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace ERPMVC.Controllers
 {
-     [Authorize]
-      [CustomAuthorization]
+    [Authorize]
+    [CustomAuthorization]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class CustomerOfCustomerController : Controller
     {
         // GET: CustomerOfCustomer
@@ -22,7 +23,7 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult> CustomersOfCustomer()
         {
 
-            return View();
+            return await Task.Run(() => View());
         }
 
         // GET: CustomerOfCustomer/Details/5

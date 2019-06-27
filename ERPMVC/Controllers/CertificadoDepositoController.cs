@@ -19,6 +19,7 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class CertificadoDepositoController : Controller
     {
         private readonly IOptions<MyConfig> config;
@@ -115,8 +116,8 @@ namespace ERPMVC.Controllers
 
         }
 
-
-        public async Task<ActionResult> GetCertificadoDepositoById(Int64 Id)
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> GetCertificadoDepositoById([DataSourceRequest]DataSourceRequest request, [FromBody] CertificadoDeposito _Certificado)
         {
             CertificadoDeposito _CertificadoDeposito = new CertificadoDeposito();
             try
@@ -124,7 +125,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoById/" + _Certificado.IdCD);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -147,39 +148,86 @@ namespace ERPMVC.Controllers
             return Json(_CertificadoDeposito);
         }
 
-        [HttpPost("[action]")]
-             public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]CertificadoDepositoDTO _CertificadoDeposito)
-           // public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]dynamic dto)
+
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<List<CertificadoDeposito>>> AgruparCertificados([FromBody]GoodsDeliveryAuthorizationParams _params)
         {
-            //CertificadoDepositoDTO _CertificadoDeposito = new CertificadoDepositoDTO(); 
-            try
-            {
-               // _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDepositoDTO>(dto.ToString());
-
-                CertificadoDeposito _listCertificadoDeposito = new CertificadoDeposito();
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoById/" + _CertificadoDeposito.IdCD);
-                string valorrespuesta = "";
-                _CertificadoDeposito.FechaModificacion = DateTime.Now;
-                _CertificadoDeposito.UsuarioModificacion = HttpContext.Session.GetString("user");
-                if (result.IsSuccessStatusCode)
+            CertificadoDeposito _GoodsReceived = new CertificadoDeposito();
+            if (_params != null)
+                if (_params.CertificadosSeleccionados != null)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listCertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDeposito>(valorrespuesta);
-                }
 
-                if (_listCertificadoDeposito == null) { _listCertificadoDeposito = new CertificadoDeposito();  }
-                if (_listCertificadoDeposito.IdCD == 0)
-                {
-                    _CertificadoDeposito.FechaCreacion = DateTime.Now;
-                    _CertificadoDeposito.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_CertificadoDeposito);
+                    try
+                    {
+                        string baseadress = config.Value.urlbase;
+                        HttpClient _client = new HttpClient();
+                        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                        var result = await _client.PostAsJsonAsync(baseadress + "api/CertificadoDeposito/AgruparCertificados", _params.CertificadosSeleccionados);
+                        string valorrespuesta = "";
+                        if (result.IsSuccessStatusCode)
+                        {
+                            valorrespuesta = await (result.Content.ReadAsStringAsync());
+                            _GoodsReceived = JsonConvert.DeserializeObject<CertificadoDeposito>(valorrespuesta);
+
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                        throw ex;
+                    }
                 }
                 else
                 {
-                    var updateresult = await Update(_CertificadoDeposito.IdCD, _CertificadoDeposito);
+
+                }
+
+            return Json(_GoodsReceived);
+        }
+
+
+
+
+        [HttpPost("[action]")]
+             public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]CertificadoDepositoDTO _CertificadoDeposito)
+          //  public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]dynamic dto)
+        {
+           // CertificadoDepositoDTO _CertificadoDeposito = new CertificadoDepositoDTO(); 
+            try
+            {
+                // _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDepositoDTO>(dto.ToString());
+                if (_CertificadoDeposito != null)
+                {
+                    CertificadoDeposito _listCertificadoDeposito = new CertificadoDeposito();
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoById/" + _CertificadoDeposito.IdCD);
+                    string valorrespuesta = "";
+                    _CertificadoDeposito.FechaModificacion = DateTime.Now;
+                    _CertificadoDeposito.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _listCertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDeposito>(valorrespuesta);
+                    }
+
+                    if (_listCertificadoDeposito == null) { _listCertificadoDeposito = new CertificadoDeposito(); }
+                    if (_listCertificadoDeposito.IdCD == 0)
+                    {
+                        _CertificadoDeposito.FechaCreacion = DateTime.Now;
+                        _CertificadoDeposito.UsuarioCreacion = HttpContext.Session.GetString("user");
+                        var insertresult = await Insert(_CertificadoDeposito);
+                    }
+                    else
+                    {
+                        var updateresult = await Update(_CertificadoDeposito.IdCD, _CertificadoDeposito);
+                    }
+                }
+                else
+                {
+                    return BadRequest("No llego correctamente el modelo!");
                 }
 
             }
@@ -328,8 +376,8 @@ namespace ERPMVC.Controllers
                                    {                                       
                                         IdCD = c.IdCD,
                                         CustomerName = "Número de certificado:" + c.NoCD + "|| Nombre:" + c.CustomerName + "|| Fecha:" + c.FechaCertificado + "|| Total:" + c.Total,
-                                        
-                                   }).ToList();
+                                                CustomerId = c.CustomerId,
+                                 }).ToList();
 
                 }
             }

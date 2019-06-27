@@ -17,7 +17,8 @@ using Newtonsoft.Json;
 namespace ERPMVC.Controllers
 {
     [Authorize]
-     [CustomAuthorization]
+    [CustomAuthorization]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class UserRolController : Controller
     {
         private readonly IOptions<MyConfig> config;

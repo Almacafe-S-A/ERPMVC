@@ -17,7 +17,7 @@ namespace ERPMVC.Models
         public Int64 CustomerId { get; set; }
 
         [Display(Name = "Cliente")]
-        public Int64 CustomerName { get; set; }
+        public string CustomerName { get; set; }
 
         [Display(Name = "Sucursal")]
         public Int64 BranchId { get; set; }
@@ -59,9 +59,19 @@ namespace ERPMVC.Models
 
         [Display(Name = "Boleta de salida")]
         public Int64 ExitTicket { get; set; }
+        public string Placa { get; set; }
+        public string Marca { get; set; }
 
+        [Display(Name = "Estado")]
         public Int64 IdEstado { get; set; }
+        [Display(Name = "Estado")]
         public string Estado { get; set; }
+
+        [Display(Name = "Currency")]
+        public int CurrencyId { get; set; }
+
+        [Display(Name = "Moneda tasa")]
+        public double Currency { get; set; }
 
         [Display(Name = "Boleta de peso")]
         public Int64 WeightBallot { get; set; }
@@ -87,4 +97,12 @@ namespace ERPMVC.Models
 
         public List<GoodsReceivedLine> _GoodsReceivedLine = new List<GoodsReceivedLine>();
     }
+
+
+    //public class GoodsReceivedDTO : GoodsReceived
+    //{
+    //    public Kardex Kardex { get; set; } = new Kardex();
+    //}
+
+
 }

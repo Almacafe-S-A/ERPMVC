@@ -1,0 +1,308 @@
+﻿
+<script src="~/admp/assets/plugins/wizard/stepsCertificadoDeposito.js"></script>
+
+<script>
+    function AsociarRecibos() {
+        $("#CustomerId").data("kendoDropDownList").value($("#CustomerIdAsociarRecibo").val());
+        $("#CustomerName").val($("#CustomerIdAsociarRecibo").data("kendoDropDownList").text());
+        var notification = $("#notification").data("kendoNotification");
+
+        var grid = $("#gridSolicitudCertificadoDepositoDetail").data("kendoGrid");
+        var datasource = grid.dataSource;
+        var raw = datasource._data;
+        for (i = datasource._data.length - 1; i >= 0; i--) {
+            item = raw[i];
+            datasource.remove(item);
+        }
+
+
+        //var agregados = '';
+        var list = [];
+        $("#ddlRecibosAsociados > option").each(function () {
+            //  alert(this.text + ' ' + this.value);
+           // agregados += this.value + ',';
+            list.push(this.value);
+        });
+
+       // agregados = agregados.substring(0, agregados.length - 1);
+        //console.log(agregados);
+        var dataObject = { 'RecibosSeleccionados': list };
+           $.ajax({
+            url: '@Url.Action("AgruparRecibos", "GoodsReceived")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (data) {
+                console.log(data._GoodsReceivedLine);
+                var sumacantidad = 0, total = 0;
+                if (data._GoodsReceivedLine.length <= 8) {
+                    for (i = 0; i < data._GoodsReceivedLine.length; i++) {
+                        datasource.insert({
+                            CertificadoLineId: 0, IdCD: 0,
+                            UnitMeasureId: data._GoodsReceivedLine[i].UnitOfMeasureId
+                            , UnitOfMeasureId: 0
+                            , SubProductId: data._GoodsReceivedLine[i].SubProductId
+                            , SubProductName: data._GoodsReceivedLine[i].SubProductName
+                            , UnitMeasurName: data._GoodsReceivedLine[i].UnitOfMeasureName
+                            , Description: "", Quantity: data._GoodsReceivedLine[i].Quantity
+                            , Price: data._GoodsReceivedLine[i].Price
+                            , Amount: (data._GoodsReceivedLine[i].Price * data._GoodsReceivedLine[i].Quantity)
+                        });
+
+                        sumacantidad += data._GoodsReceivedLine[i].Quantity;
+                        total +=  (data._GoodsReceivedLine[i].Price * data._GoodsReceivedLine[i].Quantity) ;
+                    }
+
+                    $("#Quantitysum").data("kendoNumericTextBox").value(sumacantidad);
+                    $("#Total").data("kendoNumericTextBox").value(total);
+
+                }
+                else {
+                    notification.show({
+                        title: "Validacion",
+                        message: "No pueden existir mas de 8 productos!s"
+                    }, "error");
+                }
+
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                  alert(textStatus + ": " + XMLHttpRequest.responseText);
+             }
+          });
+
+
+
+
+    }
+</script>
+
+<!-- Validation wizard -->
+<div class="row" id="validation">
+    <div class="col-12">
+        <div class="card wizard-content">
+            <div class="card-body">
+                <h4 class="card-title">Asociar recibos a certificado de deposito</h4>
+                <h6 class="card-subtitle">Solo seleccionar 8 productos</h6>
+                <form action="#" class="validation-wizard wizard-circle"
+                      data-ajax="true"
+                      data-ajax-begin="AsociarRecibos">
+                    <div class="alert alert-danger" style="display:none" id="alertamsj"></div>
+                    <!-- Step 1 -->
+                    <h6>Seleccione el Cliente</h6>
+                    <section>
+
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <script>
+
+                                        function GetSubProduct(e) {
+                                            var dataItem = e.dataItem;
+                                            $("#hcustomerid").val(dataItem.CustomerId);
+                                            hcustom = dataItem.CustomerId;
+                                            $("#SubProductId").data("kendoDropDownList").dataSource.read();
+
+                                        }
+
+                                    </script>
+
+
+                                    <label class="control-label"></label>
+
+                                    <kendo-dropdownlist name="CustomerIdAsociarRecibo" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                        option-label="Select CustomerId"
+                                                        required
+                                                        datatextfield="CustomerName"
+                                                        datavaluefield="CustomerId"
+                                                        class="required"
+                                                        style="width: 100%;">
+                                        <datasource type="DataSourceTagHelperType.WebApi">
+                                            <transport>
+                                                <read url="@Url.Action("GetCustomer", "Common")" />
+                                            </transport>
+                                        </datasource>
+                                    </kendo-dropdownlist>
+
+                                </div>
+                            </div>
+                        </div>
+
+
+                    </section>
+                    <!-- Step 2 -->
+                    <h6>Seleccione los recibos de mercadería</h6>
+                    <section>
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    @*<label for="cbxBuscarGoodsReceived" class="control-label" style="width:100%">Asociar control de estiba</label>*@
+
+                                    <script>
+                                          function valueMapper(options) {
+                                              $.ajax({
+                                                  url: "@Url.Action("Orders_ValueMapper", "GoodsReceived")",
+                                                  data: convertValues(options.value),
+                                                  //data: { 'CustomerId': $("#CustomerIdAsociarRecibo").val() , 'values': convertValues(options.value) },
+                                                  success: function (data) {
+                                                      options.success(data);
+                                                  }
+                                              });
+                                          }
+
+                                        @*function valueMapper(options) {
+                                            console.log({ 'CustomerId': $("#CustomerIdAsociarRecibo").val(), 'values': convertValues(options.value) });
+                                              $.ajax({
+                                                  url: "@Url.Action("Orders_ValueMapper", "GoodsReceived")",
+                                                  type: "GET",
+                                                  dataType: "jsonp",
+                                                  //data:  convertValues(options.value),
+                                                  data: { 'CustomerId': $("#CustomerIdAsociarRecibo").val() , 'values': convertValues(options.value) },
+                                                  success: function (data) {
+                                                      options.success(data);
+                                                  }
+                                              });
+                                          }*@
+
+                                          function convertValues(value) {
+                                              var data = {};
+                                              value = $.isArray(value) ? value : [value];
+
+                                              for (var idx = 0; idx < value.length; idx++) {
+                                                  data["values[" + idx + "]"] = value[idx];
+                                              }
+
+                                              return data;
+                                        }
+
+                                          function changesetearvalues() {
+                                             // var dataObject = { 'Id': $("#cbxBuscarGoodsReceived").val() };
+
+                                              LlenarRecibo();
+                                          }
+
+                                        function AddRecibos() {
+                                            if ($("#cbxBuscarGoodsReceived").val() !== '')
+                                            {
+                                                var existe = false;
+                                                $("#alertamsj").css('display', 'none');
+                                                $("#ddlRecibosAsociados > option").each(function () {
+                                                    if ($("#cbxBuscarGoodsReceived").val() === this.value) {
+                                                        existe = true;
+                                                    }
+                                                });
+
+                                                if (existe === false) {
+                                                    $('#ddlRecibosAsociados').append('<option value="' + $("#cbxBuscarGoodsReceived").val() + '">' + '' + $("#cbxBuscarGoodsReceived").data("kendoDropDownList").text() + '</option>');
+                                                }
+                                            }
+                                            else
+                                            {
+                                                $("#alertamsj").css('display', 'block');
+                                                $("#alertamsj").text('Debe seleccionar un recibo!');
+                                            }
+                                        }
+
+                                        function GetCustomerIdP() {
+                                            return { 'CustomerId': $("#CustomerIdAsociarRecibo").val() }
+                                        }
+
+
+                                    </script>
+
+                                    @*<kendo-dropdownlist name="orders" style="width:100%"
+                                                            datatextfield="ProductName"
+                                                            datavaluefield="GoodsReceivedId"
+                                                            min-length="3"
+                                                            auto-bind="false"
+                                                            cascade-from="CustomerIdAsociarRecibo"
+                                                            height="290"
+                                                            filter="Kendo.Mvc.UI.FilterType.Contains">
+                                            <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
+                                                <transport>
+                                                    <read url="@Url.Action("Virtualization_Read", "GoodsReceived")"   />
+                                                </transport>
+                                            </datasource>
+                                            <virtual item-height="26" value-mapper="valueMapper"  data="GetCustomerIdP" />
+                                            <popup-animation>
+                                                <open duration="500" />
+                                                <close duration="500" />
+                                            </popup-animation>
+                                        </kendo-dropdownlist>*@
+                                    @(Html.Kendo().DropDownList()
+                                                              .Name("cbxBuscarGoodsReceived")
+                                                              .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                                                              .OptionLabel("Buscar")
+                                                              .DataTextField("ProductName")
+                                                              .DataValueField("GoodsReceivedId")
+                                                              .HtmlAttributes(new { style = "width:100%" })
+                                                              .Height(290)
+                                                              .CascadeFrom("CustomerIdAsociarRecibo")
+                                                              .Events(e =>
+                                                              {
+                                                                  e.Change("changesetearvalues");
+                                                                                      // e.Filtering("applyFilterCustomer");
+                                                                                  })
+                                                              .AutoBind(true)
+                                                              .DataSource(source =>
+                                                              {
+                                                                  source.Ajax()
+                                                                  .PageSize(80)
+
+                                                                  .Read(r =>
+                                                                  {
+                                                                      r.Action("Virtualization_Read", "GoodsReceived");
+
+                                                                  });
+                                                              })
+
+                                                              .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapper"))
+                                    )
+                                </div>
+                            </div>
+
+                            <div class="col-md-4">
+                                <input type="button" class="btn waves-effect waves-light btn-primary" onclick="AddRecibos();" value="Agregar Recibo" />
+                                @*<button id="btnAgregarRecibo" onclick="AddRecibos();" style="width:100%;height:100%;" class="btn-google-plus">Agregar Recibo</button>*@
+
+                            </div>
+
+                        </div>
+
+                        <div class="row">
+
+                        </div>
+
+                        @await Html.PartialAsync("pvwReciboMercaderiRead")
+                    </section>
+                    <!-- Step 3 -->
+                    <h6>Recibos Asociados</h6>
+                    <section>
+                        <div class="row">
+                            <div class="col-md-6">
+                                @*<div class="form-group">
+                                        <label for="wint1">Recibos asociados :</label>
+                                        <input type="text" class="form-control required" id="wint1">
+                                    </div>*@
+                                <div class="form-group">
+                                    <label for="wintType1">Recibos Asociados :</label>
+                                    <select class="custom-select form-control required" id="ddlRecibosAsociados" data-placeholder="Type to search cities" name="wintType1">
+                                        @*<option value="Banquet">Normal</option>
+                                            <option value="Fund Raiser">Difficult</option>
+                                            <option value="Dinner Party">Hard</option>*@
+                                    </select>
+                                </div>
+
+                            </div>
+                        </div>
+                    </section>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+<!-- vertical wizard -->
+
+<br />

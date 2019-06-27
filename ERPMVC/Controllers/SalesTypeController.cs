@@ -7,6 +7,7 @@ using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -15,6 +16,9 @@ using Newtonsoft.Json;
 
 namespace ERPMVC.Controllers
 {
+    [Authorize]
+    [CustomAuthorization]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class SalesTypeController : Controller
     {
         private readonly IOptions<MyConfig> config;

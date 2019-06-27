@@ -32,7 +32,7 @@ namespace ERPMVC
                        logging.ClearProviders();
                        logging.SetMinimumLevel(Microsoft.Extensions.Logging.LogLevel.Trace);
                    })
-                .UseNLog()
+                .UseNLog()         
                 .UseContentRoot(Directory.GetCurrentDirectory())
                 .UseStartup<Startup>();
     }

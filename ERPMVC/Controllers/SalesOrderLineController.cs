@@ -19,6 +19,7 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [Route("[controller]")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class SalesOrderLineController : Controller
     {
          private readonly IOptions<MyConfig> _config;
@@ -255,7 +256,7 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error: {ex.Message}");
             }
 
-            return Ok(_salesorder);
+            return await Task.Run(() => Ok(_salesorder));
             //return new ObjectResult(new DataSourceResult { Data = new[] { _salesorder }, Total = 1 });
         }
 

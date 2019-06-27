@@ -18,6 +18,8 @@ namespace ERPMVC.Models
 
         [Display(Name = "Remember me?")]
         public bool RememberMe { get; set; }
+
+        public bool Failed { get; set; } = false;
     }
 
 

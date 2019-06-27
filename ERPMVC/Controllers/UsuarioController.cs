@@ -18,6 +18,7 @@ namespace ERPMVC.Controllers
 {
      [Authorize]
       [CustomAuthorization]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class UsuarioController : Controller
     {
 
@@ -38,7 +39,7 @@ namespace ERPMVC.Controllers
         }
 
         
-        [HttpGet("[action]")]
+        [HttpGet("[controller]/[action]")]
         public async Task<JsonResult> GetQuantityUsuario()
         {
             Int32 _users = 0;
@@ -65,7 +66,7 @@ namespace ERPMVC.Controllers
             return Json(_users);
         }
 
-        [HttpGet("[action]")]
+        [HttpGet("[controller]/[action]")]
         public async Task<JsonResult> GetUsuarios()
         {
             List<ApplicationUser> _users = new List<ApplicationUser>();
@@ -92,7 +93,7 @@ namespace ERPMVC.Controllers
             return Json(_users);
         }
 
-        [HttpGet("GetUsers")]
+        [HttpGet("[controller]/GetUsers")]
         public async Task<DataSourceResult> GetUsers([DataSourceRequest]DataSourceRequest request)
         {
             List<ApplicationUser> _users = new List<ApplicationUser>();
@@ -121,7 +122,7 @@ namespace ERPMVC.Controllers
             return _users.ToDataSourceResult(request);
         }
 
-        [HttpGet]
+        [HttpGet("[controller]/[action]")]
         public async Task<ActionResult> Details(Int64 UserId)
         {
             ApplicationUser _usuario = new ApplicationUser();

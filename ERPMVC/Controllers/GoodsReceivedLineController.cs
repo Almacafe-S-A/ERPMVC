@@ -18,6 +18,7 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class GoodsReceivedLineController : Controller
     {
         private readonly IOptions<MyConfig> config;
@@ -307,7 +308,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsReceivedLine }, Total = 1 });
+            return await Task.Run(() => new ObjectResult(new DataSourceResult { Data = new[] { _GoodsReceivedLine }, Total = 1 }));
         }
 
 

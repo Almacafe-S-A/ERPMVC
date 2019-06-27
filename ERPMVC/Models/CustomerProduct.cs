@@ -20,6 +20,13 @@ namespace ERPMVC.Models
         public Int64 SubProductId { get; set; }
         [Display(Name = "Producto")]
         public string SubProductName { get; set; }
+
+        [Display(Name = "Producto")]
+        public double SaldoProductoCertificado { get; set; }
+
+        [Display(Name = "Producto")]
+        public double SaldoProductoTotal { get; set; }
+
         [Display(Name = "Activo/Inactivo ")]
         public Int64 IdEstado { get; set; }
         public DateTime FechaCreacion { get; set; }

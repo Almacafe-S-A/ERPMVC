@@ -19,6 +19,7 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class ControlPalletsController : Controller
     {
         private readonly IOptions<MyConfig> config;
@@ -34,7 +35,29 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        public IActionResult IndexSalida()
+        {
 
+            return View();
+        }
+
+        [HttpGet]
+        public ActionResult SFControlPallets(Int32 id)
+        {
+            try
+            {
+                ControlPalletsDTO _ControlPalletsDTO = new ControlPalletsDTO { ControlPalletsId = id, }; //token = HttpContext.Session.GetString("token") };
+
+                return View(_ControlPalletsDTO);
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+          
+        }
         public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request)
         {
             var res = await GetControlPallets();
@@ -161,6 +184,37 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpGet]
+        public async Task<DataSourceResult> GetSalidas([DataSourceRequest]DataSourceRequest request)
+        {
+            List<ControlPallets> _ControlPallets = new List<ControlPallets>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPalletsSalida");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _ControlPallets = JsonConvert.DeserializeObject<List<ControlPallets>>(valorrespuesta);
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _ControlPallets.ToDataSourceResult(request);
+
+        }
+
 
 
 
@@ -184,11 +238,11 @@ namespace ERPMVC.Controllers
 
                 if (_ControlPallets == null)
                 {
-                    _ControlPallets = new ControlPalletsDTO { DocumentDate=DateTime.Now  , editar=1   };
+                    _ControlPallets = new ControlPalletsDTO { DocumentDate=DateTime.Now  , editar=1 , EsIngreso = _ControlPalletsId.EsIngreso };
                 }
                 else
                 {
-                    _ControlPallets.editar = 0;
+                    _ControlPallets.editar = 0;_ControlPallets.EsIngreso = _ControlPalletsId.EsIngreso;
                 }
 
             }
@@ -237,7 +291,7 @@ namespace ERPMVC.Controllers
 
                         var value = (insertresult.Result as ObjectResult).Value;
                         _ControlPalletsDTO = ((ControlPalletsDTO)(value));
-                    
+                      
 
                     }
                     else
