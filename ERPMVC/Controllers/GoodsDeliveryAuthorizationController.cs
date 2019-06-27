@@ -78,6 +78,11 @@ namespace ERPMVC.Controllers
         }
 
 
+
+
+
+
+
         [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
@@ -355,5 +360,24 @@ namespace ERPMVC.Controllers
 
 
 
+
+
     }
+
+
+
+    public class GoodsDeliveryAuthorizationParams
+    {
+        public Int64[] values { get; set; }
+
+        public Int64 CustomerId { get; set; }
+
+        public List<Int64> CertificadosSeleccionados { get; set; }
+
+    }
+
+
+
+
+
 }

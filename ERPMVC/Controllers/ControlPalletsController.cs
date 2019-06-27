@@ -184,6 +184,37 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpGet]
+        public async Task<DataSourceResult> GetSalidas([DataSourceRequest]DataSourceRequest request)
+        {
+            List<ControlPallets> _ControlPallets = new List<ControlPallets>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPalletsSalida");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _ControlPallets = JsonConvert.DeserializeObject<List<ControlPallets>>(valorrespuesta);
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _ControlPallets.ToDataSourceResult(request);
+
+        }
+
 
 
 
