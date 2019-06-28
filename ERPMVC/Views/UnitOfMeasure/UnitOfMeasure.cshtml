@@ -1,4 +1,70 @@
 ﻿
+<script>
+
+    //-- Agregar --
+    function AgregarUoM() {
+
+         var dataObject = {
+             UnitOfMeasureId: 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("Unidad", "UnitOfMeasure")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#unitofmeasure").html('');
+                $("#unitofmeasure").html(result);
+                $("#btnGuardarUoM").show();
+                $("#titulo").text("Agregar Nueva Unidad");
+                
+                //Mostrar modal con la información
+                $('#UoModal').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+
+
+    }
+
+    //-- Editar --
+    function EditUoM(e) {
+        e.preventDefault();
+        
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            UnitOfMeasureId: dataItem.UnitOfMeasureId
+        };
+
+        $.ajax({
+            url: '@Url.Action("Unidad", "UnitOfMeasure")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            //data: { Id: dataItem.UnitOfMeasureId },
+            success: function (result) {
+                $("#unitofmeasure").html('');
+                $("#unitofmeasure").html(result);
+                $("#btnGuardarUoM").hide();
+                $("#titulo").text("Editar Unidad");
+
+                //Mostrar modal con la información
+                $('#UoModal').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+    }
+</script>
+
 <h3 class="text-themecolor">Unidades de Medida</h3>
 
 
@@ -9,12 +75,13 @@
                           columns.Bound(p => p.UnitOfMeasureId).Width(100);
                           columns.Bound(p => p.UnitOfMeasureName).Width(150);
                           columns.Bound(p => p.Estado).Width(160);
+                          columns.Bound(p => p.FechaModificacion).Width(150);
                           //columns.Bound(p => p.ConcurrencyStamp).Width(150);
 
                           columns.Command(command =>
                           {
-                              //   command.Custom("Ver detalles").Click("Detalles");
-                              command.Edit();
+                              //command.Custom("Ver detalles").Click("Detalles");
+                              command.Custom("Editar").Click("EditUoM");
                           }).Width(250);
 
                       })
@@ -51,9 +118,9 @@
                                    ))
                       .ToolBar(tools =>
                       {
-                          tools.Create();
-                          tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
-                          tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+                          tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @onclick = "AgregarUoM();" });
+                          //tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                          //tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
 
 
                       })
@@ -62,10 +129,10 @@
                        .Pageable()
                        .Filterable()
                        .Scrollable()
-                       .Pdf(pdf => pdf.FileName("RolesReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                       .Pdf(pdf => pdf.FileName("UnitOfMeasureReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                         .Excel(excel => excel.FileName("RolesReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                         .Excel(excel => excel.FileName("UnitOfMeasureReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
                        .DataSource(dataSource =>
@@ -76,9 +143,6 @@
                             {
                                 model.Id(p => p.UnitOfMeasureId);
                                 model.Field(p => p.UnitOfMeasureId).Editable(false);
-                                model.Field(p => p.UnitOfMeasureName).Editable(true);
-                                model.Field(p => p.Estado).Editable(true);
-                                //model.Field(p => p.ConcurrencyStamp).Editable(false);
 
 
                             })
@@ -89,3 +153,7 @@
                             .Destroy(destroy => destroy.Action("Delete", "UnitOfMeasure", new { id = "{0}" }))
                       )
 )
+
+<div id="unitofmeasure">
+    @await Html.PartialAsync("Unidad", new ERPMVC.Models.UnitOfMeasure())
+</div>
