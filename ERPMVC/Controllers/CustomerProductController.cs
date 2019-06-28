@@ -11,6 +11,7 @@ using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -35,17 +36,66 @@ namespace ERPMVC.Controllers
 
         public IActionResult Index()
         {
-            return View();
+            return PartialView();
         }
 
-        // GET: api/CustomerProduct
-        [HttpGet]
+        //Vista de Edición/Ingreso
+        [HttpPost("[action]")]
+        public async Task<ActionResult> Productos([FromBody]CustomerProduct _cliente)
+        {
+            CustomerProduct _CustomerProduct = new CustomerProduct();
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CustomerProduct/GetCustomerProductById/" + _cliente.CustomerProductId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerProduct = JsonConvert.DeserializeObject<CustomerProduct>(valorrespuesta);
+                    //
+                    //Obtener los estados. (Activo/Inactivo)
+                    var result2 = await _client.GetAsync(baseadress + "api/Estados/GetEstadosByGrupo/" + 1);
+                    if (result2.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result2.Content.ReadAsStringAsync());
+                        var estados = JsonConvert.DeserializeObject<List<Estados>>(valorrespuesta);
+                        if (_CustomerProduct == null)
+                        {
+                            ViewData["estados"] = new SelectList(estados, "IdEstado", "NombreEstado");
+                            _CustomerProduct = new CustomerProduct();
+                        }
+                        else
+                        {
+                            ViewData["estados"] = new SelectList(estados, "IdEstado", "NombreEstado", _CustomerProduct.IdEstado);
+                            //ViewData["estadoUnidad"] = _UnitOfMeasure.IdEstado;
+                        }
+
+                    }
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return PartialView(_CustomerProduct);
+
+        }
+
+
+        // GET: Obtener Listado de Productos por Cliente
+        [HttpGet("[action]")]
         public async Task<DataSourceResult> GetCustomerProduct([DataSourceRequest]DataSourceRequest request)
         {
             List<CustomerProduct> _CustomerProduct = new List<CustomerProduct>();
             try
             {
-
                 string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -57,8 +107,7 @@ namespace ERPMVC.Controllers
                     _CustomerProduct = JsonConvert.DeserializeObject<List<CustomerProduct>>(valorrespuesta);
 
                 }
-
-
+                
             }
             catch (Exception ex)
             {
@@ -69,30 +118,93 @@ namespace ERPMVC.Controllers
 
             return _CustomerProduct.ToDataSourceResult(request);
         }
-
-        // GET: api/CustomerProduct/5
-        [HttpGet("{id}", Name = "Get")]
-        public string Get(int id)
-        {
-            return "value";
-        }
-
-        // POST: api/CustomerProduct
+        
+        // POST: Guardar
         [HttpPost]
-        public void Post([FromBody] string value)
+        public async Task<ActionResult<CustomerProduct>> Insert([FromBody]CustomerProduct _CustomerProduct)
         {
+            try
+            {
+                // TODO: Add insert logic here
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                _CustomerProduct.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _CustomerProduct.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/CustomerProduct/Insert", _CustomerProduct);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerProduct = JsonConvert.DeserializeObject<CustomerProduct>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+
+            return Ok(_CustomerProduct);
         }
 
-        // PUT: api/CustomerProduct/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
+        // PUT: Actualizar
+        [HttpPut("[controller]/[action]/{id}")]
+        public async Task<ActionResult<CustomerProduct>> Update(Int64 id, [FromBody]CustomerProduct _CustomerProduct)
         {
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                var result = await _client.PutAsJsonAsync(baseadress + "api/CustomerProduct/Update", _CustomerProduct);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerProduct = JsonConvert.DeserializeObject<CustomerProduct>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+
+            return Ok(_CustomerProduct);
         }
 
-        // DELETE: api/ApiWithActions/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
+
+        //Obtener subProductos
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> GetSubProductosCliente([DataSourceRequest]DataSourceRequest request)
         {
+            List<SubProduct> _clientes = new List<SubProduct>();
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CustomerProduct/GetSubProductosCliente/" + 1);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _clientes = JsonConvert.DeserializeObject<List<SubProduct>>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            
+            return Json(_clientes.ToDataSourceResult(request));
         }
+
     }
 }

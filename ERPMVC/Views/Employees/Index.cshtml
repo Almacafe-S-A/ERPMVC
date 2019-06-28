@@ -1,0 +1,171 @@
+﻿@{
+    ViewData["Title"] = "Empleados";
+ }
+
+<script>
+
+    //-- Agregar --
+    function AgregarEmp() {
+
+         var dataObject = {
+             IdEmpleado: 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("Empleado", "Employees")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#employee").html('');
+                $("#employee").html(result);
+                $("#btnGuardarEmp").show();
+                $("#titulo").text("Agregar Nuevo Empleado");
+
+                //Mostrar modal con la información
+                $('#ModalEmpleado').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+
+
+    }
+
+    //-- Editar --
+    function EditEmp(e) {
+        e.preventDefault();
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            IdEmpleado: dataItem.IdEmpleado
+        };
+
+        $.ajax({
+            url: '@Url.Action("Empleado", "Employees")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#employee").html('');
+                $("#employee").html(result);
+                $("#btnGuardarEmp").hide();
+                $("#titulo").text("Editar Empleado");
+
+                //Mostrar modal con la información
+                $('#ModalEmpleado').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+    }
+
+    function Detalles(e) {          
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        window.location.href = "@Url.Action("Detalles", "Employees")?Id=" + dataItem.IdEmpleado;    
+    }
+
+</script>
+
+<h3 class="text-themecolor">Empleados</h3>
+
+
+@(Html.Kendo().Grid<ERPMVC.Models.Employees>()
+                           .Name("gridEmployees")
+                          .Columns(columns =>
+                          {
+                              columns.Command(command =>
+                              {
+                                  command.Custom("Ver detalles").Click("Detalles");
+                                  command.Custom("Editar").Click("EditEmp");
+                              }).Width(280).Title("Acciones");
+
+                              columns.Bound(p => p.IdEmpleado);
+                              columns.Bound(p => p.NombreEmpleado).Width(300).Title("Nombre Completo");
+                              columns.Bound(p => p.Correo).Width(300);
+                              columns.Bound(p => p.FechaIngreso).Format("{0:dd/MM/yyyy}").Title("Ingreso").Width(150);
+                              columns.Bound(p => p.NombreDepartamento).Width(200).Title("Departamento");
+                              columns.Bound(p => p.NombreEstado).Width(150).Title("Estado");
+                              columns.Bound(p => p.NombrePuesto).Width(150).Title("Puesto");
+                              columns.Bound(p => p.NombreSucursal).Width(200).Title("Sucursal");
+                              columns.Bound(p => p.Telefono).Width(200);
+                              columns.Bound(p => p.Extension).Width(150);
+                              
+                          })
+                              .Filterable(f => f.Operators(o => o.ForString(s => s
+                                               .Clear()
+                                               .Contains("Contiene")
+                                               .DoesNotContain("No contiene")
+                                               .EndsWith("Termina con")
+                                               .IsEqualTo("Es igual a")
+                                               .IsNotEqualTo("No es igual a")
+                                               .IsNull("Es nulo")
+                                               .StartsWith("Inicia con")
+
+
+                                         )
+                                         .ForNumber(n => n
+                                           .Clear()
+                                           .IsEqualTo("Es igual a")
+                                           .IsGreaterThan("Es mayor que")
+                                           .IsLessThan("Es menor que")
+                                           .IsNull("Es nulo")
+                                           .IsLessThanOrEqualTo("Es menor o igual que")
+                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                         )
+                                         .ForDate(d => d
+                                         .Clear()
+                                         .IsEqualTo("Es igual que")
+                                         .IsGreaterThan("Es mayor que")
+                                         .IsLessThan("Es menor que")
+                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                         .IsNotEqualTo("No es igual que")
+                                          )
+                                       ))
+                          .ToolBar(tools =>
+                          {
+                              tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @onclick = "AgregarEmp();" });
+                              tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                              tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+                          })
+                           .Editable(e => e.Mode(GridEditMode.PopUp))
+                           .Sortable()
+                           .Pageable()
+                           .Filterable()
+                           .Scrollable()
+                           .Pdf(pdf => pdf.FileName("EmployeesReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                           .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                             .Excel(excel => excel.FileName("EmployeesReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                           .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                           .DataSource(dataSource =>
+                              dataSource
+                                .WebApi()
+                                .ServerOperation(true)
+                                .Model(model =>
+                                {
+                                    model.Id(p => p.IdEmpleado);
+                                    model.Field(p => p.IdEmpleado).Editable(false);
+                                })
+                                .Events(events => events.Error("error_handler"))
+                                .Read(read => read.Action("Get", "Employees"))
+                                .Create(create => create.Action("Insert", "Employees"))
+                                .Update(update => update.Action("Update", "Employees", new { id = "{0}" }))
+                                .Destroy(destroy => destroy.Action("Delete", "Employees", new { id = "{0}" }))
+                          )
+)
+
+<div id="employee">
+    @await Html.PartialAsync("Empleado", new ERPMVC.Models.Employees())
+</div>

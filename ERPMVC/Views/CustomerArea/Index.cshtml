@@ -1,0 +1,184 @@
+﻿
+<h3 class="text-themecolor">Area usada en boegas por clientes</h3>
+<script>
+
+      function clearsession() {
+            var dataObject = ["listadoproductos"];
+         $.ajax({
+            url: '@Url.Action("ClearSession","Common")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                  //  $('#myModalSalesOrder').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+          });
+      }
+
+        function AddCustomerArea() {
+  
+       //  clearsession();
+         var dataObject = {
+             CustomerAreaId: 0,
+            editar : 1
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwCustomerArea", "CustomerArea")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                //$("#salesorder").html('');
+                //$("#salesorder").html(result);
+                //RefreshCotizacionesDetail();
+                // $("#btnSaveCotizacion").show();
+                $('#myModalCustomerArea').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+
+
+    }
+
+
+    function EditCustomerArea(e) {
+        e.preventDefault();
+
+       // clearsession();
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            CustomerAreaId: dataItem.CustomerAreaId,
+            editar : 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwCustomerArea", "CustomerArea")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#salesorder").html('');
+                $("#salesorder").html(result);
+
+              //  RefreshCotizacionesDetail();
+                // $("#btnSaveCotizacion").hide();
+                $('#myModalCustomerArea').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+    }
+
+</script>
+
+@(Html.Kendo().Grid<ERPMVC.Models.CustomerArea>()
+                  .Name("grid")
+                  .Columns(columns =>
+                  {
+                      columns.Bound(p => p.CustomerAreaId).Width(100);
+                      columns.Bound(p => p.CustomerId).Width(100);
+                      columns.Bound(p => p.CustomerName).Width(150);
+                      columns.Bound(p => p.BranchName).Width(100);
+                      columns.Bound(p => p.DocumentDate).Format("dd/MM/yyyy").Width(100);
+                      columns.Bound(p => p.Ancho).Width(100);
+                      columns.Bound(p => p.Alto).Width(100);
+                      columns.Bound(p => p.Largo).Width(100);
+                      columns.Command(command =>
+                      {
+                          command.Custom("Editar").Click("EditCustomerArea");
+                          // command.Custom("Ver detalles").Click("Detalles");
+                          // command.Edit(); command.Destroy();
+                      }).Width(250);
+
+                  })
+                      .Filterable(f => f.Operators(o => o.ForString(s => s
+                                           .Clear()
+                                           .Contains("Contiene")
+                                           .DoesNotContain("No contiene")
+                                           .EndsWith("Termina con")
+                                           .IsEqualTo("Es igual a")
+                                           .IsNotEqualTo("No es igual a")
+                                           .IsNull("Es nulo")
+                                           .StartsWith("Inicia con")
+
+
+                                     )
+                                     .ForNumber(n => n
+                                       .Clear()
+                                       .IsEqualTo("Es igual a")
+                                       .IsGreaterThan("Es mayor que")
+                                       .IsLessThan("Es menor que")
+                                       .IsNull("Es nulo")
+                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                     )
+                                     .ForDate(d => d
+                                     .Clear()
+                                     .IsEqualTo("Es igual que")
+                                     .IsGreaterThan("Es mayor que")
+                                     .IsLessThan("Es menor que")
+                                     .IsLessThanOrEqualTo("Es menor o igual que")
+                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                     .IsNotEqualTo("No es igual que")
+                                      )
+                                   ))
+                  .ToolBar(tools =>
+                  {
+                      //tools.Create();
+                      tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerArea();" });
+
+                      tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                      tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+                  })
+                  .Editable(e => e.Mode(GridEditMode.PopUp))
+                  .Sortable()
+                  .Pageable()
+                  .Filterable()
+                  .Scrollable()
+                  .Pdf(pdf => pdf.FileName("ClienteAreaReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                   + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                   .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                     .Excel(excel => excel.FileName("ClienteAreaReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                   + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                   .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                  .DataSource(dataSource =>
+                      dataSource
+                        .WebApi()
+                        .ServerOperation(true)
+                        .Model(model =>
+                        {
+                            model.Id(p => p.CustomerId);
+                            model.Field(p => p.CustomerId).Editable(false);
+                        })
+                        .Events(events => events.Error("error_handler"))
+                        .Read(read => read.Action("Get", "CustomerArea"))
+                        .Create(create => create.Action("Post", "CustomerArea"))
+                        .Update(update => update.Action("Put", "CustomerArea", new { id = "{0}" }))
+                        .Destroy(destroy => destroy.Action("Delete", "CustomerArea", new { id = "{0}" }))
+                  )
+                    .Events(e =>
+                    {
+                        //e.Save("onsave");
+                    })
+)
+
+<div id="salesorder">
+    @await Html.PartialAsync("pvwCustomerArea", new ERPMVC.Models.CustomerArea { CustomerAreaId = 0, DocumentDate = DateTime.Now, Alto=0,Ancho=0,Largo=0 })
+</div>

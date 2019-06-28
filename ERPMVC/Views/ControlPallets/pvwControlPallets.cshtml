@@ -40,6 +40,11 @@
     }
 
    
+    function closeGoodsDelivered() {
+        $("#myModalControlPallets").modal('hide');
+        var grid = $("#gridEstibas").getKendoGrid();
+        grid.dataSource.read();
+    }
 
 
 
@@ -51,37 +56,143 @@
         <!-- Modal content-->
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close"  data-dismiss="modal">&times;</button>
+                <button type="button" class="close"  onclick="closeGoodsDelivered();">&times;</button>
                 <h4 class="modal-title">Información Control de ingresos</h4>
             </div>
             <div class="modal-body">
 
 
-                @*@if (!Convert.ToBoolean(Model.editar))
+                @if (Model.EsIngreso == 0)
                 {
-                    <div class="box demo-description wide">
-                        <div class="row">
-                            <h4>Enviar a:</h4>
-                            <kendo-combobox name="IdEstado" for="@Model.IdEstado" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                            placeholder="Select Estado"
-                                            datatextfield="NombreEstado"
-                                            datavaluefield="IdEstado"
-                                            required
-                                            style="width: 100%;">
-                                <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
-                                    <transport>
-                                        <read url="@Url.Action("GetEnviosCotizacion", "Estados")" />
-                                    </transport>
-                                </datasource>
-                            </kendo-combobox>
-                        </div>
-                        <div class="row">
-                            <button id="btnEnviarA" type="submit" class="form-control btn-miboton" onclick="EnviarCotizacionA(this);">Enviar</button>
-                        </div>
-                        <br />
-                    </div>
-                }*@
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="form-group">
+                            @*<label for="cbxBuscar" class="control-label" style="width:100%">Asociar control de estiba</label>*@
+                            <label for="cbxBuscar" class="control-label" style="width:100%">Asociar autorización retiro de mercadería</label>
+                            <script>
+                                                        function valueMapper(options) {
+                                                            $.ajax({
+                                                                url: "@Url.Action("Orders_ValueMapper", "GoodsDeliveryAuthorization")",
+                                                                data: convertValues(options.value),
+                                                                success: function (data) {
+                                                                    options.success(data);
+                                                                }
+                                                            });
+                                                        }
 
+                                                        function convertValues(value) {
+                                                            var data = {};
+                                                            value = $.isArray(value) ? value : [value];
+
+                                                            for (var idx = 0; idx < value.length; idx++) {
+                                                                data["values[" + idx + "]"] = value[idx];
+                                                            }
+
+                                                            return data;
+                                                        }
+                                                        function changesetearvalues() {
+                                                            var dataObject = { 'Id': $("#cbxBuscar").val() };
+
+                                                               $.ajax({
+                                                                     url: '@Url.Action("GetDeliveryAuthorizationById", "GoodsDeliveryAuthorization")',
+                                                                     method: 'GET',
+                                                                     datatype: "json",
+                                                                     contentType: 'application/json',
+                                                                     async: false,
+                                                                     data: dataObject,
+                                                                     success: function (data) {
+                                                                        console.log(data);
+
+                                                                         $("#CustomerId").data("kendoDropDownList").value(data.CustomerId);
+                                                                         $("#CustomerId").data("kendoDropDownList").select(data.CustomerId);
+                                                                         $("#CustomerId").data("kendoDropDownList").trigger('change');
+                                                                         $("#BranchId").data("kendoDropDownList").value(data.BranchId);
+                                                                         $("#CurrencyId").data("kendoDropDownList").value(data.CurrencyId);                                                                   
+                                                                         $("#ProductId").data("kendoDropDownList").value(data.ProductId);
+                                                                         hcustom = data.CustomerId;
+                                                                         GetProductTypeIdS();
+                                                                         $("#SubProductId").data("kendoDropDownList").dataSource.read();
+                                                                         $("#SubProductId").data("kendoDropDownList").value(data.SubProductId);
+                                                                         $("#Name").val(data.Motorista);
+
+                                                                         var grid = $("#gridGoodsDeliveredDetail").data("kendoGrid");
+                                                                         var datasource = grid.dataSource;
+                                                                         var raw = datasource._data;
+                                                                         for (i = datasource._data.length - 1; i >= 0; i--) {
+                                                                             item = raw[i];
+                                                                             datasource.remove(item);
+                                                                         }
+
+                                                                         for (i = 0; i < data.GoodsDeliveryAuthorizationLine.length; i++) {
+                                                                             datasource.insert({
+                                                                                   GoodsDeliveredLinedId: 0
+                                                                                 , GoodsDeliveredId : 0
+                                                                                 , NoCD: data.GoodsDeliveryAuthorizationLine[i].NoCertificadoDeposito
+                                                                                 , UnitOfMeasureName: data.GoodsDeliveryAuthorizationLine[i].UnitOfMeasureName
+                                                                                 , UnitOfMeasureId: data.GoodsDeliveryAuthorizationLine[i].UnitOfMeasureId
+                                                                                 , Quantity: data.GoodsDeliveryAuthorizationLine[i].Quantity
+                                                                                 , SubProductId: data.GoodsDeliveryAuthorizationLine[i].SubProductId
+                                                                                 , QuantitySacos: data.GoodsDeliveryAuthorizationLine[i].QuantitySacos
+                                                                                 , WareHouseId: data.GoodsDeliveryAuthorizationLine[i].WarehouseId
+                                                                                 , WareHouseName: data.GoodsDeliveryAuthorizationLine[i].WarehouseName
+                                                                                 , SubProductName: data.SubProductName
+                                                                                 , WareHouseId: data.WarehouseId
+                                                                                 , NoAR : $("#cbxBuscar").val()
+                                                                             });
+                                                                         }
+
+                                                                        // $("#singuardar").val(1);
+
+                                                                         //var numeric = $("#ValueDecimal").data("kendoNumericTextBox");
+                                                                        //numeric.value(data.ValueDecimal);
+                                                                        //numeric.trigger('change');
+
+                                                                     },
+                                                                     error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                                                                       //  $("#btngenerarfactura").show();
+                                                                         notification.show({
+                                                                             title: "Validacion",
+                                                                             message: textStatus + ": " + XMLHttpRequest.responseText
+                                                                         }, "error");
+
+                                                                     }
+                                                                 });
+                                                        }
+
+                                                      
+
+                            </script>
+                            <input type="hidden" id="singuardar" value="0" />
+                            @(Html.Kendo().DropDownList()
+                                                   .Name("cbxBuscar")
+                                                   .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                                                   .OptionLabel("Buscar")
+                                                   .DataTextField("CustomerName")
+                                                   .DataValueField("GoodsDeliveryAuthorizationId")
+                                                   .HtmlAttributes(new { style = "width:100%" })
+                                                   .Height(290)
+                                                   .Events(e =>
+                                                   {
+                                                       e.Change("changesetearvalues");
+                                                       // e.Filtering("applyFilterCustomer");
+                                                   })
+                                                   .AutoBind(true)
+                                                   .DataSource(source =>
+                                                   {
+                                                       source.Ajax()
+                                                       .PageSize(80)
+
+                                                       .Read("Virtualization_Read", "GoodsDeliveryAuthorization");
+                                                   })
+                                                   .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapper"))
+                            )
+
+
+                        </div>
+                     </div>
+                  </div>
+                }
 
                 <div class="row" id="validation">
                     <div class="col-lg-12">
@@ -162,14 +273,14 @@
 
                                                     <label asp-for="CustomerId" class="control-label"></label>
                                                     @*onchange="SetCustomerName();"
-                                                              on-select="GetSubProduct"
+                                            on-select="GetSubProduct"
                                                     *@
                                                     <kendo-dropdownlist name="CustomerId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         option-label="Select CustomerId"
                                                                         required
                                                                         datatextfield="CustomerName"
                                                                         datavaluefield="CustomerId"
-                                                                on-select="GetSubProduct"                                      
+                                                                        on-select="GetSubProduct"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi">
                                                             <transport>
@@ -206,7 +317,7 @@
                                                                         required
                                                                         auto-bind="true"
                                                                         style="width: 100%;">
-                                                        <datasource type="DataSourceTagHelperType.WebApi" >
+                                                        <datasource type="DataSourceTagHelperType.WebApi">
                                                             <transport>
                                                                 <read url="@Url.Action("GetBranch", "Branch")" />
                                                             </transport>
@@ -235,15 +346,15 @@
                                                 </script>
                                                 <label asp-for="WarehouseId" class="control-label"></label>
                                                 <kendo-dropdownlist name="WarehouseId" for="WarehouseId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                option-label="Seleccione Bodega"
-                                                                cascade-from="BranchId"
-                                                                required
-                                                                auto-bind="false"
-                                                                datatextfield="WarehouseName"
-                                                                datavaluefield="WarehouseId"
-                                                                style="width: 100%;">
+                                                                    option-label="Seleccione Bodega"
+                                                                    cascade-from="BranchId"
+                                                                    required
+                                                                    auto-bind="false"
+                                                                    datatextfield="WarehouseName"
+                                                                    datavaluefield="WarehouseId"
+                                                                    style="width: 100%;">
                                                     <datasource type="DataSourceTagHelperType.WebApi" server-filtering="true">
-                                                        <transport >
+                                                        <transport>
                                                             <read url="@Url.Action("Get", "Warehouse")" data="GetBranchId" />
                                                         </transport>
                                                     </datasource>
@@ -255,17 +366,17 @@
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <script>
-                                                   
+
                                                 </script>
                                                 <label asp-for="ProductId" class="control-label" style="width:100%"></label>
 
                                                 <kendo-dropdownlist name="ProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                for="ProductId"
-                                                                option-label="Seleccione el Producto"
-                                                                datatextfield="ProductName"
-                                                                datavaluefield="ProductId"
-                                                                required
-                                                                style="width: 100%;">
+                                                                    for="ProductId"
+                                                                    option-label="Seleccione el Producto"
+                                                                    datatextfield="ProductName"
+                                                                    datavaluefield="ProductId"
+                                                                    required
+                                                                    style="width: 100%;">
                                                     <datasource type="DataSourceTagHelperType.WebApi">
                                                         <transport>
                                                             <read url="@Url.Action("GetProduct", "Common")" />
@@ -294,20 +405,19 @@
                                                         debugger;
                                                         // console.log($("#hcustomerid").val());
                                                         return {
-                                                             'CustomerId': hcustom,
-                                                           // 'CustomerId': $("#CustomerId").val(),
+                                                            'CustomerId': hcustom,
+                                                            // 'CustomerId': $("#CustomerId").val(),
                                                             // 'ProductTypeId': 2
 
                                                         }
                                                     }
 
                                                 </script>
-                                              
+
                                                 <input type="hidden" id="subproductname" />
                                                 <kendo-dropdownlist name="SubProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                     option-label="Select SubProductId"
                                                                     for="SubProductId"
-                                                                   
                                                                     datatextfield="ProductName"
                                                                     datavaluefield="SubproductId"
                                                                     auto-bind="false"
@@ -324,7 +434,7 @@
                                             </div>
                                         </div>
 
-                                  
+
 
                                     </div>
                                     <div class="row">
@@ -353,7 +463,7 @@
                                                 <input type="text" id="Marca" required class="form-control" style="min-width: 100%;" asp-for="Marca" />
                                             </div>
                                         </div>
-                                     
+
                                     </div>
 
                                     <div class="row">
@@ -413,18 +523,18 @@
                                                     <div class="col-lg-4">
                                                         <dl class="dl-horizontal">
                                                             @*<dt>
-                                                                <label asp-for="SubTotal" class="col-md-2 control-label"></label>
-                                                            </dt>
-                                                            <dd>
-                                                                <kendo-numerictextbox name="SubTotal"
-                                                                                      format="n2"
-                                                                                      style="width: 100%;"
-                                                                                      min="0" disabled
-                                                                                      max="999999999"
-                                                                                      step="1"
-                                                                                      value="Model.SubTotal"></kendo-numerictextbox>
-                                                                <span asp-validation-for="SubTotal" class="text-danger"></span>
-                                                            </dd>*@
+                                                        <label asp-for="SubTotal" class="col-md-2 control-label"></label>
+                                                    </dt>
+                                                    <dd>
+                                                        <kendo-numerictextbox name="SubTotal"
+                                                                              format="n2"
+                                                                              style="width: 100%;"
+                                                                              min="0" disabled
+                                                                              max="999999999"
+                                                                              step="1"
+                                                                              value="Model.SubTotal"></kendo-numerictextbox>
+                                                        <span asp-validation-for="SubTotal" class="text-danger"></span>
+                                                    </dd>*@
 
                                                             <dt>
                                                                 <label asp-for="TotalSacos" class="control-label"></label>

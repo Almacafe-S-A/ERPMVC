@@ -1,0 +1,156 @@
+﻿<script>
+    //Noo!
+    //-- Agregar --
+    function AgregarCustomerProduct() {
+
+         var dataObject = {
+             CustomerProductId: 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("Productos", "CustomerProduct")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#customerproduct").html('');
+                $("#customerproduct").html(result);
+                $("#btnGuardarCustProd").show();
+                $("#titulo").text("Agregar ");
+
+                //Mostrar modal con la información
+                $('#CustProdModal').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+
+
+    }
+
+    //-- Editar --
+    function EditCustomerProduct(e) {
+        e.preventDefault();
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            CustomerProductId: dataItem.CustomerProductId
+        };
+
+        $.ajax({
+            url: '@Url.Action("Productos", "CustomerProduct")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            //data: { Id: dataItem.UnitOfMeasureId },
+            success: function (result) {
+                $("#customerproduct").html('');
+                $("#customerproduct").html(result);
+                $("#btnGuardarCustProd").hide();
+                $("#titulo").text("Editar ");
+
+                //Mostrar modal con la información
+                $('#CustProdModal').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+    }
+</script>
+
+<h3 class="text-themecolor">Productos/Cliente</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.CustomerProduct>()
+                          .Name("gridCustomerProduct")
+                          .Columns(columns =>
+                          {
+                              columns.Command(command =>
+                              {
+                                  command.Custom("Editar").Click("EditCustomerProduct");
+                              }).Width(150);
+
+                              columns.Bound(p => p.CustomerProductId).Width(100).Title("Código");
+                              columns.Bound(p => p.CustomerName).Width(150);
+                              columns.Bound(p => p.SubProductName).Width(200);
+                              columns.Bound(p => p.IdEstado).Width(100).Title("Estado");
+                              columns.Bound(p => p.FechaModificacion).Width(150).Format("{0:dd/MM/yyyy}").Title("Última Modificación");
+                              
+                          })
+                              .Filterable(f => f.Operators(o => o.ForString(s => s
+                                               .Clear()
+                                               .Contains("Contiene")
+                                               .DoesNotContain("No contiene")
+                                               .EndsWith("Termina con")
+                                               .IsEqualTo("Es igual a")
+                                               .IsNotEqualTo("No es igual a")
+                                               .IsNull("Es nulo")
+                                               .StartsWith("Inicia con")
+
+
+                                         )
+                                         .ForNumber(n => n
+                                           .Clear()
+                                           .IsEqualTo("Es igual a")
+                                           .IsGreaterThan("Es mayor que")
+                                           .IsLessThan("Es menor que")
+                                           .IsNull("Es nulo")
+                                           .IsLessThanOrEqualTo("Es menor o igual que")
+                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                         )
+                                         .ForDate(d => d
+                                         .Clear()
+                                         .IsEqualTo("Es igual que")
+                                         .IsGreaterThan("Es mayor que")
+                                         .IsLessThan("Es menor que")
+                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                         .IsNotEqualTo("No es igual que")
+                                          )
+                                       ))
+                          .ToolBar(tools =>
+                          {
+                              tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @onclick = "AgregarCustomerProduct();" });
+                              //tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                              //tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+                          })
+                           .Editable(e => e.Mode(GridEditMode.PopUp))
+                           .Sortable()
+                           .Pageable()
+                           .Filterable()
+                           .Scrollable()
+                           .Pdf(pdf => pdf.FileName("AgregarCustomerProductReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                           .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                             .Excel(excel => excel.FileName("AgregarCustomerProductReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                           .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                           .DataSource(dataSource =>
+                              dataSource
+                                .WebApi()
+                                .ServerOperation(true)
+                                .Model(model =>
+                                {
+                                    model.Id(p => p.CustomerProductId);
+                                    model.Field(p => p.CustomerProductId).Editable(false);
+
+
+                                })
+                                .Events(events => events.Error("error_handler"))
+                                .Read(read => read.Action("GetCustomerProduct", "CustomerProduct"))
+                                .Create(create => create.Action("Insert", "CustomerProduct"))
+                                .Update(update => update.Action("Update", "CustomerProduct", new { id = "{0}" }))
+                                .Destroy(destroy => destroy.Action("Delete", "CustomerProduct", new { id = "{0}" }))
+                          )
+)
+
+<div id="customerproduct">
+    @await Html.PartialAsync("Productos", new ERPMVC.Models.CustomerProduct())
+</div>
