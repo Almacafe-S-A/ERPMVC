@@ -15,44 +15,46 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
+
 namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-    public class CountryController : Controller
+    public class DepartamentoController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
 
-        public CountryController(ILogger<CountryController> logger, IOptions<MyConfig> config)
+        public DepartamentoController(ILogger<DepartamentoController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
         }
 
-        // GET: Customer
-        public ActionResult Country()
+        // GET: Departamento
+        public ActionResult Departamento()
         {
             return View();
         }
 
+
         [HttpGet]
         public async Task<JsonResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<Country> _cais = new List<Country>();
+            List<Departamento> _Departamento = new List<Departamento>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Country/GetCountry");
+                var result = await _client.GetAsync(baseadress + "api/Departamento/GetDepartamento");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _cais = JsonConvert.DeserializeObject<List<Country>>(valorrespuesta);
+                    _Departamento = JsonConvert.DeserializeObject<List<Departamento>>(valorrespuesta);
 
                 }
 
@@ -65,26 +67,26 @@ namespace ERPMVC.Controllers
             }
 
 
-            return Json(_cais.ToDataSourceResult(request));
+            return Json(_Departamento.ToDataSourceResult(request));
 
         }
         //--------------------------------------------------------------------------------------
-        [HttpGet]
-        public async Task<JsonResult> GetBOX([DataSourceRequest]DataSourceRequest request)
+        [HttpGet("[action]")]
+        public async Task<JsonResult> GetDepartamento([DataSourceRequest]DataSourceRequest request)
         {
-            List<Country> _Country = new List<Country>();
+            List<Departamento> _Departamento = new List<Departamento>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Country/GetCountry");
+                var result = await _client.GetAsync(baseadress + "api/Departamento/GetDepartamento");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Country = JsonConvert.DeserializeObject<List<Country>>(valorrespuesta);
+                    _Departamento = JsonConvert.DeserializeObject<List<Departamento>>(valorrespuesta);
 
                 }
 
@@ -97,31 +99,31 @@ namespace ERPMVC.Controllers
             }
 
 
-            return Json(_Country);
+            return Json(_Departamento);
 
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult> pvwAddCountry([FromBody]CountryDTO _sarpara)
+        public async Task<ActionResult> pvwAddDepartamento([FromBody]DepartamentoDTO _sarpara)
         {
-            CountryDTO _Country = new CountryDTO();
+            DepartamentoDTO _Departamento = new DepartamentoDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Country/GetCountryById/" + _sarpara.Id);
+                var result = await _client.GetAsync(baseadress + "api/Departamento/GetDepartamento/" + _sarpara.IdDepartamento);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Country = JsonConvert.DeserializeObject<CountryDTO>(valorrespuesta);
+                    _Departamento = JsonConvert.DeserializeObject<DepartamentoDTO>(valorrespuesta);
 
                 }
 
-                if (_Country == null)
+                if (_Departamento == null)
                 {
-                    _Country = new CountryDTO();
+                    _Departamento = new DepartamentoDTO();
                 }
             }
             catch (Exception ex)
@@ -132,45 +134,45 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_Country);
+            return PartialView(_Departamento);
 
         }
 
 
         [HttpPost]
-        public async Task<ActionResult<Country>> SaveCountry([FromBody]CountryDTO _CountryP)
+        public async Task<ActionResult<Departamento>> SaveDepartamento([FromBody]DepartamentoDTO _DepartamentoS)
         {
 
-            Country _Country = _CountryP;
+            Departamento _Departamento = _DepartamentoS;
             try
             {
                 // DTO_NumeracionSAR _liNumeracionSAR = new DTO_NumeracionSAR();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Country/GetCountryById/" + _Country.Id);
+                var result = await _client.GetAsync(baseadress + "api/Departamento/GetDepartamento/" + _Departamento.IdDepartamento);
                 string valorrespuesta = "";
-                _Country.FechaModificacion = DateTime.Now;
-                _Country.Usuariomodificacion = HttpContext.Session.GetString("user");
+                _Departamento.FechaModificacion = DateTime.Now;
+                _Departamento.Usuariomodificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Country = JsonConvert.DeserializeObject<CountryDTO>(valorrespuesta);
+                    _Departamento = JsonConvert.DeserializeObject<DepartamentoDTO>(valorrespuesta);
                 }
 
-                if (_Country == null) { _Country = new Models.Country(); }
+                if (_Departamento == null) { _Departamento = new Models.Departamento(); }
 
-                if (_CountryP.Id == 0)
+                if (_DepartamentoS.IdDepartamento == 0)
                 {
-                    _Country.FechaCreacion = DateTime.Now;
-                    _Country.Usuariocreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_CountryP);
+                    //_CAI.FechaCreacion = DateTime.Now;
+                    //_CAI.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_DepartamentoS);
                 }
                 else
                 {
-                    _CountryP.Usuariocreacion = _Country.Usuariocreacion;
-                    _CountryP.FechaCreacion = _Country.FechaCreacion;
-                    var updateresult = await Update(_Country.Id, _CountryP);
+                    _DepartamentoS.Usuariocreacion = _Departamento.Usuariocreacion;
+                    _DepartamentoS.FechaCreacion = _Departamento.FechaCreacion;
+                    var updateresult = await Update(_Departamento.IdDepartamento, _DepartamentoS);
                 }
 
             }
@@ -180,32 +182,32 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_Country);
+            return Json(_Departamento);
         }
 
 
         //--------------------------------------------------------------------------------------
-        // POST: Country/Insert
+        // POST: CAI/Insert
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public async Task<ActionResult> Insert(Country _CountryP)
+        public async Task<ActionResult> Insert(Departamento _DepartamentoS)
         {
-            Country _Country = _CountryP;
+            Departamento _Departamento = _DepartamentoS;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _Country.Usuariocreacion = HttpContext.Session.GetString("user");
-                _Country.Usuariomodificacion = HttpContext.Session.GetString("user");
-                _Country.FechaCreacion = DateTime.Now;
-                _Country.FechaModificacion = DateTime.Now;
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Country/Insert", _Country);
+                _Departamento.Usuariocreacion = HttpContext.Session.GetString("user");
+                _Departamento.Usuariomodificacion = HttpContext.Session.GetString("user");
+                _Departamento.FechaCreacion = DateTime.Now;
+                _Departamento.FechaModificacion = DateTime.Now;
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Departamento/PostDepartamento", _Departamento);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Country = JsonConvert.DeserializeObject<Country>(valorrespuesta);
+                    _Departamento = JsonConvert.DeserializeObject<Departamento>(valorrespuesta);
                 }
 
             }
@@ -214,26 +216,26 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Country }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _Departamento }, Total = 1 });
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Int64 Id, Country _CountryP)
+        public async Task<IActionResult> Update(Int64 IdDepartamento, Departamento _Departamentop)
         {
-            Country _Country = _CountryP;
+            Departamento _Departamento = _Departamentop;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _Country.FechaModificacion = DateTime.Now;
-                _Country.Usuariomodificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PutAsJsonAsync(baseadress + "api/Country/Update", _Country);
+                _Departamento.FechaModificacion = DateTime.Now;
+                _Departamento.Usuariomodificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PutAsJsonAsync(baseadress + "api/Departamento/Update", _Departamento);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Country = JsonConvert.DeserializeObject<Country>(valorrespuesta);
+                    _Departamento = JsonConvert.DeserializeObject<Departamento>(valorrespuesta);
                 }
 
             }
@@ -242,27 +244,25 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Country }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _Departamento }, Total = 1 });
         }
 
-        
-        
         [HttpPost]
-        public async Task<ActionResult<Country>> Delete(Int64 Id, Country _CountryP)
+        public async Task<ActionResult<Departamento>> Delete(Int64 Id, Departamento _Departamentop)
         {
-            Country _Country = _CountryP;
+            Departamento _Departamento = _Departamentop;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Country/Delete", _Country);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Departamento/Delete", _Departamento);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Country = JsonConvert.DeserializeObject<Country>(valorrespuesta);
+                    _Departamento = JsonConvert.DeserializeObject<Departamento>(valorrespuesta);
                 }
 
             }
@@ -271,12 +271,8 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Country }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _Departamento }, Total = 1 });
         }
-
-
-
-
 
 
     }

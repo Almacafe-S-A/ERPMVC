@@ -6,12 +6,13 @@ using System.Threading.Tasks;
 
 namespace ERPMVC.DTO
 {
-    public class CountryDTO : Country
+    public class EscalaDTO : Escala
     {
-        public List<Country> _Country { get; set; }
+        public List<Branch> _Escala { get; set; }
 
         public int editar { get; set; } = 1;
 
         public string token { get; set; }
     }
 }
+

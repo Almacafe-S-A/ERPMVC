@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using ERPMVC.DTO;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -28,31 +29,33 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-        public IActionResult Index()
+        public IActionResult Escala()
         {
             return View();
         }
 
-        public async Task<ActionResult> pvwEscala(Int64 Id = 0)
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwAddEscala([FromBody]EscalaDTO _sarpara)
+
         {
-            Escala _Escala = new Escala();
+            EscalaDTO _Escala = new EscalaDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Escala/GetEscalaById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/Escala/GetEscalaById/" + _sarpara.IdEscala);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Escala = JsonConvert.DeserializeObject<Escala>(valorrespuesta);
+                    _Escala = JsonConvert.DeserializeObject<EscalaDTO>(valorrespuesta);
 
                 }
 
                 if (_Escala == null)
                 {
-                    _Escala = new Escala();
+                    _Escala = new EscalaDTO ();
                 }
             }
             catch (Exception ex)
@@ -101,9 +104,9 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<Escala>> SaveEscala([FromBody]Escala _Escala)
+        public async Task<ActionResult<Escala>> SaveEscala([FromBody]EscalaDTO _EscalaS)
         {
-
+            Escala _Escala = _EscalaS;
             try
             {
                 Escala _listEscala = new Escala();
@@ -118,18 +121,22 @@ namespace ERPMVC.Controllers
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listEscala = JsonConvert.DeserializeObject<Escala>(valorrespuesta);
+                    _Escala = JsonConvert.DeserializeObject<EscalaDTO>(valorrespuesta);
                 }
 
-                if (_listEscala.IdEscala == 0)
+                if (_Escala == null) { _Escala = new Models.Escala(); }
+
+                if (_EscalaS.IdEscala == 0)
                 {
-                    _Escala.FechaCreacion = DateTime.Now;
-                    _Escala.Usuariocreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_Escala);
+                    _EscalaS.FechaCreacion = DateTime.Now;
+                    _EscalaS.Usuariocreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_EscalaS);
                 }
                 else
                 {
-                    var updateresult = await Update(_Escala.IdEscala, _Escala);
+                    _EscalaS.Usuariocreacion = _Escala.Usuariocreacion;
+                    _EscalaS.FechaCreacion = _Escala.FechaCreacion;
+                    var updateresult = await Update(_Escala.IdEscala, _EscalaS);
                 }
 
             }
@@ -145,16 +152,18 @@ namespace ERPMVC.Controllers
         // POST: Escala/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<Escala>> Insert(Escala _Escala)
+        public async Task<ActionResult<Escala>> Insert(Escala _Escalap)
         {
+            Escala _Escala = _Escalap;
             try
             {
-                // TODO: Add insert logic here
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 _Escala.Usuariocreacion = HttpContext.Session.GetString("user");
                 _Escala.Usuariomodificacion = HttpContext.Session.GetString("user");
+                _Escala.FechaCreacion = DateTime.Now;
+                _Escala.FechaModificacion = DateTime.Now;
                 var result = await _client.PostAsJsonAsync(baseadress + "api/Escala/Insert", _Escala);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -166,26 +175,27 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-            return Ok(_Escala);
-            // return new ObjectResult(new DataSourceResult { Data = new[] { _Escala }, Total = 1 });
+
+            return new ObjectResult(new DataSourceResult { Data = new[] { _Escala }, Total = 1 });
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<Escala>> Update(Int64 id, Escala _Escala)
+        public async Task<ActionResult<Escala>> Update(Int64 id, Escala _Escalap)
         {
+            Escala _Escala = _Escalap;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-
+                _Escala.FechaModificacion = DateTime.Now;
+                _Escala.Usuariomodificacion = HttpContext.Session.GetString("user");
                 var result = await _client.PutAsJsonAsync(baseadress + "api/Escala/Update", _Escala);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
-                {
+                {                    
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Escala = JsonConvert.DeserializeObject<Escala>(valorrespuesta);
                 }
@@ -193,15 +203,15 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _Escala }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult<Escala>> Delete([FromBody]Escala _Escala)
+        
+        [HttpPost]
+        public async Task<ActionResult<Escala>> Delete(Int64 IdEscala, Escala _Escala)
         {
             try
             {

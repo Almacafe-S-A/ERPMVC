@@ -6,9 +6,9 @@ using System.Threading.Tasks;
 
 namespace ERPMVC.DTO
 {
-    public class CountryDTO : Country
+    public class DepartamentoDTO : Departamento
     {
-        public List<Country> _Country { get; set; }
+        public List<Departamento> _Departamento { get; set; }
 
         public int editar { get; set; } = 1;
 
