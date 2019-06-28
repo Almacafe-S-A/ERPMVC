@@ -30,6 +30,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+       [HttpGet("[controller]/[action]")]
         public IActionResult Index()
         {
             return View();
@@ -153,7 +154,7 @@ namespace ERPMVC.Controllers
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<List<CertificadoDeposito>>> AgruparCertificados([FromBody]GoodsDeliveryAuthorizationParams _params)
         {
-            CertificadoDeposito _GoodsReceived = new CertificadoDeposito();
+            List<CertificadoDeposito> _CertificadoDeposito = new List<CertificadoDeposito>();
             if (_params != null)
                 if (_params.CertificadosSeleccionados != null)
                 {
@@ -168,7 +169,7 @@ namespace ERPMVC.Controllers
                         if (result.IsSuccessStatusCode)
                         {
                             valorrespuesta = await (result.Content.ReadAsStringAsync());
-                            _GoodsReceived = JsonConvert.DeserializeObject<CertificadoDeposito>(valorrespuesta);
+                            _CertificadoDeposito = JsonConvert.DeserializeObject <List<CertificadoDeposito>>(valorrespuesta);
 
                         }
                     }
@@ -183,7 +184,7 @@ namespace ERPMVC.Controllers
 
                 }
 
-            return Json(_GoodsReceived);
+            return Json(_CertificadoDeposito);
         }
 
 
@@ -375,7 +376,7 @@ namespace ERPMVC.Controllers
                                             select new CertificadoDeposito
                                    {                                       
                                         IdCD = c.IdCD,
-                                        CustomerName = "Número de certificado:" + c.NoCD + "|| Nombre:" + c.CustomerName + "|| Fecha:" + c.FechaCertificado + "|| Total:" + c.Total,
+                                        CustomerName = "Número de certificado:" + c.NoCD + "  || Nombre:" + c.CustomerName + "|| Fecha:" + c.FechaCertificado + "|| Total:" + c.Total,
                                                 CustomerId = c.CustomerId,
                                  }).ToList();
 
