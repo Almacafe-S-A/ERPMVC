@@ -18,46 +18,41 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
-    public class CustomerAreaController : Controller
+    public class EndososBonoLineController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public CustomerAreaController(ILogger<CustomerAreaController> logger, IOptions<MyConfig> config)
+        public EndososBonoLineController(ILogger<EndososBonoLineController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
         }
 
-
-        [HttpGet("[controller]/[action]")]
         public IActionResult Index()
         {
             return View();
         }
 
-
-
-        [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult> pvwCustomerArea([FromBody]CustomerArea _CustomerAreap)
+        public async Task<ActionResult> pvwEndososBonoLine(Int64 Id = 0)
         {
-            CustomerArea _CustomerArea = new CustomerArea();
+            EndososBonoLine _EndososBonoLine = new EndososBonoLine();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CustomerArea/GetCustomerAreaById/" + _CustomerAreap.CustomerAreaId);
+                var result = await _client.GetAsync(baseadress + "api/EndososBonoLine/GetEndososBonoLineById/" + Id);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CustomerArea = JsonConvert.DeserializeObject<CustomerArea>(valorrespuesta);
+                    _EndososBonoLine = JsonConvert.DeserializeObject<EndososBonoLine>(valorrespuesta);
 
                 }
 
-                if (_CustomerArea == null)
+                if (_EndososBonoLine == null)
                 {
-                    _CustomerArea = new CustomerArea();
+                    _EndososBonoLine = new EndososBonoLine();
                 }
             }
             catch (Exception ex)
@@ -68,7 +63,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_CustomerArea);
+            return PartialView(_EndososBonoLine);
 
         }
 
@@ -76,19 +71,19 @@ namespace ERPMVC.Controllers
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<CustomerArea> _CustomerArea = new List<CustomerArea>();
+            List<EndososBonoLine> _EndososBonoLine = new List<EndososBonoLine>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CustomerArea/GetCustomerArea");
+                var result = await _client.GetAsync(baseadress + "api/EndososBonoLine/GetEndososBonoLine");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CustomerArea = JsonConvert.DeserializeObject<List<CustomerArea>>(valorrespuesta);
+                    _EndososBonoLine = JsonConvert.DeserializeObject<List<EndososBonoLine>>(valorrespuesta);
 
                 }
 
@@ -101,44 +96,40 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _CustomerArea.ToDataSourceResult(request);
+            return _EndososBonoLine.ToDataSourceResult(request);
 
         }
 
-        [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<CustomerArea>> SaveCustomerArea([FromBody]CustomerArea _CustomerArea)
+        [HttpPost("[action]")]
+        public async Task<ActionResult<EndososBonoLine>> SaveEndososBonoLine([FromBody]EndososBonoLine _EndososBonoLine)
         {
 
             try
             {
-                CustomerArea _listCustomerArea = new CustomerArea();
+                EndososBonoLine _listEndososBonoLine = new EndososBonoLine();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CustomerArea/GetCustomerAreaById/" + _CustomerArea.CustomerAreaId);
+                var result = await _client.GetAsync(baseadress + "api/EndososBonoLine/GetEndososBonoLineById/" + _EndososBonoLine.EndososBonoLineId);
                 string valorrespuesta = "";
-                _CustomerArea.FechaModificacion = DateTime.Now;
-                _CustomerArea.UsuarioModificacion = HttpContext.Session.GetString("user");
+                //_EndososBonoLine.FechaModificacion = DateTime.Now;
+                //_EndososBonoLine.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listCustomerArea = JsonConvert.DeserializeObject<CustomerArea>(valorrespuesta);
+                    _listEndososBonoLine = JsonConvert.DeserializeObject<EndososBonoLine>(valorrespuesta);
                 }
 
-                if (_listCustomerArea == null) { _listCustomerArea = new CustomerArea(); }
-
-                if (_listCustomerArea.CustomerAreaId == 0)
+                if (_listEndososBonoLine.EndososBonoLineId == 0)
                 {
-                    _CustomerArea.FechaCreacion = DateTime.Now;
-                    _CustomerArea.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_CustomerArea);
+                   // _EndososBonoLine.FechaCreacion = DateTime.Now;
+                   // _EndososBonoLine.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_EndososBonoLine);
                 }
                 else
                 {
-                  
-
-                    var updateresult = await Update(_CustomerArea.CustomerAreaId, _CustomerArea);
+                    var updateresult = await Update(_EndososBonoLine.EndososBonoLineId, _EndososBonoLine);
                 }
 
             }
@@ -148,13 +139,13 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_CustomerArea);
+            return Json(_EndososBonoLine);
         }
 
-        // POST: CustomerArea/Insert
+        // POST: EndososBonoLine/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<CustomerArea>> Insert(CustomerArea _CustomerArea)
+        public async Task<ActionResult<EndososBonoLine>> Insert(EndososBonoLine _EndososBonoLine)
         {
             try
             {
@@ -162,14 +153,14 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _CustomerArea.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _CustomerArea.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/CustomerArea/Insert", _CustomerArea);
+              //  _EndososBonoLine.UsuarioCreacion = HttpContext.Session.GetString("user");
+               // _EndososBonoLine.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/EndososBonoLine/Insert", _EndososBonoLine);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CustomerArea = JsonConvert.DeserializeObject<CustomerArea>(valorrespuesta);
+                    _EndososBonoLine = JsonConvert.DeserializeObject<EndososBonoLine>(valorrespuesta);
                 }
 
             }
@@ -178,12 +169,12 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-            return Ok(_CustomerArea);
-            // return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerArea }, Total = 1 });
+            return Ok(_EndososBonoLine);
+            // return new ObjectResult(new DataSourceResult { Data = new[] { _EndososBonoLine }, Total = 1 });
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<CustomerArea>> Update(Int64 id, CustomerArea _CustomerArea)
+        public async Task<ActionResult<EndososBonoLine>> Update(Int64 id, EndososBonoLine _EndososBonoLine)
         {
             try
             {
@@ -191,12 +182,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PutAsJsonAsync(baseadress + "api/CustomerArea/Update", _CustomerArea);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/EndososBonoLine/Update", _EndososBonoLine);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CustomerArea = JsonConvert.DeserializeObject<CustomerArea>(valorrespuesta);
+                    _EndososBonoLine = JsonConvert.DeserializeObject<EndososBonoLine>(valorrespuesta);
                 }
 
             }
@@ -206,11 +197,11 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerArea }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _EndososBonoLine }, Total = 1 });
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<CustomerArea>> Delete([FromBody]CustomerArea _CustomerArea)
+        public async Task<ActionResult<EndososBonoLine>> Delete([FromBody]EndososBonoLine _EndososBonoLine)
         {
             try
             {
@@ -218,12 +209,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/CustomerArea/Delete", _CustomerArea);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/EndososBonoLine/Delete", _EndososBonoLine);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CustomerArea = JsonConvert.DeserializeObject<CustomerArea>(valorrespuesta);
+                    _EndososBonoLine = JsonConvert.DeserializeObject<EndososBonoLine>(valorrespuesta);
                 }
 
             }
@@ -235,7 +226,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerArea }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _EndososBonoLine }, Total = 1 });
         }
 
 

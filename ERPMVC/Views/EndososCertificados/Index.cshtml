@@ -1,0 +1,227 @@
+﻿
+<script>
+    function AddEndosos() {
+
+        var dataObject = ["listadoproductosEndosos"];
+         $.ajax({
+            url: '@Url.Action("ClearSession","Common")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                  //  $('#myModalSalesOrder').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+         });
+
+
+         var dataObject = {
+             EndososCertificadosId: 0,
+             editar : 1
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwEndosos", "EndososCertificados")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#Endosos").html('');
+                $("#Endosos").html(result);
+
+                //RefreshCotizacionesDetail();
+                 //$("#btnSaveCotizacion").show();
+                $('#myModalEndosos').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+
+
+    }
+
+    function EditEndosos(e) {
+         e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            EndososCertificadosId: dataItem.EndososCertificadosId,
+            editar : 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwEndosos", "EndososCertificados")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#Endosos").html('');
+                $("#Endosos").html(result);
+                var customer = $("#CustomerId").val();
+                $("#CustomerId").val(0);
+                $("#CustomerId").data("kendoDropDownList").select(customer);
+                $("#CustomerId").data("kendoDropDownList").value(customer);
+            
+                hcustom = customer;
+                GetProductTypeIdS();
+                $("#SubProductId").data("kendoDropDownList").dataSource.read();
+               // var sapProject = $("#CustomerId").data("kendoDropDownList").bind("select", onChange(customer));
+
+                $('#myModalEndosos').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+    }
+
+    function onChange(CustomerId) {
+        $("#CustomerId").val(CustomerId);
+    }
+
+    function ImprimirEndosos(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        window.location.href = '@Url.Action("SFEndosos", "Endosos")/' + dataItem.EndososCertificadosId;
+    }
+
+
+    function closecondition() {
+        $('#myModalConditions').modal('hide');
+    }
+
+
+</script>
+
+<h3 class="text-themecolor">Endosos</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.EndososCertificados>()
+                              .Name("gridEndosos")
+                              .Columns(columns =>
+                              {
+                                  columns.Command(command =>
+                                  {
+                                      command.Custom("Editar").Click("EditEndosos");
+                                      command.Custom("Imprimir").Click("ImprimirEndosos");
+                                      //  command.Edit(); command.Destroy();
+                                  }).Width(250);
+
+                                  columns.Bound(p => p.EndososCertificadosId).Title("Id").Width(150);
+                                  columns.Bound(p => p.DocumentDate).Format("{0:dd/MM/yyyy}").ClientTemplate("#=kendo.toString(DocumentDate,'dd/MM/yyyy')#").Title("Fecha Documento").Width(150);
+                                  //columns.Bound(p => p.OrderDate).Format("{0:dd/MM/yyyy}").Width(150);
+                                  columns.Bound(p => p.NoCD).Width(150);
+                                  columns.Bound(p => p.ExpirationDate).Format("{0:dd/MM/yyyy}").Width(150);
+                                  columns.Bound(p => p.ProductId).Title("Producto").Width(150);
+                                  columns.Bound(p => p.ProductName).Title("Descripcion").Width(150);
+                                  //columns.Bound(p => p.BranchId).Title("Branch Id").Width(150);
+                                  columns.Bound(p => p.FechaOtorgado).Title("Sucursal").Width(150);
+                                  columns.Bound(p => p.TasaDeInteres).Width(150);
+                                  columns.Bound(p => p.ValorEndosar).Width(150);
+                                  
+
+                              })
+                              .Filterable(f=>f.Operators(o=>o.ForString(s=>s
+                                   .Clear()
+                                   .Contains("Contiene")
+                                   .DoesNotContain("No contiene")
+                                   .EndsWith("Termina con")
+                                   .IsEqualTo("Es igual a")
+                                   .IsNotEqualTo("No es igual a")
+                                   .IsNull("Es nulo")
+                                   .StartsWith("Inicia con")
+
+
+                               )
+                               .ForNumber(n=>n
+                                 .Clear()
+                                 .IsEqualTo("Es igual a")
+                                 .IsGreaterThan("Es mayor que")
+                                 .IsLessThan("Es menor que")
+                                 .IsNull("Es nulo")
+                                 .IsLessThanOrEqualTo("Es menor o igual que")
+                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                               )
+                               .ForDate(d=>d
+                               .Clear()
+                               .IsEqualTo("Es igual que")
+                               .IsGreaterThan("Es mayor que")
+                               .IsLessThan("Es menor que")
+                               .IsLessThanOrEqualTo("Es menor o igual que")
+                               .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                               .IsNotEqualTo("No es igual que")
+                                )
+                               ))
+
+                              .ToolBar(tools =>
+                              {
+                                  //tools.Create();
+                                  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                   .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddEndosos();" });
+
+                                  tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                                  tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+                              })
+                               .Editable(e => e.Mode(GridEditMode.PopUp))
+                                .Sortable()
+                                .AutoBind(true)
+                                .Pageable()
+                                .Filterable()
+                                .Scrollable()
+                                // .ClientDetailTemplateId("template")
+                                .Pdf(pdf => pdf.FileName("EndososReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                  .Excel(excel => excel.FileName("EndososReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                //.Events(e=>e.Save("onsave"))
+                                .DataSource(dataSource =>
+
+                               dataSource
+                               //.Ajax()
+                               .WebApi()
+                                .ServerOperation(true)
+                                .Model(model =>
+                                {
+                                    model.Id(p => p.EndososCertificadosId);
+                                    model.Field(p => p.EndososCertificadosId).Editable(true);
+                                    model.Field(p => p.CustomerId).Editable(true);
+
+
+                                })
+                                .Events(events =>
+                                {
+                                    events.Error("error_handler");
+                                    //events.upda("EditHandler");
+
+                                })
+                                .Read(read => read.Action("Get", "Endosos"))
+                                .Create(create => create.Action("Insert", "Endosos"))
+                                .Update(update => update.Action("Update", "Endosos", new { id = "{0}" }))
+                                .Destroy(destroy => destroy.Action("Delete", "Endosos", new { id = "{0}" }))
+                          )
+)
+
+<div id="Endosos">
+    @await Html.PartialAsync("pvwEndosos", new ERPMVC.DTO.EndososDTO { EndososCertificadosId = 0, DocumentDate = DateTime.Now, ExpirationDate = DateTime.Now })
+</div>
+
+
+
+
+<div id="ConditionView">
+</div>
+
+<div id="CustomerConditionView">
+</div>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -18,16 +19,15 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
-    public class CustomerAreaController : Controller
+    public class EndososCertificadosController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public CustomerAreaController(ILogger<CustomerAreaController> logger, IOptions<MyConfig> config)
+        public EndososCertificadosController(ILogger<EndososCertificadosController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
         }
-
 
         [HttpGet("[controller]/[action]")]
         public IActionResult Index()
@@ -35,29 +35,27 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-
-
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult> pvwCustomerArea([FromBody]CustomerArea _CustomerAreap)
+        public async Task<ActionResult> pvwEndosos([FromBody]EndososCertificados _EndososCertificadosp)
         {
-            CustomerArea _CustomerArea = new CustomerArea();
+            EndososDTO _EndososCertificados = new EndososDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CustomerArea/GetCustomerAreaById/" + _CustomerAreap.CustomerAreaId);
+                var result = await _client.GetAsync(baseadress + "api/EndososCertificados/GetEndososCertificadosById/" + _EndososCertificadosp.EndososCertificadosId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CustomerArea = JsonConvert.DeserializeObject<CustomerArea>(valorrespuesta);
+                    _EndososCertificados = JsonConvert.DeserializeObject<EndososDTO>(valorrespuesta);
 
                 }
 
-                if (_CustomerArea == null)
+                if (_EndososCertificados == null)
                 {
-                    _CustomerArea = new CustomerArea();
+                    _EndososCertificados = new EndososDTO();
                 }
             }
             catch (Exception ex)
@@ -68,7 +66,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_CustomerArea);
+            return PartialView(_EndososCertificados);
 
         }
 
@@ -76,19 +74,19 @@ namespace ERPMVC.Controllers
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<CustomerArea> _CustomerArea = new List<CustomerArea>();
+            List<EndososCertificados> _EndososCertificados = new List<EndososCertificados>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CustomerArea/GetCustomerArea");
+                var result = await _client.GetAsync(baseadress + "api/EndososCertificados/GetEndososCertificados");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CustomerArea = JsonConvert.DeserializeObject<List<CustomerArea>>(valorrespuesta);
+                    _EndososCertificados = JsonConvert.DeserializeObject<List<EndososCertificados>>(valorrespuesta);
 
                 }
 
@@ -101,44 +99,40 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _CustomerArea.ToDataSourceResult(request);
+            return _EndososCertificados.ToDataSourceResult(request);
 
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<CustomerArea>> SaveCustomerArea([FromBody]CustomerArea _CustomerArea)
+        public async Task<ActionResult<EndososCertificados>> SaveEndososCertificados([FromBody]EndososCertificados _EndososCertificados)
         {
 
             try
             {
-                CustomerArea _listCustomerArea = new CustomerArea();
+                EndososCertificados _listEndososCertificados = new EndososCertificados();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CustomerArea/GetCustomerAreaById/" + _CustomerArea.CustomerAreaId);
+                var result = await _client.GetAsync(baseadress + "api/EndososCertificados/GetEndososCertificadosById/" + _EndososCertificados.EndososCertificadosId);
                 string valorrespuesta = "";
-                _CustomerArea.FechaModificacion = DateTime.Now;
-                _CustomerArea.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _EndososCertificados.FechaModificacion = DateTime.Now;
+                _EndososCertificados.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listCustomerArea = JsonConvert.DeserializeObject<CustomerArea>(valorrespuesta);
+                    _listEndososCertificados = JsonConvert.DeserializeObject<EndososCertificados>(valorrespuesta);
                 }
 
-                if (_listCustomerArea == null) { _listCustomerArea = new CustomerArea(); }
-
-                if (_listCustomerArea.CustomerAreaId == 0)
+                if (_listEndososCertificados.EndososCertificadosId == 0)
                 {
-                    _CustomerArea.FechaCreacion = DateTime.Now;
-                    _CustomerArea.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_CustomerArea);
+                    _EndososCertificados.FechaCreacion = DateTime.Now;
+                    _EndososCertificados.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_EndososCertificados);
                 }
                 else
                 {
-                  
-
-                    var updateresult = await Update(_CustomerArea.CustomerAreaId, _CustomerArea);
+                    var updateresult = await Update(_EndososCertificados.EndososCertificadosId, _EndososCertificados);
                 }
 
             }
@@ -148,13 +142,13 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_CustomerArea);
+            return Json(_EndososCertificados);
         }
 
-        // POST: CustomerArea/Insert
+        // POST: EndososCertificados/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<CustomerArea>> Insert(CustomerArea _CustomerArea)
+        public async Task<ActionResult<EndososCertificados>> Insert(EndososCertificados _EndososCertificados)
         {
             try
             {
@@ -162,14 +156,14 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _CustomerArea.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _CustomerArea.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/CustomerArea/Insert", _CustomerArea);
+                _EndososCertificados.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _EndososCertificados.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/EndososCertificados/Insert", _EndososCertificados);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CustomerArea = JsonConvert.DeserializeObject<CustomerArea>(valorrespuesta);
+                    _EndososCertificados = JsonConvert.DeserializeObject<EndososCertificados>(valorrespuesta);
                 }
 
             }
@@ -178,12 +172,12 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-            return Ok(_CustomerArea);
-            // return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerArea }, Total = 1 });
+            return Ok(_EndososCertificados);
+            // return new ObjectResult(new DataSourceResult { Data = new[] { _EndososCertificados }, Total = 1 });
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<CustomerArea>> Update(Int64 id, CustomerArea _CustomerArea)
+        public async Task<ActionResult<EndososCertificados>> Update(Int64 id, EndososCertificados _EndososCertificados)
         {
             try
             {
@@ -191,12 +185,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PutAsJsonAsync(baseadress + "api/CustomerArea/Update", _CustomerArea);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/EndososCertificados/Update", _EndososCertificados);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CustomerArea = JsonConvert.DeserializeObject<CustomerArea>(valorrespuesta);
+                    _EndososCertificados = JsonConvert.DeserializeObject<EndososCertificados>(valorrespuesta);
                 }
 
             }
@@ -206,11 +200,11 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerArea }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _EndososCertificados }, Total = 1 });
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<CustomerArea>> Delete([FromBody]CustomerArea _CustomerArea)
+        public async Task<ActionResult<EndososCertificados>> Delete([FromBody]EndososCertificados _EndososCertificados)
         {
             try
             {
@@ -218,12 +212,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/CustomerArea/Delete", _CustomerArea);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/EndososCertificados/Delete", _EndososCertificados);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CustomerArea = JsonConvert.DeserializeObject<CustomerArea>(valorrespuesta);
+                    _EndososCertificados = JsonConvert.DeserializeObject<EndososCertificados>(valorrespuesta);
                 }
 
             }
@@ -235,7 +229,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerArea }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _EndososCertificados }, Total = 1 });
         }
 
 

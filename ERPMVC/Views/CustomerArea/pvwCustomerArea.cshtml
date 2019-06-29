@@ -25,17 +25,43 @@
             return false;
         }
 
-        if (input.attr('name') === "Price" && input.val() == 0) {
+        if (input.attr('name') === "Largo" && input.val() == 0) {
             return false;
         }
 
-        if (input.attr('name') === "TotalLine" && input.val() == 0) {
+        if (input.attr('name') === "UsedArea" && input.val() == 0) {
+            return false;
+        }
+
+        if (input.attr('name') === "Ancho" && input.val() == 0) {
+            return false;
+        }
+
+        if (input.attr('name') === "Alto" && input.val() == 0) {
             return false;
         }
 
 
 
         return true;
+    }
+
+
+    function closeCustomer() {
+        $('#myModalCustomerArea').find(':input').not(':submit').val('0');
+       // $('#myModalCustomerArea').find(':select').not(':submit').val('0');
+        $("#ProductId").data("kendoDropDownList").value(0);
+        $("#BranchId").data("kendoDropDownList").value(0);
+        $("#TypeId").data("kendoDropDownList").value(0);
+        $("#CustomerId").data("kendoDropDownList").value(0);
+
+        RefreshGridCustomerArea();
+        $("#myModalCustomerArea").modal('hide');
+    }
+
+    function RefreshGridCustomerArea() {
+        var grid = $("#gridCustomerArea").getKendoGrid();
+        grid.dataSource.read();
     }
 </script>
 
@@ -46,7 +72,7 @@
         <!-- Modal content-->
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <button type="button" class="close" onclick="closeCustomer();">&times;</button>
                 <h4 class="modal-title">Información Area usadas por cliente</h4>
             </div>
             <div class="modal-body">
@@ -60,20 +86,37 @@
                                           data-ajax="true"
                                           data-ajax-method="post"
                                           method="post" class="validation-wizard wizard-circle">
-                                        <div class="col-md-12">
-                                            <div class="form-group">
-                                                <label asp-for="CustomerAreaId" class="  control-label" style="width:100%"></label>
-                                                <kendo-numerictextbox name="CustomerAreaId"
-                                                                      format="n"
-                                                                      min="0"
-                                                                      style="width:100%"
-                                                                      step="1"
-                                                                      value="Model.CustomerAreaId"></kendo-numerictextbox>
-                                            
-                                                <span asp-validation-for="CustomerAreaId" class="text-danger"></span>
-                                            </div>
-                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label asp-for="CustomerAreaId" class="  control-label" style="width:100%"></label>
+                                                    <kendo-numerictextbox name="CustomerAreaId"
+                                                                          format="n"
+                                                                          enable="false"
+                                                                          min="0"
+                                                                          style="width:100%"
+                                                                          step="1"
+                                                                          value="Model.CustomerAreaId"></kendo-numerictextbox>
 
+                                                    <span asp-validation-for="CustomerAreaId" class="text-danger"></span>
+                                                </div>
+                                                </div>
+
+                                                <div class="col-md-6">
+                                                    <div class="form-group">
+                                                        <label asp-for="DocumentDate" class=" control-label" style="width: 100%;"></label>
+                                                        <kendo-datetimepicker name="DocumentDate"
+                                                                              style="width: 100%;"
+                                                                              format="dd/MM/yyyy hh:mm:ss"
+                                                                              time-format="hh:mm:ss"
+                                                                              data-val-required="La fecha es requerida"
+                                                                              value="Model.DocumentDate"></kendo-datetimepicker>
+                                                        <span asp-validation-for="DocumentDate" class="text-danger"></span>
+                                                    </div>
+                                                </div>
+                                                
+                                            </div>
 
 
                                         <div class="row">
@@ -229,6 +272,7 @@
                                                                           format="n2"
                                                                           min="0"
                                                                           step="1"
+                                                                             onchange="CalcularArea();"
                                                                           style="width:100%"
                                                                           value="Model.Ancho"></kendo-numerictextbox>
                                                     <span asp-validation-for="Ancho" class="text-danger"></span>
@@ -239,11 +283,23 @@
 
 
                                         <div class="row">
+                                            <script>
+                                                function CalcularArea() {
+                                                    var UsedArea = $("#Ancho").val() * $("#Alto").val() * $("#Largo").val();
+                                                      var numeric = $("#UsedArea").data("kendoNumericTextBox");
+                                                      numeric.value(UsedArea);
+                                                      numeric.trigger('change');
+                                                    //$("#UsedArea").val(UsedArea);
+                                                }
+                                            </script>
+
+
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Alto" class="  control-label" style="width:100%"></label>
                                                     <kendo-numerictextbox name="Alto"
                                                                           format="n2"
+                                                                             onchange="CalcularArea();"
                                                                           min="0"
                                                                           step="1"
                                                                           style="width:100%"
@@ -258,6 +314,7 @@
                                                     <label asp-for="Largo" class="  control-label" style="width:100%"></label>
                                                     <kendo-numerictextbox name="Largo"
                                                                           format="n2"
+                                                                   onchange="CalcularArea();"
                                                                           min="0"
                                                                           step="1"
                                                                           style="width:100%"
@@ -272,6 +329,8 @@
                                                     <label asp-for="UsedArea" class="  control-label" style="width:100%"></label>
                                                     <kendo-numerictextbox name="UsedArea"
                                                                           format="n2"
+                                                                          disabled
+                                                                            required
                                                                           min="0"
                                                                           step="1"
                                                                           style="width:100%"
@@ -315,16 +374,16 @@
         var dataObject = {                    
             'CustomerAreaId': $("#CustomerAreaId").val(),
             'CustomerId': $("#CustomerId").val(),
-            'CustomerName': $("#CustomerName").val(),
-            'DocumentDate': $("#DocumentDate").val(),
+            'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
+            'DocumentDate': $("#DocumentDate").getKendoDateTimePicker().value().toJSON(),
             'ProductId': $("#ProductId").val(),
-            'ProductName': $("#ProductName").val(),
+            'ProductName': $("#ProductId").data("kendoDropDownList").text(),
             'BranchId': $("#BranchId").val(),
-            'BranchName': $("#BranchName").val(),
+            'BranchName': $("#BranchId").data("kendoDropDownList").text(),
             'TypeId': $("#TypeId").val(),
-            'TypeName': $("#TypeName").val(),
+            'TypeName': $("#TypeId").data("kendoDropDownList").text(),
             'WareHouseId': $("#WareHouseId").val(),
-            'WareHouseName': $("#WareHouseName").val(),
+            'WareHouseName': $("#WareHouseId").data("kendoDropDownList").text(),
             'Ancho': $("#Ancho").val(),
             'Alto': $("#Alto").val(),
             'Largo': $("#Largo").val(),
@@ -336,7 +395,7 @@
         //var validator2 = $("#TotalesDocumento").data("kendoValidator");
         var status = $(".status");
 
-        if (displayedData.length > 0) {
+       // if (displayedData.length > 0) {
             if (validator.validate()) {
 
                 $.ajax({
@@ -377,22 +436,22 @@
 
             }
             else {
-                $("#btnSaveControlEstiba").show();
-                $("#btnSaveControlEstiba").prop("disabled", false);
+                $("#btnSaveCustomerArea").show();
+                $("#btnSaveCustomerArea").prop("disabled", false);
             
             }
-        }
-        else {
-            $("#btnSaveControlEstiba").show();
-            $("#btnSaveControlEstiba").prop("disabled", false);
-            notification.show({
-                title: "Validacion",
-                message: "Debe agregar los productos!"
-            }, "error");
+        //}
+        //else {
+        //    $("#btnSaveControlEstiba").show();
+        //    $("#btnSaveControlEstiba").prop("disabled", false);
+        //    notification.show({
+        //        title: "Validacion",
+        //        message: "Debe agregar los productos!"
+        //    }, "error");
    
-        }
+       // }
 
-      //  $("#btnSaveControlEstiba").show();
+
        
     }
 </script>
