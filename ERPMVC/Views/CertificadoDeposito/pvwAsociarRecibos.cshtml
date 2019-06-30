@@ -41,9 +41,35 @@
                 console.log(data);
                 hcustom = data.CustomerId;
 
+                $("#BranchId").data("kendoDropDownList").value(data.BranchId);
+                $("#ServicioId").data("kendoDropDownList").value(data.ProductId);
+
                 var sumacantidad = 0, total = 0;
                 if (data._GoodsReceivedLine.length <= 8) {
                     for (i = 0; i < data._GoodsReceivedLine.length; i++) {
+
+                        var dataOjectSubProduct = {'SubProductId': data._GoodsReceivedLine[i].SubProductId }
+                        var merma = 0;
+                          $.ajax({
+                               url: '@Url.Action("GetProductoById", "SubProduct")',
+                               method: 'GET',
+                               datatype: "json",
+                               contentType: 'application/json',
+                               async: false,
+                              data: (dataOjectSubProduct),
+                              success: function (data) {
+                                  console.log(data);
+                                  merma = data.Merma;
+                                  if (merma == 0) { merma = 1; }
+                                  else { merma = merma + 1; }
+                              },
+                              error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                  console.log(textStatus + ": " + XMLHttpRequest.responseText);
+                                  alert(textStatus + ": " + XMLHttpRequest.responseText);
+                              }
+                          });                        
+
+
                         datasource.insert({
                             CertificadoLineId: 0, IdCD: 0,
                             UnitMeasureId: data._GoodsReceivedLine[i].UnitOfMeasureId 
@@ -51,13 +77,14 @@
                             , SubProductId: data._GoodsReceivedLine[i].SubProductId
                             , SubProductName: data._GoodsReceivedLine[i].SubProductName
                             , UnitMeasurName: data._GoodsReceivedLine[i].UnitOfMeasureName
-                            , Description: "", Quantity: data._GoodsReceivedLine[i].Quantity
-                            , Price: data._GoodsReceivedLine[i].Price
-                            , Amount: (data._GoodsReceivedLine[i].Price * data._GoodsReceivedLine[i].Quantity)
+                            , Description: "", Quantity: data._GoodsReceivedLine[i].Quantity / merma
+                             ,Price:0
+                            // , Price: data._GoodsReceivedLine[i].Price
+                            , Amount: (data._GoodsReceivedLine[i].Price * (data._GoodsReceivedLine[i].Quantity / merma))
                         });
 
-                        sumacantidad += data._GoodsReceivedLine[i].Quantity;
-                        total +=  (data._GoodsReceivedLine[i].Price * data._GoodsReceivedLine[i].Quantity) ;
+                        sumacantidad += (data._GoodsReceivedLine[i].Quantity / merma);
+                        total += (data._GoodsReceivedLine[i].Price * (data._GoodsReceivedLine[i].Quantity / merma)) ;
                     }
 
 

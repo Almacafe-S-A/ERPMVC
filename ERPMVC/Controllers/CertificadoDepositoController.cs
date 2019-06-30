@@ -36,7 +36,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> pvwCertificadoDeposito([FromBody]CertificadoDepositoDTO _CertificadoDepositoDTO)
         {
             CertificadoDepositoDTO _CertificadoDeposito = new CertificadoDepositoDTO();
@@ -85,7 +85,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpGet("[action]")]
+        [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> GetCertificadoDeposito([DataSourceRequest]DataSourceRequest request)
         {
             List<CertificadoDeposito> _CertificadoDeposito = new List<CertificadoDeposito>();
@@ -190,7 +190,7 @@ namespace ERPMVC.Controllers
 
 
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
              public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]CertificadoDepositoDTO _CertificadoDeposito)
           //  public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]dynamic dto)
         {
@@ -272,7 +272,7 @@ namespace ERPMVC.Controllers
             // return new ObjectResult(new DataSourceResult { Data = new[] { _CertificadoDeposito }, Total = 1 });
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("[controller]/[action]/{id}")]
         public async Task<ActionResult<CertificadoDeposito>> Update(Int64 id, CertificadoDeposito _CertificadoDeposito)
         {
             try
@@ -299,7 +299,7 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _CertificadoDeposito }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<CertificadoDeposito>> Delete([FromBody]CertificadoDeposito _CertificadoDeposito)
         {
             try
