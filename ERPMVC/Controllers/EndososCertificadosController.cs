@@ -55,7 +55,7 @@ namespace ERPMVC.Controllers
 
                 if (_EndososCertificados == null)
                 {
-                    _EndososCertificados = new EndososDTO();
+                    _EndososCertificados = new EndososDTO { FechaOtorgado = DateTime.Now, DocumentDate = DateTime.Now, ExpirationDate = DateTime.Now };
                 }
             }
             catch (Exception ex)
@@ -104,7 +104,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<EndososCertificados>> SaveEndososCertificados([FromBody]EndososCertificados _EndososCertificados)
+        public async Task<ActionResult<EndososCertificados>> SaveEndososCertificados([FromBody]EndososDTO _EndososCertificados)
         {
 
             try
@@ -122,6 +122,11 @@ namespace ERPMVC.Controllers
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _listEndososCertificados = JsonConvert.DeserializeObject<EndososCertificados>(valorrespuesta);
+                }
+
+                if (_listEndososCertificados == null)
+                {
+                    _listEndososCertificados = new EndososCertificados();
                 }
 
                 if (_listEndososCertificados.EndososCertificadosId == 0)

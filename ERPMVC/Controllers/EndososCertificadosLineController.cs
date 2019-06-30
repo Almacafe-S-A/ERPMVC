@@ -33,7 +33,8 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwEndososCertificadosLine(Int64 Id = 0)
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> pvwEndososDetailMant([FromBody]EndososCertificadosLine _EndososCertificadosLinep)
         {
             EndososCertificadosLine _EndososCertificadosLine = new EndososCertificadosLine();
             try
@@ -41,7 +42,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/EndososCertificadosLine/GetEndososCertificadosLineById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/EndososCertificadosLine/GetEndososCertificadosLineById/" + _EndososCertificadosLinep.EndososCertificadosLineId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -63,7 +64,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_EndososCertificadosLine);
+            return PartialView("~/Views/EndososCertificados/pvwEndososDetailMant.cshtml", _EndososCertificadosLine);
 
         }
 
@@ -99,6 +100,67 @@ namespace ERPMVC.Controllers
             return _EndososCertificadosLine.ToDataSourceResult(request);
 
         }
+
+
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetEndososCertificadosLineByEndososCertificadosId([DataSourceRequest]DataSourceRequest request, EndososCertificadosLine _EndososCertificadosLineP)
+        {
+            List<EndososCertificadosLine> _EndososCertificadosLine = new List<EndososCertificadosLine>();
+            try
+            {
+                if (HttpContext.Session.Get("listadoproductosEndosos") == null
+                   || HttpContext.Session.GetString("listadoproductosEndosos") == "")
+                {
+                    if (_EndososCertificadosLineP.EndososCertificadosId > 0)
+                    {
+                        string serialzado = JsonConvert.SerializeObject(_EndososCertificadosLineP).ToString();
+                        HttpContext.Session.SetString("listadoproductosEndosos", serialzado);
+                    }
+                }
+                else
+                {
+                    _EndososCertificadosLine = JsonConvert.DeserializeObject<List<EndososCertificadosLine>>(HttpContext.Session.GetString("listadoproductosEndosos"));
+                }
+
+
+                if (_EndososCertificadosLineP.EndososCertificadosId > 0)
+                {
+
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/EndososCertificadosLine/GetEndososCertificadosLineByEndososCertificadosId/" + _EndososCertificadosLineP.EndososCertificadosId);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _EndososCertificadosLine = JsonConvert.DeserializeObject<List<EndososCertificadosLine>>(valorrespuesta);
+                    }
+                }
+                else
+                {
+                    if (_EndososCertificadosLineP.Price > 0)
+                    {
+                        _EndososCertificadosLine.Add(_EndososCertificadosLineP);
+                        HttpContext.Session.SetString("listadoproductosEndosos", JsonConvert.SerializeObject(_EndososCertificadosLine).ToString());
+                    }
+                }
+
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _EndososCertificadosLine.ToDataSourceResult(request);
+
+        }
+
 
         [HttpPost("[action]")]
         public async Task<ActionResult<EndososCertificadosLine>> SaveEndososCertificadosLine([FromBody]EndososCertificadosLine _EndososCertificadosLine)

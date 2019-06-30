@@ -60,7 +60,7 @@ namespace ERPMVC.Models
         public string TipoEndosoName { get; set; }
 
 
-        [Display(Name = "Cantidad a endosar")]
+        [Display(Name = "Firmado en")]
         public string FirmadoEn { get; set; }
 
 
@@ -86,6 +86,8 @@ namespace ERPMVC.Models
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
         public string UsuarioModificacion { get; set; }
+
+        public List<EndososCertificadosLine> EndososCertificadosLine { get; set; } = new List<EndososCertificadosLine>();
 
     }
 }

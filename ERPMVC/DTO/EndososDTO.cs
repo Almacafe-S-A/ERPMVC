@@ -8,7 +8,7 @@ namespace ERPMVC.DTO
 {
     public class EndososDTO : EndososCertificados
     {
-
+        public List<Int64> TipoEndosoIdList { get; set; }
         public Int64 editar { get; set; } = 1;
     }
 }
