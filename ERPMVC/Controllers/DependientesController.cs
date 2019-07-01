@@ -202,7 +202,7 @@ namespace ERPMVC.Controllers
                 _Dependientes.Usuariomodificacion = HttpContext.Session.GetString("user");
                 _Dependientes.FechaCreacion = DateTime.Now;
                 _Dependientes.FechaModificacion = DateTime.Now;
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Dependientes/PostDependientes", _Dependientes);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Dependientes/Insert", _Dependientes);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -230,7 +230,7 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 _Dependientes.FechaModificacion = DateTime.Now;
                 _Dependientes.Usuariomodificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PutAsJsonAsync(baseadress + "api/Dependientes/PutDependientes", _Dependientes);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/Dependientes/Update", _Dependientes);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
