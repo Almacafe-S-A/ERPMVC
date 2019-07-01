@@ -79,10 +79,6 @@ namespace ERPMVC.Controllers
 
 
 
-
-
-
-
         [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
@@ -113,7 +109,7 @@ namespace ERPMVC.Controllers
 
         }
 
-       // [HttpGet("[controller]/[action]/{Id}")]
+        [HttpGet("[controller]/[action]/{Id}")]
         public async Task<ActionResult> GetDeliveryAuthorizationById(Int64 Id)
         {
             GoodsDeliveryAuthorization _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorization();
@@ -232,6 +228,7 @@ namespace ERPMVC.Controllers
             return Json(indices);
         }
 
+        [HttpGet("[controller]/[action]")]
         private async Task<List<GoodsDeliveryAuthorization>> GetGoodsDeliveryAuthorization()
         {
             List<GoodsDeliveryAuthorization> _GoodsDeliveryAuthorization = new List<GoodsDeliveryAuthorization>();
@@ -300,7 +297,7 @@ namespace ERPMVC.Controllers
             // return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsDeliveryAuthorization }, Total = 1 });
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("[controller]/[action]/{id}")]
         public async Task<ActionResult<GoodsDeliveryAuthorization>> Update(Int64 id, GoodsDeliveryAuthorization _GoodsDeliveryAuthorization)
         {
             try
@@ -358,6 +355,14 @@ namespace ERPMVC.Controllers
 
 
 
+        [HttpGet("[controller]/[action]/{id}")]
+        public ActionResult SFGoodsDeliveryAuthorization(Int64 id)
+        {
+
+            GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorizationDTO { GoodsDeliveryAuthorizationId = id, }; 
+
+            return View(_GoodsDeliveryAuthorization);
+        }
 
 
 

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -19,47 +18,41 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
-    public class GoodsDeliveredController : Controller
+    public class EndososBonoController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public GoodsDeliveredController(ILogger<GoodsDeliveredController> logger, IOptions<MyConfig> config)
+        public EndososBonoController(ILogger<EndososBonoController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
         }
 
-        [HttpGet("[controller]/[action]")]
         public IActionResult Index()
         {
             return View();
         }
 
-        [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult> pvwGoodsDelivered([FromBody]GoodsDeliveredDTO _GoodsDeliveredDTO)
+        public async Task<ActionResult> pvwEndososBono(Int64 Id = 0)
         {
-            GoodsDeliveredDTO _GoodsDelivered = new GoodsDeliveredDTO();
+            EndososBono _EndososBono = new EndososBono();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/GoodsDelivered/GetGoodsDeliveredById/" + _GoodsDeliveredDTO.GoodsDeliveredId);
+                var result = await _client.GetAsync(baseadress + "api/EndososBono/GetEndososBonoById/" + Id);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _GoodsDelivered = JsonConvert.DeserializeObject<GoodsDeliveredDTO>(valorrespuesta);
+                    _EndososBono = JsonConvert.DeserializeObject<EndososBono>(valorrespuesta);
 
                 }
 
-                if (_GoodsDelivered == null)
+                if (_EndososBono == null)
                 {
-                    _GoodsDelivered = new GoodsDeliveredDTO { DocumentDate=DateTime.Now, ExpirationDate = DateTime.Now, OrderDate=DateTime.Now, editar=1 };
-                }
-                else
-                {
-                    _GoodsDelivered.editar = 0;
+                    _EndososBono = new EndososBono();
                 }
             }
             catch (Exception ex)
@@ -70,27 +63,27 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_GoodsDelivered);
+            return PartialView(_EndososBono);
 
         }
 
 
-        [HttpGet("[controller]/[action]")]
+        [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<GoodsDelivered> _GoodsDelivered = new List<GoodsDelivered>();
+            List<EndososBono> _EndososBono = new List<EndososBono>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/GoodsDelivered/GetGoodsDelivered");
+                var result = await _client.GetAsync(baseadress + "api/EndososBono/GetEndososBono");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _GoodsDelivered = JsonConvert.DeserializeObject<List<GoodsDelivered>>(valorrespuesta);
+                    _EndososBono = JsonConvert.DeserializeObject<List<EndososBono>>(valorrespuesta);
 
                 }
 
@@ -103,43 +96,40 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _GoodsDelivered.ToDataSourceResult(request);
+            return _EndososBono.ToDataSourceResult(request);
 
         }
 
-        [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<GoodsDelivered>> SaveGoodsDelivered([FromBody]GoodsDelivered _GoodsDelivered)
+        [HttpPost("[action]")]
+        public async Task<ActionResult<EndososBono>> SaveEndososBono([FromBody]EndososBono _EndososBono)
         {
 
             try
             {
-                GoodsDelivered _listGoodsDelivered = new GoodsDelivered();
+                EndososBono _listEndososBono = new EndososBono();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/GoodsDelivered/GetGoodsDeliveredById/" + _GoodsDelivered.GoodsDeliveredId);
+                var result = await _client.GetAsync(baseadress + "api/EndososBono/GetEndososBonoById/" + _EndososBono.EndososBonoId);
                 string valorrespuesta = "";
-                _GoodsDelivered.FechaModificacion = DateTime.Now;
-                _GoodsDelivered.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _EndososBono.FechaModificacion = DateTime.Now;
+                _EndososBono.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listGoodsDelivered = JsonConvert.DeserializeObject<GoodsDelivered>(valorrespuesta);
+                    _listEndososBono = JsonConvert.DeserializeObject<EndososBono>(valorrespuesta);
                 }
 
-                if (_listGoodsDelivered == null) { _listGoodsDelivered = new GoodsDelivered(); }
-
-
-                if (_listGoodsDelivered.GoodsDeliveredId == 0)
+                if (_listEndososBono.EndososBonoId == 0)
                 {
-                    _GoodsDelivered.FechaCreacion = DateTime.Now;
-                    _GoodsDelivered.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_GoodsDelivered);
+                    _EndososBono.FechaCreacion = DateTime.Now;
+                    _EndososBono.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_EndososBono);
                 }
                 else
                 {
-                    var updateresult = await Update(_GoodsDelivered.GoodsDeliveredId, _GoodsDelivered);
+                    var updateresult = await Update(_EndososBono.EndososBonoId, _EndososBono);
                 }
 
             }
@@ -149,13 +139,13 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_GoodsDelivered);
+            return Json(_EndososBono);
         }
 
-        // POST: GoodsDelivered/Insert
-        [HttpPost("[controller]/[action]")]
+        // POST: EndososBono/Insert
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<GoodsDelivered>> Insert(GoodsDelivered _GoodsDelivered)
+        public async Task<ActionResult<EndososBono>> Insert(EndososBono _EndososBono)
         {
             try
             {
@@ -163,14 +153,14 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _GoodsDelivered.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _GoodsDelivered.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/GoodsDelivered/Insert", _GoodsDelivered);
+                _EndososBono.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _EndososBono.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/EndososBono/Insert", _EndososBono);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _GoodsDelivered = JsonConvert.DeserializeObject<GoodsDelivered>(valorrespuesta);
+                    _EndososBono = JsonConvert.DeserializeObject<EndososBono>(valorrespuesta);
                 }
 
             }
@@ -179,12 +169,12 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-            return Ok(_GoodsDelivered);
-            // return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsDelivered }, Total = 1 });
+            return Ok(_EndososBono);
+            // return new ObjectResult(new DataSourceResult { Data = new[] { _EndososBono }, Total = 1 });
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<GoodsDelivered>> Update(Int64 id, GoodsDelivered _GoodsDelivered)
+        public async Task<ActionResult<EndososBono>> Update(Int64 id, EndososBono _EndososBono)
         {
             try
             {
@@ -192,12 +182,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PutAsJsonAsync(baseadress + "api/GoodsDelivered/Update", _GoodsDelivered);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/EndososBono/Update", _EndososBono);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _GoodsDelivered = JsonConvert.DeserializeObject<GoodsDelivered>(valorrespuesta);
+                    _EndososBono = JsonConvert.DeserializeObject<EndososBono>(valorrespuesta);
                 }
 
             }
@@ -207,11 +197,11 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsDelivered }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _EndososBono }, Total = 1 });
         }
 
-        [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<GoodsDelivered>> Delete([FromBody]GoodsDelivered _GoodsDelivered)
+        [HttpPost("[action]")]
+        public async Task<ActionResult<EndososBono>> Delete([FromBody]EndososBono _EndososBono)
         {
             try
             {
@@ -219,12 +209,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/GoodsDelivered/Delete", _GoodsDelivered);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/EndososBono/Delete", _EndososBono);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _GoodsDelivered = JsonConvert.DeserializeObject<GoodsDelivered>(valorrespuesta);
+                    _EndososBono = JsonConvert.DeserializeObject<EndososBono>(valorrespuesta);
                 }
 
             }
@@ -236,7 +226,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsDelivered }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _EndososBono }, Total = 1 });
         }
 
 

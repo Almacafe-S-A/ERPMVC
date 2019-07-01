@@ -105,7 +105,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<CustomerArea>> SaveCustomerArea([FromBody]CustomerArea _CustomerArea)
         {
 
@@ -126,6 +126,8 @@ namespace ERPMVC.Controllers
                     _listCustomerArea = JsonConvert.DeserializeObject<CustomerArea>(valorrespuesta);
                 }
 
+                if (_listCustomerArea == null) { _listCustomerArea = new CustomerArea(); }
+
                 if (_listCustomerArea.CustomerAreaId == 0)
                 {
                     _CustomerArea.FechaCreacion = DateTime.Now;
@@ -134,6 +136,8 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
+                  
+
                     var updateresult = await Update(_CustomerArea.CustomerAreaId, _CustomerArea);
                 }
 
