@@ -1,0 +1,146 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "Producto";
+
+}
+
+<script>
+
+    function onsave(e) {
+        //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+        // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+    function caidata(data) {
+        data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+        data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    }
+
+     function AddProduct() {
+
+         $('#ModalProduct').find(':input').not(':submit').val('');
+         $('#ModalProduct').modal('show');
+         $("#ProductId").val('0');
+
+
+
+
+    }
+
+
+         function EditProduct(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+             var dataObject = {
+                 ProductId: dataItem.ProductId,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddProduct", "Product")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    console.log('success', result)
+
+                    $("#numProduct").html('');
+                    $("#numProduct").html(result);
+
+
+                    //$("#btnCAI").hide();
+                    $('#ModalProduct').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+         }
+
+
+</script>
+
+<h3 class="text-themecolor">Producto</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.Product>
+              ()
+
+                .Name("gridProduct")
+
+                .Columns(columns =>
+                {
+                    columns.Bound(p => p.ProductId).Width(150);
+                    columns.Bound(p => p.ProductName).Width(170);
+                    columns.Bound(p => p.ProductCode).Width(170);
+                    columns.Bound(p => p.Description).Width(200);
+                    columns.Bound(p => p.UnitOfMeasureId).Width(150);
+                    columns.Bound(p => p.DefaultBuyingPrice).Width(150);
+                    columns.Bound(p => p.DefaultSellingPrice).Width(150);
+                    columns.Bound(p => p.BranchId).Width(150);
+                    columns.Bound(p => p.CurrencyId).Width(150);
+                    columns.Bound(p => p.IdEstado).Width(150);
+                    columns.Command(command =>
+                    {
+                        //command.Custom("Ver detalles").Click("Detalles");
+                        command.Custom("Editar").Click("EditProduct");
+                        command.Destroy();
+                    }).Width(250);
+
+                })
+
+
+                .ToolBar(tools =>
+                {
+
+                    //tools.Create();
+                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                              .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddProduct()" });
+                    tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                    tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                })
+                .Editable(e => e.Mode(GridEditMode.PopUp))
+                .Sortable()
+                .Pageable()
+                .Filterable()
+                .Scrollable()
+                .Pdf(pdf => pdf.FileName("ProductReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                .Excel(excel => excel.FileName("ProductReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                .DataSource(dataSource =>
+                dataSource
+                .WebApi()
+
+                .ServerOperation(true)
+                .Model(model =>
+                {
+                    model.Id(p => p.ProductId);
+                    model.Field(p => p.ProductId).Editable(false);
+
+
+                })
+                .Events(events => events.Error("error_handler"))
+                .Read(read => read.Action("Get", "Product"))
+                //.Create(create => create.Action("Insert", "Product").Type(HttpVerbs.Post))
+                //.Update(update => update.Action("Update", "Product").Type(HttpVerbs.Post))
+               .Destroy(destroy => destroy.Action("Delete", "Product").Type(HttpVerbs.Post))
+                )
+                .Events(e =>
+                {
+                    e.Save("onsave");
+
+                })
+)
+
+<div id="numProduct">
+    @await Html.PartialAsync("pvwAddProduct", new ERPMVC.DTO.ProductDTO { ProductId = 0 })
+</div>
+
