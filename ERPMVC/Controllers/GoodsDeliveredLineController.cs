@@ -28,12 +28,14 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [HttpGet("[controller]/[action]")]
         public IActionResult Index()
         {
             return View();
         }
 
-        public async Task<ActionResult> pvwGoodsDeliveredLine(Int64 Id = 0)
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> pvwGoodsDeliveredLine([FromBody]GoodsDeliveredLine _GoodsDeliveredLinep)
         {
             GoodsDeliveredLine _GoodsDeliveredLine = new GoodsDeliveredLine();
             try
@@ -41,7 +43,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/GoodsDeliveredLine/GetGoodsDeliveredLineById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/GoodsDeliveredLine/GetGoodsDeliveredLineById/" + _GoodsDeliveredLinep.GoodsDeliveredLinedId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -63,12 +65,12 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_GoodsDeliveredLine);
+            return PartialView("~/Views/GoodsDelivered/pvwGoodsDeliveredDetailMant.cshtml", _GoodsDeliveredLine);
 
         }
 
 
-        [HttpGet]
+        [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
             List<GoodsDeliveredLine> _GoodsDeliveredLine = new List<GoodsDeliveredLine>();
@@ -102,7 +104,7 @@ namespace ERPMVC.Controllers
 
 
 
-        [HttpGet("[action]")]
+        [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> GetGoodsDeliveredLineByGoodsDeliveredId([DataSourceRequest]DataSourceRequest request, GoodsDeliveredLine _GoodsDeliveredLinep)
         {
             List<GoodsDeliveredLine> _GoodsDeliveredLine = new List<GoodsDeliveredLine>();
@@ -167,7 +169,7 @@ namespace ERPMVC.Controllers
 
 
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<GoodsDeliveredLine>> SaveGoodsDeliveredLine([FromBody]GoodsDeliveredLine _GoodsDeliveredLine)
         {
 
@@ -210,7 +212,7 @@ namespace ERPMVC.Controllers
         }
 
         // POST: GoodsDeliveredLine/Insert
-        [HttpPost]
+        [HttpPost("[controller]/[action]")]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult<GoodsDeliveredLine>> Insert(GoodsDeliveredLine _GoodsDeliveredLine)
         {
@@ -240,7 +242,7 @@ namespace ERPMVC.Controllers
             // return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsDeliveredLine }, Total = 1 });
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("[controller]/[action]/{id}")]
         public async Task<ActionResult<GoodsDeliveredLine>> Update(Int64 id, GoodsDeliveredLine _GoodsDeliveredLine)
         {
             try
@@ -267,7 +269,7 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsDeliveredLine }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<GoodsDeliveredLine>> Delete([FromBody]GoodsDeliveredLine _GoodsDeliveredLine)
         {
             try
