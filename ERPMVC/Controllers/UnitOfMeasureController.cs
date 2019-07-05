@@ -14,6 +14,22 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+//using System;
+//using System.Collections.Generic;
+//using System.Linq;
+//using System.Net.Http;
+//using System.Threading.Tasks;
+//using ERPMVC.DTO;
+//using ERPMVC.Helpers;
+//using ERPMVC.Models;
+//using Kendo.Mvc.Extensions;
+//using Kendo.Mvc.UI;
+//using Microsoft.AspNetCore.Authorization;
+//using Microsoft.AspNetCore.Http;
+//using Microsoft.AspNetCore.Mvc;
+//using Microsoft.Extensions.Logging;
+//using Microsoft.Extensions.Options;
+//using Newtonsoft.Json;
 
 namespace ERPMVC.Controllers
 {
@@ -22,11 +38,11 @@ namespace ERPMVC.Controllers
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class UnitOfMeasureController : Controller
     {
-        private readonly IOptions<MyConfig> config;
+        private readonly IOptions<MyConfig> _config;
         private readonly ILogger _logger;
         public UnitOfMeasureController(ILogger<UnitOfMeasureController> logger, IOptions<MyConfig> config)
         {
-            this.config = config;
+            this._config = config;
             this._logger = logger;
         }
 
@@ -42,7 +58,7 @@ namespace ERPMVC.Controllers
             UnitOfMeasure _UnitOfMeasure = new UnitOfMeasure();
             try
             {
-                string baseadress = config.Value.urlbase;
+                string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/UnitOfMeasure/GetUnitOfMeasureById/" + _unidad.UnitOfMeasureId);
@@ -83,43 +99,51 @@ namespace ERPMVC.Controllers
             return PartialView(_UnitOfMeasure);
 
         }
+        /// <summary>
+        /// Obitiene el listado de los estados!
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
+        //[HttpGet]
+        //public async Task<ActionResult> GetUnitOfMeasure([DataSourceRequest]DataSourceRequest request)
+        //{
+        //    List<UnitOfMeasure> _UnitOfMeasure = new List<UnitOfMeasure>();
+        //    try
+        //    {
+
+        //        string baseadress = _config.Value.urlbase;
+        //        HttpClient _client = new HttpClient();
+        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+        //        var result = await _client.GetAsync(baseadress + "api/UnitOfMeasure/GetUnitOfMeasure");
+        //        string valorrespuesta = "";
+        //        if (result.IsSuccessStatusCode)
+        //        {
+        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
+        //            _UnitOfMeasure = JsonConvert.DeserializeObject<List<UnitOfMeasure>>(valorrespuesta);
+
+        //        }
+
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+        //        throw ex;
+        //    }
+
+
+        //    return _UnitOfMeasure.ToDataSourceResult(request);
+
+        //}
 
         [HttpGet("[controller]/[action]")]
-        public async Task<ActionResult> Get([DataSourceRequest]DataSourceRequest request)
-        {
-            List<UnitOfMeasure> _clientes = new List<UnitOfMeasure>();
-            try
-            {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/UnitOfMeasure/GetUnitOfMeasure");
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _clientes = JsonConvert.DeserializeObject<List<UnitOfMeasure>>(valorrespuesta);
-                }
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-            return Json(_clientes.ToDataSourceResult(request));
-
-        }
-
-        [HttpGet("[controller]/[action]")]
-        public async Task<DataSourceResult> GetUoM([DataSourceRequest]DataSourceRequest request)
+        public async Task<DataSourceResult> GetUnitOfMeasure([DataSourceRequest]DataSourceRequest request)
         {
             List<UnitOfMeasure> _UnitOfMeasure = new List<UnitOfMeasure>();
             try
             {
 
-                string baseadress = config.Value.urlbase;
+                string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/UnitOfMeasure/GetUnitOfMeasure");
@@ -152,7 +176,7 @@ namespace ERPMVC.Controllers
             try
             {
                 UnitOfMeasure _listUnitOfMeasure = new UnitOfMeasure();
-                string baseadress = config.Value.urlbase;
+                string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/UnitOfMeasure/GetUnitOfMeasureById/" + _UnitOfMeasure.UnitOfMeasureId);
@@ -195,7 +219,7 @@ namespace ERPMVC.Controllers
             try
             {
                 // TODO: Add insert logic here
-                string baseadress = config.Value.urlbase;
+                string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 _UnitOfMeasure.UsuarioCreacion = HttpContext.Session.GetString("user");
@@ -224,7 +248,7 @@ namespace ERPMVC.Controllers
         {
             try
             {
-                string baseadress = config.Value.urlbase;
+                string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
@@ -252,7 +276,7 @@ namespace ERPMVC.Controllers
         {
             try
             {
-                string baseadress = config.Value.urlbase;
+                string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
