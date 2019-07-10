@@ -199,47 +199,61 @@ namespace ERPMVC.Controllers
             return Json(_SubProducts);
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
+        //public async Task<ActionResult<SubProduct>> SaveSubProduct([FromBody]dynamic dto)
         public async Task<ActionResult<SubProduct>> SaveSubProduct([FromBody]SubProductDTO _SubProductS)
         {
+
             SubProduct _SubProduct = _SubProductS;
-            try
+         //   SubProduct _SubProduct = new SubProduct();
+          //  SubProduct _SubProductS = new SubProduct(); //JsonConvert.DeserializeObject<SubProductDTO>(dto.ToString());
+            if (_SubProductS != null)
+            //if (_SubProduct != null)
             {
-                SubProduct _listProduct = new SubProduct();
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/SubProduct/GetSubProductById/" + _SubProduct.SubproductId);
-                string valorrespuesta = "";
-                _SubProduct.FechaModificacion = DateTime.Now;
-                _SubProduct.UsuarioModificacion = HttpContext.Session.GetString("user");
-                if (result.IsSuccessStatusCode)
+               
+                try
                 {
+                    //_SubProduct = JsonConvert.DeserializeObject<SubProductDTO>(dto.ToString());
+                    SubProduct _listProduct = new SubProduct();
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/SubProduct/GetSubProductById/" + _SubProduct.SubproductId);
+                    string valorrespuesta = "";
+                    _SubProduct.FechaModificacion = DateTime.Now;
+                    _SubProduct.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    if (result.IsSuccessStatusCode)
+                    {
 
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _SubProduct = JsonConvert.DeserializeObject<SubProductDTO>(valorrespuesta);
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _SubProduct = JsonConvert.DeserializeObject<SubProductDTO>(valorrespuesta);
+                    }
+
+                    if (_SubProduct == null) { _SubProduct = new Models.SubProduct(); }
+
+                    if (_SubProduct.SubproductId == 0)
+                    {
+                        _SubProductS.FechaCreacion = DateTime.Now;
+                        _SubProductS.UsuarioCreacion = HttpContext.Session.GetString("user");
+                        var insertresult = await Insert(_SubProductS);
+                    }
+                    else
+                    {
+                        _SubProductS.UsuarioCreacion = _SubProduct.UsuarioCreacion;
+                        _SubProductS.FechaCreacion = _SubProduct.FechaCreacion;
+                        var updateresult = await Update(_SubProduct.SubproductId, _SubProductS);
+                    }
+
                 }
-
-                if (_SubProduct == null) { _SubProduct = new Models.SubProduct(); }
-
-                if (_SubProductS.SubproductId == 0)
+                catch (Exception ex)
                 {
-                    _SubProductS.FechaCreacion = DateTime.Now;
-                    _SubProductS.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_SubProductS);
+                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                    throw ex;
                 }
-                else
-                {
-                    _SubProductS.UsuarioCreacion = _SubProduct.UsuarioCreacion;
-                    _SubProductS.FechaCreacion = _SubProduct.FechaCreacion;
-                    var updateresult = await Update(_SubProduct.SubproductId, _SubProductS);
-                }
-
             }
-            catch (Exception ex)
+            else
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
+                return BadRequest("No llego correctamente el modelo!");
             }
 
             return Json(_SubProduct);
