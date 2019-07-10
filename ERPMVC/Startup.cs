@@ -21,6 +21,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Mvc.Cors.Internal;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -98,6 +99,25 @@ namespace ERPMVC
 
             //services.AddScoped<Filters.SessionsAuthorizationFilter>();
 
+            //services.AddCors(options => options.AddPolicy("ApiCorsPolicy", builder =>
+            //{
+            //    builder.WithOrigins("http://localhost:9200").AllowAnyMethod().AllowAnyHeader();
+            //}));
+
+            services.AddCors(o => o.AddPolicy("AllowAllOrigins", builder =>
+            {
+
+                builder.AllowAnyOrigin()
+                            .AllowAnyMethod()
+                            .AllowAnyOrigin()
+                            .AllowAnyHeader()
+                            //  .WithMethods("GET")
+                            //  .WithOrigins("http://localhost:9200");
+                            .AllowCredentials();
+                      
+                  }));
+
+
             services.AddMvc(config =>
             {
                 //var policy = new AuthorizationPolicyBuilder()
@@ -108,6 +128,13 @@ namespace ERPMVC
             .AddJsonOptions(options => options.SerializerSettings.ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver())
             .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddAutoMapper();
+
+
+            services.Configure<MvcOptions>(options =>
+            {
+                options.Filters.Add(new CorsAuthorizationFilterFactory("AllowAllOrigins"));
+            });
+
 
             services.AddKendo();
 
@@ -292,10 +319,7 @@ namespace ERPMVC
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            app.UseCors(x => x
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader());
+          
 
             app.UseAuthentication();
 
@@ -310,7 +334,18 @@ namespace ERPMVC
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
+
+            //app.UseCors(builder =>
+            //     builder.WithOrigins("http://localhost:9200"));
+
+            app.UseCors("AllowAllOrigins");
+
+            //app.UseCors(builder => builder.WithOrigins("http://localhost:9200")
+            //                  .AllowAnyOrigin()
+            //                  .AllowAnyMethod()
+            //                  .AllowAnyHeader());
+
+         //   app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             var cookiePolicyOptions = new CookiePolicyOptions

@@ -107,89 +107,93 @@ namespace ERPMVC.Controllers
         [HttpGet("[controller]/[action]")]
         public async Task<ActionResult> GetBoleto_EntById([DataSourceRequest]DataSourceRequest request, Boleto_Ent _Boleto_Entp)
         {
-          PesajeDTO _Pesaje = new PesajeDTO();
+            Boleto_Ent _Boleto_Ent = new Boleto_Ent();
             try
             {
 
-                string connetionString = null;
-                OdbcConnection cnn;
-                connetionString = @"Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=C:\Users\tomaturnos\Desktop\Old\Projects\BI\Documentos\ALMACAFE\Integracion balanza\rev_2000.accdb";
-                cnn = new OdbcConnection(connetionString);
-                try
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Boleto_Ent/GetBoleto_EntById/" + _Boleto_Entp.clave_e);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
                 {
-                    cnn.Open();
-                    // Console.WriteLine("Connection Open ! ");
-                   // OdbcConnection connection = new OdbcConnection("");
-                    OdbcCommand command = new OdbcCommand("SELECT * FROM boleto_ent WHERE clave_e = ? ", cnn);
-                    command.Parameters.Add("@clave_e", OdbcType.Int).Value = _Boleto_Entp.clave_e;
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Boleto_Ent = JsonConvert.DeserializeObject<Boleto_Ent>(valorrespuesta);
 
-                    Boleto_Ent _boleta_ent = new Boleto_Ent();
-                    using (OdbcDataReader reader = command.ExecuteReader())
-                    {
-                        while (reader.Read())
-                        {
-                            _boleta_ent.clave_e =   Convert.ToInt64(reader.GetValue(0).ToString());
-                            _boleta_ent.clave_C =   reader.GetValue(1).ToString();
-                            _boleta_ent.clave_o =   reader.GetValue(2).ToString();
-                            _boleta_ent.clave_p =   reader.GetValue(3).ToString();
-                            _boleta_ent.completo =  Convert.ToBoolean(reader.GetValue(4).ToString());
-                            _boleta_ent.fecha_e =   Convert.ToDateTime(reader.GetValue(5).ToString());
-                            _boleta_ent.hora_e =    reader.GetValue(6).ToString();
-                            _boleta_ent.placas =    reader.GetValue(7).ToString();
-
-                            _boleta_ent.conductor = reader.GetValue(8).ToString();
-                            _boleta_ent.peso_e =    Convert.ToInt32(reader.GetValue(9).ToString());
-                            _boleta_ent.observa_e = reader.GetValue(10).ToString();
-                            _boleta_ent.nombre_oe = reader.GetValue(11).ToString();
-                            _boleta_ent.turno_oe =  reader.GetValue(12).ToString();
-                            _boleta_ent.unidad_e =  reader.GetValue(13).ToString();
-
-                            _boleta_ent.bascula_e = reader.GetValue(14).ToString();
-                            _boleta_ent.t_entrada = Convert.ToInt32(reader.GetValue(15).ToString());
-                            _boleta_ent.clave_u = reader.GetValue(16).ToString();
-                            // Word is from the database. Do something with it.
-                        }
-                    }
-
-                    OdbcCommand commandtara = new OdbcCommand("SELECT * FROM tara WHERE t_placas = ? ", cnn);
-                    commandtara.Parameters.Add("@t_placas", OdbcType.VarChar).Value = _boleta_ent.placas;
-                    Tara _Tara = new Tara();
-                    using (OdbcDataReader reader2 = commandtara.ExecuteReader())
-                    {
-                        while (reader2.Read())
-                        {
-                            _Tara.t_placas = reader2.GetValue(0).ToString();
-
-                            _Tara.t_peso = Convert.ToDouble(reader2.GetValue(1).ToString());
-                            _Tara.t_unidad = reader2.GetValue(2).ToString();
-                            _Tara.t_fecha = Convert.ToDateTime(reader2.GetValue(3).ToString());
-                            _Tara.t_captura = reader2.GetValue(4).ToString();
-                            _Tara.t_observaciones = reader2.GetValue(5).ToString();
-                         
-                        }
-                    }
-
-                     _Pesaje.Boleto_Ent = _boleta_ent;
-                    _Pesaje.Tara = _Tara;
-                    cnn.Close();
-                }
-                catch (Exception ex)
-                {
-                    Console.WriteLine("Can not open connection ! " + ex.Message);
                 }
 
-                
-                //string baseadress = config.Value.urlbase;
-                //HttpClient _client = new HttpClient();
-                //_client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                //var result = await _client.GetAsync(baseadress + "api/Boleto_Ent/GetBoleto_Ent");
-                //string valorrespuesta = "";
-                //if (result.IsSuccessStatusCode)
+                if (_Boleto_Ent == null) { _Boleto_Ent = new Boleto_Ent(); }
+
+                //string connetionString = null;
+                //OdbcConnection cnn;
+                //connetionString = @"Driver={Microsoft Access Driver (*.mdb, *.accdb)};DBQ=C:\Users\tomaturnos\Desktop\Old\Projects\BI\Documentos\ALMACAFE\Integracion balanza\rev_2000.accdb";
+                //cnn = new OdbcConnection(connetionString);
+                //try
                 //{
-                //    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                //    _Pesaje = JsonConvert.DeserializeObject<List<Boleto_Ent>>(valorrespuesta);
+                //    cnn.Open();
+                //    // Console.WriteLine("Connection Open ! ");
+                //   // OdbcConnection connection = new OdbcConnection("");
+                //    OdbcCommand command = new OdbcCommand("SELECT * FROM boleto_ent WHERE clave_e = ? ", cnn);
+                //    command.Parameters.Add("@clave_e", OdbcType.Int).Value = _Boleto_Entp.clave_e;
 
+                //    Boleto_Ent _boleta_ent = new Boleto_Ent();
+                //    using (OdbcDataReader reader = command.ExecuteReader())
+                //    {
+                //        while (reader.Read())
+                //        {
+                //            _boleta_ent.clave_e =   Convert.ToInt64(reader.GetValue(0).ToString());
+                //            _boleta_ent.clave_C =   reader.GetValue(1).ToString();
+                //            _boleta_ent.clave_o =   reader.GetValue(2).ToString();
+                //            _boleta_ent.clave_p =   reader.GetValue(3).ToString();
+                //            _boleta_ent.completo =  Convert.ToBoolean(reader.GetValue(4).ToString());
+                //            _boleta_ent.fecha_e =   Convert.ToDateTime(reader.GetValue(5).ToString());
+                //            _boleta_ent.hora_e =    reader.GetValue(6).ToString();
+                //            _boleta_ent.placas =    reader.GetValue(7).ToString();
+
+                //            _boleta_ent.conductor = reader.GetValue(8).ToString();
+                //            _boleta_ent.peso_e =    Convert.ToInt32(reader.GetValue(9).ToString());
+                //            _boleta_ent.observa_e = reader.GetValue(10).ToString();
+                //            _boleta_ent.nombre_oe = reader.GetValue(11).ToString();
+                //            _boleta_ent.turno_oe =  reader.GetValue(12).ToString();
+                //            _boleta_ent.unidad_e =  reader.GetValue(13).ToString();
+
+                //            _boleta_ent.bascula_e = reader.GetValue(14).ToString();
+                //            _boleta_ent.t_entrada = Convert.ToInt32(reader.GetValue(15).ToString());
+                //            _boleta_ent.clave_u = reader.GetValue(16).ToString();
+                //            // Word is from the database. Do something with it.
+                //        }
+                //    }
+
+                //OdbcCommand commandtara = new OdbcCommand("SELECT * FROM tara WHERE t_placas = ? ", cnn);
+                //commandtara.Parameters.Add("@t_placas", OdbcType.VarChar).Value = _boleta_ent.placas;
+                //Tara _Tara = new Tara();
+                //using (OdbcDataReader reader2 = commandtara.ExecuteReader())
+                //{
+                //    while (reader2.Read())
+                //    {
+                //        _Tara.t_placas = reader2.GetValue(0).ToString();
+
+                //        _Tara.t_peso = Convert.ToDouble(reader2.GetValue(1).ToString());
+                //        _Tara.t_unidad = reader2.GetValue(2).ToString();
+                //        _Tara.t_fecha = Convert.ToDateTime(reader2.GetValue(3).ToString());
+                //        _Tara.t_captura = reader2.GetValue(4).ToString();
+                //        _Tara.t_observaciones = reader2.GetValue(5).ToString();
+
+                //    }
                 //}
+
+                // _Pesaje.Boleto_Ent = _boleta_ent;
+                //_Pesaje.Tara = _Tara;
+                //cnn.Close();
+                //}
+                //catch (Exception ex)
+                //{
+                //    Console.WriteLine("Can not open connection ! " + ex.Message);
+                //}
+
+
+
 
 
             }
@@ -200,7 +204,7 @@ namespace ERPMVC.Controllers
             }
 
 
-            return Json(_Pesaje); //_Pesaje.ToDataSourceResult(request);
+            return Json(_Boleto_Ent); //_Pesaje.ToDataSourceResult(request);
 
         }
 

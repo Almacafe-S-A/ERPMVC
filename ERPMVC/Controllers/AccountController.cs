@@ -53,21 +53,9 @@ namespace ERPMVC.Controllers
             List<MessageClassUtil> _message = new List<MessageClassUtil>();
             try
             {
-                //if (ModelState.IsValid)
-                //{
+              
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
-                // ApplicationUser _appuser = new ApplicationUser { Email = model.Email  };
-                //var user = _userManager.FindByEmailAsync(model.Email);
-                //var claims = new List<Claim>
-                //{
-                //    new Claim("user", ""),
-                //    new Claim("role", "Member")
-                //};
-
-                //var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
-                //identity.AddClaim(new Claim(ClaimTypes.Name, _userManager.Users.Username));
-                //  await _signInManager.SignInAsync(new ClaimsPrincipal(new ClaimsIdentity(claims, "Cookies", "user", "role")));
-                // await _signInManager.SignInAsync(_appuser,model.RememberMe);
+             
                 var res = HttpContext.User.Identity.IsAuthenticated;
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -15,6 +16,7 @@ namespace ERPMVC.Controllers
     [Authorize]
     [CustomAuthorization]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    [EnableCors("AllowAllOrigins")]
     public class HomeController : Controller
     {
         // [Authorize(Policy ="Admin")]
