@@ -20,6 +20,8 @@ namespace ERPMVC.Models
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
         public string UsuarioModificacion { get; set; }
+        public Product Product { get; set; }
+        public SubProduct SubProduct { get; set; }
 
     }
 
