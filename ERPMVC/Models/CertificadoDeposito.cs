@@ -110,7 +110,7 @@ namespace ERPMVC.Models
         /// <summary>
         /// Totales de Detalle de Linea
         /// </summary>
-
+        public string Impreso { get; set; }
         public List<CertificadoLine> _CertificadoLine { get; set; } = new List<CertificadoLine>();
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }

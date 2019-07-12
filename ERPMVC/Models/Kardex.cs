@@ -52,13 +52,15 @@ namespace ERPMVC.Models
 
         [Display(Name = "Fecha de creación")]
         public DateTime FechaCreacion { get; set; }
-
         [Display(Name = "Fecha de modificación")]
         public DateTime FechaModificacion { get; set; }
-
         public string UsuarioCreacion { get; set; }
         public string UsuarioModificacion { get; set; }
 
+        public string Impreso { get; set; }
+
         public List<KardexLine> _KardexLine { get; set; } = new List<KardexLine>();
     }
+
+
 }

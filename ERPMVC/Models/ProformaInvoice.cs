@@ -112,6 +112,8 @@ namespace ERPMVC.Models
         public string UsuarioCreacion { get; set; }
         public string UsuarioModificacion { get; set; }
 
+        public string Impreso { get; set; }
+
         public List<ProformaInvoiceLine> ProformaInvoiceLine { get; set; } = new List<ProformaInvoiceLine>();
     }
 }

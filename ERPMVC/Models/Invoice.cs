@@ -107,7 +107,6 @@ namespace ERPMVC.Models
         [Display(Name = "Impuesto 18%")]
         public double Tax18 { get; set; }
 
-
         [Display(Name = "Flete")]
         public double Freight { get; set; }
 
@@ -116,22 +115,19 @@ namespace ERPMVC.Models
 
         [Display(Name = "Total exonerado")]
         public double TotalExonerado { get; set; }
-
         [Display(Name = "Total Gravado")]
         public double TotalGravado { get; set; }
-
         [Display(Name = "Total Gravado 18%")]
         public double TotalGravado18 { get; set; }
-
         public double Total { get; set; }
-
         public Int64 IdEstado { get; set; }
         public string Estado { get; set; }
-
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
         public string UsuarioModificacion { get; set; }
+
+        public string Impreso { get; set; }
 
         public List<InvoiceLine> InvoiceLines { get; set; } = new List<InvoiceLine>();
 

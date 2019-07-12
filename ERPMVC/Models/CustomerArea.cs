@@ -28,6 +28,12 @@ namespace ERPMVC.Models
         [Display(Name = "Producto")]
         public string ProductName { get; set; }
 
+        [Display(Name = "Unidad de medida")]
+        public Int64 UnitOfMeasureId { get; set; }
+
+        [Display(Name = "Unidad de medida")]
+        public string UnitOfMeasureName { get; set; }
+
         [Display(Name = "Sucursal")]
         public Int64 BranchId { get; set; }
 

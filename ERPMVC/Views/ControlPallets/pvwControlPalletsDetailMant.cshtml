@@ -20,7 +20,7 @@
     }
 
     function CalcularTotal() {
-        debugger;
+       // debugger;
         var Ancho = Number($("#Ancho").val());
         var Alto = Number($("#Alto").val());
         var Otros = Number($("#Otros").val());
@@ -32,51 +32,57 @@
 
 
     function CalcularTotalDocumento() {
-        var freight = $("#Freight").val()===""?0:$("#Freight").val();
+      //  var freight = $("#Freight").val()===""?0:$("#Freight").val();
 
+        var notification = $("#notification").data("kendoNotification");
         var displayedData = $("#gridControlPalletsDetail").data().kendoGrid.dataSource.view();
-        var total = 0;
+        var total = 0, TotalSacosPolietileno = 0, TotalSacosYute=0;
 
             //totaldescuento = 0, totalimpuesto = 0, totalimpuesto18 = 0, totalmonto = 0;
         //var TotalExento = 0, TotalExonerado = 0, TotalGravado = 0,TotalGravado18=0;
-
+        console.log(displayedData);
         $(displayedData).each(function (index, element) {
             var t = JSON.parse(JSON.stringify(element));
 
             total = total + t["Totallinea"];       
+            TotalSacosPolietileno += t["cantidadPoliEtileno"];
+            TotalSacosYute += t["cantidadYute"];
 
        });      
 
        // setearvalor('SubTotal', TotalExento);
         setearvalor('TotalSacos', total);
-       
-        
+        setearvalor('TotalSacosPolietileno', TotalSacosPolietileno);
+        setearvalor('TotalSacosYute', TotalSacosYute);
     
     }
 
     function AddControlPalletsDetail(e) {
        // e.preventDefault();
         var notification = $("#notification").data("kendoNotification");
+        var validator = $("#frmControlPalletsLine").data("kendoValidator");
 
-        RefreshControlPalletsDetail();
-        //if ($("#SubProductId").val() > 0) {
-        //    try {
-        //        $("#btnActualizarCotizacionLinea").prop("disabled", true);
-        //        RefreshCotizacionesDetail();
+        var totaltipo = Number($("#cantidadYute").val()) + Number($("#cantidadPoliEtileno").val());
+        var Totallinea = Number($("#Totallinea").val());
 
-        //    } catch (e) {
-        //        $("#btnActualizarCotizacionLinea").prop("disabled", false);
-        //    }
-        //}
-        //else {
-        //    notification.show({
-        //        title: "Validación",
-        //        message: "Seleccion el SubProducto!"
-        //    }, "error");
+    //    console.log(totaltipo);
+      //  console.log(Totallinea);
+        if (validator.validate()) {
+            if (totaltipo == Totallinea) {
+                RefreshControlPalletsDetail();
+               // completedorderlinemant();
+               
+            }
+            else {
+                notification.show({
+                    title: "Validación",
+                    message: "Haga coincidir el total con la suma de cantidades de sacos.!"
+                }, "error");
 
-        //    return;
-        //}
-
+                return false;
+            }
+        }
+   
 
     }
 
@@ -142,8 +148,7 @@
     }
 
     function AgregarCustomerCondition() {
-        var notification = $("#notification").data("kendoNotification");
-               
+        var notification = $("#notification").data("kendoNotification");               
 
         if ($("#SalesOrderId").val() > 0) {
             $('#myModalCustomerConditions').modal('show');
@@ -173,10 +178,13 @@
             <div class="modal-body">
 
                 @{
-              var messages1 = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+                    var messages1 = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },                                                                
                                                             {"required","Valor requerido" }
+
                                                          };
-              var rules1 = new Dictionary<string, string>() { { "custom", "customFunction" } };
+                    var rules1 = new Dictionary<string, string>() { { "custom", "customFunction" }
+                         
+                    };
                 }
 
                 @*<div class="row">
@@ -203,11 +211,12 @@
                             <div class="card-body">
                                 <form id="frmControlPalletsLine"
                                       kendo-validator="true" kendo-messages="messages1" kendo-rules="rules1"
-                                      data-ajax-method="post"                                   
+                                      data-ajax-method="post"
+                                      method="post"
                                       data-ajax-complete="completedorderlinemant"
-                                      data-ajax-begin="AddControlPalletsDetail"
+                                      data-ajax-begin="return AddControlPalletsDetail();"
                                       data-ajax="true"
-                                      method="post" class="validation-wizard wizard-circle">
+                                      class="validation-wizard wizard-circle">
                                     <div class="form-body">
                                         <hr>
 
@@ -220,26 +229,25 @@
                                                 </div>
                                             </div>
 
+                                            @*<div class="col-md-4">
+                    <div class="form-group">
+                        <label asp-for="Ancho" class="control-label" style="width:100%"></label>
+
+                        <kendo-numerictextbox name="Ancho"
+                                              format="n2"
+                                              min="0"
+                                              step="1"
+                                              required
+                                              onchange="CalcularTotal();"
+                                              style="width:100%"
+                                              value="Model.Ancho"></kendo-numerictextbox>
+                        <span asp-validation-for="Ancho" class="text-danger"></span>
+                    </div>
+                </div>*@
 
 
 
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label asp-for="Ancho" class="control-label" style="width:100%"></label>
-                                                    @*<input type="text" id="Ancho" asp-for="Ancho" class="form-control" style="width:100%" />*@
-                                                    <kendo-numerictextbox name="Ancho"
-                                                                          format="n2"
-                                                                          min="0"
-                                                                          step="1"
-                                                                          required
-                                                                          onchange="CalcularTotal();"
-                                                                          style="width:100%"
-                                                                          value="Model.Ancho"></kendo-numerictextbox>
-                                                    <span asp-validation-for="Ancho" class="text-danger"></span>
-                                                </div>
-                                            </div>
 
-                                           
                                         </div>
 
                                         <div class="row">
@@ -256,6 +264,21 @@
                                                                           style="width:100%"
                                                                           value="Model.Alto"></kendo-numerictextbox>
                                                     <span asp-validation-for="Alto" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Ancho" class="control-label" style="width:100%"></label>
+                                                    @*<input type="text" id="Ancho" asp-for="Ancho" class="form-control" style="width:100%" />*@
+                                                    <kendo-numerictextbox name="Ancho"
+                                                                          format="n2"
+                                                                          min="0"
+                                                                          step="1"
+                                                                          required
+                                                                          onchange="CalcularTotal();"
+                                                                          style="width:100%"
+                                                                          value="Model.Ancho"></kendo-numerictextbox>
+                                                    <span asp-validation-for="Ancho" class="text-danger"></span>
                                                 </div>
                                             </div>
 
@@ -275,11 +298,46 @@
                                             </div>
 
 
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="cantidadYute" class="control-label" style="width:100%"></label>
+
+                                                    <kendo-numerictextbox name="cantidadYute"
+                                                                          format="n2"
+                                                                          min="0"
+                                                                          decimals="0"
+                                                                          step="1"
+                                                                          required
+                                                                          onchange="CalcularTotal();"
+                                                                          style="width:100%"
+                                                                          value="Model.cantidadYute"></kendo-numerictextbox>
+                                                    <span asp-validation-for="cantidadYute" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="cantidadPoliEtileno" class="control-label" style="width:100%"></label>
+                                                    <kendo-numerictextbox name="cantidadPoliEtileno"
+                                                                          format="n2"
+                                                                          decimals="0"
+                                                                          min="0"
+                                                                          step="1"
+                                                                          required
+                                                                          onchange="CalcularTotal();"
+                                                                          style="width:100%"
+                                                                          value="Model.cantidadPoliEtileno"></kendo-numerictextbox>
+                                                    <span asp-validation-for="cantidadPoliEtileno" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Totallinea" class=" control-label" style="width:100%"></label>
                                                     <kendo-numerictextbox name="Totallinea"
-                                                                           
                                                                           format="n2"
                                                                           id="Totallinea"
                                                                           spinners="false"
@@ -294,15 +352,14 @@
                                                 </div>
                                             </div>
                                         </div>
-
-
-                                     
-
                                     </div>
+
                                     <div class="row">
-                                        <button id="btnActualizarCotizacionLinea" type="submit" class="form-control">Actualizar</button>
+                                        <button id="btnActualizarCotizacionLinea" type="submit"  class="form-control">Actualizar</button>
                                     </div>
+
                                 </form>
+                               
                             </div>
                         </div>
                     </div>

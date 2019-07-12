@@ -84,6 +84,8 @@ namespace ERPMVC.Models
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
         public string UsuarioModificacion { get; set; }
+
+        public string Impreso { get; set; }
         public List<EndososTalonLine> EndososTalonLine { get; set; } = new List<EndososTalonLine>();
     }
 }

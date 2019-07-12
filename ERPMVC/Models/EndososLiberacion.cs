@@ -29,6 +29,8 @@ namespace ERPMVC.Models
         [Display(Name = "Saldo")]
         public double Saldo { get; set; }
 
+        public string Impreso { get; set; }
+
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
