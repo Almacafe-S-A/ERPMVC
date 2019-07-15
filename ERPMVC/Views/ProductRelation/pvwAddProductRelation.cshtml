@@ -1,0 +1,221 @@
+﻿@model ERPMVC.DTO.ProductRelationDTO
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+           // {"required","Valor requerido" }
+        };
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<script>
+
+        function customFunction(input) {
+
+            if (input.attr('name') === "BranchId" && input.val() === "0") {
+                return false;
+            }
+
+        }
+
+
+</script>
+
+
+
+<div id="ModalProductRelation" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">ProductRelationo</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmProductRelation" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveProductRelation"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <h3 class="card-title">ProductRelation</h3>
+                                        <hr>
+
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="RelationProductId" class=" control-label" style="width:100%">RelaciónId</label>
+                                                    <input type="text" asp-for="RelationProductId" name="Barcode" class="form-control" autocomplete="off" style="width:100%" />
+                                                    <span asp-validation-for="RelationProductId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="ProductId" class="control-label"></label>
+                                                    <kendo-dropdownlist name="IdEstado"
+                                                                        for="@Model.ProductId"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Producto"
+                                                                        datatextfield="ProductName"
+                                                                        datavaluefield="ProductId"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetProduct", "Product")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="SubProductId" class="control-label"></label>
+                                                    <kendo-dropdownlist name="IdEstado"
+                                                                        for="@Model.SubProductId"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Sub Producto"
+                                                                        datatextfield="SubProductId"
+                                                                        datavaluefield="SubProductId"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetSubProduct", "SubProduct")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+
+
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button id="btnProductRelation" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+        function SaveProductRelation(e) {
+
+            var notification = $("#notification").data("kendoNotification");
+           // e.preventDefault();
+            $("#btnProductRelation").hide();
+            $("#btnProductRelation").prop("disabled", true);
+
+            var displayedData = $("#gridProductRelation").data().kendoGrid.dataSource.view();
+
+            var dataObject = {
+                'ProductRelationId': $("#ProductRelationId").val() === "" ? "0" : $("#ProductRelationId").val(),
+                'ProductRelationName': $("#ProductRelationName").val(),
+                'ProductRelationCode': $("#ProductRelationCode").val(),
+                'Barcode': $("#Barcode").val(),
+                'Description': $("#Description").val(),
+
+                'UnitOfMeasureId': $("#UnitOfMeasureId").val(),
+
+
+                'DefaultBuyingPrice': $("#DefaultBuyingPrice").val(),
+                'DefaultSellingPrice': $("#DefaultSellingPrice").val(),
+                'BranchId': $("#BranchId").val(),
+                'IdEstado': $("#IdEstado").val(),
+                'Estado': $("#IdEstado").data("kendoDropDownList").text(),
+
+                'CurrencyId': $("#CurrencyId").val(),
+
+                           //'FechaCreacion': $("#FechaCreacion").val(),
+                           //'FechaModificacion':$("#FechaModificacion").val(),
+                           //'UsuarioCreacion':$("#UsuarioCreacion").val(),
+                           //'UsuarioModificacion':$("#UsuarioModificacion").val(),
+                           '_ProductRelation': displayedData
+            };
+
+           // console.log(JSON.stringify(dataObject));
+            //var form = $("#frmNumeracion");
+           // form.validate();
+
+            var validator = $("#frmProductRelation").data("kendoValidator");
+                 var status = $(".status");
+            console.log(validator)
+            console.log('VERIFICAR',displayedData.length)
+            if (displayedData.length > 0) {
+                if (validator.validate()) {
+
+                    $.ajax({
+                        url: '@Url.Action("SaveProductRelation", "ProductRelation")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+
+                            //notification.show({
+                            //    message: "Guardado correctamente!"
+                            //}, "upload-success");
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: 'Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+
+                            RefreshCotizaciones();
+
+                            $('#ModalProductRelation').modal('hide');
+
+
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            console.log('VERIFICAR')
+
+                            notification.show({
+                                title: "Validacion",
+                                message: textStatus + ": " + XMLHttpRequest.responseText
+                            }, "error");
+
+                        }
+                    });
+
+                }
+                else {
+                    status.text("Oops! There is invalid data in the form.")
+                        .removeClass("valid")
+                        .addClass("invalid");
+                }
+            }
+            else {
+                notification.show({
+                    title: "Validacion",
+                    message: "Debe agregar los ProductRelationos!"
+                }, "error");
+               // notification.show("New E-mail","Debe agregar los ProductRelationos", "info");
+                //alert('Debe agregar los ProductRelationos!!');
+            }
+
+            $("#btnProductRelation").show();
+            $("#btnProductRelation").prop("disabled", false);
+    }
+</script>
