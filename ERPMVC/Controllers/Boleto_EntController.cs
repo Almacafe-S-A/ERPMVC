@@ -106,7 +106,7 @@ namespace ERPMVC.Controllers
 
         [HttpGet("[controller]/[action]")]
         public async Task<ActionResult> GetBoleto_EntById([DataSourceRequest]DataSourceRequest request, Boleto_Ent _Boleto_Entp)
-        {
+       {
             Boleto_Ent _Boleto_Ent = new Boleto_Ent();
             try
             {

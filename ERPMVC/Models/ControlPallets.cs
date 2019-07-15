@@ -60,6 +60,9 @@ namespace ERPMVC.Models
 
         public string Impreso { get; set; }
 
+        [Display(Name = "Boleta de peso")]
+        public Int64 WeightBallot { get; set; }
+
         public List<ControlPalletsLine> _ControlPalletsLine = new List<ControlPalletsLine>();
 
     }

@@ -75,18 +75,18 @@ namespace ERPMVC.Controllers
             List<ControlPalletsLine> _ControlPalletsLine = new List<ControlPalletsLine>();
             try
             {
-                if (HttpContext.Session.Get("listadoproductos") == null
-                   || HttpContext.Session.GetString("listadoproductos") == "")
+                if (HttpContext.Session.Get("listadoproductospallet") == null
+                   || HttpContext.Session.GetString("listadoproductospallet") == "")
                 {
                     if (_ControlPalletsLinep.ControlPalletsId > 0)
                     {
                         string serialzado = JsonConvert.SerializeObject(_ControlPalletsLinep).ToString();
-                        HttpContext.Session.SetString("listadoproductos", serialzado);
+                        HttpContext.Session.SetString("listadoproductospallet", serialzado);
                     }
                 }
                 else
                 {
-                    _ControlPalletsLine = JsonConvert.DeserializeObject<List<ControlPalletsLine>>(HttpContext.Session.GetString("listadoproductos"));
+                    _ControlPalletsLine = JsonConvert.DeserializeObject<List<ControlPalletsLine>>(HttpContext.Session.GetString("listadoproductospallet"));
                 }
 
 
@@ -113,7 +113,7 @@ namespace ERPMVC.Controllers
                     if (_ControlPalletsLinep.Ancho > 0)
                     {
                         _ControlPalletsLine.Add(_ControlPalletsLinep);
-                        HttpContext.Session.SetString("listadoproductos", JsonConvert.SerializeObject(_ControlPalletsLine).ToString());
+                        HttpContext.Session.SetString("listadoproductospallet", JsonConvert.SerializeObject(_ControlPalletsLine).ToString());
                     }
                 }
 
@@ -247,17 +247,36 @@ namespace ERPMVC.Controllers
         {
             try
             {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/ControlPalletsLine/Delete", _ControlPalletsLine);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
+                List<ControlPalletsLine> _GoodsReceivedLineLIST =
+                    JsonConvert.DeserializeObject<List<ControlPalletsLine>>(HttpContext.Session.GetString("listadoproductospallet"));
+
+                if (_GoodsReceivedLineLIST != null)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ControlPalletsLine = JsonConvert.DeserializeObject<ControlPalletsLine>(valorrespuesta);
+                    _GoodsReceivedLineLIST = _GoodsReceivedLineLIST
+                           .Where(q => q.Alto != _ControlPalletsLine.Alto)
+                           .Where(q => q.Ancho != _ControlPalletsLine.Ancho)
+                           .Where(q => q.Otros != _ControlPalletsLine.Otros)
+                           .Where(q => q.cantidadPoliEtileno != _ControlPalletsLine.cantidadPoliEtileno)
+                           .Where(q => q.cantidadYute != _ControlPalletsLine.cantidadYute)
+                           // .Where(q => q.UnitOfMeasureId != _GoodsReceivedLine.UnitOfMeasureId)
+                           .ToList();
+
+                    HttpContext.Session.SetString("listadoproductospallet", JsonConvert.SerializeObject(_GoodsReceivedLineLIST));
                 }
+
+
+                //string baseadress = config.Value.urlbase;
+                //HttpClient _client = new HttpClient();
+                //_client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                //var result = await _client.PostAsJsonAsync(baseadress + "api/ControlPalletsLine/Delete", _ControlPalletsLine);
+                //string valorrespuesta = "";
+                //if (result.IsSuccessStatusCode)
+                //{
+                //    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                //    _ControlPalletsLine = JsonConvert.DeserializeObject<ControlPalletsLine>(valorrespuesta);
+                //}
 
             }
             catch (Exception ex)

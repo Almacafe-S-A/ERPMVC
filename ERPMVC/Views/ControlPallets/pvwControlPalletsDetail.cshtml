@@ -32,6 +32,7 @@
 
     function AddCotizacionDetalle() {
         var notification = $("#notification").data("kendoNotification");
+        $('#myModalControlPalletsLine').find(':input').not('#ControlPalletsId :submit').val('0');
       //  console.log($("#ProductId").val());
         if ($("#ProductId").val() !== '' && $("#ProductId").val() !== '0'  ) {
 
@@ -81,42 +82,111 @@
         var notification = $("#notification").data("kendoNotification");
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
 
-        var subproducto = 0;
-        var dataObject = { 'SalesOrderLineId': dataItem.SalesOrderLineId };
-              $.ajax({
-                    url: '@Url.Action("pvwSalesOrderDetailMant", "ControlPalletsLine")',
-                    method: 'POST',
-                    datatype: "json",
-                    contentType: 'application/json',
-                    async: false,
-                    data: JSON.stringify(dataObject),
-                    success: function (data) {
-                        $("#ControlPalletsLineMant").html('');
-                        $("#ControlPalletsLineMant").html(data);
-                        var txt = $(data);
-                        var found = $("#SubProductId", txt);
-                        subproducto = $(found).val();
-                    },
-                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+        if (dataItem.ControlPalletsLineId > 0) {
+            var subproducto = 0;
+            var dataObject = { 'ControlPalletsLineId': dataItem.ControlPalletsLineId };
+            $.ajax({
+                url: '@Url.Action("pvwSalesOrderDetailMant", "ControlPalletsLine")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    $("#ControlPalletsLineMant").html('');
+                    $("#ControlPalletsLineMant").html(data);
+                    var txt = $(data);
+                    var found = $("#SubProductId", txt);
+                    subproducto = $(found).val();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
 
-                      //  $("#btngenerarfactura").show();
-                        notification.show({
-                            title: "Validacion",
-                            message: textStatus + ": " + XMLHttpRequest.responseText
-                        }, "error");
+                    //  $("#btngenerarfactura").show();
+                    notification.show({
+                        title: "Validacion",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
 
-                    }
-              });
+                }
+            });
+        }
+        else {
+            $("#ControlPalletsLineId").val(dataItem.ControlPalletsLineId);
+            var Ancho = $("#Ancho").data("kendoNumericTextBox");
+            Ancho.value(dataItem.Ancho);
+            Ancho.trigger('change');
+
+            var Alto = $("#Alto").data("kendoNumericTextBox");
+            Alto.value(dataItem.Alto);
+            Alto.trigger('change');
+
+            var Otros = $("#Otros").data("kendoNumericTextBox");
+            Otros.value(dataItem.Otros);
+            Otros.trigger('change');
+
+
+            var cantidadPoliEtileno = $("#cantidadPoliEtileno").data("kendoNumericTextBox");
+            cantidadPoliEtileno.value(dataItem.cantidadPoliEtileno);
+            cantidadPoliEtileno.trigger('change');
+
+            var cantidadYute = $("#cantidadYute").data("kendoNumericTextBox");
+            cantidadYute.value(dataItem.cantidadYute);
+            cantidadYute.trigger('change');
+
+            
+            var Totallinea = $("#Totallinea").data("kendoNumericTextBox");
+            Totallinea.value(dataItem.Totallinea);
+            Totallinea.trigger('change');
+        }
 
 
      
-        $("#frmSalesOrderLine :input").prop("disabled", true);
+        $("#frmControlPalletsLine :input").prop("disabled", true);
       //  llenarsubproduct();
-        var combobox = $('#SubProductId').getKendoDropDownList();
-        combobox.value(subproducto);
-        combobox.trigger('change');      
-        $('#myModalSalesOrderLine').modal('show');
+        //var combobox = $('#SubProductId').getKendoDropDownList();
+        //combobox.value(subproducto);
+        //combobox.trigger('change');      
+        $('#myModalControlPalletsLine').modal('show');
        
+    }
+
+        function Delete(e) {
+
+        e.preventDefault();
+        if (confirm('Esta seguro que desea eliminar la fila?')) {
+            var notification = $("#notification").data("kendoNotification");
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+            $.ajax({
+                url: '@Url.Action("Delete", "ControlPalletsLine")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataItem),
+                success: function (data) {
+                    //$("#ControlPalletsLineMant").html('');
+                    //$("#ControlPalletsLineMant").html(data);
+                    //var txt = $(data);
+                    //var found = $("#SubProductId", txt);
+                    //subproducto = $(found).val();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    //  $("#btngenerarfactura").show();
+                    notification.show({
+                        title: "Validacion",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+
+                }
+            });
+
+            var grid = $("#gridControlPalletsDetail").data("kendoGrid");     
+            grid.dataSource.remove(dataItem);
+            //Sync it with the grid
+            //grid.dataSource.sync();
+        }
     }
 </script>
 
@@ -131,7 +201,11 @@
                                           {
                                               columns.Command(command =>
                                               {
-                                                  command.Custom("Editar").Click("EditControlPalletDetalle");
+                                                  if (Model.editar == 1)
+                                                  {
+                                                      command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+                                                  }
+                                                  command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditControlPalletDetalle");
                                                   // command.Custom("Imprimir").Click("ImprimirCotizacion");
                                                   //  command.Edit(); command.Destroy();
                                               }).Width(150);
@@ -162,6 +236,7 @@
                                             .Sortable()
                                             .AutoBind(true)
                                             .Pageable()
+                                            
                                             .Filterable()
                                             .Scrollable()
                                             // .ClientDetailTemplateId("template")
@@ -177,7 +252,7 @@
                                            dataSource
                                            //.Ajax()
                                            .WebApi()
-
+                                           .PageSize(100)
                                             .ServerOperation(true)
                                             .Model(model =>
                                             {
@@ -194,8 +269,8 @@
                                             })
                                             .Read(read => read.Action("GetControlPalletsLineByControlPalletId", "ControlPalletsLine").Data("GetControlPalletsId"))
                                             //.Create(create => create.Action("Insert", "SalesOrderLine"))
-                                            //.Update(update => update.Action("Update", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
-                                            //.Destroy(destroy => destroy.Action("Delete", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
+                                            //.Update(update => update.Action("Update", "SalesOrderLine", new { ControlPalletsLineId = "{0}" }))
+                                            //.Destroy(destroy => destroy.Action("Delete", "SalesOrderLine", new { ControlPalletsLineId = "{0}" }))
                                       )
         )
 

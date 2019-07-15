@@ -67,7 +67,7 @@ namespace ERPMVC.Models
         [Display(Name = "Estado")]
         public string Estado { get; set; }
 
-        [Display(Name = "Currency")]
+        [Display(Name = "Moneda")]
         public int CurrencyId { get; set; }
 
         [Display(Name = "Moneda tasa")]

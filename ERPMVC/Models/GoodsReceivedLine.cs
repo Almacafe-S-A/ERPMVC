@@ -37,7 +37,7 @@ namespace ERPMVC.Models
         [Display(Name = "Estiba")]
         public Int64 ControlPalletsId { get; set; }
         [Display(Name = "Cantidad")]
-        public int Quantity { get; set; }
+        public double Quantity { get; set; }
         [Display(Name = "Sacos")]
         public int QuantitySacos { get; set; }
 

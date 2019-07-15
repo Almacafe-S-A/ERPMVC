@@ -41,9 +41,7 @@
 
         if (input.attr('name') === "Quantity" && input.val() == 0) {
             return false;
-        }
-
-      
+        }      
 
         if (input.attr('name') === "Price" && input.val() == 0) {
             return false;
@@ -120,7 +118,7 @@
                                                                      async: false,
                                                                      data: dataObject,
                                                                      success: function (data) {
-                                                                        console.log(data);
+                                                                        //console.log(data);
 
                                                                          $("#CustomerId").data("kendoDropDownList").value(data.CustomerId);
                                                                          $("#CustomerId").data("kendoDropDownList").select(data.CustomerId);
@@ -349,6 +347,90 @@
 
                                     </div>
 
+                                    <div class="row">
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <script>
+                                                    function GetBoletaPeso() {
+                                                        var dataObject = { 'clave_e': $("#WeightBallot").val()};
+                                                        $.ajax({
+                                                            url: '@Url.Action("GetBoleto_EntById", "Boleto_Ent")',
+                                                            method: 'GET',
+                                                            datatype: "json",
+                                                            contentType: 'application/json',
+                                                            async: false,
+                                                            data: dataObject,
+                                                            success: function (result) {
+                                                                //console.log('Restful API:');
+                                                                // console.log(result);
+
+                                                                var pesobruto = (result.Boleto_Sal.peso_n / 100);
+                                                                setearvalor("QQPesoBruto", pesobruto);
+
+                                                                var tarapolietileno = ($("#TotalSacosPolietileno").val() * 0.5)/100;
+                                                                var tarayute = ($("#TotalSacosYute").val() * 1)/100;
+                                                                var ts = tarapolietileno + tarayute;
+
+                                                                setearvalor("Tara", ts);
+                                                                setearvalor("QQPesoNeto", pesobruto - ts);
+                                                                
+
+                                                                if (result.clave_e == 0) {
+                                                                    //Web api local
+                                                                    var urlbase = "http://localhost:9200/api/code"
+                                                                    var dataObject2 = { 'id': $("#WeightBallot").val() };
+
+                                                                    //$.get(urlbase + '/' + $("#WeightBallot").val(), function (responseText) {
+                                                                    //    alert(responseText);
+                                                                    //});                                                             
+
+                                                                    $.ajax({
+                                                                        url: urlbase,
+                                                                        type: 'GET',
+                                                                        method: 'GET',
+                                                                        cache: 'true',
+                                                                        dataType: 'jsonp',
+                                                                        // contentType: 'application/json',
+                                                                        data: dataObject2,
+                                                                        async: false,
+                                                                        success: function (json) {
+                                                                            console.log(json);
+
+                                                                        },
+                                                                        error: function (parsedjson, textStatus, errorThrown) {
+
+                                                                            $('body').append(
+                                                                                "parsedJson status: " + parsedjson.status + '</br>' +
+                                                                                "errorStatus: " + textStatus + '</br>' +
+                                                                                "errorThrown: " + errorThrown);
+
+                                                                        }
+                                                                    });
+
+                                                                }
+
+                                                            },
+                                                             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                                                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                                                              }
+                                                         });
+                                                    }
+                                                </script>
+                                                <label asp-for="WeightBallot" class="control-label" style="width:100%"></label>
+                                                <kendo-numerictextbox name="WeightBallot"
+                                                                      format="n"
+                                                                      required
+                                                                      min="0"
+                                                                      spinners="false"
+                                                                      max="99999999"
+                                                                       onchange="GetBoletaPeso()"
+                                                                      step="1"
+                                                                      style="width: 100%;"
+                                                                      value="Model.WeightBallot"></kendo-numerictextbox>
+                                                <span asp-validation-for="WeightBallot" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                    </div>
 
 
                                     <div class="row">
@@ -569,6 +651,53 @@
                                                                 <span asp-validation-for="TotalSacosPolietileno" class="text-danger"></span>
                                                             </dd>
 
+
+                                                            <dt>
+                                                                <label asp-for="QQPesoBruto" class=" control-label"></label>
+                                                            </dt>
+                                                            <dd>
+                                                                <kendo-numerictextbox name="QQPesoBruto"
+                                                                                      format="n2"
+                                                                                      style="width: 100%;"
+                                                                                      min="0" disabled
+                                                                                      max="999999999"
+                                                                                      step="1"
+                                                                                      value="Model.QQPesoBruto"></kendo-numerictextbox>
+                                                                <span asp-validation-for="QQPesoBruto" class="text-danger"></span>
+                                                            </dd>
+
+
+                                                            <dt>
+                                                                <label asp-for="Tara" class=" control-label"></label>
+                                                            </dt>
+                                                            <dd>
+                                                                <kendo-numerictextbox name="Tara"
+                                                                                      format="n2"
+                                                                                      style="width: 100%;"
+                                                                                      min="0" disabled
+                                                                                      max="999999999"
+                                                                                      step="1"
+                                                                                      value="Model.Tara"></kendo-numerictextbox>
+                                                                <span asp-validation-for="Tara" class="text-danger"></span>
+                                                            </dd>
+
+                                                            <dt>
+                                                                <label asp-for="QQPesoNeto" class=" control-label"></label>
+                                                            </dt>
+                                                            <dd>
+                                                                <kendo-numerictextbox name="QQPesoNeto"
+                                                                                      format="n2"
+                                                                                      style="width: 100%;"
+                                                                                      required
+                                                                                      min="0" disabled
+                                                                                      max="999999999"
+                                                                                      step="1"
+                                                                                      value="Model.QQPesoNeto"></kendo-numerictextbox>
+                                                                <span asp-validation-for="QQPesoNeto" class="text-danger"></span>
+                                                            </dd>
+
+
+
                                                             <dt>
                                                                 <label asp-for="TotalSacos" class="control-label"></label>
                                                             </dt>
@@ -635,6 +764,7 @@
             'ControlPalletsId': $("#ControlPalletsId").val() === "" ? "0" : $("#ControlPalletsId").val(),
             'Motorista': $("#Motorista").val(),
             'WarehouseId': $("#WarehouseId").val(),
+         
             'DocumentDate': $("#DocumentDate").getKendoDateTimePicker().value().toJSON(),
             'ProductId': $("#ProductId").val(),
             'DescriptionProduct': $("#ProductId").data("kendoDropDownList").text(),
@@ -654,7 +784,10 @@
             'QQPesoFinal': $("#QQPesoFinal").val(),
             'CustomerId': $("#CustomerId").val(),
             'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
-            'BranchId': $("#BranchId").val() ,
+            'BranchId': $("#BranchId").val(),
+            'WeightBallot': $("#WeightBallot").val(),
+            'TotalSacosPolietileno': $("#TotalSacosPolietileno").val(),
+            'TotalSacosYute': $("#TotalSacosYute").val(),
             '_ControlPalletsLine': displayedData
         }; 
 
