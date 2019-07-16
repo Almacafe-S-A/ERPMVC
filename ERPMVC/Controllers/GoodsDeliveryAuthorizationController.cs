@@ -248,7 +248,8 @@ namespace ERPMVC.Controllers
                                                    select new GoodsDeliveryAuthorization
                                        {
                                            GoodsDeliveryAuthorizationId = c.GoodsDeliveryAuthorizationId,
-                                           CustomerName ="Numero de autorización"+ c.GoodsDeliveryAuthorizationId + "  ||Nombre:" + c.CustomerName + " ||Fecha: " + c.DocumentDate + " ||Fecha de autorización:"+c.AuthorizationDate + " || Total:" + c.TotalCertificado,
+                                           CustomerName ="Numero de autorización"+ c.GoodsDeliveryAuthorizationId + "  ||Nombre:" + c.CustomerName + " ||Fecha: " 
+                                             + c.DocumentDate + " ||Fecha de autorización:"+c.AuthorizationDate + " || Total Certificado:" + c.TotalCertificado +" || Total Financiado:"+c.TotalFinanciado,
                                            DocumentDate = c.DocumentDate,
 
                                        }

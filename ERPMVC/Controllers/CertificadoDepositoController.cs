@@ -392,10 +392,10 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpGet("[controller]/[action]/{id}")]
+        [HttpGet]
         public ActionResult SFCertificadoDeposito(Int64 id)
         {
-
+            
             CertificadoDepositoDTO _CertificadoDepositoDTO = new CertificadoDepositoDTO { IdCD = id, };
 
             return View(_CertificadoDepositoDTO);

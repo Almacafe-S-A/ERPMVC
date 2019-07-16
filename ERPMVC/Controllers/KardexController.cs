@@ -34,6 +34,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> pvwKardex(Int64 Id = 0)
         {
             Kardex _Kardex = new Kardex();

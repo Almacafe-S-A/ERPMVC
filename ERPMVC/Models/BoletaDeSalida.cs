@@ -14,8 +14,8 @@ namespace ERPMVC.Models
         public Int64 BoletaDeSalidaId { get; set; }
 
         [Display(Name = "C/E No.")]
-        public Int64 NoEntrega { get; set; }
-        
+        public Int64 GoodsDeliveredId { get; set; }
+
         [Display(Name = "A/R No.")]
         public Int64 GoodsDeliveryAuthorizationId { get; set; }
 
