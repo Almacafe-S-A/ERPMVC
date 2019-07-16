@@ -106,51 +106,52 @@ namespace ERPMVC.Controllers
 
         }
 
-        
 
-
-        
-
-
-        [HttpPost]
-        public async Task<ActionResult<ProductRelation>> SaveProductRelation([FromBody]ProductRelationDTO _ProductRelationp)
+        //public async Task<ActionResult> SaveProductRelation([FromBody]dynamic dto)
+        public async Task<ActionResult> SaveProductRelation([FromBody]ProductRelation _ProductRelationp)
         {
-            ProductRelation _ProductRelation = _ProductRelationp;
+            ProductRelation _ProductRelation = new ProductRelation();
+            List<ProductRelation> _ProductRelationlist = new List<ProductRelation>();
             try
             {
-                // DTO_NumeracionSAR _liNumeracionSAR = new DTO_NumeracionSAR();
+
+
+
+               // ProductRelation _ProductRelationp = JsonConvert.DeserializeObject<ProductRelation>(dto);
+                //ProductRelation _ProductRelationp = dto;
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ProductRelation/GetProductRelationById/" + _ProductRelation.RelationProductId);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/ProductRelation/GetProductRelationByProductIDSubProductId", _ProductRelationp);
                 string valorrespuesta = "";
-                _ProductRelation.FechaModificacion = DateTime.Now;
-                _ProductRelation.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
-
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ProductRelation = JsonConvert.DeserializeObject<ProductRelation>(valorrespuesta);
+                    _ProductRelationlist = JsonConvert.DeserializeObject<List<ProductRelation>>(valorrespuesta);
+
+
+
                 }
 
-                if (_ProductRelation == null) { _ProductRelation = new Models.ProductRelation(); }
-                //_ProductRelation.Id.ToString("N");
-                // _ProductRelation = _ProductRelation.Where(q => q.Id == Id).ToList();
 
-
-                if (_ProductRelationp.RelationProductId.ToString() == "00000000-0000-0000-0000-000000000000")
-
+                if (_ProductRelationlist.Count == 0)
                 {
-                    _ProductRelation.FechaCreacion = DateTime.Now;
-                    _ProductRelation.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    _ProductRelationp.FechaCreacion = DateTime.Now;
+                    _ProductRelationp.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_ProductRelationp);
                 }
-                else
-                {
-                    _ProductRelationp.UsuarioCreacion = _ProductRelation.UsuarioCreacion;
-                    _ProductRelationp.FechaCreacion = _ProductRelation.FechaCreacion;
-                    var updateresult = await Update(_ProductRelationp.RelationProductId, _ProductRelationp);
-                }
+                //else
+                //{
+                //    _ProductRelationp.UsuarioCreacion = _ProductRelation.UsuarioCreacion;
+                //    _ProductRelationp.FechaCreacion = _ProductRelation.FechaCreacion;
+                //    var updateresult = await Update(_ProductRelation.RelationProductId, _ProductRelationp);
+                //}
+
+
+
+
+
+
 
             }
             catch (Exception ex)
@@ -159,9 +160,70 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_ProductRelation);
 
+
+            return Json(_ProductRelation);
         }
+
+
+
+
+        //[HttpPost("[action]")]
+        //public async Task<ActionResult<ProductRelation>> SaveProductRelation([FromBody]ProductRelationDTO _ProductRelationS)
+        ////public async Task<ActionResult> SaveProductRelation([FromBody]dynamic dto)
+        //{
+        //    //ProductRelation _ProductRelation = new ProductRelation();
+        //    ProductRelation _ProductRelation = _ProductRelationS;
+        //    try
+        //    {
+
+
+        //        //ProductRelation _ProductRelationp = JsonConvert.DeserializeObject<ProductRelation>(dto);
+        //        string baseadress = config.Value.urlbase;
+        //        HttpClient _client = new HttpClient();
+        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+        //        var result = await _client.GetAsync(baseadress + "api/ProductRelation/GetProductRelationById/" + _ProductRelation.RelationProductId);
+        //        string valorrespuesta = "";
+        //        _ProductRelation.FechaModificacion = DateTime.Now;
+        //        _ProductRelation.UsuarioModificacion = HttpContext.Session.GetString("user");
+        //        if (result.IsSuccessStatusCode)
+        //        {
+
+        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
+        //            _ProductRelation = JsonConvert.DeserializeObject<ProductRelationDTO>(valorrespuesta);
+        //        }
+
+        //        if (_ProductRelation == null) { _ProductRelation = new Models.ProductRelation(); }
+
+        //        if (_ProductRelation.ProductId == 0)
+        //        {
+        //            _ProductRelationp.FechaCreacion = DateTime.Now;
+        //            _ProductRelationp.UsuarioCreacion = HttpContext.Session.GetString("user");
+        //            var insertresult = await Insert(_ProductRelationp);
+        //        }
+        //        else
+        //        {
+        //            _ProductRelationp.UsuarioCreacion = _ProductRelation.UsuarioCreacion;
+        //            _ProductRelationp.FechaCreacion = _ProductRelation.FechaCreacion;
+        //            var updateresult = await Update(_ProductRelation.ProductId, _ProductRelationp);
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+        //        throw ex;
+        //    }
+
+
+        //    return Json(_ProductRelation);
+        //}
+
+
+
+
+
+
+
 
 
 
@@ -178,7 +240,8 @@ namespace ERPMVC.Controllers
                 _ProductRelation.UsuarioModificacion = HttpContext.Session.GetString("user");
                 _ProductRelation.FechaCreacion = DateTime.Now;
                 _ProductRelation.FechaModificacion = DateTime.Now;
-                var result = await _client.PostAsJsonAsync(baseadress + "api/ProducRelation/Insert", _ProductRelation);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/ProductRelation/Insert", _ProductRelation);
+
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
