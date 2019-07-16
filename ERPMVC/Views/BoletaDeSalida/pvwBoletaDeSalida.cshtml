@@ -87,6 +87,150 @@
                                           data-ajax-method="post"
                                           method="post" class="validation-wizard wizard-circle">
                                         
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <script>
+                                                         function valueMapper(options) {
+                                                            $.ajax({
+                                                                url: "@Url.Action("Orders_ValueMapper", "GoodsDelivered")",
+                                                                data: convertValues(options.value),
+                                                                success: function (data) {
+                                                                    options.success(data);
+                                                                }
+                                                            });
+                                                        }
+
+                                                        function convertValues(value) {
+                                                            var data = {};
+                                                            value = $.isArray(value) ? value : [value];
+
+                                                            for (var idx = 0; idx < value.length; idx++) {
+                                                                data["values[" + idx + "]"] = value[idx];
+                                                            }
+
+                                                            return data;
+                                                        }
+
+                                                        function changesetearvalues() {
+                                                            var dataObject = { 'GoodsDeliveredId' : $("#GoodsDeliveredId").val() };
+                                                            var notification = $("#notification").data("kendoNotification");
+                                                            var subproductid = 0;
+                                                            $.ajax({
+                                                                url: '@Url.Action("GetGoodsDeliveredById", "GoodsDelivered")',
+                                                                method: 'POST',
+                                                                datatype: "json",
+                                                                contentType: 'application/json',
+                                                                async: false,
+                                                                data: JSON.stringify(dataObject),
+                                                                success: function (data) {
+                                                                    //console.log(data);
+                                                                    $("#Placa").val(data.Placa);
+                                                                    $("#Motorista").val(data.Name);
+                                                                    $("#Marca").val(data.Marca);
+                                                                    $("#Quantity").data("kendoNumericTextBox").value(data._GoodsDeliveredLine[0].QuantitySacos);
+                                                                    $("#CustomerId").data("kendoDropDownList").value(data.CustomerId);
+                                                                    $("#SubProductId").data("kendoDropDownList").dataSource.read();                                                                  
+                                                                    $("#UnitOfMeasureId").data("kendoDropDownList").value(data._GoodsDeliveredLine[0].UnitOfMeasureId);
+                                                                    $("#BranchId").data("kendoDropDownList").value(data.BranchId);
+                                                                    subproductid = data._GoodsDeliveredLine[0].SubProductId;
+                                                                },
+                                                                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                                                                    notification.show({
+                                                                        title: "Validacion",
+                                                                        message: textStatus + ": " + XMLHttpRequest.responseText
+                                                                    }, "error");
+
+                                                                }
+                                                            });
+
+                                                            $("#SubProductId").data("kendoDropDownList").value(subproductid);
+                                                        }
+                                                    </script>
+                                                    <label asp-for="GoodsDeliveredId" class="  control-label" style="width:100%"></label>
+
+                                                    @(Html.Kendo().DropDownListFor(m => m.GoodsDeliveredId)
+                                                               //.Name("cbxBuscar")
+                                                               .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                                                               .OptionLabel("Seleccione un comprobante de entrega")
+                                                               .DataTextField("CustomerName")
+                                                               .DataValueField("GoodsDeliveredId")
+                                                               .HtmlAttributes(new { style = "width:100%" , required = (string)null })
+                                                               .Height(290)
+                                                               .Events(e =>
+                                                               {
+                                                                  e.Change("changesetearvalues");
+                                                                  // e.Filtering("applyFilterCustomer");
+                                                               })
+                                                               .AutoBind(true)
+                                                               .DataSource(source =>
+                                                               {
+                                                                   source.Ajax()
+                                                                   .PageSize(80)
+
+                                                                   .Read("Virtualization_Read", "GoodsDelivered");
+                                                               })
+                                                               .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapper"))
+                                                    )
+                                                    <span asp-validation-for="GoodsDeliveredId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <script>
+                                                         function valueMapperAuthorization(options) {
+                                                            $.ajax({
+                                                                url: "@Url.Action("Orders_ValueMapper", "GoodsDeliveryAuthorization")",
+                                                                data: convertValues(options.value),
+                                                                success: function (data) {
+                                                                    options.success(data);
+                                                                }
+                                                            });
+                                                        }
+
+                                                        function convertValues(value) {
+                                                            var data = {};
+                                                            value = $.isArray(value) ? value : [value];
+
+                                                            for (var idx = 0; idx < value.length; idx++) {
+                                                                data["values[" + idx + "]"] = value[idx];
+                                                            }
+
+                                                            return data;
+                                                        }
+                                                    </script>
+                                                    <label asp-for="GoodsDeliveryAuthorizationId" class="  control-label" style="width:100%"></label>
+
+                                                    @(Html.Kendo().DropDownListFor(m => m.GoodsDeliveryAuthorizationId)
+                                                                    //.Name("cbxBuscar")
+                                                                    .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                                                                    .OptionLabel("Seleccione una autorización")
+                                                                    .DataTextField("CustomerName")
+                                                                    .DataValueField("GoodsDeliveryAuthorizationId")
+                                                                    .HtmlAttributes(new { style = "width:100%", required = (string)null })
+                                                                    .Height(290)
+                                                                    .Events(e =>
+                                                                    {
+                                                                         // e.Change("changesetearvalues");
+                                                                         // e.Filtering("applyFilterCustomer");
+                                                                     })
+                                                                    .AutoBind(true)
+                                                                    .DataSource(source =>
+                                                                    {
+                                                                        source.Ajax()
+                                                                        .PageSize(80)
+
+                                                                        .Read("Virtualization_Read", "GoodsDeliveryAuthorization");
+                                                                    })
+                                                                    .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapperAuthorization"))
+                                                    )
+                                                    <span asp-validation-for="GoodsDeliveryAuthorizationId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
                                         <div class="row">
                                             <div class="col-md-6">
                                                 <div class="form-group">
@@ -255,6 +399,15 @@
 
                                         </div>
 
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label asp-for="Vigilante" class="control-label" style="width: 100%;"></label>
+                                                    <input type="text" id="Vigilante" required class="form-control" style="min-width:100%;" asp-for="Vigilante" />
+                                                </div>
+                                            </div>
+                                        </div>
+
 
 
                                         <div class="row">
@@ -271,7 +424,7 @@
 
                                             <script>
                                                 function GrupoConfiguracionCargado() {
-                                                    return { Id: 2 };
+                                                    return { Id: 7 };
                                                 }
                                             </script>
                                             <div class="col-md-4">
@@ -309,7 +462,7 @@
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi">
                                                             <transport>
-                                                                <read url="@Url.Action("Get", "UnitOfMeasure")" />
+                                                                <read url="@Url.Action("GetUnitOfMeasure", "UnitOfMeasure")" />
                                                             </transport>
                                                         </datasource>
 
@@ -367,7 +520,7 @@
 
         var dataObject = {                    
             'BoletaDeSalidaId': $("#BoletaDeSalidaId").val(),
-            'NoEntrega': $("#NoEntrega").val(),
+            'GoodsDeliveredId': $("#GoodsDeliveredId").val(),
             'GoodsDeliveryAuthorizationId': $("#GoodsDeliveryAuthorizationId").val(),
             'Vigilante': $("#Vigilante").val(),
             'DocumentDate': $("#DocumentDate").getKendoDateTimePicker().value().toJSON(),

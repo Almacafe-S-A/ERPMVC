@@ -18,6 +18,7 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class BoletaDeSalidaController : Controller
     {
         private readonly IOptions<MyConfig> config;
@@ -233,6 +234,15 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _BoletaDeSalida }, Total = 1 });
         }
 
+
+        [HttpGet]
+        public ActionResult SFBoletaDeSalida(Int64 id)
+        {
+
+            BoletaDeSalida _BoletaDeSalida = new BoletaDeSalida { BoletaDeSalidaId = id, };
+
+            return View(_BoletaDeSalida);
+        }
 
 
 
