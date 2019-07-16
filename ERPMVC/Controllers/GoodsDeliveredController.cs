@@ -344,6 +344,15 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpGet]
+        public ActionResult SFGoodsDelivered(Int64 id)
+        {
+
+            GoodsDeliveredDTO _GoodsDelivered = new GoodsDeliveredDTO { GoodsDeliveredId = id, };
+
+            return View(_GoodsDelivered);
+        }
+
 
 
 
