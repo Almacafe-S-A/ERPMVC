@@ -29,7 +29,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-        public IActionResult Index()
+        public IActionResult GrupoConfiguracion()
         {
             return View();
         }
