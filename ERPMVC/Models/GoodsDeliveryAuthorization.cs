@@ -58,6 +58,15 @@ namespace ERPMVC.Models
         public double TotalCertificado { get; set; }
         public double TotalFinanciado { get; set; }
 
+        [Display(Name = "Derechos Lps.")]
+        public double DerechoLps { get; set; }
+
+        [Display(Name = "Póliza No.")]
+        public Int64 NoPoliza { get; set; }
+
+        [Display(Name = "Delegado Fiscal")]
+        public string DelegadoFiscal { get; set; }
+
         [Display(Name = "Fecha de Creacion")]
         public DateTime? FechaCreacion { get; set; }
         [Display(Name = "Fecha de Modificación")]
