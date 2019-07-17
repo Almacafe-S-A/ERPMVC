@@ -71,6 +71,38 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetByProductType([DataSourceRequest]DataSourceRequest request)
+        {
+            List<SubProduct> _SubProduct = new List<SubProduct>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/SubProduct/GetSubProduct");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _SubProduct = JsonConvert.DeserializeObject<List<SubProduct>>(valorrespuesta);
+                    _SubProduct = _SubProduct.Where(q => q.ProductTypeId == 2).ToList();
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _SubProduct.ToDataSourceResult(request);
+
+        }
+
 
         [HttpGet("[controller]/[action]")]
         public async Task<ActionResult<SubProduct>> GetSubProductoByTipo(Int64 ProductTypeId)

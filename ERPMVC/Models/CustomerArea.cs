@@ -22,15 +22,15 @@ namespace ERPMVC.Models
         [Display(Name = "Fecha de documento")]
         public DateTime DocumentDate { get; set; }
 
-        [Display(Name = "Producto")]
-        public Int64 ProductId { get; set; }
+        //[Display(Name = "Producto")]
+        //public Int64 ProductId { get; set; }
 
-        [Display(Name = "Producto")]
-        public string ProductName { get; set; }
+        //[Display(Name = "Producto")]
+        //public string ProductName { get; set; }
 
         [Display(Name = "Unidad de medida")]
         public Int64 UnitOfMeasureId { get; set; }
-
+        
         [Display(Name = "Unidad de medida")]
         public string UnitOfMeasureName { get; set; }
 
@@ -62,8 +62,7 @@ namespace ERPMVC.Models
         //public Int64 ControlPalletsId { get; set; }
 
         //public string PalletsId { get; set; }
-
-
+        
         [Display(Name = "Area Utilizada")]
         public double UsedArea { get; set; }        
 
@@ -71,6 +70,11 @@ namespace ERPMVC.Models
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
         public string UsuarioModificacion { get; set; }
-        
+
+        [Display(Name = "Productos en el area")]
+        public List<CustomerAreaProduct> CustomerAreaProduct { get; set; }
+
+        public List<Int64> Productos { get; set; } = new List<Int64>();
+
     }
 }

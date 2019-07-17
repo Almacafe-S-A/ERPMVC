@@ -107,11 +107,13 @@ namespace ERPMVC.Controllers
 
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<CustomerArea>> SaveCustomerArea([FromBody]CustomerArea _CustomerArea)
+      //  public async Task<ActionResult<CustomerArea>> SaveCustomerArea([FromBody]dynamic dto)
         {
-
+            CustomerArea _listCustomerArea = new CustomerArea();
             try
             {
-                CustomerArea _listCustomerArea = new CustomerArea();
+              //  CustomerArea _CustomerArea = JsonConvert.DeserializeObject<CustomerArea>(dto);
+               
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -132,6 +134,12 @@ namespace ERPMVC.Controllers
                 {
                     _CustomerArea.FechaCreacion = DateTime.Now;
                     _CustomerArea.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    foreach (var item in _CustomerArea.Productos)
+                    {
+                        if (_CustomerArea.CustomerAreaProduct == null) { _CustomerArea.CustomerAreaProduct = new List<CustomerAreaProduct>(); } 
+                        _CustomerArea.CustomerAreaProduct.Add(new CustomerAreaProduct { ProductId = item,
+                            CustomerAreaId = _CustomerArea.CustomerAreaId, FechaCreacion = DateTime.Now, FechaMoficacion = DateTime.Now });
+                    }
                     var insertresult = await Insert(_CustomerArea);
                 }
                 else
@@ -148,7 +156,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_CustomerArea);
+            return Json(_listCustomerArea);
         }
 
         // POST: CustomerArea/Insert
