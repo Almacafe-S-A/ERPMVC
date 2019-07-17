@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
+using ERPMVC.DTO;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
@@ -130,9 +131,56 @@ namespace ERPMVC.Controllers
         }
 
 
-        public async Task<ActionResult<ElementoConfiguracion>> SaveElementoConfiguracion([FromBody]ElementoConfiguracion _ElementoConfiguracion)
-        {
+        //public async Task<ActionResult<ElementoConfiguracion>> SaveElementoConfiguracion([FromBody]ElementoConfiguracion _ElementoConfiguracion)
+        //[HttpPost("[action]")]
+        //public async Task<ActionResult<ElementoConfiguracion>> SaveProduct([FromBody]ElementoConfiguracionDTO _ElementoConfiguracionS)
+        //{
 
+        //    try
+        //    {
+        //        ElementoConfiguracion _listElementoConfiguracion = new ElementoConfiguracion();
+        //        string baseadress = config.Value.urlbase;
+        //        HttpClient _client = new HttpClient();
+        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+        //        var result = await _client.GetAsync(baseadress + "api/ElementoConfiguracion/GetElementoConfiguracionById/" + _ElementoConfiguracionS.Id);
+        //        string valorrespuesta = "";
+        //        _ElementoConfiguracion.FechaModificacion = DateTime.Now;
+        //        _ElementoConfiguracion.UsuarioModificacion = HttpContext.Session.GetString("user");
+        //        if (result.IsSuccessStatusCode)
+        //        {
+
+        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
+        //            _listElementoConfiguracion = JsonConvert.DeserializeObject<List<ElementoConfiguracion>>(valorrespuesta);
+
+
+        //        }
+
+        //        if (_listElementoConfiguracion.Id == 0)
+        //        {
+        //            _ElementoConfiguracion.FechaCreacion = DateTime.Now;
+        //            _ElementoConfiguracion.UsuarioCreacion = HttpContext.Session.GetString("user");
+        //            var insertresult = await Insert(_ElementoConfiguracion);
+        //        }
+        //        else
+        //        {
+        //            var updateresult = await Update(_ElementoConfiguracion.Id, _ElementoConfiguracion);
+        //        }
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+        //        throw ex;
+        //    }
+
+        //    return Json(_ElementoConfiguracion);
+        //}
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<ElementoConfiguracion>> SaveElementoConfiguracion([FromBody]ElementoConfiguracionDTO _ElementoConfiguracionS)
+        {
+            ElementoConfiguracion _ElementoConfiguracion = _ElementoConfiguracionS;
+            
             try
             {
                 ElementoConfiguracion _listElementoConfiguracion = new ElementoConfiguracion();
@@ -143,22 +191,37 @@ namespace ERPMVC.Controllers
                 string valorrespuesta = "";
                 _ElementoConfiguracion.FechaModificacion = DateTime.Now;
                 _ElementoConfiguracion.UsuarioModificacion = HttpContext.Session.GetString("user");
+                
                 if (result.IsSuccessStatusCode)
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listElementoConfiguracion = JsonConvert.DeserializeObject<ElementoConfiguracion>(valorrespuesta);
+                    _ElementoConfiguracion = JsonConvert.DeserializeObject<ElementoConfiguracionDTO>(valorrespuesta);
                 }
 
-                if (_listElementoConfiguracion.Id == 0)
+                if (_ElementoConfiguracion == null) { _ElementoConfiguracion = new Models.ElementoConfiguracion(); }
+
+                if (_ElementoConfiguracionS.Id == 0)
                 {
-                    _ElementoConfiguracion.FechaCreacion = DateTime.Now;
-                    _ElementoConfiguracion.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_ElementoConfiguracion);
+                    _ElementoConfiguracionS.FechaCreacion = DateTime.Now;
+                    _ElementoConfiguracionS.UsuarioCreacion = HttpContext.Session.GetString("user");
+
+                    if (_ElementoConfiguracionS.Estado == "Activo")
+                    {
+                        _ElementoConfiguracionS.Estado = "A";
+                    }
+                    else {
+                        _ElementoConfiguracionS.Estado = "I";
+
+                    }
+                    
+                    var insertresult = await Insert(_ElementoConfiguracionS);
                 }
                 else
                 {
-                    var updateresult = await Update(_ElementoConfiguracion.Id, _ElementoConfiguracion);
+                    _ElementoConfiguracionS.UsuarioCreacion = _ElementoConfiguracion.UsuarioCreacion;
+                    _ElementoConfiguracionS.FechaCreacion = _ElementoConfiguracion.FechaCreacion;
+                    var updateresult = await Update(_ElementoConfiguracion.Id, _ElementoConfiguracionS);
                 }
 
             }
