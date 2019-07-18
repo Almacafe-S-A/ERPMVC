@@ -42,12 +42,20 @@ namespace ERPMVC.Controllers
         }
 
 
-        public ActionResult SalesOrderCustomer()
+        public async  Task<ActionResult> SalesOrderCustomer()
         {
-            return PartialView();
+            return await Task.Run(()=> PartialView());
+        }
+        
+       public async Task<ActionResult> CertificadoDepositoCustomer()
+        {
+            return await Task.Run(() => PartialView());
         }
 
-
+        public async Task<ActionResult> ProformaInvoiceCustomer()
+        {
+            return await Task.Run(() => PartialView());
+        }
 
         [HttpGet("[action]")]
         public async Task<ActionResult> GetCustomerById(Int64 CustomerId)
@@ -75,7 +83,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return Json(_customers);
+            return await Task.Run(() => Json(_customers));
         }
 
         // GET: Customer/Details/5
@@ -101,16 +109,16 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-        
 
 
-            return View(_customers);
+
+            return await Task.Run(() => View(_customers));
         }
 
         // GET: Customer/Create
-        public ActionResult Create()
+        public async  Task<ActionResult> Create()
         {
-            return View();
+            return await Task.Run(() => View());
         }
 
         
@@ -140,9 +148,9 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-        
-      
-            return _customers.ToDataSourceResult(request);
+
+
+            return await Task.Run(() => _customers.ToDataSourceResult(request));
 
         }
 
@@ -174,7 +182,7 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _customers.ToDataSourceResult(request);
+            return await Task.Run(() => _customers.ToDataSourceResult(request));
 
         }
 
@@ -208,7 +216,7 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _customer }, Total = 1 });
+            return await Task.Run(() => new ObjectResult(new DataSourceResult { Data = new[] { _customer }, Total = 1 }));
         }
 
         [HttpPut("{id}")]
@@ -235,13 +243,13 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _customer }, Total = 1 });
+            return await Task.Run(() => new ObjectResult(new DataSourceResult { Data = new[] { _customer }, Total = 1 }));
         }
 
             // GET: Customer/Edit/5
-            public ActionResult Edit(int id)
+            public async Task< ActionResult> Edit(int id)
         {
-            return View();
+            return await Task.Run(() => View());
         }
 
         // POST: Customer/Edit/5
