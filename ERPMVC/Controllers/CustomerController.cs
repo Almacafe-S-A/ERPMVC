@@ -36,18 +36,23 @@ namespace ERPMVC.Controllers
         
 
         // GET: Customer
-        public ActionResult Index()
+        public async  Task<ActionResult> Index()
         {
-            return View();
+            return  await Task.Run(() => View());
         }
 
+
+     
 
         public async  Task<ActionResult> SalesOrderCustomer()
         {
             return await Task.Run(()=> PartialView());
         }
-        
-       public async Task<ActionResult> CertificadoDepositoCustomer()
+
+
+       
+
+        public async Task<ActionResult> CertificadoDepositoCustomer()
         {
             return await Task.Run(() => PartialView());
         }

@@ -190,6 +190,8 @@ namespace ERPMVC.Controllers
                     _listUnitOfMeasure = JsonConvert.DeserializeObject<UnitOfMeasure>(valorrespuesta);
                 }
 
+                if (_listUnitOfMeasure == null) { _listUnitOfMeasure = new Models.UnitOfMeasure(); }
+
                 if (_listUnitOfMeasure.UnitOfMeasureId == 0)
                 {
                     _UnitOfMeasure.FechaCreacion = DateTime.Now;
