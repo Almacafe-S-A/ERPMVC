@@ -17,6 +17,8 @@ using Newtonsoft.Json;
 using Kendo.Mvc.UI;
 using Kendo.Mvc.Extensions;
 using Microsoft.AspNetCore.Http;
+using Syncfusion.Pdf;
+using Syncfusion.DocIORenderer;
 
 namespace ERPMVC.Controllers
 {
@@ -279,7 +281,7 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult> SFPrintContract(Int64 id)
         {
             CustomerContract _customercontract = new CustomerContract();
-
+            SFPrintContract _SFPrintContract = new SFPrintContract();
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -296,8 +298,24 @@ namespace ERPMVC.Controllers
                 }
 
                 string basePath = _hostingEnvironment.WebRootPath;
+                string Contrato = "";
+                switch (_customercontract.ProductName)
+                {
+                    case "Almacenaje Fiscal":
+                    case "Almacenaje General":
+                        Contrato = "ContratoAlmacenaje.docx";
+                        break;
+                    case "Bodega Habilitada":
+                        Contrato = "ContratoHabilitacionBodegas.docx";
+                        break;
+                    case "Arrendamiento":
+                        Contrato = "ContratoArrendamiento.docx";
+                        break;
+                    default:
+                        break;
+                }
                 //FileStream fs = System.IO.File.OpenRead(basePath+ "/ContratosTemplate/Test.docx");
-                FileStream fs = new FileStream(basePath + "/ContratosTemplate/ContratoAlmacenaje.docx", FileMode.Open, FileAccess.Read);
+                FileStream fs = new FileStream(basePath + "/ContratosTemplate/"+Contrato, FileMode.Open, FileAccess.Read);
 
                 WordDocument document = new WordDocument(fs, FormatType.Docx);
                 string[] fieldNames = _customercontract.GetType()
@@ -320,11 +338,31 @@ namespace ERPMVC.Controllers
                 MemoryStream stream = new MemoryStream();
 
                 document.Save(stream, FormatType.Docx);
+                DocIORenderer render = new DocIORenderer();
 
-                using (FileStream file = new FileStream(basePath + "/ContratosTemplate/file.docx", FileMode.Create, System.IO.FileAccess.Write))
-                    stream.WriteTo(file);
+                PdfDocument pdfDocument = render.ConvertToPDF(document);
+                
+                document.Dispose();
+
+                //using (FileStream file = new FileStream(basePath + "/ContratosTemplate/file.docx", FileMode.Create, System.IO.FileAccess.Write))
+                //    stream.WriteTo(file);
 
                 document.Close();
+
+                MemoryStream outputStream = new MemoryStream();
+
+                pdfDocument.Save(outputStream);
+                string completepath = basePath + $"/ContratosTemplate/Contrato_Cliente_{_customercontract.CustomerName}_ContratoNumero_{_customercontract.CustomerContractId}.pdf";
+
+
+                using (FileStream file = new FileStream(completepath, FileMode.Create, System.IO.FileAccess.Write))
+                    outputStream.WriteTo(file);
+
+                ViewBag.pathcontrato = completepath; //$"/ContratosTemplate/Contrato_Cliente_{_customercontract.CustomerName}_ContratoNumero_{_customercontract.CustomerContractId}.pdf";//_SFPrintContract.path = completepath;
+
+                //Closes the instance of PDF document object
+
+                pdfDocument.Close();
             }
             catch (Exception ex)
             {
