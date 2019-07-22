@@ -329,6 +329,7 @@ namespace ERPMVC.Controllers
 
 
 
+
                     CustomerConditions _cc = new CustomerConditions();
                     List<CustomerConditions> _cclist = new List<CustomerConditions>();
                     _cc.DocumentId = _SalesOrdermodel.SalesOrderId;
@@ -361,6 +362,8 @@ namespace ERPMVC.Controllers
                     _customercontract.CustomerName = _SalesOrdermodel.CustomerName;
                     _customercontract.ProductId = _SalesOrdermodel.ProductId;
                     _customercontract.ProductName = _SalesOrdermodel.ProductName;
+
+
 
                     _client = new HttpClient();
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
