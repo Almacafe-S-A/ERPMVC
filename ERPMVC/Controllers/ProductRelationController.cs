@@ -72,7 +72,6 @@ namespace ERPMVC.Controllers
 
         [HttpPost("[action]")]
         public async Task<ActionResult> pvwAddProductRelation([FromBody]ProductRelationDTO _sarpara)
-
         {
             ProductRelation _ProductRelation = new ProductRelationDTO();
             try
@@ -80,19 +79,42 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ProductRelation/GetProductRelation/" + _sarpara.RelationProductId);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ProductRelation = JsonConvert.DeserializeObject<ProductRelationDTO>(valorrespuesta);
+                
 
-                }
+                //if (_sarpara.RelationProductId > 0)
+                //{
+                    var result = await _client.GetAsync(baseadress + "api/ProductRelation/GetProductRelationById/" + _sarpara.RelationProductId);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _ProductRelation = JsonConvert.DeserializeObject<ProductRelationDTO>(valorrespuesta);
 
-                if (_ProductRelation == null)
-                {
-                    _ProductRelation = new ProductRelationDTO();
-                }
+                    }
+
+                    if (_ProductRelation == null)
+                    {
+                        _ProductRelation = new ProductRelationDTO();
+                    }
+                //}
+                //else
+                //{
+                //    var result = await _client.GetAsync(baseadress + "api/ProductRelation/GetProductRelation/" + _sarpara.RelationProductId);
+                //    string valorrespuesta = "";
+                //    if (result.IsSuccessStatusCode)
+                //    {
+                //        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                //        _ProductRelation = JsonConvert.DeserializeObject<ProductRelationDTO>(valorrespuesta);
+
+                //    }
+
+                //    if (_ProductRelation == null)
+                //    {
+                //        _ProductRelation = new ProductRelationDTO();
+                //    }
+                //}
+                
+                
             }
             catch (Exception ex)
             {
@@ -140,12 +162,12 @@ namespace ERPMVC.Controllers
                     _ProductRelationp.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_ProductRelationp);
                 }
-                //else
-                //{
-                //    _ProductRelationp.UsuarioCreacion = _ProductRelation.UsuarioCreacion;
-                //    _ProductRelationp.FechaCreacion = _ProductRelation.FechaCreacion;
-                //    var updateresult = await Update(_ProductRelation.RelationProductId, _ProductRelationp);
-                //}
+                else
+                {
+                    _ProductRelationp.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    _ProductRelationp.FechaModificacion = DateTime.Now;
+                    var updateresult = await Update(_ProductRelation.RelationProductId, _ProductRelationp);
+                }
 
 
 
@@ -269,7 +291,7 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 _ProductRelation.FechaModificacion = DateTime.Now;
                 _ProductRelation.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PutAsJsonAsync(baseadress + "api/ProducRelation/Update", _ProductRelation);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/ProductRelation/Update", _ProductRelation);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
