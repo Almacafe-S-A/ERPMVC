@@ -7,14 +7,13 @@ using System.Threading.Tasks;
 
 namespace ERPMVC.Models
 {
+    
     public class City
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public long Id { get; set; } 
-        public string Name { get; set; } 
-        public long? State_Id { get; set; } 
+        public long Id { get; set; }
+        public string Name { get; set; }
+        public long? State_Id { get; set; }
 
     }
-
-
 }
