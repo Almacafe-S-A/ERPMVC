@@ -257,7 +257,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/TipoContrato/Delete", _TipoContrato);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/TipoContrato/DeleteTipoContrato", _TipoContrato);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
