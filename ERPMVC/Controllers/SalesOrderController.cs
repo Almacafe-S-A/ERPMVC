@@ -270,6 +270,133 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpPost("[action]")]
+        public async Task<ActionResult<SalesOrder>> GenerarContrato([FromBody]SalesOrderDTO _SalesOrderp)
+        //  public async Task<ActionResult<SalesOrder>> GenerarContrato([FromBody]dynamic dto)
+        {
+
+            //     _SalesOrder = JsonConvert.DeserializeObject<SalesOrderDTO>(dto.ToString());           
+            SalesOrder _SalesOrdermodel = new SalesOrder();
+            if (_SalesOrderp != null)
+            {
+                try
+                {
+
+                    string baseadress = _config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/SalesOrder/GetSalesOrderById/" + _SalesOrderp.SalesOrderId);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _SalesOrdermodel = JsonConvert.DeserializeObject<SalesOrder>(valorrespuesta);
+                    }
+
+                    CustomerContract _customercontract = new CustomerContract();
+                    _customercontract.SalesOrderId = _SalesOrderp.SalesOrderId;
+
+
+                    _customercontract.UsedArea = _SalesOrdermodel.SalesOrderLines
+                      .Where(q => q.SubProductName.Contains("Almacenaje")).Select(q => q.Price).FirstOrDefault();
+
+                    _customercontract.UnitOfMeasureId = _SalesOrdermodel.SalesOrderLines
+                      .Where(q => q.SubProductName.Contains("Almacenaje")).Select(q => q.UnitOfMeasureId).FirstOrDefault();
+
+                    _customercontract.UnitOfMeasureName = _SalesOrdermodel.SalesOrderLines
+                    .Where(q => q.SubProductName.Contains("Almacenaje")).Select(q => q.UnitOfMeasureName).FirstOrDefault();
+
+                    _customercontract.ValueSecure = _SalesOrdermodel.SalesOrderLines
+                           .Where(q => q.SubProductName.Contains("Seguro")).Select(q => q.Price).FirstOrDefault();
+
+                    _customercontract.ValueBascula = _SalesOrdermodel.SalesOrderLines
+                                           .Where(q => q.SubProductName.Contains("Bascula")).Select(q => q.Price).FirstOrDefault();
+                    _customercontract.BandaTransportadora = _SalesOrdermodel.SalesOrderLines
+                                                   .Where(q => q.SubProductName.Contains("Banda")).Select(q => q.Price).FirstOrDefault();
+                    _customercontract.MontaCargas = _SalesOrdermodel.SalesOrderLines
+                                                 .Where(q => q.SubProductName.Contains("Monta carga")).Select(q => q.Price).FirstOrDefault();
+                    _customercontract.Papeleria = _SalesOrdermodel.SalesOrderLines
+                             .Where(q => q.SubProductName.Contains("Papeleria")).Select(q => q.Price).FirstOrDefault();
+                    _customercontract.ExtraHours = _SalesOrdermodel.SalesOrderLines
+                            .Where(q => q.SubProductName.Contains("Horas Extras")).Select(q => q.Price).FirstOrDefault();
+
+                    _customercontract.FoodPayment = _SalesOrdermodel.SalesOrderLines
+                           .Where(q => q.SubProductName.Contains("Alimentacion")).Select(q => q.Price).FirstOrDefault();
+
+                    _customercontract.Transport = _SalesOrdermodel.SalesOrderLines
+                         .Where(q => q.SubProductName.Contains("Transporte")).Select(q => q.Price).FirstOrDefault();
+
+
+
+                    CustomerConditions _cc = new CustomerConditions();
+                    List<CustomerConditions> _cclist = new List<CustomerConditions>();
+                    _cc.DocumentId = _SalesOrdermodel.SalesOrderId;
+                    _cc.IdTipoDocumento = 12;
+                    _client = new HttpClient();
+
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    result = await _client.PostAsJsonAsync(baseadress + "api/CustomerConditions/GetCustomerConditionsByClass", _cc);
+                    valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _cclist = JsonConvert.DeserializeObject<List<CustomerConditions>>(valorrespuesta);
+                    }
+
+                    _customercontract.Porcentaje1 = _cclist
+                           .Where(q => q.CustomerConditionName.Contains("enor")).Select(q => q.ValueDecimal).FirstOrDefault();
+
+                    _customercontract.Valor1 = _cclist
+                         .Where(q => q.CustomerConditionName.Contains("enor")).Select(q => Convert.ToDouble(q.ValueToEvaluate)).FirstOrDefault();
+
+                    _customercontract.Porcentaje2 = _cclist
+                           .Where(q => q.CustomerConditionName.Contains("ayor")).Select(q => q.ValueDecimal).FirstOrDefault();
+
+                    _customercontract.Valor2 = _cclist
+                         .Where(q => q.CustomerConditionName.Contains("ayor")).Select(q => Convert.ToDouble(q.ValueToEvaluate)).FirstOrDefault();
+
+
+                    _customercontract.CustomerId = _SalesOrdermodel.CustomerId;
+                    _customercontract.CustomerName = _SalesOrdermodel.CustomerName;
+                    _customercontract.ProductId = _SalesOrdermodel.ProductId;
+                    _customercontract.ProductName = _SalesOrdermodel.ProductName;
+
+                    _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    result = await _client.PostAsJsonAsync(baseadress + "api/CustomerContract/Insert", _customercontract);
+
+                    valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _customercontract = JsonConvert.DeserializeObject<CustomerContract>(valorrespuesta);
+
+                    }
+                    else
+                    {
+                        string request = await result.Content.ReadAsStringAsync();
+                        return await Task.Run(() => BadRequest(request));
+                    }
+
+
+                    return await Task.Run(()=>Json(_customercontract));
+                }
+
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+
+            }
+            else
+            {
+                return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+            }
+        }
+
+
 
         [HttpPost("[action]")]
         public async Task<ActionResult<SalesOrder>> Insert(SalesOrder _SalesOrder)

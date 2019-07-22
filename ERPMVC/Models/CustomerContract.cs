@@ -70,6 +70,19 @@ namespace ERPMVC.Models
         [Display(Name = "Valor de la bascula")]
         public double ValueBascula { get; set; }
 
+
+        [Display(Name = "Salario Delegado")]
+        public double DelegateSalary { get; set; }
+
+        [Display(Name = "Bodega Habilitada Requerimientos")]
+        public string WarehouseRequirements { get; set; }
+
+        [Display(Name = "Resolución")]
+        public string Resolution { get; set; }
+
+        [Display(Name = "Mercancías")]
+        public string Mercancias { get; set; }
+
         [Display(Name = "Banda transportadora")]
         public double BandaTransportadora { get; set; }
 
@@ -87,6 +100,19 @@ namespace ERPMVC.Models
 
         [Display(Name = "Porcentaje 2/Comisión")]
         public double Porcentaje2 { get; set; }
+
+        [Display(Name = "Fecha de contrato")]
+        public DateTime FechaContrato { get; set; }
+
+        [Display(Name = "Montacargas")]
+        public double MontaCargas { get; set; }
+
+        [Display(Name = "Mulas Hidráulicas")]
+        public double MulasHidraulicas { get; set; }
+
+        [Display(Name = "Papelería")]
+        public double Papeleria { get; set; }
+
 
         [Display(Name = "Valor/Comisión 1")]
         public double Valor1 { get; set; }

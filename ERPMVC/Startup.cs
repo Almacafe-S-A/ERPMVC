@@ -39,7 +39,7 @@ namespace ERPMVC
 
             string License = File.ReadAllText(System.IO.Path.Combine(env.ContentRootPath, "SyncfusionLicense.txt"), Encoding.UTF8);
             SyncfusionLicenseProvider.RegisterLicense(License);
-
+         
             Configuration = configuration;
         }
 

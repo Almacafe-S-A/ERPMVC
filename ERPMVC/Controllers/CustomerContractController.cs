@@ -281,7 +281,7 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult> SFPrintContract(Int64 id)
         {
             CustomerContract _customercontract = new CustomerContract();
-            SFPrintContract _SFPrintContract = new SFPrintContract();
+        //    SFPrintContract _SFPrintContract = new SFPrintContract();
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -339,8 +339,8 @@ namespace ERPMVC.Controllers
 
                 document.Save(stream, FormatType.Docx);
                 DocIORenderer render = new DocIORenderer();
-
-                PdfDocument pdfDocument = render.ConvertToPDF(document);
+               
+                 PdfDocument pdfDocument = render.ConvertToPDF(document);
                 
                 document.Dispose();
 
