@@ -10,13 +10,18 @@ namespace ERPMVC.Models
     public class UnitOfMeasure
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        
+
+        [Display(Name = "Unidad de medida")]
         public int UnitOfMeasureId { get; set; }
-        
+
+        [Display(Name = "Unidad de medida")]
         public string UnitOfMeasureName { get; set; }
+        [Display(Name = "Descripción")]
         public string Description { get; set; }
 
+        [Display(Name = "Estado")]
         public Int64 IdEstado { get; set; }
+        [Display(Name = "Estado")]
         public string Estado { get; set; }
 
         [Required]

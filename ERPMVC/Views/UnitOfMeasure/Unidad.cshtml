@@ -8,7 +8,7 @@
 }
 
 <div id="UoModal" class="modal fade" role="dialog">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-lg" role="document">
 
         <!-- Modal content-->
         <div class="modal-content">
@@ -17,41 +17,49 @@
                 <h4 class="modal-title">Información Unidad de Medida</h4>
             </div>
             <div class="modal-body">
-                <!-- Contenido -->
-                <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-12">
-                            <h3 id="titulo">Editar</h3>
-                            <hr />
-                                    <!-- ID -->
-                                    <div class="row">
-                                        <div class="col-sm-12 col-md-12">
-                                            <div class="form-group">
-                                                <label asp-for="UnitOfMeasureId" class="control-label" style="width:100%">Código</label>
-                                                <input asp-for="UnitOfMeasureId" class="form-control disabled" style="min-width: 100% !important;" disabled />
-                                                <span asp-validation-for="UnitOfMeasureId" class="text-danger"></span>
-                                            </div>
+
+
+                <form id="frmUnitOfMeasure" kendo-validator="true" kendo-messages="messages" kendo-rules="rules"
+                      data-ajax="true"
+                      data-ajax-method="post"
+                      method="post" class="validation-wizard wizard-circle">
+                    <!-- Contenido -->
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-12">
+                                <h3 id="titulo">Editar</h3>
+                                <hr />
+                                <!-- ID -->
+                                <div class="row">
+                                    <div class="col-sm-12 col-md-12">
+                                        <div class="form-group">
+                                            <label asp-for="UnitOfMeasureId" class="control-label" style="width:100%">Código</label>
+                                            <input asp-for="UnitOfMeasureId" class="form-control disabled" style="min-width: 100% !important;" disabled />
+                                            <span asp-validation-for="UnitOfMeasureId" class="text-danger"></span>
                                         </div>
                                     </div>
-                                    <!-- Descripción -->
-                                    <div class="row">
-                                        <div class="col-sm-12 col-md-12">
-                                            <div class="form-group">
-                                                <label asp-for="UnitOfMeasureName" class="control-label" style="width:100%">Descripción</label>
-                                                <input asp-for="UnitOfMeasureName" class="form-control" style="min-width: 100% !important;" required />
-                                                <span asp-validation-for="UnitOfMeasureName" class="text-danger"></span>
-                                            </div>
+                                </div>
+                                <!-- Descripción -->
+                                <div class="row">
+                                    <div class="col-sm-12 col-md-12">
+                                        <div class="form-group">
+                                            <label asp-for="UnitOfMeasureName" class="control-label" style="width:100%">Descripción</label>
+                                            <input asp-for="UnitOfMeasureName" class="form-control" style="min-width: 100% !important;" required />
+                                            <span asp-validation-for="UnitOfMeasureName" class="text-danger"></span>
                                         </div>
                                     </div>
-                                    <!-- Estado -->
-                                    <div>
+                                </div>
+                                <!-- Estado -->
+                                <div class="row">
+                                    <div class="col-sm-12 col-md-12">
                                         <div class="form-group">
                                             <label asp-for="IdEstado" class="control-label">Estado: </label>
                                             <kendo-dropdownlist name="IdEstado" for="@Model.IdEstado" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                required
                                                                 option-label="Seleccionar Estado"
                                                                 datatextfield="NombreEstado"
                                                                 datavaluefield="IdEstado"
-                                                                style="width: 100%;">
+                                                                style="min-width: 100%;">
                                                 <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
                                                     <transport>
                                                         <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
@@ -61,19 +69,94 @@
                                             <span asp-validation-for="IdEstado" class="text-danger"></span>
                                         </div>
                                     </div>
-                                
-                        </div>
-                    </div>
-                    <div class="row" id="btnGuardarUoM">
-                        <div class="col-12">
-                            <button type="submit" class="form-control btn-miboton " onclick="GuardarUoM();">Guardar</button>
-                        </div>
-                    </div>
-                </div>
+                                </div>
 
+
+                                <div class="row">
+                                    <div class="col-md-12">
+                                        <button id="btnSaveCustomerContract" type="submit" class="form-control btn-miboton" style="min-width:80%" onclick="GuardarUoM(this);">Guardar</button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+
+                    </div>
+                </form>
             </div>
 
         </div>
     </div>
 </div>
 
+<script>
+
+    function RefreshGridUnidades() {
+     
+        var grid = $("#gridUoM").getKendoGrid();
+        grid.dataSource.read();
+    }
+    function GuardarUoM() {
+
+        $("#btnSaveCustomerContract").hide();
+        $("#btnSaveCustomerContract").prop("disabled", true);
+
+        var dataObject = {
+            'UnitOfMeasureId': $("#UnitOfMeasureId").val(),
+            'UnitOfMeasureName': $("#UnitOfMeasureName").val(),
+            'Description': $("#Description").val(),        
+            'IdEstado': $("#IdEstado").val(),
+            'Estado': $("#IdEstado").data("kendoDropDownList").text() 
+                //'UsuarioCreacion': $("#UsuarioCreacion").val(),
+            //'UsuarioModificacion': $("#UsuarioModificacion").val(),
+            //'FechaCreacion': $("#FechaCreacion").val(),
+            //'FechaModificacion': $("#FechaModificacion").val(),
+
+        };
+        var validator = $("#frmUnitOfMeasure").data("kendoValidator");
+
+            if (validator.validate()) {
+
+                $.ajax({
+                    url: '@Url.Action("SaveUnitOfMeasure", "UnitOfMeasure")',
+                    method: 'POST',
+                    datatype: "json",
+                    contentType: 'application/json',
+                    async: false,
+                    data: JSON.stringify(dataObject),
+                    success: function (data) {
+
+                        $("#UnitOfMeasureId").val(data.UnitOfMeasureId);
+                        $.toast({
+                            heading: 'Satisfactorio',
+                            text: 'Datos guardados correctamente.',
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'success',
+                            hideAfter: 30000,
+                            stack: 6
+                        });
+
+                        RefreshGridUnidades();
+                       // $('#myModalSalesOrder').modal('hide');
+
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        $("#btnSaveCustomerContract").show();
+                        $("#btnSaveCustomerContract").prop("disabled", false);
+                        notification.show({
+                            title: "Validacion",
+                            message: textStatus + ": " + XMLHttpRequest.responseText
+                        }, "error");
+
+                    }
+                });
+
+            }
+            else {
+                $("#btnSaveCustomerContract").show();
+                $("#btnSaveCustomerContract").prop("disabled", false);
+
+            }
+    }
+</script>

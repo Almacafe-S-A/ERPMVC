@@ -139,6 +139,37 @@ namespace ERPMVC.Controllers
             return _ProformaInvoice.ToDataSourceResult(request);
         }
 
+        
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetProformaInvoiceByCustomer([DataSourceRequest]DataSourceRequest request,Int64 CustomerId)
+        {
+            List<ProformaInvoice> _ProformaInvoice = new List<ProformaInvoice>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/ProformaInvoice/GetProformaInvoiceByCustomer/" + CustomerId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _ProformaInvoice = JsonConvert.DeserializeObject<List<ProformaInvoice>>(valorrespuesta);
+                }
+                //else if(result.StatusCode== 401)
+                //{
+                //}
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+            }
+
+
+            return _ProformaInvoice.ToDataSourceResult(request);
+        }
+
         [HttpPost("[action]")]
         public async Task<ActionResult> CalcularConCertificado([FromBody]ProformaInvoice _proformap)
         {

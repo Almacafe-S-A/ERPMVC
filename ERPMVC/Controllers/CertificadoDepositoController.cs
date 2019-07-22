@@ -117,6 +117,40 @@ namespace ERPMVC.Controllers
 
         }
 
+        
+
+        [HttpGet("[controller]/[action]")]
+        public async Task<DataSourceResult> GetCertificadoDepositoByCustomer([DataSourceRequest]DataSourceRequest request,Int64 CustomerId)
+        {
+            List<CertificadoDeposito> _CertificadoDeposito = new List<CertificadoDeposito>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoByCustomer/"+CustomerId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CertificadoDeposito = JsonConvert.DeserializeObject<List<CertificadoDeposito>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _CertificadoDeposito.ToDataSourceResult(request);
+
+        }
+
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> GetCertificadoDepositoById([DataSourceRequest]DataSourceRequest request, [FromBody] CertificadoDeposito _Certificado)
         {
