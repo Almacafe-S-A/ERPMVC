@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
+using ERPMVC.DTO;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
@@ -34,26 +35,29 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwGrupoConfiguracion(Int64 Id = 0)
+        [HttpPost("[action]")]
+        //public async Task<ActionResult> pvwGrupoConfiguracion(Int64 Id = 0)
+        public async Task<ActionResult> pvwGrupoConfiguracion([FromBody]GrupoConfiguracionDTO _sarpara)
         {
-            GrupoConfiguracion _GrupoConfiguracion = new GrupoConfiguracion();
+            //GrupoConfiguracion _GrupoConfiguracion = new GrupoConfiguracion();
+            GrupoConfiguracionDTO _GrupoConfiguracion = new GrupoConfiguracionDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/GrupoConfiguracion/GetGrupoConfiguracionById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/GrupoConfiguracion/GetGrupoConfiguracionById/" + _sarpara.IdConfiguracion);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _GrupoConfiguracion = JsonConvert.DeserializeObject<GrupoConfiguracion>(valorrespuesta);
+                    _GrupoConfiguracion = JsonConvert.DeserializeObject<GrupoConfiguracionDTO>(valorrespuesta);
 
                 }
 
                 if (_GrupoConfiguracion == null)
                 {
-                    _GrupoConfiguracion = new GrupoConfiguracion();
+                    _GrupoConfiguracion = new GrupoConfiguracionDTO();
                 }
             }
             catch (Exception ex)
@@ -68,6 +72,34 @@ namespace ERPMVC.Controllers
 
         }
 
+
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> GetElementoByIdConfiguracion([DataSourceRequest]DataSourceRequest request, Int64 Id)
+        {
+            List<GrupoConfiguracion> _clientes = new List<GrupoConfiguracion>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/GrupoConfiguracion/GetGrupoConfiguracionByIdConfiguracion/" + Id);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _clientes = JsonConvert.DeserializeObject<List<GrupoConfiguracion>>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_clientes.ToDataSourceResult(request));
+
+        }
 
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
@@ -102,8 +134,55 @@ namespace ERPMVC.Controllers
         }
 
 
-        public async Task<ActionResult<GrupoConfiguracion>> SaveGrupoConfiguracion([FromBody]GrupoConfiguracion _GrupoConfiguracion)
+        //public async Task<ActionResult<GrupoConfiguracion>> SaveGrupoConfiguracion([FromBody]GrupoConfiguracion _GrupoConfiguracion)
+        //[HttpPost("[action]")]
+        //public async Task<ActionResult<GrupoConfiguracion>> SaveProduct([FromBody]GrupoConfiguracionDTO _GrupoConfiguracionS)
+        //{
+
+        //    try
+        //    {
+        //        GrupoConfiguracion _listGrupoConfiguracion = new GrupoConfiguracion();
+        //        string baseadress = config.Value.urlbase;
+        //        HttpClient _client = new HttpClient();
+        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+        //        var result = await _client.GetAsync(baseadress + "api/GrupoConfiguracion/GetGrupoConfiguracionById/" + _GrupoConfiguracionS.Id);
+        //        string valorrespuesta = "";
+        //        _GrupoConfiguracion.FechaModificacion = DateTime.Now;
+        //        _GrupoConfiguracion.UsuarioModificacion = HttpContext.Session.GetString("user");
+        //        if (result.IsSuccessStatusCode)
+        //        {
+
+        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
+        //            _listGrupoConfiguracion = JsonConvert.DeserializeObject<List<GrupoConfiguracion>>(valorrespuesta);
+
+
+        //        }
+
+        //        if (_listGrupoConfiguracion.Id == 0)
+        //        {
+        //            _GrupoConfiguracion.FechaCreacion = DateTime.Now;
+        //            _GrupoConfiguracion.UsuarioCreacion = HttpContext.Session.GetString("user");
+        //            var insertresult = await Insert(_GrupoConfiguracion);
+        //        }
+        //        else
+        //        {
+        //            var updateresult = await Update(_GrupoConfiguracion.Id, _GrupoConfiguracion);
+        //        }
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+        //        throw ex;
+        //    }
+
+        //    return Json(_GrupoConfiguracion);
+        //}
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<GrupoConfiguracion>> SaveGrupoConfiguracion([FromBody]GrupoConfiguracionDTO _GrupoConfiguracionS)
         {
+            GrupoConfiguracion _GrupoConfiguracion = _GrupoConfiguracionS;
 
             try
             {
@@ -115,22 +194,27 @@ namespace ERPMVC.Controllers
                 string valorrespuesta = "";
                 _GrupoConfiguracion.FechaModificacion = DateTime.Now;
                 _GrupoConfiguracion.UsuarioModificacion = HttpContext.Session.GetString("user");
+
                 if (result.IsSuccessStatusCode)
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listGrupoConfiguracion = JsonConvert.DeserializeObject<GrupoConfiguracion>(valorrespuesta);
+                    _GrupoConfiguracion = JsonConvert.DeserializeObject<GrupoConfiguracionDTO>(valorrespuesta);
                 }
 
-                if (_listGrupoConfiguracion.IdConfiguracion == 0)
+                if (_GrupoConfiguracion == null) { _GrupoConfiguracion = new Models.GrupoConfiguracion(); }
+
+                if (_GrupoConfiguracionS.IdConfiguracion == 0)
                 {
-                    _GrupoConfiguracion.FechaCreacion = DateTime.Now;
-                    _GrupoConfiguracion.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_GrupoConfiguracion);
+                    _GrupoConfiguracionS.FechaCreacion = DateTime.Now;
+                    _GrupoConfiguracionS.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_GrupoConfiguracionS);
                 }
                 else
                 {
-                    var updateresult = await Update(_GrupoConfiguracion.IdConfiguracion, _GrupoConfiguracion);
+                    _GrupoConfiguracionS.UsuarioCreacion = _GrupoConfiguracion.UsuarioCreacion;
+                    _GrupoConfiguracionS.FechaCreacion = _GrupoConfiguracion.FechaCreacion;
+                    var updateresult = await Update(_GrupoConfiguracion.IdConfiguracion, _GrupoConfiguracionS);
                 }
 
             }
@@ -201,15 +285,16 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _GrupoConfiguracion }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult<GrupoConfiguracion>> Delete([FromBody]GrupoConfiguracion _GrupoConfiguracion)
+        [HttpPost]
+        public async Task<ActionResult<GrupoConfiguracion>> Delete(Int64 Id, GrupoConfiguracion _GrupoConfiguracionP)
         {
+            GrupoConfiguracion _GrupoConfiguracion = _GrupoConfiguracionP;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.PostAsJsonAsync(baseadress + "api/GrupoConfiguracion/Delete", _GrupoConfiguracion);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -221,11 +306,8 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error: {ex.Message}");
+                return BadRequest($"Ocurrio un error{ex.Message}");
             }
-
-
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _GrupoConfiguracion }, Total = 1 });
         }
