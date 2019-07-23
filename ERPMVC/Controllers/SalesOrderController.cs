@@ -363,7 +363,20 @@ namespace ERPMVC.Controllers
                     _customercontract.ProductId = _SalesOrdermodel.ProductId;
                     _customercontract.ProductName = _SalesOrdermodel.ProductName;
 
+                    CompanyInfo _company = new CompanyInfo { CompanyInfoId = 1 };
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                     result = await _client.GetAsync(baseadress + "api/CompanyInfo/GetCompanyInfoById/" + _company.CompanyInfoId);
+                     valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _company = JsonConvert.DeserializeObject<CompanyInfo>(valorrespuesta);
+                    }
 
+
+                    _customercontract.Manager = _company.Manager;
+                    _customercontract.RTNMANAGER = _company.RTNMANAGER;
+                   
 
                     _client = new HttpClient();
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
