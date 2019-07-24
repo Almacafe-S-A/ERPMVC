@@ -84,7 +84,7 @@
     function GetPercentage() {
         var dataObject = { TaxId: $("#TaxCode").val()};
          $.ajax({
-            url: '@Url.Action("GetTaxById","Tax")',
+            url: '@Url.Action("GetTaxById", "Tax")',
             method: 'GET',
             datatype: "json",
             contentType: 'application/json',
@@ -111,7 +111,7 @@
         var dataObject = { 'ConditionId': $("#ConditionId").val() };
 
            $.ajax({
-            url: '@Url.Action("pvwConditions","Conditions")',
+            url: '@Url.Action("pvwConditions", "Conditions")',
             method: 'GET',
             datatype: "json",
             contentType: 'application/json',
@@ -165,13 +165,13 @@
             <div class="modal-body">
 
                 @{
-              var messages1 = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+                    var messages1 = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
                                                             {"required","Valor requerido" }
                                                          };
-              var rules1 = new Dictionary<string, string>() { { "custom", "customFunction" } };
+                    var rules1 = new Dictionary<string, string>() { { "custom", "customFunction" } };
                 }
 
-             
+
 
                 <div class="row" id="validation">
                     <div class="col-lg-12">
@@ -237,9 +237,9 @@
                                             <div class="col-md-4">
 
                                                 <div class="form-group">
-                                                    <label asp-for="SubProductId" class="control-label" style="width:100%"></label>
+
                                                     <script>
-                                                        function setsubproductname(e) {                                                           
+                                                        function setsubproductname(e) {
                                                             var dataItem = e.dataItem;
                                                             if (dataItem != null)
                                                                 $("#subproductname").val(dataItem.ProductName);
@@ -257,8 +257,38 @@
                                                             }
                                                         }
 
+                                                        function SaldoKardex() {
+
+                                                            var dataObject = {
+                                                                'SubProductId': $("#SubProductId").val(),
+                                                                'DocumentId': $("#NoCertificadoDeposito").val(),
+                                                                'DocumentName': "CD"
+                                                            };
+
+                                                            $.ajax({
+                                                                url: '@Url.Action("GetSaldoProductoByCertificado", "Kardex")',
+                                                                method: 'POST',
+                                                                datatype: "json",
+                                                                contentType: 'application/json',
+                                                                async: false,
+                                                                data: JSON.stringify(dataObject),
+                                                                success: function (result) {
+
+                                                                    $("#SaldoProducto").data("kendoNumericTextBox").value(result.TotalCD);                                                                    
+                                                                    $("#ConditionView").html('');
+                                                                    $("#ConditionView").html(result);
+
+                                                                },
+                                                                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                                                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                                                                }
+                                                            });
+
+                                                        }
+
                                                     </script>
 
+                                                    <label asp-for="SubProductId" class="control-label" style="width:100%"></label>
                                                     <input type="hidden" id="subproductname" />
                                                     <kendo-dropdownlist name="SubProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         id="SubProductId"
@@ -266,7 +296,7 @@
                                                                         for="SubProductId"
                                                                         datatextfield="ProductName"
                                                                         datavaluefield="SubproductId"
-                                                                     
+                                                                        onchange="SaldoKardex();"
                                                                         auto-bind="false"
                                                                         required
                                                                         style="width: 100%;">
@@ -383,6 +413,21 @@
                                                                           style="width:100%"
                                                                           value="Model.valorfinanciado"></kendo-numerictextbox>
                                                     <span asp-validation-for="valorfinanciado" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="SaldoProducto" class="control-label" style="width:100%"></label>
+
+                                                    <kendo-numerictextbox name="SaldoProducto"
+                                                                          format="n2"
+                                                                          min="0"
+                                                                          step="1"
+                                                                          required
+                                                                          disabled
+                                                                          style="width:100%"
+                                                                          value="Model.SaldoProducto"></kendo-numerictextbox>
+                                                    <span asp-validation-for="SaldoProducto" class="text-danger"></span>
                                                 </div>
                                             </div>
                                         </div>

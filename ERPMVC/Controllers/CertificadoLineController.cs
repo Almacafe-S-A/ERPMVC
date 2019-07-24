@@ -143,10 +143,31 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    if (_CertificadoLine.SubProductId > 0)
+                    //if(uid=="")
+                   if (_CertificadoLine.CertificadoLineId > 0)
                     {
                         _CertificadoLinelist.Add(_CertificadoLine);
                         HttpContext.Session.SetString("listadoproductoscertificadodeposito", JsonConvert.SerializeObject(_CertificadoLinelist).ToString());
+                    }
+                    else
+                    {
+                        var obj = _CertificadoLinelist.FirstOrDefault(x => x.CertificadoLineId == _CertificadoLine.CertificadoLineId);
+                        if (obj != null)
+                        {
+                            obj.Description = _CertificadoLine.Description;
+                            obj.Price = _CertificadoLine.Price;
+                            obj.Quantity = _CertificadoLine.Quantity;
+                            obj.Amount = _CertificadoLine.Amount;
+                            obj.SubProductId = _CertificadoLine.SubProductId;
+                            obj.SubProductName = _CertificadoLine.SubProductName;
+                            obj.TotalCantidad = _CertificadoLine.TotalCantidad;
+                            obj.UnitMeasureId = _CertificadoLine.UnitMeasureId;
+                            obj.UnitMeasurName = _CertificadoLine.UnitMeasurName;
+                           
+                        }
+
+
+
                     }
                 }
 

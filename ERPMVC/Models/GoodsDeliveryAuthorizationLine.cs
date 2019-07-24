@@ -44,6 +44,9 @@ namespace ERPMVC.Models
         public double valorcertificado { get; set; }
         [Display(Name = "Valor financiado")]
         public double valorfinanciado { get; set; }
+
+        [Display(Name = "Saldo de producto")]
+        public double SaldoProducto { get; set; }
     }
 
 

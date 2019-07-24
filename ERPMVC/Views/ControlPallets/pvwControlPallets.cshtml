@@ -351,6 +351,8 @@
                                             <div class="form-group">
                                                 <script>
                                                     function GetBoletaPeso() {
+
+                                                        var notification = $("#notification").data("kendoNotification");
                                                         var dataObject = { 'clave_e': $("#WeightBallot").val()};
                                                         $.ajax({
                                                             url: '@Url.Action("GetBoleto_EntById", "Boleto_Ent")',
@@ -362,7 +364,7 @@
                                                             success: function (result) {
                                                                 //console.log('Restful API:');
                                                                 // console.log(result);
-
+                                                                var resultados = result;
                                                                 var pesobruto = (result.Boleto_Sal.peso_n / 100);
                                                                 setearvalor("QQPesoBruto", pesobruto);
 
@@ -374,7 +376,7 @@
                                                                 setearvalor("QQPesoNeto", pesobruto - ts);
                                                                 
 
-                                                                if (result.clave_e == 0) {
+                                                                if (resultados.clave_e == 0) {
                                                                     //Web api local
                                                                     var urlbase = "http://localhost:9200/api/code"
                                                                     var dataObject2 = { 'id': $("#WeightBallot").val() };
@@ -393,8 +395,33 @@
                                                                         data: dataObject2,
                                                                         async: false,
                                                                         success: function (json) {
-                                                                            console.log(json);
+                                                                            //  console.log(json);
+                                                                            resultados = json;
+                                                                            $.ajax({
+                                                                                url: '@Url.Action("SaveBoleto_Ent", "Boleto_Ent")',
+                                                                                type: 'POST',
+                                                                                method: 'POST',                                                                               
+                                                                                dataType: 'json',
+                                                                                // contentType: 'application/json',
+                                                                                data: JSON.stringify(resultados),
+                                                                                async: false,
+                                                                                success: function (json) {
+                                                                                    //  console.log(json);
+                                                                                    //resultados = json;
 
+                                                                                },
+                                                                                error: function (parsedjson, textStatus, errorThrown) {
+
+                                                                                    $('body').append(
+                                                                                        "parsedJson status: " + parsedjson.status + '</br>' +
+                                                                                        "errorStatus: " + textStatus + '</br>' +
+                                                                                        "errorThrown: " + errorThrown);
+
+                                                                                }
+                                                                            });
+
+
+                                                                      
                                                                         },
                                                                         error: function (parsedjson, textStatus, errorThrown) {
 
@@ -407,6 +434,31 @@
                                                                     });
 
                                                                 }
+
+
+                                                                if ($("#EsIngreso").val() == 1) {
+                                                                    if (resultados.Boleto_Sal.peso_s > resultados.peso_e) {
+
+                                                                        notification.show({
+                                                                            title: "Validación",
+                                                                            message: "La boleta de peso es una salida de mercancía"
+                                                                        }, "error");
+
+                                                                        return false;
+                                                                    }
+                                                                }
+                                                                else if ($("#EsIngreso").val() == 0) { {
+                                                                    if (resultados.Boleto_Sal.peso_s < resultados.peso_e) {
+
+                                                                        notification.show({
+                                                                            title: "Validación",
+                                                                            message: "La boleta de peso es una entrada de mercancía"
+                                                                        }, "error");
+
+                                                                        return false;
+                                                                    }
+                                                                }
+
 
                                                             },
                                                              error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -422,7 +474,7 @@
                                                                       min="0"
                                                                       spinners="false"
                                                                       max="99999999"
-                                                                       onchange="GetBoletaPeso()"
+                                                                       onchange="return GetBoletaPeso()"
                                                                       step="1"
                                                                       style="width: 100%;"
                                                                       value="Model.WeightBallot"></kendo-numerictextbox>

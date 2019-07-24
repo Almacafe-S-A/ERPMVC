@@ -1403,9 +1403,7 @@
               <PaddingRight>2pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop>
               <PaddingBottom>2pt</PaddingBottom>
-              <Border>
-                <Color>#000000</Color>
-              </Border>
+              <Border />
             </Style>
             <KeepTogether>true</KeepTogether>
             <Paragraphs>
@@ -1951,14 +1949,14 @@ WHERE GoodsReceivedId =@GoodsReceivedId</CommandText>
       <Query>
         <DataSourceName>ERP</DataSourceName>
         <CommandType>Text</CommandType>
-        <CommandText>SELECT gr.*
+        <CommandText>       SELECT gr.*
   ,(CAST(be.peso_e AS FLOAT))/100 AS PB
 ,(bs.peso_n/100) AS PesoNetoCalculado
  ,CASE WHEN be.peso_e &gt; bs.peso_n THEN (be.peso_e - bs.peso_n )/100      
  WHEN be.peso_e &lt; bs.peso_n THEN (be.peso_e)/100
   END AS taracamion
-  ,(SELECT ((cp.TotalSacosYute * 1)/100) + ((cp.TotalSacosPolietileno * 0.5)/100) FROM ControlPallets cp WHERE cp.ControlPalletsId = grl.ControlPalletsId) AS TS
-  ,(SELECT cp.QQPesoNeto FROM ControlPallets cp WHERE cp.ControlPalletsId = grl.ControlPalletsId) AS PN
+  ,COALESCE((SELECT ((cp.TotalSacosYute * 1)/100) + ((cp.TotalSacosPolietileno * 0.5)/100) FROM ControlPallets cp WHERE cp.ControlPalletsId = grl.ControlPalletsId),0) AS TS
+  ,COALESCE((SELECT cp.QQPesoNeto FROM ControlPallets cp WHERE cp.ControlPalletsId = grl.ControlPalletsId),bs.peso_n/100) AS PN
   FROM GoodsReceived gr
   INNER JOIN Boleto_Ent be
      ON gr.WeightBallot = be.clave_e

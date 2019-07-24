@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -20,11 +21,11 @@ namespace ERPMVC.Controllers
     [CustomAuthorization]
     public class CustomerAreaController : Controller
     {
-        private readonly IOptions<MyConfig> config;
+        private readonly IOptions<MyConfig> _config;
         private readonly ILogger _logger;
         public CustomerAreaController(ILogger<CustomerAreaController> logger, IOptions<MyConfig> config)
         {
-            this.config = config;
+            this._config = config;
             this._logger = logger;
         }
 
@@ -43,7 +44,7 @@ namespace ERPMVC.Controllers
             CustomerArea _CustomerArea = new CustomerArea();
             try
             {
-                string baseadress = config.Value.urlbase;
+                string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/CustomerArea/GetCustomerAreaById/" + _CustomerAreap.CustomerAreaId);
@@ -80,7 +81,7 @@ namespace ERPMVC.Controllers
             try
             {
 
-                string baseadress = config.Value.urlbase;
+                string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/CustomerArea/GetCustomerArea");
@@ -106,6 +107,104 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> GetCustomerAreaById([DataSourceRequest]DataSourceRequest request, [FromBody]CustomerAreaDTO _CustomerAreap)
+        {
+            CustomerArea _CustomerArea = new CustomerArea();
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CustomerArea/GetCustomerAreaById/" + _CustomerAreap.CustomerAreaId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerArea = JsonConvert.DeserializeObject<CustomerArea>(valorrespuesta);
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return Json(_CustomerArea);
+
+        }
+
+
+
+
+        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request)
+        {
+            var res = await GetCustomerArea();
+            return Json(res.ToDataSourceResult(request));
+        }
+
+        public async Task<ActionResult> Orders_ValueMapper(Int64[] values)
+        {
+            var indices = new List<Int64>();
+
+            if (values != null && values.Any())
+            {
+                var index = 0;
+
+                foreach (var order in await GetCustomerArea())
+                {
+                    if (values.Contains(order.CustomerAreaId))
+                    {
+                        indices.Add(index);
+                    }
+
+                    index += 1;
+                }
+            }
+
+            return Json(indices);
+        }
+
+        private async Task<List<CustomerArea>> GetCustomerArea()
+        {
+            List<CustomerArea> _CustomerArea = new List<CustomerArea>();
+
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CustomerArea/GetCustomerArea");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerArea = JsonConvert.DeserializeObject<List<CustomerArea>>(valorrespuesta);
+                    _CustomerArea = (from c in _CustomerArea
+                                     select new CustomerArea
+                                    {                                     
+                                       CustomerAreaId = c.CustomerAreaId,
+                                       CustomerName = "Id: " + c.CustomerAreaId + " || Nombre: " + c.CustomerName + "|| Fecha:" + c.DocumentDate + "|| Area utilizada:" + c.UsedArea,
+                                       DocumentDate = c.DocumentDate,
+                                    }).ToList();
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return _CustomerArea;
+        }
+
+
+
+
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<CustomerArea>> SaveCustomerArea([FromBody]CustomerArea _CustomerArea)
       //  public async Task<ActionResult<CustomerArea>> SaveCustomerArea([FromBody]dynamic dto)
         {
@@ -114,7 +213,7 @@ namespace ERPMVC.Controllers
             {
               //  CustomerArea _CustomerArea = JsonConvert.DeserializeObject<CustomerArea>(dto);
                
-                string baseadress = config.Value.urlbase;
+                string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/CustomerArea/GetCustomerAreaById/" + _CustomerArea.CustomerAreaId);
@@ -123,7 +222,6 @@ namespace ERPMVC.Controllers
                 _CustomerArea.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
-
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _listCustomerArea = JsonConvert.DeserializeObject<CustomerArea>(valorrespuesta);
                 }
@@ -167,7 +265,7 @@ namespace ERPMVC.Controllers
             try
             {
                 // TODO: Add insert logic here
-                string baseadress = config.Value.urlbase;
+                string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 _CustomerArea.UsuarioCreacion = HttpContext.Session.GetString("user");
@@ -195,7 +293,7 @@ namespace ERPMVC.Controllers
         {
             try
             {
-                string baseadress = config.Value.urlbase;
+                string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
@@ -222,7 +320,7 @@ namespace ERPMVC.Controllers
         {
             try
             {
-                string baseadress = config.Value.urlbase;
+                string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 

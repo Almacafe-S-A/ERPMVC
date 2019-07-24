@@ -45,6 +45,10 @@ namespace ERPMVC.Models
         [Display(Name = "Nombre Cliente")]
         public string CustomerName { get; set; }
 
+        [Display(Name = "Area Utilizada")]
+        public Int64 CustomerAreaId { get; set; }
+
+
         [Display(Name = "Id")]
         public Int64 ProductId { get; set; }
 

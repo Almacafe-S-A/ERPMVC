@@ -293,10 +293,10 @@ namespace ERPMVC.Controllers
 
         [HttpPost("[action]")]
        // [ValidateAntiForgeryToken]
-         public async Task<ActionResult<ProformaInvoice>> SaveProformaInvoice([FromBody]ProformaInvoice _ProformaInvoice)
-      //  public async Task<ActionResult<SalesOrder>> SaveProformaInvoice([FromBody]dynamic dto)
+        // public async Task<ActionResult<ProformaInvoice>> SaveProformaInvoice([FromBody]ProformaInvoice _ProformaInvoice)
+        public async Task<ActionResult<SalesOrder>> SaveProformaInvoice([FromBody]dynamic dto)
         {
-           // ProformaInvoice _ProformaInvoice = JsonConvert.DeserializeObject<ProformaInvoice>(dto.ToString());
+            ProformaInvoice _ProformaInvoice = JsonConvert.DeserializeObject<ProformaInvoice>(dto.ToString());
             try
             {
                 if (_ProformaInvoice != null)
