@@ -28,12 +28,12 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-        public IActionResult Index()
+        public IActionResult CompanyInfo()
         {
             return View();
         }
 
-        public async Task<ActionResult> pvwCompanyInfo(Int64 Id = 0)
+        public async Task<ActionResult> pvwAddCompanyInfo(Int64 Id = 0)
         {
             CompanyInfo _CompanyInfo = new CompanyInfo();
             try
