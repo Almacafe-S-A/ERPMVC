@@ -113,6 +113,37 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpPost("[controller]/[action]")]
+        public async Task<DataSourceResult> GetSaldoProductoByCertificado([DataSourceRequest]DataSourceRequest request,[FromBody]Kardex _Kardexp)
+        {
+            List<Kardex> _Kardex = new List<Kardex>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Kardex/GetSaldoProductoByCertificado", _Kardexp);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Kardex = JsonConvert.DeserializeObject<List<Kardex>>(valorrespuesta);
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _Kardex.ToDataSourceResult(request);
+
+        }
+
         [HttpPost("[action]")]
         public async Task<ActionResult<Kardex>> SaveKardex([FromBody]Kardex _Kardex)
         {

@@ -29,6 +29,15 @@
             return false;
         }
 
+        if (input.attr('name') === "BranchId" && input.val() === "0") {
+            return false;
+        }
+
+        
+        if (input.attr('name') === "NoCD" && input.val() == 0) {
+            return false;
+        }
+
         if (input.attr('name') === "Quantity" && input.val() == 0) {
             return false;
         }
@@ -98,6 +107,7 @@
                                                     <label asp-for="NoCD" class="control-label"></label>
                                                     <kendo-numerictextbox name="NoCD"
                                                                           format="n"
+                                                                          required
                                                                           min="0"
                                                                           max="99999999"
                                                                           step="1"
@@ -663,8 +673,8 @@
         grid.dataSource.read();
     }
 
-    function SaveCertificadoDeposito(e) {
-
+     function SaveCertificadoDeposito(e) {
+         CalcularTotalDocumento();
         var notification = $("#notification").data("kendoNotification");
        // e.preventDefault();
         $("#btnSaveCertificadoDeposito").hide();
@@ -676,111 +686,118 @@
         });
 
         var displayedData = $("#gridCertificadoDepositoDetail").data().kendoGrid.dataSource.view();
+        for (var i = 0; i < displayedData.length; i++) {
+            displayedData[i].CertificadoLineId = 0;
+        }
 
-        var dataObject = {
-            'IdCD': $("#IdCD").val(),
-            'CustomerId': $("#CustomerId").val(),
-            'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),            
-            'BranchId': $("#BranchId").val(),
-            'BranchName': $("#BranchId").data("kendoDropDownList").text(),
-            'WarehouseId': $("#WarehouseId").val(),
-            'WarehouseName': $("#WarehouseId").data("kendoDropDownList").text(),
-            'ServicioId': $("#ServicioId").val(),
-            'ServicioName': $("#ServicioId").data("kendoDropDownList").text(),
-            'IdEstado': $("#IdEstado").val(),
-            'Direccion': $("#Direccion").val(),
-            'FechaCertificado': $("#FechaCertificado").getKendoDateTimePicker().value().toJSON(),
-            'NombreEmpresa': $("#NombreEmpresa").val(),
-            'EmpresaSeguro': $("#EmpresaSeguro").val(),
-            'NoPoliza': $("#NoPoliza").val(),
-            'FechaVencimiento': $("#FechaVencimiento").getKendoDateTimePicker().value().toJSON(),        
-            'Almacenaje': $("#Almacenaje").val(),
-            'BankId': $("#BankId").val(),
-            'BankName': $("#BankId").data("kendoDropDownList").text(),
-            'CurrencyId': $("#CurrencyId").val(),
-            'CurrencyName': $("#CurrencyId").data("kendoDropDownList").text(),
-            'FechaFirma': $("#FechaFirma").getKendoDateTimePicker().value().toJSON(),
-            'FechaInicioComputo': $("#FechaInicioComputo").getKendoDateTimePicker().value().toJSON(),
-            'FechaPagoBanco': $("#FechaPagoBanco").getKendoDateTimePicker().value().toJSON(),
-            'FechaVencimientoDeposito': $("#FechaVencimientoDeposito").getKendoDateTimePicker().value().toJSON(),
-            'LugarFirma': $("#LugarFirma").val(),
-            'MontoGarantia': $("#MontoGarantia").val(),
-            'NoCD': $("#NoCD").val(),
-            'NoTraslado': $("#NoTraslado").val(),
-            'NombrePrestatario': $("#NombrePrestatario").val(),
-            'OtrosCargos': $("#OtrosCargos").val(),
-            'PorcentajeInteresesInsolutos': $("#PorcentajeInteresesInsolutos").val(),
-            'Quantitysum': $("#Quantitysum").val(),
-            'Seguro': $("#Seguro").val(),
-            'SujetasAPago': $("#SujetasAPago").val(),
-            'Total': $("#Total").val() ,
-            '_CertificadoLine': displayedData,
-            'RecibosAsociados': list
-            //'FechaCreacion': $("#FechaCreacion").val(),
-            //'FechaModificacion': $("#FechaModificacion").val(),
-            //'UsuarioCreacion': $("#UsuarioCreacion").val(),
-            //'UsuarioModificacion': $("#UsuarioModificacion").val(),
-        };
-
-        //console.log(JSON.stringify(dataObject));
-        //var form = $("#frmCertificadoDeposito");
-        //form.validate();
 
         var validator = $("#frmCertificadoDeposito").data("kendoValidator");
         var validator2 = $("#TotalesDocumento").data("kendoValidator");
         var status = $(".status");
+         if (displayedData.length > 0) {
+             if (validator.validate() && validator2.validate()) {
+                 var dataObject = {
+                     'IdCD': $("#IdCD").val(),
+                     'CustomerId': $("#CustomerId").val(),
+                     'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
+                     'BranchId': $("#BranchId").val(),
+                     'BranchName': $("#BranchId").data("kendoDropDownList").text(),
+                     'WarehouseId': $("#WarehouseId").val(),
+                   //  'WarehouseName': $("#WarehouseId").data("kendoDropDownList").text(),
+                     'ServicioId': $("#ServicioId").val(),
+                     'ServicioName': $("#ServicioId").data("kendoDropDownList").text(),
+                     'IdEstado': $("#IdEstado").val(),
+                     'Direccion': $("#Direccion").val(),
+                     'FechaCertificado': $("#FechaCertificado").getKendoDateTimePicker().value().toJSON(),
+                     'NombreEmpresa': $("#NombreEmpresa").val(),
+                     'EmpresaSeguro': $("#EmpresaSeguro").val(),
+                     'NoPoliza': $("#NoPoliza").val(),
+                     'FechaVencimiento': $("#FechaVencimiento").getKendoDateTimePicker().value().toJSON(),
+                     'Almacenaje': $("#Almacenaje").val(),
+                     'BankId': $("#BankId").val(),
+                     'BankName': $("#BankId").data("kendoDropDownList").text(),
+                     'CurrencyId': $("#CurrencyId").val(),
+                     'CurrencyName': $("#CurrencyId").data("kendoDropDownList").text(),
+                     'FechaFirma': $("#FechaFirma").getKendoDateTimePicker().value().toJSON(),
+                     'FechaInicioComputo': $("#FechaInicioComputo").getKendoDateTimePicker().value().toJSON(),
+                     'FechaPagoBanco': $("#FechaPagoBanco").getKendoDateTimePicker().value().toJSON(),
+                     'FechaVencimientoDeposito': $("#FechaVencimientoDeposito").getKendoDateTimePicker().value().toJSON(),
+                     'LugarFirma': $("#LugarFirma").val(),
+                     'MontoGarantia': $("#MontoGarantia").val(),
+                     'NoCD': $("#NoCD").val(),
+                     'NoTraslado': $("#NoTraslado").val(),
+                     'NombrePrestatario': $("#NombrePrestatario").val(),
+                     'OtrosCargos': $("#OtrosCargos").val(),
+                     'PorcentajeInteresesInsolutos': $("#PorcentajeInteresesInsolutos").val(),
+                     'Quantitysum': $("#Quantitysum").val(),
+                     'Seguro': $("#Seguro").val(),
+                     'SujetasAPago': $("#SujetasAPago").val(),
+                     'Total': $("#Total").val(),
+                     '_CertificadoLine': displayedData,
+                     'RecibosAsociados': list
+                     //'FechaCreacion': $("#FechaCreacion").val(),
+                     //'FechaModificacion': $("#FechaModificacion").val(),
+                     //'UsuarioCreacion': $("#UsuarioCreacion").val(),
+                     //'UsuarioModificacion': $("#UsuarioModificacion").val(),
+                 };
 
-        //console.log(JSON.stringify(dataObject));
-        //console.log(dataObject);
+                 //console.log(JSON.stringify(dataObject));
+                 //var form = $("#frmCertificadoDeposito");
+                 //form.validate();
 
-        if (displayedData.length > 0) {
-            if (validator.validate() && validator2.validate()) {
 
-                $.ajax({
-                    url: '@Url.Action("SaveCertificadoDeposito", "CertificadoDeposito")',
-                    method: 'POST',
-                    datatype: "json",
-                  //  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-                    contentType: 'application/json',
-                    async: false,
-                    data: JSON.stringify( dataObject),
-                    success: function (data) {
 
-                        $.toast({
-                            heading: 'Satisfactorio',
-                            text: 'Datos guardados correctamente.',
-                            position: 'top-right',
-                            loaderBg: '#ff6849',
-                            icon: 'success',
-                            hideAfter: 30000,
-                            stack: 6
-                        });
-                        //notification.show({
-                        //    message: "Guardado correctamente!"
-                        //}, "upload-success");
+                 //console.log(JSON.stringify(dataObject));
+                 //console.log(dataObject);
 
-                        RefreshCertificadoDeposito();
-                        $('#myModalCertificadoDeposito').modal('hide');
 
-                    },
-                    error: function (XMLHttpRequest, textStatus, errorThrown) {
 
-                        $("#btngenerarfactura").show();
-                        notification.show({
-                            title: "Validacion",
-                            message: textStatus + ": " + XMLHttpRequest.responseText
-                        }, "error");
 
-                    }
-                });
+                 $.ajax({
+                     url: '@Url.Action("SaveCertificadoDeposito", "CertificadoDeposito")',
+                     method: 'POST',
+                     datatype: "json",
+                     //  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                     contentType: 'application/json',
+                     async: false,
+                     data: JSON.stringify(dataObject),
+                     success: function (data) {
 
-            }
-            else {
-                status.text("Oops! There is invalid data in the form.")
-                    .removeClass("valid")
-                    .addClass("invalid");
-            }
-        }
+                         $.toast({
+                             heading: 'Satisfactorio',
+                             text: 'Datos guardados correctamente.',
+                             position: 'top-right',
+                             loaderBg: '#ff6849',
+                             icon: 'success',
+                             hideAfter: 30000,
+                             stack: 6
+                         });
+                         //notification.show({
+                         //    message: "Guardado correctamente!"
+                         //}, "upload-success");
+
+                         RefreshCertificadoDeposito();
+                         $('#myModalCertificadoDeposito').modal('hide');
+
+                     },
+                     error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                         $("#btngenerarfactura").show();
+                         notification.show({
+                             title: "Validacion",
+                             message: textStatus + ": " + XMLHttpRequest.responseText
+                         }, "error");
+
+                     }
+                 });
+
+             }
+             else {
+                 status.text("Oops! There is invalid data in the form.")
+                     .removeClass("valid")
+                     .addClass("invalid");
+             }
+         }
         else {
             notification.show({
                 title: "Validacion",

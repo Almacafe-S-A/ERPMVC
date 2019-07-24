@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -35,9 +36,9 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult> pvwProformaInvoiceLine([FromBody]ProformaInvoiceLine _salesorderline)
+        public async Task<ActionResult> pvwProformaInvoiceLine([FromBody]ProformaInvoiceLineDTO _salesorderline)
         {
-            ProformaInvoiceLine _ProformaInvoiceLine = new ProformaInvoiceLine();
+            ProformaInvoiceLineDTO _ProformaInvoiceLine = new ProformaInvoiceLineDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -48,13 +49,13 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ProformaInvoiceLine = JsonConvert.DeserializeObject<ProformaInvoiceLine>(valorrespuesta);
+                    _ProformaInvoiceLine = JsonConvert.DeserializeObject<ProformaInvoiceLineDTO>(valorrespuesta);
 
                 }
 
                 if (_ProformaInvoiceLine == null)
                 {
-                    _ProformaInvoiceLine = new ProformaInvoiceLine();
+                    _ProformaInvoiceLine = new ProformaInvoiceLineDTO { IdCD = _salesorderline.IdCD };
                 }
             }
             catch (Exception ex)
@@ -121,10 +122,37 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    if (_ProformaInvoiceLinep.Quantity > 0)
+                    if (_ProformaInvoiceLinep.ProformaLineId > 0)
                     {
                         _GoodsReceivedLine.Add(_ProformaInvoiceLinep);
                         HttpContext.Session.SetString("listadoproductosproformainvoice", JsonConvert.SerializeObject(_GoodsReceivedLine).ToString());
+                    }
+                    else
+                    {
+                        var obj = _GoodsReceivedLine.FirstOrDefault(x => x.ProformaLineId == _ProformaInvoiceLinep.ProformaLineId);
+                        if (obj != null)
+                        {
+                            obj.Description = _ProformaInvoiceLinep.Description;
+                            obj.Price = _ProformaInvoiceLinep.Price;
+                            obj.Quantity = _ProformaInvoiceLinep.Quantity;
+                            obj.Amount = _ProformaInvoiceLinep.Amount;
+                            obj.SubProductId = _ProformaInvoiceLinep.SubProductId;
+                            obj.SubProductName = _ProformaInvoiceLinep.SubProductName;
+                            obj.SubTotal = _ProformaInvoiceLinep.SubTotal;
+                            obj.TaxAmount = _ProformaInvoiceLinep.TaxAmount;
+                            obj.TaxCode = _ProformaInvoiceLinep.TaxCode;
+                            obj.TaxPercentage = _ProformaInvoiceLinep.TaxPercentage;
+                            obj.UnitOfMeasureId = _ProformaInvoiceLinep.UnitOfMeasureId;
+                            obj.UnitOfMeasureName = _ProformaInvoiceLinep.UnitOfMeasureName;
+                            obj.WareHouseId = _ProformaInvoiceLinep.WareHouseId;
+                            obj.CenterCostId = _ProformaInvoiceLinep.CenterCostId;
+                            obj.DiscountAmount = _ProformaInvoiceLinep.DiscountAmount;
+                            obj.DiscountPercentage = _ProformaInvoiceLinep.DiscountPercentage;
+
+                        }
+
+
+
                     }
                 }
 

@@ -19,7 +19,30 @@
                 subproductname = $("#SubProductId").data("kendoDropDownList").text();
             }
         }
-            return {
+
+        var displayedData = $("#gridProformaInvoiceDetail").data().kendoGrid.dataSource.view();
+        var id = -999999;
+        debugger;
+        if (Number($("#ProformaLineId").val()) === 0) {
+            if (displayedData.length > 0) {
+                for (var i = 0; i < displayedData.length; i++) {
+                    //console.log('Linea:' + displayedData[i].ProformaLineId);
+                    //console.log('Linea:' + id);
+                    if (displayedData[i].ProformaLineId > id)
+                        id = displayedData[i].ProformaLineId;
+
+                }
+
+                id = id + 1;
+            }
+        }
+        else {
+            id = $("#ProformaLineId").val();
+        }
+
+
+        return {
+                ProformaLineId : id,
                 ProformaInvoiceId: @Model.ProformaId,
                 /*ProductId: $("#ProductId").val(),*/
                 SubProductId: $("#SubProductId").val(),              
@@ -93,13 +116,15 @@
         }
     }
 
+    var hcustom = 0;
     function EditCotizacionDetalle(e) {
-
+        var notification = $("#notification").data("kendoNotification");
         e.preventDefault();
         var notification = $("#notification").data("kendoNotification");
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        debugger;
-        if (dataItem.ProformaLineId > 0) {
+        //  debugger;
+        if (dataItem.ProformaInvoiceId > 0) {
+             $("#btnActualizarCotizacionLinea").prop("disabled", true);
             var subproducto = 0;
             var dataObject = { 'Id': dataItem.ProformaLineId };
             $.ajax({
@@ -132,7 +157,7 @@
             });
 
             $("#frmSalesOrderLine :input").prop("disabled", true);
-            llenarsubproduct();
+            //llenarsubproduct();
             var combobox = $('#SubProductId').getKendoDropDownList();
             if (combobox != null) {
                 combobox.value(subproducto);
@@ -141,7 +166,49 @@
             }
         }
         else {
-            llenarsubproduct();
+
+            var dataObject = { 'ProformaInvoiceId': 0, 'IdCD': ($("#cbxBuscarCertificadosDeposito").val() == '' ? 0 : $("#cbxBuscarCertificadosDeposito").val()) };
+            console.log(dataObject);
+           $.ajax({
+                url: '@Url.Action("pvwProformaInvoiceLine", "ProformaInvoiceLine")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    $("#SalesOrderLineMant").html('');
+                    $("#SalesOrderLineMant").html(data);
+                    var txt = $(data);
+
+                    //var combobox = $('#SubProductId').getKendoDropDownList();
+                    //if (combobox != null) {
+                    //    var found = $("#SubProductId", txt);
+                    //    subproducto = $(found).val();
+                    //}
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    //  $("#btngenerarfactura").show();
+                    notification.show({
+                        title: "Validacion",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+
+                }
+            });
+
+
+            $("#btnActualizarCotizacionLinea").prop("disabled", false);
+            $("#ProformaLineId").val(dataItem.ProformaLineId);
+            $("#IdCD").val($("#cbxBuscarCertificadosDeposito").val());
+            hcustom = $("#CustomerId").val();
+            //console.log(hcustom);
+            if(Number($("#IdCD").val()) === 0)
+            {
+                llenarsubproduct();
+            }
+            $("#SubProductId").data("kendoDropDownList").dataSource.read();
             $("#SubProductId").data("kendoDropDownList").value(dataItem.SubProductId);
             $("#UnitOfMeasureId").data("kendoDropDownList").value(dataItem.UnitOfMeasureId);
             $("#UnitOfMeasureId").data("kendoDropDownList").value(dataItem.UnitOfMeasureId);
@@ -230,16 +297,16 @@
                                               columns.Bound(p => p.SubProductName).Title("Producto").Width(150);
                                               columns.Bound(p => p.Description).Title("Descripcion").Width(150);
                                               columns.Bound(p => p.Quantity).Title("Cantidad").Width(150);
-                                              columns.Bound(p => p.Price).Title("Precio").Width(150);
+                                              columns.Bound(p => p.Price).Title("Precio").Format("{0:n2}").Width(150);
                                               columns.Bound(p => p.UnitOfMeasureId).Title("Unidad de medida").Visible(false);
                                               //  columns.Bound(p => p.TaxPercentage).Title("Porcentaje impuestos").Width(150);
-                                              columns.Bound(p => p.SubTotal).Title("Sub Total").Width(150);
-                                              columns.Bound(p => p.DiscountAmount).Title("Descuentos").Width(150);
+                                              columns.Bound(p => p.SubTotal).Format("{0:n2}").Title("Sub Total").Width(150);
+                                              columns.Bound(p => p.DiscountAmount).Format("{0:n2}").Title("Descuentos").Width(150);
                                               columns.Bound(p => p.TaxCode).Title("Tipo Impuesto").Width(150);
                                               // columns.Bound(p => p.tax).Title("Tipo Impuesto").Width(150);
-                                              columns.Bound(p => p.TaxAmount).Title("Impuestos").Width(150);
+                                              columns.Bound(p => p.TaxAmount).Format("{0:n2}").Title("Impuestos").Width(150);
 
-                                              columns.Bound(p => p.Total).Title("Total").Width(150);
+                                              columns.Bound(p => p.Total).Format("{0:n2}").Title("Total").Width(150);
 
                                           })
                                               .Filterable(f => f.Operators(o => o.ForString(s => s

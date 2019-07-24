@@ -144,7 +144,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[controller]/[action]")]
-          public async Task<ActionResult<GoodsDeliveryAuthorization>> SaveGoodsDeliveryAuthorization([FromBody]GoodsDeliveryAuthorization _GoodsDeliveryAuthorization)
+          public async Task<ActionResult<GoodsDeliveryAuthorization>> SaveGoodsDeliveryAuthorization([FromBody]GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorization)
         //public async Task<ActionResult<GoodsDeliveryAuthorization>> SaveGoodsDeliveryAuthorization([FromBody]dynamic dto)
         {
           //  GoodsDeliveryAuthorization _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorization();
@@ -270,7 +270,7 @@ namespace ERPMVC.Controllers
         // POST: GoodsDeliveryAuthorization/Insert
         [HttpPost("[controller]/[action]")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<GoodsDeliveryAuthorization>> Insert(GoodsDeliveryAuthorization _GoodsDeliveryAuthorization)
+        public async Task<ActionResult<GoodsDeliveryAuthorization>> Insert(GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorization)
         {
             try
             {
@@ -285,7 +285,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _GoodsDeliveryAuthorization = JsonConvert.DeserializeObject<GoodsDeliveryAuthorization>(valorrespuesta);
+                    _GoodsDeliveryAuthorization = JsonConvert.DeserializeObject<GoodsDeliveryAuthorizationDTO>(valorrespuesta);
                 }
 
             }

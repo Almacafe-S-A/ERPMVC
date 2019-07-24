@@ -1,4 +1,4 @@
-﻿@model ERPMVC.Models.ProformaInvoiceLine
+﻿@model ERPMVC.DTO.ProformaInvoiceLineDTO
 
 
 
@@ -12,7 +12,7 @@
         $('#TaxCode').data("kendoDropDownList").value(0);
         $('Description').val('');
         CalcularTotalDocumento();
-       // $("#btnActualizarCotizacionLinea").prop("disabled", false);
+        $("#btnActualizarCotizacionLinea").prop("disabled", false);
        closesaleorderline();
     };
 
@@ -75,14 +75,16 @@
 
 
         if ($("#cbxBuscarCertificadosDeposito").val() !== '') {
-            console.log($("#Price").data("kendoNumericTextBox").value());
+          //  console.log($("#Price").data("kendoNumericTextBox").value());
             var dataObject = {
                 CertificadoDepositoId: $("#cbxBuscarCertificadosDeposito").val(),
-                SalesOrderId: $("#cbxBuscarCotizaciones").val(),
-                OrderDate: $("#OrderDate").val(),
+                SalesOrderId: ($("#cbxBuscarCotizaciones").val() === '' ? 0 : $("#cbxBuscarCotizaciones").val()),
+                OrderDate: $("#OrderDate").getKendoDateTimePicker().value().toJSON(),
                 SubTotal: $("#Price").data("kendoNumericTextBox").value(),
                 Discount: $("#Quantity").data("kendoNumericTextBox").value(),
             };
+
+            console.log(dataObject);
 
             $.ajax({
                 url: '@Url.Action("CalcularConCertificado","ProformaInvoice")',
@@ -94,7 +96,7 @@
                 success: function (result) {
                     console.log(result);
                     setearvalor("Total", result.Total);
-                  
+
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     alert(textStatus + ": " + XMLHttpRequest.responseText);
@@ -209,27 +211,7 @@
     function AgregarCustomerCondition() {
         var notification = $("#notification").data("kendoNotification");
 
-         @*var dataObject = { 'ConditionId': $("#ConditionId").val() };
-
-           $.ajax({
-            url: '@Url.Action("Index","CustomerConditions")',
-            method: 'GET',
-            datatype: "json",
-            contentType: 'application/json',
-            async: false,
-            data: dataObject,
-               success: function (result) {
-                   //console.log(result);
-                   //debugger;
-                  // $("#CustomerConditionView").html('');
-                  // $("#CustomerConditionView").html(result);
-
-            },
-             error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
-              }
-         });*@
-
+       
         if ($("#SalesOrderId").val() > 0) {
             $('#myModalCustomerConditions').modal('show');
         }
@@ -242,6 +224,9 @@
     }
 
 </script>
+
+
+
 
 @*@await Html.PartialAsync("~/Views/CustomerConditions/Index.cshtml")*@
 
@@ -261,30 +246,30 @@
 
                 @{
                     var messages1 = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
-                                                                    {"required","Valor requerido" }
-                                                                 };
+                                                                            {"required","Valor requerido" }
+                                                                         };
                     var rules1 = new Dictionary<string, string>() { { "custom", "customFunction" } };
                 }
 
                 @*<div class="row">
-                    <div class="col-md-12">
-                        <div class="card-base">
-                            <div class="card-icon">
-                                <a href="#" title="Widgets" id="widgetCardIcon" class="imagecard">
-                                    <span class="fa fa-plus-hexagon"></span>
-                                </a>
-                                <div class="card-data widgetCardData">
-                                    <h3 class="box-title" style="color:#3c8dbc;text-align:center">Condiciones</h3>
-                                  
-                                    <button id="btnAgregarCondicion" type="submit" onclick="agregarcondicionpopup();" class="form-control">Agregar Condición</button>
-                                    <button id="btnAgregarCustomerCondicion" type="submit" onclick="AgregarCustomerCondition();" class="form-control"><i class="fa fa-plus-circle"></i>Agregar Valores</button>
-                          
-                                </div>
-                            </div>
+                        <div class="col-md-12">
+                            <div class="card-base">
+                                <div class="card-icon">
+                                    <a href="#" title="Widgets" id="widgetCardIcon" class="imagecard">
+                                        <span class="fa fa-plus-hexagon"></span>
+                                    </a>
+                                    <div class="card-data widgetCardData">
+                                        <h3 class="box-title" style="color:#3c8dbc;text-align:center">Condiciones</h3>
 
+                                        <button id="btnAgregarCondicion" type="submit" onclick="agregarcondicionpopup();" class="form-control">Agregar Condición</button>
+                                        <button id="btnAgregarCustomerCondicion" type="submit" onclick="AgregarCustomerCondition();" class="form-control"><i class="fa fa-plus-circle"></i>Agregar Valores</button>
+
+                                    </div>
+                                </div>
+
+                            </div>
                         </div>
-                    </div>
-                </div>*@
+                    </div>*@
 
                 <div class="row" id="validation">
                     <div class="col-lg-12">
@@ -302,6 +287,16 @@
                                       method="post" class="validation-wizard wizard-circle">
                                     <div class="form-body">
                                         <hr>
+
+
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label asp-for="ProformaLineId" class="control-label" style="width:100%"></label>
+                                                    <input type="number" asp-for="ProformaLineId" class="form-control" style="min-width:100%" disabled />
+                                                </div>
+                                            </div>
+                                        </div>
 
                                         <div class="row">
                                             <div class="col-md-4">
@@ -323,26 +318,71 @@
                                                             if (dataItem != null)
                                                                 $("#subproductname").val(dataItem.ProductName);
                                                         }
+
+                                                      //  var hcustom = 0;
+                                                        function GetProductTypeIdS() {
+                                                            //debugger;
+                                                            // console.log($("#hcustomerid").val());
+                                                            hcustom = $("#CustomerId").val();
+                                                            return {
+                                                                'CustomerId': hcustom
+                                                                // 'CustomerId': $("#CustomerId").val(),
+                                                                // 'ProductTypeId': 2
+
+                                                            }
+                                                        }
                                                     </script>
                                                     <input type="hidden" id="subproductname" />
-                                                    <kendo-dropdownlist name="SubProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        option-label="Seleccione el subproducto"
-                                                                        for="SubProductId"
-                                                                        datatextfield="ProductName"
-                                                                        datavaluefield="SubproductId"
-                                                                        auto-bind="false"
-                                                                        on-select="setsubproductname"
-                                                                        required
-                                                                        style="width: 100%;">
-                                                        <datasource type="DataSourceTagHelperType.WebApi">
-                                                            <transport>
-                                                                <read url="@Url.Action("GetSubProductByProductId", "ProductRelation")" data="GetProductIdS()" />
-                                                            </transport>
-                                                        </datasource>
+                                                    <input type="hidden" id="IdCD" asp-for="IdCD" />
+                                                   <script>
+                                                       debugger;
+                                                       console.log($("#IdCD").val());
+                                                       if (Number($("#IdCD").val()) === 0) {
+                                                           $("#productcliente").remove();
+                                                       }
+                                                       else {
+                                                           $("#productrelacion").remove();
+                                                       }
+                                                   </script>
+                                                        <div id="productrelacion">
+                                                            <kendo-dropdownlist name="SubProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                                option-label="Seleccione el subproducto"
+                                                                                for="SubProductId"
+                                                                                datatextfield="ProductName"
+                                                                                datavaluefield="SubproductId"
+                                                                                auto-bind="false"
+                                                                                on-select="setsubproductname"
+                                                                                required
+                                                                                style="width: 100%;">
+                                                                <datasource type="DataSourceTagHelperType.WebApi">
+                                                                    <transport>
+                                                                        <read url="@Url.Action("GetSubProductByProductId", "ProductRelation")"  />
+                                                                    </transport>
+                                                                </datasource>
 
-                                                    </kendo-dropdownlist>
-                                                    <span asp-validation-for="SubProductId" class="text-danger"></span>
-                                                </div>
+                                                            </kendo-dropdownlist>
+                                                        </div>
+                                                        <div id="productcliente">
+                                                            <kendo-dropdownlist name="SubProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                                option-label="Seleccione el subproducto"
+                                                                                for="SubProductId"
+                                                                                datatextfield="ProductName"
+                                                                                datavaluefield="SubproductId"
+                                                                                auto-bind="false"
+                                                                                on-select="setsubproductname"
+                                                                                required
+                                                                                style="width: 100%;">
+                                                                <datasource type="DataSourceTagHelperType.WebApi">
+                                                                    <transport>
+                                                                        <read url="@Url.Action("GetSubProductoByTipoByCustomer", "SubProduct")" data="GetProductTypeIdS()" />
+                                                                    </transport>
+                                                                </datasource>
+
+                                                            </kendo-dropdownlist>
+                                                        </div>
+                                                    
+                                                <span asp-validation-for="SubProductId" class="text-danger"></span>
+                                            </div>
                                             </div>
 
 
@@ -569,7 +609,7 @@
                                     <div class="row">
                                         @if (Model.ProformaInvoiceId == 0)
                                         {
-                                        <button id="btnActualizarCotizacionLinea" type="submit" class="form-control">Actualizar</button>
+                                            <button id="btnActualizarCotizacionLinea" type="submit" class="form-control">Actualizar</button>
                                         }
                                     </div>
                                 </form>

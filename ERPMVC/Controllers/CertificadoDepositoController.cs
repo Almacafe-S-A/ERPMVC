@@ -410,7 +410,7 @@ namespace ERPMVC.Controllers
                                             select new CertificadoDeposito
                                    {                                       
                                         IdCD = c.IdCD,
-                                        CustomerName = "Número de certificado:" + c.NoCD + "  || Nombre:" + c.CustomerName + "|| Fecha:" + c.FechaCertificado + "|| Total:" + c.Total,
+                                        CustomerName ="Id:"+c.IdCD + " ||Número de certificado:" + c.NoCD + "  || Nombre:" + c.CustomerName + "|| Fecha:" + c.FechaCertificado + "|| Total:" + c.Total,
                                                 CustomerId = c.CustomerId,
                                  }).ToList();
 

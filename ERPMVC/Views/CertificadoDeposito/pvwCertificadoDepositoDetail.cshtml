@@ -18,6 +18,28 @@
             }
         }
 
+
+        var displayedData = $("#gridCertificadoDepositoDetail").data().kendoGrid.dataSource.view();
+        var id = -999999;
+        debugger;
+        if (Number($("#CertificadoLineId").val()) === 0) {
+            if (displayedData.length > 0) {
+                for (var i = 0; i < displayedData.length; i++) {
+                    console.log('Linea:' + displayedData[i].CertificadoLineId);
+                    console.log('Linea:' + id);
+                    if (displayedData[i].CertificadoLineId > id)
+                        id = displayedData[i].CertificadoLineId ;
+                      
+                }
+
+                id = id + 1;
+            }
+        }
+        else {
+            id = $("#CertificadoLineId").val();
+        }
+
+
             return {
                 @*'IdCD': @Model.IdCD,              
                 'UnitOfMeasureId' : $("#UnitOfMeasureId").val(),
@@ -35,8 +57,9 @@
                 'TaxAmount': $("#TaxAmount").val(),
                 'Total': $("#TotalLine").val(),*@
 
+                'CertificadoLineId': id,
                 'IdCD': @Model.IdCD,
-                'CertificadoLineId': $("#CertificadoLineId").val(),
+                'uid': $("#uid").val(),               
                 'SubProductId': $("#SubProductId").val(),
                 'SubProductName': subproductname,
                 'Description': $("#DescriptionDetail").val(),
@@ -54,7 +77,7 @@
         var grid = $("#gridCertificadoDepositoDetail").getKendoGrid();
         grid.dataSource.read();
 
-        CalcularTotalDocumento();
+        //CalcularTotalDocumento();
     }
 
 
@@ -62,7 +85,7 @@
         var notification = $("#notification").data("kendoNotification");
       //  console.log($("#ProductId").val());
         if ($("#ServicioId").val() !== '' && $("#ServicioId").val() !== '0'  ) {
-
+            $("#SubProductId").data("kendoDropDownList").value(0);
           //  llenarsubproduct();
             $("#frmCertificadoDepositoLine :input").not('#SalesOrderId').prop("disabled", false);
             $('#TaxCode').val(0);
@@ -109,11 +132,11 @@
             e.preventDefault();
             var notification = $("#notification").data("kendoNotification");
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-            // console.log(dataItem);
-            debugger;
+            console.log(dataItem);
+          //  debugger;
             var subproducto = 0;
             var dataObject = { 'CertificadoLineId': dataItem.CertificadoLineId };
-            if (dataItem.CertificadoLineId > 0) {
+            if (dataItem.IdCD > 0) {
                 $.ajax({
                     url: '@Url.Action("pvwCertificadoDepositoDetailMant", "CertificadoLine")',
                     method: 'GET',
@@ -149,6 +172,7 @@
 
             }
             else {
+                $("#CertificadoLineId").val(dataItem.CertificadoLineId);                
                 $("#IdCD").val(0);
                 $("#DescriptionDetail").val(dataItem.Description);
                 var quantity = $("#Quantity").data("kendoNumericTextBox");
@@ -163,6 +187,7 @@
                 Amount.value(dataItem.Amount);
                 Amount.trigger('change');
 
+                $("#uid").val(dataItem.uid);
                 
                 $("#UnitMeasureId").data("kendoDropDownList").value(dataItem.UnitMeasureId);
 
@@ -261,8 +286,8 @@
                                               columns.Bound(p => p.UnitMeasurName).Title("Unidad de medida").Width(150);
                                               columns.Bound(p => p.Description).Title("Descripcion").Width(150);
                                               columns.Bound(p => p.Quantity).Format("{0:n2}").Title("Cantidad").Width(150);
-                                              columns.Bound(p => p.Price).Title("Precio").Width(150);
-                                              columns.Bound(p => p.Amount).Title("Total").Width(125);
+                                              columns.Bound(p => p.Price).Format("{0:n2}").Title("Precio").Width(150);
+                                              columns.Bound(p => p.Amount).Format("{0:n2}").Title("Total").Width(125);
                                               //columns.Bound(p => p.TotalCantidad).Title("Total Cantidad");
                                               //columns.Bound(p => p.TaxPercentage).Title("Porcentaje impuestos").Width(150);
                                               //columns.Bound(p => p.SubTotal).Title("Sub Total").Width(150);
