@@ -364,6 +364,7 @@ namespace ERPMVC.Controllers
                     _customercontract.ProductName = _SalesOrdermodel.ProductName;
 
                     CompanyInfo _company = new CompanyInfo { CompanyInfoId = 1 };
+                    _client = new HttpClient();
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                      result = await _client.GetAsync(baseadress + "api/CompanyInfo/GetCompanyInfoById/" + _company.CompanyInfoId);
                      valorrespuesta = "";
@@ -402,7 +403,7 @@ namespace ERPMVC.Controllers
                 catch (Exception ex)
                 {
                     _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                    return await Task.Run(() => BadRequest($"{ex.ToString()}!"));
                 }
 
             }

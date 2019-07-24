@@ -244,6 +244,8 @@ namespace ERPMVC.Controllers
                 }
 
 
+                //Se utiliza el campo Discount como Quqantity de la linea y se usa el campo SubTotal como Price
+
                 double totalfacturar = 0;
                 foreach (var item in _CustomerConditions)
                 {

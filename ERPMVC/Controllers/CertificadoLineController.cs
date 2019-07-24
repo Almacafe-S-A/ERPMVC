@@ -143,8 +143,16 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
+
+                    List<CertificadoLine> _existelinea = new List<CertificadoLine>();
+                    if (HttpContext.Session.GetString("listadoproductoscertificadodeposito") != "")
+                    {
+                        _CertificadoLinelist = JsonConvert.DeserializeObject<List<CertificadoLine>>(HttpContext.Session.GetString("listadoproductoscertificadodeposito"));
+                        _existelinea = _CertificadoLinelist.Where(q => q.CertificadoLineId == _CertificadoLine.CertificadoLineId).ToList();
+                    }
+
                     //if(uid=="")
-                   if (_CertificadoLine.CertificadoLineId > 0)
+                    if (_CertificadoLine.CertificadoLineId > 0 && _existelinea.Count == 0)
                     {
                         _CertificadoLinelist.Add(_CertificadoLine);
                         HttpContext.Session.SetString("listadoproductoscertificadodeposito", JsonConvert.SerializeObject(_CertificadoLinelist).ToString());
@@ -296,17 +304,36 @@ namespace ERPMVC.Controllers
         {
             try
             {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/CertificadoLine/Delete", _CertificadoLine);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
+                List<CertificadoLine> _salesorderLIST =
+                JsonConvert.DeserializeObject<List<CertificadoLine>>(HttpContext.Session.GetString("listadoproductoscertificadodeposito"));
+
+                if (_salesorderLIST != null)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CertificadoLine = JsonConvert.DeserializeObject<CertificadoLine>(valorrespuesta);
+                    _salesorderLIST = _salesorderLIST
+                            .Where(q => q.CertificadoLineId == _CertificadoLine.CertificadoLineId)
+                           .Where(q => q.Quantity != _CertificadoLine.Quantity)
+                           .Where(q => q.Amount != _CertificadoLine.Amount)
+                           .Where(q => q.TotalCantidad != _CertificadoLine.TotalCantidad)
+                           .Where(q => q.Price != _CertificadoLine.Price)
+                           .Where(q => q.SubProductId != _CertificadoLine.SubProductId)
+                          .ToList();
+
+                    HttpContext.Session.SetString("listadoproductoscertificadodeposito", JsonConvert.SerializeObject(_salesorderLIST));
                 }
+
+
+                //string baseadress = config.Value.urlbase;
+                //HttpClient _client = new HttpClient();
+                //_client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                //var result = await _client.PostAsJsonAsync(baseadress + "api/CertificadoLine/Delete", _CertificadoLine);
+                //string valorrespuesta = "";
+                //if (result.IsSuccessStatusCode)
+                //{
+                //    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                //    _CertificadoLine = JsonConvert.DeserializeObject<CertificadoLine>(valorrespuesta);
+                //}
 
             }
             catch (Exception ex)
