@@ -62,5 +62,14 @@ namespace ERPMVC.Models
         public List<KardexLine> _KardexLine { get; set; } = new List<KardexLine>();
     }
 
+    public class KardexParam
+    {
+        public Int64 DocumentId { get; set; }
+
+        
+        public string DocumentName { get; set; }
+
+        public Int64 SubProducId { get; set; }
+    }
 
 }

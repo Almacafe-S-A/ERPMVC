@@ -30,9 +30,9 @@
             return false;
         }
 
-        if (input.attr('name') === "Price" && input.val() == 0) {
-            return false;
-        }
+        //if (input.attr('name') === "Price" && input.val() == 0) {
+        //    return false;
+        //}
 
         if (input.attr('name') === "TotalLine" && input.val() == 0) {
             return false;
@@ -493,7 +493,7 @@
                                                     <div class="col-lg-4">
                                                         <dl class="dl-horizontal">
                                                             <dt>
-                                                        <label asp-for="TotalCertificado" class="col-md-2 control-label"></label>
+                                                        <label asp-for="TotalCertificado" class="control-label"></label>
                                                     </dt>
                                                     <dd>
                                                         <kendo-numerictextbox name="TotalCertificado"
@@ -554,117 +554,141 @@
   
 
     function RefreshGridGoodsDelivered() {
-        var grid = $("#gridGoodsDelivered").getKendoGrid();
+        var grid = $("#RefreshGridGoodsDelivered ").getKendoGrid();
         grid.dataSource.read();
     }
 
     function SaveGoodsDelivered(e) {
 
+        //CalcularTotalDocumento();
         var notification = $("#notification").data("kendoNotification");
        // e.preventDefault();
         $("#btnSaveControlEstiba").hide();
         $("#btnSaveControlEstiba").prop("disabled", true);
 
-        var displayedData = $("#gridGoodsDeliveredAuthorizationLine").data().kendoGrid.dataSource.view();
+        var validadetalle = true;
+        var displayedData = $("#gridGoodsDeliveredAuthorizationLine").data().kendoGrid.dataSource.data();
+        for (var i = 0; i < displayedData.length; i++) {
+            displayedData[i].GoodsDeliveryAuthorizationLineId = 0;
+           // console.log(displayedData[i].WarehouseId);
+            if (displayedData[i].NoCertificadoDeposito === '' || displayedData[i].NoCertificadoDeposito === '0'
+                || displayedData[i].WarehouseId === '' || displayedData[i].Quantity === 0
+                || displayedData[i].WarehouseId === null || displayedData[i].WarehouseId === 0) {
+                notification.show({
+                    title: "Validación",
+                    message: "Ingrese al detalle todos los datos requeridos"
+                }, "error");
+                validadetalle = false;
+               
+            }
+        }
 
-        var list = [];
-        $("#ddlRecibosAsociados > option").each(function () {
-            list.push(this.value);
-        });
 
-        var dataObject = {                    
-            'GoodsDeliveryAuthorizationId': $("#GoodsDeliveryAuthorizationId").val(),
-            'AuthorizationName': $("#AuthorizationName").val(),
-            'DocumentDate': $("#DocumentDate").getKendoDateTimePicker().value().toJSON(),
-            'AuthorizationDate': $("#AuthorizationDate").getKendoDateTimePicker().value().toJSON(),
-            'NoCD': $("#NoCD").val(),
-            'Name': $("#Name").val(),
-            'BankId': $("#BankId").val(),
-            'BankName': $("#BankId").data("kendoDropDownList").text(),
-            'ProductId': $("#ProductId").val(),
-            'ProductName': $("#ProductId").data("kendoDropDownList").text(),
-            'BranchId': $("#BranchId").val(),
-            'BranchName': $("#BranchId").data("kendoDropDownList").text(),
-            //'WareHouseId': $("#WarehouseId").val(),
-            //'WareHouseName': $("#WarehouseId").data("kendoDropDownList").text(),
-            'TotalCertificado': $("#TotalCertificado").val(),
-            'TotalFinanciado': $("#TotalFinanciado").val(),          
-            'CustomerId': $("#CustomerId").val(),
-            'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
-            'CurrencyId': $("#CurrencyId").val(),
-            'CurrencyName': $("#CurrencyId").data("kendoDropDownList").text(),
-            'DerechoLps': $("#DerechoLps").val(),
-            'NoPoliza': $("#NoPoliza").val(),
-            'DelegadoFiscal': $("#DelegadoFiscal").val(),
-            'GoodsDeliveryAuthorizationLine': displayedData,
-            'CertificadosAsociados': list
-        }; 
+        if (validadetalle) {
+            var list = [];
+            $("#ddlRecibosAsociados > option").each(function () {
+                list.push(this.value);
+            });
 
-        var validator = $("#frmGoodsDeliveryAuthorization").data("kendoValidator");
-        var validator2 = $("#TotalesDocumento").data("kendoValidator");
-        var status = $(".status");
+            var dataObject = {
+                'GoodsDeliveryAuthorizationId': $("#GoodsDeliveryAuthorizationId").val(),
+                'AuthorizationName': $("#AuthorizationName").val(),
+                'DocumentDate': $("#DocumentDate").getKendoDateTimePicker().value().toJSON(),
+                'AuthorizationDate': $("#AuthorizationDate").getKendoDateTimePicker().value().toJSON(),
+                'NoCD': $("#NoCD").val(),
+                'Name': $("#Name").val(),
+                'BankId': $("#BankId").val(),
+                'BankName': $("#BankId").data("kendoDropDownList").text(),
+                'ProductId': $("#ProductId").val(),
+                'ProductName': $("#ProductId").data("kendoDropDownList").text(),
+                'BranchId': $("#BranchId").val(),
+                'BranchName': $("#BranchId").data("kendoDropDownList").text(),
+                //'WareHouseId': $("#WarehouseId").val(),
+                //'WareHouseName': $("#WarehouseId").data("kendoDropDownList").text(),
+                'TotalCertificado': $("#TotalCertificado").val(),
+                'TotalFinanciado': $("#TotalFinanciado").val(),
+                'CustomerId': $("#CustomerId").val(),
+                'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
+                'CurrencyId': $("#CurrencyId").val(),
+                'CurrencyName': $("#CurrencyId").data("kendoDropDownList").text(),
+                'DerechoLps': $("#DerechoLps").val(),
+                'NoPoliza': $("#NoPoliza").val(),
+                'DelegadoFiscal': $("#DelegadoFiscal").val(),
+                'GoodsDeliveryAuthorizationLine': displayedData,
+                'CertificadosAsociados': list
+            };
 
-        if (displayedData.length > 0) {
-            if (validator.validate() && validator2.validate()) {
+            var validator = $("#frmGoodsDeliveryAuthorization").data("kendoValidator");
+            var validator2 = $("#TotalesDocumento").data("kendoValidator");
+            var status = $(".status");
 
-                $.ajax({
-                    url: '@Url.Action("SaveGoodsDeliveryAuthorization", "GoodsDeliveryAuthorization")',
-                    method: 'POST',
-                    datatype: "json",
-                    //contentType: "application/x-www-form-urlencoded; charset=UTF-8", 
-                    contentType: 'application/json',
-                    async: false,
-                    data: JSON.stringify(dataObject),
-                    success: function (data) {
+            if (displayedData.length > 0) {
+                if (validator.validate() && validator2.validate()) {
 
-                        $.toast({
-                            heading: 'Satisfactorio',
-                            text: 'Datos guardados correctamente.',
-                            position: 'top-right',
-                            loaderBg: '#ff6849',
-                            icon: 'success',
-                            hideAfter: 30000,
-                            stack: 6
-                        });
+                    $.ajax({
+                        url: '@Url.Action("SaveGoodsDeliveryAuthorization", "GoodsDeliveryAuthorization")',
+                        method: 'POST',
+                        datatype: "json",
+                        //contentType: "application/x-www-form-urlencoded; charset=UTF-8", 
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
 
-                        //notification.show({
-                        //    message: "Guardado correctamente!"
-                        //}, "upload-success");
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: 'Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
 
-                        RefreshGridGoodsDelivered();                        
-                        $('#myModalGoodsDeliveryAuthorization').modal('hide');
+                            //notification.show({
+                            //    message: "Guardado correctamente!"
+                            //}, "upload-success");
 
-                    },
-                    error: function (XMLHttpRequest, textStatus, errorThrown) {
-                        $("#btnSaveControlEstiba").show();
-                        $("#btnSaveControlEstiba").prop("disabled", false);
-                        $("#btngenerarfactura").show();
-                        notification.show({
-                            title: "Validacion",
-                            message: textStatus + ": " + XMLHttpRequest.responseText
-                        }, "error");
+                            RefreshGridGoodsDelivered();
+                            $('#myModalGoodsDeliveryAuthorization').modal('hide');
 
-                    }
-                });
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            $("#btnSaveControlEstiba").show();
+                            $("#btnSaveControlEstiba").prop("disabled", false);
+                            $("#btngenerarfactura").show();
+                            notification.show({
+                                title: "Validacion",
+                                message: textStatus + ": " + XMLHttpRequest.responseText
+                            }, "error");
 
+                        }
+                    });
+
+                }
+                else {
+                    $("#btnSaveControlEstiba").show();
+                    $("#btnSaveControlEstiba").prop("disabled", false);
+                    //status.text("Oops! There is invalid data in the form.")
+                    //    .removeClass("valid")
+                    //    .addClass("invalid");
+                }
             }
             else {
                 $("#btnSaveControlEstiba").show();
                 $("#btnSaveControlEstiba").prop("disabled", false);
-                //status.text("Oops! There is invalid data in the form.")
-                //    .removeClass("valid")
-                //    .addClass("invalid");
+                notification.show({
+                    title: "Validacion",
+                    message: "Debe agregar los productos!"
+                }, "error");
+
             }
         }
         else {
             $("#btnSaveControlEstiba").show();
             $("#btnSaveControlEstiba").prop("disabled", false);
-            notification.show({
-                title: "Validacion",
-                message: "Debe agregar los productos!"
-            }, "error");
-   
         }
+
 
       //  $("#btnSaveControlEstiba").show();
        
