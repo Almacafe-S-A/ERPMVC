@@ -49,7 +49,10 @@ namespace ERPMVC.Models
         [Display(Name = "Valor financiado")]
         public double valorfinanciado { get; set; }
 
-        [Display(Name = "Saldo de producto")]
+        [Display(Name = "Valor a pagar impuestos")]
+        public double ValorImpuestos { get; set; }
+
+        [Display(Name = "Saldo disponible")]
         public double SaldoProducto { get; set; }
     }
 

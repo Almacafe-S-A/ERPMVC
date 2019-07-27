@@ -101,6 +101,38 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpGet]
+        public async Task<ActionResult> GetCertificadoLineByIdCD([DataSourceRequest]DataSourceRequest request,Int64 IdCD)
+        {
+            List<CertificadoLine> _CertificadoLine = new List<CertificadoLine>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CertificadoLine/GetCertificadoLineByIdCD/" + IdCD);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CertificadoLine = JsonConvert.DeserializeObject<List<CertificadoLine>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return Json(_CertificadoLine.ToDataSourceResult(request));
+
+        }
+
 
         [HttpGet("[action]")]
         public async Task<DataSourceResult> GetSalesOrderLine([DataSourceRequest]DataSourceRequest request, CertificadoLine _CertificadoLine)

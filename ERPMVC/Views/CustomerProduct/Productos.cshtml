@@ -7,8 +7,88 @@
     var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
 }
 
+
+<script>
+
+    function customFunction(input) {
+
+        if (input.attr('name') === "BranchId" && input.val() === "0") {
+            return false;
+        }
+
+        if (input.attr('name') === "CurrencyId" && input.val() === "0") {
+            return false;
+        }
+
+        if (input.attr('name') === "NoCertificadoDeposito" && input.val() === "0") {
+            return false;
+        }
+
+        if (input.attr('name') === "Quantity" && input.val() == 0) {
+            return false;
+        }
+
+        //if (input.attr('name') === "Price" && input.val() == 0) {
+        //    return false;
+        //}
+
+        if (input.attr('name') === "TotalLine" && input.val() == 0) {
+            return false;
+        }
+
+
+
+        return true;
+    }
+
+    function SaveCustomerProduct()
+    {
+        var dataObject = {
+            'CustomerProductId': $("#CustomerProductId").val(),
+            'CustomerId': $("#CustomerId").val(),
+            'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
+            'SubProductId': $("#SubProductId").val(),
+            'SubProductName': $("#SubProductId").data("kendoDropDownList").text(),
+            'IdEstado': $("#IdEstado").val(),
+           // 'FechaCreacion': $("#FechaCreacion").val(),
+            //'FechaModificacion': $("#FechaModificacion").val(),
+            //'UsuarioCreacion': $("#UsuarioCreacion").val(),
+            //'UsuarioModificacion': $("#UsuarioModificacion").val(),
+            'SaldoProductoCertificado': $("#SaldoProductoCertificado").val(),
+            'SaldoProductoTotal': $("#SaldoProductoTotal").val(),
+            'Estado': $("#Estado").val(),
+            'SaldoProductoSacos': $("#SaldoProductoSacos").val() 
+
+        };
+
+           $.ajax({
+            url: '@Url.Action("SaveCustomerProduct", "CustomerProduct")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (data)
+            {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: 'Datos guardados correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                   alert(textStatus + ": " + XMLHttpRequest.responseText);
+             }
+           });
+    }
+</script>
+
 <div id="CustProdModal" class="modal fade" role="dialog">
-    <div class="modal-dialog" role="document">
+    <div class="modal-dialog modal-lg" >
 
         <!-- Modal content-->
         <div class="modal-content">
@@ -17,82 +97,122 @@
                 <h4 class="modal-title">Información Productos/Cliente</h4>
             </div>
             <div class="modal-body">
-                <!-- Contenido -->
-                <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-12">
-                            <h3 id="titulo">Editar</h3>
-                            <hr />
-                            <!-- ID -->
-                            <div class="row">
-                                <div class="col-sm-12 col-md-12">
-                                    <div class="form-group">
-                                        <label asp-for="CustomerProductId" class="control-label" style="width:100%">Código</label>
-                                        <input asp-for="CustomerProductId" disabled />
-                                        <span asp-validation-for="CustomerProductId" class="text-danger"></span>
+                <form id="frmCustomerProduct" kendo-validator="true" kendo-messages="messages" kendo-rules="rules"
+                    data-ajax-begin="return SaveCustomerProduct();"
+                        data-ajax-method="post"
+                        data-ajax="true"
+                      method="post" class="wizard-circle">
+                    <!-- Contenido -->
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-12">
+                                <h3 id="titulo">Editar</h3>
+                                <hr />
+                                <!-- ID -->
+                                <div class="row">
+                                    <div class="col-sm-12 col-md-12">
+                                        <div class="form-group">
+                                            <label asp-for="CustomerProductId" class="control-label" style="width:100%">Código</label>
+                                            <input asp-for="CustomerProductId" class="form-control" style="min-width:100%" disabled />
+                                            <span asp-validation-for="CustomerProductId" class="text-danger"></span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <!-- Cliente -->
-                            <div class="row">
-                                <div class="col-sm-12 col-md-12">
-                                    <div class="form-group">
-                                        <label asp-for="CustomerName" class="control-label" style="width:100%">Nombre del Cliente</label>
-                                        <input asp-for="CustomerName" disabled />
-                                        <span asp-validation-for="CustomerName" class="text-danger"></span>
+                                <!-- Cliente -->
+                                <div class="row">
+                                    <div class="col-sm-12 col-md-12">
+                                        <div class="form-group">
+                                            <label asp-for="CustomerName" class="control-label" style="width:100%">Nombre del Cliente</label>
+                                            <input asp-for="CustomerName" class="form-control" style="min-width:100%" disabled />
+                                            <span asp-validation-for="CustomerName" class="text-danger"></span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <!-- Producto -->
-                            <div class="row">
-                                <div class="col-sm-12 col-md-12">
-                                    <div class="form-group">
-                                        <label asp-for="SubProductId" class="control-label">Producto </label>
-                                        <kendo-dropdownlist name="SubProductId" for="@Model.SubProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                            option-label="Seleccionar Producto"
-                                                            datatextfield="ProductName"
-                                                            datavaluefield="SubproductId"
-                                                            style="width: 100%;">
-                                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
-                                                <transport>
-                                                    <read url="@Url.Action("GetSubProductosCliente", "CustomerProduct")" />
-                                                </transport>
-                                            </datasource>
-                                        </kendo-dropdownlist>
-                                        <span asp-validation-for="SubProductId" class="text-danger"></span>
+                                <!-- Producto -->
+                                <div class="row">
+                                    <div class="col-sm-12 col-md-12">
+                                        <div class="form-group">
+                                            <script>
+                                                function getProductTypeId() {
+                                                    return { 'ProductTypeId': 2 }
+                                                }
+                                            </script>
+                                            <label asp-for="SubProductId" class="control-label">Producto </label>
+                                            <kendo-dropdownlist name="SubProductId2"
+                                                                for="@Model.SubProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                option-label="Seleccionar Producto"
+                                                                datatextfield="ProductName"
+                                                                datavaluefield="SubproductId"
+                                                                style="width: 100%;">
+                                                <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                    <transport>
+                                                        <read url="@Url.Action("GetSubProductoByTipoJson", "SubProduct")" data="getProductTypeId" />
+                                                    </transport>
+                                                </datasource>
+                                            </kendo-dropdownlist>
+                                            <span asp-validation-for="SubProductId" class="text-danger"></span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <!-- Estado -->
-                            <div class="row">
-                                <div class="col-sm-12 col-md-12">
-                                    <div class="form-group">
-                                        <label asp-for="IdEstado" class="control-label">Estado </label>
-                                        <kendo-dropdownlist name="IdEstado2" for="@Model.IdEstado" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                            option-label="Seleccionar Estado"
-                                                            datatextfield="NombreEstado"
-                                                            datavaluefield="IdEstado"
-                                                            style="width: 100%;">
-                                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
-                                                <transport>
-                                                    <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
-                                                </transport>
-                                            </datasource>
-                                        </kendo-dropdownlist>
-                                        <span asp-validation-for="IdEstado" class="text-danger"></span>
+                                <!-- Estado -->
+                                <div class="row">
+                                    <div class="col-sm-12 col-md-12">
+                                        <div class="form-group">
+                                            <label asp-for="IdEstado" class="control-label">Estado </label>
+                                            <kendo-dropdownlist name="IdEstado2" for="@Model.IdEstado" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                option-label="Seleccionar Estado"
+                                                                datatextfield="NombreEstado"
+                                                                datavaluefield="IdEstado"
+                                                                style="width: 100%;">
+                                                <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                    <transport>
+                                                        <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                                                    </transport>
+                                                </datasource>
+                                            </kendo-dropdownlist>
+                                            <span asp-validation-for="IdEstado" class="text-danger"></span>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
 
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        <label asp-for="SaldoProductoCertificado" class="control-label">Estado </label>
+                                        <kendo-numerictextbox name="SaldoProductoCertificado"
+                                                              format="n2"
+                                                              min="0"
+                                                              disabled
+                                                              required
+                                                              style="width: 100%;"
+                                                              max="999999999"
+                                                              step="1"
+                                                              value="Model.SaldoProductoCertificado"></kendo-numerictextbox>
+                                        <span asp-validation-for="SaldoProductoCertificado" class="text-danger"></span>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label asp-for="SaldoProductoTotal" class="control-label">Estado </label>
+                                        <kendo-numerictextbox name="SaldoProductoTotal"
+                                                              format="n2"
+                                                              min="0"
+                                                              disabled
+                                                              required
+                                                              style="width: 100%;"
+                                                              max="999999999"
+                                                              step="1"
+                                                              value="Model.SaldoProductoTotal"></kendo-numerictextbox>
+                                        <span asp-validation-for="SaldoProductoTotal" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <button type="submit" id="btnGuardarCustProd" class="form-control btn-miboton " onclick="GuardarUoM();">Guardar</button>
+                            </div>
                         </div>
                     </div>
-                    <div class="row" id="btnGuardarCustProd">
-                        <div class="col-12">
-                            <button type="submit" class="form-control btn-miboton " onclick="GuardarUoM();">Guardar</button>
-                        </div>
-                    </div>
-                </div>
-
+                    </form>
             </div>
 
         </div>

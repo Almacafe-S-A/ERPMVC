@@ -22,6 +22,10 @@
             return false;
         }
 
+        if (input.attr('name') === "ControlPalletsId" && input.val() === "0") {
+            return false;
+        }        
+
         if (input.attr('name') === "Quantity" && input.val() == 0) {
             return false;
         }
@@ -100,17 +104,18 @@
                                                             return data;
                                                         }
                                                         function changesetearvalues() {
-                                                            var dataObject = { 'Id': $("#cbxBuscar").val() };
+                                                            var dataObject = { 'GoodsDeliveryAuthorizationId': $("#cbxBuscar").val() };
 
+                                                           
 
-
+                                                          
                                                                $.ajax({
-                                                                     url: '@Url.Action("GetDeliveryAuthorizationById", "GoodsDeliveryAuthorization")',
-                                                                     method: 'GET',
+                                                                     url: '@Url.Action("GetDeliveryAuthorizationById", "GoodsDeliveryAuthorization")'  ,
+                                                                     method: 'POST',
                                                                      datatype: "json",
                                                                      contentType: 'application/json',
-                                                                     async: false,
-                                                                     data: dataObject,
+                                                                      async: false,
+                                                                     data: JSON.stringify( dataObject),
                                                                      success: function (data) {
                                                                         console.log(data);
 
@@ -150,7 +155,7 @@
                                                                                  , QuantitySacos: data.GoodsDeliveryAuthorizationLine[i].QuantitySacos
                                                                                  , WareHouseId: data.GoodsDeliveryAuthorizationLine[i].WarehouseId
                                                                                  , WareHouseName: data.GoodsDeliveryAuthorizationLine[i].WarehouseName
-                                                                                 , SubProductName: data.SubProductName                                                                                                                                                         
+                                                                                 , SubProductName: data.GoodsDeliveryAuthorizationLine[i].SubProductName                                                                                                                                                         
                                                                                  , WareHouseId: data.WarehouseId
                                                                                  , NoAR : $("#cbxBuscar").val()
                                                                              });
@@ -259,7 +264,7 @@
                                                               on-select="GetSubProduct"
                                                     *@
                                                     <kendo-dropdownlist name="CustomerId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        option-label="Select CustomerId"
+                                                                        option-label="Seleccione el cliente"
                                                                         required
                                                                         datatextfield="CustomerName"
                                                                         datavaluefield="CustomerId"
@@ -391,7 +396,7 @@
 
                                                 <input type="hidden" id="subproductname" />
                                                 <kendo-dropdownlist name="SubProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                    option-label="Select SubProductId"
+                                                                    option-label="Seleccione Producto del cliente"
                                                                     for="SubProductId"
                                                                     datatextfield="ProductName"
                                                                     datavaluefield="SubproductId"
@@ -712,101 +717,110 @@
     function SaveGoodsDelivered(e) {
 
         var notification = $("#notification").data("kendoNotification");
-       // e.preventDefault();
-        $("#btnSaveControlEstiba").hide();
-        $("#btnSaveControlEstiba").prop("disabled", true);
 
-        var displayedData = $("#gridGoodsDeliveredDetail").data().kendoGrid.dataSource.data();
+        if ($("#cbxBuscar").val() !== '' && $("#cbxBuscar").val() !== null) {
+            // e.preventDefault();
+            $("#btnSaveControlEstiba").hide();
+            $("#btnSaveControlEstiba").prop("disabled", true);
 
-        var dataObject = {                    
-            'GoodsDeliveredId': $("#GoodsDeliveredId").val(),
-            'CustomerId': $("#CustomerId").val(),
-            'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
-            'BranchId': $("#BranchId").val(),          
-            'BranchName': $("#BranchId").data("kendoDropDownList").text(),
-            'CurrencyId': $("#CurrencyId").val(),
-            //'WarehouseId': $("#WarehouseId").val(),
-           // 'WarehouseName': $("#WarehouseId").data("kendoDropDownList").text(),
-            'Placa': $("#Placa").val(),
-            'Marca': $("#Marca").val(),
-            'ProductId': $("#ProductId").val(),
-            'ProductName': $("#ProductId").data("kendoDropDownList").text(),
-            'SubProductId': $("#SubProductId").val(),
-            'SubProductName': $("#SubProductId").data("kendoDropDownList").text(),
-            // 'OrderDate': $("#OrderDate").getKendoDateTimePicker().value().toJSON(),
-            'OrderDate':  $("#DocumentDate").getKendoDateTimePicker().value().toJSON(),
-            'DocumentDate': $("#DocumentDate").getKendoDateTimePicker().value().toJSON(),
-            'Name': $("#Name").val(),
-            'Reference': $("#Reference").val(),
-            'ExitTicket': $("#ExitTicket").val(),
-            'Comments': $("#Comments").val(),
-            '_GoodsDeliveredLine': displayedData
-        }; 
+            var displayedData = $("#gridGoodsDeliveredDetail").data().kendoGrid.dataSource.data();
 
-        var validator = $("#frmGoodsDelivered").data("kendoValidator");
-        var validator2 = $("#TotalesDocumento").data("kendoValidator");
-        var status = $(".status");
+            var dataObject = {
+                'GoodsDeliveredId': $("#GoodsDeliveredId").val(),
+                'CustomerId': $("#CustomerId").val(),
+                'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
+                'BranchId': $("#BranchId").val(),
+                'BranchName': $("#BranchId").data("kendoDropDownList").text(),
+                'CurrencyId': $("#CurrencyId").val(),
+                //'WarehouseId': $("#WarehouseId").val(),
+                // 'WarehouseName': $("#WarehouseId").data("kendoDropDownList").text(),
+                'Placa': $("#Placa").val(),
+                'Marca': $("#Marca").val(),
+                'ProductId': $("#ProductId").val(),
+                'ProductName': $("#ProductId").data("kendoDropDownList").text(),
+                'SubProductId': $("#SubProductId").val(),
+                'SubProductName': $("#SubProductId").data("kendoDropDownList").text(),
+                // 'OrderDate': $("#OrderDate").getKendoDateTimePicker().value().toJSON(),
+                'OrderDate': $("#DocumentDate").getKendoDateTimePicker().value().toJSON(),
+                'DocumentDate': $("#DocumentDate").getKendoDateTimePicker().value().toJSON(),
+                'Name': $("#Name").val(),
+                'Reference': $("#Reference").val(),
+                'ExitTicket': $("#ExitTicket").val(),
+                'Comments': $("#Comments").val(),
+                '_GoodsDeliveredLine': displayedData
+            };
 
-        if (displayedData.length > 0) {
-            if (validator.validate() && validator2.validate()) {
+            var validator = $("#frmGoodsDelivered").data("kendoValidator");
+            var validator2 = $("#TotalesDocumento").data("kendoValidator");
+            var status = $(".status");
 
-                $.ajax({
-                    url: '@Url.Action("SaveGoodsDelivered", "GoodsDelivered")',
-                    method: 'POST',
-                    datatype: "json",
-                    //contentType: "application/x-www-form-urlencoded; charset=UTF-8", 
-                    contentType: 'application/json',
-                    async: false,
-                    data: JSON.stringify(dataObject),
-                    success: function (data) {
+            if (displayedData.length > 0) {
+                if (validator.validate() && validator2.validate()) {
 
-                        $.toast({
-                            heading: 'Satisfactorio',
-                            text: 'Datos guardados correctamente.',
-                            position: 'top-right',
-                            loaderBg: '#ff6849',
-                            icon: 'success',
-                            hideAfter: 30000,
-                            stack: 6
-                        });
+                    $.ajax({
+                        url: '@Url.Action("SaveGoodsDelivered", "GoodsDelivered")',
+                        method: 'POST',
+                        datatype: "json",
+                        //contentType: "application/x-www-form-urlencoded; charset=UTF-8", 
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
 
-                        //notification.show({
-                        //    message: "Guardado correctamente!"
-                        //}, "upload-success");
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: 'Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
 
-                        RefreshGridGoodsDelivered();                        
-                        $('#myModalGoodsDelivered').modal('hide');
+                            //notification.show({
+                            //    message: "Guardado correctamente!"
+                            //}, "upload-success");
 
-                    },
-                    error: function (XMLHttpRequest, textStatus, errorThrown) {
-                        $("#btnSaveControlEstiba").show();
-                        $("#btnSaveControlEstiba").prop("disabled", false);
-                        $("#btngenerarfactura").show();
-                        notification.show({
-                            title: "Validacion",
-                            message: textStatus + ": " + XMLHttpRequest.responseText
-                        }, "error");
+                            RefreshGridGoodsDelivered();
+                            $('#myModalGoodsDelivered').modal('hide');
 
-                    }
-                });
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            $("#btnSaveControlEstiba").show();
+                            $("#btnSaveControlEstiba").prop("disabled", false);
+                            $("#btngenerarfactura").show();
+                            notification.show({
+                                title: "Validacion",
+                                message: textStatus + ": " + XMLHttpRequest.responseText
+                            }, "error");
 
+                        }
+                    });
+
+                }
+                else {
+                    $("#btnSaveControlEstiba").show();
+                    $("#btnSaveControlEstiba").prop("disabled", false);
+                    //status.text("Oops! There is invalid data in the form.")
+                    //    .removeClass("valid")
+                    //    .addClass("invalid");
+                }
             }
             else {
                 $("#btnSaveControlEstiba").show();
                 $("#btnSaveControlEstiba").prop("disabled", false);
-                //status.text("Oops! There is invalid data in the form.")
-                //    .removeClass("valid")
-                //    .addClass("invalid");
+                notification.show({
+                    title: "Validación",
+                    message: "Debe agregar los productos!"
+                }, "error");
+
             }
         }
         else {
-            $("#btnSaveControlEstiba").show();
-            $("#btnSaveControlEstiba").prop("disabled", false);
             notification.show({
-                title: "Validacion",
-                message: "Debe agregar los productos!"
+                title: "Validación",
+                message: "Debe de seleccionar la autorización!"
             }, "error");
-   
         }
 
       //  $("#btnSaveControlEstiba").show();

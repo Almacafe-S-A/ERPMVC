@@ -874,9 +874,10 @@ namespace IntegracionBalanza
                             _SubProduct = new SubProduct();
                             _SubProduct.ProductCode = Convert.ToString(reader.GetValue(0).ToString());
                             _SubProduct.ProductName = reader.GetValue(1).ToString();
-                            _SubProduct.Description = "Balanza";                        
-
-                             _SubProductlist.Add(_SubProduct);
+                            _SubProduct.Description = "Balanza";
+                            _SubProduct.ProductTypeId = 2;
+                            _SubProduct.ProductTypeName = "Clientes";
+                            _SubProductlist.Add(_SubProduct);
                         }
 
                         _client = new HttpClient();

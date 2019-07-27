@@ -19,6 +19,7 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
+    //[Route("GoodsDeliveryAuthorization")]
     public class GoodsDeliveryAuthorizationController : Controller
     {
         private readonly IOptions<MyConfig> config;
@@ -30,12 +31,14 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet("[controller]/[action]")]
+        [HttpGet("[action]")]
         public IActionResult Index()
         {
             return View();
         }
 
         [HttpPost("[controller]/[action]")]
+        [HttpPost("[action]")]
         public async Task<ActionResult> pvwGoodsDeliveryAuthorization([FromBody]GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorizationDTO )
         {
             GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorizationDTO();
@@ -80,6 +83,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet("[controller]/[action]")]
+        [HttpGet("[action]")]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
             List<GoodsDeliveryAuthorization> _GoodsDeliveryAuthorization = new List<GoodsDeliveryAuthorization>();
@@ -109,8 +113,11 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpGet("[controller]/[action]/{Id}")]
-        public async Task<ActionResult> GetDeliveryAuthorizationById(Int64 Id)
+        //[HttpGet("GoodsDeliveryAuthorization/GetDeliveryAuthorizationById/{Id}")]
+        //[HttpGet("/GoodsDeliveryAuthorization/GetDeliveryAuthorizationById/{Id}")]
+        //[HttpGet("[action]/{Id}")]
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> GetDeliveryAuthorizationById([FromBody]GoodsDeliveryAuthorization _GoodsDeliveryAuthorizationp)
         {
             GoodsDeliveryAuthorization _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorization();
             try
@@ -118,7 +125,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/GoodsDeliveryAuthorization/GetGoodsDeliveryAuthorizationById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/GoodsDeliveryAuthorization/GetGoodsDeliveryAuthorizationById/" + _GoodsDeliveryAuthorizationp.GoodsDeliveryAuthorizationId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -144,8 +151,9 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[controller]/[action]")]
-         // public async Task<ActionResult<GoodsDeliveryAuthorization>> SaveGoodsDeliveryAuthorization([FromBody]GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorization)
-         public async Task<ActionResult<GoodsDeliveryAuthorization>> SaveGoodsDeliveryAuthorization([FromBody]dynamic dto)
+        [HttpPost("[action]")]
+        // public async Task<ActionResult<GoodsDeliveryAuthorization>> SaveGoodsDeliveryAuthorization([FromBody]GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorization)
+        public async Task<ActionResult<GoodsDeliveryAuthorization>> SaveGoodsDeliveryAuthorization([FromBody]dynamic dto)
         {
            GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorizationDTO();
 
@@ -229,6 +237,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet("[controller]/[action]")]
+        [HttpGet("[action]")]
         private async Task<List<GoodsDeliveryAuthorization>> GetGoodsDeliveryAuthorization()
         {
             List<GoodsDeliveryAuthorization> _GoodsDeliveryAuthorization = new List<GoodsDeliveryAuthorization>();
