@@ -21,11 +21,11 @@ namespace ERPMVC.Controllers
     [CustomAuthorization]
     public class ProductTypeController : Controller
     {
-        private readonly IOptions<MyConfig> _config;
+        private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
         public ProductTypeController(ILogger<ProductTypeController> logger, IOptions<MyConfig> config)
         {
-            this._config = config;
+            this.config = config;
             this._logger = logger;
         }
 
@@ -41,7 +41,7 @@ namespace ERPMVC.Controllers
             ProductTypeDTO _ProductType = new ProductTypeDTO();
             try
             {
-                string baseadress = _config.Value.urlbase;
+                string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/ProductType/GetProductTypeById/" + _sarpara.ProductTypeId);
@@ -71,43 +71,6 @@ namespace ERPMVC.Controllers
         }
 
 
-        //[HttpGet]
-        //public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
-        //{
-        //    List<ProductType> _ProductType = new List<ProductType>();
-        //    try
-        //    {
-
-        //        string baseadress = config.Value.urlbase;
-        //        HttpClient _client = new HttpClient();
-        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-        //        var result = await _client.GetAsync(baseadress + "api/ProductType/GetProductType");
-        //        string valorrespuesta = "";
-        //        if (result.IsSuccessStatusCode)
-        //        {
-        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
-        //            _ProductType = JsonConvert.DeserializeObject<List<ProductType>>(valorrespuesta);
-
-        //        }
-
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-        //        throw ex;
-        //    }
-
-
-        //    return _ProductType.ToDataSourceResult(request);
-
-        //}
-
-        /// <summary>
-        /// Obitiene el listado de los estados!
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
@@ -115,7 +78,7 @@ namespace ERPMVC.Controllers
             try
             {
 
-                string baseadress = _config.Value.urlbase;
+                string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/ProductType/GetProductType");
@@ -147,7 +110,7 @@ namespace ERPMVC.Controllers
             try
             {
                 ProductType _listProductType = new ProductType();
-                string baseadress = _config.Value.urlbase;
+                string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/ProductType/GetProductTypeById/" + _ProductType.ProductTypeId);
@@ -188,7 +151,7 @@ namespace ERPMVC.Controllers
             ProductType _ProductType = _ProductTypep;
             try
             {
-                string baseadress = _config.Value.urlbase;
+                string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
              
@@ -215,7 +178,7 @@ namespace ERPMVC.Controllers
             ProductType _ProductType = _ProductTypep;
             try
             {
-                string baseadress = _config.Value.urlbase;
+                string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.PutAsJsonAsync(baseadress + "api/ProductType/Update", _ProductType);
@@ -241,7 +204,7 @@ namespace ERPMVC.Controllers
         {
             try
             {
-                string baseadress = _config.Value.urlbase;
+                string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
