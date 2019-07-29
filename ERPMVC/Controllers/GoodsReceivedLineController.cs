@@ -66,7 +66,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView("~/Views/GoodsReceived/pvwGoodsReceivedMant.cshtml", _GoodsReceivedLine);
+            return PartialView("~/Views/GoodsReceived/pvwGoodsReceivedDetailMant.cshtml", _GoodsReceivedLine);
 
         }
 
@@ -218,11 +218,44 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    if (_GoodsReceivedLinep.Quantity > 0)
+
+                    List<GoodsReceivedLine> _existelinea = new List<GoodsReceivedLine>();
+                    if (HttpContext.Session.GetString("listadoproductosgoodsreceived") != "")
+                    {
+                        _GoodsReceivedLine = JsonConvert.DeserializeObject<List<GoodsReceivedLine>>(HttpContext.Session.GetString("listadoproductosgoodsreceived"));
+                        _existelinea = _GoodsReceivedLine.Where(q => q.GoodsReceiveLinedId == _GoodsReceivedLinep.GoodsReceiveLinedId).ToList();
+                    }
+
+
+                    if (_GoodsReceivedLinep.GoodsReceiveLinedId > 0 && _existelinea.Count == 0)
                     {
                         _GoodsReceivedLine.Add(_GoodsReceivedLinep);
                         HttpContext.Session.SetString("listadoproductosgoodsreceived", JsonConvert.SerializeObject(_GoodsReceivedLine).ToString());
                     }
+                    else
+                    {
+                        var obj = _GoodsReceivedLine.Where(x => x.GoodsReceiveLinedId == _GoodsReceivedLinep.GoodsReceiveLinedId).FirstOrDefault();
+                        if (obj != null)
+                        {
+                            obj.Description = _GoodsReceivedLinep.Description;
+                            obj.Price = _GoodsReceivedLinep.Price;
+                            obj.Quantity = _GoodsReceivedLinep.Quantity;
+                            obj.QuantitySacos = _GoodsReceivedLinep.QuantitySacos;
+                            obj.SubProductId = _GoodsReceivedLinep.SubProductId;
+                            obj.SubProductName = _GoodsReceivedLinep.SubProductName;
+                            obj.Total = _GoodsReceivedLinep.Total;
+                            obj.UnitOfMeasureId = _GoodsReceivedLinep.UnitOfMeasureId;
+                            obj.UnitOfMeasureName = _GoodsReceivedLinep.UnitOfMeasureName;
+                            obj.WareHouseId = _GoodsReceivedLinep.WareHouseId;
+                            obj.WareHouseName = _GoodsReceivedLinep.WareHouseName;
+                            obj.ControlPalletsId = _GoodsReceivedLinep.ControlPalletsId;
+
+                        }
+
+                        HttpContext.Session.SetString("listadoproductosgoodsreceived", JsonConvert.SerializeObject(_GoodsReceivedLine).ToString());
+
+                    }
+
                 }
 
              
@@ -280,6 +313,7 @@ namespace ERPMVC.Controllers
                 if (_GoodsReceivedLineLIST != null)
                 {
                     _GoodsReceivedLineLIST = _GoodsReceivedLineLIST
+                           .Where(q => q.GoodsReceiveLinedId != _GoodsReceivedLine.GoodsReceiveLinedId)
                            .Where(q => q.Quantity != _GoodsReceivedLine.Quantity)
                            .Where(q=>q.QuantitySacos!=_GoodsReceivedLine.QuantitySacos)
                            .Where(q => q.Total != _GoodsReceivedLine.Total)

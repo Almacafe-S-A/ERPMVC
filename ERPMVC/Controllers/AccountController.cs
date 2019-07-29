@@ -67,7 +67,7 @@ namespace ERPMVC.Controllers
                     HttpContext.Session.SetString("token", _userToken.Token);
                     HttpContext.Session.SetString("Expiration", _userToken.Expiration.ToString());
                     HttpContext.Session.SetString("user", model.Email);
-                   // HttpContext.Session.SetString("Sucursal", model.sucursal);
+                    HttpContext.Session.SetString("BranchId", _userToken.BranchId.ToString());
 
                     return RedirectToAction("Index", "Home");
                 

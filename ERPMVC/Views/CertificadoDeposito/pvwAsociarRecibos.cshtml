@@ -2,11 +2,19 @@
 <script src="~/admp/assets/plugins/wizard/stepsCertificadoDeposito.js"></script>
 
 <script>
-    function AsociarRecibos() {
+
+    function sleep(ms) {
+        return new Promise(resolve => setTimeout(resolve, ms));
+    }
+
+
+   function AsociarRecibos() {
+       
+        clearsession();
+
         var customerid = $("#CustomerId").data("kendoDropDownList");
         customerid.value($("#CustomerIdAsociarRecibo").val());
         customerid.trigger('change');
-        clearsession();
         $("#CustomerName").val($("#CustomerIdAsociarRecibo").data("kendoDropDownList").text());
         var notification = $("#notification").data("kendoNotification");
 
@@ -18,12 +26,12 @@
             datasource.remove(item);
         }
 
-
+        //await sleep(2000);
         //var agregados = '';
         var list = [];
         $("#ddlRecibosAsociados > option").each(function () {
-            //  alert(this.text + ' ' + this.value);
-           // agregados += this.value + ',';
+           //alert(this.text + ' ' + this.value);
+           //agregados += this.value + ',';
             list.push(this.value);
         });
 
@@ -38,9 +46,9 @@
             async: false,
             data: JSON.stringify(dataObject),
             success: function (data) {
-                console.log(data);
-                hcustom = data.CustomerId;
-
+                //console.log(data);
+                // $("#SubProductId").data("kendoDropDownList").dataSource.read();     
+                hcustom = data.CustomerId;         
                 $("#BranchId").data("kendoDropDownList").value(data.BranchId);
                 $("#ServicioId").data("kendoDropDownList").value(data.ProductId);
 
@@ -48,47 +56,70 @@
                 if (data._GoodsReceivedLine.length <= 8) {
                     for (i = 0; i < data._GoodsReceivedLine.length; i++) {
 
-                        var dataOjectSubProduct = {'SubProductId': data._GoodsReceivedLine[i].SubProductId }
+                        var dataOjectSubProduct = { 'SubProductId': data._GoodsReceivedLine[i].SubProductId }
                         var merma = 0;
-                          $.ajax({
-                               url: '@Url.Action("GetProductoById", "SubProduct")',
-                               method: 'GET',
-                               datatype: "json",
-                               contentType: 'application/json',
-                               async: false,
-                              data: (dataOjectSubProduct),
-                              success: function (data) {
-                                  console.log(data);
-                                  merma = data.Merma;
-                                  if (merma == 0) { merma = 1; }
-                                  else { merma = merma + 1; }
-                              },
-                              error: function (XMLHttpRequest, textStatus, errorThrown) {
-                                  console.log(textStatus + ": " + XMLHttpRequest.responseText);
-                                  alert(textStatus + ": " + XMLHttpRequest.responseText);
-                              }
-                          });                        
+                        $.ajax({
+                            url: '@Url.Action("GetProductoById", "SubProduct")',
+                            method: 'GET',
+                            datatype: "json",
+                            contentType: 'application/json',
+                            async: false,
+                            data: (dataOjectSubProduct),
+                            success: function (data) {
+                                // console.log(data);
+                                merma = data.Merma;
+                                if (merma == 0) { merma = 1; }
+                                else { merma = merma; }
+                            },
+                            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                console.log(textStatus + ": " + XMLHttpRequest.responseText);
+                                alert(textStatus + ": " + XMLHttpRequest.responseText);
+                            }
+                        });
 
-                       // console.log('Valor de merma:' + merma);
+
+                        var cantidad = data._GoodsReceivedLine[i].Quantity - (data._GoodsReceivedLine[i].Quantity * merma);
+                        // console.log('Valor de merma:' + merma);
                         //console.log('Valor de Quantity:' + data._GoodsReceivedLine[i].Quantity);
                         datasource.insert({
-                            CertificadoLineId: i+1, IdCD: 0,
-                            UnitMeasureId: data._GoodsReceivedLine[i].UnitOfMeasureId 
-                            , UnitOfMeasureId: 0
+                            CertificadoLineId: i + 1, IdCD: 0,
+                            UnitMeasureId: data._GoodsReceivedLine[i].UnitOfMeasureId
                             , SubProductId: data._GoodsReceivedLine[i].SubProductId
                             , SubProductName: data._GoodsReceivedLine[i].SubProductName
                             , UnitMeasurName: data._GoodsReceivedLine[i].UnitOfMeasureName
-                            , Description: "", Quantity: data._GoodsReceivedLine[i].Quantity / merma
-                             ,Price:0
+                            , Description: ""
+                            , Quantity: cantidad
+                            , Price: 0
                             // , Price: data._GoodsReceivedLine[i].Price
-                            , Amount: (data._GoodsReceivedLine[i].Price * (data._GoodsReceivedLine[i].Quantity / merma))
+                            , Amount: (data._GoodsReceivedLine[i].Price * (cantidad))
                         });
 
-                        sumacantidad += (data._GoodsReceivedLine[i].Quantity / merma);
-                        total += (data._GoodsReceivedLine[i].Price * (data._GoodsReceivedLine[i].Quantity / merma)) ;
+                        sumacantidad += (cantidad);
+                        total += (data._GoodsReceivedLine[i].Price * (cantidad));
+
+                      
+
+                         // console.log(data._GoodsReceivedLine[i].SubProductId);      
+                        $("#CertificadoLineId").val(i + 1);                                      
+                        var combobox = $('#SubProductId').getKendoDropDownList();
+                        combobox.value(data._GoodsReceivedLine[i].SubProductId);
+                        combobox.trigger('change');
+       
+                        $("#UnitMeasureId").data("kendoDropDownList").value(data._GoodsReceivedLine[i].UnitOfMeasureId);                      
+                        $("#DescriptionDetail").val('');
+                        $("#Quantity").data("kendoNumericTextBox").value(cantidad);
+                        $("#AmountLine").data("kendoNumericTextBox").value((data._GoodsReceivedLine[i].Price * (cantidad)));
+                        // $("#UnitMeasureName").val($("#UnitMeasureId").data("kendoDropDownList").text());
+                        //$("#SubProductId").data("kendoDropDownList").value(data._GoodsReceivedLine[i].SubProductId);
+                        //$("#SubProductName").val($("#SubProductId").data("kendoDropDownList").text());
+                        //$("#TotalCantidad").data("kendoNumericTextBox").value(total);
+                        //$("#ValorImpuestos").val()
+
+                        datasource.read();
                     }
 
-
+                    changeServicio();
+                    grid.refresh();
                     $("#Quantitysum").data("kendoNumericTextBox").value(sumacantidad);
                     $("#Total").data("kendoNumericTextBox").value(total);
 
@@ -130,24 +161,26 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="form-group">
-                                    @*<script>
+                                    <script>
 
                                         function GetSubProduct(e) {
-                                            var dataItem = e.dataItem;
-                                            $("#hcustomerid").val(dataItem.CustomerId);
-                                            hcustom = dataItem.CustomerId;
+                                            //var dataItem = e.dataItem;
+                                            //$("#hcustomerid").val(dataItem.CustomerId);
+                                           
+                                            hcustom = $("#CustomerIdAsociarRecibo").val();
                                             $("#SubProductId").data("kendoDropDownList").dataSource.read();
 
                                         }
 
-                                    </script>*@
+                                    </script>
 
 
                                     <label class="control-label"></label>
 
                                     <kendo-dropdownlist name="CustomerIdAsociarRecibo" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                        option-label="Select CustomerId"
+                                                        option-label="Seleccione el cliente"
                                                         required
+                                                        onchange="GetSubProduct();"
                                                         datatextfield="CustomerName"
                                                         datavaluefield="CustomerId"
                                                         class="required"
@@ -229,6 +262,10 @@
 
                                                 if (existe === false) {
                                                     $('#ddlRecibosAsociados').append('<option value="' + $("#cbxBuscarGoodsReceived").val() + '">' + '' + $("#cbxBuscarGoodsReceived").data("kendoDropDownList").text() + '</option>');
+                                                }
+                                                else {
+                                                    $("#alertamsj").css('display', 'block');
+                                                    $("#alertamsj").text('Ya existe el recibo!');
                                                 }
                                             }
                                             else

@@ -136,6 +136,40 @@ namespace ERPMVC.Controllers
 
         //}
 
+
+
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> GetUnitOfMeasureJson([DataSourceRequest]DataSourceRequest request)
+        {
+            List<UnitOfMeasure> _UnitOfMeasure = new List<UnitOfMeasure>();
+            try
+            {
+
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/UnitOfMeasure/GetUnitOfMeasure");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _UnitOfMeasure = JsonConvert.DeserializeObject<List<UnitOfMeasure>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return Json(_UnitOfMeasure.ToDataSourceResult(request));
+
+        }
+
         [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> GetUnitOfMeasure([DataSourceRequest]DataSourceRequest request)
         {

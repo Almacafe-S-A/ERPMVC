@@ -57,5 +57,10 @@ namespace ERPMVC.Models
     }
 
 
-
+    
+    public class GoodsDeliveryAuthorizationLineDTO : GoodsDeliveryAuthorizationLine
+    {
+       public double ValorImpuestosOriginal { get; set; }
+        public double QuantityOriginal { get; set; }
+    }
 }

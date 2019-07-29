@@ -63,8 +63,8 @@ namespace ERPMVC.Controllers
                         FechaVencimientoDeposito = DateTime.Now.AddDays(30),
                         FechaFirma = DateTime.Now,
                         FechaInicioComputo = DateTime.Now,
-                        FechaPagoBanco = DateTime.Now,
-                        
+                        FechaPagoBanco = DateTime.Now
+                        ,BranchId = Convert.ToInt64(HttpContext.Session.GetString("BranchId"))
                     };
                 }
                 else
@@ -277,9 +277,73 @@ namespace ERPMVC.Controllers
 
 
 
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<CertificadoDeposito>> AnularCD([FromBody]CertificadoDepositoDTO _CertificadoDeposito)
+        //  public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]dynamic dto)
+        {
+            // CertificadoDepositoDTO _CertificadoDeposito = new CertificadoDepositoDTO(); 
+            try
+            {
+                // _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDepositoDTO>(dto.ToString());
+                if (_CertificadoDeposito != null)
+                {
+                    CertificadoDeposito _listCertificadoDeposito = new CertificadoDeposito();
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    _CertificadoDeposito.IdEstado = 3;
+                    _CertificadoDeposito.Estado = "Anulado";
+                    var result = await _client.PostAsJsonAsync(baseadress + "api/CertificadoDeposito/AnularCD", _CertificadoDeposito);
+                    string valorrespuesta = "";
+                    _CertificadoDeposito.FechaModificacion = DateTime.Now;
+                    _CertificadoDeposito.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _listCertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDeposito>(valorrespuesta);
+                    }
+                    else
+                    {
+                        return await Task.Run(() => BadRequest("No se anulo el documento!"));
+                    }
+
+
+                    //if (_listCertificadoDeposito == null) { _listCertificadoDeposito = new CertificadoDeposito(); }
+                    //if (_listCertificadoDeposito.IdCD == 0)
+                    //{
+                    //    _CertificadoDeposito.FechaCreacion = DateTime.Now;
+                    //    _CertificadoDeposito.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    //    var insertresult = await Insert(_CertificadoDeposito);
+                    //    var value = (insertresult.Result as ObjectResult).Value;
+                    //    _CertificadoDeposito = ((CertificadoDepositoDTO)(value));
+                    //    if (_CertificadoDeposito.IdCD == 0)
+                    //    {
+                    //        return await Task.Run(() => BadRequest("No se genero el documento!"));
+                    //    }
+                    //}
+                    //else
+                    //{
+                    //    var updateresult = await Update(_CertificadoDeposito.IdCD, _CertificadoDeposito);
+                    //}
+                }
+                else
+                {
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_CertificadoDeposito);
+        }
+
 
         [HttpPost("[controller]/[action]")]
-             public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]CertificadoDepositoDTO _CertificadoDeposito)
+       public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]CertificadoDepositoDTO _CertificadoDeposito)
           //  public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]dynamic dto)
         {
            // CertificadoDepositoDTO _CertificadoDeposito = new CertificadoDepositoDTO(); 
@@ -308,6 +372,12 @@ namespace ERPMVC.Controllers
                         _CertificadoDeposito.FechaCreacion = DateTime.Now;
                         _CertificadoDeposito.UsuarioCreacion = HttpContext.Session.GetString("user");
                         var insertresult = await Insert(_CertificadoDeposito);
+                        var value = (insertresult.Result as ObjectResult).Value;
+                        _CertificadoDeposito = ((CertificadoDepositoDTO)(value));
+                        if(_CertificadoDeposito.IdCD==0)
+                        {
+                            return await Task.Run(() => BadRequest("No se genero el documento!"));
+                        }
                     }
                     else
                     {
@@ -316,7 +386,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    return BadRequest("No llego correctamente el modelo!");
+                    return await Task.Run(()=> BadRequest("No llego correctamente el modelo!"));
                 }
 
             }
@@ -349,6 +419,10 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDepositoDTO>(valorrespuesta);
                 }
+                else
+                {
+                    _CertificadoDeposito.IdCD = 0;
+                }
 
             }
             catch (Exception ex)
@@ -356,11 +430,11 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-            return Ok(_CertificadoDeposito);
+            return await Task.Run(()=> Ok(_CertificadoDeposito));
             // return new ObjectResult(new DataSourceResult { Data = new[] { _CertificadoDeposito }, Total = 1 });
         }
 
-        [HttpPut("[controller]/[action]/{id}")]
+        [HttpPost("[controller]/[action]/{id}")]
         public async Task<ActionResult<CertificadoDeposito>> Update(Int64 id, CertificadoDeposito _CertificadoDeposito)
         {
             try
@@ -369,7 +443,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PutAsJsonAsync(baseadress + "api/CertificadoDeposito/Update", _CertificadoDeposito);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/CertificadoDeposito/Update", _CertificadoDeposito);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {

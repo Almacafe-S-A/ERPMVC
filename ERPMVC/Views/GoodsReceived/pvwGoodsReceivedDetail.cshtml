@@ -25,10 +25,31 @@
             }
         }
 
-       // console.log('ACTUALIZANDO:'+$("#SubProductIddetail").val());
+        var displayedData = $("#gridGoodsReceivedDetail").data().kendoGrid.dataSource.view();
+        var id = -999999;
+        debugger;
+        if (Number($("#GoodsReceiveLinedId").val()) === 0) {
+            if (displayedData.length > 0) {
+                for (var i = 0; i < displayedData.length; i++) {
+                    //console.log('Linea:' + displayedData[i].CertificadoLineId);
+                    //console.log('Linea:' + id);
+                    if (displayedData[i].GoodsReceiveLinedId > id)
+                        id = displayedData[i].GoodsReceiveLinedId;
+
+                }
+
+                id = id + 1;
+            }
+            else {
+                id = 1;
+            }
+        }
+        else {
+            id = $("#GoodsReceiveLinedId").val();
+        }
 
         return {
-            'GoodsReceiveLinedId': $("#GoodsReceiveLinedId").val(),
+            'GoodsReceiveLinedId': id,
             'GoodsReceivedId':@Model.GoodsReceivedId,
             'UnitOfMeasureId': $("#UnitOfMeasureId").val(),
             'UnitOfMeasureName': unidaddemedida ,
@@ -60,8 +81,25 @@
     function AddGoodsReceivedDetalle() {
         var notification = $("#notification").data("kendoNotification");
       //  console.log($("#ProductId").val());
+        $("#GoodsReceiveLinedId").val(0);
         if ($("#ProductId").val() !== '' && $("#ProductId").val() !== '0'
             && $("#CustomerId").val() !== '0' && $("#CustomerId").val() !== ''  ) {
+            $("#UnitOfMeasureId").data("kendoDropDownList").value(0);
+            $("#SubProductIddetail").data("kendoDropDownList").value(0);    
+            $("#WareHouseId").data("kendoDropDownList").value(0);
+            var ControlPalletsId = $("#ControlPalletsId").data("kendoNumericTextBox");
+            ControlPalletsId.value(0);
+            ControlPalletsId.trigger('change');
+
+            var quantity = $("#Quantity").data("kendoNumericTextBox");
+            quantity.value(0);
+            quantity.trigger('change');
+
+            var quantitysacos = $("#QuantitySacos").data("kendoNumericTextBox");
+            if (quantitysacos !== null)
+                quantitysacos.value(0);
+            quantitysacos.trigger('change');
+
 
            // llenarsubproduct();
             $("#frmGoodsReceivedLine :input").not('#GoodsReceiveLinedId').prop("disabled", false);
@@ -109,8 +147,9 @@
         e.preventDefault();
         var notification = $("#notification").data("kendoNotification");
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-
-        if (dataItem.SalesOrderLineId > 0) {
+       // hcustom = $("#CustomerId").val();
+       // $("#SubProductIddetail").data("kendoDropDownList").dataSource.read();  
+        if (dataItem.GoodsReceivedId > 0) {
             var subproducto = 0;
             var dataObject = { 'GoodsReceiveLinedId': dataItem.GoodsReceiveLinedId };
             $.ajax({
@@ -121,11 +160,13 @@
                 async: false,
                 data: JSON.stringify(dataObject),
                 success: function (data) {
-                    $("#ControlPalletsLineMant").html('');
-                    $("#ControlPalletsLineMant").html(data);
+                    $("#GoodsReceivedLineMant").html('');
+                    $("#GoodsReceivedLineMant").html(data);
+                       
                     var txt = $(data);
-                    var found = $("#SubProductId", txt);
+                    var found = $("#SubProductIddetail", txt);
                     subproducto = $(found).val();
+                    console.log(subproducto);
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
 
@@ -140,52 +181,63 @@
 
             $("#frmGoodsReceivedLine :input").prop("disabled", true);
             //llenarsubproduct();
-            var combobox = $('#SubProductId').getKendoDropDownList();
+            var combobox = $('#SubProductIddetail').getKendoDropDownList();
             combobox.value(subproducto);
             combobox.trigger('change'); 
         }
         else {
+
+            console.log(dataItem);
+
             $("#GoodsReceiveLinedId").val(dataItem.GoodsReceiveLinedId);
             $("#GoodsReceivedId").val(dataItem.GoodsReceivedId);
            
-            $("#UnitOfMeasureName").val(dataItem.UnitOfMeasureName);
-            $("#UnitOfMeasureId").val(dataItem.UnitOfMeasureId);
+           // $("#UnitOfMeasureName").val(dataItem.UnitOfMeasureName);
+          
             $("#SubProductIddetail").data("kendoDropDownList").dataSource.read();          
-            $("#SubProductIddetail").data("kendoDropDownList").value(dataItem.SubProductId);
-            //$("#SubProductName").val(dataItem.SubProductName);
 
-            console.log(dataItem.SubProductId);
+
+
+            var UnitOfMeasureId = $("#UnitOfMeasureId").data("kendoDropDownList");
+            UnitOfMeasureId.value(dataItem.UnitOfMeasureId);
+            UnitOfMeasureId.trigger('change');
+
+            var WareHouseId = $("#WareHouseId").data("kendoDropDownList");
+            WareHouseId.value(dataItem.WareHouseId);            
+            WareHouseId.trigger('change');
+
+            var SubProductIddetail = $("#SubProductIddetail").data("kendoDropDownList");
+            SubProductIddetail.value(dataItem.SubProductId);
+            SubProductIddetail.trigger('change');
+
+            var ControlPalletsId = $("#ControlPalletsId").data("kendoNumericTextBox");
+            ControlPalletsId.value(dataItem.ControlPalletsId);
+            ControlPalletsId.trigger('change');
+
+         //   console.log(dataItem.SubProductId);
 
             var quantity = $("#Quantity").data("kendoNumericTextBox");   
             quantity.value(dataItem.Quantity);
-            quantity.trigger('change');
-
-            //var Price = $("#Price").data("kendoNumericTextBox");
-            //Price.value(dataItem.Price);
-            //Price.trigger('change');
-
-            //var Total = $("#Total").data("kendoNumericTextBox");
-            //Total.value(dataItem.Total);
-            //Total.trigger('change');
+            quantity.trigger('change');    
 
             var quantitysacos= $("#QuantitySacos").data("kendoNumericTextBox");          
             if (quantitysacos !== null && dataItem.QuantitySacos != null)
                 quantitysacos.value(dataItem.QuantitySacos);
                 quantitysacos.trigger('change');
 
+            //var Price = $("#Price").data("kendoNumericTextBox");
+            //Price.value(dataItem.Price);
+            //Price.trigger('change');
+            //var Total = $("#Total").data("kendoNumericTextBox");
+            //Total.value(dataItem.Total);
+            //Total.trigger('change');
             //var total = $("#Total").data("kendoNumericTextBox");
             //if (total !== null)
             //    total.value(dataItem.TotalSacos);
             //      total.trigger('change');
 
-            $("#WareHouseId").val(dataItem.WareHouseId);
-          //  data.WarehouseId
-            var ControlPalletsId = $("#ControlPalletsId").data("kendoNumericTextBox");
-            ControlPalletsId.value(dataItem.ControlPalletsId);
-            ControlPalletsId.trigger('change');
+         
         }
-
-
      
            
         $('#myModalGoodsReceivedLine').modal('show');

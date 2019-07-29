@@ -58,11 +58,13 @@ namespace ERPMVC.Controllers
 
                 if (_GoodsDeliveryAuthorization == null)
                 {
-                    _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorizationDTO { AuthorizationDate = DateTime.Now, DocumentDate = DateTime.Now, editar = 1 };
+                    _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorizationDTO { AuthorizationDate = DateTime.Now, DocumentDate = DateTime.Now, editar = 1 
+                        , BranchId = Convert.ToInt64(HttpContext.Session.GetString("BranchId")) };
                 }
                 else
                 {
                     _GoodsDeliveryAuthorization.editar = 0;
+                    
                 }
 
 
@@ -175,6 +177,7 @@ namespace ERPMVC.Controllers
 
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _listGoodsDeliveryAuthorization = JsonConvert.DeserializeObject<GoodsDeliveryAuthorization>(valorrespuesta);
+
                     }
 
                     if (_listGoodsDeliveryAuthorization == null) { _listGoodsDeliveryAuthorization = new GoodsDeliveryAuthorization(); }
@@ -184,6 +187,12 @@ namespace ERPMVC.Controllers
                         _GoodsDeliveryAuthorization.FechaCreacion = DateTime.Now;
                         _GoodsDeliveryAuthorization.UsuarioCreacion = HttpContext.Session.GetString("user");
                         var insertresult = await Insert(_GoodsDeliveryAuthorization);
+                        var value = (insertresult.Result as ObjectResult).Value;
+                        _GoodsDeliveryAuthorization = ((GoodsDeliveryAuthorizationDTO)(value));
+                        if (_GoodsDeliveryAuthorization.GoodsDeliveryAuthorizationId == 0)
+                        {
+                            return await Task.Run(() => BadRequest("No se genero el documento!"));
+                        }
                     }
                     else
                     {
@@ -192,7 +201,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    return BadRequest("No llego correctamente el modelo!");
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
                 }
 
 
