@@ -180,6 +180,7 @@
                                                                         option-label="Seleccione Sucursal"
                                                                         datatextfield="BranchName"
                                                                         datavaluefield="BranchId"
+                                                                            enable="false"
                                                                         required
                                                                         auto-bind="true"
                                                                         style="width: 100%;">
@@ -254,7 +255,7 @@
                                             <div class="col-md-4">
                                                 <label asp-for="IdEstado" class="control-label" style="width:100%"></label>
                                                 <kendo-dropdownlist name="IdEstado" for="@Model.IdEstado" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                    option-label="Select Estado"
+                                                                    option-label="Seleccione el Estado"
                                                                     datatextfield="NombreEstado"
                                                                     datavaluefield="IdEstado"
                                                                     required
@@ -290,15 +291,43 @@
                                         <div class="row">
 
                                             <div class="col-md-4">
-                                                <label asp-for="SujetasAPago" class="control-label" style="width:100%"></label>
-                                                <kendo-numerictextbox name="SujetasAPago"
-                                                                      format="n"
-                                                                      min="0"
-                                                                      max="99999999"
-                                                                      step="1"
-                                                                      style="width: 100%;"
-                                                                      value="Model.SujetasAPago"></kendo-numerictextbox>
+                                                <div class="form-group">
+                                                    <script>
+                                                        function changeServicio() {
+                                                            if ($("#ServicioId").val() == 2) {
+
+                                                                $("#divtotalsujetoapago").css("display", "block");
+                                                                $("#divvalorimpuesto").css("display", "block");
+
+                                                            }
+                                                            else {
+
+                                                                $("#divtotalsujetoapago").css("display", "none");
+                                                                $("#SujetasAPago").data("kendoNumericTextBox").value(0);
+                                                            }
+                                                        }
+                                                    </script>
+                                                    <label asp-for="ServicioId" class="control-label" style="width:100%"></label>
+
+                                                    <kendo-dropdownlist name="ServicioId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        for="ServicioId"
+                                                                        onchange="changeServicio();"
+                                                                        option-label="Seleccione el servicio"
+                                                                        datatextfield="ProductName"
+                                                                        datavaluefield="ProductId"
+                                                                        required
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetProduct", "Common")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="ServicioId" class="text-danger"></span>
+                                                </div>
                                             </div>
+
+
 
                                             <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
@@ -312,7 +341,7 @@
                                                 <div class="form-group">
                                                     <label asp-for="BankId" class="control-label" style="width:100%"></label>
                                                     <kendo-dropdownlist name="BankId" for="@Model.BankId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        option-label="Seleccion el banco"
+                                                                        option-label="Seleccione el banco"
                                                                         datatextfield="BankName"
                                                                         datavaluefield="BankId"
                                                                         auto-bind="true"
@@ -533,30 +562,18 @@
 
                                         <div class="row">
 
+                                            <div class="col-md-4" id="divtotalsujetoapago" style="display:none">
+                                                <label asp-for="SujetasAPago" class="control-label" style="width:100%"></label>
+                                                <kendo-numerictextbox name="SujetasAPago"
+                                                                      format="n"
+                                                                      enable="false"
+                                                                      min="0"
+                                                                      max="99999999"
+                                                                      step="1"
+                                                                      style="width: 100%;"
+                                                                      value="Model.SujetasAPago"></kendo-numerictextbox>
 
-
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label asp-for="ServicioId" class="control-label" style="width:100%"></label>
-
-                                                    <kendo-dropdownlist name="ServicioId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        for="ServicioId"
-                                                                        option-label="Seleccione el  producto"
-                                                                        datatextfield="ProductName"
-                                                                        datavaluefield="ProductId"
-                                                                        required
-                                                                        style="width: 100%;">
-                                                        <datasource type="DataSourceTagHelperType.WebApi">
-                                                            <transport>
-                                                                <read url="@Url.Action("GetProduct", "Common")" />
-                                                            </transport>
-                                                        </datasource>
-                                                    </kendo-dropdownlist>
-                                                    <span asp-validation-for="ServicioId" class="text-danger"></span>
-                                                </div>
                                             </div>
-
-
 
                                         </div>
 
@@ -674,139 +691,167 @@
     }
 
      function SaveCertificadoDeposito(e) {
-         CalcularTotalDocumento();
-        var notification = $("#notification").data("kendoNotification");
-       // e.preventDefault();
-        $("#btnSaveCertificadoDeposito").hide();
-        $("#btnSaveCertificadoDeposito").prop("disabled", true);
+        // e.preventDefault();
+        CalcularTotalDocumento();
+        var notification = $("#notification").data("kendoNotification");     
+         $("#btnSaveCertificadoDeposito").hide();
+         $("#btnSaveCertificadoDeposito").prop("disabled", true);     
 
-        var list = [];
-        $("#ddlRecibosAsociados > option").each(function () {          
-            list.push(this.value);
-        });
-
-        var displayedData = $("#gridCertificadoDepositoDetail").data().kendoGrid.dataSource.view();
+      //  debugger;
+        var validadetalle = true;
+        var displayedData = $("#gridCertificadoDepositoDetail").data().kendoGrid.dataSource.data();
         for (var i = 0; i < displayedData.length; i++) {
             displayedData[i].CertificadoLineId = 0;
-        }
+            if (
+                displayedData[i].Quantity === 0
+                || displayedData[i].Price === 0
+                || displayedData[i].Amount === 0
+                || displayedData[i].SubProductId === null || displayedData[i].SubProductId === 0) {
+                notification.show({
+                    title: "Validación",
+                    message: "Ingrese al detalle todos los datos requeridos"
+                }, "error");
+                validadetalle = false;
+            }
+
+            if ($("#ServicioId").val() == 2 && (displayedData[i].ValorImpuestos == '' || displayedData[i].ValorImpuestos == 0)) {
+                validadetalle = false;
+                notification.show({
+                    title: "Validación",
+                    message: "Ingresar los valores de impuestos!"
+                }, "error");
+            }
+         }
+
+         if ($("#ServicioId").val() == 2 && ($("#SujetasAPago").val() == '' || $("#SujetasAPago").val() == 0)) {
+             validadetalle = false;
+             notification.show({
+                 title: "Validación",
+                 message: "Ingresar los valores de impuestos!"
+             }, "error");
+         }
 
 
-        var validator = $("#frmCertificadoDeposito").data("kendoValidator");
-        var validator2 = $("#TotalesDocumento").data("kendoValidator");
-        var status = $(".status");
-         if (displayedData.length > 0) {
-             if (validator.validate() && validator2.validate()) {
-                 var dataObject = {
-                     'IdCD': $("#IdCD").val(),
-                     'CustomerId': $("#CustomerId").val(),
-                     'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
-                     'BranchId': $("#BranchId").val(),
-                     'BranchName': $("#BranchId").data("kendoDropDownList").text(),
-                     'WarehouseId': $("#WarehouseId").val(),
-                   //  'WarehouseName': $("#WarehouseId").data("kendoDropDownList").text(),
-                     'ServicioId': $("#ServicioId").val(),
-                     'ServicioName': $("#ServicioId").data("kendoDropDownList").text(),
-                     'IdEstado': $("#IdEstado").val(),
-                     'Direccion': $("#Direccion").val(),
-                     'FechaCertificado': $("#FechaCertificado").getKendoDateTimePicker().value().toJSON(),
-                     'NombreEmpresa': $("#NombreEmpresa").val(),
-                     'EmpresaSeguro': $("#EmpresaSeguro").val(),
-                     'NoPoliza': $("#NoPoliza").val(),
-                     'FechaVencimiento': $("#FechaVencimiento").getKendoDateTimePicker().value().toJSON(),
-                     'Almacenaje': $("#Almacenaje").val(),
-                     'BankId': $("#BankId").val(),
-                     'BankName': $("#BankId").data("kendoDropDownList").text(),
-                     'CurrencyId': $("#CurrencyId").val(),
-                     'CurrencyName': $("#CurrencyId").data("kendoDropDownList").text(),
-                     'FechaFirma': $("#FechaFirma").getKendoDateTimePicker().value().toJSON(),
-                     'FechaInicioComputo': $("#FechaInicioComputo").getKendoDateTimePicker().value().toJSON(),
-                     'FechaPagoBanco': $("#FechaPagoBanco").getKendoDateTimePicker().value().toJSON(),
-                     'FechaVencimientoDeposito': $("#FechaVencimientoDeposito").getKendoDateTimePicker().value().toJSON(),
-                     'LugarFirma': $("#LugarFirma").val(),
-                     'MontoGarantia': $("#MontoGarantia").val(),
-                     'NoCD': $("#NoCD").val(),
-                     'NoTraslado': $("#NoTraslado").val(),
-                     'NombrePrestatario': $("#NombrePrestatario").val(),
-                     'OtrosCargos': $("#OtrosCargos").val(),
-                     'PorcentajeInteresesInsolutos': $("#PorcentajeInteresesInsolutos").val(),
-                     'Quantitysum': $("#Quantitysum").val(),
-                     'Seguro': $("#Seguro").val(),
-                     'SujetasAPago': $("#SujetasAPago").val(),
-                     'Total': $("#Total").val(),
-                     '_CertificadoLine': displayedData,
-                     'RecibosAsociados': list
-                     //'FechaCreacion': $("#FechaCreacion").val(),
-                     //'FechaModificacion': $("#FechaModificacion").val(),
-                     //'UsuarioCreacion': $("#UsuarioCreacion").val(),
-                     //'UsuarioModificacion': $("#UsuarioModificacion").val(),
-                 };
+         if (validadetalle) {
 
-                 //console.log(JSON.stringify(dataObject));
-                 //var form = $("#frmCertificadoDeposito");
-                 //form.validate();
+             var list = [];
+             $("#ddlRecibosAsociados > option").each(function () {
+                 list.push(this.value);
+             });
+             var validator = $("#frmCertificadoDeposito").data("kendoValidator");
+             var validator2 = $("#TotalesDocumento").data("kendoValidator");
+             var status = $(".status");
+             if (displayedData.length > 0) {
+                 if (validator.validate() && validator2.validate()) {
+                     var dataObject = {
+                         'IdCD': $("#IdCD").val(),
+                         'CustomerId': $("#CustomerId").val(),
+                         'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
+                         'BranchId': $("#BranchId").val(),
+                         'BranchName': $("#BranchId").data("kendoDropDownList").text(),
+                         'WarehouseId': $("#WarehouseId").val(),                        
+                         'ServicioId': $("#ServicioId").val(),
+                         'ServicioName': $("#ServicioId").data("kendoDropDownList").text(),
+                         'IdEstado': $("#IdEstado").val(),
+                         'Direccion': $("#Direccion").val(),
+                         'FechaCertificado': $("#FechaCertificado").getKendoDateTimePicker().value().toJSON(),
+                         'NombreEmpresa': $("#NombreEmpresa").val(),
+                         'EmpresaSeguro': $("#EmpresaSeguro").val(),
+                         'NoPoliza': $("#NoPoliza").val(),
+                         'FechaVencimiento': $("#FechaVencimiento").getKendoDateTimePicker().value().toJSON(),
+                         'Almacenaje': $("#Almacenaje").val(),
+                         'BankId': $("#BankId").val(),
+                         'BankName': $("#BankId").data("kendoDropDownList").text(),
+                         'CurrencyId': $("#CurrencyId").val(),
+                         'CurrencyName': $("#CurrencyId").data("kendoDropDownList").text(),
+                         'FechaFirma': $("#FechaFirma").getKendoDateTimePicker().value().toJSON(),
+                         'FechaInicioComputo': $("#FechaInicioComputo").getKendoDateTimePicker().value().toJSON(),
+                         'FechaPagoBanco': $("#FechaPagoBanco").getKendoDateTimePicker().value().toJSON(),
+                         'FechaVencimientoDeposito': $("#FechaVencimientoDeposito").getKendoDateTimePicker().value().toJSON(),
+                         'LugarFirma': $("#LugarFirma").val(),
+                         'MontoGarantia': $("#MontoGarantia").val(),
+                         'NoCD': $("#NoCD").val(),
+                         'NoTraslado': $("#NoTraslado").val(),
+                         'NombrePrestatario': $("#NombrePrestatario").val(),
+                         'OtrosCargos': $("#OtrosCargos").val(),
+                         'PorcentajeInteresesInsolutos': $("#PorcentajeInteresesInsolutos").val(),
+                         'Quantitysum': $("#Quantitysum").val(),
+                         'Seguro': $("#Seguro").val(),
+                         'SujetasAPago': $("#SujetasAPago").val(),
+                         'Total': $("#Total").val(),
+                         '_CertificadoLine': displayedData,
+                         'RecibosAsociados': list
+                         //'FechaCreacion': $("#FechaCreacion").val(),
+                         //'FechaModificacion': $("#FechaModificacion").val(),
+                         //'UsuarioCreacion': $("#UsuarioCreacion").val(),
+                         //'UsuarioModificacion': $("#UsuarioModificacion").val(),
+                         //'WarehouseName': $("#WarehouseId").data("kendoDropDownList").text(),
+                     };
 
+                     //console.log(JSON.stringify(dataObject));
+                     //var form = $("#frmCertificadoDeposito");
+                     //form.validate();
+                     //console.log(JSON.stringify(dataObject));
+                     //console.log(dataObject);
 
+                     $.ajax({
+                         url: '@Url.Action("SaveCertificadoDeposito", "CertificadoDeposito")',
+                         method: 'POST',
+                         datatype: "json",
+                         //  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                         contentType: 'application/json',
+                         async: false,
+                         data: JSON.stringify(dataObject),
+                         success: function (data) {
 
-                 //console.log(JSON.stringify(dataObject));
-                 //console.log(dataObject);
+                             $.toast({
+                                 heading: 'Satisfactorio',
+                                 text: 'Datos guardados correctamente.',
+                                 position: 'top-right',
+                                 loaderBg: '#ff6849',
+                                 icon: 'success',
+                                 hideAfter: 3000,
+                                 stack: 6
+                             });
+                             //notification.show({
+                             //    message: "Guardado correctamente!"
+                             //}, "upload-success");
 
+                             RefreshCertificadoDeposito();
+                             $('#myModalCertificadoDeposito').modal('hide');
 
+                         },
+                         error: function (XMLHttpRequest, textStatus, errorThrown) {
 
+                             $("#btnSaveCertificadoDeposito").show();
+                             $("#btnSaveCertificadoDeposito").prop("disabled", false);
+                             notification.show({
+                                 title: "Validacion",
+                                 message: textStatus + ": " + XMLHttpRequest.responseText
+                             }, "error");
 
-                 $.ajax({
-                     url: '@Url.Action("SaveCertificadoDeposito", "CertificadoDeposito")',
-                     method: 'POST',
-                     datatype: "json",
-                     //  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-                     contentType: 'application/json',
-                     async: false,
-                     data: JSON.stringify(dataObject),
-                     success: function (data) {
+                         }
+                     });
 
-                         $.toast({
-                             heading: 'Satisfactorio',
-                             text: 'Datos guardados correctamente.',
-                             position: 'top-right',
-                             loaderBg: '#ff6849',
-                             icon: 'success',
-                             hideAfter: 30000,
-                             stack: 6
-                         });
-                         //notification.show({
-                         //    message: "Guardado correctamente!"
-                         //}, "upload-success");
-
-                         RefreshCertificadoDeposito();
-                         $('#myModalCertificadoDeposito').modal('hide');
-
-                     },
-                     error: function (XMLHttpRequest, textStatus, errorThrown) {
-
-                         $("#btngenerarfactura").show();
-                         notification.show({
-                             title: "Validacion",
-                             message: textStatus + ": " + XMLHttpRequest.responseText
-                         }, "error");
-
-                     }
-                 });
-
+                 }
+                 else {
+                     $("#btnSaveCertificadoDeposito").show();
+                     $("#btnSaveCertificadoDeposito").prop("disabled", false);
+                 }
              }
              else {
-                 status.text("Oops! There is invalid data in the form.")
-                     .removeClass("valid")
-                     .addClass("invalid");
+                 notification.show({
+                     title: "Validacion",
+                     message: "Debe agregar los productos!"
+                 }, "error");
+
              }
+
+
          }
-        else {
-            notification.show({
-                title: "Validacion",
-                message: "Debe agregar los productos!"
-            }, "error");
-
-        }
-
-        $("#btnSaveCertificadoDeposito").show();
-        $("#btnSaveCertificadoDeposito").prop("disabled", false);
+         else {
+             $("#btnSaveCertificadoDeposito").show();
+             $("#btnSaveCertificadoDeposito").prop("disabled", false);
+         }
     }
-                        </script>
+ </script>

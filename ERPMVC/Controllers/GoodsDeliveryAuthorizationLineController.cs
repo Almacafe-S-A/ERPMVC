@@ -143,9 +143,9 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet("[controller]/[action]")]
-        public async Task<DataSourceResult> GetGoodsDeliveryAuthorizationLineById([DataSourceRequest]DataSourceRequest request, GoodsDeliveryAuthorizationLine _GoodsReceivedLinep)
+        public async Task<DataSourceResult> GetGoodsDeliveryAuthorizationLineById([DataSourceRequest]DataSourceRequest request, GoodsDeliveryAuthorizationLineDTO _GoodsReceivedLinep)
         {
-            List<GoodsDeliveryAuthorizationLine> _GoodsReceivedLine = new List<GoodsDeliveryAuthorizationLine>();
+            List<GoodsDeliveryAuthorizationLineDTO> _GoodsReceivedLine = new List<GoodsDeliveryAuthorizationLineDTO>();
             try
             {
                 if (HttpContext.Session.Get("listadoproductosGoodsDeliveryAuthorization") == null
@@ -159,7 +159,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    _GoodsReceivedLine = JsonConvert.DeserializeObject<List<GoodsDeliveryAuthorizationLine>>(HttpContext.Session.GetString("listadoproductosGoodsDeliveryAuthorization"));
+                    _GoodsReceivedLine = JsonConvert.DeserializeObject<List<GoodsDeliveryAuthorizationLineDTO>>(HttpContext.Session.GetString("listadoproductosGoodsDeliveryAuthorization"));
                 }
 
 
@@ -178,16 +178,55 @@ namespace ERPMVC.Controllers
                     if (result.IsSuccessStatusCode)
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _GoodsReceivedLine = JsonConvert.DeserializeObject<List<GoodsDeliveryAuthorizationLine>>(valorrespuesta);
+                        _GoodsReceivedLine = JsonConvert.DeserializeObject<List<GoodsDeliveryAuthorizationLineDTO>>(valorrespuesta);
                     }
                 }
                 else
                 {
-                    if (_GoodsReceivedLinep.Quantity > 0)
+
+                    List<GoodsDeliveryAuthorizationLineDTO> _existelinea = new List<GoodsDeliveryAuthorizationLineDTO>();
+                    if (HttpContext.Session.GetString("listadoproductosGoodsDeliveryAuthorization") != "")
+                    {
+                        _GoodsReceivedLine = JsonConvert.DeserializeObject<List<GoodsDeliveryAuthorizationLineDTO>>(HttpContext.Session.GetString("listadoproductosGoodsDeliveryAuthorization"));
+                        _existelinea = _GoodsReceivedLine.Where(q => q.GoodsDeliveryAuthorizationLineId == _GoodsReceivedLinep.GoodsDeliveryAuthorizationLineId).ToList();
+                    }
+
+                    if (_GoodsReceivedLinep.GoodsDeliveryAuthorizationLineId > 0 && _existelinea.Count == 0)
                     {
                         _GoodsReceivedLine.Add(_GoodsReceivedLinep);
                         HttpContext.Session.SetString("listadoproductosGoodsDeliveryAuthorization", JsonConvert.SerializeObject(_GoodsReceivedLine).ToString());
                     }
+                    else
+                    {
+                        var obj = _GoodsReceivedLine.FirstOrDefault(x => x.GoodsDeliveryAuthorizationLineId == _GoodsReceivedLinep.GoodsDeliveryAuthorizationLineId);
+                        if (obj != null)
+                        {
+                            obj.Description = _GoodsReceivedLinep.Description;
+                            obj.Price = _GoodsReceivedLinep.Price;
+                            obj.Quantity = _GoodsReceivedLinep.Quantity;                            
+                            obj.SubProductId = _GoodsReceivedLinep.SubProductId;
+                            obj.SubProductName = _GoodsReceivedLinep.SubProductName;
+                            obj.Price = _GoodsReceivedLinep.Price;
+                            obj.SubProductId = _GoodsReceivedLinep.SubProductId;
+                            obj.SubProductName = _GoodsReceivedLinep.SubProductName;
+                            obj.valorcertificado = _GoodsReceivedLinep.valorcertificado;
+                            obj.valorfinanciado = _GoodsReceivedLinep.valorfinanciado;
+                            obj.UnitOfMeasureId = _GoodsReceivedLinep.UnitOfMeasureId;
+                            obj.UnitOfMeasureName = _GoodsReceivedLinep.UnitOfMeasureName;
+                            obj.WarehouseId = _GoodsReceivedLinep.WarehouseId;
+                            obj.WarehouseName = _GoodsReceivedLinep.WarehouseName;
+                            obj.NoCertificadoDeposito = _GoodsReceivedLinep.NoCertificadoDeposito;
+                            obj.Description = _GoodsReceivedLinep.Description;
+                            obj.ValorImpuestos = _GoodsReceivedLinep.ValorImpuestos;
+
+                            obj.ValorImpuestosOriginal = _GoodsReceivedLinep.ValorImpuestosOriginal;
+                            obj.QuantityOriginal = _GoodsReceivedLinep.QuantityOriginal;
+                        }
+
+                        HttpContext.Session.SetString("listadoproductosGoodsDeliveryAuthorization", JsonConvert.SerializeObject(_GoodsReceivedLine).ToString());
+                    }
+
+
                 }
 
 
@@ -274,6 +313,7 @@ namespace ERPMVC.Controllers
                 if (_salesorderLIST != null)
                 {
                     _salesorderLIST = _salesorderLIST
+                          .Where(q => q.GoodsDeliveryAuthorizationLineId != _GoodsDeliveryAuthorizationLine.GoodsDeliveryAuthorizationLineId)
                            .Where(q => q.Quantity != _GoodsDeliveryAuthorizationLine.Quantity)
                            .Where(q => q.SubProductId != _GoodsDeliveryAuthorizationLine.SubProductId)
                            .Where(q => q.UnitOfMeasureId != _GoodsDeliveryAuthorizationLine.UnitOfMeasureId)

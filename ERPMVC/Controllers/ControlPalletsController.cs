@@ -238,7 +238,9 @@ namespace ERPMVC.Controllers
 
                 if (_ControlPallets == null)
                 {
-                    _ControlPallets = new ControlPalletsDTO { DocumentDate=DateTime.Now  , editar=1 , EsIngreso = _ControlPalletsId.EsIngreso };
+                    _ControlPallets = new ControlPalletsDTO { DocumentDate=DateTime.Now  , editar=1 , EsIngreso = _ControlPalletsId.EsIngreso
+                   , BranchId = Convert.ToInt64(HttpContext.Session.GetString("BranchId"))
+                    };
                 }
                 else
                 {

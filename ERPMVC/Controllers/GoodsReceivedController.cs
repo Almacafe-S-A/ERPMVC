@@ -56,7 +56,10 @@ namespace ERPMVC.Controllers
 
                 if (_GoodsReceived == null)
                 {
-                    _GoodsReceived = new GoodsReceivedDTO {  DocumentDate=DateTime.Now, ExpirationDate=DateTime.Now,OrderDate=DateTime.Now,editar=1 };
+                    _GoodsReceived = new GoodsReceivedDTO {  DocumentDate=DateTime.Now, ExpirationDate=DateTime.Now,OrderDate=DateTime.Now,editar=1
+                    ,
+                        BranchId = Convert.ToInt64(HttpContext.Session.GetString("BranchId"))
+                    };
                 }
                 else
                 {
@@ -368,6 +371,10 @@ namespace ERPMVC.Controllers
                         var insertresult = await Insert(_GoodsReceived);
                         var value = (insertresult.Result as ObjectResult).Value;
                         _GoodsReceived = ((GoodsReceivedDTO)(value));
+                        if (_GoodsReceived.GoodsReceivedId == 0)
+                        {
+                            return await Task.Run(() => BadRequest("No se genero el documento!"));
+                        }
 
                         return _GoodsReceived;
                     }

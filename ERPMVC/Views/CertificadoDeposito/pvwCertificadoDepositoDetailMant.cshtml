@@ -6,7 +6,18 @@
     completedorderlinemant = function (xhr) {  
         
         $('#myModalCertificadoDepositoLine').find(':input').not('#IdCD :submit').val('0');
-     
+        $('#SubProductId').data("kendoDropDownList").value('0');
+        var quantity = $("#Quantity").data("kendoNumericTextBox");
+        quantity.value(0);
+        quantity.trigger('change');
+
+        var Price = $("#Price").data("kendoNumericTextBox");
+        Price.value(0);
+        Price.trigger('change');
+
+        var Amount = $("#AmountLine").data("kendoNumericTextBox");
+        Amount.value(0);
+        Amount.trigger('change');
       //  RefreshCertificadoDepositoDetail();
         $('DescriptionDetail').val('');
         CalcularTotalDocumento();    
@@ -28,20 +39,21 @@
         //var freight = $("#Freight").val()===""?0:$("#Freight").val();
       
         var displayedData = $("#gridCertificadoDepositoDetail").data().kendoGrid.dataSource.view(); 
-        var total = 0, sumacantidad = 0;
+        var total = 0, sumacantidad = 0, ValorImpuestos=0;
 
         $(displayedData).each(function (index, element) {
             var t = JSON.parse(JSON.stringify(element));
-            console.log(t);
-            console.log('Total 1'+total);
-            sumacantidad = sumacantidad + t["Quantity"];     
-            console.log('sumacantidad 2' + sumacantidad);
+            //console.log(t);
+            //console.log('Total 1'+total);
+              //  console.log('sumacantidad 2' + sumacantidad);
+            sumacantidad = sumacantidad + t["Quantity"];   
             total = total + t["Amount"];
-            console.log('Total 2' + total);
+            ValorImpuestos = ValorImpuestos + t["ValorImpuestos"];
         });
 
-        console.log('Total Documento:' + total);
+      //  console.log('Total Documento:' + total);
         setearvalor("Quantitysum", sumacantidad);
+        setearvalor("SujetasAPago", ValorImpuestos);
         setearvalor("Total", total);
         //$("#Quantitysum").data("kendoNumericTextBox").value(sumacantidad);
         //$("#Total").data("kendoNumericTextBox").value(total);
@@ -176,7 +188,7 @@
                                       <div class="col-md-12">
                                           <div class="form-group">
                                               <label asp-for="CertificadoLineId" class="control-label" style="width:100%"></label>
-                                              <input type="number" asp-for="CertificadoLineId" class="form-control" disabled />
+                                              <input type="number" asp-for="CertificadoLineId" readonly="readonly" style="min-width:100%" class="form-control" disabled />
                                               <input type="hidden" id="uid" />
                                           </div>
                                       </div>
@@ -186,7 +198,7 @@
                                           <div class="col-md-4">
                                               <div class="form-group">
                                                   <label asp-for="IdCD" class="control-label" style="width:100%"></label>
-                                                  <input type="number" asp-for="IdCD" class="form-control" disabled />
+                                                  <input type="number" asp-for="IdCD" style="min-width:100%" class="form-control" disabled />
                                                   <input type="hidden" id="uid" />
                                               </div>
                                           </div>
@@ -203,7 +215,6 @@
                                                               $("#subproductname").val(dataItem.ProductName);
                                                       }
 
-
                                                       function GetProductTypeIdS() {
                                                           debugger;
                                                           // console.log($("#hcustomerid").val());
@@ -217,16 +228,17 @@
 
                                                   </script>
 
-                                                  <input type="hidden" id="subproductname" />
+                                                  @*<input type="hidden" id="subproductname" />*@
                                                   <kendo-dropdownlist name="SubProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                       option-label="Seleccione el producto de cliente"
                                                                       for="SubProductId"
                                                                       datatextfield="ProductName"
                                                                       datavaluefield="SubproductId"
                                                                       auto-bind="false"
+ 
                                                                       required
                                                                       style="width: 100%;">
-                                                      <datasource type="DataSourceTagHelperType.WebApi" server-filtering="true">
+                                                      <datasource type="DataSourceTagHelperType.WebApi" auto-sync="false" server-filtering="true">
                                                           <transport>
                                                               <read url="@Url.Action("GetSubProductoByTipoByCustomer", "SubProduct")" data="GetProductTypeIdS" />
                                                           </transport>
@@ -271,7 +283,7 @@
                                           <div class="col-md-4">
                                               <div class="form-group">
                                                   <label asp-for="Description" class="control-label" style="width:100%"></label>
-                                                  <input type="text" id="DescriptionDetail" asp-for="Description" class="form-control" style="width:100%" />
+                                                  <input type="text" id="DescriptionDetail" asp-for="Description" class="form-control" style="min-width:100%" />
 
                                                   <span asp-validation-for="Description" class="text-danger"></span>
                                               </div>
@@ -332,10 +344,24 @@
                                       </div>
 
                                       <div class="row">
-                                          <div class="col-md-12">
+                                          <div  id="divvalorimpuesto" class="col-md-6" style="display:none">
+                                              <div class="form-group">
+                                                  <label asp-for="ValorImpuestos" class="control-label" style="width:100%"></label>
+
+                                                  <kendo-numerictextbox name="ValorImpuestos"
+                                                                        format="n2"
+                                                                        min="0"
+                                                                        step="1"
+                                                                        required
+                                                                        style="width:100%"
+                                                                        value="Model.ValorImpuestos"></kendo-numerictextbox>
+                                                  <span asp-validation-for="ValorImpuestos" class="text-danger"></span>
+                                              </div>
+                                          </div>
+                                          <div class="col-md-6">
                                               <div class="form-group">
                                                   <label asp-for="UnitMeasureId" class="control-label" style="width:100%"></label>
-                                                  <kendo-dropdownlist name="UnitOfMeasureId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                  <kendo-dropdownlist name="UnitMeasureId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                       id="UnitMeasureId"
                                                                       option-label="Seleccione la unidad de medida"
                                                                       for="UnitMeasureId"

@@ -142,11 +142,48 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    if (_GoodsDeliveredLinep.Quantity > 0)
+
+                    List<GoodsDeliveredLine> _existelinea = new List<GoodsDeliveredLine>();
+                    if (HttpContext.Session.GetString("listadoproductosGoodsDelivered") != "")
+                    {
+                        _GoodsDeliveredLine = JsonConvert.DeserializeObject<List<GoodsDeliveredLine>>(HttpContext.Session.GetString("listadoproductoscertificadodeposito"));
+                        _existelinea = _GoodsDeliveredLine.Where(q => q.GoodsDeliveredLinedId == _GoodsDeliveredLinep.GoodsDeliveredLinedId).ToList();
+                    }
+
+                    if (_GoodsDeliveredLinep.GoodsDeliveredLinedId > 0 && _existelinea.Count == 0)
                     {
                         _GoodsDeliveredLine.Add(_GoodsDeliveredLinep);
                         HttpContext.Session.SetString("listadoproductosGoodsDelivered", JsonConvert.SerializeObject(_GoodsDeliveredLine).ToString());
                     }
+                    else
+                    {
+                        var obj = _GoodsDeliveredLine.FirstOrDefault(x => x.GoodsDeliveredLinedId == _GoodsDeliveredLinep.GoodsDeliveredLinedId);
+                        if (obj != null)
+                        {
+                            obj.Description = _GoodsDeliveredLinep.Description;
+                            obj.Price = _GoodsDeliveredLinep.Price;
+                            obj.Quantity = _GoodsDeliveredLinep.Quantity;
+                            obj.Total = _GoodsDeliveredLinep.Total;
+                            obj.SubProductId = _GoodsDeliveredLinep.SubProductId;
+                            obj.SubProductName = _GoodsDeliveredLinep.SubProductName;
+                            obj.Price = _GoodsDeliveredLinep.Price;
+                            obj.SubProductId = _GoodsDeliveredLinep.SubProductId;
+                            obj.SubProductName = _GoodsDeliveredLinep.SubProductName;
+                            obj.QuantitySacos = _GoodsDeliveredLinep.QuantitySacos;
+                            obj.UnitOfMeasureId = _GoodsDeliveredLinep.UnitOfMeasureId;
+                            obj.UnitOfMeasureName = _GoodsDeliveredLinep.UnitOfMeasureName;
+                            obj.WareHouseId = _GoodsDeliveredLinep.WareHouseId;
+                            obj.WareHouseName = _GoodsDeliveredLinep.WareHouseName;
+                            obj.NoCD = _GoodsDeliveredLinep.NoCD;
+                            obj.ControlPalletsId = _GoodsDeliveredLinep.ControlPalletsId;
+                            obj.CenterCostId = _GoodsDeliveredLinep.CenterCostId;
+                            obj.Description = _GoodsDeliveredLinep.Description;
+
+                        }
+
+                    }
+
+
                 }
 
 

@@ -38,6 +38,10 @@ namespace ERPMVC.Models
 
         [Display(Name = "Cantidad")]
         public double Quantity { get; set; }
+
+        [Display(Name = "Precio")]
+        public double Price { get; set; }
+
         [Display(Name = "Descripción")]
         public string Description { get; set; }
         [Display(Name = "Valor del certificado")]
@@ -45,10 +49,18 @@ namespace ERPMVC.Models
         [Display(Name = "Valor financiado")]
         public double valorfinanciado { get; set; }
 
-        [Display(Name = "Saldo de producto")]
+        [Display(Name = "Valor a pagar impuestos")]
+        public double ValorImpuestos { get; set; }
+
+        [Display(Name = "Saldo disponible")]
         public double SaldoProducto { get; set; }
     }
 
 
-
+    
+    public class GoodsDeliveryAuthorizationLineDTO : GoodsDeliveryAuthorizationLine
+    {
+       public double ValorImpuestosOriginal { get; set; }
+        public double QuantityOriginal { get; set; }
+    }
 }

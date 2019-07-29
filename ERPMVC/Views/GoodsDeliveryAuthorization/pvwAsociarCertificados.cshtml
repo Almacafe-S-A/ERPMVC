@@ -3,6 +3,9 @@
 
 <script>
     function AsociarCertificados() {
+
+        clearsessiondeliveryautor();
+
         $("#CustomerId").data("kendoDropDownList").value($("#CustomerIdAsociarRecibo").val());
         $("#CustomerName").val($("#CustomerIdAsociarRecibo").data("kendoDropDownList").text());
         var notification = $("#notification").data("kendoNotification");
@@ -15,13 +18,12 @@
             datasource.remove(item);
         }
 
-
         //var agregados = '';
         var list = [];
-        $("#ddlRecibosAsociados > option").each(function () {
-            //  alert(this.text + ' ' + this.value);
-           // agregados += this.value + ',';
+        $("#ddlRecibosAsociados > option").each(function () {           
             list.push(this.value);
+             //alert(this.text + ' ' + this.value);
+            //agregados += this.value + ',';
         });
 
        // agregados = agregados.substring(0, agregados.length - 1);
@@ -41,38 +43,100 @@
                     hcustom = data[j].CustomerId;
                     $("#FechaCertificado").val(data[j].FechaCertificado);
                     $("#FechaDeVencimiento").val(data[j].FechaVencimiento);
-                    $("#ProductId").data("kendoDropDownList").value(data[j].ServicioId);
-                    // $("#idrecibo").text(data.NoCD);
-                    // $("#ServicioName").text(data.ServicioName);
-                    // $("#WarehouseName").text(data.WarehouseName);
+                    $("#ProductId").data("kendoDropDownList").value(data[j].ServicioId);                   
                     $("#WarehouseId").data("kendoDropDownList").value(data[j].WarehouseId);
                     $("#BranchId").data("kendoDropDownList").value(data[j].BranchId);
                     $("#CurrencyId").data("kendoDropDownList").value(data[j].CurrencyId);
                     $("#BankId").data("kendoDropDownList").value(data[j].BankId);
-
+                     // $("#idrecibo").text(data.NoCD);
+                    // $("#ServicioName").text(data.ServicioName);
+                    // $("#WarehouseName").text(data.WarehouseName);
+                   // console.log(data);
                     var sumacantidad = 0, total = 0;
                     if (data[j]._CertificadoLine.length <= 8) {
                         for (i = 0; i < data[j]._CertificadoLine.length; i++) {
-                            datasource.insert({
-                                GoodsDeliveryAuthorizationLineId: 0
-                                , GoodsDeliveryAuthorizationId: 0
-                                , IdCD: data[j]._CertificadoLine[i].IdCD
-                                , NoCertificadoDeposito: data[j]._CertificadoLine[i].NoCD
-                                , UnitOfMeasureId: data[j]._CertificadoLine[i].UnitMeasureId
-                                , UnitOfMeasureName: data[j]._CertificadoLine[i].UnitMeasurName
-                                , WarehouseId: data[j].WarehouseId
-                                , WarehouseName: data[j].WarehouseName
-                                , SubProductId: data[j]._CertificadoLine[i].SubProductId
-                                , SubProductName: data[j]._CertificadoLine[i].SubProductName
-                                , Quantity: "", Quantity: data[j]._CertificadoLine[i].Quantity
-                                , Price: data[j]._CertificadoLine[i].Price
-                                , valorcertificado : data[j].Total
-                            });
+                           
 
+                            var multi = $("#ProductosCD").getKendoMultiSelect(),
+                                multiDataItems = multi.dataItems();
+                                    //selectedProducts = [];
+
+                            for (var k = 0; k < multiDataItems.length; k += 1) {
+                                var currentProduct = multiDataItems[k];
+
+                                //selectedProducts.push({
+                                //    SubProductId: currentProduct.SubProductId,
+                                //    SubProductName: currentProduct.SubProductName
+                                //})
+                              //  console.log(selectedProducts);
+
+
+                                if (currentProduct.SubProductId == data[j]._CertificadoLine[i].SubProductId) {
+                                    datasource.insert({
+                                        GoodsDeliveryAuthorizationLineId: i + 1
+                                        , GoodsDeliveryAuthorizationId: 0
+                                        , IdCD: data[j]._CertificadoLine[i].IdCD
+                                        , NoCertificadoDeposito: data[j].NoCD
+                                        , UnitOfMeasureId: data[j]._CertificadoLine[i].UnitMeasureId
+                                        , UnitOfMeasureName: data[j]._CertificadoLine[i].UnitMeasurName
+                                        , ValorImpuestos: data[j]._CertificadoLine[i].ValorImpuestos
+                                        , WarehouseId: data[j].WarehouseId
+                                        , WarehouseName: data[j].WarehouseName
+                                        , SubProductId: data[j]._CertificadoLine[i].SubProductId
+                                        , SubProductName: data[j]._CertificadoLine[i].SubProductName
+                                        ,  Quantity: data[j]._CertificadoLine[i].Quantity
+                                        , Price: data[j]._CertificadoLine[i].Price
+                                        , valorcertificado: data[j].Total
+                                    });
+
+                                        
+                                          $("#GoodsDeliveryAuthorizationLineId").val(i + 1);   
+                                          $("#NoCertificadoDeposito").data("kendoNumericTextBox").value(data[j].NoCD);                                 
+                                          $("#Quantity").data("kendoNumericTextBox").value(data[j]._CertificadoLine[i].Quantity);
+                                          $("#Description").val('');                                    
+                                          $("#valorcertificado").data("kendoNumericTextBox").value(data[j].Total);
+                                        //  $("#valorfinanciado").data("kendoNumericTextBox").value(data[j].Total);		
+                                          $("#SubProductId").data("kendoDropDownList").value(data[j]._CertificadoLine[i].SubProductId);  		                            	
+                                         $("#UnitOfMeasureId").data("kendoDropDownList").value(data[j]._CertificadoLine[i].UnitMeasureId);
+                                         $("#WarehouseId").data("kendoDropDownList").value(data[j].WarehouseId);                                   
+                                         $("#Price").val(data[j]._CertificadoLine[i].Price);                                  
+                                         $("#ValorImpuestos").data("kendoNumericTextBox").value(data[j]._CertificadoLine[i].ValorImpuestos);
+
+                                    debugger;
+                                    $('#allescondidos').append(' <input type="hidden" id="ValorImpuestosOriginal' + (i + 1) + '" value="' + data[j]._CertificadoLine[i].ValorImpuestos + '" />');
+                                    $('#allescondidos').append(' <input type="hidden" id="QuantityOriginal' + (i + 1) + '" value="' + data[j]._CertificadoLine[i].Quantity + '" />');
+
+                                    //$('<input>').attr({
+                                    //    type: 'hidden',
+                                    //    id: "ValorImpuestosOriginal" + ( i + 1),
+                                    //    value: data[j]._CertificadoLine[i].ValorImpuestos
+                                    //}).appendTo('allescondidos');
+
+                                    //$('<input>').attr({
+                                    //    type: 'hidden',
+                                    //    id: "QuantityOriginal" + (i + 1),
+                                    //    value: data[j]._CertificadoLine[i].Quantity
+                                    //}).appendTo('allescondidos');
+
+                                   // $("#ValorImpuestosOriginal").val(data[j]._CertificadoLine[i].ValorImpuestos);
+                                    //$("#QuantityOriginal").val(data[j]._CertificadoLine[i].Quantity);
+
+                                    datasource.read();
+
+                                }
+
+                            }
+
+                          //  datasource.refresh();
                             //sumacantidad += data._CertificadoLine[i].Quantity;
                             //total += (data._CertificadoLine[i].Price * data._CertificadoLine[i].Quantity) ;
                         }
 
+
+                        fiscal();
+
+                        CalcularTotalDocumento();
+                
                         // $("#Quantitysum").data("kendoNumericTextBox").value(sumacantidad);
                         //$("#Total").data("kendoNumericTextBox").value(total);
 
@@ -117,12 +181,13 @@
                                 <div class="form-group">
                                     <script>
 
-                                        function GetSubProduct(e) {
-                                            var dataItem = e.dataItem;
-                                            $("#hcustomerid").val(dataItem.CustomerId);
-                                            hcustom = dataItem.CustomerId;
+                                        function GetSubProductcustomer(e) {
+                                            //var dataItem = e.dataItem;
+                                            //$("#hcustomerid").val(dataItem.CustomerId);
+                                            //hcustom = dataItem.CustomerId;
+                                            //$("#SubProductId").data("kendoDropDownList").dataSource.read();
+                                            hcustom = $("#CustomerIdAsociarRecibo").val();
                                             $("#SubProductId").data("kendoDropDownList").dataSource.read();
-
                                         }
 
                                     </script>
@@ -131,11 +196,12 @@
                                     <label class="control-label"></label>
 
                                     <kendo-dropdownlist name="CustomerIdAsociarRecibo" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                        option-label="Select CustomerId"
+                                                        option-label="Seleccione Cliente"
                                                         required
                                                         datatextfield="CustomerName"
                                                         datavaluefield="CustomerId"
                                                         class="required"
+                                                         onchange="GetSubProductcustomer();"
                                                         style="width: 100%;">
                                         <datasource type="DataSourceTagHelperType.WebApi">
                                             <transport>
@@ -169,7 +235,7 @@
                                                       options.success(data);
                                                   }
                                               });
-                                          }                                
+                                          }
 
                                           function convertValues(value) {
                                               var data = {};
@@ -185,7 +251,10 @@
                                           function changesetearvalues() {
                                              // var dataObject = { 'Id': $("#cbxBuscarCertificadosDeposito").val() };
                                              // console.log('changesetearvalues');
+
+                                             
                                               if ($("#cbxBuscarCertificadosDeposito").val() > 0) {
+                                                  $("#ProductosCD").data("kendoMultiSelect").dataSource.read();
                                                   LlenarRecibo();
                                               }
                                           }
@@ -204,6 +273,10 @@
                                                 if (existe === false) {
                                                     $('#ddlRecibosAsociados').append('<option value="' + $("#cbxBuscarCertificadosDeposito").val() + '">' + '' + $("#cbxBuscarCertificadosDeposito").data("kendoDropDownList").text() + '</option>');
                                                 }
+                                                else {
+                                                    $("#alertamsj").css('display', 'block');
+                                                    $("#alertamsj").text('Ya existe el certificado!');
+                                                }
                                             }
                                             else
                                             {
@@ -219,34 +292,64 @@
 
                                     </script>
 
-                                 
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <script>                                                
+                                                function GetLinesById() {
+
+                                                    return {
+                                                        'IdCD': $("#cbxBuscarCertificadosDeposito").val(),
+                                                    }
+                                                }
+                                            </script>
+                                            <label id="SubProducto" class="control-label" style="width:100%">Productos</label>
+
+                                            <kendo-multiselect name="ProductosCD" filter="Kendo.Mvc.UI.FilterType.Contains"                                                             
+                                                               option-label="Seleccione el/los Producto(s)"
+                                                               datatextfield="SubProductName"
+                                                               datavaluefield="SubProductId"
+                                                               required
+                                                               style="width: 100%;">
+                                                <datasource type="DataSourceTagHelperType.WebApi">
+                                                    <transport>
+                                                        <read url="@Url.Action("GetCertificadoLineByIdCD", "CertificadoLine")" data="GetLinesById" />
+                                                    </transport>
+                                                </datasource>
+                                            </kendo-multiselect>
+                                            @*<span asp-validation-for="CustomerAreaProduct" class="text-danger"></span>*@
+                                        </div>
+                                    </div>
+
+
+
                                     @(Html.Kendo().DropDownList()
-                                                      .Name("cbxBuscarCertificadosDeposito")
-                                                      .Filter(Kendo.Mvc.UI.FilterType.Contains)
-                                                      .OptionLabel("Buscar")
-                                                      .DataTextField("CustomerName")
-                                                      .DataValueField("IdCD")
-                                                      .HtmlAttributes(new { style = "width:100%" })
-                                                      .Height(290)
-                                                      .CascadeFrom("CustomerIdAsociarRecibo")
-                                                      .Events(e =>
-                                                      {
-                                                          e.Change("changesetearvalues");
-                                                          // e.Filtering("applyFilterCustomer");
-                                                      })
-                                                      .AutoBind(true)
-                                                      .DataSource(source =>
-                                                      {
-                                                          source.Ajax()
-                                                          .PageSize(80)
+                                                              .Name("cbxBuscarCertificadosDeposito")
+                                                              .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                                                              .OptionLabel("Buscar")
+                                                              .DataTextField("CustomerName")
+                                                              .DataValueField("IdCD")
+                                                              .HtmlAttributes(new { style = "width:100%" })
+                                                              .Height(290)
+                                                              .CascadeFrom("CustomerIdAsociarRecibo")
+                                                              .Events(e =>
+                                                              {
+                                                                  e.Change("changesetearvalues");
+                                                                                      // e.Filtering("applyFilterCustomer");
+                                                                                  })
+                                                              .AutoBind(true)
+                                                              .DataSource(source =>
+                                                              {
+                                                                  source.Ajax()
+                                                                  .PageSize(80)
 
-                                                          .Read(r=> {
-                                                              r.Action("Virtualization_Read", "CertificadoDeposito");
+                                                                  .Read(r =>
+                                                                  {
+                                                                      r.Action("Virtualization_Read", "CertificadoDeposito");
 
-                                                          });
-                                                      })
-                                                      
-                                                      .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapper"))
+                                                                  });
+                                                              })
+
+                                                              .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapper"))
                                     )
                                 </div>
                             </div>

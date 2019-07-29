@@ -1,4 +1,5 @@
-﻿
+﻿@using Microsoft.AspNetCore.Http;
+
 <script>
 
 
@@ -29,7 +30,7 @@
     function AddCertificadoDeposito() {
        // $('#myModalSalesOrder').find(':input').not(':submit').val('');
          //$('#myModalSalesOrder').modal('show');
-     
+
          clearsession();
 
          var dataObject = {
@@ -109,121 +110,186 @@
     }
 
 
+    function AnularCD(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        var dataObject = {
+            IdCD: dataItem.IdCD
+        }
+
+        if (confirm("Esta seguro que desea anular el certificado de deposito?")) {
+            $.ajax({
+                url: '@Url.Action("AnularCD", "CertificadoDeposito")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    //$("#GoodsDeliveryAuthorization").html('');
+                    //$("#GoodsDeliveryAuthorization").html(result);
+                    //var customer = $("#CustomerId").val();
+                    //$("#CustomerId").val(0);
+                    //$("#CustomerId").data("kendoDropDownList").select(customer);
+                    //$("#CustomerId").data("kendoDropDownList").value(customer);
+
+                    //hcustom = customer;
+                    //GetProductTypeIdS();
+                    //$("#SubProductId").data("kendoDropDownList").dataSource.read();
+                    //// var sapProject = $("#CustomerId").data("kendoDropDownList").bind("select", onChange(customer));
+                    //fiscal();
+                    //$('#myModalGoodsDeliveryAuthorization').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+        }
+    }
+
 </script>
 
 <h3 class="text-themecolor">Certificado de depósito</h3>
 
 @(Html.Kendo().Grid<ERPMVC.Models.CertificadoDeposito>()
-                          .Name("gridCertificadoDeposito")
-                          .Columns(columns =>
-                          {
-                              columns.Command(command =>
+                              .Name("gridCertificadoDeposito")
+                              .Columns(columns =>
                               {
-                                  command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCertificadoDeposito");
-                                  command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCertificadoDeposito");
-                                  //  command.Edit(); command.Destroy();
-                              }).Width(250);
+                                  columns.Command(command =>
+                                  {
+                                      command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCertificadoDeposito");
+                                      command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCertificadoDeposito");
+                                      command.Custom("Anular").Text(" ").IconClass("fa fa-times-circle").Click("AnularCD");
 
-                              columns.Bound(p => p.IdCD).Title("Id").Width(150);
-                              columns.Bound(p => p.FechaCertificado).Format("{0:dd/MM/yyyy}").Title("Fecha Certificado").Width(150);
-                              columns.Bound(p => p.FechaVencimiento).Format("{0:dd/MM/yyyy}").Title("Fecha de Vencimiento").Width(150);
-                              columns.Bound(p => p.CustomerName).Title("Cliente").Width(150);
-                              columns.Bound(p => p.ServicioName).Title("Servicio").Width(150);
-                              columns.Bound(p => p.WarehouseName).Title("Sucursal").Width(150);
-                              columns.Bound(p => p.NombreEmpresa).Title("Nombre empresa").Width(150);
-                              columns.Bound(p => p.NoPoliza).Title("NoPoliza").Width(150);
 
-                              //columns.Bound(p => p.Total).Title("Total").Width(150);
-                          })
-                              .Filterable(f => f.Operators(o => o.ForString(s => s
+                                      //  command.Edit(); command.Destroy();
+                                  }).Width(250);
+
+                                  columns.Bound(p => p.IdCD).Title("Id").Width(150);
+                                  columns.Bound(p => p.FechaCertificado).Format("{0:dd/MM/yyyy}").Title("Fecha Certificado").Width(150);
+                                  columns.Bound(p => p.FechaVencimiento).Format("{0:dd/MM/yyyy}").Title("Fecha de Vencimiento").Width(150);
+                                  columns.Bound(p => p.CustomerName).Title("Cliente").Width(150);
+                                  columns.Bound(p => p.ServicioName).Title("Servicio").Width(150);
+                                  // columns.Bound(p => p.WarehouseName).Title("Sucursal").Width(150);
+                                  columns.Bound(p => p.NombreEmpresa).Title("Nombre empresa").Width(150);
+                                  columns.Bound(p => p.NoPoliza).Title("NoPoliza").Width(150);
+
+                                  //columns.Bound(p => p.Total).Title("Total").Width(150);
+                              })
+                                  .Filterable(f => f.Operators(o => o.ForString(s => s
+                                           .Clear()
+                                           .Contains("Contiene")
+                                           .DoesNotContain("No contiene")
+                                           .EndsWith("Termina con")
+                                           .IsEqualTo("Es igual a")
+                                           .IsNotEqualTo("No es igual a")
+                                           .IsNull("Es nulo")
+                                           .StartsWith("Inicia con")
+
+
+                                     )
+                                     .ForNumber(n => n
                                        .Clear()
-                                       .Contains("Contiene")
-                                       .DoesNotContain("No contiene")
-                                       .EndsWith("Termina con")
                                        .IsEqualTo("Es igual a")
-                                       .IsNotEqualTo("No es igual a")
+                                       .IsGreaterThan("Es mayor que")
+                                       .IsLessThan("Es menor que")
                                        .IsNull("Es nulo")
-                                       .StartsWith("Inicia con")
+                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                     )
+                                     .ForDate(d => d
+                                     .Clear()
+                                     .IsEqualTo("Es igual que")
+                                     .IsGreaterThan("Es mayor que")
+                                     .IsLessThan("Es menor que")
+                                     .IsLessThanOrEqualTo("Es menor o igual que")
+                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                     .IsNotEqualTo("No es igual que")
+                                      )
+                                   ))
+                              .ToolBar(tools =>
+                              {
+                                  // tools.Create();
+                                  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                             .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCertificadoDeposito();" });
+
+                                  tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                                  tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
 
 
-                                 )
-                                 .ForNumber(n => n
-                                   .Clear()
-                                   .IsEqualTo("Es igual a")
-                                   .IsGreaterThan("Es mayor que")
-                                   .IsLessThan("Es menor que")
-                                   .IsNull("Es nulo")
-                                   .IsLessThanOrEqualTo("Es menor o igual que")
-                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                 )
-                                 .ForDate(d => d
-                                 .Clear()
-                                 .IsEqualTo("Es igual que")
-                                 .IsGreaterThan("Es mayor que")
-                                 .IsLessThan("Es menor que")
-                                 .IsLessThanOrEqualTo("Es menor o igual que")
-                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                 .IsNotEqualTo("No es igual que")
-                                  )
-                               ))
-                          .ToolBar(tools =>
-                          {
-                              // tools.Create();
-                              tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                             .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCertificadoDeposito();" });
+                              })
+                               .Editable(e => e.Mode(GridEditMode.PopUp))
+                                .Sortable()
+                                .AutoBind(true)
+                                .Pageable()
+                                .Filterable()
+                                .Scrollable()
+                                // .ClientDetailTemplateId("template")
+                                .Pdf(pdf => pdf.FileName("CertificadoDepositoReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                  .Excel(excel => excel.FileName("CertificadoDepositoReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                //.Events(e=>e.Save("onsave"))
+                                .DataSource(dataSource =>
 
-                              tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
-                              tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+                               dataSource
+                               //.Ajax()
+                               .WebApi()
+                                .ServerOperation(true)
+                                .Model(model =>
+                                {
+                                    model.Id(p => p.IdCD);
+                                    model.Field(p => p.IdCD).Editable(true);
+                                    model.Field(p => p.IdCD).Editable(true);
 
 
-                          })
-                           .Editable(e => e.Mode(GridEditMode.PopUp))
-                            .Sortable()
-                            .AutoBind(true)
-                            .Pageable()
-                            .Filterable()
-                            .Scrollable()
-                            // .ClientDetailTemplateId("template")
-                            .Pdf(pdf => pdf.FileName("CertificadoDepositoReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                              .Excel(excel => excel.FileName("CertificadoDepositoReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                            //.Events(e=>e.Save("onsave"))
-                            .DataSource(dataSource =>
+                                })
+                                .Events(events =>
+                                {
+                                    events.Error("error_handler");
+                                    //events.upda("EditHandler");
 
-                           dataSource
-                           //.Ajax()
-                           .WebApi()
-                            .ServerOperation(true)
-                            .Model(model =>
-                            {
-                                model.Id(p => p.IdCD);
-                                model.Field(p => p.IdCD).Editable(true);
-                                model.Field(p => p.IdCD).Editable(true);
-
-
-                            })
-                            .Events(events =>
-                            {
-                                events.Error("error_handler");
-                                //events.upda("EditHandler");
-
-                            })
-                            .Read(read => read.Action("GetCertificadoDeposito", "CertificadoDeposito") )
-                            .Create(create => create.Action("Insert", "CertificadoDeposito"))
-                            .Update(update => update.Action("Update", "CertificadoDeposito", new { id = "{0}" }))
-                            .Destroy(destroy => destroy.Action("Delete", "CertificadoDeposito", new { id = "{0}" }))
-                      )
+                                })
+                                .Read(read => read.Action("GetCertificadoDeposito", "CertificadoDeposito"))
+                                .Create(create => create.Action("Insert", "CertificadoDeposito"))
+                                .Update(update => update.Action("Update", "CertificadoDeposito", new { id = "{0}" }))
+                                .Destroy(destroy => destroy.Action("Delete", "CertificadoDeposito", new { id = "{0}" }))
+                          )
 )
 
 <div id="salesorder">
-    @await Html.PartialAsync("pvwCertificadoDeposito", new ERPMVC.DTO.CertificadoDepositoDTO { IdCD = 0, FechaCertificado = DateTime.Now, FechaVencimiento = DateTime.Now.AddDays(60) 
-     , FechaVencimientoDeposito =DateTime.Now.AddDays(30) ,FechaFirma = DateTime.Now,  FechaInicioComputo=DateTime.Now, FechaPagoBanco=DateTime.Now })
+    @await Html.PartialAsync("pvwCertificadoDeposito", new ERPMVC.DTO.CertificadoDepositoDTO { IdCD = 0, FechaCertificado = DateTime.Now, FechaVencimiento = DateTime.Now.AddDays(60)
+     , FechaVencimientoDeposito =DateTime.Now.AddDays(30) ,FechaFirma = DateTime.Now,  FechaInicioComputo=DateTime.Now, FechaPagoBanco=DateTime.Now
+,BranchId = Convert.ToInt64(Context.Session.GetString("BranchId"))
+})
 </div>
 
+<script>
 
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridCertificadoDeposito").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridCertificadoDeposito").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-button k-button-icontext k-grid-Agregar k-i-plus-sm", "Agregar un nuevo registro");
+    //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
+    setRowButtonTooltip(".k-grid-Anular", "Anular un certificado de deposito!");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+
+</script>
 
 
 

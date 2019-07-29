@@ -160,7 +160,7 @@ namespace ERPMVC.Controllers
 
                         }
 
-
+                        HttpContext.Session.SetString("listadoproductosproformainvoice", JsonConvert.SerializeObject(_GoodsReceivedLine).ToString());
 
                     }
                 }

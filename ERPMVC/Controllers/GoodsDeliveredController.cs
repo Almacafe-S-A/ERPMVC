@@ -57,7 +57,10 @@ namespace ERPMVC.Controllers
 
                 if (_GoodsDelivered == null)
                 {
-                    _GoodsDelivered = new GoodsDeliveredDTO { DocumentDate=DateTime.Now, ExpirationDate = DateTime.Now, OrderDate=DateTime.Now, editar=1 };
+                    _GoodsDelivered = new GoodsDeliveredDTO { DocumentDate=DateTime.Now, ExpirationDate = DateTime.Now, OrderDate=DateTime.Now, editar=1
+                        ,
+                        BranchId = Convert.ToInt64(HttpContext.Session.GetString("BranchId"))
+                    };
                 }
                 else
                 {
