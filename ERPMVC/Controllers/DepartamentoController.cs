@@ -202,7 +202,7 @@ namespace ERPMVC.Controllers
                 _Departamento.Usuariomodificacion = HttpContext.Session.GetString("user");
                 _Departamento.FechaCreacion = DateTime.Now;
                 _Departamento.FechaModificacion = DateTime.Now;
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Departamento/PostDepartamento", _Departamento);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Departamento/Insert", _Departamento);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {

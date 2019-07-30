@@ -181,7 +181,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PutAsJsonAsync(baseadress + "api/ProductType/Update", _ProductType);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/ProductType/Update", _ProductType);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {

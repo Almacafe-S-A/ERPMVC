@@ -8,7 +8,7 @@ namespace ERPMVC.DTO
 {
     public class EscalaDTO : Escala
     {
-        public List<Branch> _Escala { get; set; }
+        public List<Escala> _Escala { get; set; }
 
         public int editar { get; set; } = 1;
 
