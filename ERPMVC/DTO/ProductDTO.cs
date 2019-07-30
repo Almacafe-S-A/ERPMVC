@@ -8,7 +8,7 @@ namespace ERPMVC.DTO
 {
     public class ProductDTO : Product
     {
-        public List<Branch> _Product { get; set; }
+        public List<Product> _Product { get; set; }
 
         public int editar { get; set; } = 1;
 

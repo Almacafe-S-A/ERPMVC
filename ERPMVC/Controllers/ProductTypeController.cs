@@ -172,6 +172,8 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _ProductType }, Total = 1 });
         }
 
+
+
         [HttpPut("{ProductTypeId}")]
         public async Task<ActionResult<ProductType>> Update(Int64 ProductTypeId, ProductType _ProductTypep)
         {
