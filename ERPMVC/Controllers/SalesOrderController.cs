@@ -1,12 +1,19 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.Mail;
+using System.Reflection;
 using System.Threading.Tasks;
 using AutoMapper;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using FluentEmail.Core;
+using FluentEmail.Razor;
+using FluentEmail.Smtp;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -15,6 +22,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using static ERPMVC.Helpers.ViewRenderService;
 
 namespace ERPMVC.Controllers
 {
@@ -25,16 +33,23 @@ namespace ERPMVC.Controllers
     {
         //private readonly ApplicationDbContext _context;
        //  private readonly ILogger _logger;
-         private readonly IOptions<MyConfig> _config;
-          private readonly IMapper mapper;
+        private readonly IOptions<MyConfig> _config;
+        private readonly IMapper mapper;
         private readonly ILogger _logger;
+        private readonly IViewRenderService _viewRenderService;
+        private readonly ViewRender view;
 
         //public SalesOrderController(ILogger<SalesOrderController> logger,IOptions<MyConfig> config)
-        public SalesOrderController(ILogger<SalesOrderController> logger, IOptions<MyConfig> config, IMapper mapper)
+        public SalesOrderController(ILogger<SalesOrderController> logger, IOptions<MyConfig> config
+            , IMapper mapper, IViewRenderService viewRenderService
+            , ViewRender view
+            )
         {
             this.mapper = mapper;
             this._logger = logger;
             this._config = config;
+            this._viewRenderService = viewRenderService;
+            this.view = view;
         }
 
         [CustomAuthorization]
@@ -245,15 +260,114 @@ namespace ERPMVC.Controllers
                 SalesOrder _SalesOrdermodel = new SalesOrder();
                 try
                 {
-                  _SalesOrdermodel  = mapper.Map<SalesOrderDTO, SalesOrder>(_SalesOrder);
+                    _SalesOrder.CustomerId = _SalesOrder.CustomerId == null ? 0 : _SalesOrder.CustomerId;
+                    _SalesOrdermodel  = mapper.Map<SalesOrderDTO, SalesOrder>(_SalesOrder);
                     if (_SalesOrder.SalesOrderId == 0)
                     {
                         _SalesOrder.UsuarioCreacion = HttpContext.Session.GetString("user");
                         _SalesOrder.UsuarioModificacion = HttpContext.Session.GetString("user");
                         var resultsalesorder = await Insert(_SalesOrder);
                         var value = (resultsalesorder.Result as ObjectResult).Value;
-                        resultsalesorder = ((SalesOrder)(value));
-                 
+                        SalesOrder resultado = ((SalesOrder)(value));
+                        if (resultado.SalesOrderId > 0)
+                        {                            
+
+                           if (_SalesOrder.IdEstado == 5)
+                            {
+
+                                string baseadress = _config.Value.urlbase;
+                                HttpClient _client = new HttpClient();
+                                Alert _alert = new Alert { AlertName = "Sancionados", DescriptionAlert="Listados sancionados"
+                                        , UsuarioCreacion = _SalesOrder.UsuarioCreacion, UsuarioModificacion= _SalesOrder.UsuarioModificacion
+                                        , DocumentId = resultado.SalesOrderId , DocumentName = "COT"
+                                       , FechaCreacion=DateTime.Now, FechaModificacion=DateTime.Now };
+                                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                                var result = await _client.PostAsJsonAsync(baseadress + "api/Alert/Insert" , _alert);
+                                string valorrespuesta = "";
+                                if (result.IsSuccessStatusCode)
+                                {
+                                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                                    _alert = JsonConvert.DeserializeObject<Alert>(valorrespuesta);
+                                }
+
+                                System.Net.ServicePointManager.ServerCertificateValidationCallback = new System.Net.Security.RemoteCertificateValidationCallback(RemoteServerCertificateValidationCallback);
+                                SmtpClient smtp = new SmtpClient();
+
+                                var client = new SmtpClient();
+                                client.UseDefaultCredentials = false;
+                                client.Credentials = new NetworkCredential(_config.Value.emailsender, _config.Value.passwordsmtp);
+                                client.Host = _config.Value.smtp;
+                                client.Port = Convert.ToInt32(_config.Value.port);
+                                client.EnableSsl = true;
+                                Email.DefaultSender = new SmtpSender(client);
+
+                                //var resultview = this.view.Render("Mail/Aprobacion",
+                                //   new DocumentoDTO
+                                //   {
+                                //       Title = "Cotización a aprobar",
+                                //       DocumentId = resultado.SalesOrderId.ToString()
+                                //   }
+                                //   );
+
+
+                                //var resultview = await _viewRenderService.RenderToStringAsync("Mail/Aprobacion",
+                                //    new DocumentoDTO
+                                //    {
+                                //        Title = "Cotización a aprobar",
+                                //        DocumentId = resultado.SalesOrderId.ToString()
+                                //    }
+                                //    );
+
+
+                                string completepath = Directory.GetCurrentDirectory() + "/Views/Shared/Page1.cshtml";
+                                string url = this.Request.Scheme +"://" + this.Request.Host.Value + Url.Action("Index", "SalesOrder");
+                                Email.DefaultRenderer = new RazorRenderer();
+                                //var template = "Dear @Model.Name, You are totally @Model.Compliment. Ya que el nombre se encontro en los listados";
+                                var email = Email
+                                    .From(_config.Value.emailsender)
+                                    .To("freddy.chinchilla@bi-dss.com")
+                                    .To("freddys18@yahoo.com")
+                                     //.To("mperez@almacafehn.com")
+                                    //  .To("jr@almacafehn.com")
+                                      //.To("informatica@almacafehn.com")                                 
+                                     // .To("gerencia@almacafehn.com")
+                                    .Subject($"La cotización {resultado.SalesOrderId} fue {_SalesOrder.Estado} " +
+                                              $"por {_SalesOrder.UsuarioCreacion} !")
+                                            .Body(url)
+                                     .UsingTemplateFromFile($"{completepath}", new
+                                     {
+                                         Title = "Cotización a aprobar",
+                                         DocumentId = resultado.SalesOrderId.ToString(),
+                                         url = url,
+                                         Fecha = DateTime.Now.ToString("dd/MM/yyyy") + " © BI.Todos los derechos reservados.",
+                                     })
+
+
+                                    //.UsingTemplateFromEmbedded("MailTemplate.Page1.cshtml",
+                                    //   new 
+                                    //   {
+                                    //       Title = "Cotización a aprobar",
+                                    //       DocumentId = resultado.SalesOrderId.ToString(),
+                                    //       url = url,
+                                    //       Fecha =DateTime.Now.ToString("dd/MM/yyyy") +" © BI.Todos los derechos reservados.",
+                                    //   },                                      
+                                    //      Assembly.Load("MailTemplate"))
+
+
+
+
+                                    //  .Body(resultview)                                     
+                                    //.UsingTemplate(template)                                  
+                                    .SendAsync();                                   
+
+                             
+
+                                //await email.SendAsync();
+                            }
+
+                          
+                        }
+
                         return resultsalesorder;
                     }
                     else
@@ -269,7 +383,16 @@ namespace ERPMVC.Controllers
                 }
 
             }
-            return BadRequest("No llego correctamente el modelo!");
+
+            return await Task.Run(()=>  BadRequest("No llego correctamente el modelo!"));
+        }
+
+
+
+        private bool RemoteServerCertificateValidationCallback(object sender, System.Security.Cryptography.X509Certificates.X509Certificate certificate, System.Security.Cryptography.X509Certificates.X509Chain chain, System.Net.Security.SslPolicyErrors sslPolicyErrors)
+        {
+            //Console.WriteLine(certificate);
+            return true;
         }
 
 
@@ -299,7 +422,6 @@ namespace ERPMVC.Controllers
 
                     CustomerContract _customercontract = new CustomerContract();
                     _customercontract.SalesOrderId = _SalesOrderp.SalesOrderId;
-
 
                     _customercontract.UsedArea = _SalesOrdermodel.SalesOrderLines
                       .Where(q => q.SubProductName.Contains("Almacenaje")).Select(q => q.Price).FirstOrDefault();
@@ -331,7 +453,7 @@ namespace ERPMVC.Controllers
                          .Where(q => q.SubProductName.Contains("Transporte")).Select(q => q.Price).FirstOrDefault();
 
 
-
+                    _logger.LogInformation($"Despues del transporte");
 
                     CustomerConditions _cc = new CustomerConditions();
                     List<CustomerConditions> _cclist = new List<CustomerConditions>();
@@ -348,6 +470,8 @@ namespace ERPMVC.Controllers
                         _cclist = JsonConvert.DeserializeObject<List<CustomerConditions>>(valorrespuesta);
                     }
 
+                    _logger.LogInformation($"Despues de consultar las condiciones del cliente Cantidad de condiciones: {_cclist.Count}");
+
                     _customercontract.Porcentaje1 = _cclist
                            .Where(q => q.CustomerConditionName.Contains("enor")).Select(q => q.ValueDecimal).FirstOrDefault();
 
@@ -361,11 +485,13 @@ namespace ERPMVC.Controllers
                          .Where(q => q.CustomerConditionName.Contains("ayor")).Select(q => Convert.ToDouble(q.ValueToEvaluate)).FirstOrDefault();
 
 
-                    _customercontract.CustomerId = _SalesOrdermodel.CustomerId;
+                    _customercontract.CustomerId = _SalesOrdermodel.CustomerId.Value;
                     _customercontract.CustomerName = _SalesOrdermodel.CustomerName;
                     _customercontract.ProductId = _SalesOrdermodel.ProductId;
                     _customercontract.ProductName = _SalesOrdermodel.ProductName;
 
+
+                    _logger.LogInformation($"Antes de recuperar la empresa");
                     CompanyInfo _company = new CompanyInfo { CompanyInfoId = 1 };
                     _client = new HttpClient();
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -377,21 +503,22 @@ namespace ERPMVC.Controllers
                         _company = JsonConvert.DeserializeObject<CompanyInfo>(valorrespuesta);
                     }
 
-
                     _customercontract.Manager = _company.Manager;
                     _customercontract.RTNMANAGER = _company.RTNMANAGER;
-                   
+
+                    _logger.LogInformation($"Despues de manager");
 
                     _client = new HttpClient();
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                     result = await _client.PostAsJsonAsync(baseadress + "api/CustomerContract/Insert", _customercontract);
 
+                    _logger.LogInformation($"Despues del insertar el contrato!");
                     valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _customercontract = JsonConvert.DeserializeObject<CustomerContract>(valorrespuesta);
-
+                        _logger.LogInformation($"Fue satisfactorio la generacion!");
                     }
                     else
                     {

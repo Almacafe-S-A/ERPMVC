@@ -172,7 +172,7 @@ namespace ERPMVC.Controllers
           //  return Json(_roles);
         }
 
-        [HttpGet("[action]")]
+        [HttpGet("[controller]/[action]")]
         public async Task<JsonResult> GetJsonRoles([DataSourceRequest]DataSourceRequest request)
         {
             List<ApplicationUserRole> _roles = new List<ApplicationUserRole>();

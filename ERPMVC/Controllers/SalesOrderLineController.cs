@@ -106,11 +106,56 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    if (_SalesOrderLine.SubProductId > 0)
+
+                    List<SalesOrderLine> _existelinea = new List<SalesOrderLine>();
+                    if (HttpContext.Session.GetString("listadoproductos") != "")
+                    {
+                        _SalesOrders = JsonConvert.DeserializeObject<List<SalesOrderLine>>(HttpContext.Session.GetString("listadoproductos"));
+                        _existelinea = _SalesOrders.Where(q => q.SalesOrderLineId == _SalesOrderLine.SalesOrderLineId).ToList();
+                    }
+
+
+
+                    if (_SalesOrderLine.SalesOrderLineId > 0 && _existelinea.Count == 0)
                     {
                         _SalesOrders.Add(_SalesOrderLine);
                         HttpContext.Session.SetString("listadoproductos", JsonConvert.SerializeObject(_SalesOrders).ToString());
                     }
+                       else
+                    {
+                        var obj = _SalesOrders.FirstOrDefault(x => x.SalesOrderLineId == _SalesOrderLine.SalesOrderLineId);
+                        if (obj != null)
+                        {
+                            obj.Description = _SalesOrderLine.Description;
+                            obj.Price = _SalesOrderLine.Price;
+                            obj.Quantity = _SalesOrderLine.Quantity;
+                            obj.Amount = _SalesOrderLine.Amount;
+                            obj.SubProductId = _SalesOrderLine.SubProductId;
+                            obj.SubProductName = _SalesOrderLine.SubProductName;
+                            obj.Total = _SalesOrderLine.Total;
+                            obj.UnitOfMeasureId = _SalesOrderLine.UnitOfMeasureId;
+                            obj.UnitOfMeasureName = _SalesOrderLine.UnitOfMeasureName;
+                            obj.TaxCode = _SalesOrderLine.TaxCode;
+                            obj.TaxPercentage = _SalesOrderLine.TaxPercentage;
+                            obj.TaxAmount = _SalesOrderLine.TaxAmount;
+                            obj.SubTotal = _SalesOrderLine.SubTotal;
+                            obj.ProductId = _SalesOrderLine.ProductId;
+                            obj.DiscountAmount = _SalesOrderLine.DiscountAmount;
+                            obj.DiscountPercentage = _SalesOrderLine.DiscountPercentage;
+                            obj.Description = _SalesOrderLine.Description;
+
+                        }
+
+                        HttpContext.Session.SetString("listadoproductos", JsonConvert.SerializeObject(_SalesOrders).ToString());
+
+
+
+                    }
+
+
+
+
+
                 }
 
 
@@ -227,6 +272,7 @@ namespace ERPMVC.Controllers
                 if (_salesorderLIST != null)
                 {
                     _salesorderLIST = _salesorderLIST
+                          .Where(q => q.SalesOrderLineId != _salesorder.SalesOrderLineId)
                            .Where(q => q.Quantity != _salesorder.Quantity)
                            .Where(q => q.Amount != _salesorder.Amount)
                            .Where(q => q.Total != _salesorder.Total)

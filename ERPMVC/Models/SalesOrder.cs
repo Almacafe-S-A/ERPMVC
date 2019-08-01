@@ -46,7 +46,8 @@ namespace ERPMVC.Models
         public string BranchName { get; set; }
 
         [Display(Name = "Cliente")]
-        public Int64 CustomerId { get; set; }
+      
+        public Int64? CustomerId { get; set; }
 
         [Display(Name = "Fecha de vencimiento")]
         public DateTime ExpirationDate { get; set; }

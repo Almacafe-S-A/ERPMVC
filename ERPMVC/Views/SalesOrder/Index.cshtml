@@ -113,6 +113,7 @@
     //});
 
     function GenerarContrato(e) {
+        var notification = $("#notification").data("kendoNotification");
         if (confirm('Esta seguro de generar un contrato?')) {
             e.preventDefault();
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
@@ -129,14 +130,22 @@
                 async: false,
                 data: JSON.stringify(dataObject),
                 success: function (result) {
-                    $("#salesorder").html('');
-                    $("#salesorder").html(result);
-
-                    //  RefreshCotizacionesDetail();
-                    $("#btnSaveCotizacion").hide();
-                    $('#myModalSalesOrder').modal('show');
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: 'Contrato generado correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 7000,
+                        stack: 6
+                    });
+                 
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    notification.show({
+                        title: "Validacion",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
                     alert(textStatus + ": " + XMLHttpRequest.responseText);
                 }
             });
@@ -159,16 +168,17 @@
                                                   command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
                                                   command.Custom("GenerarContrato").Text(" ").IconClass("fa fa-file-import").Click("GenerarContrato")
                                                          ;
-                                      //  command.Edit(); command.Destroy();
-                                  }).Width(250);
+                                                  //  command.Edit(); command.Destroy();
+                                              }).Width(250);
 
                                               columns.Bound(p => p.SalesOrderId).Title("Id").Width(150);
                                               columns.Bound(p => p.OrderDate).Format("{0:dd/MM/yyyy}").Title("Fecha Cotizacion").Width(150);
                                               columns.Bound(p => p.CustomerName).Title("Cliente").Width(150);
                                               columns.Bound(p => p.CustomerRefNumber).Title("Codigo referencia").Width(150);
                                               columns.Bound(p => p.Discount).Title("Descuentos").Width(150);
-                                  //columns.Bound(p => p.BranchId).Title("Branch Id").Width(150);
-                                  columns.Bound(p => p.BranchName).Title("Sucursal").Width(150);
+                                              columns.Bound(p => p.Estado).Title("Estado").Width(150);
+                                              //columns.Bound(p => p.BranchId).Title("Branch Id").Width(150);
+                                              columns.Bound(p => p.BranchName).Title("Sucursal").Width(150);
                                               columns.Bound(p => p.Freight).Title("Flete").Width(150);
                                               columns.Bound(p => p.SubTotal).Title("Sub Total").Width(150);
                                               columns.Bound(p => p.Tax).Title("Total Impuesto").Width(150);
@@ -205,9 +215,9 @@
                                                ))
                                           .ToolBar(tools =>
                                           {
-                                  // tools.Create();
-                                  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                             .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
+                                              // tools.Create();
+                                              tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                         .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
 
                                               tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
                                               tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
@@ -246,9 +256,9 @@
                                             .Events(events =>
                                             {
                                                 events.Error("error_handler");
-                                    //events.upda("EditHandler");
+                                                //events.upda("EditHandler");
 
-                                })
+                                            })
                                             .Read(read => read.Action("GetSalesOrder", "SalesOrder"))
                                             .Create(create => create.Action("Insert", "SalesOrder"))
                                             .Update(update => update.Action("Update", "SalesOrder", new { id = "{0}" }))

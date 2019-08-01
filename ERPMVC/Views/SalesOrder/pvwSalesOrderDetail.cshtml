@@ -18,9 +18,32 @@
             }
         }
 
-            return {
-                SalesOrderId: @Model.SalesOrderId,
-                /*ProductId: $("#ProductId").val(),*/
+        var displayedData = $("#gridCotizacionesDetail").data().kendoGrid.dataSource.data();
+        var id = -999999;
+         debugger;
+        if (Number($("#SalesOrderLineId").val()) === 0) {
+            if (displayedData.length > 0) {
+                for (var i = 0; i < displayedData.length; i++) {
+                    if (displayedData[i].SalesOrderLineId > id)
+                        id = displayedData[i].SalesOrderLineId;
+
+                }
+
+                id = id + 1;
+            }
+            else if ($("#Quantity").val()>0) {
+                id = 1;
+            }
+          
+        }
+        else {
+            id = $("#SalesOrderLineId").val();
+        }
+
+
+        return {
+                SalesOrderLineId: id,
+                SalesOrderId: @Model.SalesOrderId,              
                 UnitOfMeasureId : $("#UnitOfMeasureId").val(),
                 UnitOfMeasureName: unidaddemedida,
                 SubProductId: $("#SubProductId").val(),
@@ -64,6 +87,7 @@
 
         }
 
+        return true;
     }
 
     function llenarsubproduct() {
@@ -100,38 +124,61 @@
 
         var subproducto = 0;
         var dataObject = { 'SalesOrderLineId': dataItem.SalesOrderLineId };
-              $.ajax({
-                    url: '@Url.Action("pvwSalesOrderDetailMant", "SalesOrderLine")',
-                    method: 'POST',
-                    datatype: "json",
-                    contentType: 'application/json',
-                    async: false,
-                    data: JSON.stringify(dataObject),
-                    success: function (data) {
-                      $("#SalesOrderLineMant").html('');
-                        $("#SalesOrderLineMant").html(data);
-                        var txt = $(data);
-                        var found = $("#SubProductId", txt);
-                        subproducto = $(found).val();
-                    },
-                    error: function (XMLHttpRequest, textStatus, errorThrown) {
 
-                      //  $("#btngenerarfactura").show();
-                        notification.show({
-                            title: "Validacion",
-                            message: textStatus + ": " + XMLHttpRequest.responseText
-                        }, "error");
+        if (dataItem.IdCD > 0) {
+            $.ajax({
+                url: '@Url.Action("pvwSalesOrderDetailMant", "SalesOrderLine")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    $("#SalesOrderLineMant").html('');
+                    $("#SalesOrderLineMant").html(data);
+                    var txt = $(data);
+                    var found = $("#SubProductId", txt);
+                    subproducto = $(found).val();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
 
-                    }
-              });
+                    //  $("#btngenerarfactura").show();
+                    notification.show({
+                        title: "Validacion",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+
+                }
+            });
 
 
-     
-        $("#frmSalesOrderLine :input").prop("disabled", true);
-        llenarsubproduct();
-        var combobox = $('#SubProductId').getKendoDropDownList();
-        combobox.value(subproducto);
-        combobox.trigger('change');      
+
+            $("#frmSalesOrderLine :input").prop("disabled", true);
+            llenarsubproduct();
+            var combobox = $('#SubProductId').getKendoDropDownList();
+            combobox.value(subproducto);
+            combobox.trigger('change');
+
+        }
+        else {
+            $("#SalesOrderLineId").val(dataItem.SalesOrderLineId);   
+            $("#Quantity").data("kendoNumericTextBox").value(dataItem.Quantity);
+            $("#Price").data("kendoNumericTextBox").value(dataItem.Price);
+            $("#Description").val(dataItem.Description);
+            $("#Amount").data("kendoNumericTextBox").value(dataItem.Amount);
+            $("#Total").data("kendoNumericTextBox").value(dataItem.Total);          
+            $("#TaxPercentage").data("kendoNumericTextBox").value(dataItem.TaxPercentage);
+            $("#TaxAmount").data("kendoNumericTextBox").value(dataItem.TaxAmount);
+            $("#SubTotal").data("kendoNumericTextBox").value(dataItem.SubTotal);
+            $("#DiscountAmount").data("kendoNumericTextBox").value(dataItem.DiscountAmount);
+            $("#DiscountPercentage").data("kendoNumericTextBox").value(dataItem.DiscountPercentage);
+            $("#SubProductId").data("kendoDropDownList").dataSource.read();
+            $("#TaxCode").data("kendoDropDownList").value(dataItem.TaxCode);
+            $("#UnitOfMeasureId").data("kendoDropDownList").value(dataItem.UnitOfMeasureId);
+            $("#SubProductId").data("kendoDropDownList").value(dataItem.SubProductId);
+
+        }
+
         $('#myModalSalesOrderLine').modal('show');
        
     }
