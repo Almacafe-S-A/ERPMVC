@@ -37,6 +37,18 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        [HttpGet("[controller]/[action]")]
+        public IActionResult SubProductClientes()
+        {
+            return View();
+        }
+
+        [HttpGet("[controller]/[action]")]
+        public IActionResult SubProductPropios()
+        {
+            return View();
+        }
+
 
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
@@ -54,6 +66,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _SubProduct = JsonConvert.DeserializeObject<List<SubProduct>>(valorrespuesta);
+                    _SubProduct = _SubProduct.Where(q => q.ProductTypeId != 11).ToList();
 
                 }
 
@@ -87,7 +100,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _SubProduct = JsonConvert.DeserializeObject<List<SubProduct>>(valorrespuesta);
-                    _SubProduct = _SubProduct.Where(q => q.ProductTypeId == 2).ToList();
+                    _SubProduct = _SubProduct.Where(q => q.ProductTypeId == 11).ToList();
                 }
 
 
@@ -103,6 +116,63 @@ namespace ERPMVC.Controllers
 
         }
 
+
+
+        [HttpGet("[controller]/[action]")]
+
+        public async Task<DataSourceResult> GetSubProductoByTipoGrid([DataSourceRequest]DataSourceRequest request, Int64 ProductTypeId)
+        {
+            List<SubProduct> _SubProducto = new List<SubProduct>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/SubProduct/GetSubProductbByProductTypeId/" + ProductTypeId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _SubProducto = JsonConvert.DeserializeObject<List<SubProduct>>(valorrespuesta);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return (_SubProducto.ToDataSourceResult(request));
+        }
+
+
+        [HttpGet("[controller]/[action]")]
+        public async Task<DataSourceResult> GetSubProductoByTipoGridPropios([DataSourceRequest]DataSourceRequest request, Int64 ProductTypeId)
+        {
+            List<SubProduct> _SubProducto = new List<SubProduct>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/SubProduct/GetSubProductbByProductTypeIdPropios/" + ProductTypeId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _SubProducto = JsonConvert.DeserializeObject<List<SubProduct>>(valorrespuesta);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return (_SubProducto.ToDataSourceResult(request));
+        }
 
         [HttpGet("[controller]/[action]")]
         public async Task<ActionResult<SubProduct>> GetSubProductoByTipoJson([DataSourceRequest]DataSourceRequest request, Int64 ProductTypeId)

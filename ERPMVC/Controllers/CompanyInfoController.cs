@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using ERPMVC.DTO;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -33,26 +34,28 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwAddCompanyInfo(Int64 Id = 0)
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwAddCompanyInfo([FromBody]CompanyInfoDTO _sarpara)
+
         {
-            CompanyInfo _CompanyInfo = new CompanyInfo();
+            CompanyInfoDTO _CompanyInfo = new CompanyInfoDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CompanyInfo/GetCompanyInfoById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/CompanyInfo/GetCompanyInfoById/" + _sarpara.CompanyInfoId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CompanyInfo = JsonConvert.DeserializeObject<CompanyInfo>(valorrespuesta);
+                    _CompanyInfo = JsonConvert.DeserializeObject<CompanyInfoDTO>(valorrespuesta);
 
                 }
 
                 if (_CompanyInfo == null)
                 {
-                    _CompanyInfo = new CompanyInfo();
+                    _CompanyInfo = new CompanyInfoDTO();
                 }
             }
             catch (Exception ex)
@@ -100,13 +103,58 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult<CompanyInfo>> SaveCompanyInfo([FromBody]CompanyInfo _CompanyInfo)
-        {
+        //[HttpPost("[action]")]
+        //public async Task<ActionResult<CompanyInfo>> SaveCompanyInfo([FromBody]CompanyInfoDTO _CompanyInfo)
+        //{
 
+        //    try
+        //    {
+        //        CompanyInfo _listCompanyInfo = new CompanyInfo();
+        //        string baseadress = config.Value.urlbase;
+        //        HttpClient _client = new HttpClient();
+        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+        //        var result = await _client.GetAsync(baseadress + "api/CompanyInfo/GetCompanyInfoById/" + _CompanyInfo.CompanyInfoId);
+        //        string valorrespuesta = "";
+        //        _CompanyInfo.FechaCreacion = DateTime.Now;
+        //        _CompanyInfo.UsuarioCreacion = HttpContext.Session.GetString("user");
+        //        if (result.IsSuccessStatusCode)
+        //        {
+
+        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
+        //            _listCompanyInfo = JsonConvert.DeserializeObject<CompanyInfoDTO>(valorrespuesta);
+
+        //        }
+
+        //        if (_listCompanyInfo.CompanyInfoId == 0)
+        //        {
+        //            _CompanyInfo.FechaCreacion = DateTime.Now;
+        //            _CompanyInfo.UsuarioCreacion = HttpContext.Session.GetString("user");
+        //            var insertresult = await Insert(_CompanyInfo);
+        //        }
+        //        else
+        //        {
+        //            var updateresult = await Update(_CompanyInfo.CompanyInfoId, _CompanyInfo);
+        //        }
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+        //        throw ex;
+        //    }
+
+        //    return Json(_CompanyInfo);
+        //}
+
+
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<CompanyInfo>> SaveCompanyInfo([FromBody]CompanyInfoDTO _CompanyInfoS)
+        {
+            CompanyInfo _CompanyInfo = _CompanyInfoS;
             try
             {
-                CompanyInfo _listCompanyInfo = new CompanyInfo();
+                CompanyInfo _listCompanyInfo= new CompanyInfo();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -118,18 +166,22 @@ namespace ERPMVC.Controllers
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listCompanyInfo = JsonConvert.DeserializeObject<CompanyInfo>(valorrespuesta);
+                    _CompanyInfo = JsonConvert.DeserializeObject<CompanyInfo>(valorrespuesta);
                 }
 
-                if (_listCompanyInfo.CompanyInfoId == 0)
+                if (_CompanyInfo == null) { _CompanyInfo = new Models.CompanyInfo(); }
+
+                if (_CompanyInfoS.CompanyInfoId == 0)
                 {
-                    _CompanyInfo.FechaCreacion = DateTime.Now;
-                    _CompanyInfo.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_CompanyInfo);
+                    _CompanyInfoS.FechaCreacion = DateTime.Now;
+                    _CompanyInfoS.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_CompanyInfoS);
                 }
                 else
                 {
-                    var updateresult = await Update(_CompanyInfo.CompanyInfoId, _CompanyInfo);
+                    _CompanyInfoS.UsuarioCreacion = _CompanyInfo.UsuarioCreacion;
+                    _CompanyInfoS.FechaCreacion = _CompanyInfo.FechaCreacion;
+                    var updateresult = await Update(_CompanyInfo.CompanyInfoId, _CompanyInfoS);
                 }
 
             }
@@ -173,15 +225,17 @@ namespace ERPMVC.Controllers
             // return new ObjectResult(new DataSourceResult { Data = new[] { _CompanyInfo }, Total = 1 });
         }
 
-        [HttpPut("{id}")]
-        public async Task<ActionResult<CompanyInfo>> Update(Int64 id, CompanyInfo _CompanyInfo)
+        [HttpPut("{CompanyInfoId}")]
+        public async Task<ActionResult<CompanyInfo>> Update(Int64 CompanyInfoId, CompanyInfo _CompanyInfop)
         {
+            CompanyInfo _CompanyInfo = _CompanyInfop;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-
+                _CompanyInfo.FechaModificacion = DateTime.Now;
+                _CompanyInfo.UsuarioModificacion = HttpContext.Session.GetString("user");
                 var result = await _client.PutAsJsonAsync(baseadress + "api/CompanyInfo/Update", _CompanyInfo);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -193,15 +247,14 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _CompanyInfo }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult<CompanyInfo>> Delete([FromBody]CompanyInfo _CompanyInfo)
+        [HttpPost]
+        public async Task<ActionResult<CompanyInfo>> Delete(Int64 CompanyInfo, CompanyInfo _CompanyInfo)
         {
             try
             {
