@@ -1,0 +1,125 @@
+﻿<script>
+
+
+    function DataONUList() {
+       return {
+           FIRST_NAME: $("#SalesOrderName").val(),
+           SECOND_NAME: $("#SalesOrderName").val(),
+           THIRD_NAME: $("#SalesOrderName").val(),
+        };
+
+    }
+</script>
+
+<div id="myModalListaONU" class="modal fade" role="dialog" style="z-index:99999">
+    <div class="modal-dialog modal-lg">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Información Lista ONU </h4>
+            </div>
+            <div class="modal-body">
+
+                @( Html.Kendo().Grid<ERPMVC.Models.INDIVIDUALM>
+                                   ()
+                                   .Name("gridListaONU")
+                                   .Columns(columns =>
+                                   {
+                                       columns.Bound(p => p.FIRST_NAME).Width(100);
+                                       columns.Bound(p => p.SECOND_NAME).Width(150);
+                                       columns.Bound(p => p.THIRD_NAME).Width(100);
+                                       columns.Bound(p => p.TITLE).Width(100);
+                                       columns.Bound(p => p.NATIONALITY).Width(100);
+                                       columns.Bound(p => p.REFERENCE_NUMBER).Width(100);
+                                       columns.Bound(p => p.DESIGNATION).Width(100);
+                                       columns.Bound(p => p.COMMENTS1).Width(300);
+                                       columns.Command(command =>
+                                       {
+                                           //command.Custom("Ver detalles").Click("Detalles");
+                                           //   command.Edit();
+                                           //command.Destroy();
+                                       }).Width(150);
+
+                                   })
+                                       .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                       .Clear()
+                                                       .Contains("Contiene")
+                                                       .DoesNotContain("No contiene")
+                                                       .EndsWith("Termina con")
+                                                       .IsEqualTo("Es igual a")
+                                                       .IsNotEqualTo("No es igual a")
+                                                       .IsNull("Es nulo")
+                                                       .StartsWith("Inicia con")
+
+
+                                                 )
+                                                 .ForNumber(n => n
+                                                   .Clear()
+                                                   .IsEqualTo("Es igual a")
+                                                   .IsGreaterThan("Es mayor que")
+                                                   .IsLessThan("Es menor que")
+                                                   .IsNull("Es nulo")
+                                                   .IsLessThanOrEqualTo("Es menor o igual que")
+                                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                 )
+                                                 .ForDate(d => d
+                                                 .Clear()
+                                                 .IsEqualTo("Es igual que")
+                                                 .IsGreaterThan("Es mayor que")
+                                                 .IsLessThan("Es menor que")
+                                                 .IsLessThanOrEqualTo("Es menor o igual que")
+                                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                 .IsNotEqualTo("No es igual que")
+                                                  )
+                                               ))
+                                   .ToolBar(tools =>
+                                   {
+                                       // tools.Create();
+                                       tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                                       tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+                                   })
+                                   .Editable(e => e.Mode(GridEditMode.PopUp))
+                                   .Sortable()
+                                   .Pageable()
+                                   .Filterable()
+                                   .Scrollable()
+                                   .Pdf(pdf => pdf.FileName("ONUReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                   + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                   .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                       .Excel(excel => excel.FileName("ONUReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                   + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                   .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                   .DataSource(dataSource =>
+                                       dataSource
+                                       .WebApi()
+
+                                       .ServerOperation(true)
+                                       .Model(model =>
+                                       {
+                                           model.Id(p => p.Id);
+                                           model.Field(p => p.Id).Editable(false);
+                                           model.Field(p => p.FIRST_NAME).Editable(true);
+
+
+                                       })
+                                       .Events(events => events.Error("error_handler"))
+                                       .Read(read => read.Action("GetONUPersonByName", "ONU").Data("DataONUList"))
+                                       .Create(create => create.Action("Insert", "ONU"))
+                                       .Update(update => update.Action("Update", "ONU", new { IdPuntoEmision = "{0}" }).Type(HttpVerbs.Post))
+                                       .Destroy(destroy => destroy.Action("Delete", "ONU", new { IdPuntoEmision = "{0}" }).Type(HttpVerbs.Delete))
+
+                                   )
+                                   .Events(e =>
+                                   {
+                                       // e.Save("onsave");
+
+                                   })
+                )
+
+            </div>
+        </div>
+    </div>
+</div>

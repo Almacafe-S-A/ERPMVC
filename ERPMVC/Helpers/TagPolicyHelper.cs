@@ -13,7 +13,7 @@ using System.Threading.Tasks;
 namespace ERPMVC
 {
     [HtmlTargetElement(Attributes = "policy")]
-    public class PolicyTagHelper : TagHelper
+    public  class PolicyTagHelper : TagHelper
     {
         private readonly IAuthorizationService _authService;
         private readonly ClaimsPrincipal _principal;
@@ -29,7 +29,7 @@ namespace ERPMVC
 
         }
 
-        public string Policy { get; set; }
+        public  string Policy { get; set; }
 
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {

@@ -1,0 +1,123 @@
+﻿<script>
+
+
+    function DataBlackList() {
+       return {
+           Funcionario: $("#SalesOrderName").val(),
+          // Funcionario: $("#SalesOrderName").val()
+        };
+
+    }
+</script>
+
+<div id="myModalListaNegra" class="modal fade" role="dialog" style="z-index:9999">
+    <div class="modal-dialog modal-lg">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Información Lista Negra </h4>
+            </div>
+            <div class="modal-body">
+
+                @( Html.Kendo().Grid<ERPMVC.Models.BlackListCustomers>
+                           ()
+                           .Name("gridListaNegra")
+                           .Columns(columns =>
+                           {
+                               columns.Bound(p => p.CustomerName).Width(100);
+                               columns.Bound(p => p.CustomerReference).Width(150);
+                               columns.Bound(p => p.DocumentDate).Width(100);
+                               columns.Bound(p => p.Estado).Width(100);
+                               columns.Bound(p => p.Identidad).Width(100);
+                               columns.Bound(p => p.Referencia).Width(100);
+                               columns.Bound(p => p.Origen).Width(100);
+                               columns.Command(command =>
+                               {
+                                   //command.Custom("Ver detalles").Click("Detalles");
+                                   //   command.Edit();
+                                   //command.Destroy();
+                               }).Width(150);
+
+                           })
+                               .Filterable(f => f.Operators(o => o.ForString(s => s
+                                               .Clear()
+                                               .Contains("Contiene")
+                                               .DoesNotContain("No contiene")
+                                               .EndsWith("Termina con")
+                                               .IsEqualTo("Es igual a")
+                                               .IsNotEqualTo("No es igual a")
+                                               .IsNull("Es nulo")
+                                               .StartsWith("Inicia con")
+
+
+                                         )
+                                         .ForNumber(n => n
+                                           .Clear()
+                                           .IsEqualTo("Es igual a")
+                                           .IsGreaterThan("Es mayor que")
+                                           .IsLessThan("Es menor que")
+                                           .IsNull("Es nulo")
+                                           .IsLessThanOrEqualTo("Es menor o igual que")
+                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                         )
+                                         .ForDate(d => d
+                                         .Clear()
+                                         .IsEqualTo("Es igual que")
+                                         .IsGreaterThan("Es mayor que")
+                                         .IsLessThan("Es menor que")
+                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                         .IsNotEqualTo("No es igual que")
+                                          )
+                                       ))
+                           .ToolBar(tools =>
+                           {
+                               // tools.Create();
+                               tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                               tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+                           })
+                           .Editable(e => e.Mode(GridEditMode.PopUp))
+                           .Sortable()
+                           .Pageable()
+                           .Filterable()
+                           .Scrollable()
+                           .Pdf(pdf => pdf.FileName("BlackListReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                           .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                               .Excel(excel => excel.FileName("BlackListReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                           .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                           .DataSource(dataSource =>
+                               dataSource
+                               .WebApi()
+
+                               .ServerOperation(true)
+                               .Model(model =>
+                               {
+                                   model.Id(p => p.BlackListId);
+                                   model.Field(p => p.CustomerReference).Editable(false);
+                                   model.Field(p => p.DocumentDate).Editable(true);
+
+
+                               })
+                               .Events(events => events.Error("error_handler"))
+                               .Read(read => read.Action("GetBlackListByParams", "BlackList").Data("DataBlackList"))
+                               .Create(create => create.Action("Insert", "BlackList"))
+                               .Update(update => update.Action("Update", "BlackList", new { IdPuntoEmision = "{0}" }).Type(HttpVerbs.Post))
+                               .Destroy(destroy => destroy.Action("Delete", "BlackList", new { IdPuntoEmision = "{0}" }).Type(HttpVerbs.Delete))
+
+                           )
+                           .Events(e =>
+                           {
+                               // e.Save("onsave");
+
+                           })
+                )
+
+            </div>
+        </div>
+    </div>
+</div>
