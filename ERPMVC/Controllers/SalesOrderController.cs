@@ -247,6 +247,50 @@ namespace ERPMVC.Controllers
             return RedirectToAction("", "");
         }
 
+         [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<SalesOrderDTO>> Aprobar([FromBody]SalesOrderDTO _SalesOrder)
+        {
+            SalesOrderDTO _so = new SalesOrderDTO();
+            if (_SalesOrder!=null)
+            {
+                try
+                {
+                    string baseadress = _config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/SalesOrder/GetSalesOrderById/" + _SalesOrder.SalesOrderId);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _so = JsonConvert.DeserializeObject<SalesOrderDTO>(valorrespuesta);
+
+
+                        //  _SalesOrder.UsuarioCreacion = HttpContext.Session.GetString("user");
+                        // _SalesOrder.UsuarioModificacion = HttpContext.Session.GetString("user");
+                        _so.IdEstado = 6;
+                        _so.Estado = "Aprobado";
+                         var resultsalesorder = await Update(_so.SalesOrderId, _so);
+
+                        var value = (resultsalesorder.Result as ObjectResult).Value;
+                        SalesOrder resultado = ((SalesOrder)(value));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                    throw ex;
+                }
+            }
+            else
+            {
+                return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+            }
+
+            return await Task.Run(() => Ok(_so));
+        }
+
         [HttpPost("[action]")]
         public async Task<ActionResult<SalesOrder>> SaveSalesOrder([FromBody]SalesOrderDTO _SalesOrder)
      //  public async Task<ActionResult<SalesOrder>> SaveSalesOrder([FromBody]dynamic dto)
@@ -602,7 +646,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PutAsJsonAsync(baseadress + "api/SalesOrder/Update", _SalesOrderLine);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/SalesOrder/Update", _SalesOrderLine);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -618,8 +662,8 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _SalesOrderLine }, Total = 1 });
-
+           // return new ObjectResult(new DataSourceResult { Data = new[] { _SalesOrderLine }, Total = 1 });
+             return Ok(_SalesOrderLine);
         }
 
         [HttpPost("[action]")]

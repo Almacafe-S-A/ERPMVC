@@ -194,15 +194,24 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _usuario = JsonConvert.DeserializeObject<ApplicationUser>(valorrespuesta);
                 }
+                else
+                {
+
+                    _usuario.PasswordHash = await result.Content.ReadAsStringAsync() + " El password debe tener mayusculas y minusculas!";
+                    return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
+                    //return await Task.Run(() => BadRequest($"Ocurrio un error{result.Content.ReadAsStringAsync()}"));
+                }
 
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                return await Task.Run(()=> BadRequest($"Ocurrio un error{ex.Message}"));
             }
 
+
+            _usuario.PasswordHash = "**********************";
             return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
 
         }
