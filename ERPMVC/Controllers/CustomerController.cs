@@ -16,7 +16,6 @@ using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
-using ERPMVC.DTO;
 
 namespace ERPMVC.Controllers
 {
@@ -34,24 +33,24 @@ namespace ERPMVC.Controllers
             this.config = config;
             this._logger = logger;
         }
-
+        
 
         // GET: Customer
-        public async Task<ActionResult> Index()
+        public async  Task<ActionResult> Index()
         {
-            return await Task.Run(() => View());
+            return  await Task.Run(() => View());
         }
 
 
+     
 
-
-        public async Task<ActionResult> SalesOrderCustomer()
+        public async  Task<ActionResult> SalesOrderCustomer()
         {
-            return await Task.Run(() => PartialView());
+            return await Task.Run(()=> PartialView());
         }
 
 
-
+       
 
         public async Task<ActionResult> CertificadoDepositoCustomer()
         {
@@ -97,7 +96,7 @@ namespace ERPMVC.Controllers
         {
             Customer _customers = new Customer();
             try
-            {
+            {               
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -122,16 +121,16 @@ namespace ERPMVC.Controllers
         }
 
         // GET: Customer/Create
-        public async Task<ActionResult> Create()
+        public async  Task<ActionResult> Create()
         {
             return await Task.Run(() => View());
         }
 
-
+        
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<Customer> _customers = new List<Customer>();
+              List<Customer> _customers = new List<Customer>();
             try
             {
 
@@ -193,72 +192,11 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult<SalesOrder>> InsertCustomerFromSalesOrder([FromBody]SalesOrderDTO _SalesOrder)
-        {
-            SalesOrderDTO _so = new SalesOrderDTO();
-            Customer _customer = new Customer();
-            try
-            {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/SalesOrder/GetSalesOrderById/" + _SalesOrder.SalesOrderId);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _so = JsonConvert.DeserializeObject<SalesOrderDTO>(valorrespuesta);
-
-                    _customer.CustomerName = _so.SalesOrderName;
-                    _customer.RTN = _so.RTN;
-                    _customer.Phone = _so.Tefono;
-                    _customer.Identidad = _so.RTN;
-                    _customer.Email = _so.Correo;
-                    //_customer. = _so.SalesOrderName;
-
-
-                    var resultsalesorder = await Post(_customer);
-                    var value = (resultsalesorder.Result as ObjectResult).Value;
-                    _customer = ((Customer)(value));
-
-
-                    _so.CustomerId = _customer.CustomerId;
-                    _so.CustomerName = _customer.CustomerName;
-                    _client = new HttpClient();
-
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                     result = await _client.PostAsJsonAsync(baseadress + "api/SalesOrder/Update", _so);
-                     valorrespuesta = "";
-                    if (result.IsSuccessStatusCode)
-                    {
-                        
-                    }
-                    else
-                    {
-                        return await Task.Run(() => BadRequest($"La actualización de la cotización no se hizo correctamente "));
-
-                    }
-
-                }
-
-
-
-           }
-            catch (Exception ex)
-            {
-                return await Task.Run(() => BadRequest($"Ocurrio un error{ex.Message}"));
-                throw ex;
-            }
-
-            return await Task.Run(() => Ok(_customer));
-        }
-
 
         // POST: Customer/Create
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public async Task<ActionResult<Customer>> Post(Customer _customer)
+        public async Task<ActionResult> Post(Customer _customer)
         {
             try
             {
@@ -280,11 +218,10 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return  await Task.Run(()=> BadRequest($"Ocurrio un error{ex.Message}"));
+                return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return await Task.Run(() => Ok(_customer));
-            // return await Task.Run(() => new ObjectResult(new DataSourceResult { Data = new[] { _customer }, Total = 1 }));
+            return await Task.Run(() => new ObjectResult(new DataSourceResult { Data = new[] { _customer }, Total = 1 }));
         }
 
         [HttpPut("{id}")]

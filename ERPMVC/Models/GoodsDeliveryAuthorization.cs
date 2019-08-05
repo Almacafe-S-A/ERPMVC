@@ -10,7 +10,6 @@ namespace ERPMVC.Models
     public class GoodsDeliveryAuthorization
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Display(Name = "Id")]
         public Int64 GoodsDeliveryAuthorizationId { get; set; }
 
         [Display(Name = "Nombre de autorizacion")]

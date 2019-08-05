@@ -183,6 +183,8 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
+                    if (_GoodsReceivedLinep.Quantity > 0) { 
+
 
                     List<GoodsDeliveryAuthorizationLineDTO> _existelinea = new List<GoodsDeliveryAuthorizationLineDTO>();
                     if (HttpContext.Session.GetString("listadoproductosGoodsDeliveryAuthorization") != "")
@@ -192,21 +194,24 @@ namespace ERPMVC.Controllers
                     }
 
                     if (_GoodsReceivedLinep.GoodsDeliveryAuthorizationLineId > 0 && _existelinea.Count == 0)
+
                     {
                         _GoodsReceivedLine.Add(_GoodsReceivedLinep);
                         HttpContext.Session.SetString("listadoproductosGoodsDeliveryAuthorization", JsonConvert.SerializeObject(_GoodsReceivedLine).ToString());
                     }
+                    }
+
                     else
                     {
                         var obj = _GoodsReceivedLine.FirstOrDefault(x => x.GoodsDeliveryAuthorizationLineId == _GoodsReceivedLinep.GoodsDeliveryAuthorizationLineId);
                         if (obj != null)
                         {
                             obj.Description = _GoodsReceivedLinep.Description;
-                            obj.Price = _GoodsReceivedLinep.Price;
+                          //  obj.Price = _GoodsReceivedLinep.Price;
                             obj.Quantity = _GoodsReceivedLinep.Quantity;                            
                             obj.SubProductId = _GoodsReceivedLinep.SubProductId;
                             obj.SubProductName = _GoodsReceivedLinep.SubProductName;
-                            obj.Price = _GoodsReceivedLinep.Price;
+                           // obj.Price = _GoodsReceivedLinep.Price;
                             obj.SubProductId = _GoodsReceivedLinep.SubProductId;
                             obj.SubProductName = _GoodsReceivedLinep.SubProductName;
                             obj.valorcertificado = _GoodsReceivedLinep.valorcertificado;
@@ -225,6 +230,7 @@ namespace ERPMVC.Controllers
 
                         HttpContext.Session.SetString("listadoproductosGoodsDeliveryAuthorization", JsonConvert.SerializeObject(_GoodsReceivedLine).ToString());
                     }
+
 
 
                 }
@@ -313,7 +319,6 @@ namespace ERPMVC.Controllers
                 if (_salesorderLIST != null)
                 {
                     _salesorderLIST = _salesorderLIST
-                          .Where(q => q.GoodsDeliveryAuthorizationLineId != _GoodsDeliveryAuthorizationLine.GoodsDeliveryAuthorizationLineId)
                            .Where(q => q.Quantity != _GoodsDeliveryAuthorizationLine.Quantity)
                            .Where(q => q.SubProductId != _GoodsDeliveryAuthorizationLine.SubProductId)
                            .Where(q => q.UnitOfMeasureId != _GoodsDeliveryAuthorizationLine.UnitOfMeasureId)

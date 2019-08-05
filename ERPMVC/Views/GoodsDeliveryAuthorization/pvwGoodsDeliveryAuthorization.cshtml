@@ -30,9 +30,9 @@
             return false;
         }
 
-        //if (input.attr('name') === "Price" && input.val() == 0) {
-        //    return false;
-        //}
+        if (input.attr('name') === "Price" && input.val() == 0) {
+            return false;
+        }
 
         if (input.attr('name') === "TotalLine" && input.val() == 0) {
             return false;
@@ -248,7 +248,7 @@
                                             on-select="GetSubProduct"
                                                     *@
                                                     <kendo-dropdownlist name="CustomerId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        option-label="Selecccione Cliente"
+                                                                        option-label="Select CustomerId"
                                                                         required
                                                                         datatextfield="CustomerName"
                                                                         datavaluefield="CustomerId"
@@ -473,7 +473,7 @@
 
                                     </div>
 
-                                    @*<div class="row">
+                                    <div class="row">
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <label asp-for="NoPoliza" class="control-label" style="width:100%"></label>
@@ -482,7 +482,7 @@
                                             </div>
 
                                         </div>
-                                    </div>*@
+                                    </div>
 
                                 </form>
 
@@ -507,6 +507,20 @@
                                                     <div class="col-lg-4">
                                                         <dl class="dl-horizontal">
                                                             <dt>
+<<<<<<< HEAD
+                                                        <label asp-for="TotalCertificado" class="col-md-2 control-label"></label>
+                                                    </dt>
+                                                    <dd>
+                                                        <kendo-numerictextbox name="TotalCertificado"
+                                                                              format="n2"
+                                                                              style="width: 100%;"
+                                                                              min="0" disabled
+                                                                              max="999999999"
+                                                                              step="1"
+                                                                              value="Model.TotalCertificado"></kendo-numerictextbox>
+                                                        <span asp-validation-for="TotalCertificado" class="text-danger"></span>
+                                                    </dd>
+=======
                                                                 <label asp-for="TotalCertificado" class="control-label"></label>
                                                             </dt>
                                                             <dd>
@@ -519,6 +533,7 @@
                                                                                       value="Model.TotalCertificado"></kendo-numerictextbox>
                                                                 <span asp-validation-for="TotalCertificado" class="text-danger"></span>
                                                             </dd>
+>>>>>>> f88cbe5cb3e0b261c2f0f4cf7b6f99225a58adac
 
                                                             <dt>
                                                                 <label asp-for="TotalFinanciado" class="control-label"></label>
@@ -616,36 +631,101 @@
   
 
     function RefreshGridGoodsDelivered() {
-        var grid = $("#RefreshGridGoodsDelivered ").getKendoGrid();
+        var grid = $("#gridGoodsDelivered").getKendoGrid();
         grid.dataSource.read();
     }
 
     function SaveGoodsDelivered(e) {
 
-        //CalcularTotalDocumento();
         var notification = $("#notification").data("kendoNotification");
        // e.preventDefault();
         $("#btnSaveControlEstiba").hide();
         $("#btnSaveControlEstiba").prop("disabled", true);
 
-        var validadetalle = true;
-        var displayedData = $("#gridGoodsDeliveredAuthorizationLine").data().kendoGrid.dataSource.data();
-        for (var i = 0; i < displayedData.length; i++) {
-            displayedData[i].GoodsDeliveryAuthorizationLineId = 0;
-           // console.log(displayedData[i].WarehouseId);
-            if (displayedData[i].NoCertificadoDeposito === '' || displayedData[i].NoCertificadoDeposito === '0'
-                || displayedData[i].WarehouseId === '' || displayedData[i].Quantity === 0
-                || displayedData[i].WarehouseId === null || displayedData[i].WarehouseId === 0) {
-                notification.show({
-                    title: "Validación",
-                    message: "Ingrese al detalle todos los datos requeridos"
-                }, "error");
-                validadetalle = false;
-               
-            }
-        }
+        var displayedData = $("#gridGoodsDeliveredAuthorizationLine").data().kendoGrid.dataSource.view();
 
+        var list = [];
+        $("#ddlRecibosAsociados > option").each(function () {
+            list.push(this.value);
+        });
 
+        var dataObject = {                    
+            'GoodsDeliveryAuthorizationId': $("#GoodsDeliveryAuthorizationId").val(),
+            'AuthorizationName': $("#AuthorizationName").val(),
+            'DocumentDate': $("#DocumentDate").getKendoDateTimePicker().value().toJSON(),
+            'AuthorizationDate': $("#AuthorizationDate").getKendoDateTimePicker().value().toJSON(),
+            'NoCD': $("#NoCD").val(),
+            'Name': $("#Name").val(),
+            'BankId': $("#BankId").val(),
+            'BankName': $("#BankId").data("kendoDropDownList").text(),
+            'ProductId': $("#ProductId").val(),
+            'ProductName': $("#ProductId").data("kendoDropDownList").text(),
+            'BranchId': $("#BranchId").val(),
+            'BranchName': $("#BranchId").data("kendoDropDownList").text(),
+            //'WareHouseId': $("#WarehouseId").val(),
+            //'WareHouseName': $("#WarehouseId").data("kendoDropDownList").text(),
+            'TotalCertificado': $("#TotalCertificado").val(),
+            'TotalFinanciado': $("#TotalFinanciado").val(),          
+            'CustomerId': $("#CustomerId").val(),
+            'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
+            'CurrencyId': $("#CurrencyId").val(),
+            'CurrencyName': $("#CurrencyId").data("kendoDropDownList").text(),
+            'DerechoLps': $("#DerechoLps").val(),
+            'NoPoliza': $("#NoPoliza").val(),
+            'DelegadoFiscal': $("#DelegadoFiscal").val(),
+            'GoodsDeliveryAuthorizationLine': displayedData,
+            'CertificadosAsociados': list
+        }; 
+
+        var validator = $("#frmGoodsDeliveryAuthorization").data("kendoValidator");
+        var validator2 = $("#TotalesDocumento").data("kendoValidator");
+        var status = $(".status");
+
+        if (displayedData.length > 0) {
+            if (validator.validate() && validator2.validate()) {
+
+                $.ajax({
+                    url: '@Url.Action("SaveGoodsDeliveryAuthorization", "GoodsDeliveryAuthorization")',
+                    method: 'POST',
+                    datatype: "json",
+                    //contentType: "application/x-www-form-urlencoded; charset=UTF-8", 
+                    contentType: 'application/json',
+                    async: false,
+                    data: JSON.stringify(dataObject),
+                    success: function (data) {
+
+                        $.toast({
+                            heading: 'Satisfactorio',
+                            text: 'Datos guardados correctamente.',
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'success',
+                            hideAfter: 30000,
+                            stack: 6
+                        });
+
+                        //notification.show({
+                        //    message: "Guardado correctamente!"
+                        //}, "upload-success");
+
+                        RefreshGridGoodsDelivered();                        
+                        $('#myModalGoodsDeliveryAuthorization').modal('hide');
+
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        $("#btnSaveControlEstiba").show();
+                        $("#btnSaveControlEstiba").prop("disabled", false);
+                        $("#btngenerarfactura").show();
+                        notification.show({
+                            title: "Validacion",
+                            message: textStatus + ": " + XMLHttpRequest.responseText
+                        }, "error");
+
+                    }
+                });
+
+<<<<<<< HEAD
+=======
         if (validadetalle) {
             var list = [];
             $("#ddlRecibosAsociados > option").each(function () {
@@ -735,22 +815,25 @@
                     //    .removeClass("valid")
                     //    .addClass("invalid");
                 }
+>>>>>>> f88cbe5cb3e0b261c2f0f4cf7b6f99225a58adac
             }
             else {
                 $("#btnSaveControlEstiba").show();
                 $("#btnSaveControlEstiba").prop("disabled", false);
-                notification.show({
-                    title: "Validacion",
-                    message: "Debe agregar los productos!"
-                }, "error");
-
+                //status.text("Oops! There is invalid data in the form.")
+                //    .removeClass("valid")
+                //    .addClass("invalid");
             }
         }
         else {
             $("#btnSaveControlEstiba").show();
             $("#btnSaveControlEstiba").prop("disabled", false);
+            notification.show({
+                title: "Validacion",
+                message: "Debe agregar los productos!"
+            }, "error");
+   
         }
-
 
       //  $("#btnSaveControlEstiba").show();
        

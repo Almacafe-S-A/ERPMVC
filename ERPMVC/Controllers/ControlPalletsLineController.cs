@@ -110,39 +110,11 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    List<ControlPalletsLine> _existelinea = new List<ControlPalletsLine>();
-                    if (HttpContext.Session.GetString("listadoproductospallet") != "")
-                    {
-                        _ControlPalletsLine = JsonConvert.DeserializeObject<List<ControlPalletsLine>>(HttpContext.Session.GetString("listadoproductospallet"));
-                        _existelinea = _ControlPalletsLine.Where(q => q.ControlPalletsLineId == _ControlPalletsLinep.ControlPalletsLineId).ToList();
-                    }
-
-                    if (_ControlPalletsLinep.ControlPalletsLineId > 0 && _existelinea.Count == 0)
+                    if (_ControlPalletsLinep.Ancho > 0)
                     {
                         _ControlPalletsLine.Add(_ControlPalletsLinep);
                         HttpContext.Session.SetString("listadoproductospallet", JsonConvert.SerializeObject(_ControlPalletsLine).ToString());
                     }
-                    else
-                    {
-                        var obj = _ControlPalletsLine.FirstOrDefault(x => x.ControlPalletsLineId == _ControlPalletsLinep.ControlPalletsLineId);
-                        if (obj != null)
-                        {
-                            obj.Alto = _ControlPalletsLinep.Alto;
-                            obj.Ancho = _ControlPalletsLinep.Ancho;
-                            obj.cantidadPoliEtileno = _ControlPalletsLinep.cantidadPoliEtileno;
-                            obj.cantidadYute = _ControlPalletsLinep.cantidadYute;
-                            obj.Otros = _ControlPalletsLinep.Otros;
-                            obj.Totallinea = _ControlPalletsLinep.Totallinea;
-                            //obj. = _ControlPalletsLinep.TotalCantidad;
-                           
-                        }
-
-                        HttpContext.Session.SetString("listadoproductospallet", JsonConvert.SerializeObject(_ControlPalletsLine).ToString());
-
-
-
-                    }
-
                 }
 
                 //string baseadress = config.Value.urlbase;
@@ -196,8 +168,6 @@ namespace ERPMVC.Controllers
                     _ControlPalletsLine.FechaCreacion = DateTime.Now;
                     _ControlPalletsLine.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_ControlPalletsLine);
-                 
-
                 }
                 else
                 {
@@ -284,7 +254,6 @@ namespace ERPMVC.Controllers
                 if (_GoodsReceivedLineLIST != null)
                 {
                     _GoodsReceivedLineLIST = _GoodsReceivedLineLIST
-                          .Where(q => q.ControlPalletsLineId != _ControlPalletsLine.ControlPalletsLineId)
                            .Where(q => q.Alto != _ControlPalletsLine.Alto)
                            .Where(q => q.Ancho != _ControlPalletsLine.Ancho)
                            .Where(q => q.Otros != _ControlPalletsLine.Otros)
