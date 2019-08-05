@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using ERPMVC.DTO;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -29,7 +30,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-        public IActionResult Index()
+        public IActionResult Employees()
         {
             return View();
         }
@@ -68,22 +69,28 @@ namespace ERPMVC.Controllers
 
         }
 
-        // GET: Customer/Details/5
-        public async Task<ActionResult> Detalles(Int64 Id)
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwAddEmployees([FromBody]EmployeesDTO _sarpara)
+
         {
-            Employees _empleado = new Employees();
+            EmployeesDTO _Employees = new EmployeesDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Employees/GetEmployeesById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/Employees/GetEmployeesById/" + _sarpara.IdEmpleado);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _empleado = JsonConvert.DeserializeObject<Employees>(valorrespuesta);
+                    _Employees = JsonConvert.DeserializeObject<EmployeesDTO>(valorrespuesta);
 
+                }
+
+                if (_Employees == null)
+                {
+                    _Employees = new EmployeesDTO();
                 }
             }
             catch (Exception ex)
@@ -91,8 +98,11 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-            
-            return View(_empleado);
+
+
+
+            return PartialView(_Employees);
+
         }
 
         [HttpGet("[controller]/[action]")]
