@@ -112,7 +112,7 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/GoodsDeliveryAuthorizationLine/GetGoodsDeliveryAuthorizationLineById/" + _GoodsDeliveryAuthorizationLine.GoodsDeliveryAuthorizationLineId);
                 string valorrespuesta = "";
-               // _GoodsDeliveryAuthorizationLine.FechaModificacion = DateTime.Now;
+                // _GoodsDeliveryAuthorizationLine.FechaModificacion = DateTime.Now;
                 //_GoodsDeliveryAuthorizationLine.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
@@ -123,7 +123,7 @@ namespace ERPMVC.Controllers
 
                 if (_listGoodsDeliveryAuthorizationLine.GoodsDeliveryAuthorizationLineId == 0)
                 {
-                  //  _GoodsDeliveryAuthorizationLine.FechaCreacion = DateTime.Now;
+                    //  _GoodsDeliveryAuthorizationLine.FechaCreacion = DateTime.Now;
                     //_GoodsDeliveryAuthorizationLine.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_GoodsDeliveryAuthorizationLine);
                 }
@@ -203,7 +203,7 @@ namespace ERPMVC.Controllers
                         {
                             obj.Description = _GoodsReceivedLinep.Description;
                             obj.Price = _GoodsReceivedLinep.Price;
-                            obj.Quantity = _GoodsReceivedLinep.Quantity;                            
+                            obj.Quantity = _GoodsReceivedLinep.Quantity;
                             obj.SubProductId = _GoodsReceivedLinep.SubProductId;
                             obj.SubProductName = _GoodsReceivedLinep.SubProductName;
                             obj.Price = _GoodsReceivedLinep.Price;
@@ -318,7 +318,7 @@ namespace ERPMVC.Controllers
                            .Where(q => q.SubProductId != _GoodsDeliveryAuthorizationLine.SubProductId)
                            .Where(q => q.UnitOfMeasureId != _GoodsDeliveryAuthorizationLine.UnitOfMeasureId)
                            .Where(q => q.valorcertificado != _GoodsDeliveryAuthorizationLine.valorcertificado)
-                           //.Where(q => q.SubProductId != _GoodsDeliveryAuthorizationLine.SubProductId)
+                          //.Where(q => q.SubProductId != _GoodsDeliveryAuthorizationLine.SubProductId)
                           .ToList();
 
                     HttpContext.Session.SetString("listadoproductosGoodsDeliveryAuthorization", JsonConvert.SerializeObject(_salesorderLIST));

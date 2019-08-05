@@ -102,7 +102,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> GetCertificadoLineByIdCD([DataSourceRequest]DataSourceRequest request,Int64 IdCD)
+        public async Task<ActionResult> GetCertificadoLineByIdCD([DataSourceRequest]DataSourceRequest request, Int64 IdCD)
         {
             List<CertificadoLine> _CertificadoLine = new List<CertificadoLine>();
             try
@@ -162,10 +162,10 @@ namespace ERPMVC.Controllers
                     HttpClient _client = new HttpClient();
 
                     //_client.DefaultRequestHeaders.Add("SalesOrderId", _salesorder.SalesOrderId.ToString());
-                  //  _client.DefaultRequestHeaders.Add("SalesOrderId", _CertificadoLine.IdCD.ToString());
+                    //  _client.DefaultRequestHeaders.Add("SalesOrderId", _CertificadoLine.IdCD.ToString());
 
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/CertificadoLine/GetCertificadoLineByIdCD/"+_CertificadoLine.IdCD);
+                    var result = await _client.GetAsync(baseadress + "api/CertificadoLine/GetCertificadoLineByIdCD/" + _CertificadoLine.IdCD);
                     string valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
@@ -242,7 +242,7 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/CertificadoLine/GetCertificadoLineById/" + _CertificadoLine.CertificadoLineId);
                 string valorrespuesta = "";
-               // _CertificadoLine.FechaModificacion = DateTime.Now;
+                // _CertificadoLine.FechaModificacion = DateTime.Now;
                 //_CertificadoLine.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
@@ -253,7 +253,7 @@ namespace ERPMVC.Controllers
 
                 if (_listCertificadoLine.CertificadoLineId == 0)
                 {
-                   // _CertificadoLine.FechaCreacion = DateTime.Now;
+                    // _CertificadoLine.FechaCreacion = DateTime.Now;
                     //_CertificadoLine.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_CertificadoLine);
                 }
@@ -286,7 +286,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-               // _CertificadoLine.UsuarioCreacion = HttpContext.Session.GetString("user");
+                // _CertificadoLine.UsuarioCreacion = HttpContext.Session.GetString("user");
                 //_CertificadoLine.UsuarioModificacion = HttpContext.Session.GetString("user");
                 var result = await _client.PostAsJsonAsync(baseadress + "api/CertificadoLine/Insert", _CertificadoLine);
                 string valorrespuesta = "";

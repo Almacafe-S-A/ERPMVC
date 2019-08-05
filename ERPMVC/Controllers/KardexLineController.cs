@@ -102,7 +102,7 @@ namespace ERPMVC.Controllers
         }
 
 
-       
+
 
         [HttpPost("[action]")]
         public async Task<ActionResult<KardexLine>> SaveKardexLine([FromBody]KardexLine _KardexLine)
@@ -116,8 +116,8 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/KardexLine/GetKardexLineById/" + _KardexLine.KardexLineId);
                 string valorrespuesta = "";
-              //  _KardexLine.FechaModificacion = DateTime.Now;
-               // _KardexLine.UsuarioModificacion = HttpContext.Session.GetString("user");
+                //  _KardexLine.FechaModificacion = DateTime.Now;
+                // _KardexLine.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
 
@@ -127,8 +127,8 @@ namespace ERPMVC.Controllers
 
                 if (_listKardexLine.KardexLineId == 0)
                 {
-                 //   _KardexLine.FechaCreacion = DateTime.Now;
-                   // _KardexLine.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    //   _KardexLine.FechaCreacion = DateTime.Now;
+                    // _KardexLine.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_KardexLine);
                 }
                 else
@@ -157,8 +157,8 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-              //  _KardexLine.UsuarioCreacion = HttpContext.Session.GetString("user");
-               // _KardexLine.UsuarioModificacion = HttpContext.Session.GetString("user");
+                //  _KardexLine.UsuarioCreacion = HttpContext.Session.GetString("user");
+                // _KardexLine.UsuarioModificacion = HttpContext.Session.GetString("user");
                 var result = await _client.PostAsJsonAsync(baseadress + "api/KardexLine/Insert", _KardexLine);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)

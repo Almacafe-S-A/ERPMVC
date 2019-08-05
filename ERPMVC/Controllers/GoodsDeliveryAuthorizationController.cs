@@ -39,7 +39,7 @@ namespace ERPMVC.Controllers
 
         [HttpPost("[controller]/[action]")]
         [HttpPost("[action]")]
-        public async Task<ActionResult> pvwGoodsDeliveryAuthorization([FromBody]GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorizationDTO )
+        public async Task<ActionResult> pvwGoodsDeliveryAuthorization([FromBody]GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorizationDTO)
         {
             GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorizationDTO();
             try
@@ -58,13 +58,19 @@ namespace ERPMVC.Controllers
 
                 if (_GoodsDeliveryAuthorization == null)
                 {
-                    _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorizationDTO { AuthorizationDate = DateTime.Now, DocumentDate = DateTime.Now, editar = 1 
-                        , BranchId = Convert.ToInt64(HttpContext.Session.GetString("BranchId")) };
+                    _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorizationDTO
+                    {
+                        AuthorizationDate = DateTime.Now,
+                        DocumentDate = DateTime.Now,
+                        editar = 1
+                        ,
+                        BranchId = Convert.ToInt64(HttpContext.Session.GetString("BranchId"))
+                    };
                 }
                 else
                 {
                     _GoodsDeliveryAuthorization.editar = 0;
-                    
+
                 }
 
 
@@ -157,11 +163,11 @@ namespace ERPMVC.Controllers
         // public async Task<ActionResult<GoodsDeliveryAuthorization>> SaveGoodsDeliveryAuthorization([FromBody]GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorization)
         public async Task<ActionResult<GoodsDeliveryAuthorization>> SaveGoodsDeliveryAuthorization([FromBody]dynamic dto)
         {
-           GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorizationDTO();
+            GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorizationDTO();
 
             try
             {
-                 _GoodsDeliveryAuthorization = JsonConvert.DeserializeObject<GoodsDeliveryAuthorizationDTO>(dto.ToString());
+                _GoodsDeliveryAuthorization = JsonConvert.DeserializeObject<GoodsDeliveryAuthorizationDTO>(dto.ToString());
                 if (_GoodsDeliveryAuthorization != null)
                 {
                     GoodsDeliveryAuthorization _listGoodsDeliveryAuthorization = new GoodsDeliveryAuthorization();
@@ -264,13 +270,13 @@ namespace ERPMVC.Controllers
                     _GoodsDeliveryAuthorization = JsonConvert.DeserializeObject<List<GoodsDeliveryAuthorization>>(valorrespuesta);
                     _GoodsDeliveryAuthorization = (from c in _GoodsDeliveryAuthorization
                                                    select new GoodsDeliveryAuthorization
-                                       {
-                                           GoodsDeliveryAuthorizationId = c.GoodsDeliveryAuthorizationId,
-                                           CustomerName ="Numero de autorización: "+ c.GoodsDeliveryAuthorizationId + "  ||Nombre:" + c.CustomerName + " ||Fecha: " 
-                                             + c.DocumentDate + " ||Fecha de autorización:"+c.AuthorizationDate + " || Total Certificado:" + c.TotalCertificado +" || Total Financiado:"+c.TotalFinanciado,
-                                           DocumentDate = c.DocumentDate,
+                                                   {
+                                                       GoodsDeliveryAuthorizationId = c.GoodsDeliveryAuthorizationId,
+                                                       CustomerName = "Numero de autorización: " + c.GoodsDeliveryAuthorizationId + "  ||Nombre:" + c.CustomerName + " ||Fecha: "
+                                             + c.DocumentDate + " ||Fecha de autorización:" + c.AuthorizationDate + " || Total Certificado:" + c.TotalCertificado + " || Total Financiado:" + c.TotalFinanciado,
+                                                       DocumentDate = c.DocumentDate,
 
-                                       }
+                                                   }
                                       ).ToList();
                 }
             }
@@ -378,7 +384,7 @@ namespace ERPMVC.Controllers
         public ActionResult SFGoodsDeliveryAuthorization(Int64 id)
         {
 
-            GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorizationDTO { GoodsDeliveryAuthorizationId = id, }; 
+            GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorizationDTO { GoodsDeliveryAuthorizationId = id, };
 
             return View(_GoodsDeliveryAuthorization);
         }

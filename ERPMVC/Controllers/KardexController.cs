@@ -119,7 +119,7 @@ namespace ERPMVC.Controllers
         {
             List<KardexLine> _KardexLine = new List<KardexLine>();
             KardexLine _saldo = new KardexLine();
-            Kardex _Kardexq = new Kardex { DocumentId = _Kardexp.DocumentId , DocumentName = _Kardexp.DocumentName   };
+            Kardex _Kardexq = new Kardex { DocumentId = _Kardexp.DocumentId, DocumentName = _Kardexp.DocumentName };
             try
             {
                 // _Kardexq = JsonConvert.DeserializeObject<Kardex>(_Kardexd);
@@ -127,7 +127,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoByNoCD/"+ _Kardexq.DocumentId);
+                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoByNoCD/" + _Kardexq.DocumentId);
                 string valorrespuesta = "";
                 CertificadoDeposito _cd = new CertificadoDeposito();
                 if (result.IsSuccessStatusCode)

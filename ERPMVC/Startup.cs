@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -22,6 +24,7 @@ using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Cors.Internal;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -29,17 +32,21 @@ using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Syncfusion.Licensing;
+using static ERPMVC.Helpers.ViewRenderService;
 
 namespace ERPMVC
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env, IConfiguration configuration)
+        public Startup(IHostingEnvironment env, IConfiguration configuration, IServiceProvider serviceProvider)
         {
 
             string License = File.ReadAllText(System.IO.Path.Combine(env.ContentRootPath, "SyncfusionLicense.txt"), Encoding.UTF8);
             SyncfusionLicenseProvider.RegisterLicense(License);
-         
+
+            //var mvcBuilder = serviceProvider.GetService<IMvcBuilder>();
+            //new MvcConfiguration().ConfigureMvc(mvcBuilder);
+
             Configuration = configuration;
         }
 
@@ -78,6 +85,20 @@ namespace ERPMVC
             });
 
               services.Configure<MyConfig>(Configuration.GetSection("AppSettings"));
+
+            var client = new SmtpClient();
+            client.Credentials = new NetworkCredential("erp@almacafehn.com", "Almacafe09");
+            client.Host = "mail.almacafehn.com";
+            client.Port = 587;
+
+            services
+               .AddFluentEmail("erp@almacafehn.com")
+               .AddRazorRenderer()
+               .AddSmtpSender(client);
+
+            services.AddScoped<IViewRenderService, ViewRenderService>();
+            services.AddScoped<ViewRender, ViewRender>();
+
 
             services.AddIdentity<ApplicationUser, ApplicationRole>(
                   options =>
@@ -125,6 +146,12 @@ namespace ERPMVC
                 //.Build();
                 //config.Filters.Add(new AuthorizeFilter(policy));
             })
+            //.ConfigureApplicationPartManager(manager =>
+            //{
+            //    var oldMetadataReferenceFeatureProvider = manager.FeatureProviders.First(f => f is MetadataReferenceFeatureProvider);
+            //    manager.FeatureProviders.Remove(oldMetadataReferenceFeatureProvider);
+            //    manager.FeatureProviders.Add(new ReferencesMetadataReferenceFeatureProvider());
+            //})
             .AddJsonOptions(options => options.SerializerSettings.ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver())
             .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddAutoMapper();

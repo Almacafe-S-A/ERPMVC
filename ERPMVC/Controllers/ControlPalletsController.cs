@@ -56,7 +56,7 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-          
+
         }
         public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request)
         {
@@ -104,9 +104,9 @@ namespace ERPMVC.Controllers
                     _ControlPallets = (from c in _ControlPallets
                                        select new ControlPallets
                                        {
-                                            ControlPalletsId = c.ControlPalletsId,
-                                            CustomerName = "Nombre:"+c.CustomerName+"|| Fecha: "+c.DocumentDate+" || Total:"+c.TotalSacos,
-                                            DocumentDate = c.DocumentDate,
+                                           ControlPalletsId = c.ControlPalletsId,
+                                           CustomerName = "Nombre:" + c.CustomerName + "|| Fecha: " + c.DocumentDate + " || Total:" + c.TotalSacos,
+                                           DocumentDate = c.DocumentDate,
 
                                        }
                                       ).ToList();
@@ -135,7 +135,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ControlPallets = JsonConvert.DeserializeObject<ControlPallets>(valorrespuesta);
-                   
+
                 }
 
                 if (_ControlPallets == null)
@@ -219,7 +219,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[action]")]
-        public async Task<ActionResult> pvwControlPallets([FromBody]ControlPalletsDTO _ControlPalletsId )
+        public async Task<ActionResult> pvwControlPallets([FromBody]ControlPalletsDTO _ControlPalletsId)
         {
             ControlPalletsDTO _ControlPallets = new ControlPalletsDTO();
             try
@@ -238,13 +238,18 @@ namespace ERPMVC.Controllers
 
                 if (_ControlPallets == null)
                 {
-                    _ControlPallets = new ControlPalletsDTO { DocumentDate=DateTime.Now  , editar=1 , EsIngreso = _ControlPalletsId.EsIngreso
-                   , BranchId = Convert.ToInt64(HttpContext.Session.GetString("BranchId"))
+                    _ControlPallets = new ControlPalletsDTO
+                    {
+                        DocumentDate = DateTime.Now,
+                        editar = 1,
+                        EsIngreso = _ControlPalletsId.EsIngreso
+                   ,
+                        BranchId = Convert.ToInt64(HttpContext.Session.GetString("BranchId"))
                     };
                 }
                 else
                 {
-                    _ControlPallets.editar = 0;_ControlPallets.EsIngreso = _ControlPalletsId.EsIngreso;
+                    _ControlPallets.editar = 0; _ControlPallets.EsIngreso = _ControlPalletsId.EsIngreso;
                 }
 
             }
@@ -253,7 +258,7 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-           
+
 
 
             return PartialView(_ControlPallets);
@@ -293,7 +298,14 @@ namespace ERPMVC.Controllers
 
                         var value = (insertresult.Result as ObjectResult).Value;
                         _ControlPalletsDTO = ((ControlPalletsDTO)(value));
-                      
+                        if (_ControlPalletsDTO.ControlPalletsId > 0)
+                        {
+
+                        }
+                        else
+                        {
+                            return await Task.Run(() => BadRequest("No se genero correctamente el control!"));
+                        }
 
                     }
                     else
@@ -303,9 +315,9 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    return BadRequest("No llego correctamente el modelo!");
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
                 }
-               
+
             }
             catch (Exception ex)
             {
@@ -401,7 +413,7 @@ namespace ERPMVC.Controllers
             }
 
 
-         
+
             return new ObjectResult(new DataSourceResult { Data = new[] { _ControlPallets }, Total = 1 });
         }
 

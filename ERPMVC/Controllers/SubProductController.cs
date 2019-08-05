@@ -210,7 +210,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/SubProduct/GetSubProductbByProductTypeId/"+ ProductTypeId);
+                var result = await _client.GetAsync(baseadress + "api/SubProduct/GetSubProductbByProductTypeId/" + ProductTypeId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -272,8 +272,8 @@ namespace ERPMVC.Controllers
             List<SubProduct> _SubProducto = new List<SubProduct>();
             try
             {
-               // CustomerTypeSubProduct _CustomerTypeSubProduct = new CustomerTypeSubProduct();
-                _CustomerTypeSubProduct.ProductTypeId= _CustomerTypeSubProduct.ProductTypeId ==0 ? 2 : _CustomerTypeSubProduct.ProductTypeId;
+                // CustomerTypeSubProduct _CustomerTypeSubProduct = new CustomerTypeSubProduct();
+                _CustomerTypeSubProduct.ProductTypeId = _CustomerTypeSubProduct.ProductTypeId == 0 ? 2 : _CustomerTypeSubProduct.ProductTypeId;
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -292,7 +292,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
             return Json(_SubProducto.ToDataSourceResult(request));
-           // return Json(_SubProducto);
+            // return Json(_SubProducto);
         }
 
 
@@ -315,7 +315,7 @@ namespace ERPMVC.Controllers
 
                 }
 
-                if(_SubProducts== null) { _SubProducts = new SubProduct(); }
+                if (_SubProducts == null) { _SubProducts = new SubProduct(); }
             }
             catch (Exception ex)
             {
@@ -333,13 +333,13 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult<SubProduct>> SaveSubProduct([FromBody]SubProductDTO _SubProductS)
         {
 
-         
-         //   SubProduct _SubProductS = new SubProduct(); //JsonConvert.DeserializeObject<SubProductDTO>(dto.ToString());
+
+            //   SubProduct _SubProductS = new SubProduct(); //JsonConvert.DeserializeObject<SubProductDTO>(dto.ToString());
             SubProduct _SubProduct = _SubProductS;
             if (_SubProductS != null)
             //if (_SubProduct != null)
             {
-               
+
                 try
                 {
                     // _SubProductS = JsonConvert.DeserializeObject<SubProductDTO>(dto.ToString());
@@ -369,8 +369,8 @@ namespace ERPMVC.Controllers
                     }
                     else
                     {
-                       // _SubProductS.UsuarioCreacion = _SubProduct.UsuarioCreacion;
-                       // _SubProductS.FechaCreacion = _SubProduct.FechaCreacion;
+                        // _SubProductS.UsuarioCreacion = _SubProduct.UsuarioCreacion;
+                        // _SubProductS.FechaCreacion = _SubProduct.FechaCreacion;
                         var updateresult = await Update(_SubProduct.SubproductId, _SubProductS);
                     }
 

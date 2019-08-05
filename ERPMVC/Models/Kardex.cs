@@ -66,7 +66,7 @@ namespace ERPMVC.Models
     {
         public Int64 DocumentId { get; set; }
 
-        
+
         public string DocumentName { get; set; }
 
         public Int64 SubProducId { get; set; }
