@@ -184,60 +184,6 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult> GetCertificadoDepositoByIdKardex([DataSourceRequest]DataSourceRequest request, [FromBody] CertificadoDeposito _Certificado)
-        {
-            CertificadoDeposito _CertificadoDeposito = new CertificadoDeposito();
-            try
-            {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoById/" + _Certificado.IdCD);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDeposito>(valorrespuesta);
-
-                }
-
-                if (_CertificadoDeposito == null)
-                {
-                    _CertificadoDeposito = new CertificadoDeposito();
-                }
-
-                Kardex _kardexparam = new Kardex { DocumentId = _Certificado.IdCD, DocumentName = "CD" };
-                List<KardexLine> _kardexsaldo = new List<KardexLine>();
-                result = await _client.PostAsJsonAsync(baseadress + "api/Kardex/GetSaldoProductoByCertificado", _kardexparam);
-                valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _kardexsaldo = JsonConvert.DeserializeObject<List<KardexLine>>(valorrespuesta);
-                }
-
-                // _CertificadoDeposito._CertificadoLine.Clear();
-                foreach (var item in _CertificadoDeposito._CertificadoLine)
-                {
-                    item.Quantity = (from c in _kardexsaldo
-                                     .Where(q=>q.SubProducId==item.SubProductId)
-                                     select c.TotalCD
-                                     ).FirstOrDefault();
-                }
-
-                
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-            return Json(_CertificadoDeposito);
-        }
-
-
 
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<List<CertificadoDeposito>>> AgruparCertificados([FromBody]GoodsDeliveryAuthorizationParams _params)

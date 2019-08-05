@@ -1,6 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Http;
-@*@using Microsoft.AspNetCore.Authorization
-@inject IAuthorizationService AuthorizationService*@
+@using Microsoft.AspNetCore.Authorization
+@inject IAuthorizationService AuthorizationService
 <script>
 
     $(document).ready(function () {
@@ -95,9 +95,8 @@
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
 
-        var url =  '@Url.Action("SFCotizacion", "SalesOrder")/' + dataItem.SalesOrderId;
-        var win = window.open(url, '_blank');
-        win.focus();
+        window.location.href =  '@Url.Action("SFCotizacion", "SalesOrder")/' + dataItem.SalesOrderId;
+
     }
 
 
@@ -133,8 +132,6 @@
                 async: false,
                 data: JSON.stringify(dataObject),
                 success: function (result) {
-
-                    RefrescarGrid();
                     $.toast({
                         heading: 'Satisfactorio',
                         text: 'Contrato generado correctamente.',
@@ -155,113 +152,6 @@
                 }
             });
         }
-    }
-
-
-    function AprobarCotizacion(e) {
-        var notification = $("#notification").data("kendoNotification");
-        if (confirm('Esta seguro de aprobar esta cotización?')) {
-            e.preventDefault();
-            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-            var dataObject = {
-                SalesOrderId: dataItem.SalesOrderId,
-                editar: 0
-            };
-
-            $.ajax({
-                url: '@Url.Action("Aprobar","SalesOrder")',
-                method: 'POST',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: JSON.stringify(dataObject),
-                success: function (result) {
-                    $.toast({
-                        heading: 'Satisfactorio',
-                        text: 'Contrato generado correctamente.',
-                        position: 'top-right',
-                        loaderBg: '#ff6849',
-                        icon: 'success',
-                        hideAfter: 7000,
-                        stack: 6
-                    });
-
-                    RefrescarGrid();
-
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    notification.show({
-                        title: "Validacion",
-                        message: textStatus + ": " + XMLHttpRequest.responseText
-                    }, "error");
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
-                }
-            });
-        }
-    }
-
-    function CreateCustomer(e) {        
-        var notification = $("#notification").data("kendoNotification");
-        if (confirm('Esta seguro de crear este cliente?')) {
-            e.preventDefault();
-            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-            var dataObject = {
-                SalesOrderId: dataItem.SalesOrderId,
-                editar: 0
-            };
-
-            $.ajax({
-                url: '@Url.Action("InsertCustomerFromSalesOrder", "Customer")',
-                method: 'POST',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: JSON.stringify(dataObject),
-                success: function (result) {
-
-                    RefrescarGrid();
-                    $.toast({
-                        heading: 'Satisfactorio',
-                        text: 'Contrato generado correctamente.',
-                        position: 'top-right',
-                        loaderBg: '#ff6849',
-                        icon: 'success',
-                        hideAfter: 7000,
-                        stack: 6
-                    });
-
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    notification.show({
-                        title: "Validacion",
-                        message: textStatus + ": " + XMLHttpRequest.responseText
-                    }, "error");
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
-                }
-            });
-        }
-    }
-
-
-    function dataBound(e) {
-        $.each(this.dataSource.data(), function () {
-           // console.log(this);
-            if (Number(this.IdEstado) !=5) {
-              //  console.log(this.SalesOrderId);
-                $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
-                
-            }
-            if (Number(this.CustomerId) > 0) {
-                $('[data-uid=' + this.uid + ']').find('.k-grid-CrearCliente').hide();
-            }
-        })
-    }
-
-    function RefrescarGrid() {
-
-        var grid = $("#gridCotizaciones").getKendoGrid();
-        grid.dataSource.read();
-
     }
 
 </script>
@@ -272,12 +162,11 @@
 
     @{
         bool Gerente = false;
-        //if (await HasPolicyAsync(Enum.GetName(typeof(Politicas),0)))
-        if(await HasPolicyAsync(Politicas.GG))
+        if (await HasPolicyAsync(Enum.GetName(typeof(Politicas),0)))
         {
             Gerente = true;
         }
-
+        
     }
 
     @(Html.Kendo().Grid<ERPMVC.Models.SalesOrder>()
@@ -290,16 +179,14 @@
                                                                           command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
                                                                           command.Custom("GenerarContrato").Text(" ").IconClass("fa fa-file-import").Click("GenerarContrato");
 
-                                                                          command.Custom("CrearCliente").Text(" ").IconClass("fa fa-address-card").Click("CreateCustomer");
-
                                                                           if (Gerente)
                                                                           {
-                                                                              command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("AprobarCotizacion");
+                                                                              command.Custom("Aprobar").Text(" ").IconClass("fa fa-file-import").Click("GenerarContrato").HtmlAttributes(new { policy = "GG" });
                                                                           }
 
 
-                                                                          //  command.Edit(); command.Destroy();
-                                                                      }).Width(250);
+                                                              //  command.Edit(); command.Destroy();
+                                                          }).Width(250);
 
                                                                       columns.Bound(p => p.SalesOrderId).Title("Id").Width(150);
                                                                       columns.Bound(p => p.OrderDate).Format("{0:dd/MM/yyyy}").Title("Fecha Cotizacion").Width(150);
@@ -307,13 +194,12 @@
                                                                       columns.Bound(p => p.CustomerRefNumber).Title("Codigo referencia").Width(150);
                                                                       columns.Bound(p => p.Discount).Title("Descuentos").Width(150);
                                                                       columns.Bound(p => p.Estado).Title("Estado").Width(150);
-                                                                      columns.Bound(p => p.IdEstado).Hidden().Title("Estado").Width(150);
-                                                                      //columns.Bound(p => p.BranchId).Title("Branch Id").Width(150);
-                                                                      columns.Bound(p => p.BranchName).Title("Sucursal").Width(150);
+                                                          //columns.Bound(p => p.BranchId).Title("Branch Id").Width(150);
+                                                          columns.Bound(p => p.BranchName).Title("Sucursal").Width(150);
                                                                       columns.Bound(p => p.Freight).Title("Flete").Width(150);
-                                                                      columns.Bound(p => p.SubTotal).Title("Sub Total").Format("n2").Width(150);
-                                                                      columns.Bound(p => p.Tax).Title("Total Impuesto").Format("n2").Width(150);
-                                                                      columns.Bound(p => p.Total).Title("Total").Format("n2").Width(150);
+                                                                      columns.Bound(p => p.SubTotal).Title("Sub Total").Width(150);
+                                                                      columns.Bound(p => p.Tax).Title("Total Impuesto").Width(150);
+                                                                      columns.Bound(p => p.Total).Title("Total").Width(150);
                                                                   })
                                                           .Filterable(f => f.Operators(o => o.ForString(s => s
                                                                    .Clear()
@@ -346,9 +232,9 @@
                                                            ))
                                                       .ToolBar(tools =>
                                                       {
-                                                          // tools.Create();
-                                                          tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                                                             .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
+                                              // tools.Create();
+                                              tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                 .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
 
                                                           tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
                                                           tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
@@ -369,7 +255,6 @@
                                                           .Excel(excel => excel.FileName("CotizacionReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                                                         + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
                                                         .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                                        .Events(e=>e.DataBound("dataBound"))
                                                         //.Events(e=>e.Save("onsave"))
                                                         .DataSource(dataSource =>
 
@@ -387,11 +272,10 @@
                                                         })
                                                         .Events(events =>
                                                         {
-
                                                             events.Error("error_handler");
-                                                            //events.upda("EditHandler");
+                                                //events.upda("EditHandler");
 
-                                                        })
+                                            })
                                                         .Read(read => read.Action("GetSalesOrder", "SalesOrder"))
                                                         .Create(create => create.Action("Insert", "SalesOrder"))
                                                         .Update(update => update.Action("Update", "SalesOrder", new { id = "{0}" }))
@@ -427,8 +311,6 @@
     setRowButtonTooltip(".k-grid-GenerarContrato", "Generar un contrato!");
     setRowButtonTooltip(".k-grid-Imprimir", "Imprimir");
     setRowButtonTooltip(".k-grid-Editar", "Editar registro");
-    setRowButtonTooltip(".k-grid-Aprobar", "Aprobar Cotización");
-    setRowButtonTooltip(".k-grid-CrearCliente", "Crear cliente");
 
 </script>
 
