@@ -293,7 +293,14 @@ namespace ERPMVC.Controllers
 
                         var value = (insertresult.Result as ObjectResult).Value;
                         _ControlPalletsDTO = ((ControlPalletsDTO)(value));
-                      
+                        if (_ControlPalletsDTO.ControlPalletsId > 0)
+                        {
+
+                        }
+                        else
+                        {
+                            return await Task.Run(() => BadRequest("No se genero correctamente el control!"));
+                        }
 
                     }
                     else
@@ -303,7 +310,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    return BadRequest("No llego correctamente el modelo!");
+                    return await Task.Run(()=> BadRequest("No llego correctamente el modelo!"));
                 }
                
             }

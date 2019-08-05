@@ -166,6 +166,8 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _usuario = JsonConvert.DeserializeObject<ApplicationUser>(valorrespuesta);
+
+                    _usuario.PasswordHash = "**********************";
                 }
 
             }
