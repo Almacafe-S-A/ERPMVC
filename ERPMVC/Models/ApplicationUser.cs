@@ -9,6 +9,7 @@ namespace ERPMVC.Models
 {
     public class ApplicationUser : IdentityUser<Guid>
     {
+        [Display(Name = "Sucursal")]
         public Int64 BranchId { get; set; }
 
         [DataType(DataType.Password)]
