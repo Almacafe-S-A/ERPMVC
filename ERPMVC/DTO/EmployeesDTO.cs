@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 
 namespace ERPMVC.DTO
 {
-    public class CAIDTO:CAI
+    public class EmployeesDTO : Employees
     {
-        public List<CAI> _CAIs { get; set; }
-
-        public string elcai { get; set; }
+        public List<Employees> _Employees { get; set; }
 
         public int editar { get; set; } = 1;
 
