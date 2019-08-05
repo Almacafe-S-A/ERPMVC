@@ -27,12 +27,12 @@ using static ERPMVC.Helpers.ViewRenderService;
 namespace ERPMVC.Controllers
 {
     [Authorize]
-     [CustomAuthorization]
+    [CustomAuthorization]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class SalesOrderController : Controller
     {
         //private readonly ApplicationDbContext _context;
-       //  private readonly ILogger _logger;
+        //  private readonly ILogger _logger;
         private readonly IOptions<MyConfig> _config;
         private readonly IMapper mapper;
         private readonly ILogger _logger;
@@ -55,10 +55,10 @@ namespace ERPMVC.Controllers
         [CustomAuthorization]
         public IActionResult Index()
         {
-           // SalesOrderDTO _dto = new SalesOrderDTO();
+            // SalesOrderDTO _dto = new SalesOrderDTO();
             try
             {
-               
+
             }
             catch (Exception ex)
             {
@@ -80,7 +80,7 @@ namespace ERPMVC.Controllers
 
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/SalesOrder/GetById/"+_salesorder.SalesOrderId);
+                var result = await _client.GetAsync(baseadress + "api/SalesOrder/GetById/" + _salesorder.SalesOrderId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -88,11 +88,21 @@ namespace ERPMVC.Controllers
                     _salesorderf = JsonConvert.DeserializeObject<SalesOrderDTO>(valorrespuesta);
                 }
 
-                if (_salesorderf == null) { _salesorderf = new SalesOrderDTO { ExpirationDate=DateTime.Now.AddDays(30), DeliveryDate=DateTime.Now,OrderDate=DateTime.Now
-                    , editar = _salesorder.editar, SalesOrderId = _salesorder.SalesOrderId
-                    ,  BranchId = Convert.ToInt32(HttpContext.Session.GetString("BranchId"))
-                }; }
-                _salesorderf.editar = _salesorder.editar;             
+                if (_salesorderf == null)
+                {
+                    _salesorderf = new SalesOrderDTO
+                    {
+                        ExpirationDate = DateTime.Now.AddDays(30),
+                        DeliveryDate = DateTime.Now,
+                        OrderDate = DateTime.Now
+,
+                        editar = _salesorder.editar,
+                        SalesOrderId = _salesorder.SalesOrderId
+,
+                        BranchId = Convert.ToInt32(HttpContext.Session.GetString("BranchId"))
+                    };
+                }
+                _salesorderf.editar = _salesorder.editar;
 
 
 
@@ -106,7 +116,7 @@ namespace ERPMVC.Controllers
             return View(_salesorderf);
         }
 
-       
+
         [HttpGet("[action]")]
         public async Task<DataSourceResult> GetSalesOrder([DataSourceRequest]DataSourceRequest request)
         {
@@ -131,7 +141,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-               _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
             }
 
 
@@ -140,7 +150,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet("[action]")]
-        public async Task<DataSourceResult> GetSalesOrderByCustomerId([DataSourceRequest]DataSourceRequest request,Int64 CustomerId)
+        public async Task<DataSourceResult> GetSalesOrderByCustomerId([DataSourceRequest]DataSourceRequest request, Int64 CustomerId)
         {
             List<SalesOrder> _SalesOrders = new List<SalesOrder>();
             try
@@ -199,7 +209,7 @@ namespace ERPMVC.Controllers
 
 
 
-        public async Task<ActionResult> EnviarCotizacionA([DataSourceRequest]DataSourceRequest request , SalesOrderDTO _SalesOrderDTO)
+        public async Task<ActionResult> EnviarCotizacionA([DataSourceRequest]DataSourceRequest request, SalesOrderDTO _SalesOrderDTO)
         {
 
             try
@@ -231,10 +241,10 @@ namespace ERPMVC.Controllers
                         break;
                     //Factura fiscal
                     case 4:
-                    case 6: 
+                    case 6:
                         break;
 
-                  
+
                 }
 
             }
@@ -247,13 +257,57 @@ namespace ERPMVC.Controllers
             return RedirectToAction("", "");
         }
 
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<SalesOrderDTO>> Aprobar([FromBody]SalesOrderDTO _SalesOrder)
+        {
+            SalesOrderDTO _so = new SalesOrderDTO();
+            if (_SalesOrder != null)
+            {
+                try
+                {
+                    string baseadress = _config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/SalesOrder/GetSalesOrderById/" + _SalesOrder.SalesOrderId);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _so = JsonConvert.DeserializeObject<SalesOrderDTO>(valorrespuesta);
+
+
+                        //  _SalesOrder.UsuarioCreacion = HttpContext.Session.GetString("user");
+                        // _SalesOrder.UsuarioModificacion = HttpContext.Session.GetString("user");
+                        _so.IdEstado = 6;
+                        _so.Estado = "Aprobado";
+                        var resultsalesorder = await Update(_so.SalesOrderId, _so);
+
+                        var value = (resultsalesorder.Result as ObjectResult).Value;
+                        SalesOrder resultado = ((SalesOrder)(value));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                    throw ex;
+                }
+            }
+            else
+            {
+                return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+            }
+
+            return await Task.Run(() => Ok(_so));
+        }
+
         [HttpPost("[action]")]
         public async Task<ActionResult<SalesOrder>> SaveSalesOrder([FromBody]SalesOrderDTO _SalesOrder)
-     //  public async Task<ActionResult<SalesOrder>> SaveSalesOrder([FromBody]dynamic dto)
-      // public async Task<ActionResult<SalesOrder>> SaveSalesOrder(Newtonsoft.Json.Linq.JObject datos)
-        {     
-              
-           //     _SalesOrder = JsonConvert.DeserializeObject<SalesOrderDTO>(dto.ToString());           
+        //  public async Task<ActionResult<SalesOrder>> SaveSalesOrder([FromBody]dynamic dto)
+        // public async Task<ActionResult<SalesOrder>> SaveSalesOrder(Newtonsoft.Json.Linq.JObject datos)
+        {
+
+            //     _SalesOrder = JsonConvert.DeserializeObject<SalesOrderDTO>(dto.ToString());           
 
             if (_SalesOrder != null)
             {
@@ -261,7 +315,7 @@ namespace ERPMVC.Controllers
                 try
                 {
                     _SalesOrder.CustomerId = _SalesOrder.CustomerId == null ? 0 : _SalesOrder.CustomerId;
-                    _SalesOrdermodel  = mapper.Map<SalesOrderDTO, SalesOrder>(_SalesOrder);
+                    _SalesOrdermodel = mapper.Map<SalesOrderDTO, SalesOrder>(_SalesOrder);
                     if (_SalesOrder.SalesOrderId == 0)
                     {
                         _SalesOrder.UsuarioCreacion = HttpContext.Session.GetString("user");
@@ -270,19 +324,29 @@ namespace ERPMVC.Controllers
                         var value = (resultsalesorder.Result as ObjectResult).Value;
                         SalesOrder resultado = ((SalesOrder)(value));
                         if (resultado.SalesOrderId > 0)
-                        {                            
+                        {
 
-                           if (_SalesOrder.IdEstado == 5)
+                            if (_SalesOrder.IdEstado == 5)
                             {
 
                                 string baseadress = _config.Value.urlbase;
                                 HttpClient _client = new HttpClient();
-                                Alert _alert = new Alert { AlertName = "Sancionados", DescriptionAlert="Listados sancionados"
-                                        , UsuarioCreacion = _SalesOrder.UsuarioCreacion, UsuarioModificacion= _SalesOrder.UsuarioModificacion
-                                        , DocumentId = resultado.SalesOrderId , DocumentName = "COT"
-                                       , FechaCreacion=DateTime.Now, FechaModificacion=DateTime.Now };
+                                Alert _alert = new Alert
+                                {
+                                    AlertName = "Sancionados",
+                                    DescriptionAlert = "Listados sancionados"
+                                        ,
+                                    UsuarioCreacion = _SalesOrder.UsuarioCreacion,
+                                    UsuarioModificacion = _SalesOrder.UsuarioModificacion
+                                        ,
+                                    DocumentId = resultado.SalesOrderId,
+                                    DocumentName = "COT"
+                                       ,
+                                    FechaCreacion = DateTime.Now,
+                                    FechaModificacion = DateTime.Now
+                                };
                                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                                var result = await _client.PostAsJsonAsync(baseadress + "api/Alert/Insert" , _alert);
+                                var result = await _client.PostAsJsonAsync(baseadress + "api/Alert/Insert", _alert);
                                 string valorrespuesta = "";
                                 if (result.IsSuccessStatusCode)
                                 {
@@ -320,17 +384,17 @@ namespace ERPMVC.Controllers
 
 
                                 string completepath = Directory.GetCurrentDirectory() + "/Views/Shared/Page1.cshtml";
-                                string url = this.Request.Scheme +"://" + this.Request.Host.Value + Url.Action("Index", "SalesOrder");
+                                string url = this.Request.Scheme + "://" + this.Request.Host.Value + Url.Action("Index", "SalesOrder");
                                 Email.DefaultRenderer = new RazorRenderer();
                                 //var template = "Dear @Model.Name, You are totally @Model.Compliment. Ya que el nombre se encontro en los listados";
                                 var email = Email
                                     .From(_config.Value.emailsender)
                                     .To("freddy.chinchilla@bi-dss.com")
                                     .To("freddys18@yahoo.com")
-                                     //.To("mperez@almacafehn.com")
+                                    //.To("mperez@almacafehn.com")
                                     //  .To("jr@almacafehn.com")
-                                      //.To("informatica@almacafehn.com")                                 
-                                     // .To("gerencia@almacafehn.com")
+                                    //.To("informatica@almacafehn.com")                                 
+                                    // .To("gerencia@almacafehn.com")
                                     .Subject($"La cotización {resultado.SalesOrderId} fue {_SalesOrder.Estado} " +
                                               $"por {_SalesOrder.UsuarioCreacion} !")
                                             .Body(url)
@@ -358,21 +422,21 @@ namespace ERPMVC.Controllers
 
                                     //  .Body(resultview)                                     
                                     //.UsingTemplate(template)                                  
-                                    .SendAsync();                                   
+                                    .SendAsync();
 
-                             
+
 
                                 //await email.SendAsync();
                             }
 
-                          
+
                         }
 
                         return resultsalesorder;
                     }
                     else
                     {
-                      //  return await Update(_SalesOrder.SalesOrderId.ToString(), _SalesOrder);
+                        //  return await Update(_SalesOrder.SalesOrderId.ToString(), _SalesOrder);
                     }
                 }
 
@@ -384,7 +448,7 @@ namespace ERPMVC.Controllers
 
             }
 
-            return await Task.Run(()=>  BadRequest("No llego correctamente el modelo!"));
+            return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
         }
 
 
@@ -493,9 +557,10 @@ namespace ERPMVC.Controllers
 
                     _logger.LogInformation($"Antes de recuperar la empresa");
                     CompanyInfo _company = new CompanyInfo { CompanyInfoId = 1 };
+                    _client = new HttpClient();
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                     result = await _client.GetAsync(baseadress + "api/CompanyInfo/GetCompanyInfoById/" + _company.CompanyInfoId);
-                     valorrespuesta = "";
+                    result = await _client.GetAsync(baseadress + "api/CompanyInfo/GetCompanyInfoById/" + _company.CompanyInfoId);
+                    valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
@@ -526,13 +591,13 @@ namespace ERPMVC.Controllers
                     }
 
 
-                    return await Task.Run(()=>Json(_customercontract));
+                    return await Task.Run(() => Json(_customercontract));
                 }
 
                 catch (Exception ex)
                 {
                     _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                    return await Task.Run(() => BadRequest($"{ex.ToString()}!"));
                 }
 
             }
@@ -601,7 +666,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PutAsJsonAsync(baseadress + "api/SalesOrder/Update", _SalesOrderLine);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/SalesOrder/Update", _SalesOrderLine);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -613,12 +678,12 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _SalesOrderLine }, Total = 1 });
-
+            // return new ObjectResult(new DataSourceResult { Data = new[] { _SalesOrderLine }, Total = 1 });
+            return Ok(_SalesOrderLine);
         }
 
         [HttpPost("[action]")]
@@ -640,7 +705,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                  _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error: {ex.Message}");
             }
 
@@ -649,18 +714,18 @@ namespace ERPMVC.Controllers
 
 
 
-       // [HttpGet("{SalesOrderId}")]
-       //public  ActionResult AR(Int32 SalesOrderId)
-       // {
+        // [HttpGet("{SalesOrderId}")]
+        //public  ActionResult AR(Int32 SalesOrderId)
+        // {
 
-       //     SalesOrderDTO _salesorderdto = new SalesOrderDTO { SalesOrderId = SalesOrderId, token = HttpContext.Session.GetString("token") };
+        //     SalesOrderDTO _salesorderdto = new SalesOrderDTO { SalesOrderId = SalesOrderId, token = HttpContext.Session.GetString("token") };
 
-       //     return View(_salesorderdto);
-       // }
+        //     return View(_salesorderdto);
+        // }
 
 
-       // [HttpGet("[controller]/[action]/{SalesOrderId}")]
-   //    [HttpGet("{SalesOrderId}")]
+        // [HttpGet("[controller]/[action]/{SalesOrderId}")]
+        //    [HttpGet("{SalesOrderId}")]
         [HttpGet]
         public ActionResult SFCotizacion(Int32 id)
         {
@@ -719,10 +784,10 @@ namespace ERPMVC.Controllers
                     _SalesOrder = (from c in _SalesOrder
                                    select new SalesOrder
                                    {
-                                      RTN = c.RTN,
-                                      SalesOrderId =c.SalesOrderId,
-                                      SalesOrderName = "Id:"+c.SalesOrderId +"|| Nombre:"+ c.SalesOrderName+"|| Fecha:"+c.OrderDate+"|| Total:"+ c.Total,
-                                      OrderDate = c.OrderDate,
+                                       RTN = c.RTN,
+                                       SalesOrderId = c.SalesOrderId,
+                                       SalesOrderName = "Id:" + c.SalesOrderId + "|| Nombre:" + c.SalesOrderName + "|| Fecha:" + c.OrderDate + "|| Total:" + c.Total,
+                                       OrderDate = c.OrderDate,
                                    }).ToList();
 
                 }

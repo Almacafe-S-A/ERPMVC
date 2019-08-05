@@ -19,7 +19,7 @@ namespace ERPMVC.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly ILogger _logger;     
+        private readonly ILogger _logger;
         private readonly IOptions<MyConfig> config;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
@@ -53,9 +53,9 @@ namespace ERPMVC.Controllers
             List<MessageClassUtil> _message = new List<MessageClassUtil>();
             try
             {
-              
+
                 var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
-             
+
                 var res = HttpContext.User.Identity.IsAuthenticated;
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
@@ -67,13 +67,10 @@ namespace ERPMVC.Controllers
                     HttpContext.Session.SetString("token", _userToken.Token);
                     HttpContext.Session.SetString("Expiration", _userToken.Expiration.ToString());
                     HttpContext.Session.SetString("user", model.Email);
-
-
                     HttpContext.Session.SetString("BranchId", _userToken.BranchId.ToString());
 
-
                     return RedirectToAction("Index", "Home");
-                
+
                 }
                 else
                 {
@@ -91,7 +88,7 @@ namespace ERPMVC.Controllers
                 model.Failed = true;
                 return View(model);
                 // throw ex;
-                
+
             }
 
 
@@ -101,7 +98,7 @@ namespace ERPMVC.Controllers
         // [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-              HttpContext.Session.Clear();
+            HttpContext.Session.Clear();
             //  await _signInManager.SignOutAsync();                 
             //  _logger.LogInformation($"User signed out");
             return await Task.Run(() => RedirectToAction(nameof(HomeController.Index), "Home"));

@@ -66,7 +66,7 @@ namespace ERPMVC.Controllers
 
 
             return PartialView("~/Views/ProformaInvoice/pvwProformaInvoiceDetailMant.cshtml", _ProformaInvoiceLine);
-          //  return PartialView(_ProformaInvoiceLine);
+            //  return PartialView(_ProformaInvoiceLine);
 
         }
 
@@ -98,7 +98,7 @@ namespace ERPMVC.Controllers
                     {
                         _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                     }
-                   
+
                 }
 
 
@@ -122,13 +122,22 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    if (_ProformaInvoiceLinep.ProformaLineId > 0)
+
+                    List<ProformaInvoiceLine> _existelinea = new List<ProformaInvoiceLine>();
+                    if (HttpContext.Session.GetString("listadoproductosproformainvoice") != "")
+                    {
+                        _GoodsReceivedLine = JsonConvert.DeserializeObject<List<ProformaInvoiceLine>>(HttpContext.Session.GetString("listadoproductosproformainvoice"));
+                        _existelinea = _GoodsReceivedLine.Where(q => q.ProformaLineId == _ProformaInvoiceLinep.ProformaLineId).ToList();
+                    }
+
+                    if (_ProformaInvoiceLinep.ProformaLineId > 0 && _existelinea.Count == 0)
                     {
                         _GoodsReceivedLine.Add(_ProformaInvoiceLinep);
                         HttpContext.Session.SetString("listadoproductosproformainvoice", JsonConvert.SerializeObject(_GoodsReceivedLine).ToString());
                     }
                     else
                     {
+
                         var obj = _GoodsReceivedLine.FirstOrDefault(x => x.ProformaLineId == _ProformaInvoiceLinep.ProformaLineId);
                         if (obj != null)
                         {
@@ -217,7 +226,7 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/ProformaInvoiceLine/GetProformaInvoiceLineById/" + _ProformaInvoiceLine.ProformaLineId);
                 string valorrespuesta = "";
-               // _ProformaInvoiceLine.FechaModificacion = DateTime.Now;
+                // _ProformaInvoiceLine.FechaModificacion = DateTime.Now;
                 //_ProformaInvoiceLine.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
@@ -228,8 +237,8 @@ namespace ERPMVC.Controllers
 
                 if (_listProformaInvoiceLine.ProformaLineId == 0)
                 {
-                  //  _ProformaInvoiceLine.FechaCreacion = DateTime.Now;
-                   // _ProformaInvoiceLine.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    //  _ProformaInvoiceLine.FechaCreacion = DateTime.Now;
+                    // _ProformaInvoiceLine.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_ProformaInvoiceLine);
                 }
                 else
@@ -310,17 +319,35 @@ namespace ERPMVC.Controllers
         {
             try
             {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/ProformaInvoiceLine/Delete", _ProformaInvoiceLine);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
+                List<ProformaInvoiceLine> _salesorderLIST =
+              JsonConvert.DeserializeObject<List<ProformaInvoiceLine>>(HttpContext.Session.GetString("listadoproductosproformainvoice"));
+
+                if (_salesorderLIST != null)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ProformaInvoiceLine = JsonConvert.DeserializeObject<ProformaInvoiceLine>(valorrespuesta);
+                    _salesorderLIST = _salesorderLIST
+                            .Where(q => q.ProformaLineId == _ProformaInvoiceLine.ProformaLineId)
+                           .Where(q => q.Quantity != _ProformaInvoiceLine.Quantity)
+                           .Where(q => q.Amount != _ProformaInvoiceLine.Amount)
+                           .Where(q => q.Total != _ProformaInvoiceLine.Total)
+                           .Where(q => q.Price != _ProformaInvoiceLine.Price)
+                           .Where(q => q.SubProductId != _ProformaInvoiceLine.SubProductId)
+                          .ToList();
+
+                    HttpContext.Session.SetString("listadoproductosproformainvoice", JsonConvert.SerializeObject(_salesorderLIST));
                 }
+
+                //string baseadress = config.Value.urlbase;
+                //HttpClient _client = new HttpClient();
+                //_client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                //var result = await _client.PostAsJsonAsync(baseadress + "api/ProformaInvoiceLine/Delete", _ProformaInvoiceLine);
+                //string valorrespuesta = "";
+                //if (result.IsSuccessStatusCode)
+                //{
+                //    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                //    _ProformaInvoiceLine = JsonConvert.DeserializeObject<ProformaInvoiceLine>(valorrespuesta);
+                //}
 
             }
             catch (Exception ex)

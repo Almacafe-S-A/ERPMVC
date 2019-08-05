@@ -30,7 +30,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-       [HttpGet("[controller]/[action]")]
+        [HttpGet("[controller]/[action]")]
         public IActionResult Index()
         {
             return View();
@@ -56,7 +56,8 @@ namespace ERPMVC.Controllers
 
                 if (_CertificadoDeposito == null)
                 {
-                    _CertificadoDeposito = new CertificadoDepositoDTO {
+                    _CertificadoDeposito = new CertificadoDepositoDTO
+                    {
                         IdCD = 0,
                         FechaCertificado = DateTime.Now,
                         FechaVencimiento = DateTime.Now.AddDays(60),
@@ -64,7 +65,8 @@ namespace ERPMVC.Controllers
                         FechaFirma = DateTime.Now,
                         FechaInicioComputo = DateTime.Now,
                         FechaPagoBanco = DateTime.Now
-                        ,BranchId = Convert.ToInt64(HttpContext.Session.GetString("BranchId"))
+                        ,
+                        BranchId = Convert.ToInt64(HttpContext.Session.GetString("BranchId"))
                     };
                 }
                 else
@@ -117,10 +119,10 @@ namespace ERPMVC.Controllers
 
         }
 
-        
+
 
         [HttpGet("[controller]/[action]")]
-        public async Task<DataSourceResult> GetCertificadoDepositoByCustomer([DataSourceRequest]DataSourceRequest request,Int64 CustomerId)
+        public async Task<DataSourceResult> GetCertificadoDepositoByCustomer([DataSourceRequest]DataSourceRequest request, Int64 CustomerId)
         {
             List<CertificadoDeposito> _CertificadoDeposito = new List<CertificadoDeposito>();
             try
@@ -129,7 +131,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoByCustomer/"+CustomerId);
+                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoByCustomer/" + CustomerId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -184,6 +186,60 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> GetCertificadoDepositoByIdKardex([DataSourceRequest]DataSourceRequest request, [FromBody] CertificadoDeposito _Certificado)
+        {
+            CertificadoDeposito _CertificadoDeposito = new CertificadoDeposito();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoById/" + _Certificado.IdCD);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDeposito>(valorrespuesta);
+
+                }
+
+                if (_CertificadoDeposito == null)
+                {
+                    _CertificadoDeposito = new CertificadoDeposito();
+                }
+
+                Kardex _kardexparam = new Kardex { DocumentId = _Certificado.IdCD, DocumentName = "CD" };
+                List<KardexLine> _kardexsaldo = new List<KardexLine>();
+                result = await _client.PostAsJsonAsync(baseadress + "api/Kardex/GetSaldoProductoByCertificado", _kardexparam);
+                valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _kardexsaldo = JsonConvert.DeserializeObject<List<KardexLine>>(valorrespuesta);
+                }
+
+                // _CertificadoDeposito._CertificadoLine.Clear();
+                foreach (var item in _CertificadoDeposito._CertificadoLine)
+                {
+                    item.Quantity = (from c in _kardexsaldo
+                                     .Where(q => q.SubProducId == item.SubProductId)
+                                     select c.TotalCD
+                                     ).FirstOrDefault();
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_CertificadoDeposito);
+        }
+
+
 
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<List<CertificadoDeposito>>> AgruparCertificados([FromBody]GoodsDeliveryAuthorizationParams _params)
@@ -203,7 +259,7 @@ namespace ERPMVC.Controllers
                         if (result.IsSuccessStatusCode)
                         {
                             valorrespuesta = await (result.Content.ReadAsStringAsync());
-                            _CertificadoDeposito = JsonConvert.DeserializeObject <List<CertificadoDeposito>>(valorrespuesta);
+                            _CertificadoDeposito = JsonConvert.DeserializeObject<List<CertificadoDeposito>>(valorrespuesta);
 
                         }
                     }
@@ -289,10 +345,10 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[controller]/[action]")]
-       public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]CertificadoDepositoDTO _CertificadoDeposito)
-          //  public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]dynamic dto)
+        public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]CertificadoDepositoDTO _CertificadoDeposito)
+        //  public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]dynamic dto)
         {
-           // CertificadoDepositoDTO _CertificadoDeposito = new CertificadoDepositoDTO(); 
+            // CertificadoDepositoDTO _CertificadoDeposito = new CertificadoDepositoDTO(); 
             try
             {
                 // _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDepositoDTO>(dto.ToString());
@@ -320,7 +376,7 @@ namespace ERPMVC.Controllers
                         var insertresult = await Insert(_CertificadoDeposito);
                         var value = (insertresult.Result as ObjectResult).Value;
                         _CertificadoDeposito = ((CertificadoDepositoDTO)(value));
-                        if(_CertificadoDeposito.IdCD==0)
+                        if (_CertificadoDeposito.IdCD == 0)
                         {
                             return await Task.Run(() => BadRequest("No se genero el documento!"));
                         }
@@ -332,7 +388,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    return await Task.Run(()=> BadRequest("No llego correctamente el modelo!"));
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
                 }
 
             }
@@ -376,7 +432,7 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-            return await Task.Run(()=> Ok(_CertificadoDeposito));
+            return await Task.Run(() => Ok(_CertificadoDeposito));
             // return new ObjectResult(new DataSourceResult { Data = new[] { _CertificadoDeposito }, Total = 1 });
         }
 
@@ -482,11 +538,11 @@ namespace ERPMVC.Controllers
                     _CertificadoDeposito = JsonConvert.DeserializeObject<List<CertificadoDeposito>>(valorrespuesta);
                     _CertificadoDeposito = (from c in _CertificadoDeposito
                                             select new CertificadoDeposito
-                                   {                                       
-                                        IdCD = c.IdCD,
-                                        CustomerName ="Id:"+c.IdCD + " ||Número de certificado:" + c.NoCD + "  || Nombre:" + c.CustomerName + "|| Fecha:" + c.FechaCertificado + "|| Total:" + c.Total,
+                                            {
+                                                IdCD = c.IdCD,
+                                                CustomerName = "Id:" + c.IdCD + " ||Número de certificado:" + c.NoCD + "  || Nombre:" + c.CustomerName + "|| Fecha:" + c.FechaCertificado + "|| Total:" + c.Total,
                                                 CustomerId = c.CustomerId,
-                                 }).ToList();
+                                            }).ToList();
 
                 }
             }
@@ -503,7 +559,7 @@ namespace ERPMVC.Controllers
         [HttpGet]
         public ActionResult SFCertificadoDeposito(Int64 id)
         {
-            
+
             CertificadoDepositoDTO _CertificadoDepositoDTO = new CertificadoDepositoDTO { IdCD = id, };
 
             return View(_CertificadoDepositoDTO);

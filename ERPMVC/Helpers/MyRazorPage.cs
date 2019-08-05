@@ -23,17 +23,25 @@ namespace ERPMVC
 
                 return false;
             }
-         
+
         }
     }
 
 
-    public enum Politicas {
-          GG ,
-          Admin,
-          
+    public class Politicas
+    {
+        public const string GG = "GG";
+        public const string Admin = "Admin";
+
 
     }
+
+    //public enum Politicas {
+    //      GG ,
+    //      Admin,
+
+
+    //}
 
 
 

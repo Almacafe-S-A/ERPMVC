@@ -16,13 +16,13 @@ using Newtonsoft.Json;
 
 namespace ERPMVC.Controllers
 {
-     [Authorize]
-      [CustomAuthorization]
+    [Authorize]
+    [CustomAuthorization]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class UsuarioController : Controller
     {
 
-         private readonly IOptions<MyConfig> config;
+        private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
 
         public UsuarioController(ILogger<UserRolController> logger
@@ -32,13 +32,13 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-        [Authorize(Policy ="Admin")]
+        [Authorize(Policy = "Admin")]
         public IActionResult Usuarios()
         {
             return View();
         }
 
-        
+
         [HttpGet("[controller]/[action]")]
         public async Task<JsonResult> GetQuantityUsuario()
         {
@@ -117,7 +117,7 @@ namespace ERPMVC.Controllers
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
-            }           
+            }
 
             return _users.ToDataSourceResult(request);
         }
@@ -166,6 +166,8 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _usuario = JsonConvert.DeserializeObject<ApplicationUser>(valorrespuesta);
+
+                    _usuario.PasswordHash = "**********************";
                 }
 
             }
@@ -194,15 +196,24 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _usuario = JsonConvert.DeserializeObject<ApplicationUser>(valorrespuesta);
                 }
+                else
+                {
+
+                    _usuario.PasswordHash = await result.Content.ReadAsStringAsync() + " El password debe tener mayusculas y minusculas!";
+                    return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
+                    //return await Task.Run(() => BadRequest($"Ocurrio un error{result.Content.ReadAsStringAsync()}"));
+                }
 
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                return await Task.Run(() => BadRequest($"Ocurrio un error{ex.Message}"));
             }
 
+
+            _usuario.PasswordHash = "**********************";
             return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
 
         }
