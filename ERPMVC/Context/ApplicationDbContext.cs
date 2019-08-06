@@ -37,6 +37,10 @@ namespace ERP.Contexts
         }
 
 
+
+        public DbSet<ERPMVC.Models.Dimensions> Dimensions { get; set; }
+
+
         
     }
 }
