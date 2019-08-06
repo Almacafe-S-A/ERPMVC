@@ -8,7 +8,7 @@ namespace ERPMVC.DTO
 {
     public class EmpresaDTO : Empresa
     {
-        public List<Empresa> _Brach { get; set; }
+        public List<Empresa> _Empresa { get; set; }
 
         public int editar { get; set; } = 1;
 
