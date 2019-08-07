@@ -38,7 +38,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet("[action]")]
-        public async Task<JsonResult> GetJsonRoles()
+        public async Task<JsonResult> GetJsonRoles([DataSourceRequest]DataSourceRequest request)
         {
             List<ApplicationRole> _users = new List<ApplicationRole>();
             try

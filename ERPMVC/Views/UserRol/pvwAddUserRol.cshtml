@@ -6,10 +6,11 @@
 
   <script>
       completed = function (xhr) {
-            RefreshPorRol();
-            RefreshPorUser();
-            alert(` ${xhr.responseText}!`);
-            $('#myModal').modal('hide');
+          $('#myModal').modal('hide');
+         //   RefreshPorRol();
+          //  RefreshPorUser();
+       //     alert(` ${xhr.responseText}!`);
+          
       };
 
  </script>
@@ -27,9 +28,11 @@
       </div>
       <div class="modal-body">
           
-                <form class="form-signin" asp-controller="UserRol" asp-action="Insert" 
-                 data-ajax-method="post" 
+                <form class="form-signin" id="frmUserRol"
+                kendo-validator="true" 
+                 data-ajax-method="post"                  
                  data-ajax-complete="completed" 
+                data-ajax-begin="SaveUserRol"
                  data-ajax="true" >
                   <div class="row">
                    <div class="col-md-12">
@@ -37,12 +40,12 @@
                       @(Html.Kendo().DropDownList()
                         .Name("UserId")
                         .OptionLabel("Seleccione un usuario")
-                        .DataValueField("UserId")
+                        .DataValueField("Id")
                         .DataTextField("UserName")
                         .Filter(Kendo.Mvc.UI.FilterType.Contains)                   
-                        .HtmlAttributes(new { @style = "width:100%" })                         
+                        .HtmlAttributes(new { @style = "width:100%", @required="true" })                         
                         .Enable(true)
-                        .DataSource(Source => Source.Read(r => r.Action("GetJsonUsers", "UserRol")))
+                        .DataSource(Source => Source.Read(r => r.Action("GetUsuariosJson", "Usuario")))
                       )
                         
                   </div>
@@ -54,16 +57,16 @@
                      @(Html.Kendo().DropDownList()
                       // .HtmlAttributes(new { data_bind="value:RoleId"})
                       .Name("RoleId")
-                      .DataValueField("RoleId")
-                      .DataTextField("RoleName")
+                      .DataValueField("Id")
+                      .DataTextField("Name")
                       .Filter(Kendo.Mvc.UI.FilterType.Contains)
-                      .HtmlAttributes(new { @style = "width:100%" })
+                      .HtmlAttributes(new { @style = "width:100%", @required = "true" })
                       .OptionLabel("Seleccione un rol")
                       //.Events(e=>e.Select("rolf"))
                       .AutoBind(true)
                       .Enable(true)
-                      .DataSource(Source => Source.Read(r => r.Action("GetJsonRoles", "UserRol")))
-                    
+                      .DataSource(Source => Source.Read(r => r.Action("GetJsonRoles", "Roles")))
+
                      )
                     </div>
                  </div>
@@ -79,12 +82,76 @@
            </div>
       <div class="modal-footer">
            
-        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        <button type="button" id="btnSaveUserRol" class="btn btn-default" data-dismiss="modal">Close</button>
       </div>
     </div>
 
   </div>
 </div>
+
+<script>
+    function SaveUserRol() {
+        var notification = $("#notification").data("kendoNotification");
+        $("#btnSaveUserRol").hide();
+        $("#btnSaveUserRol").prop("disabled", true);
+        var validator = $("#frmUserRol").data("kendoValidator");
+
+        var dataObject = {
+            UserId: $("#UserId").val(),
+            UserName: $("#UserId").data("kendoDropDownList").text(),
+            RoleId: $("#RoleId").val(),
+            RoleName: $("#RoleId").data("kendoDropDownList").text(),
+        };
+
+
+       // console.log(dataObject);
+
+        if (validator.validate()) {
+            $.ajax({
+                url: '@Url.Action("Insert", "UserRol")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+
+                    //notification.show({
+                    //    message: "Guardado correctamente!"
+                    //}, "upload-success");
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: 'Datos guardados correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+
+                    RefreshPorRol();
+                    RefreshPorUser();
+                    $('#myModal').modal('hide');
+
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $("#btnSaveUserRol").show();
+                    $("#btnSaveUserRol").prop("disabled", false);
+                    notification.show({
+                        title: "Validacion",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+
+                }
+            });
+        }
+        else {
+            $("#btnSaveUserRol").show();
+            $("#btnSaveUserRol").prop("disabled", false);
+        }
+    }
+</script>
 
 
 

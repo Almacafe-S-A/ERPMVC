@@ -12,6 +12,9 @@ namespace ERPMVC.Models
         [Display(Name = "Sucursal")]
         public Int64 BranchId { get; set; }
 
+        [Display(Name = "Habilitado")]
+        public bool? IsEnabled { get; set; }
+
         [DataType(DataType.Password)]
         public override string PasswordHash { get; set; }
         public DateTime FechaCreacion { get; set; }
