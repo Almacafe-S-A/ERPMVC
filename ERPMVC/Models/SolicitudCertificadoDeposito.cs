@@ -119,12 +119,6 @@ namespace ERPMVC.Models
 
 
 
-    public class SolicitudCertificadoDepositoDTO :SolicitudCertificadoDeposito 
-    {
-        public List<Int64> RecibosAsociados { get; set; }
-        public int editar { get; set; } = 1;
-
-    }
 
 
 
