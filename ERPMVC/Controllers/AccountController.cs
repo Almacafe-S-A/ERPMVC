@@ -64,12 +64,22 @@ namespace ERPMVC.Controllers
                 {
                     string webtoken = await (resultlogin.Content.ReadAsStringAsync());
                     UserToken _userToken = JsonConvert.DeserializeObject<UserToken>(webtoken);
-                    HttpContext.Session.SetString("token", _userToken.Token);
-                    HttpContext.Session.SetString("Expiration", _userToken.Expiration.ToString());
-                    HttpContext.Session.SetString("user", model.Email);
-                    HttpContext.Session.SetString("BranchId", _userToken.BranchId.ToString());
 
-                    return RedirectToAction("Index", "Home");
+                    if (_userToken.IsEnabled.Value)
+                    {
+                        HttpContext.Session.SetString("token", _userToken.Token);
+                        HttpContext.Session.SetString("Expiration", _userToken.Expiration.ToString());
+                        HttpContext.Session.SetString("user", model.Email);
+                        HttpContext.Session.SetString("BranchId", _userToken.BranchId.ToString());
+
+                        return RedirectToAction("Index", "Home");
+                    }
+                    else
+                    {
+                        _message.Add(new MessageClassUtil { key = "Login", name = "error", mensaje = "Error en login" });
+                        model.Failed = true;
+                        return View(model);
+                    }
 
                 }
                 else
@@ -93,6 +103,25 @@ namespace ERPMVC.Controllers
 
 
         }
+
+        public async  Task<ActionResult> ChangePassword()
+        {
+            try
+            {
+
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+
+            return await Task.Run(()=> View());
+        }
+
+
+
+
 
         [HttpGet]
         // [ValidateAntiForgeryToken]

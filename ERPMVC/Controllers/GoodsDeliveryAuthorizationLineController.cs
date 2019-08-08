@@ -142,6 +142,35 @@ namespace ERPMVC.Controllers
             return Json(_GoodsDeliveryAuthorizationLine);
         }
 
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<GoodsDeliveryAuthorizationLine>> SetLinesInSession([FromBody]GoodsDeliveryAuthorizationLineDTO _GoodsDeliveryAuthorizationLine)
+        {
+
+            try
+            {
+
+                List<GoodsDeliveryAuthorizationLineDTO> _GoodsReceivedLine = new List<GoodsDeliveryAuthorizationLineDTO>();
+                _GoodsReceivedLine = JsonConvert.DeserializeObject<List<GoodsDeliveryAuthorizationLineDTO>>(HttpContext.Session.GetString("listadoproductosGoodsDeliveryAuthorization"));
+
+                if (_GoodsReceivedLine == null) { _GoodsReceivedLine = new List<GoodsDeliveryAuthorizationLineDTO>(); }
+                _GoodsReceivedLine.Add(_GoodsDeliveryAuthorizationLine);
+                //  GoodsDeliveryAuthorizationLine _listGoodsDeliveryAuthorizationLine = new GoodsDeliveryAuthorizationLine();
+               // string serialzado = JsonConvert.SerializeObject(_GoodsDeliveryAuthorizationLine).ToString();
+                HttpContext.Session.SetString("listadoproductosGoodsDeliveryAuthorization", JsonConvert.SerializeObject(_GoodsReceivedLine).ToString());
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_GoodsDeliveryAuthorizationLine);
+        }
+
+
+
         [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> GetGoodsDeliveryAuthorizationLineById([DataSourceRequest]DataSourceRequest request, GoodsDeliveryAuthorizationLineDTO _GoodsReceivedLinep)
         {

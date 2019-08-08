@@ -132,7 +132,7 @@ namespace ERPMVC.Controllers
            return _roles.ToDataSourceResult(request);
         }
 
-          [HttpGet("[action]")]
+          [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> GetUsersByRoleId([DataSourceRequest]DataSourceRequest request, Guid RoleId)
         {
             List<ApplicationUserRole> _roles = new List<ApplicationUserRole>();
@@ -208,7 +208,7 @@ namespace ERPMVC.Controllers
              return Json(_roles);
         //    return _roles.ToDataSourceResult(request);
         }
-        [HttpGet("[action]")]
+        [HttpGet("[controller]/[action]")]
         public async Task<JsonResult> GetJsonUsersApi([DataSourceRequest]DataSourceRequest request)
         {
             List<ApplicationUserRole> _roles = new List<ApplicationUserRole>();
@@ -246,7 +246,7 @@ namespace ERPMVC.Controllers
             return Json(_roles.ToDataSourceResult(request));
         }
 
-        [HttpGet("[action]")]
+        [HttpGet("[controller]/[action]")]
         public async Task<JsonResult> GetJsonUsers([DataSourceRequest]DataSourceRequest request)
         {
             List<ApplicationUserRole> _roles = new List<ApplicationUserRole>();
@@ -286,7 +286,7 @@ namespace ERPMVC.Controllers
 
 
 
-        [HttpGet("[action]")]
+        [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> GetUsersRoles([DataSourceRequest]DataSourceRequest request)
         {
             List<ApplicationUserRole> _roles = new List<ApplicationUserRole>();
@@ -358,8 +358,8 @@ namespace ERPMVC.Controllers
             return View(_usuario);
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult<ApplicationUserRole>> Insert(ApplicationUserRole _role)
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<ApplicationUserRole>> Insert([FromBody]ApplicationUserRole _role)
         {
             try
             {
@@ -369,7 +369,10 @@ namespace ERPMVC.Controllers
                     // TODO: Add insert logic here
                     string baseadress = config.Value.urlbase;
                     HttpClient _client = new HttpClient();
-
+                    _role.FechaCreacion = DateTime.Now;
+                    _role.FechaModificacion = DateTime.Now;
+                    _role.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    _role.UsuarioModificacion = HttpContext.Session.GetString("user");
 
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                     var result = await _client.PostAsJsonAsync(baseadress + "api/UserRol/Insert", _role);
@@ -404,7 +407,7 @@ namespace ERPMVC.Controllers
            // return new ObjectResult(new DataSourceResult { Data = new[] { _role }, Total = 1 });
         }
 
-        [HttpPut("[action]")]
+        [HttpPut("[controller]/[action]")]
         public async Task<ActionResult<ApplicationUserRole>> Update(string Id, ApplicationUserRole _rol)
         {
             try
@@ -433,7 +436,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<ApplicationRole>> Delete([FromBody]ApplicationUserRole _rol)
         {
             try

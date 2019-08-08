@@ -2,7 +2,18 @@
 <script src="~/admp/assets/plugins/wizard/stepsGoodsDeliveryAuthorization.js"></script>
 
 <script>
-    function AsociarCertificados() {
+
+
+   async function resolveAfter2Seconds() {
+        return new Promise(resolve => {
+            setTimeout(() => {
+                RefreshGoodsDeliveredDetail();
+            }, 3000);
+        });
+    }
+
+    var id = -999999;
+   async function AsociarCertificados() {
 
         clearsessiondeliveryautor();
 
@@ -12,12 +23,14 @@
 
         var grid = $("#gridGoodsDeliveredAuthorizationLine").data("kendoGrid");
         var datasource = grid.dataSource;
+
         var raw = datasource._data;
         for (i = datasource._data.length - 1; i >= 0; i--) {
             item = raw[i];
             datasource.remove(item);
         }
 
+        datasource.async = false;
         //var agregados = '';
         var list = [];
         $("#ddlRecibosAsociados > option").each(function () {
@@ -26,6 +39,8 @@
             //agregados += this.value + ',';
         });
 
+
+       var data;
        // agregados = agregados.substring(0, agregados.length - 1);
         //console.log(agregados);
         var dataObject = { 'CertificadosSeleccionados': list };
@@ -36,118 +51,10 @@
             contentType: 'application/json',
             async: false,
             data: JSON.stringify(dataObject),
-            success: function (data) {
+            success: function (result) {
                // console.log(data);
-                for (j = 0; j < data.length; j++) {
 
-                    hcustom = data[j].CustomerId;
-                    $("#FechaCertificado").val(data[j].FechaCertificado);
-                    $("#FechaDeVencimiento").val(data[j].FechaVencimiento);
-                    $("#ProductId").data("kendoDropDownList").value(data[j].ServicioId);
-                    $("#WarehouseId").data("kendoDropDownList").value(data[j].WarehouseId);
-                    $("#BranchId").data("kendoDropDownList").value(data[j].BranchId);
-                    $("#CurrencyId").data("kendoDropDownList").value(data[j].CurrencyId);
-                    $("#BankId").data("kendoDropDownList").value(data[j].BankId);
-                     // $("#idrecibo").text(data.NoCD);
-                    // $("#ServicioName").text(data.ServicioName);
-                    // $("#WarehouseName").text(data.WarehouseName);
-                   // console.log(data);
-                    var sumacantidad = 0, total = 0;
-                    if (data[j]._CertificadoLine.length <= 8) {
-                        for (i = 0; i < data[j]._CertificadoLine.length; i++) {
-
-
-                            var multi = $("#ProductosCD").getKendoMultiSelect(),
-                                multiDataItems = multi.dataItems();
-                                    //selectedProducts = [];
-
-                            for (var k = 0; k < multiDataItems.length; k += 1) {
-                                var currentProduct = multiDataItems[k];
-
-                                //selectedProducts.push({
-                                //    SubProductId: currentProduct.SubProductId,
-                                //    SubProductName: currentProduct.SubProductName
-                                //})
-                              //  console.log(selectedProducts);
-
-
-                                if (currentProduct.SubProductId == data[j]._CertificadoLine[i].SubProductId) {
-                                    datasource.insert({
-                                        GoodsDeliveryAuthorizationLineId: i + 1
-                                        , GoodsDeliveryAuthorizationId: 0
-                                        , IdCD: data[j]._CertificadoLine[i].IdCD
-                                        , NoCertificadoDeposito: data[j].NoCD
-                                        , UnitOfMeasureId: data[j]._CertificadoLine[i].UnitMeasureId
-                                        , UnitOfMeasureName: data[j]._CertificadoLine[i].UnitMeasurName
-                                        , ValorImpuestos: data[j]._CertificadoLine[i].ValorImpuestos
-                                        , WarehouseId: data[j].WarehouseId
-                                        , WarehouseName: data[j].WarehouseName
-                                        , SubProductId: data[j]._CertificadoLine[i].SubProductId
-                                        , SubProductName: data[j]._CertificadoLine[i].SubProductName
-                                        ,  Quantity: data[j]._CertificadoLine[i].Quantity
-                                        , Price: data[j]._CertificadoLine[i].Price
-                                        , valorcertificado: data[j].Total
-                                    });
-
-
-                                          $("#GoodsDeliveryAuthorizationLineId").val(i + 1);
-                                          $("#NoCertificadoDeposito").data("kendoNumericTextBox").value(data[j].NoCD);
-                                          $("#Quantity").data("kendoNumericTextBox").value(data[j]._CertificadoLine[i].Quantity);
-                                          $("#Description").val('');
-                                          $("#valorcertificado").data("kendoNumericTextBox").value(data[j].Total);
-                                        //  $("#valorfinanciado").data("kendoNumericTextBox").value(data[j].Total);
-                                          $("#SubProductId").data("kendoDropDownList").value(data[j]._CertificadoLine[i].SubProductId);
-                                         $("#UnitOfMeasureId").data("kendoDropDownList").value(data[j]._CertificadoLine[i].UnitMeasureId);
-                                         $("#WarehouseId").data("kendoDropDownList").value(data[j].WarehouseId);
-                                         $("#Price").val(data[j]._CertificadoLine[i].Price);
-                                         $("#ValorImpuestos").data("kendoNumericTextBox").value(data[j]._CertificadoLine[i].ValorImpuestos);
-
-                                    debugger;
-                                    $('#allescondidos').append(' <input type="hidden" id="ValorImpuestosOriginal' + (i + 1) + '" value="' + data[j]._CertificadoLine[i].ValorImpuestos + '" />');
-                                    $('#allescondidos').append(' <input type="hidden" id="QuantityOriginal' + (i + 1) + '" value="' + data[j]._CertificadoLine[i].Quantity + '" />');
-
-                                    //$('<input>').attr({
-                                    //    type: 'hidden',
-                                    //    id: "ValorImpuestosOriginal" + ( i + 1),
-                                    //    value: data[j]._CertificadoLine[i].ValorImpuestos
-                                    //}).appendTo('allescondidos');
-
-                                    //$('<input>').attr({
-                                    //    type: 'hidden',
-                                    //    id: "QuantityOriginal" + (i + 1),
-                                    //    value: data[j]._CertificadoLine[i].Quantity
-                                    //}).appendTo('allescondidos');
-
-                                   // $("#ValorImpuestosOriginal").val(data[j]._CertificadoLine[i].ValorImpuestos);
-                                    //$("#QuantityOriginal").val(data[j]._CertificadoLine[i].Quantity);
-
-                                    datasource.read();
-
-                                }
-
-                            }
-
-                          //  datasource.refresh();
-                            //sumacantidad += data._CertificadoLine[i].Quantity;
-                            //total += (data._CertificadoLine[i].Price * data._CertificadoLine[i].Quantity) ;
-                        }
-
-
-                        fiscal();
-
-                        CalcularTotalDocumento();
-
-                        // $("#Quantitysum").data("kendoNumericTextBox").value(sumacantidad);
-                        //$("#Total").data("kendoNumericTextBox").value(total);
-
-                    }
-                    else {
-                        notification.show({
-                            title: "Validacion",
-                            message: "No pueden existir mas de 8 productos!s"
-                        }, "error");
-                    }
-                }
+                data = result;
 
             },
              error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -155,10 +62,138 @@
              }
           });
 
+     //  console.log(data);
+       var n = 0;
+       for (j = 0; j < data.length; j++) {
 
+           debugger;
+           hcustom = data[j].CustomerId;
+           $("#FechaCertificado").val(data[j].FechaCertificado);
+           $("#FechaDeVencimiento").val(data[j].FechaVencimiento);
+           $("#ProductId").data("kendoDropDownList").value(data[j].ServicioId);
+           $("#WarehouseId").data("kendoDropDownList").value(data[j].WarehouseId);
+           $("#BranchId").data("kendoDropDownList").value(data[j].BranchId);
+           $("#CurrencyId").data("kendoDropDownList").value(data[j].CurrencyId);
+           $("#BankId").data("kendoDropDownList").value(data[j].BankId);
+           // $("#idrecibo").text(data.NoCD);
+           // $("#ServicioName").text(data.ServicioName);
+           // $("#WarehouseName").text(data.WarehouseName);
+           // console.log(data);
+           var sumacantidad = 0, total = 0;
+           if (data[j]._CertificadoLine.length <= 8) {
+
+
+               // debugger;
+               for (i = 0; i < data[j]._CertificadoLine.length; i++) {
+                   console.log('Certificado Line ' + i + 'de ' + j);
+
+                   var multi = $("#ProductosCD").getKendoMultiSelect(),
+                       multiDataItems = multi.dataItems();
+                   //selectedProducts = [];
+
+                   for (var k = 0; k < multiDataItems.length; k += 1) {
+                       var currentProduct = multiDataItems[k];
+
+
+                       var dataObject = { 
+                           GoodsDeliveryAuthorizationLineId: n + 1
+                          , GoodsDeliveryAuthorizationId: 0
+                           , IdCD: data[j]._CertificadoLine[i].IdCD
+                                    , NoCertificadoDeposito: data[j].NoCD
+                                 , UnitOfMeasureId: data[j]._CertificadoLine[i].UnitMeasureId
+                                               , UnitOfMeasureName: data[j]._CertificadoLine[i].UnitMeasurName
+                                                   , ValorImpuestos: data[j]._CertificadoLine[i].ValorImpuestos
+                                                       , WarehouseId: data[j].WarehouseId
+                                                           , WarehouseName: data[j].WarehouseName
+                                                               , SubProductId: data[j]._CertificadoLine[i].SubProductId
+                                                                   , SubProductName: data[j]._CertificadoLine[i].SubProductName
+                                                                       , Quantity: data[j]._CertificadoLine[i].Quantity
+                           , Price: data[j]._CertificadoLine[i].Price
+                          , valorcertificado: data[j].Total
+                   };
+
+
+                       if (currentProduct.SubProductId == data[j]._CertificadoLine[i].SubProductId) {
+                           datasource.insert(
+                               dataObject
+                           );
+
+                              
+                               $.ajax({
+                                url: '@Url.Action("SetLinesInSession", "GoodsDeliveryAuthorizationLine")',
+                                method: 'POST',
+                                datatype: "json",
+                                contentType: 'application/json',
+                                async: false,
+                                data: JSON.stringify(dataObject),
+                                success: function (result) {
+                                   // console.log(data);
+                                   // data = result;
+
+                                },
+                                 error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                      alert(textStatus + ": " + XMLHttpRequest.responseText);
+                                 }
+                              });
+
+
+                           //$("#GoodsDeliveryAuthorizationLineId").val(n + 1);
+                           //$("#NoCertificadoDeposito").data("kendoNumericTextBox").value(data[j].NoCD);
+                           //$("#Quantity").data("kendoNumericTextBox").value(data[j]._CertificadoLine[i].Quantity);
+                           //$("#Description").val('');
+                           //$("#valorcertificado").data("kendoNumericTextBox").value(data[j].Total);
+                           ////  $("#valorfinanciado").data("kendoNumericTextBox").value(data[j].Total);
+                           //$("#SubProductId").data("kendoDropDownList").value(data[j]._CertificadoLine[i].SubProductId);
+                           //$("#UnitOfMeasureId").data("kendoDropDownList").value(data[j]._CertificadoLine[i].UnitMeasureId);
+                           //$("#WarehouseId").data("kendoDropDownList").value(data[j].WarehouseId);
+                           //$("#Price").val(data[j]._CertificadoLine[i].Price);
+                           //$("#ValorImpuestos").data("kendoNumericTextBox").value(data[j]._CertificadoLine[i].ValorImpuestos);
+
+                           // debugger;
+                           $('#allescondidos').append(' <input type="hidden" id="ValorImpuestosOriginal' + (n + 1) + '" value="' + data[j]._CertificadoLine[i].ValorImpuestos + '" />');
+                           $('#allescondidos').append(' <input type="hidden" id="QuantityOriginal' + (n + 1) + '" value="' + data[j]._CertificadoLine[i].Quantity + '" />');
+
+
+                         
+
+                           debugger;
+
+                          //  RefreshGoodsDeliveredDetail();
+                           //var result = await resolveAfter2Seconds();
+                           //console.log('Resultado despues de x segundos');
+                          // console.log(result);
+                           // datasource.read();
+                           n++;
+                       }
+
+                   }
+
+                   //  datasource.refresh();
+                   //sumacantidad += data._CertificadoLine[i].Quantity;
+                   //total += (data._CertificadoLine[i].Price * data._CertificadoLine[i].Quantity) ;
+               }
+
+
+
+               fiscal();
+
+               CalcularTotalDocumento();
+
+               // $("#Quantitysum").data("kendoNumericTextBox").value(sumacantidad);
+               //$("#Total").data("kendoNumericTextBox").value(total);
+
+           }
+           else {
+               notification.show({
+                   title: "Validacion",
+                   message: "No pueden existir mas de 8 productos!s"
+               }, "error");
+           }
+       }
 
 
     }
+
 </script>
 
 <!-- Validation wizard -->
