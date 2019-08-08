@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using ERPMVC.Models;
+using ERPMVC.DTO;
 
 namespace ERP.Contexts
 {
@@ -39,6 +40,10 @@ namespace ERP.Contexts
 
 
         public DbSet<ERPMVC.Models.Dimensions> Dimensions { get; set; }
+
+
+
+        public DbSet<ERPMVC.DTO.DimensionsDTO> DimensionsDTO { get; set; }
 
 
         
