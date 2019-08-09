@@ -246,6 +246,13 @@ namespace ERPMVC.Controllers
                     _GoodsDelivered.FechaCreacion = DateTime.Now;
                     _GoodsDelivered.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_GoodsDelivered);
+                    var value = (insertresult.Result as ObjectResult).Value;
+                    _GoodsDelivered = ((GoodsDelivered)(value));
+                    if (_GoodsDelivered.GoodsDeliveredId == 0)
+                    {
+                        return await Task.Run(() => BadRequest("No se genero el documento!"));
+                    }
+
                 }
                 else
                 {
