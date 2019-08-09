@@ -1,7 +1,10 @@
 ﻿@model ERPMVC.DTO.DimensionsDTO
 
-@{
-    ViewData["Title"] = "pvwAddDimensions";
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+   // {"required","Valor requerido" }
+};
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
 }
 
 <script>
@@ -20,40 +23,154 @@
 
 
 
-<h1>pvwAddDimensions</h1>
 
-<h4>DimensionsDTO</h4>
-<hr />
-<div class="row">
-    <div class="col-md-4">
-        <form asp-action="pvwAddDimensions" id="DimensionsDTOForm">
-            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
-            <div class="form-group">
-                <label asp-for="DimCode"></label>
-                <kendo-numerictextbox for="DimCode" />
-                <span asp-validation-for="DimCode" class="text-danger k-invalid-msg" data-for="DimCode"></span>
+<div id="ModalDimensions" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Centros de Costo</h4>
             </div>
-            <div class="form-group">
-                <label asp-for="Description"></label>
-                <input asp-for="Description" class="k-textbox" />
-                <span asp-validation-for="Description" class="text-danger k-invalid-msg" data-for="Description"></span>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmDimensions" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveDimensions"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <h3 class="card-title">Centro de Costo</h3>
+                                        <hr>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="DimCode" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="DimCode" name="Dimcode" class="form-control" disabled="disabled" style="width:100%" value="2"/>
+                                                    <span asp-validation-for="DimCode" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Num" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="Num" name="Num" class="form-control" autocomplete="off" style="width:100%" />
+                                                    <span asp-validation-for="Num" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Description" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="Description" name="Description" class="form-control" autocomplete="off" style="width:100%" />
+                                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button id="btnDimensions" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                            </div>
+                                        </div>
+
+
+
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <input type="submit" value="Create" class="k-button k-primary" />
-            </div>
-        </form>
+        </div>
     </div>
 </div>
 
-<div>
-    <a asp-action="Index" class="k-button">Back to List</a>
-</div>
 
 <script>
-    $(document).ready(function () {
-        $("#DimensionsDTOForm").kendoValidator({
-            // You can define your custom rules here:
-            //rules: {}
-        });
-    })
+    function RefrescarGrid() {
+
+        var grid = $("#gridNumeracionDimensions").getKendoGrid();
+        grid.dataSource.read();
+    }
+    function SaveDimensions(e) {
+
+            var notification = $("#notification").data("kendoNotification");
+           // e.preventDefault();
+        $("#btnDimensions").hide();
+        $("#btnDimensions").prop("disabled", true);
+
+        var displayedData = $("#gridNumeracionDimensions").data().kendoGrid.dataSource.view();
+
+        var dataObject = {  'Num': $("#Num").val()===""?"0":$("#Num").val(),
+                            'DimCode':$("#Dimcode").val(),
+                           'Description': $("#Description").val(),
+                           'FechaCreacion': $("#FechaCreacion").val(),
+                           'FechaModificacion':$("#FechaModificacion").val(),
+                           'UsuarioCreacion':$("#UsuarioCreacion").val(),
+                           'UsuarioModificacion':$("#UsuarioModificacion").val(),
+            '_Dimensions': displayedDimensions
+            };
+
+           // console.log(JSON.stringify(dataObject));
+            //var form = $("#frmNumeracion");
+           // form.validate();
+
+        var validator = $("#frmDimensions").data("kendoValidator");
+                 var status = $(".status");
+
+
+                if (validator.validate()) {
+
+                    $.ajax({
+                        url: '@Url.Action("SaveDimensions", "Dimensions")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+
+                            //notification.show({
+                            //    message: "Guardado correctamente!"
+                            //}, "upload-success");
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: 'Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+
+                            RefrescarGrid();
+
+                            $('#ModalDimensions').modal('hide');
+
+
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                            notification.show({
+                                title: "Validacion",
+                                message: textStatus + ": " + XMLHttpRequest.responseText
+                            }, "error");
+
+                        }
+                    });
+
+                }
+                else {
+                    status.text("Oops! There is invalid data in the form.")
+                        .removeClass("valid")
+                        .addClass("invalid");
+                }
+
+
+        $("#btnDimensions").show();
+        $("#btnDimensions").prop("disabled", false);
+    }
 </script>
