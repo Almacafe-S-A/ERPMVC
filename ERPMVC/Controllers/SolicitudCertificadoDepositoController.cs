@@ -247,6 +247,16 @@ namespace ERPMVC.Controllers
 
 
 
+        [HttpGet]
+        public ActionResult SFSolicitudCertificadoDeposito(Int64 id)
+        {
+
+            SolicitudCertificadoDepositoDTO _SolicitudCertificadoDepositoDTO = new SolicitudCertificadoDepositoDTO { NoCD = id, };
+
+            return View(_SolicitudCertificadoDepositoDTO);
+        }
+
+
 
     }
 }
