@@ -31,8 +31,8 @@ namespace ERPMVC.Controllers
             this.config = config;
             this._logger = logger;
         }
-
-        public IActionResult Dimensions()
+        // GET: Branch
+        public ActionResult Dimensions()
         {
             return View();
         }
@@ -46,7 +46,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Dimensions");///GetDimensions
+                var result = await _client.GetAsync(baseadress + "api/Dimensions/GetDimensions");///GetDimensions
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -78,7 +78,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Dimensions");
+                var result = await _client.GetAsync(baseadress + "api/Dimensions/GetDimensions");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
