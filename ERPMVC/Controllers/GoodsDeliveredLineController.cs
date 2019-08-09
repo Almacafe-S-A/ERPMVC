@@ -103,6 +103,36 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpPost("[controller]/[action]")]
+          //public async Task<ActionResult<GoodsDeliveredLine>> SetLinesInSession([FromBody]dynamic dto)
+          public async Task<ActionResult<GoodsDeliveredLine>> SetLinesInSession([FromBody]GoodsDeliveredLine _GoodsDeliveryAuthorizationLine)
+        {
+
+           
+           // GoodsDeliveredLine _GoodsDeliveryAuthorizationLine = new GoodsDeliveredLine();
+            try
+            {
+             //    _GoodsDeliveryAuthorizationLine = JsonConvert.DeserializeObject<GoodsDeliveredLine>(dto);
+                List <GoodsDeliveredLine> _GoodsDeliveredLine = new List<GoodsDeliveredLine>();
+                _GoodsDeliveredLine = JsonConvert.DeserializeObject<List<GoodsDeliveredLine>>(HttpContext.Session.GetString("listadoproductosGoodsDelivered"));
+
+                if (_GoodsDeliveredLine == null) { _GoodsDeliveredLine = new List<GoodsDeliveredLine>(); }
+                if(_GoodsDeliveryAuthorizationLine!=null)
+                _GoodsDeliveredLine.Add(_GoodsDeliveryAuthorizationLine);
+                //  GoodsDeliveryAuthorizationLine _listGoodsDeliveryAuthorizationLine = new GoodsDeliveryAuthorizationLine();
+                // string serialzado = JsonConvert.SerializeObject(_GoodsDeliveryAuthorizationLine).ToString();
+                HttpContext.Session.SetString("listadoproductosGoodsDelivered", JsonConvert.SerializeObject(_GoodsDeliveredLine).ToString());
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_GoodsDeliveryAuthorizationLine);
+        }
+
 
         [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> GetGoodsDeliveredLineByGoodsDeliveredId([DataSourceRequest]DataSourceRequest request, GoodsDeliveredLine _GoodsDeliveredLinep)
@@ -146,7 +176,7 @@ namespace ERPMVC.Controllers
                     List<GoodsDeliveredLine> _existelinea = new List<GoodsDeliveredLine>();
                     if (HttpContext.Session.GetString("listadoproductosGoodsDelivered") != "")
                     {
-                        _GoodsDeliveredLine = JsonConvert.DeserializeObject<List<GoodsDeliveredLine>>(HttpContext.Session.GetString("listadoproductoscertificadodeposito"));
+                        _GoodsDeliveredLine = JsonConvert.DeserializeObject<List<GoodsDeliveredLine>>(HttpContext.Session.GetString("listadoproductosGoodsDelivered"));
                         _existelinea = _GoodsDeliveredLine.Where(q => q.GoodsDeliveredLinedId == _GoodsDeliveredLinep.GoodsDeliveredLinedId).ToList();
                     }
 
@@ -180,6 +210,8 @@ namespace ERPMVC.Controllers
                             obj.Description = _GoodsDeliveredLinep.Description;
 
                         }
+
+                        HttpContext.Session.SetString("listadoproductosGoodsDelivered", JsonConvert.SerializeObject(_GoodsDeliveredLine).ToString());
 
                     }
 

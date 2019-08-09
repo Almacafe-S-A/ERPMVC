@@ -87,6 +87,7 @@ namespace ERPMVC.Models
 
         public double PesoNeto2 { get; set; }
 
+        public Int64 GoodsDeliveryAuthorizationId { get; set; }
 
 
         [Display(Name = "Comentarios")]

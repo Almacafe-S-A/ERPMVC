@@ -214,12 +214,15 @@ namespace ERPMVC.Controllers
 
 
 
-        [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<GoodsDelivered>> SaveGoodsDelivered([FromBody]GoodsDelivered _GoodsDelivered)
+             [HttpPost("[controller]/[action]")]
+             public async Task<ActionResult<GoodsDelivered>> SaveGoodsDelivered([FromBody]GoodsDelivered _GoodsDelivered)
+            // public async Task<ActionResult<GoodsDelivered>> SaveGoodsDelivered([FromBody]dynamic dto)
         {
 
+            //GoodsDelivered _GoodsDelivered = new GoodsDelivered();
             try
             {
+              //  _GoodsDelivered = JsonConvert.DeserializeObject<GoodsDelivered>(dto.ToString());
                 GoodsDelivered _listGoodsDelivered = new GoodsDelivered();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();

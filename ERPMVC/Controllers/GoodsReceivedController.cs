@@ -375,8 +375,8 @@ namespace ERPMVC.Controllers
                         {
                             return await Task.Run(() => BadRequest("No se genero el documento!"));
                         }
-
-                        return _GoodsReceived;
+                        
+                        return Ok(_GoodsReceived);
                     }
                     else
                     {
