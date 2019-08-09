@@ -92,6 +92,58 @@ namespace ERPMVC.Controllers
             return await Task.Run(() => Json(_customers));
         }
 
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<Customer>> SaveCustomer([FromBody]Customer _Customer)
+        {
+
+            try
+            {
+                Customer _listCustomer = new Customer();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Customer/GetCustomerById/" + _Customer.CustomerId);
+                string valorrespuesta = "";
+                _Customer.FechaModificacion = DateTime.Now;
+                _Customer.UsuarioModificacion = HttpContext.Session.GetString("user");
+                if (result.IsSuccessStatusCode)
+                {
+
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _listCustomer = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
+                }
+
+                if (_listCustomer.CustomerId == 0)
+                {
+                    _Customer.FechaCreacion = DateTime.Now;
+                    _Customer.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Post(_Customer);
+                    var value = (insertresult.Result as ObjectResult).Value;
+                    _Customer = ((Customer)(value));
+                    if (_Customer.CustomerId == 0)
+                    {
+                        return await Task.Run(() => BadRequest("No se genero el documento!"));
+                    }
+                }
+                else
+                {
+                    _Customer.UsuarioCreacion = _listCustomer.UsuarioCreacion == "" ? HttpContext.Session.GetString("user") : _listCustomer.UsuarioCreacion;
+                    _Customer.FechaCreacion = _listCustomer.FechaCreacion==null?DateTime.Now: _listCustomer.FechaCreacion;
+
+                    var updateresult = await Put(_Customer.CustomerId, _Customer);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_Customer);
+        }
+
         // GET: Customer/Details/5
         public async Task<ActionResult> Details(Int64 CustomerId)
         {
@@ -296,7 +348,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PutAsJsonAsync(baseadress + "api/Customer/Update", _customer);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Customer/Update", _customer);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {

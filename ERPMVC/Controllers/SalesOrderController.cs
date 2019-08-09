@@ -389,13 +389,14 @@ namespace ERPMVC.Controllers
                                 //var template = "Dear @Model.Name, You are totally @Model.Compliment. Ya que el nombre se encontro en los listados";
                                 var email = Email
                                     .From(_config.Value.emailsender)
-                                    .To("freddy.chinchilla@bi-dss.com")
-                                    .To("freddys18@yahoo.com")
-                                    //.To("mperez@almacafehn.com")
-                                    //  .To("jr@almacafehn.com")
-                                    //.To("informatica@almacafehn.com")                                 
-                                    // .To("gerencia@almacafehn.com")
-                                    .Subject($"La cotización {resultado.SalesOrderId} fue {_SalesOrder.Estado} " +
+                                     .To("freddy.chinchilla@bi-dss.com")
+                                     .To("freddys18@yahoo.com")
+                                     .To("cumplimiento@almacafehn.com")                                    
+                                     .To("informatica@almacafehn.com")                                 
+                                     .To("gerencia@almacafehn.com")
+                                     //.To("mperez@almacafehn.com")
+                                     //  .To("jr@almacafehn.com")
+                                     .Subject($"La cotización {resultado.SalesOrderId} fue {_SalesOrder.Estado} " +
                                               $"por {_SalesOrder.UsuarioCreacion} !")
                                             .Body(url)
                                      .UsingTemplateFromFile($"{completepath}", new
@@ -406,7 +407,6 @@ namespace ERPMVC.Controllers
                                          Fecha = DateTime.Now.ToString("dd/MM/yyyy") + " © BI.Todos los derechos reservados.",
                                      })
 
-
                                     //.UsingTemplateFromEmbedded("MailTemplate.Page1.cshtml",
                                     //   new 
                                     //   {
@@ -416,10 +416,6 @@ namespace ERPMVC.Controllers
                                     //       Fecha =DateTime.Now.ToString("dd/MM/yyyy") +" © BI.Todos los derechos reservados.",
                                     //   },                                      
                                     //      Assembly.Load("MailTemplate"))
-
-
-
-
                                     //  .Body(resultview)                                     
                                     //.UsingTemplate(template)                                  
                                     .SendAsync();

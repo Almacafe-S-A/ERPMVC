@@ -26,9 +26,9 @@ namespace ERPMVC.Models
         [Display(Name = "Ciudad")]
         public string City { get; set; }
 
-        [Display(Name = "Estado")]
+        [Display(Name = "Departamento")]
         public string State { get; set; }
-        [Display(Name = "Zip Code")]
+        [Display(Name = "Codigo Zip")]
         public string ZipCode { get; set; }
 
         [Display(Name = "Teléfono")]

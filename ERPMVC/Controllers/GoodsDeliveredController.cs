@@ -319,7 +319,7 @@ namespace ERPMVC.Controllers
 
             }
             catch (Exception ex)
-            {
+            { 
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
