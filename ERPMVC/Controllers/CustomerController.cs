@@ -326,6 +326,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _customer = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
+
                 }
 
             }

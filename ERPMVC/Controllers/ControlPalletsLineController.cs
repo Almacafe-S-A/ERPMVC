@@ -111,7 +111,7 @@ namespace ERPMVC.Controllers
                 else
                 {
                     List<ControlPalletsLine> _existelinea = new List<ControlPalletsLine>();
-                    if (HttpContext.Session.GetString("listadoproductospallet") != "")
+                    if (HttpContext.Session.GetString("listadoproductospallet") != "" && HttpContext.Session.GetString("listadoproductospallet")!=null)
                     {
                         _ControlPalletsLine = JsonConvert.DeserializeObject<List<ControlPalletsLine>>(HttpContext.Session.GetString("listadoproductospallet"));
                         _existelinea = _ControlPalletsLine.Where(q => q.ControlPalletsLineId == _ControlPalletsLinep.ControlPalletsLineId).ToList();

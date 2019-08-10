@@ -47,6 +47,40 @@ namespace ERPMVC.Models
 
         public string Estado { get; set; }
 
+
+        [Display(Name = "Grupo económico")]
+        public string GrupoEconomico { get; set; }
+
+        [Display(Name = "Monto de activos")]
+        public double MontoActivos { get; set; }
+
+        [Display(Name = "Ingresos anuales")]
+
+     
+        public double MontoIngresosAnuales { get; set; }
+
+        [Display(Name = "Proveedor 1")]
+        public string Proveedor1 { get; set; }
+
+        [Display(Name = "Proveedor 2")]
+        public string Proveedor2 { get; set; }
+
+        [Display(Name = "Cliente pasara a recogerla a las oficinas de ALMACAFE")]
+        public bool ClienteRecoger { get; set; }
+
+        [Display(Name = "Enviarla con el mensajero")]
+        public bool EnviarlaMensajero { get; set; }
+
+        [Display(Name = "Dirección de envío con puntos de referencia")]
+        public string DireccionEnvio { get; set; }
+
+        [Display(Name = "Articulos pertenecen a la empresa u otra organización")]
+        public string PerteneceEmpresa { get; set; }
+
+        [Display(Name = "Confirmación por correo")]
+        public bool ConfirmacionCorreo { get; set; }
+
+
         [Required]
         public string UsuarioCreacion { get; set; }
 
