@@ -535,6 +535,8 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
+                     
+
                     _CertificadoDeposito = JsonConvert.DeserializeObject<List<CertificadoDeposito>>(valorrespuesta);
                     _CertificadoDeposito = (from c in _CertificadoDeposito
                                             select new CertificadoDeposito
@@ -544,6 +546,16 @@ namespace ERPMVC.Controllers
                                                 CustomerId = c.CustomerId,
                                             }).ToList();
 
+                    _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    result = await _client.GetAsync(baseadress + "api/EndososCertificados/GetCertificadoDeposito");
+                    valorrespuesta = "";
+                    //if (result.IsSuccessStatusCode)
+                    //{
+                    //    List<Int64> _endosos = 
+
+                    //}
+                
                 }
             }
             catch (Exception ex)

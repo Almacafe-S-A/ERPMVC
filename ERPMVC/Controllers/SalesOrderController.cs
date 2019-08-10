@@ -616,6 +616,8 @@ namespace ERPMVC.Controllers
                     string baseadress = _config.Value.urlbase;
                     HttpClient _client = new HttpClient();
 
+                    _SalesOrder.FechaCreacion = DateTime.Now;
+                    _SalesOrder.UsuarioCreacion = HttpContext.Session.GetString("user");
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                     var result = await _client.PostAsJsonAsync(baseadress + "api/SalesOrder/Insert", _SalesOrder);
 

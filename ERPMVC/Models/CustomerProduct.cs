@@ -21,10 +21,10 @@ namespace ERPMVC.Models
         [Display(Name = "Producto")]
         public string SubProductName { get; set; }
 
-        [Display(Name = "Producto")]
+        [Display(Name = "Saldo Certificado")]
         public double SaldoProductoCertificado { get; set; }
 
-        [Display(Name = "Producto")]
+        [Display(Name = "Saldo")]
         public double SaldoProductoTotal { get; set; }
 
         [Display(Name = "Activo/Inactivo ")]
