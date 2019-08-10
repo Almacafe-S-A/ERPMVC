@@ -121,7 +121,7 @@ namespace ERPMVC.Controllers
 
                 if (_Dimensions == null) { _Dimensions = new Models.Dimensions(); }
 
-                if (_DimensionsP.Num == "000")
+                if (_DimensionsP.Num == "")
                 {
                     _Dimensions.FechaCreacion = DateTime.Now;
                     _Dimensions.UsuarioCreacion = HttpContext.Session.GetString("user");
@@ -213,7 +213,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPut("DimensionsId")]
-        public async Task<IActionResult> Update(String Num, Dimensions _Dimensions)
+        public async Task<IActionResult> Update(string DimensionsId, Dimensions _Dimensions)
         {
             try
             {
