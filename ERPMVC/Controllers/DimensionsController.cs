@@ -119,10 +119,11 @@ namespace ERPMVC.Controllers
                     _Dimensions = JsonConvert.DeserializeObject<Dimensions>(valorrespuesta);
                 }
 
-                if (_Dimensions == null) { _Dimensions = new Models.Dimensions(); }
+               // if (_Dimensions == null) { }
 
-                if (_DimensionsP.Num == "")
+                if (_Dimensions == null)
                 {
+                    _Dimensions = new Models.Dimensions();
                     _Dimensions.FechaCreacion = DateTime.Now;
                     _Dimensions.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_DimensionsP);
