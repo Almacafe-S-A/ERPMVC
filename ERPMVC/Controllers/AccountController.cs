@@ -54,7 +54,7 @@ namespace ERPMVC.Controllers
             try
             {
 
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
+                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: true);
 
                 var res = HttpContext.User.Identity.IsAuthenticated;
                 string baseadress = config.Value.urlbase;

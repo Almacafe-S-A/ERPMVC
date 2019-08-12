@@ -403,6 +403,7 @@ namespace ERPMVC.Controllers
                 _SubProductp.UsuarioModificacion = HttpContext.Session.GetString("user");
                 _SubProductp.FechaCreacion = DateTime.Now;
                 _SubProductp.FechaModificacion = DateTime.Now;
+                _SubProduct.ProductName = _SubProduct.ProductName.ToUpper();
                 var result = await _client.PostAsJsonAsync(baseadress + "api/SubProduct/Insert", _SubProduct);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)

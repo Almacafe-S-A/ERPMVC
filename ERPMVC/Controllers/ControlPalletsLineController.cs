@@ -34,7 +34,9 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwControlPalletsLine(Int64 Id = 0)
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwControlPalletsDetailMant([FromBody]ControlPalletsLine _ControlPalletsLinep)
         {
             ControlPalletsLine _ControlPalletsLine = new ControlPalletsLine();
             try
@@ -42,7 +44,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ControlPalletsLine/GetControlPalletsLineById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/ControlPalletsLine/GetControlPalletsLineById/" + _ControlPalletsLinep.ControlPalletsLineId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -64,7 +66,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_ControlPalletsLine);
+            return PartialView("~/Views/ControlPallets/pvwControlPalletsDetailMant.cshtml", _ControlPalletsLine);
 
         }
 

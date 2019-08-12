@@ -483,34 +483,43 @@ namespace ERPMVC.Controllers
                     CustomerContract _customercontract = new CustomerContract();
                     _customercontract.SalesOrderId = _SalesOrderp.SalesOrderId;
 
-                    _customercontract.UsedArea = _SalesOrdermodel.SalesOrderLines
-                      .Where(q => q.SubProductName.Contains("Almacenaje")).Select(q => q.Price).FirstOrDefault();
+                    try
+                    {
+                        _customercontract.UsedArea = _SalesOrdermodel.SalesOrderLines
+                    .Where(q => q.SubProductName.Contains("Almacenaje")).Select(q => q.Price).FirstOrDefault();
 
-                    _customercontract.UnitOfMeasureId = _SalesOrdermodel.SalesOrderLines
-                      .Where(q => q.SubProductName.Contains("Almacenaje")).Select(q => q.UnitOfMeasureId).FirstOrDefault();
+                        _customercontract.UnitOfMeasureId = _SalesOrdermodel.SalesOrderLines
+                          .Where(q => q.SubProductName.Contains("Almacenaje")).Select(q => q.UnitOfMeasureId).FirstOrDefault();
 
-                    _customercontract.UnitOfMeasureName = _SalesOrdermodel.SalesOrderLines
-                    .Where(q => q.SubProductName.Contains("Almacenaje")).Select(q => q.UnitOfMeasureName).FirstOrDefault();
+                        _customercontract.UnitOfMeasureName = _SalesOrdermodel.SalesOrderLines
+                        .Where(q => q.SubProductName.Contains("Almacenaje")).Select(q => q.UnitOfMeasureName).FirstOrDefault();
 
-                    _customercontract.ValueSecure = _SalesOrdermodel.SalesOrderLines
-                           .Where(q => q.SubProductName.Contains("Seguro")).Select(q => q.Price).FirstOrDefault();
+                        _customercontract.ValueSecure = _SalesOrdermodel.SalesOrderLines
+                               .Where(q => q.SubProductName.Contains("Seguro")).Select(q => q.Price).FirstOrDefault();
 
-                    _customercontract.ValueBascula = _SalesOrdermodel.SalesOrderLines
-                                           .Where(q => q.SubProductName.Contains("Bascula")).Select(q => q.Price).FirstOrDefault();
-                    _customercontract.BandaTransportadora = _SalesOrdermodel.SalesOrderLines
-                                                   .Where(q => q.SubProductName.Contains("Banda")).Select(q => q.Price).FirstOrDefault();
-                    _customercontract.MontaCargas = _SalesOrdermodel.SalesOrderLines
-                                                 .Where(q => q.SubProductName.Contains("Monta carga")).Select(q => q.Price).FirstOrDefault();
-                    _customercontract.Papeleria = _SalesOrdermodel.SalesOrderLines
-                             .Where(q => q.SubProductName.Contains("Papeleria")).Select(q => q.Price).FirstOrDefault();
-                    _customercontract.ExtraHours = _SalesOrdermodel.SalesOrderLines
-                            .Where(q => q.SubProductName.Contains("Horas Extras")).Select(q => q.Price).FirstOrDefault();
+                        _customercontract.ValueBascula = _SalesOrdermodel.SalesOrderLines
+                                               .Where(q => q.SubProductName.Contains("Bascula")).Select(q => q.Price).FirstOrDefault();
+                        _customercontract.BandaTransportadora = _SalesOrdermodel.SalesOrderLines
+                                                       .Where(q => q.SubProductName.Contains("Banda")).Select(q => q.Price).FirstOrDefault();
+                        _customercontract.MontaCargas = _SalesOrdermodel.SalesOrderLines
+                                                     .Where(q => q.SubProductName.Contains("Monta carga")).Select(q => q.Price).FirstOrDefault();
+                        _customercontract.Papeleria = _SalesOrdermodel.SalesOrderLines
+                                 .Where(q => q.SubProductName.Contains("Papeleria")).Select(q => q.Price).FirstOrDefault();
+                        _customercontract.ExtraHours = _SalesOrdermodel.SalesOrderLines
+                                .Where(q => q.SubProductName.Contains("Horas Extras")).Select(q => q.Price).FirstOrDefault();
 
-                    _customercontract.FoodPayment = _SalesOrdermodel.SalesOrderLines
-                           .Where(q => q.SubProductName.Contains("Alimentacion")).Select(q => q.Price).FirstOrDefault();
+                        _customercontract.FoodPayment = _SalesOrdermodel.SalesOrderLines
+                               .Where(q => q.SubProductName.Contains("Alimentacion")).Select(q => q.Price).FirstOrDefault();
 
-                    _customercontract.Transport = _SalesOrdermodel.SalesOrderLines
-                         .Where(q => q.SubProductName.Contains("Transporte")).Select(q => q.Price).FirstOrDefault();
+                        _customercontract.Transport = _SalesOrdermodel.SalesOrderLines
+                             .Where(q => q.SubProductName.Contains("Transporte")).Select(q => q.Price).FirstOrDefault();
+                    }
+                    catch (Exception)
+                    {
+                        return await Task.Run(() => BadRequest("Asegurese que la cotización tenga los elementos necesarios para generar un contrato  como: Almacenaje,Seguro,Bascula,Banda,Monta carga,Papeleria,Horas Extras,Alimentación,Transporte"));
+
+                    }
+                  
 
 
                     _logger.LogInformation($"Despues del transporte");
