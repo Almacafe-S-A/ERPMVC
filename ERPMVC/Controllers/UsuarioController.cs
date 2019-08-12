@@ -187,6 +187,10 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                _usuario.UsuarioCreacion = HttpContext.Session.GetString("token");
+                _usuario.FechaCreacion = DateTime.Now;
+                _usuario.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _usuario.UserName = _usuario.Email;
                 var result = await _client.PostAsJsonAsync(baseadress + "api/Usuario/PostUsuario", _usuario);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -296,10 +300,12 @@ namespace ERPMVC.Controllers
             {
                 // TODO: Add insert logic here
                 string baseadress = config.Value.urlbase;
+                _usuario.UserName = _usuario.Email;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.PutAsJsonAsync(baseadress + "api/Usuario/PutUsuario", _usuario);
                 string valorrespuesta = "";
+
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());

@@ -501,14 +501,73 @@
                                     </div>
 
                                     <div class="row">
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <div class="form-group">
                                                 <label asp-for="Name" class="control-label" style="width: 100%;"></label>
                                                 <input type="text" id="Name" required class="form-control" style="min-width:100%;" asp-for="Name" />
                                             </div>
                                         </div>
 
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
+                                            <script>
+                                                      function valueMapperWB(options) {
+                                                          $.ajax({
+                                                              url: "@Url.Action("Orders_ValueMapper", "Boleto_Ent")",
+                                                              data: convertValuesWB(options.value),
+                                                              success: function (data) {
+                                                                  options.success(data);
+                                                              }
+                                                          });
+                                                      }
+
+                                                      function convertValuesWB(value) {
+                                                          var data = {};
+
+                                                          value = $.isArray(value) ? value : [value];
+
+                                                          for (var idx = 0; idx < value.length; idx++) {
+                                                              data["values[" + idx + "]"] = value[idx];
+                                                          }
+
+                                                          return data;
+                                                    }
+
+                                                    function CallPesaje() {
+                                                        $("#WeightBallot").data("kendoNumericTextBox").value($("#WeightBallotddl").val());
+                                                        $("#WeightBallot").data("kendoNumericTextBox").trigger('change');
+                                                        GetBoletaPeso();
+                                                    }
+                                            </script>
+                                            <label asp-for="WeightBallot" class="control-label" style="width: 100%;"></label>
+                                            @(Html.Kendo().DropDownList()
+                                                                       .Name("WeightBallotddl")
+                                                                       .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                                                                       .OptionLabel("Buscar")
+                                                                       .DataTextField("observa_e")
+                                                                       .DataValueField("clave_e")
+                                                                       .HtmlAttributes(new { style = "width:100%" })
+                                                                       .Height(290)
+                                                                       .Events(e =>
+                                                                       {
+                                                                           e.Change("CallPesaje");
+                                                                                                           // e.Filtering("applyFilterCustomer");
+                                                                                                       })
+                                                                       .AutoBind(true)
+                                                                       .DataSource(source =>
+                                                                       {
+                                                                           source.Ajax()
+                                                                           .PageSize(80)
+
+                                                                           .Read("Virtualization_Read", "Boleto_Ent");
+                                                                       })
+                                                                       .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapperWB"))
+                                            )
+
+                                            <span asp-validation-for="SubProductId" class="text-danger"></span>
+                                        </div>
+
+
+                                        <div class="col-md-3">
                                             <div class="form-group">
                                                 <script>
                                                     function GetBoletaPeso() {
@@ -563,6 +622,10 @@
 
                                                                 }
 
+
+                                                                $("#Name").val(resultados.conductor);
+                                                                $("#Placa").val(resultados.placas);
+
                                                                 //console.log(resultados.Boleto_Sal.peso_s);
                                                                 if (resultados.Boleto_Sal.peso_s > resultados.peso_e) {
 
@@ -598,7 +661,7 @@
                                             </div>
 
                                         </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <div class="form-group">
                                                 <label asp-for="Placa" class="control-label" style="width: 100%;"></label>
                                                 <input type="text" id="Placa" required class="form-control" style="min-width:100%;" asp-for="Placa" />

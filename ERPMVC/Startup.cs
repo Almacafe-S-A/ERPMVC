@@ -4,6 +4,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Net.Http;
 using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
@@ -99,12 +100,15 @@ namespace ERPMVC
             services.AddScoped<IViewRenderService, ViewRenderService>();
             services.AddScoped<ViewRender, ViewRender>();
 
+            var value = (GetQuantityFailedRequest().Result as Int32?);
+            int maxfailed =  value==null?3:value.Value ;
 
-            services.AddIdentity<ApplicationUser, ApplicationRole>(
+                services.AddIdentity<ApplicationUser, ApplicationRole>(
                   options =>
                   {
-                      options.Lockout.MaxFailedAccessAttempts = 6;
+                      options.Lockout.MaxFailedAccessAttempts = maxfailed;
 
+                    
                       options.Password.RequiredLength = 6;
                       options.Password.RequiredUniqueChars = 3;
                       options.Password.RequireLowercase = false;
@@ -168,6 +172,41 @@ namespace ERPMVC
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
             services.AddScoped<IAuthorizationHandler, HasScopeHandler>();
+        }
+
+        private async Task<int> GetQuantityFailedRequest()
+        {
+            int maxaccess = 0;
+            try
+            {               
+                var config = Configuration.GetSection("AppSettings").Get<MyConfig>();
+                string baseadress = config.urlbase;
+                HttpClient _client = new HttpClient();
+                var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = config.UserEmail, Password = config.UserPassword });
+                if (resultlogin.IsSuccessStatusCode)
+                {
+                    string webtoken = await (resultlogin.Content.ReadAsStringAsync());
+                    UserToken _userToken = JsonConvert.DeserializeObject<UserToken>(webtoken);
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + _userToken.Token);
+                    var result = await _client.GetAsync(baseadress + "api/ElementoConfiguracion/GetElementoConfiguracionById/" + 15);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        string res = await result.Content.ReadAsStringAsync();
+                        ElementoConfiguracion _elc = JsonConvert.DeserializeObject<ElementoConfiguracion>(res);
+                        if (_elc == null) { _elc = new ElementoConfiguracion { Valordecimal = 0 }; }
+                        maxaccess = Convert.ToInt32(_elc.Valordecimal);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                maxaccess = 0;
+            }
+           
+
+            return maxaccess;
+
         }
 
         //// This method gets called by the runtime. Use this method to add services to the container.
