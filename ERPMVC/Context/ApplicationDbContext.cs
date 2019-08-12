@@ -39,11 +39,11 @@ namespace ERP.Contexts
 
 
 
-        public DbSet<ERPMVC.Models.Dimensions> Dimensions { get; set; }
+        //public DbSet<ERPMVC.Models.Dimensions> Dimensions { get; set; }
 
 
 
-        public DbSet<ERPMVC.DTO.DimensionsDTO> DimensionsDTO { get; set; }
+        //public DbSet<ERPMVC.DTO.DimensionsDTO> DimensionsDTO { get; set; }
 
 
         
