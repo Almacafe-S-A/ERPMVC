@@ -45,7 +45,8 @@ namespace ERPMVC.Controllers
             return PartialView();
         }
 
-        public async Task<ActionResult> pvwCustomerDocument(Int64 Id = 0)
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> pvwCustomerDocument([FromBody]CustomerDocument _CustomerDocumentp)
         {
             CustomerDocument _CustomerDocument = new CustomerDocument();
             try
@@ -53,7 +54,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CustomerDocument/GetCustomerDocumentById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/CustomerDocument/GetCustomerDocumentById/" + _CustomerDocumentp.CustomerDocumentId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -66,6 +67,7 @@ namespace ERPMVC.Controllers
                 {
                     _CustomerDocument = new CustomerDocument();
                 }
+
             }
             catch (Exception ex)
             {
@@ -164,11 +166,10 @@ namespace ERPMVC.Controllers
                 foreach (var file in files)
                 {
                     FileInfo info = new FileInfo(file.FileName);
-                    if (info.Extension.Equals(".pdf") || info.Extension.Equals(".jpg") ||
-                        info.Extension.Equals(".xls") || info.Extension.Equals(".xlsx"))
-                    {
-
-                      
+                    if (info.Extension.Equals(".pdf") || info.Extension.Equals(".jpg") 
+                        || info.Extension.Equals(".png")
+                       || info.Extension.Equals(".xls") || info.Extension.Equals(".xlsx"))
+                    {                      
 
                         _CustomerDocument.FechaModificacion = DateTime.Now;
                         _CustomerDocument.UsuarioModificacion = HttpContext.Session.GetString("user");
@@ -183,6 +184,7 @@ namespace ERPMVC.Controllers
                         if (_listCustomerDocument.CustomerDocumentId == 0)
                         {
                             _CustomerDocument.FechaCreacion = DateTime.Now;
+                            _CustomerDocument.DocumentName = file.FileName;
                             _CustomerDocument.UsuarioCreacion = HttpContext.Session.GetString("user");
                             var insertresult = await Insert(_CustomerDocument);
                             var value = (insertresult.Result as ObjectResult).Value;
