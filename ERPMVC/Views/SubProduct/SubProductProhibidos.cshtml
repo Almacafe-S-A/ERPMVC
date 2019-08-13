@@ -1,0 +1,145 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "Sub productos prohibidos";
+
+}
+
+<script>
+
+    function onsave(e) {
+        //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+        // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+
+    function caidata(data) {
+        data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+        data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    }
+
+    function AddSubProduct() {
+        $('#ModalSubProduct').find(':input').not(':submit').val('');
+        $('#ModalSubProduct').modal('show');
+        $("#SubProductId").val('0');
+    }
+
+
+         function EditSubProduct(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+             var dataObject = {
+                 SubproductId: dataItem.SubproductId,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddSubProduct", "SubProduct")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                   // console.log('success', result)
+                    $("#numSubProduct").html('');
+                    $("#numSubProduct").html(result);
+
+                    //$("#btnCAI").hide();
+                    $('#ModalSubProduct').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+         }
+
+
+</script>
+
+<h3 class="text-themecolor">Sub productos prohibidos</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.SubProduct>
+                          ()
+
+                            .Name("gridSubProduct")
+
+                            .Columns(columns =>
+                            {
+                                columns.Bound(p => p.SubproductId).Width(150);
+                                columns.Bound(p => p.ProductName).Width(170);
+                                columns.Bound(p => p.ProductCode).Width(170);
+                                columns.Bound(p => p.Description).Width(200);
+                    //columns.Bound(p => p.Balance).Width(200);
+                    //columns.Bound(p => p.BagBalance).Width(200);
+                    columns.Bound(p => p.UnitOfMeasureId).Width(150);
+                                columns.Bound(p => p.ProductTypeName).Width(150);
+                                columns.Command(command =>
+                                {
+                        //command.Custom("Ver detalles").Click("Detalles");
+                        command.Custom("Editar").Click("EditSubProduct");
+                                    command.Destroy();
+                                }).Width(250);
+
+                            })
+
+
+                            .ToolBar(tools =>
+                            {
+
+                    //tools.Create();
+                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                      .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddSubProduct()" });
+                                tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                                tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                            })
+                            .Editable(e => e.Mode(GridEditMode.PopUp))
+                            .Sortable()
+                            .Pageable()
+                            .Filterable()
+                            .Scrollable()
+                            .Pdf(pdf => pdf.FileName("SubProductReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                            .Excel(excel => excel.FileName("SubProductReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                            .DataSource(dataSource =>
+                            dataSource
+                            .WebApi()
+
+                            .ServerOperation(true)
+                            .Model(model =>
+                            {
+                                model.Id(p => p.SubproductId);
+                                model.Field(p => p.SubproductId).Editable(false);
+
+
+                            })
+                            .Events(events => events.Error("error_handler"))
+                            .Read(read => read.Action("GetSubProductoByTipoGrid", "SubProduct").Data("ProductType"))
+                           //.Create(create => create.Action("Insert", "Product").Type(HttpVerbs.Post))
+                           //.Update(update => update.Action("Update", "Product").Type(HttpVerbs.Post))
+                           .Destroy(destroy => destroy.Action("Delete", "SubProduct").Type(HttpVerbs.Post))
+                            )
+                            .Events(e =>
+                            {
+                                e.Save("onsave");
+
+                            })
+)
+
+<script>
+    function ProductType() {
+        return { ProductTypeId:2 };
+    }
+</script>
+
+
+<div id="numSubProduct">
+    @await Html.PartialAsync("pvwAddSubProduct", new ERPMVC.DTO.SubProductDTO { SubproductId = 0 })
+</div>
+

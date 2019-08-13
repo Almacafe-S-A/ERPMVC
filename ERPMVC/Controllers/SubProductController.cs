@@ -50,6 +50,13 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpGet("[controller]/[action]")]
+        public IActionResult SubProductProhibidos()
+        {
+            return View();
+        }
+
+
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
