@@ -265,14 +265,16 @@ namespace ERPMVC.Controllers
                     else
                     {
 
-                        _usuario.PasswordHash = await result.Content.ReadAsStringAsync() + " El password debe tener mayusculas y minusculas!";
+                     //   _usuario.PasswordHash = await result.Content.ReadAsStringAsync() + " El password debe tener mayusculas y minusculas!";
                         string error = await result.Content.ReadAsStringAsync();
-                        return this.Json(new DataSourceResult
-                        {
-                            //Data=  _usuario ,
-                            Errors = $"Ocurrio un error:{error} El password debe tener mayusculas y minusculas!"
+                        return await Task.Run(() => BadRequest($"{error}"));
 
-                        });
+                        //return this.Json(new DataSourceResult
+                        //{
+                        //    //Data=  _usuario ,
+                        //    Errors = $"Ocurrio un error:{error} El password debe tener mayusculas y minusculas!"
+
+                        //});
 
                         // return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
                         //return await Task.Run(() => BadRequest($"Ocurrio un error:{result.Content.ReadAsStringAsync()} El password debe tener mayusculas y minusculas!"));

@@ -81,6 +81,54 @@
         });
     }
 
+
+    function Descargar(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        @*var dataObject = { 'tpath' : "test" };
+         $.ajax({
+            url: '@Url.Action("Download", "Download")',
+            method: 'GET',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: (dataObject),
+             success: function (result) {
+                 
+                //  saveAs(result, "save");
+                //$("#CustomerDocument").html('');
+                //$("#CustomerDocument").html(result);             
+                //$('#myModalCustomerDocumentUpload').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });*@
+
+       // console.log(dataItem.Path);
+         var dataObject = {
+             'tpath': dataItem.Path//"C:\\Users\\tomaturnos\\Desktop\\Old\\Projects\\BI\\ERP\\ERPMVC\\ERPMVC\\wwwroot\\ContratosTemplate\\Proceso.pdf"
+          };
+
+          var ajax = new XMLHttpRequest();
+         ajax.open("Post", '@Url.Action("Download", "Download")' , true);
+          ajax.responseType = "blob";
+          ajax.setRequestHeader("Content-Type", "application/json");
+                            ajax.onreadystatechange = function () {
+                                if (this.readyState == 4) {
+                                    //debugger; 
+                                    var blob = new Blob([this.response], { type: "application/vnd.ms-excel;charset=charset=utf-8" });
+                                   // var blob = new  Blob([this.response], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=charset=utf-8" });
+                                    var fileName = dataItem.DocumentName;
+                                    saveAs(blob, fileName);
+                                    //application/octet-stream
+                                }
+        };
+        ajax.send(JSON.stringify(dataObject));
+
+
+    }
+
 </script>
 
 @(Html.Kendo().Grid<ERPMVC.Models.CustomerDocument>()
@@ -89,17 +137,19 @@
                       {
                           columns.Command(command =>
                           {
-                              command.Custom("Editar").Click("EditCustomerDocument");
-                  // command.Custom("Ver detalles").Click("Detalles");
-                  // command.Edit(); command.Destroy();
-              }).Width(170);
+                              command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCustomerDocument");
+                              command.Custom("Descargar").Text(" ").IconClass("fa fa-download").Click("Descargar");
+                              // command.Custom("Ver detalles").Click("Detalles");
+                              // command.Edit(); command.Destroy();
+                          }).Width(170);
                           columns.Bound(p => p.CustomerDocumentId).Width(100);
                           columns.Bound(p => p.CustomerId).Visible(false).Width(100);
                           columns.Bound(p => p.DocumentName).Width(150);
                           columns.Bound(p => p.DocumentTypeId).Width(100);
-                          columns.Bound(p => p.DocumentTypeName).Format("{0:dd/MM/yyyy}").Width(100);
-                          columns.Bound(p => p.FechaCreacion).Width(100);                    
-                          
+                          columns.Bound(p => p.DocumentTypeName).Width(100);
+                          columns.Bound(p => p.Path).Visible(false).Width(100);
+                          columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy}").Width(100);
+
                       })
                           .Filterable(f => f.Operators(o => o.ForString(s => s
                                                .Clear()
@@ -134,9 +184,9 @@
                                        ))
                       .ToolBar(tools =>
                       {
-              //tools.Create();
-              tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerArea();" });
+                          //tools.Create();
+                          tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerArea();" });
 
                           tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
                           tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
@@ -171,8 +221,8 @@
                       )
                         .Events(e =>
                         {
-                //e.Save("onsave");
-            })
+                            //e.Save("onsave");
+                        })
 )
 
 <div id="CustomerDocument">
