@@ -1,0 +1,173 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "PLAN CONTABLE";
+}
+
+<script>
+
+    function onsave(e) {
+     //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+       // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+    //function caidata(data) {
+      //  data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+        //data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    //}
+
+      function AddAccounting() {
+
+
+
+          $('#ModalAccounting').find(':input').not(':submit').val('');
+
+          $('#ModalAccounting').modal('show');
+          $("#AccountId").val('0');
+
+
+
+
+
+      }
+
+
+         function EditAccount(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+             var dataObject = {
+                 AccountId: dataItem.AccountId,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddAccounting", "Account")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumAccount").html('');
+                    $("#NumAccount").html(result);
+
+
+                    //$("#btnCAI").hide();
+                    $('#ModalAccounting').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+         }
+
+
+
+</script>
+
+<h3 class="text-themecolor">Plan Contable</h3>
+@(Html.Kendo().Grid<ERPMVC.Models.Account>
+                        ()
+                        .Name("gridNumeracionAccount")
+                        .Columns(columns =>
+                        {
+                            columns.Bound(p => p.AccountId).Width(100);
+                            columns.Bound(p => p.AccountCode).Title("Codigo de Cuenta").Width(250);
+                            columns.Bound(p => p.AccountName).Title("Nombre de Cuenta").Width(250);
+                            columns.Bound(p => p.ParentAccountId).Title("Codigo de Padre Contable ").Width(200);
+                            //columns.Bound(p => p.DimCode).Width(150);
+
+                            //columns.Bound(p => p.UsuarioCreacion).Width(250);
+                            //columns.Bound(p => p.UsuarioModificacion).Width(250);
+                            //columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy}").Width(450);
+                            //columns.Bound(p => p.FechaModificacion).Format("{0:dd/MM/yyyy}").Width(450);
+
+                            columns.Command(command =>
+                            {
+                                //command.Custom("Ver detalles").Click("Detalles");
+                                command.Custom("Editar").Click("EditAccount");
+                                //  command.Destroy();
+                            }).Width(250);
+
+                        })
+                            .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                   .Clear()
+                                                   .Contains("Contiene")
+                                                   .DoesNotContain("No contiene")
+                                                   .EndsWith("Termina con")
+                                                   .IsEqualTo("Es igual a")
+                                                   .IsNotEqualTo("No es igual a")
+                                                   .IsNull("Es nulo")
+                                                   .StartsWith("Inicia con")
+
+
+                                             )
+                                             .ForNumber(n => n
+                                               .Clear()
+                                               .IsEqualTo("Es igual a")
+                                               .IsGreaterThan("Es mayor que")
+                                               .IsLessThan("Es menor que")
+                                               .IsNull("Es nulo")
+                                               .IsLessThanOrEqualTo("Es menor o igual que")
+                                               .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                             )
+                                             .ForDate(d => d
+                                             .Clear()
+                                             .IsEqualTo("Es igual que")
+                                             .IsGreaterThan("Es mayor que")
+                                             .IsLessThan("Es menor que")
+                                             .IsLessThanOrEqualTo("Es menor o igual que")
+                                             .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                             .IsNotEqualTo("No es igual que")
+                                              )
+                                           ))
+                        .ToolBar(tools =>
+                        {
+                            // tools.Create();
+                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                   .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddAccounting()" });
+                            tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                            tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                        })
+                        .Editable(e => e.Mode(GridEditMode.PopUp))
+                        .Sortable()
+                        .Pageable()
+                        .Filterable()
+                        .Scrollable()
+                        .Pdf(pdf => pdf.FileName("AccountReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                            .Excel(excel => excel.FileName("AccountReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                        .DataSource(dataSource =>
+                            dataSource
+                            .WebApi()
+
+                            .ServerOperation(true)
+                            .Model(model =>
+                            {
+                                model.Id(p => p.AccountId);
+                                model.Field(p => p.AccountName).Editable(false);
+                                model.Field(p => p.ParentAccount).Editable(true);
+
+                            })
+                            .Events(events => events.Error("error_handler"))
+                            .Read(read => read.Action("GetAccount", "Account"))
+                            .Create(create => create.Action("Insert", "Account"))
+                            .Update(update => update.Action("Update", "Account", new { AccountId = "{0}" }).Type(HttpVerbs.Put))
+                     
+                        )
+                        .Events(e =>
+                        {
+                            e.Save("onsave");
+
+                        })
+)
+
+<div id="NumAccount">
+    @await Html.PartialAsync("pvwAddAccounting", new ERPMVC.DTO.AccountDTO { AccountId = 0 })
+</div>

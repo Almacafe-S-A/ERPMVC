@@ -1,0 +1,68 @@
+﻿
+
+@(Html.Kendo().Grid<ERPMVC.Models.PayrollEmployee>()
+                                  .Name("gridPlaEmp")
+                                  .Columns(columns =>
+                                  {
+                                      columns.Command(command =>
+                                      {
+                                          //command.Custom("Editar").Click("EditCotizacion");
+                                          command.Edit(); command.Destroy();
+                                      }).Width(250);
+
+                                      columns.Bound(p => p.IdPlanillaempleado).Title("Id").Width(150);
+                                      columns.Bound(p => p.IdEmpleado).Title("Empleado").Width(150);
+                                      columns.Bound(p => p.FechaIngreso).Format("{0:dd/MM/yyyy}").Title("Ingreso").Width(150);
+                                      columns.Bound(p => p.Estado).Title("Estado").Width(150);
+                                      columns.Bound(p => p.FechaIngreso).Format("{0:dd/MM/yyyy}").Title("Creación").Width(150);
+
+                                  })
+                                  .ToolBar(tools =>
+                                  {
+                                      //tools.Create();
+                                      //  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                      //             .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
+
+                                      tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                                      tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+                                  })
+                                   .Editable(e => e.Mode(GridEditMode.PopUp))
+                                    .Sortable()
+                                    .AutoBind(true)
+                                    .Pageable()
+                                    .Filterable()
+                                    .Scrollable()
+                                    // .ClientDetailTemplateId("template")
+                                    .Pdf(pdf => pdf.FileName("PayrollEmployeeReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                      .Excel(excel => excel.FileName("PayrollEmployeeReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                    //.Events(e=>e.Save("onsave"))
+                                    .DataSource(dataSource =>
+
+                                   dataSource
+                                   //.Ajax()
+                                   .WebApi()
+                                    .ServerOperation(true)
+                                    .Model(model =>
+                                    {
+                                        model.Id(p => p.IdPlanillaempleado);
+                                        model.Field(p => p.IdPlanillaempleado).Editable(false);
+                                        model.Field(p => p.IdPlanilla).Editable(true);
+                                        model.Field(p => p.IdEmpleado).Editable(true);
+                                    })
+                                    .Events(events =>
+                                    {
+                                        events.Error("error_handler");
+
+                                    })
+                                    .Read(read => read.Action("GetByPlanillaId", "PayrollEmployee").Data("GetEmpleadoId"))
+                                    .Create(create => create.Action("Insert", "PayrollEmployee"))
+                                    .Update(update => update.Action("Update", "PayrollEmployee", new { id = "{0}" }))
+                                    .Destroy(destroy => destroy.Action("Delete", "PayrollEmployee", new { id = "{0}" }))
+                              )
+)
