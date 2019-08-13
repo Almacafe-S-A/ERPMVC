@@ -46,7 +46,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult> pvwCustomerDocument([FromBody]CustomerDocument _CustomerDocumentp)
+        public async Task<ActionResult> pvwCustomerDocumentUpload([FromBody]CustomerDocument _CustomerDocumentp)
         {
             CustomerDocument _CustomerDocument = new CustomerDocument();
             try
@@ -197,7 +197,7 @@ namespace ERPMVC.Controllers
 
 
                         var filePath = _hostingEnvironment.WebRootPath + "/CustomerDocuments/" + _CustomerDocument.CustomerDocumentId+"_" 
-                            + file.FileName +"_"+ _CustomerDocument.DocumentTypeId+"_"+_CustomerDocument.DocumentTypeName;
+                            + file.FileName.Split("") +"_"+ _CustomerDocument.DocumentTypeId+"_"+_CustomerDocument.DocumentTypeName;
                         using (var stream = new FileStream(filePath, FileMode.Create))
                         {
                             await file.CopyToAsync(stream);

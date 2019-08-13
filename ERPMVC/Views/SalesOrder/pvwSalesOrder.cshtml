@@ -184,47 +184,12 @@
                                                         });
                                                     }*@
 
-                                                    function RefreshOFAC() {
-                                                        var grid = $("#gridListaOFAC").getKendoGrid();
-                                                        grid.dataSource.read();
-                                                        var gridListaOFAClen = $("#gridListaOFAC").data().kendoGrid.dataSource.data();
-                                                        if (gridListaOFAClen.length > 0) {
-                                                            $("#myModalOFAC").modal('show');
-                                                        }
-
-                                                        var gridListaPEPS = $("#gridListaPEPS").getKendoGrid();
-                                                        gridListaPEPS.dataSource.read();
-                                                        var gridListalengthpeps = $("#gridListaPEPS").data().kendoGrid.dataSource.data();
-                                                        if (gridListalengthpeps.length > 0) {
-                                                            $("#myModalPEPS").modal('show');
-                                                        }
-
-                                                        var gridListaNegra = $("#gridListaNegra").getKendoGrid();
-                                                        gridListaNegra.dataSource.read();
-                                                        var gridListalengthNegra = $("#gridListaNegra").data().kendoGrid.dataSource.data();
-                                                        if (gridListalengthNegra.length > 0) {
-                                                            $("#myModalListaNegra").modal('show');
-                                                        }
-
-
-                                                        var gridListaONU = $("#gridListaONU").getKendoGrid();
-                                                        gridListaONU.dataSource.read();
-                                                        var gridListalengthONU = $("#gridListaONU").data().kendoGrid.dataSource.data();
-                                                        console.log(gridListalengthONU.length);
-                                                        if (gridListalengthONU.length > 0) {
-
-                                                            $("#myModalListaONU").modal('show');
-                                                        }
-
-
-
-
-                                                    }
+                                               
                                                 </script>
                                                 <div class="form-group">
                                                     <label asp-for="SalesOrderName" class="control-label" style="width:100%"></label>
                                                     <span>
-                                                        <input asp-for="SalesOrderName" required class="form-control form-control-line" style="min-width: 80%" />
+                                                        <input asp-for="SalesOrderName" required class="form-control form-control-line" onchange="RefreshOFAC();" style="min-width: 80%" />
                                                         <button type="button" onclick="return RefreshOFAC();" class="k-button k-primary"><i class="fa fa-search"></i>LISTADOS</button>
                                                     </span>
                                                     <span asp-validation-for="SalesOrderName" class="text-danger"></span>
@@ -455,7 +420,7 @@
                                                 </div>
                                             </div>
 
-                                            <div class="col-md-4">
+                                            @*<div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="DeliveryDate" class="control-label" style="width: 100%;"></label>
                                                     <kendo-datetimepicker name="DeliveryDate"
@@ -465,7 +430,7 @@
                                                                           value="Model.DeliveryDate"></kendo-datetimepicker>
                                                     <span asp-validation-for="DeliveryDate" class="text-danger"></span>
                                                 </div>
-                                            </div>
+                                            </div>*@
 
                                             <div class="col-md-4">
                                                 <div class="form-group">
@@ -783,11 +748,15 @@
                             }
                         }
 
+                        RefreshOFAC();                        
                         RefreshOFAC();
-                        var gridListaOFAC = $("#gridCotizacionesDetail").data().kendoGrid.dataSource.data();
+                       
+                        var listadoenqueaparece = "";
+                        var gridListaOFAC = $("#gridListaOFAC").data().kendoGrid.dataSource.data();
                         var gridListaPEPS = $("#gridListaPEPS").data().kendoGrid.dataSource.data();
                         var gridListaNegra = $("#gridListaNegra").data().kendoGrid.dataSource.data();
                         var gridListaONU = $("#gridListaONU").data().kendoGrid.dataSource.data();
+                        debugger;
 
                         var confirmaexpecion = false;
                         var idEstado = 6;
@@ -796,10 +765,9 @@
                             Estado = $("#IdEstado").data("kendoDropDownList").text();
                         }
 
-                        if (gridListaOFAC.length > 0
-                            || gridListaPEPS.length > 0
-                            || gridListaNegra.length > 0
-                            || gridListaONU.length > 0
+                        if (
+                            gridListaPEPS.length > 0
+
                         ) {
 
                             // notification.show({
@@ -813,6 +781,7 @@
                                 confirmaexpecion = true;
                                 idEstado = 5;
                                 Estado = 'Enviada a Aprobacion'
+                                listadoenqueaparece += gridListaOFAC.length > 0 ? "PEPS" : "";
                             }
                             else {
                                 validadetalle = false;
@@ -823,8 +792,30 @@
                             }
 
                         }
+                        else if (gridListaOFAC.length > 0
+                            || gridListaNegra.length > 0
+                            || gridListaONU.length > 0
+                        )
 
-                        debugger;
+                        {
+                            listadoenqueaparece += gridListaOFAC.length > 0 ? "OFAC" : "";
+                            listadoenqueaparece += gridListaNegra.length > 0 ? "ListaNegra" : "";
+                            listadoenqueaparece += gridListaONU.length > 0 ? "ListadoONU" : "";
+
+
+                            validadetalle = true;
+                            idEstado = 7;
+                            Estado = 'Rechazado';
+
+                            notification.show({
+                                title: "Validación",
+                                message: "Esta cotización se muestra como estado rechazado!"
+                            }, "error");
+
+                        }
+
+
+                       // debugger;
 
                         if (validadetalle) {
 
@@ -838,7 +829,7 @@
                                 'ProductId': $("#ProductId").val(),
                                 'ProductName': $("#ProductId").data("kendoDropDownList").text(),
                                 'OrderDate': $("#OrderDate").getKendoDateTimePicker().value().toJSON(),
-                                'DeliveryDate': $("#DeliveryDate").getKendoDateTimePicker().value().toJSON(),
+                              //  'DeliveryDate': $("#DeliveryDate").getKendoDateTimePicker().value().toJSON(),
                                 'ExpirationDate': $("#ExpirationDate").getKendoDateTimePicker().value().toJSON(),
                                 'CurrencyId': Number($("#CurrencyId").val()),
                                 'CustomerRefNumber': $("#CustomerRefNumber").val(),
@@ -861,7 +852,8 @@
                                 'TotalGravado': $("#TotalGravado").val(),
                                 'SalesOrderLines': displayedData,
                                 'IdEstado': idEstado,
-                                'Estado': Estado
+                                'Estado': Estado,
+                                'listadossancionados': listadoenqueaparece
                             };
 
                             //console.log(JSON.stringify(dataObject));
@@ -939,6 +931,13 @@
                                 $("#btnSaveCotizacion").prop("disabled", false);
                             }
                         }
+
+                        else
+                            {
+                               $("#btnSaveCotizacion").show();
+                               $("#btnSaveCotizacion").prop("disabled", false);
+                         }
+
 
 
                     }
