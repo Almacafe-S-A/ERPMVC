@@ -1,0 +1,63 @@
+﻿
+
+@(Html.Kendo().Grid<ERPMVC.Models.Incidencias>()
+                                          .Name("gridIncapacidades")
+                                          .Columns(columns =>
+                                          {
+                                              columns.Command(command =>
+                                              {
+                                                  //command.Custom("Editar").Click("EditCotizacion");
+                                                  command.Edit(); command.Destroy();
+                                              }).Width(200);
+
+                                              columns.Bound(p => p.IdIncidencia).Title("Id").Width(100);
+                                              columns.Bound(p => p.FechaInicio).Format("{0:dd/MM/yyyy}").Title("Inicio").Width(150);
+                                              columns.Bound(p => p.FechaFin).Format("{0:dd/MM/yyyy}").Title("Fin").Width(150);
+                                              columns.Bound(p => p.DescripcionIncidencia).Title("Descripción").Width(300);
+                                              //columns.Bound(p => p.IdEmpleado).Title("Empleado").Width(150);
+                                              columns.Bound(p => p.IdTipoIncidencia).Title("Tipo").Width(150);
+                                          })
+                                          .ToolBar(tools =>
+                                          {
+                                              //tools.Create();
+                                              //  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
+
+                                              tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                                              tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+                                          })
+                                           .Editable(e => e.Mode(GridEditMode.PopUp))
+                                            .Sortable()
+                                            .AutoBind(true)
+                                            .Pageable()
+                                            .Filterable()
+                                            .Scrollable()
+                                            .Pdf(pdf => pdf.FileName("IncapacidadesReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                              .Excel(excel => excel.FileName("IncapacidadesReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                            .DataSource(dataSource =>
+                                            dataSource
+                                           .WebApi()
+                                            .ServerOperation(true)
+                                            .Model(model =>
+                                            {
+                                                model.Id(p => p.IdIncidencia);
+                                                model.Field(p => p.IdIncidencia).Editable(false);
+                                                model.Field(p => p.IdTipoIncidencia).Editable(true);
+                                                model.Field(p => p.IdEmpleado).Editable(false);
+                                            })
+                                            .Events(events =>
+                                            {
+                                                events.Error("error_handler");
+
+                                            })
+                                            .Read(read => read.Action("GetIncapacidadesByEmp", "Incidencias").Data("GetEmpId"))
+                                            .Create(create => create.Action("Insert", "Incidencias"))
+                                            .Update(update => update.Action("Update", "Incidencias", new { id = "{0}" }))
+                                            .Destroy(destroy => destroy.Action("Delete", "Incidencias", new { id = "{0}" }))
+                                      )
+)

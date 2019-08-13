@@ -47,7 +47,10 @@ namespace ERPMVC.Controllers
             return PartialView();
         }
 
-
+        public ActionResult CustomerProduct()
+        {
+            return PartialView();
+        }
 
         [HttpGet("[action]")]
         public async Task<ActionResult> GetCustomerById(Int64 CustomerId)

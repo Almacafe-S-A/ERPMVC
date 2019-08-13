@@ -89,7 +89,11 @@ namespace ERPMVC.Controllers
         }
 
 
-        // GET: Obtener Listado de Productos por Cliente
+        /// <summary>
+        /// Listado de Productos por Cliente
+        /// </summary>
+        /// <param name="request"></param>
+        /// <returns></returns>
         [HttpGet("[action]")]
         public async Task<DataSourceResult> GetCustomerProduct([DataSourceRequest]DataSourceRequest request)
         {
@@ -118,14 +122,52 @@ namespace ERPMVC.Controllers
 
             return _CustomerProduct.ToDataSourceResult(request);
         }
+
+        /// <summary>
+        /// Guardar cambios.
+        /// </summary>
+        /// <param name="_customerProduct"></param>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<ActionResult<CustomerProduct>> SaveCustomerProduct([FromBody]CustomerProduct _customerProduct)
+        {
+            try
+            {
+                if (_customerProduct.CustomerProductId == 0)
+                {
+                    _customerProduct.FechaCreacion = DateTime.Now;
+                    _customerProduct.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    _customerProduct.FechaModificacion = DateTime.Now;
+                    _customerProduct.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    
+                    var insertresult = await Insert(_customerProduct);
+                }
+                else
+                {
+                    _customerProduct.FechaModificacion = DateTime.Now;
+                    _customerProduct.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    var updateresult = await Update(_customerProduct.CustomerProductId, _customerProduct);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrió un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_customerProduct);
+        }
         
-        // POST: Guardar
+        /// <summary>
+        /// Agregar producto a un cliente.
+        /// </summary>
+        /// <param name="_CustomerProduct"></param>
+        /// <returns></returns>
         [HttpPost]
         public async Task<ActionResult<CustomerProduct>> Insert([FromBody]CustomerProduct _CustomerProduct)
         {
             try
             {
-                // TODO: Add insert logic here
                 string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -149,7 +191,12 @@ namespace ERPMVC.Controllers
             return Ok(_CustomerProduct);
         }
 
-        // PUT: Actualizar
+        /// <summary>
+        /// Actualizar relación.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="_CustomerProduct"></param>
+        /// <returns></returns>
         [HttpPut("[controller]/[action]/{id}")]
         public async Task<ActionResult<CustomerProduct>> Update(Int64 id, [FromBody]CustomerProduct _CustomerProduct)
         {
@@ -176,35 +223,7 @@ namespace ERPMVC.Controllers
 
             return Ok(_CustomerProduct);
         }
-
-
-        //Obtener subProductos
-        [HttpGet("[controller]/[action]")]
-        public async Task<ActionResult> GetSubProductosCliente([DataSourceRequest]DataSourceRequest request)
-        {
-            List<SubProduct> _clientes = new List<SubProduct>();
-            try
-            {
-                string baseadress = _config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CustomerProduct/GetSubProductosCliente/" + 1);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _clientes = JsonConvert.DeserializeObject<List<SubProduct>>(valorrespuesta);
-                }
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-            
-            return Json(_clientes.ToDataSourceResult(request));
-        }
+        
 
     }
 }
