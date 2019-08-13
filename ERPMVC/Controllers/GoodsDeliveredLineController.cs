@@ -28,12 +28,14 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [HttpGet("[controller]/[action]")]
         public IActionResult Index()
         {
             return View();
         }
 
-        public async Task<ActionResult> pvwGoodsDeliveredLine(Int64 Id = 0)
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> pvwGoodsDeliveredLine([FromBody]GoodsDeliveredLine _GoodsDeliveredLinep)
         {
             GoodsDeliveredLine _GoodsDeliveredLine = new GoodsDeliveredLine();
             try
@@ -41,7 +43,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/GoodsDeliveredLine/GetGoodsDeliveredLineById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/GoodsDeliveredLine/GetGoodsDeliveredLineById/" + _GoodsDeliveredLinep.GoodsDeliveredLinedId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -63,12 +65,12 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_GoodsDeliveredLine);
+            return PartialView("~/Views/GoodsDelivered/pvwGoodsDeliveredDetailMant.cshtml", _GoodsDeliveredLine);
 
         }
 
 
-        [HttpGet]
+        [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
             List<GoodsDeliveredLine> _GoodsDeliveredLine = new List<GoodsDeliveredLine>();
@@ -101,8 +103,38 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpPost("[controller]/[action]")]
+          //public async Task<ActionResult<GoodsDeliveredLine>> SetLinesInSession([FromBody]dynamic dto)
+          public async Task<ActionResult<GoodsDeliveredLine>> SetLinesInSession([FromBody]GoodsDeliveredLine _GoodsDeliveryAuthorizationLine)
+        {
 
-        [HttpGet("[action]")]
+           
+           // GoodsDeliveredLine _GoodsDeliveryAuthorizationLine = new GoodsDeliveredLine();
+            try
+            {
+             //    _GoodsDeliveryAuthorizationLine = JsonConvert.DeserializeObject<GoodsDeliveredLine>(dto);
+                List <GoodsDeliveredLine> _GoodsDeliveredLine = new List<GoodsDeliveredLine>();
+                _GoodsDeliveredLine = JsonConvert.DeserializeObject<List<GoodsDeliveredLine>>(HttpContext.Session.GetString("listadoproductosGoodsDelivered"));
+
+                if (_GoodsDeliveredLine == null) { _GoodsDeliveredLine = new List<GoodsDeliveredLine>(); }
+                if(_GoodsDeliveryAuthorizationLine!=null)
+                _GoodsDeliveredLine.Add(_GoodsDeliveryAuthorizationLine);
+                //  GoodsDeliveryAuthorizationLine _listGoodsDeliveryAuthorizationLine = new GoodsDeliveryAuthorizationLine();
+                // string serialzado = JsonConvert.SerializeObject(_GoodsDeliveryAuthorizationLine).ToString();
+                HttpContext.Session.SetString("listadoproductosGoodsDelivered", JsonConvert.SerializeObject(_GoodsDeliveredLine).ToString());
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_GoodsDeliveryAuthorizationLine);
+        }
+
+
+        [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> GetGoodsDeliveredLineByGoodsDeliveredId([DataSourceRequest]DataSourceRequest request, GoodsDeliveredLine _GoodsDeliveredLinep)
         {
             List<GoodsDeliveredLine> _GoodsDeliveredLine = new List<GoodsDeliveredLine>();
@@ -128,7 +160,7 @@ namespace ERPMVC.Controllers
 
                     string baseadress = config.Value.urlbase;
                     HttpClient _client = new HttpClient();
-             
+
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                     var result = await _client.GetAsync(baseadress + "api/GoodsDeliveredLine/GetGoodsReceivedLineByGoodsDeliveredId/" + _GoodsDeliveredLinep.GoodsDeliveredId);
                     string valorrespuesta = "";
@@ -140,11 +172,50 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    if (_GoodsDeliveredLinep.Quantity > 0)
+
+                    List<GoodsDeliveredLine> _existelinea = new List<GoodsDeliveredLine>();
+                    if (HttpContext.Session.GetString("listadoproductosGoodsDelivered") != "")
+                    {
+                        _GoodsDeliveredLine = JsonConvert.DeserializeObject<List<GoodsDeliveredLine>>(HttpContext.Session.GetString("listadoproductosGoodsDelivered"));
+                        _existelinea = _GoodsDeliveredLine.Where(q => q.GoodsDeliveredLinedId == _GoodsDeliveredLinep.GoodsDeliveredLinedId).ToList();
+                    }
+
+                    if (_GoodsDeliveredLinep.GoodsDeliveredLinedId > 0 && _existelinea.Count == 0)
                     {
                         _GoodsDeliveredLine.Add(_GoodsDeliveredLinep);
                         HttpContext.Session.SetString("listadoproductosGoodsDelivered", JsonConvert.SerializeObject(_GoodsDeliveredLine).ToString());
                     }
+                    else
+                    {
+                        var obj = _GoodsDeliveredLine.FirstOrDefault(x => x.GoodsDeliveredLinedId == _GoodsDeliveredLinep.GoodsDeliveredLinedId);
+                        if (obj != null)
+                        {
+                            obj.Description = _GoodsDeliveredLinep.Description;
+                            obj.Price = _GoodsDeliveredLinep.Price;
+                            obj.Quantity = _GoodsDeliveredLinep.Quantity;
+                            obj.Total = _GoodsDeliveredLinep.Total;
+                            obj.SubProductId = _GoodsDeliveredLinep.SubProductId;
+                            obj.SubProductName = _GoodsDeliveredLinep.SubProductName;
+                            obj.Price = _GoodsDeliveredLinep.Price;
+                            obj.SubProductId = _GoodsDeliveredLinep.SubProductId;
+                            obj.SubProductName = _GoodsDeliveredLinep.SubProductName;
+                            obj.QuantitySacos = _GoodsDeliveredLinep.QuantitySacos;
+                            obj.UnitOfMeasureId = _GoodsDeliveredLinep.UnitOfMeasureId;
+                            obj.UnitOfMeasureName = _GoodsDeliveredLinep.UnitOfMeasureName;
+                            obj.WareHouseId = _GoodsDeliveredLinep.WareHouseId;
+                            obj.WareHouseName = _GoodsDeliveredLinep.WareHouseName;
+                            obj.NoCD = _GoodsDeliveredLinep.NoCD;
+                            obj.ControlPalletsId = _GoodsDeliveredLinep.ControlPalletsId;
+                            obj.CenterCostId = _GoodsDeliveredLinep.CenterCostId;
+                            obj.Description = _GoodsDeliveredLinep.Description;
+
+                        }
+
+                        HttpContext.Session.SetString("listadoproductosGoodsDelivered", JsonConvert.SerializeObject(_GoodsDeliveredLine).ToString());
+
+                    }
+
+
                 }
 
 
@@ -167,7 +238,7 @@ namespace ERPMVC.Controllers
 
 
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<GoodsDeliveredLine>> SaveGoodsDeliveredLine([FromBody]GoodsDeliveredLine _GoodsDeliveredLine)
         {
 
@@ -210,7 +281,7 @@ namespace ERPMVC.Controllers
         }
 
         // POST: GoodsDeliveredLine/Insert
-        [HttpPost]
+        [HttpPost("[controller]/[action]")]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult<GoodsDeliveredLine>> Insert(GoodsDeliveredLine _GoodsDeliveredLine)
         {
@@ -240,7 +311,7 @@ namespace ERPMVC.Controllers
             // return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsDeliveredLine }, Total = 1 });
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("[controller]/[action]/{id}")]
         public async Task<ActionResult<GoodsDeliveredLine>> Update(Int64 id, GoodsDeliveredLine _GoodsDeliveredLine)
         {
             try
@@ -267,7 +338,7 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsDeliveredLine }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<GoodsDeliveredLine>> Delete([FromBody]GoodsDeliveredLine _GoodsDeliveredLine)
         {
             try

@@ -122,47 +122,8 @@ namespace ERPMVC.Controllers
 
             return _CustomerProduct.ToDataSourceResult(request);
         }
-
-        /// <summary>
-        /// Guardar cambios.
-        /// </summary>
-        /// <param name="_customerProduct"></param>
-        /// <returns></returns>
-        [HttpPost]
-        public async Task<ActionResult<CustomerProduct>> SaveCustomerProduct([FromBody]CustomerProduct _customerProduct)
-        {
-            try
-            {
-                if (_customerProduct.CustomerProductId == 0)
-                {
-                    _customerProduct.FechaCreacion = DateTime.Now;
-                    _customerProduct.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    _customerProduct.FechaModificacion = DateTime.Now;
-                    _customerProduct.UsuarioModificacion = HttpContext.Session.GetString("user");
-                    
-                    var insertresult = await Insert(_customerProduct);
-                }
-                else
-                {
-                    _customerProduct.FechaModificacion = DateTime.Now;
-                    _customerProduct.UsuarioModificacion = HttpContext.Session.GetString("user");
-                    var updateresult = await Update(_customerProduct.CustomerProductId, _customerProduct);
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrió un error: { ex.ToString() }");
-                throw ex;
-            }
-
-            return Json(_customerProduct);
-        }
         
-        /// <summary>
-        /// Agregar producto a un cliente.
-        /// </summary>
-        /// <param name="_CustomerProduct"></param>
-        /// <returns></returns>
+        // POST: Guardar
         [HttpPost]
         public async Task<ActionResult<CustomerProduct>> Insert([FromBody]CustomerProduct _CustomerProduct)
         {

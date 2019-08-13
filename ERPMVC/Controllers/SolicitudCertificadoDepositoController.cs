@@ -44,7 +44,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/SolicitudCertificadoDeposito/GetSolicitudCertificadoDepositoById/" + _SolicitidCertificadoDeposito.IdCD);
+                var result = await _client.GetAsync(baseadress + "api/SolicitudCertificadoDeposito/GetSolicitudCertificadoDepositoById/" + _SolicitidCertificadoDeposito.IdSCD);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -57,7 +57,7 @@ namespace ERPMVC.Controllers
                 {
                     _SolicitidCertificadoDeposito = new DTO.SolicitudCertificadoDepositoDTO
                     {
-                        IdCD = 0,
+                        IdSCD = 0,
                         FechaCertificado = DateTime.Now,
                         FechaVencimiento = DateTime.Now.AddDays(60),
                         FechaVencimientoDeposito = DateTime.Now.AddDays(30),
@@ -125,7 +125,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/SolicitudCertificadoDeposito/GetSolicitudCertificadoDepositoById/" + _SolicitudCertificadoDeposito.IdCD);
+                var result = await _client.GetAsync(baseadress + "api/SolicitudCertificadoDeposito/GetSolicitudCertificadoDepositoById/" + _SolicitudCertificadoDeposito.IdSCD);
                 string valorrespuesta = "";
                 _SolicitudCertificadoDeposito.FechaModificacion = DateTime.Now;
                 _SolicitudCertificadoDeposito.UsuarioModificacion = HttpContext.Session.GetString("user");
@@ -136,7 +136,7 @@ namespace ERPMVC.Controllers
                     _SolicitudCertificadoDeposito = JsonConvert.DeserializeObject<SolicitudCertificadoDeposito>(valorrespuesta);
                 }
 
-                if (_SolicitudCertificadoDepositoP.IdCD == 0)
+                if (_SolicitudCertificadoDepositoP.IdSCD == 0)
                 {
                     _SolicitudCertificadoDeposito.FechaCreacion = DateTime.Now;
                     _SolicitudCertificadoDeposito.UsuarioCreacion = HttpContext.Session.GetString("user");
@@ -144,7 +144,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    var updateresult = await Update(_SolicitudCertificadoDeposito.IdCD, _SolicitudCertificadoDepositoP);
+                    var updateresult = await Update(_SolicitudCertificadoDeposito.IdSCD, _SolicitudCertificadoDepositoP);
                 }
 
             }
@@ -245,6 +245,16 @@ namespace ERPMVC.Controllers
         }
 
 
+
+
+        [HttpGet]
+        public ActionResult SFSolicitudCertificadoDeposito(Int64 id)
+        {
+
+            SolicitudCertificadoDepositoDTO _SolicitudCertificadoDepositoDTO = new SolicitudCertificadoDepositoDTO { NoCD = id, };
+
+            return View(_SolicitudCertificadoDepositoDTO);
+        }
 
 
 

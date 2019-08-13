@@ -10,6 +10,7 @@ namespace ERPMVC.Models
     public class GoodsDeliveryAuthorization
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Display(Name = "Id")]
         public Int64 GoodsDeliveryAuthorizationId { get; set; }
 
         [Display(Name = "Nombre de autorizacion")]
@@ -57,6 +58,15 @@ namespace ERPMVC.Models
         public string WareHouseName { get; set; }
         public double TotalCertificado { get; set; }
         public double TotalFinanciado { get; set; }
+
+        [Display(Name = "Derechos Lps.")]
+        public double DerechoLps { get; set; }
+
+        [Display(Name = "Póliza No.")]
+        public Int64 NoPoliza { get; set; }
+
+        [Display(Name = "Delegado Fiscal")]
+        public string DelegadoFiscal { get; set; }
 
         [Display(Name = "Fecha de Creacion")]
         public DateTime? FechaCreacion { get; set; }

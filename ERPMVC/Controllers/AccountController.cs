@@ -19,7 +19,7 @@ namespace ERPMVC.Controllers
 {
     public class AccountController : Controller
     {
-        private readonly ILogger _logger;     
+        private readonly ILogger _logger;
         private readonly IOptions<MyConfig> config;
         private readonly UserManager<ApplicationUser> _userManager;
         private readonly SignInManager<ApplicationUser> _signInManager;
@@ -53,21 +53,9 @@ namespace ERPMVC.Controllers
             List<MessageClassUtil> _message = new List<MessageClassUtil>();
             try
             {
-                //if (ModelState.IsValid)
-                //{
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: false);
-                // ApplicationUser _appuser = new ApplicationUser { Email = model.Email  };
-                //var user = _userManager.FindByEmailAsync(model.Email);
-                //var claims = new List<Claim>
-                //{
-                //    new Claim("user", ""),
-                //    new Claim("role", "Member")
-                //};
 
-                //var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
-                //identity.AddClaim(new Claim(ClaimTypes.Name, _userManager.Users.Username));
-                //  await _signInManager.SignInAsync(new ClaimsPrincipal(new ClaimsIdentity(claims, "Cookies", "user", "role")));
-                // await _signInManager.SignInAsync(_appuser,model.RememberMe);
+                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: true);
+
                 var res = HttpContext.User.Identity.IsAuthenticated;
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
@@ -76,13 +64,23 @@ namespace ERPMVC.Controllers
                 {
                     string webtoken = await (resultlogin.Content.ReadAsStringAsync());
                     UserToken _userToken = JsonConvert.DeserializeObject<UserToken>(webtoken);
-                    HttpContext.Session.SetString("token", _userToken.Token);
-                    HttpContext.Session.SetString("Expiration", _userToken.Expiration.ToString());
-                    HttpContext.Session.SetString("user", model.Email);
 
+                    if (_userToken.IsEnabled.Value)
+                    {
+                        HttpContext.Session.SetString("token", _userToken.Token);
+                        HttpContext.Session.SetString("Expiration", _userToken.Expiration.ToString());
+                        HttpContext.Session.SetString("user", model.Email);
+                        HttpContext.Session.SetString("BranchId", _userToken.BranchId.ToString());
 
-                    return RedirectToAction("Index", "Home");
-                
+                        return RedirectToAction("Index", "Home");
+                    }
+                    else
+                    {
+                        _message.Add(new MessageClassUtil { key = "Login", name = "error", mensaje = "Error en login" });
+                        model.Failed = true;
+                        return View(model);
+                    }
+
                 }
                 else
                 {
@@ -100,17 +98,36 @@ namespace ERPMVC.Controllers
                 model.Failed = true;
                 return View(model);
                 // throw ex;
-                
+
             }
 
 
         }
 
+        public async  Task<ActionResult> ChangePassword()
+        {
+            try
+            {
+
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+
+            return await Task.Run(()=> View());
+        }
+
+
+
+
+
         [HttpGet]
         // [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
-              HttpContext.Session.Clear();
+            HttpContext.Session.Clear();
             //  await _signInManager.SignOutAsync();                 
             //  _logger.LogInformation($"User signed out");
             return await Task.Run(() => RedirectToAction(nameof(HomeController.Index), "Home"));

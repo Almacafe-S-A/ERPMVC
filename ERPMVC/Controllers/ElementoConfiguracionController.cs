@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
+using ERPMVC.DTO;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
@@ -29,31 +30,34 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-        public IActionResult Index()
+        public IActionResult ElementoConfiguracion()
         {
             return View();
         }
 
-        public async Task<ActionResult> pvwElementoConfiguracion(Int64 Id = 0)
+        [HttpPost("[action]")]
+        //public async Task<ActionResult> pvwElementoConfiguracion(Int64 Id = 0)
+        public async Task<ActionResult> pvwElementoConfiguracion([FromBody]ElementoConfiguracionDTO _sarpara)
         {
-            ElementoConfiguracion _ElementoConfiguracion = new ElementoConfiguracion();
+            //ElementoConfiguracion _ElementoConfiguracion = new ElementoConfiguracion();
+            ElementoConfiguracionDTO _ElementoConfiguracion = new ElementoConfiguracionDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ElementoConfiguracion/GetElementoConfiguracionById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/ElementoConfiguracion/GetElementoConfiguracionById/" + _sarpara.Id);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ElementoConfiguracion = JsonConvert.DeserializeObject<ElementoConfiguracion>(valorrespuesta);
+                    _ElementoConfiguracion = JsonConvert.DeserializeObject<ElementoConfiguracionDTO>(valorrespuesta);
 
                 }
 
                 if (_ElementoConfiguracion == null)
                 {
-                    _ElementoConfiguracion = new ElementoConfiguracion();
+                    _ElementoConfiguracion = new ElementoConfiguracionDTO();
                 }
             }
             catch (Exception ex)
@@ -130,9 +134,56 @@ namespace ERPMVC.Controllers
         }
 
 
-        public async Task<ActionResult<ElementoConfiguracion>> SaveElementoConfiguracion([FromBody]ElementoConfiguracion _ElementoConfiguracion)
-        {
+        //public async Task<ActionResult<ElementoConfiguracion>> SaveElementoConfiguracion([FromBody]ElementoConfiguracion _ElementoConfiguracion)
+        //[HttpPost("[action]")]
+        //public async Task<ActionResult<ElementoConfiguracion>> SaveProduct([FromBody]ElementoConfiguracionDTO _ElementoConfiguracionS)
+        //{
 
+        //    try
+        //    {
+        //        ElementoConfiguracion _listElementoConfiguracion = new ElementoConfiguracion();
+        //        string baseadress = config.Value.urlbase;
+        //        HttpClient _client = new HttpClient();
+        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+        //        var result = await _client.GetAsync(baseadress + "api/ElementoConfiguracion/GetElementoConfiguracionById/" + _ElementoConfiguracionS.Id);
+        //        string valorrespuesta = "";
+        //        _ElementoConfiguracion.FechaModificacion = DateTime.Now;
+        //        _ElementoConfiguracion.UsuarioModificacion = HttpContext.Session.GetString("user");
+        //        if (result.IsSuccessStatusCode)
+        //        {
+
+        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
+        //            _listElementoConfiguracion = JsonConvert.DeserializeObject<List<ElementoConfiguracion>>(valorrespuesta);
+
+
+        //        }
+
+        //        if (_listElementoConfiguracion.Id == 0)
+        //        {
+        //            _ElementoConfiguracion.FechaCreacion = DateTime.Now;
+        //            _ElementoConfiguracion.UsuarioCreacion = HttpContext.Session.GetString("user");
+        //            var insertresult = await Insert(_ElementoConfiguracion);
+        //        }
+        //        else
+        //        {
+        //            var updateresult = await Update(_ElementoConfiguracion.Id, _ElementoConfiguracion);
+        //        }
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+        //        throw ex;
+        //    }
+
+        //    return Json(_ElementoConfiguracion);
+        //}
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<ElementoConfiguracion>> SaveElementoConfiguracion([FromBody]ElementoConfiguracionDTO _ElementoConfiguracionS)
+        {
+            ElementoConfiguracion _ElementoConfiguracion = _ElementoConfiguracionS;
+            
             try
             {
                 ElementoConfiguracion _listElementoConfiguracion = new ElementoConfiguracion();
@@ -143,22 +194,37 @@ namespace ERPMVC.Controllers
                 string valorrespuesta = "";
                 _ElementoConfiguracion.FechaModificacion = DateTime.Now;
                 _ElementoConfiguracion.UsuarioModificacion = HttpContext.Session.GetString("user");
+                
                 if (result.IsSuccessStatusCode)
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listElementoConfiguracion = JsonConvert.DeserializeObject<ElementoConfiguracion>(valorrespuesta);
+                    _ElementoConfiguracion = JsonConvert.DeserializeObject<ElementoConfiguracionDTO>(valorrespuesta);
                 }
 
-                if (_listElementoConfiguracion.Id == 0)
+                if (_ElementoConfiguracion == null) { _ElementoConfiguracion = new Models.ElementoConfiguracion(); }
+
+                if (_ElementoConfiguracionS.Id == 0)
                 {
-                    _ElementoConfiguracion.FechaCreacion = DateTime.Now;
-                    _ElementoConfiguracion.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_ElementoConfiguracion);
+                    _ElementoConfiguracionS.FechaCreacion = DateTime.Now;
+                    _ElementoConfiguracionS.UsuarioCreacion = HttpContext.Session.GetString("user");
+
+                    if (_ElementoConfiguracionS.Estado == "Activo")
+                    {
+                        _ElementoConfiguracionS.Estado = "A";
+                    }
+                    else {
+                        _ElementoConfiguracionS.Estado = "I";
+
+                    }
+                    
+                    var insertresult = await Insert(_ElementoConfiguracionS);
                 }
                 else
                 {
-                    var updateresult = await Update(_ElementoConfiguracion.Id, _ElementoConfiguracion);
+                    _ElementoConfiguracionS.UsuarioCreacion = _ElementoConfiguracion.UsuarioCreacion;
+                    _ElementoConfiguracionS.FechaCreacion = _ElementoConfiguracion.FechaCreacion;
+                    var updateresult = await Update(_ElementoConfiguracion.Id, _ElementoConfiguracionS);
                 }
 
             }
@@ -229,15 +295,16 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _ElementoConfiguracion }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult<ElementoConfiguracion>> Delete([FromBody]ElementoConfiguracion _ElementoConfiguracion)
+        [HttpPost]
+        public async Task<ActionResult<ElementoConfiguracion>> Delete(Int64 Id, ElementoConfiguracion _ElementoConfiguracionP)
         {
+            ElementoConfiguracion _ElementoConfiguracion = _ElementoConfiguracionP;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.PostAsJsonAsync(baseadress + "api/ElementoConfiguracion/Delete", _ElementoConfiguracion);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -249,11 +316,8 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error: {ex.Message}");
+                return BadRequest($"Ocurrio un error{ex.Message}");
             }
-
-
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _ElementoConfiguracion }, Total = 1 });
         }

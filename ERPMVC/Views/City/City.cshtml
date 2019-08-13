@@ -1,0 +1,142 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "City";
+
+}
+
+<script>
+
+    function onsave(e) {
+        //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+        // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+    function caidata(data) {
+        data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+        data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    }
+
+    function AddCity() {
+
+        $('#ModalCity').find(':input').not(':submit').val('');
+        $('#ModalCity').modal('show');
+        $("#CityId").val('0');
+
+
+
+
+    }
+
+
+    function EditCity(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            Id: dataItem.Id,
+            editar: 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwAddCity", "City")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#numCity").html('');
+                $("#numCity").html(result);
+
+
+                //$("#btnCAI").hide();
+                $('#ModalCity').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+    function RefrescarGrid() {
+        var grid = $("#gridCity").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+
+</script>
+
+<h3 class="text-themecolor">Ciudad</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.City>
+        ()
+
+        .Name("gridCity")
+
+        .Columns(columns =>
+        {
+            columns.Bound(p => p.Id).Width(150);
+            columns.Bound(p => p.Name).Width(170);
+            columns.Bound(p => p.State_Id).Width(170);
+
+            columns.Command(command =>
+            {
+                //command.Custom("Ver detalles").Click("Detalles");
+                command.Custom("Editar").Click("EditCity");
+                command.Destroy();
+            }).Width(250);
+
+        })
+
+
+        .ToolBar(tools =>
+        {
+
+            //tools.Create();
+            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCity()" });
+            tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+            tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+        })
+        .Editable(e => e.Mode(GridEditMode.PopUp))
+        .Sortable()
+        .Pageable()
+        .Filterable()
+        .Scrollable()
+        .Pdf(pdf => pdf.FileName("CityReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+        .Excel(excel => excel.FileName("CityReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+        .DataSource(dataSource =>
+        dataSource
+        .WebApi()
+
+        .ServerOperation(true)
+        .Model(model =>
+        {
+            model.Id(p => p.Id);
+            model.Field(p => p.Id).Editable(false);
+
+
+        })
+        .Events(events => events.Error("error_handler"))
+        .Read(read => read.Action("Get", "City"))
+        .Create(create => create.Action("Insert", "City").Type(HttpVerbs.Post))
+        .Update(update => update.Action("Update", "City").Type(HttpVerbs.Post))
+        .Destroy(destroy => destroy.Action("Delete", "City").Type(HttpVerbs.Post))
+
+        )
+        .Events(e =>
+        {
+            e.Save("onsave");
+
+        })
+)
+
+<div id="numCity">
+    @await Html.PartialAsync("pvwAddCity", new ERPMVC.DTO.CityDTO { Id = 0 })
+</div>

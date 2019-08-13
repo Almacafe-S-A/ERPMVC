@@ -1,0 +1,152 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "Escala";
+
+}
+
+<script>
+
+    function onsave(e) {
+        //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+        // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+    function caidata(data) {
+        data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+        data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    }
+
+     function AddEscala() {
+
+         $('#ModalEscala').find(':input').not(':submit').val('');
+         $('#ModalEscala').modal('show');
+         $("#EscalaId").val('0');
+
+
+
+
+    }
+
+
+         function EditEscala(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+             var dataObject = {
+                 IdEscala: dataItem.IdEscala,
+                editar : 0
+             };
+
+             console.log('dataobject', dataObject);
+
+            $.ajax({
+                url: '@Url.Action("pvwAddEscala", "Escala")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#numEscala").html('');
+                    $("#numEscala").html(result);
+
+
+                    //$("#btnCAI").hide();
+                    $('#ModalEscala').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+    }
+
+    function RefrescarGrid() {
+
+        var grid = $("#gridEscala").getKendoGrid();
+        grid.dataSource.read();
+
+    }
+
+
+</script>
+
+<h3 class="text-themecolor">Escala</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.Escala>
+              ()
+
+                .Name("gridEscala")
+
+                .Columns(columns =>
+                {
+                    columns.Bound(p => p.IdEscala).Width(150);
+                    columns.Bound(p => p.NombreEscala).Width(170);
+                    columns.Bound(p => p.DescripcionEscala).Width(170);
+                    columns.Bound(p => p.ValorInicial).Width(200);
+                    columns.Bound(p => p.ValorFinal).Width(150);
+                    columns.Bound(p => p.Porcentaje).Width(150);
+                    columns.Bound(p => p.ValorCalculo).Width(150);
+                    columns.Bound(p => p.Estado).Width(150);
+                    //columns.Bound(p => p.UsuarioCreacion).Width(170);
+                    //columns.Bound(p => p.UsuarioModificacion).Width(190);
+                    columns.Command(command =>
+                    {
+                        //command.Custom("Ver detalles").Click("Detalles");
+                        command.Custom("Editar").Click("EditEscala");
+                        command.Destroy();
+                    }).Width(250);
+
+                })
+
+
+                .ToolBar(tools =>
+                {
+
+                    //tools.Create();
+                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                              .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddEscala()" });
+                    tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                    tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                })
+                .Editable(e => e.Mode(GridEditMode.PopUp))
+                .Sortable()
+                .Pageable()
+                .Filterable()
+                .Scrollable()
+                .Pdf(pdf => pdf.FileName("EscalaReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                .Excel(excel => excel.FileName("EscalaReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                .DataSource(dataSource =>
+                dataSource
+                .WebApi()
+
+                .ServerOperation(true)
+                .Model(model =>
+                {
+                    model.Id(p => p.IdEscala);
+                    model.Field(p => p.IdEscala).Editable(false);
+
+
+                })
+                .Events(events => events.Error("error_handler"))
+                .Read(read => read.Action("Get", "Escala"))
+                //.Create(create => create.Action("Insert", "Escala").Type(HttpVerbs.Post))
+                //.Update(update => update.Action("Update", "Escala").Type(HttpVerbs.Post))
+               .Destroy(destroy => destroy.Action("Delete", "Escala").Type(HttpVerbs.Post))
+                )
+                .Events(e =>
+                {
+                    e.Save("onsave");
+
+                })
+)
+
+<div id="numEscala">
+    @await Html.PartialAsync("pvwAddEscala", new ERPMVC.DTO.EscalaDTO { IdEscala = 0 })
+</div>

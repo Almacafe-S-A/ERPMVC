@@ -10,23 +10,16 @@ namespace ERPMVC.Models
     public class Employees
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Display(Name = "Id")]
         public long IdEmpleado { get; set; }
-        [Required]
         public string NombreEmpleado { get; set; }
-        [Required]
         public string Correo { get; set; }
-        [Required]
         public long? Puesto { get; set; }
-        [Required]
         public DateTime? FechaNacimiento { get; set; }
         public DateTime? FechaIngreso { get; set; }
         public decimal? Salario { get; set; }
         public string Estado { get; set; }
-        [Required]
         public string Identidad { get; set; }
         public DateTime? FechaEgreso { get; set; }
-        [Required]
         public string Direccion { get; set; }
         public string Genero { get; set; }
         public long? IdEstado { get; set; }
@@ -55,10 +48,12 @@ namespace ERPMVC.Models
         public int IdTipoContrato { get; set; }
         public int IdDepartamento { get; set; }
         public string NombreDepartamento { get; set; }
-        
+
+
         public string Usuariocreacion { get; set; }
         public string Usuariomodificacion { get; set; }
         public DateTime? FechaCreacion { get; set; }
         public DateTime? FechaModificacion { get; set; }
+
     }
 }

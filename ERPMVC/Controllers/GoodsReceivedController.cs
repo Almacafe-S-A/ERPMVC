@@ -56,7 +56,10 @@ namespace ERPMVC.Controllers
 
                 if (_GoodsReceived == null)
                 {
-                    _GoodsReceived = new GoodsReceivedDTO {  DocumentDate=DateTime.Now, ExpirationDate=DateTime.Now,OrderDate=DateTime.Now,editar=1 };
+                    _GoodsReceived = new GoodsReceivedDTO {  DocumentDate=DateTime.Now, ExpirationDate=DateTime.Now,OrderDate=DateTime.Now,editar=1
+                    ,
+                        BranchId = Convert.ToInt64(HttpContext.Session.GetString("BranchId"))
+                    };
                 }
                 else
                 {
@@ -242,7 +245,7 @@ namespace ERPMVC.Controllers
                                        select new GoodsReceived
                                        {
                                            GoodsReceivedId = c.GoodsReceivedId,
-                                           ProductName = "Nombre:" + c.ProductName + "|| Fecha: " + c.DocumentDate + " || Total:" + c.WarehouseName,
+                                           ProductName = "Cliente:"+ c.CustomerName+ " ||Nombre:" + c.ProductName +" ||No. Documento:"+c.GoodsReceivedId + "|| Fecha: " + c.DocumentDate + " || Total:" + c.WarehouseName,
                                            //DocumentDate = c.DocumentDate,
                                            CustomerId = c.CustomerId,
                                        }
@@ -368,8 +371,12 @@ namespace ERPMVC.Controllers
                         var insertresult = await Insert(_GoodsReceived);
                         var value = (insertresult.Result as ObjectResult).Value;
                         _GoodsReceived = ((GoodsReceivedDTO)(value));
-
-                        return _GoodsReceived;
+                        if (_GoodsReceived.GoodsReceivedId == 0)
+                        {
+                            return await Task.Run(() => BadRequest("No se genero el documento!"));
+                        }
+                        
+                        return Ok(_GoodsReceived);
                     }
                     else
                     {

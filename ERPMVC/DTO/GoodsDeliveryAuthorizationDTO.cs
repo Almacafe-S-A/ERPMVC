@@ -9,6 +9,9 @@ namespace ERPMVC.DTO
     public class GoodsDeliveryAuthorizationDTO : GoodsDeliveryAuthorization
     {
         public int editar { get; set; } = 1;
-       
+
+        public List<Int64> CertificadosAsociados { get; set; }
+
+
     }
 }

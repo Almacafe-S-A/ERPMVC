@@ -16,6 +16,7 @@ using Newtonsoft.Json;
 using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
+using ERPMVC.DTO;
 
 namespace ERPMVC.Controllers
 {
@@ -33,23 +34,36 @@ namespace ERPMVC.Controllers
             this.config = config;
             this._logger = logger;
         }
-        
+
 
         // GET: Customer
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
-            return View();
+            return await Task.Run(() => View());
         }
 
 
-        public ActionResult SalesOrderCustomer()
+
+
+        public async Task<ActionResult> SalesOrderCustomer()
         {
-            return PartialView();
+            return await Task.Run(() => PartialView());
         }
 
         public ActionResult CustomerProduct()
         {
             return PartialView();
+        }
+
+
+        public async Task<ActionResult> CertificadoDepositoCustomer()
+        {
+            return await Task.Run(() => PartialView());
+        }
+
+        public async Task<ActionResult> ProformaInvoiceCustomer()
+        {
+            return await Task.Run(() => PartialView());
         }
 
         [HttpGet("[action]")]
@@ -78,7 +92,59 @@ namespace ERPMVC.Controllers
 
 
 
-            return Json(_customers);
+            return await Task.Run(() => Json(_customers));
+        }
+
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<Customer>> SaveCustomer([FromBody]Customer _Customer)
+        {
+
+            try
+            {
+                Customer _listCustomer = new Customer();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Customer/GetCustomerById/" + _Customer.CustomerId);
+                string valorrespuesta = "";
+                _Customer.FechaModificacion = DateTime.Now;
+                _Customer.UsuarioModificacion = HttpContext.Session.GetString("user");
+                if (result.IsSuccessStatusCode)
+                {
+
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _listCustomer = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
+                }
+
+                if (_listCustomer.CustomerId == 0)
+                {
+                    _Customer.FechaCreacion = DateTime.Now;
+                    _Customer.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Post(_Customer);
+                    var value = (insertresult.Result as ObjectResult).Value;
+                    _Customer = ((Customer)(value));
+                    if (_Customer.CustomerId == 0)
+                    {
+                        return await Task.Run(() => BadRequest("No se genero el documento!"));
+                    }
+                }
+                else
+                {
+                    _Customer.UsuarioCreacion = _listCustomer.UsuarioCreacion == "" ? HttpContext.Session.GetString("user") : _listCustomer.UsuarioCreacion;
+                    _Customer.FechaCreacion = _listCustomer.FechaCreacion==null?DateTime.Now: _listCustomer.FechaCreacion;
+
+                    var updateresult = await Put(_Customer.CustomerId, _Customer);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_Customer);
         }
 
         // GET: Customer/Details/5
@@ -86,7 +152,7 @@ namespace ERPMVC.Controllers
         {
             Customer _customers = new Customer();
             try
-            {               
+            {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -104,23 +170,23 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-        
 
 
-            return View(_customers);
+
+            return await Task.Run(() => View(_customers));
         }
 
         // GET: Customer/Create
-        public ActionResult Create()
+        public async Task<ActionResult> Create()
         {
-            return View();
+            return await Task.Run(() => View());
         }
 
-        
+
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-              List<Customer> _customers = new List<Customer>();
+            List<Customer> _customers = new List<Customer>();
             try
             {
 
@@ -143,9 +209,9 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-        
-      
-            return _customers.ToDataSourceResult(request);
+
+
+            return await Task.Run(() => _customers.ToDataSourceResult(request));
 
         }
 
@@ -177,16 +243,77 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _customers.ToDataSourceResult(request);
+            return await Task.Run(() => _customers.ToDataSourceResult(request));
 
         }
 
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<SalesOrder>> InsertCustomerFromSalesOrder([FromBody]SalesOrderDTO _SalesOrder)
+        {
+            SalesOrderDTO _so = new SalesOrderDTO();
+            Customer _customer = new Customer();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/SalesOrder/GetSalesOrderById/" + _SalesOrder.SalesOrderId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _so = JsonConvert.DeserializeObject<SalesOrderDTO>(valorrespuesta);
+
+                    _customer.CustomerName = _so.SalesOrderName;
+                    _customer.RTN = _so.RTN;
+                    _customer.Phone = _so.Tefono;
+                    _customer.Identidad = _so.RTN;
+                    _customer.Email = _so.Correo;
+                    //_customer. = _so.SalesOrderName;
+
+
+                    var resultsalesorder = await Post(_customer);
+                    var value = (resultsalesorder.Result as ObjectResult).Value;
+                    _customer = ((Customer)(value));
+
+
+                    _so.CustomerId = _customer.CustomerId;
+                    _so.CustomerName = _customer.CustomerName;
+                    _client = new HttpClient();
+
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    result = await _client.PostAsJsonAsync(baseadress + "api/SalesOrder/Update", _so);
+                    valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+
+                    }
+                    else
+                    {
+                        return await Task.Run(() => BadRequest($"La actualización de la cotización no se hizo correctamente "));
+
+                    }
+
+                }
+
+
+
+            }
+            catch (Exception ex)
+            {
+                return await Task.Run(() => BadRequest($"Ocurrio un error{ex.Message}"));
+                throw ex;
+            }
+
+            return await Task.Run(() => Ok(_customer));
+        }
 
 
         // POST: Customer/Create
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public async Task<ActionResult> Post(Customer _customer)
+        public async Task<ActionResult<Customer>> Post(Customer _customer)
         {
             try
             {
@@ -202,16 +329,18 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _customer = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
+
                 }
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                return await Task.Run(() => BadRequest($"Ocurrio un error{ex.Message}"));
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _customer }, Total = 1 });
+            return await Task.Run(() => Ok(_customer));
+            // return await Task.Run(() => new ObjectResult(new DataSourceResult { Data = new[] { _customer }, Total = 1 }));
         }
 
         [HttpPut("{id}")]
@@ -223,7 +352,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PutAsJsonAsync(baseadress + "api/Customer/Update", _customer);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Customer/Update", _customer);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -238,13 +367,13 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _customer }, Total = 1 });
+            return await Task.Run(() => new ObjectResult(new DataSourceResult { Data = new[] { _customer }, Total = 1 }));
         }
 
-            // GET: Customer/Edit/5
-            public ActionResult Edit(int id)
+        // GET: Customer/Edit/5
+        public async Task<ActionResult> Edit(int id)
         {
-            return View();
+            return await Task.Run(() => View());
         }
 
         // POST: Customer/Edit/5

@@ -2,8 +2,8 @@
 
 @{ Layout = null;
     var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
-                                                {"required","Valor requerido" }
-                                            };
+                                        {"required","Valor requerido" }
+                                    };
     var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
 }
 
@@ -22,6 +22,10 @@
             return false;
         }
 
+        if (input.attr('name') === "ControlPalletsId" && input.val() === "0") {
+            return false;
+        }
+
         if (input.attr('name') === "Quantity" && input.val() == 0) {
             return false;
         }
@@ -34,6 +38,11 @@
             return false;
         }
 
+        if (input.attr('name') === "WeightBallot" && input.val() == 0) {
+            return false;
+        }
+
+        
 
 
         return true;
@@ -99,18 +108,20 @@
 
                                                             return data;
                                                         }
-                                                        function changesetearvalues() {
-                                                            var dataObject = { 'Id': $("#cbxBuscar").val() };
 
+                                                        async  function changesetearvalues() {
+                                                            var dataObject = { 'GoodsDeliveryAuthorizationId': $("#cbxBuscar").val() };
+
+                                                            clearsession();
 
 
                                                                $.ajax({
-                                                                     url: '@Url.Action("GetDeliveryAuthorizationById", "GoodsDeliveryAuthorization")',
-                                                                     method: 'GET',
+                                                                     url: '@Url.Action("GetDeliveryAuthorizationById", "GoodsDeliveryAuthorization")'  ,
+                                                                     method: 'POST',
                                                                      datatype: "json",
                                                                      contentType: 'application/json',
-                                                                     async: false,
-                                                                     data: dataObject,
+                                                                      async: false,
+                                                                     data: JSON.stringify( dataObject),
                                                                      success: function (data) {
                                                                         console.log(data);
 
@@ -131,33 +142,77 @@
                                                                          $("#Name").val(data.Motorista);
 
                                                                          var grid = $("#gridGoodsDeliveredDetail").data("kendoGrid");
-                                                                         var datasource = grid.dataSource;                                                                        
-                                                                         var raw = datasource._data;                                                                      
-                                                                         for (i = datasource._data.length - 1; i >= 0; i--) {                                                                           
-                                                                             item = raw[i];                                                                           
-                                                                             datasource.remove(item);                                                                          
+                                                                         var datasource = grid.dataSource;
+                                                                         var raw = datasource._data;
+                                                                         for (i = datasource._data.length - 1; i >= 0; i--) {
+                                                                             item = raw[i];
+                                                                             datasource.remove(item);
                                                                          }
 
+                                                                         datasource.async = false;
+
                                                                          for (i = 0; i < data.GoodsDeliveryAuthorizationLine.length; i++) {
-                                                                             datasource.insert({
-                                                                                   GoodsDeliveredLinedId: 0
-                                                                                 , GoodsDeliveredId : 0
-                                                                                 , NoCD: data.GoodsDeliveryAuthorizationLine[i].NoCertificadoDeposito                                                                                 
+
+                                                                             var dataObject = {
+                                                                                 GoodsDeliveredLinedId: i + 1
+                                                                                 , GoodsDeliveredId: 0
+                                                                                 , NoCD: data.GoodsDeliveryAuthorizationLine[i].NoCertificadoDeposito
                                                                                  , UnitOfMeasureName: data.GoodsDeliveryAuthorizationLine[i].UnitOfMeasureName
                                                                                  , UnitOfMeasureId: data.GoodsDeliveryAuthorizationLine[i].UnitOfMeasureId
                                                                                  , Quantity: data.GoodsDeliveryAuthorizationLine[i].Quantity                                                                                
-                                                                                 , SubProductId: data.GoodsDeliveryAuthorizationLine[i].SubProductId
-                                                                                 , QuantitySacos: data.GoodsDeliveryAuthorizationLine[i].QuantitySacos
+                                                                                 , QuantitySacos: data.GoodsDeliveryAuthorizationLine[i].QuantitySacos == null ? 0 : data.GoodsDeliveryAuthorizationLine[i].QuantitySacos
                                                                                  , WareHouseId: data.GoodsDeliveryAuthorizationLine[i].WarehouseId
                                                                                  , WareHouseName: data.GoodsDeliveryAuthorizationLine[i].WarehouseName
-                                                                                 , SubProductName: data.SubProductName                                                                                                                                                         
-                                                                                 , WareHouseId: data.WarehouseId
-                                                                                 , NoAR : $("#cbxBuscar").val()
+                                                                                 , SubProductId: data.GoodsDeliveryAuthorizationLine[i].SubProductId
+                                                                                 , SubProductName: data.GoodsDeliveryAuthorizationLine[i].SubProductName
+                                                                                // , WareHouseId: data.WarehouseId
+                                                                                 , NoAR: $("#cbxBuscar").val()
+                                                                                 , CenterCostId :0
+                                                                                 , ProducId: 0
+                                                                                 , Price: 0
+                                                                                 , ControlPalletsId:0
+                                                                             };
+
+                                                                             datasource.insert(dataObject);
+                                                                             
+                                                                               $.ajax({
+                                                                               url: '@Url.Action("SetLinesInSession", "GoodsDeliveredLine")',
+                                                                               method: 'POST',
+                                                                               datatype: "json",
+                                                                               contentType: 'application/json',
+                                                                               async: false,
+                                                                               data: JSON.stringify(dataObject),
+                                                                               success: function (result) {
+                                                                                  // console.log(data);
+                                                                                  // data = result;
+
+                                                                               },
+                                                                                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                                                                     alert(textStatus + ": " + XMLHttpRequest.responseText);
+                                                                                }
                                                                              });
+
+                                                                             console.log(dataObject);
+                                                                            
+
+
+                                                                             //$("#GoodsDeliveredLinedId").val(i + 1);
+                                                                             //$("#UnitOfMeasureId").data("kendoDropDownList").value(data.GoodsDeliveryAuthorizationLine[i].UnitOfMeasureId);
+                                                                             ////$("#ProducId").data("kendoDropDownList").value();
+                                                                             //$("#SubProductIddetail").data("kendoDropDownList").value(data.GoodsDeliveryAuthorizationLine[i].SubProductId);
+                                                                             //$("#Quantity").data("kendoNumericTextBox").value(data.GoodsDeliveryAuthorizationLine[i].Quantity);
+                                                                             //$("#QuantitySacos").data("kendoNumericTextBox").value(data.GoodsDeliveryAuthorizationLine[i].QuantitySacos);
+                                                                             //$("#WareHouseId").data("kendoNumericTextBox").value(data.WarehouseId);
+                                                                             //   $("#Price").data("kendoNumericTextBox").value()
+                                                                             //   $("#Total").data("kendoNumericTextBox").value()
+                                                                              //  $("#CenterCostId").data("kendoNumericTextBox").value()
+                                                                          
+                                                                            
+                                                                            // RefreshGoodsDeliveredDetail();
                                                                          }
 
                                                                         // $("#singuardar").val(1);
-                                                                         
+
                                                                          //var numeric = $("#ValueDecimal").data("kendoNumericTextBox");
                                                                         //numeric.value(data.ValueDecimal);
                                                                         //numeric.trigger('change');
@@ -194,27 +249,27 @@
                                                     </script>
                                                     <input type="hidden" id="singuardar" value="0" />
                                                     @(Html.Kendo().DropDownList()
-                                                                       .Name("cbxBuscar")
-                                                                       .Filter(Kendo.Mvc.UI.FilterType.Contains)
-                                                                       .OptionLabel("Buscar")
-                                                                       .DataTextField("CustomerName")
-                                                                       .DataValueField("GoodsDeliveryAuthorizationId")
-                                                                       .HtmlAttributes(new { style = "width:100%" })                                                                    
-                                                                       .Height(290)
-                                                                       .Events(e =>
-                                                                       {
-                                                                           e.Change("changesetearvalues");
-                                                                           // e.Filtering("applyFilterCustomer");
-                                                                       })
-                                                                       .AutoBind(true)
-                                                                       .DataSource(source =>
-                                                                       {
-                                                                           source.Ajax()
-                                                                           .PageSize(80)
+                                                                               .Name("cbxBuscar")
+                                                                               .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                                                                               .OptionLabel("Buscar")
+                                                                               .DataTextField("CustomerName")
+                                                                               .DataValueField("GoodsDeliveryAuthorizationId")
+                                                                               .HtmlAttributes(new { style = "width:100%" })
+                                                                               .Height(290)
+                                                                               .Events(e =>
+                                                                               {
+                                                                                   e.Change("changesetearvalues");
+                                                                                                                       // e.Filtering("applyFilterCustomer");
+                                                                                                                   })
+                                                                               .AutoBind(true)
+                                                                               .DataSource(source =>
+                                                                               {
+                                                                                   source.Ajax()
+                                                                                   .PageSize(80)
 
-                                                                           .Read("Virtualization_Read", "GoodsDeliveryAuthorization");
-                                                                       })
-                                                                       .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapper"))
+                                                                                   .Read("Virtualization_Read", "GoodsDeliveryAuthorization");
+                                                                               })
+                                                                               .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapper"))
                                                     )
 
 
@@ -242,28 +297,28 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <script>
-                                                       
+
                                                         function GetSubProduct(e) {
                                                             var dataItem = e.dataItem;
                                                             $("#hcustomerid").val(dataItem.CustomerId);
                                                             hcustom = dataItem.CustomerId;
-                                                           $("#SubProductId").data("kendoDropDownList").dataSource.read();
+                                                            $("#SubProductId").data("kendoDropDownList").dataSource.read();
 
                                                         }
-                                                     
+
                                                     </script>
 
 
                                                     <label asp-for="CustomerId" class="control-label"></label>
                                                     @*onchange="SetCustomerName();"
-                                                              on-select="GetSubProduct"
+                                                        on-select="GetSubProduct"
                                                     *@
                                                     <kendo-dropdownlist name="CustomerId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        option-label="Select CustomerId"
+                                                                        option-label="Seleccione el cliente"
                                                                         required
                                                                         datatextfield="CustomerName"
                                                                         datavaluefield="CustomerId"
-                                                                on-select="GetSubProduct"                                      
+                                                                        on-select="GetSubProduct"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi">
                                                             <transport>
@@ -297,10 +352,11 @@
                                                                         option-label="Seleccione Sucursal"
                                                                         datatextfield="BranchName"
                                                                         datavaluefield="BranchId"
+                                                                        enable="false"
                                                                         required
                                                                         auto-bind="true"
                                                                         style="width: 100%;">
-                                                        <datasource type="DataSourceTagHelperType.WebApi" >
+                                                        <datasource type="DataSourceTagHelperType.WebApi">
                                                             <transport>
                                                                 <read url="@Url.Action("GetBranch", "Branch")" />
                                                             </transport>
@@ -316,7 +372,7 @@
 
 
                                     <div class="row">
-                                       
+
 
                                         <div class="col-md-4">
                                             <div class="form-group">
@@ -391,7 +447,7 @@
 
                                                 <input type="hidden" id="subproductname" />
                                                 <kendo-dropdownlist name="SubProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                    option-label="Select SubProductId"
+                                                                    option-label="Seleccione Producto del cliente"
                                                                     for="SubProductId"
                                                                     datatextfield="ProductName"
                                                                     datavaluefield="SubproductId"
@@ -439,13 +495,14 @@
                                         </div>
 
 
-                                       
+
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <label asp-for="ExitTicket" class="control-label" style="width:100%"></label>
                                                 <kendo-numerictextbox name="ExitTicket"
                                                                       format="n"
                                                                       min="0"
+                                                                      enable="false"
                                                                       max="99999999"
                                                                       step="1"
                                                                       style="width: 100%;"
@@ -469,10 +526,89 @@
 
                                         <div class="col-md-4">
                                             <div class="form-group">
+                                                <script>
+                                                    function GetBoletaPeso() {
+
+                                                        var notification = $("#notification").data("kendoNotification");
+                                                        var dataObject = { 'clave_e': $("#WeightBallot").val()};
+                                                        $.ajax({
+                                                            url: '@Url.Action("GetBoleto_EntById", "Boleto_Ent")',
+                                                            method: 'GET',
+                                                            datatype: "json",
+                                                            contentType: 'application/json',
+                                                            async: false,
+                                                            data: dataObject,
+                                                            success: function (result) {
+                                                                //console.log('Restful API:');
+                                                               // console.log(result);
+
+                                                                var resultados = result;
+
+
+
+                                                                if (result.clave_e == 0) {
+                                                                    //Web api local
+
+                                                                    var urlbase = "http://localhost:9200/api/code"
+                                                                    var dataObject2 = { 'id': $("#WeightBallot").val() };
+
+                                                                    $.get(urlbase + '/' + $("#WeightBallot").val(), function (responseText) {
+                                                                        //alert(responseText);
+                                                                        resultados = responseText;
+
+                                                                        $.ajax({
+                                                                                url: '@Url.Action("SaveBoleto_Ent", "Boleto_Ent")',
+                                                                                type: 'POST',
+                                                                                method: 'POST',
+                                                                                dataType: 'json',
+                                                                                // contentType: 'application/json',
+                                                                                data: JSON.stringify(resultados),
+                                                                                async: false,
+                                                                                success: function (json) {
+                                                                                    //  console.log(json);
+                                                                                    //resultados = json;
+
+                                                                                },
+                                                                                error: function (parsedjson, textStatus, errorThrown) {
+
+                                                                                    $('body').append(
+                                                                                        "parsedJson status: " + parsedjson.status + '</br>' +
+                                                                                        "errorStatus: " + textStatus + '</br>' +
+                                                                                        "errorThrown: " + errorThrown);
+
+                                                                                }
+                                                                            });
+                                                                    });
+
+
+
+                                                                }
+
+                                                                $("#Name").val(resultados.conductor);
+                                                                $("#Placa").val(resultados.placas);
+
+                                                                if (resultados.Boleto_Sal.peso_s < resultados.peso_e) {
+
+                                                                    notification.show({
+                                                                        title: "Validación",
+                                                                        message: "La boleta de peso es una entrada de mercancía"
+                                                                    }, "error");
+
+                                                                    return false;
+                                                                }
+
+                                                            },
+                                                             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                                                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                                                              }
+                                                         });
+                                                    }
+                                                </script>
                                                 <label asp-for="WeightBallot" class="control-label" style="width:100%"></label>
                                                 <kendo-numerictextbox name="WeightBallot"
                                                                       format="n"
                                                                       min="0"
+                                                                      onchange="return GetBoletaPeso();"
                                                                       spinners="false"
                                                                       max="99999999"
                                                                       step="1"
@@ -491,10 +627,10 @@
                                         </div>
 
 
-                                        
+
 
                                     </div>
-                                    
+
 
                                     <div class="row">
 
@@ -517,35 +653,35 @@
                                     </div>
 
 
-                                        @*
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label asp-for="PalletId" class="control-label" style="width: 100%;"></label>
-                    <kendo-numerictextbox name="PalletId"
-                                          format="n"
-                                          min="0"
-                                          max="99999999"
-                                          step="1"
-                                          style="width: 100%;"
-                                          value="Model.PalletId"></kendo-numerictextbox>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="form-group">
-                    <label asp-for="EsIngreso" class="control-label" style="width: 100%;"></label>
-                    <kendo-numerictextbox name="EsIngreso"
-                                          format="n"
-                                          min="0"
-                                          disabled
-                                          max="99999999"
-                                          step="1"
-                                          style="width: 100%;"
-                                          value="Model.EsIngreso"></kendo-numerictextbox>
-                </div>
-            </div>
-        </div>*@
+                                    @*
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="PalletId" class="control-label" style="width: 100%;"></label>
+                                                    <kendo-numerictextbox name="PalletId"
+                                                                          format="n"
+                                                                          min="0"
+                                                                          max="99999999"
+                                                                          step="1"
+                                                                          style="width: 100%;"
+                                                                          value="Model.PalletId"></kendo-numerictextbox>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="EsIngreso" class="control-label" style="width: 100%;"></label>
+                                                    <kendo-numerictextbox name="EsIngreso"
+                                                                          format="n"
+                                                                          min="0"
+                                                                          disabled
+                                                                          max="99999999"
+                                                                          step="1"
+                                                                          style="width: 100%;"
+                                                                          value="Model.EsIngreso"></kendo-numerictextbox>
+                                                </div>
+                                            </div>
+                                        </div>*@
 
-</form>
+                                </form>
 
 
                                 <div id="salesorderdetail">
@@ -553,7 +689,7 @@
                                 </div>
 
                                 <div id="GoodsDeliveredLineMant">
-                                    @await Html.PartialAsync("pvwGoodsDeliveredDetailMant", new ERPMVC.Models.GoodsDeliveredLine {  GoodsDeliveredLinedId = 0, GoodsDeliveredId = Model.GoodsDeliveredId })
+                                    @await Html.PartialAsync("pvwGoodsDeliveredDetailMant", new ERPMVC.Models.GoodsDeliveredLine { GoodsDeliveredLinedId = 0, GoodsDeliveredId = Model.GoodsDeliveredId })
                                 </div>
 
 
@@ -568,35 +704,35 @@
                                                     <div class="col-lg-4">
                                                         <dl class="dl-horizontal">
                                                             @*<dt>
-                                                                <label asp-for="SubTotal" class="col-md-2 control-label"></label>
-                                                            </dt>
-                                                            <dd>
-                                                                <kendo-numerictextbox name="SubTotal"
-                                                                                      format="n2"
-                                                                                      style="width: 100%;"
-                                                                                      min="0" disabled
-                                                                                      max="999999999"
-                                                                                      step="1"
-                                                                                      value="Model.SubTotal"></kendo-numerictextbox>
-                                                                <span asp-validation-for="SubTotal" class="text-danger"></span>
-                                                            </dd>*@
+                                                                    <label asp-for="SubTotal" class="col-md-2 control-label"></label>
+                                                                </dt>
+                                                                <dd>
+                                                                    <kendo-numerictextbox name="SubTotal"
+                                                                                          format="n2"
+                                                                                          style="width: 100%;"
+                                                                                          min="0" disabled
+                                                                                          max="999999999"
+                                                                                          step="1"
+                                                                                          value="Model.SubTotal"></kendo-numerictextbox>
+                                                                    <span asp-validation-for="SubTotal" class="text-danger"></span>
+                                                                </dd>*@
 
                                                             @*<dt>
-                                                                <label asp-for="tot" class="control-label"></label>
-                                                            </dt>
+                                                                    <label asp-for="tot" class="control-label"></label>
+                                                                </dt>
 
-                                                            <dd>
-                                                                <kendo-numerictextbox name="TotalSacos"
-                                                                                      format="n2"
-                                                                                      min="0"
-                                                                                      disabled
-                                                                                      required
-                                                                                      style="width: 100%;"
-                                                                                      max="999999999"
-                                                                                      step="1"
-                                                                                      value="Model.TotalSacos"></kendo-numerictextbox>
-                                                                <span asp-validation-for="TotalSacos" class="text-danger"></span>
-                                                            </dd>*@
+                                                                <dd>
+                                                                    <kendo-numerictextbox name="TotalSacos"
+                                                                                          format="n2"
+                                                                                          min="0"
+                                                                                          disabled
+                                                                                          required
+                                                                                          style="width: 100%;"
+                                                                                          max="999999999"
+                                                                                          step="1"
+                                                                                          value="Model.TotalSacos"></kendo-numerictextbox>
+                                                                    <span asp-validation-for="TotalSacos" class="text-danger"></span>
+                                                                </dd>*@
 
                                                         </dl>
                                                     </div>
@@ -607,7 +743,7 @@
                                 </form>
 
                                 <div class="row">
-                                    @if (Model.editar==1)
+                                    @if (Model.editar == 1)
                                     {
                                         <button id="btnSaveControlEstiba" type="submit" class="form-control btn-miboton" onclick="SaveGoodsDelivered(this);">Guardar</button>
                                     }
@@ -626,7 +762,7 @@
 
 
 <script>
-  
+
 
     function RefreshGridGoodsDelivered() {
         var grid = $("#gridGoodsDelivered").getKendoGrid();
@@ -636,104 +772,119 @@
     function SaveGoodsDelivered(e) {
 
         var notification = $("#notification").data("kendoNotification");
-       // e.preventDefault();
-        $("#btnSaveControlEstiba").hide();
-        $("#btnSaveControlEstiba").prop("disabled", true);
 
-        var displayedData = $("#gridGoodsDeliveredDetail").data().kendoGrid.dataSource.view();
+        if ($("#cbxBuscar").val() !== '' && $("#cbxBuscar").val() !== null) {
+            // e.preventDefault();
+            $("#btnSaveControlEstiba").hide();
+            $("#btnSaveControlEstiba").prop("disabled", true);
 
-        var dataObject = {                    
-            'GoodsDeliveredId': $("#GoodsDeliveredId").val(),
-            'CustomerId': $("#CustomerId").val(),
-            'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
-            'BranchId': $("#BranchId").val(),          
-            'BranchName': $("#BranchId").data("kendoDropDownList").text(),
-            'CurrencyId': $("#CurrencyId").val(),
-            //'WarehouseId': $("#WarehouseId").val(),
-           // 'WarehouseName': $("#WarehouseId").data("kendoDropDownList").text(),
-            'Placa': $("#Placa").val(),
-            'Marca': $("#Marca").val(),
-            'ProductId': $("#ProductId").val(),
-            'ProductName': $("#ProductId").data("kendoDropDownList").text(),
-            'SubProductId': $("#SubProductId").val(),
-            'SubProductName': $("#SubProductId").data("kendoDropDownList").text(),
-            // 'OrderDate': $("#OrderDate").getKendoDateTimePicker().value().toJSON(),
-            'OrderDate':  $("#DocumentDate").getKendoDateTimePicker().value().toJSON(),
-            'DocumentDate': $("#DocumentDate").getKendoDateTimePicker().value().toJSON(),
-            'Name': $("#Name").val(),
-            'Reference': $("#Reference").val(),
-            'ExitTicket': $("#ExitTicket").val(),
-            'Comments': $("#Comments").val(),
-            '_GoodsDeliveredLine': displayedData
-        }; 
+            var displayedData = $("#gridGoodsDeliveredDetail").data().kendoGrid.dataSource.data();
+            for (var i = 0; i < displayedData.length; i++) {
+                displayedData[i].GoodsDeliveredLinedId = 0;
+            }
 
-        var validator = $("#frmGoodsDelivered").data("kendoValidator");
-        var validator2 = $("#TotalesDocumento").data("kendoValidator");
-        var status = $(".status");
+            var dataObject = {
+                'GoodsDeliveredId': $("#GoodsDeliveredId").val(),
+                'CustomerId': $("#CustomerId").val(),
+                'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
+                'BranchId': $("#BranchId").val(),
+                'BranchName': $("#BranchId").data("kendoDropDownList").text(),
+                'CurrencyId': $("#CurrencyId").val(),              
+                'Placa': $("#Placa").val(),
+                'Marca': $("#Marca").val(),
+                'ProductId': $("#ProductId").val(),
+                'ProductName': $("#ProductId").data("kendoDropDownList").text(),
+                'SubProductId': $("#SubProductId").val(),
+                'SubProductName': $("#SubProductId").data("kendoDropDownList").text(),              
+                'OrderDate': $("#DocumentDate").getKendoDateTimePicker().value().toJSON(),
+                'DocumentDate': $("#DocumentDate").getKendoDateTimePicker().value().toJSON(),
+                'Name': $("#Name").val(),
+                'Reference': $("#Reference").val(),
+                'ExitTicket': $("#ExitTicket").val(),
+                'Comments': $("#Comments").val(),
+                'GoodsDeliveryAuthorizationId': ($("#cbxBuscar").val()),
+                'WeightBallot': $("#WeightBallot").val(),
+                '_GoodsDeliveredLine': displayedData
+                  //'WarehouseId': $("#WarehouseId").val(),
+                // 'WarehouseName': $("#WarehouseId").data("kendoDropDownList").text(),
+                  // 'OrderDate': $("#OrderDate").getKendoDateTimePicker().value().toJSON(),
+               
+            };
 
-        if (displayedData.length > 0) {
-            if (validator.validate() && validator2.validate()) {
+            var validator = $("#frmGoodsDelivered").data("kendoValidator");
+            var validator2 = $("#TotalesDocumento").data("kendoValidator");
+            var status = $(".status");
 
-                $.ajax({
-                    url: '@Url.Action("SaveGoodsDelivered", "GoodsDelivered")',
-                    method: 'POST',
-                    datatype: "json",
-                    //contentType: "application/x-www-form-urlencoded; charset=UTF-8", 
-                    contentType: 'application/json',
-                    async: false,
-                    data: JSON.stringify(dataObject),
-                    success: function (data) {
+            if (displayedData.length > 0) {
+                if (validator.validate() && validator2.validate()) {
 
-                        $.toast({
-                            heading: 'Satisfactorio',
-                            text: 'Datos guardados correctamente.',
-                            position: 'top-right',
-                            loaderBg: '#ff6849',
-                            icon: 'success',
-                            hideAfter: 30000,
-                            stack: 6
-                        });
+                    $.ajax({
+                        url: '@Url.Action("SaveGoodsDelivered", "GoodsDelivered")',
+                        method: 'POST',
+                        datatype: "json",
+                        //contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
 
-                        //notification.show({
-                        //    message: "Guardado correctamente!"
-                        //}, "upload-success");
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: 'Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
 
-                        RefreshGridGoodsDelivered();                        
-                        $('#myModalGoodsDelivered').modal('hide');
+                            //notification.show({
+                            //    message: "Guardado correctamente!"
+                            //}, "upload-success");
 
-                    },
-                    error: function (XMLHttpRequest, textStatus, errorThrown) {
-                        $("#btnSaveControlEstiba").show();
-                        $("#btnSaveControlEstiba").prop("disabled", false);
-                        $("#btngenerarfactura").show();
-                        notification.show({
-                            title: "Validacion",
-                            message: textStatus + ": " + XMLHttpRequest.responseText
-                        }, "error");
+                            RefreshGridGoodsDelivered();
+                            $('#myModalGoodsDelivered').modal('hide');
 
-                    }
-                });
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            $("#btnSaveControlEstiba").show();
+                            $("#btnSaveControlEstiba").prop("disabled", false);
+                            $("#btngenerarfactura").show();
+                            notification.show({
+                                title: "Validacion",
+                                message: textStatus + ": " + XMLHttpRequest.responseText
+                            }, "error");
 
+                        }
+                    });
+
+                }
+                else {
+                    $("#btnSaveControlEstiba").show();
+                    $("#btnSaveControlEstiba").prop("disabled", false);
+                    //status.text("Oops! There is invalid data in the form.")
+                    //    .removeClass("valid")
+                    //    .addClass("invalid");
+                }
             }
             else {
                 $("#btnSaveControlEstiba").show();
                 $("#btnSaveControlEstiba").prop("disabled", false);
-                //status.text("Oops! There is invalid data in the form.")
-                //    .removeClass("valid")
-                //    .addClass("invalid");
+                notification.show({
+                    title: "Validación",
+                    message: "Debe agregar los productos!"
+                }, "error");
+
             }
         }
         else {
-            $("#btnSaveControlEstiba").show();
-            $("#btnSaveControlEstiba").prop("disabled", false);
             notification.show({
-                title: "Validacion",
-                message: "Debe agregar los productos!"
+                title: "Validación",
+                message: "Debe de seleccionar la autorización!"
             }, "error");
-   
         }
 
       //  $("#btnSaveControlEstiba").show();
-       
+
     }
 </script>

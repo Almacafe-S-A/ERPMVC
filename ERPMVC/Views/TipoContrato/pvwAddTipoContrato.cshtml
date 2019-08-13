@@ -1,0 +1,194 @@
+﻿@model ERPMVC.DTO.TipoContratoDTO
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+           // {"required","Valor requerido" }
+        };
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<script>
+
+        function customFunction(input) {
+
+            if (input.attr('name') === "BranchId" && input.val() === "0") {
+                return false;
+            }
+
+        }
+
+
+</script>
+
+
+
+<div id="ModalTipoContrato" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Tipo Contrato</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmTipoContrato" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveTipoContrato"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <h3 class="card-title">TipoContrato</h3>
+                                        <hr>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="IdTipoContrato" class=" control-label" style="width:100%">Id TipoContratoo</label>
+                                                    <input type="text" asp-for="IdTipoContrato" name="IdTipoContrato" class="form-control" disabled="disabled" style="width:100%" />
+                                                    <span asp-validation-for="IdTipoContrato" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="NombreTipoContrato" class=" control-label" style="width:100%">Nombre tipo de contrato</label>
+                                                    <input type="text" asp-for="NombreTipoContrato" name="NombreTipoContrato" class="form-control" style="width:100%" />
+                                                    <span asp-validation-for="NombreTipoContrato" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="IdEstado" class="control-label"></label>
+                                                    <kendo-dropdownlist name="IdEstado"
+                                                                        for="@Model.IdEstado"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar Estado"
+                                                                        datatextfield="NombreEstado"
+                                                                        datavaluefield="IdEstado"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+
+
+
+                                        </div>
+                                       
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button id="btnTipoContrato" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+        function SaveTipoContrato(e) {
+
+            var notification = $("#notification").data("kendoNotification");
+           // e.preventDefault();
+            $("#btnTipoContrato").hide();
+            $("#btnTipoContrato").prop("disabled", true);
+
+            var displayedData = $("#gridTipoContrato").data().kendoGrid.dataSource.view();
+
+            var dataObject = {
+                'IdTipoContrato': $("#IdTipoContrato").val() === "" ? "0" : $("#IdTipoContrato").val(),
+                'NombreTipoContrato': $("#NombreTipoContrato").val(),
+                'IdEstado': $("#IdEstado").val(),
+
+                           //'FechaCreacion': $("#FechaCreacion").val(),
+                           //'FechaModificacion':$("#FechaModificacion").val(),
+                           //'UsuarioCreacion':$("#UsuarioCreacion").val(),
+                           //'UsuarioModificacion':$("#UsuarioModificacion").val(),
+                          // '_TipoContrato': displayedData
+            };
+
+           // console.log(JSON.stringify(dataObject));
+            //var form = $("#frmNumeracion");
+           // form.validate();
+
+            var validator = $("#frmTipoContrato").data("kendoValidator");
+                 var status = $(".status");
+            console.log(validator)
+            console.log('VERIFICAR',displayedData.length)
+            if (displayedData.length > 0) {
+                if (validator.validate()) {
+
+                    $.ajax({
+                        url: '@Url.Action("SaveTipoContrato", "TipoContrato")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+
+                            //notification.show({
+                            //    message: "Guardado correctamente!"
+                            //}, "upload-success");
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: 'Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+
+                            RefrescarGrid();
+
+                            $('#ModalTipoContrato').modal('hide');
+
+
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            console.log('VERIFICAR')
+
+                            notification.show({
+                                title: "Validacion",
+                                message: textStatus + ": " + XMLHttpRequest.responseText
+                            }, "error");
+
+                        }
+                    });
+
+                }
+                else {
+                    status.text("Oops! There is invalid data in the form.")
+                        .removeClass("valid")
+                        .addClass("invalid");
+                }
+            }
+            else {
+                notification.show({
+                    title: "Validacion",
+                    message: "Debe agregar los TipoContratoos!"
+                }, "error");
+               // notification.show("New E-mail","Debe agregar los TipoContratoos", "info");
+                //alert('Debe agregar los TipoContratoos!!');
+            }
+
+            $("#btnTipoContrato").show();
+            $("#btnTipoContrato").prop("disabled", false);
+    }
+</script>

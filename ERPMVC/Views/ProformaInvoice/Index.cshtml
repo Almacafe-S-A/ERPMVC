@@ -96,6 +96,38 @@
 
     }
 
+    function GenerarFactura(e) {
+        if (confirm('Esta seguro de generar una factura?')) {
+            e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                ProformaId: dataItem.ProformaId,
+                editar: 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("GenerarFactura", "ProformaInvoice")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#salesorder").html('');
+                    $("#salesorder").html(result);
+
+                    //  RefreshCotizacionesDetail();
+                    $("#btnSaveCotizacion").hide();
+                    $('#myModalSalesOrder').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+        }
+    }
+
+
 
     function closecondition() {
         $('#myModalConditions').modal('hide');
@@ -112,8 +144,10 @@
                           {
                               columns.Command(command =>
                               {
-                                  command.Custom("Editar").Click("EditCotizacion");
-                                  command.Custom("Imprimir").Click("ImprimirCotizacion");
+                                  command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCotizacion");
+                                  command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
+                                  command.Custom("GenerarFactura").Text(" ").IconClass("fa fa-file-import").Click("GenerarFactura");
+                                                
                                   //  command.Edit(); command.Destroy();
                               }).Width(250);
 
@@ -218,6 +252,29 @@
 </div>
 
 
+<script>
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridCotizaciones").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridCotizaciones").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-button k-button-icontext k-grid-Agregar k-i-plus-sm", "Agregar un nuevo registro");
+    //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
+    setRowButtonTooltip(".k-grid-GenerarFactura", "Generar una factura fiscal!");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+
+</script>
 
 
 

@@ -61,55 +61,70 @@ namespace ERPMVC.Policies
 
                         }
 
-                     //   _policies = _policies.Where(q => q.Name == policyName).ToList();
 
-                        foreach (var item in _policies)
+
+                        List<Policy> _policiesexistencia = new List<Policy>();
+                        _policiesexistencia = _policies.Where(q => q.Name == policyName).ToList();
+
+                        if(_policiesexistencia.Count>0)
                         {
-
-                            policyName = item.Name;
-                            string valor = "";
-                        
-
-                            switch (item.type)
+                            foreach (var item in _policies)
                             {
-                                case "Roles":
-                                    valor = await _client.GetAsync(baseadress + "api/Policies/GetRolesByPolicy/" + item.Id).Result.Content.ReadAsStringAsync();
-                                    List<ApplicationRole> _policiesroles = JsonConvert.DeserializeObject<List<ApplicationRole>>(valor);
-                                    string[] _rols = _policiesroles.Select(q => q.Name).ToArray<string>();
-                                    policy = new AuthorizationPolicyBuilder()
-                                     .RequireRole(_rols)
 
-                                   //.AddRequirements(new HasScopeRequirement(policyName, $"https://{_configuration["Auth0:Domain"]}/"))
-                                   // .AddRequirements(new HasScopeRequirement(policyName,_policiesroles))
-                                   .Build();
-                                    _options.AddPolicy(policyName, policy);
-                                    break;
-                                case "UserClaimRequirement":
-                                    List<IdentityUserClaim<string>> _userclaims = new List<Microsoft.AspNetCore.Identity.IdentityUserClaim<string>>();
-                                    // _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + _userToken.Token);
-                                     result = await _client.GetAsync(baseadress + "api/Policies/GetUserClaims/" + item.Id);
-                                     valorrespuesta = "";
-                                    if (result.IsSuccessStatusCode)
-                                    {
-                                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                                        _userclaims = JsonConvert.DeserializeObject<List<IdentityUserClaim<string>>>(valorrespuesta);
+                                policyName = item.Name;
+                                string valor = "";
 
-                                    }
 
-                                    foreach (var _uclaim in _userclaims)
-                                    {
+                                switch (item.type)
+                                {
+                                    case "Roles":
+                                        valor = await _client.GetAsync(baseadress + "api/Policies/GetRolesByPolicy/" + item.Id).Result.Content.ReadAsStringAsync();
+                                        List<ApplicationRole> _policiesroles = JsonConvert.DeserializeObject<List<ApplicationRole>>(valor);
+                                        string[] _rols = _policiesroles.Select(q => q.Name).ToArray<string>();
                                         policy = new AuthorizationPolicyBuilder()
-                                       .AddRequirements(new HasScopeRequirement(policyName, _uclaim.ClaimValue, _uclaim.ClaimType))
-                                       .Build();
-                                    }
-                                   _options.AddPolicy(policyName, policy);
-                                    break;
-                                    
+                                         .RequireRole(_rols)
 
+                                       //.AddRequirements(new HasScopeRequirement(policyName, $"https://{_configuration["Auth0:Domain"]}/"))
+                                       // .AddRequirements(new HasScopeRequirement(policyName,_policiesroles))
+                                       .Build();
+                                        _options.AddPolicy(policyName, policy);
+                                        break;
+                                    case "UserClaimRequirement":
+                                        List<IdentityUserClaim<string>> _userclaims = new List<Microsoft.AspNetCore.Identity.IdentityUserClaim<string>>();
+                                        // _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + _userToken.Token);
+                                        result = await _client.GetAsync(baseadress + "api/Policies/GetUserClaims/" + item.Id);
+                                        valorrespuesta = "";
+                                        if (result.IsSuccessStatusCode)
+                                        {
+                                            valorrespuesta = await (result.Content.ReadAsStringAsync());
+                                            _userclaims = JsonConvert.DeserializeObject<List<IdentityUserClaim<string>>>(valorrespuesta);
+
+                                        }
+
+                                        foreach (var _uclaim in _userclaims)
+                                        {
+                                            policy = new AuthorizationPolicyBuilder()
+                                           .AddRequirements(new HasScopeRequirement(policyName, _uclaim.ClaimValue, _uclaim.ClaimType))
+                                           .Build();
+                                        }
+                                        _options.AddPolicy(policyName, policy);
+                                        break;
+                                   
+
+
+
+                                }
                             }
 
                             // Add policy to the AuthorizationOptions, so we don't have to re-create it each time
                          //   _options.AddPolicy(policyName, policy);
+                        }
+                        else
+                        {
+                            //policy = new AuthorizationPolicyBuilder()
+                            //           .RequireRole(policyName).Build();
+
+                            //_options.AddPolicy(policyName, policy);
                         }
                     }
                 }

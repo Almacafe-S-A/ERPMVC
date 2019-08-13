@@ -1,0 +1,183 @@
+﻿@using Kendo.Mvc.UI
+@{
+    ViewData["Title"] = "Configuración de grupo";
+}
+
+<script>
+
+    function onsave(e) {
+        //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+        // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+    function caidata(data) {
+        data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+        data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    }
+
+
+    function AddGrupoConfiguracion() {
+
+        $('#ModalGrupoConfiguracion').find(':input').not(':submit').val('');
+        $('#ModalGrupoConfiguracion').modal('show');
+        $("#IdGrupoConfiguracion").val('0');
+    }
+
+
+         function EditGrupoConfiguracion(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+             var dataObject = {
+                 IdConfiguracion: dataItem.IdConfiguracion,
+                editar : 0
+             };
+             console.log(dataItem);
+             console.log(dataObject);
+
+
+            $.ajax({
+                url: '@Url.Action("pvwGrupoConfiguracion", "GrupoConfiguracion")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#numGrupoConfiguracion").html('');
+                    $("#numGrupoConfiguracion").html(result);
+
+
+                    //$("#btnCity").hide();
+                    console.log('RESULTADO',result);
+                    $('#ModalGrupoConfiguracion').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    //alert(textStatus + ": " + XMLHttpRequest.responseText);
+                    //console.log('RESULTADO', result);
+                    console.log(textStatus + ": " + XMLHttpRequest.responseText)
+                }
+            });
+         }
+
+    function RefreshGridGrupoConfiguracion() {
+
+        var grid = $("#gridGrupoConfiguracion").getKendoGrid();
+            grid.dataSource.read();
+
+    }
+
+
+</script>
+
+<h3 class="text-themecolor">Configuración de grupo elemento</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.GrupoConfiguracion>
+                          ()
+
+                            .Name("gridGrupoConfiguracion")
+
+                            .Columns(columns =>
+                            {
+                                columns.Bound(p => p.IdConfiguracion).Width(100);
+                                columns.Bound(p => p.Nombreconfiguracion).Width(200);
+                                columns.Bound(p => p.Tipoconfiguracion).Width(170);
+                                columns.Bound(p => p.IdConfiguracionorigen).Width(170);
+                                columns.Bound(p => p.IdConfiguraciondestino).Width(170);
+                                columns.Bound(p => p.IdZona).Width(170);
+                        
+                    //columns.Bound(p => p.UsuarioCreacion).Width(170);
+                    //columns.Bound(p => p.UsuarioModificacion).Width(190);
+                    columns.Command(command =>
+                                {
+                        //command.Custom("Ver detalles").Click("Detalles");
+                        command.Custom("Editar").Click("EditGrupoConfiguracion");
+                                    command.Destroy();
+                                }).Width(250);
+
+                            })
+                                .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                           .Clear()
+                                                           .Contains("Contiene")
+                                                           .DoesNotContain("No contiene")
+                                                           .EndsWith("Termina con")
+                                                           .IsEqualTo("Es igual a")
+                                                           .IsNotEqualTo("No es igual a")
+                                                           .IsNull("Es nulo")
+                                                           .StartsWith("Inicia con")
+
+
+                                                     )
+                                                     .ForNumber(n => n
+                                                       .Clear()
+                                                       .IsEqualTo("Es igual a")
+                                                       .IsGreaterThan("Es mayor que")
+                                                       .IsLessThan("Es menor que")
+                                                       .IsNull("Es nulo")
+                                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                     )
+                                                     .ForDate(d => d
+                                                     .Clear()
+                                                     .IsEqualTo("Es igual que")
+                                                     .IsGreaterThan("Es mayor que")
+                                                     .IsLessThan("Es menor que")
+                                                     .IsLessThanOrEqualTo("Es menor o igual que")
+                                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                     .IsNotEqualTo("No es igual que")
+                                                      )
+                                                   ))
+
+                            .ToolBar(tools =>
+                            {
+
+                    //tools.Create();
+                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                      .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddGrupoConfiguracion()" });
+                                tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                                tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                            })
+                            .Editable(e => e.Mode(GridEditMode.PopUp))
+                            .Sortable()
+                            .Pageable()
+                            .Filterable()
+                            .Scrollable()
+                            .Pdf(pdf => pdf.FileName("GrupoConfiguracionReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                            .Excel(excel => excel.FileName("GrupoConfiguracionReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                            .DataSource(dataSource =>
+                            dataSource
+                            .WebApi()
+
+                            .ServerOperation(true)
+                            .Model(model =>
+                            {
+                                model.Id(p => p.IdConfiguracion);
+                                model.Field(p => p.IdConfiguracion).Editable(false);
+
+
+                            })
+                            .Events(events => events.Error("error_handler"))
+                            .Read(read => read.Action("Get", "GrupoConfiguracion"))
+                            .Create(create => create.Action("Insert", "GrupoConfiguracion").Type(HttpVerbs.Post))
+                            .Update(update => update.Action("Update", "GrupoConfiguracion").Type(HttpVerbs.Post))
+                            .Destroy(destroy => destroy.Action("Delete", "GrupoConfiguracion").Type(HttpVerbs.Post))
+
+
+                            )
+                            .Events(e =>
+                            {
+                                e.Save("onsave");
+
+                            })
+)
+
+<div id="numGrupoConfiguracion">
+    @await Html.PartialAsync("pvwGrupoConfiguracion", new ERPMVC.DTO.GrupoConfiguracionDTO { IdConfiguracion = 0 })
+</div>
+

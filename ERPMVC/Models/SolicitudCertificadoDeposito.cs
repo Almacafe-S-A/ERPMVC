@@ -11,7 +11,7 @@ namespace ERPMVC.Models
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Display(Name = "Id")]
-        public Int64 IdCD { get; set; }
+        public Int64 IdSCD { get; set; }
         [Display(Name = "No de solicitud")]
         public Int64 NoCD { get; set; }
         [Display(Name = "Cliente")]
@@ -119,12 +119,6 @@ namespace ERPMVC.Models
 
 
 
-    public class SolicitudCertificadoDepositoDTO :SolicitudCertificadoDeposito 
-    {
-        public List<Int64> RecibosAsociados { get; set; }
-        public int editar { get; set; } = 1;
-
-    }
 
 
 

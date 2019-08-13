@@ -11,5 +11,10 @@ namespace ERPMVC.Helpers
         public string UserEmail { get; set; }
         public string UserPassword { get; set; }
         public string wsorbiteciahhrr { get; set; }
+        public string emailsender { get; set; }
+        public string smtp { get; set; }
+        public string port { get; set; }
+
+        public string passwordsmtp { get; set; }
     }
 }

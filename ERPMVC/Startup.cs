@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Net;
+using System.Net.Http;
+using System.Net.Mail;
 using System.Text;
 using System.Threading.Tasks;
 using AutoMapper;
@@ -21,6 +24,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Mvc.Cors.Internal;
+using Microsoft.AspNetCore.Mvc.Razor.Compilation;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -28,16 +33,20 @@ using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Syncfusion.Licensing;
+using static ERPMVC.Helpers.ViewRenderService;
 
 namespace ERPMVC
 {
     public class Startup
     {
-        public Startup(IHostingEnvironment env, IConfiguration configuration)
+        public Startup(IHostingEnvironment env, IConfiguration configuration, IServiceProvider serviceProvider)
         {
 
             string License = File.ReadAllText(System.IO.Path.Combine(env.ContentRootPath, "SyncfusionLicense.txt"), Encoding.UTF8);
             SyncfusionLicenseProvider.RegisterLicense(License);
+
+            //var mvcBuilder = serviceProvider.GetService<IMvcBuilder>();
+            //new MvcConfiguration().ConfigureMvc(mvcBuilder);
 
             Configuration = configuration;
         }
@@ -78,11 +87,28 @@ namespace ERPMVC
 
               services.Configure<MyConfig>(Configuration.GetSection("AppSettings"));
 
-            services.AddIdentity<ApplicationUser, ApplicationRole>(
+            var client = new SmtpClient();
+            client.Credentials = new NetworkCredential("erp@almacafehn.com", "Almacafe09");
+            client.Host = "mail.almacafehn.com";
+            client.Port = 587;
+
+            services
+               .AddFluentEmail("erp@almacafehn.com")
+               .AddRazorRenderer()
+               .AddSmtpSender(client);
+
+            services.AddScoped<IViewRenderService, ViewRenderService>();
+            services.AddScoped<ViewRender, ViewRender>();
+
+            var value = (GetQuantityFailedRequest().Result as Int32?);
+            int maxfailed =  value==null?3:value.Value ;
+
+                services.AddIdentity<ApplicationUser, ApplicationRole>(
                   options =>
                   {
-                      options.Lockout.MaxFailedAccessAttempts = 6;
+                      options.Lockout.MaxFailedAccessAttempts = maxfailed;
 
+                    
                       options.Password.RequiredLength = 6;
                       options.Password.RequiredUniqueChars = 3;
                       options.Password.RequireLowercase = false;
@@ -98,6 +124,25 @@ namespace ERPMVC
 
             //services.AddScoped<Filters.SessionsAuthorizationFilter>();
 
+            //services.AddCors(options => options.AddPolicy("ApiCorsPolicy", builder =>
+            //{
+            //    builder.WithOrigins("http://localhost:9200").AllowAnyMethod().AllowAnyHeader();
+            //}));
+
+            services.AddCors(o => o.AddPolicy("AllowAllOrigins", builder =>
+            {
+
+                builder.AllowAnyOrigin()
+                            .AllowAnyMethod()
+                            .AllowAnyOrigin()
+                            .AllowAnyHeader()
+                            //  .WithMethods("GET")
+                            //  .WithOrigins("http://localhost:9200");
+                            .AllowCredentials();
+                      
+                  }));
+
+
             services.AddMvc(config =>
             {
                 //var policy = new AuthorizationPolicyBuilder()
@@ -105,15 +150,63 @@ namespace ERPMVC
                 //.Build();
                 //config.Filters.Add(new AuthorizeFilter(policy));
             })
+            //.ConfigureApplicationPartManager(manager =>
+            //{
+            //    var oldMetadataReferenceFeatureProvider = manager.FeatureProviders.First(f => f is MetadataReferenceFeatureProvider);
+            //    manager.FeatureProviders.Remove(oldMetadataReferenceFeatureProvider);
+            //    manager.FeatureProviders.Add(new ReferencesMetadataReferenceFeatureProvider());
+            //})
             .AddJsonOptions(options => options.SerializerSettings.ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver())
             .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddAutoMapper();
+
+
+            services.Configure<MvcOptions>(options =>
+            {
+                options.Filters.Add(new CorsAuthorizationFilterFactory("AllowAllOrigins"));
+            });
+
 
             services.AddKendo();
 
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
             services.AddScoped<IAuthorizationHandler, HasScopeHandler>();
+        }
+
+        private async Task<int> GetQuantityFailedRequest()
+        {
+            int maxaccess = 0;
+            try
+            {               
+                var config = Configuration.GetSection("AppSettings").Get<MyConfig>();
+                string baseadress = config.urlbase;
+                HttpClient _client = new HttpClient();
+                var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = config.UserEmail, Password = config.UserPassword });
+                if (resultlogin.IsSuccessStatusCode)
+                {
+                    string webtoken = await (resultlogin.Content.ReadAsStringAsync());
+                    UserToken _userToken = JsonConvert.DeserializeObject<UserToken>(webtoken);
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + _userToken.Token);
+                    var result = await _client.GetAsync(baseadress + "api/ElementoConfiguracion/GetElementoConfiguracionById/" + 15);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        string res = await result.Content.ReadAsStringAsync();
+                        ElementoConfiguracion _elc = JsonConvert.DeserializeObject<ElementoConfiguracion>(res);
+                        if (_elc == null) { _elc = new ElementoConfiguracion { Valordecimal = 0 }; }
+                        maxaccess = Convert.ToInt32(_elc.Valordecimal);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                maxaccess = 0;
+            }
+           
+
+            return maxaccess;
+
         }
 
         //// This method gets called by the runtime. Use this method to add services to the container.
@@ -292,10 +385,7 @@ namespace ERPMVC
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-            app.UseCors(x => x
-                .AllowAnyOrigin()
-                .AllowAnyMethod()
-                .AllowAnyHeader());
+          
 
             app.UseAuthentication();
 
@@ -310,7 +400,18 @@ namespace ERPMVC
                 app.UseHsts();
             }
 
-            app.UseHttpsRedirection();
+
+            //app.UseCors(builder =>
+            //     builder.WithOrigins("http://localhost:9200"));
+
+            app.UseCors("AllowAllOrigins");
+
+            //app.UseCors(builder => builder.WithOrigins("http://localhost:9200")
+            //                  .AllowAnyOrigin()
+            //                  .AllowAnyMethod()
+            //                  .AllowAnyHeader());
+
+         //   app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             var cookiePolicyOptions = new CookiePolicyOptions

@@ -137,8 +137,9 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpPost]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<CAI>> SaveCAI([FromBody]CAIDTO _CAIS)
+        //public async Task<ActionResult<Product>> SaveProduct([FromBody]ProductDTO _ProductS)
         {
 
             CAI _CAI = _CAIS;
@@ -159,7 +160,7 @@ namespace ERPMVC.Controllers
                 }
 
                 if (_CAI == null) { _CAI = new Models.CAI(); }
-
+                _CAIS._cai = _CAIS.elcai;
                 if (_CAIS.IdCAI == 0)
                 {
                     _CAI.FechaCreacion = DateTime.Now;

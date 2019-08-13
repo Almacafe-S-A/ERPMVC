@@ -103,6 +103,39 @@ namespace ERPMVC.Controllers
 
         }
 
+
+        [HttpGet]
+        public async Task<DataSourceResult> GetByParams([DataSourceRequest]DataSourceRequest request,PEPS _PEPSP)
+        {
+            List<PEPS> _PEPS = new List<PEPS>();
+            try
+            {
+               
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/PEPS/GetByParams", _PEPSP);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _PEPS = JsonConvert.DeserializeObject<List<PEPS>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _PEPS.ToDataSourceResult(request);
+
+        }
+
         [HttpPost("[action]")]
         public async Task<ActionResult<PEPS>> SavePEPS([FromBody]PESPDTO _PEPSP)
         {

@@ -16,13 +16,13 @@ using Newtonsoft.Json;
 
 namespace ERPMVC.Controllers
 {
-     [Authorize]
-      [CustomAuthorization]
+    [Authorize]
+    [CustomAuthorization]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class UsuarioController : Controller
     {
 
-         private readonly IOptions<MyConfig> config;
+        private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
 
         public UsuarioController(ILogger<UserRolController> logger
@@ -32,13 +32,13 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-        [Authorize(Policy ="Admin")]
+        [Authorize(Policy = "Admin")]
         public IActionResult Usuarios()
         {
             return View();
         }
 
-        
+
         [HttpGet("[controller]/[action]")]
         public async Task<JsonResult> GetQuantityUsuario()
         {
@@ -54,6 +54,33 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _users = JsonConvert.DeserializeObject<Int32>(valorrespuesta);
+
+                }
+
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw (new Exception(ex.Message));
+            }
+            return Json(_users);
+        }
+
+        [HttpGet("[controller]/[action]")]
+        public async Task<JsonResult> GetUsuariosJson([DataSourceRequest]DataSourceRequest request)
+        {
+            List<ApplicationUser> _users = new List<ApplicationUser>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Usuario/GetUsers");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _users = JsonConvert.DeserializeObject<List<ApplicationUser>>(valorrespuesta);
 
                 }
 
@@ -117,7 +144,7 @@ namespace ERPMVC.Controllers
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
-            }           
+            }
 
             return _users.ToDataSourceResult(request);
         }
@@ -160,21 +187,111 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                _usuario.UsuarioCreacion = HttpContext.Session.GetString("token");
+                _usuario.FechaCreacion = DateTime.Now;
+                _usuario.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _usuario.UserName = _usuario.Email;
                 var result = await _client.PostAsJsonAsync(baseadress + "api/Usuario/PostUsuario", _usuario);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _usuario = JsonConvert.DeserializeObject<ApplicationUser>(valorrespuesta);
+
+                    _usuario.PasswordHash = "**********************";
+                }
+                else
+                {
+
+                    _usuario.PasswordHash = await result.Content.ReadAsStringAsync() + " El password debe tener mayusculas y minusculas!";
+                    string error =await result.Content.ReadAsStringAsync();
+                    return this.Json(new DataSourceResult
+                    {
+                         //Data=  _usuario ,
+                        Errors = $"Ocurrio un error:{error} El password debe tener mayusculas y minusculas!"
+
+                    });
+
+                    // return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
+                     //return await Task.Run(() => BadRequest($"Ocurrio un error:{result.Content.ReadAsStringAsync()} El password debe tener mayusculas y minusculas!"));
+                    //  throw new Exception($"Ocurrio un error:{result.Content.ReadAsStringAsync()} El password debe tener mayusculas y minusculas!");
                 }
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                //return BadRequest($"Ocurrio un error{ex.Message}");
+                throw ex;
+
             }
 
+            _usuario.PasswordHash = "**********************";
+            return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
+        }
+
+
+        [HttpPost("ChangePassword")]
+        public async Task<ActionResult<ApplicationUser>> ChangePassword([FromBody]ApplicationUser _usuario)
+        {
+            try
+            {
+                // TODO: Add insert logic here
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+
+                var result = await _client.GetAsync(baseadress + "api/Usuario/GetUserByEmail/"+ _usuario.Email);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+
+                    string password = _usuario.PasswordHash;
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _usuario = JsonConvert.DeserializeObject<ApplicationUser>(valorrespuesta);
+
+                    _usuario.PasswordHash = password;
+
+                     result = await _client.PostAsJsonAsync(baseadress + "api/Usuario/ChangePassword", _usuario);
+                     valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _usuario = JsonConvert.DeserializeObject<ApplicationUser>(valorrespuesta);
+
+                        _usuario.PasswordHash = "**********************";
+                    }
+                    else
+                    {
+
+                     //   _usuario.PasswordHash = await result.Content.ReadAsStringAsync() + " El password debe tener mayusculas y minusculas!";
+                        string error = await result.Content.ReadAsStringAsync();
+                        return await Task.Run(() => BadRequest($"{error}"));
+
+                        //return this.Json(new DataSourceResult
+                        //{
+                        //    //Data=  _usuario ,
+                        //    Errors = $"Ocurrio un error:{error} El password debe tener mayusculas y minusculas!"
+
+                        //});
+
+                        // return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
+                        //return await Task.Run(() => BadRequest($"Ocurrio un error:{result.Content.ReadAsStringAsync()} El password debe tener mayusculas y minusculas!"));
+                        //  throw new Exception($"Ocurrio un error:{result.Content.ReadAsStringAsync()} El password debe tener mayusculas y minusculas!");
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                //return BadRequest($"Ocurrio un error{ex.Message}");
+                throw ex;
+
+            }
+
+            _usuario.PasswordHash = "**********************";
             return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
         }
 
@@ -185,14 +302,28 @@ namespace ERPMVC.Controllers
             {
                 // TODO: Add insert logic here
                 string baseadress = config.Value.urlbase;
+                _usuario.UserName = _usuario.Email;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.PutAsJsonAsync(baseadress + "api/Usuario/PutUsuario", _usuario);
                 string valorrespuesta = "";
+
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _usuario = JsonConvert.DeserializeObject<ApplicationUser>(valorrespuesta);
+                }
+                else
+                {
+
+                    _usuario.PasswordHash = await result.Content.ReadAsStringAsync() + " El password debe tener mayusculas y minusculas!";
+                    string error = await result.Content.ReadAsStringAsync();
+                    return this.Json(new DataSourceResult
+                    {
+                        Errors = $"Ocurrio un error:{error} El password debe tener mayusculas y minusculas!"
+                    });
+                    // return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
+                    //return await Task.Run(() => BadRequest($"Ocurrio un error{result.Content.ReadAsStringAsync()}"));
                 }
 
 
@@ -200,9 +331,11 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                return await Task.Run(() => BadRequest($"Ocurrio un error{ex.Message}"));
             }
 
+
+            _usuario.PasswordHash = "**********************";
             return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
 
         }

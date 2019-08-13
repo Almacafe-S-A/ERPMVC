@@ -5,9 +5,13 @@
 
     completedorderlinemant = function (xhr) {
 
-        $('#myModalGoodsReceivedLine').find(':input').not('#GoodsReceivedId :submit').val('');
-        CalcularTotalDocumento();
+       // $('#myModalGoodsReceivedLine').find(':input').not('#GoodsReceivedId :submit').val('0');
         $("#btnActualizarCotizacionLinea").prop("disabled", false);
+        $("#btnActualizarCotizacionLinea").show();
+        $("#UnitOfMeasureId").data("kendoDropDownList").value(0);
+        $("#SubProductIddetail").data("kendoDropDownList").value(0);
+        $("#WareHouseId").data("kendoDropDownList").value(0);
+        CalcularTotalDocumento();       
        closesaleorderline();
     };
 
@@ -21,10 +25,10 @@
         debugger;
         var Quantity = Number($("#Quantity").val());
         var QuantitySacos = Number($("#QuantitySacos").val());
-        var Price = Number($("#Price").val());
+        var Price = 1;//Number($("#Price").val());
         var Totallinea = (Quantity * Price);
 
-        setearvalor("Total", Totallinea);      
+       // setearvalor("Total", Totallinea);      
       
     }
 
@@ -54,6 +58,9 @@
 
     function AddControlPalletsDetail(e) {
        // e.preventDefault();
+        
+        $("#btnActualizarCotizacionLinea").hide();
+        $("#btnActualizarCotizacionLinea").prop("disabled", true);
         var notification = $("#notification").data("kendoNotification");
         var form1 = $("#frmGoodsReceivedLine").data("kendoValidator");
         if (form1.validate() && $("#SubProductIddetail").val() > '0' && $("#UnitOfMeasureId").val() > '0') {
@@ -62,34 +69,16 @@
             RefreshGoodsReceivedDetail();
         }
         else {
+            $("#btnActualizarCotizacionLinea").show();
+            $("#btnActualizarCotizacionLinea").prop("disabled", false);
                     notification.show({
                 title: "Validación",
                 message: "Seleccione los datos obligatorios!"
             }, "error");
 
            // break;
-            return 0;
-        }
-
-       
-        //if ($("#SubProductId").val() > 0) {
-        //    try {
-        //        $("#btnActualizarCotizacionLinea").prop("disabled", true);
-        //        RefreshCotizacionesDetail();
-
-        //    } catch (e) {
-        //        $("#btnActualizarCotizacionLinea").prop("disabled", false);
-        //    }
-        //}
-        //else {
-        //    notification.show({
-        //        title: "Validación",
-        //        message: "Seleccion el SubProducto!"
-        //    }, "error");
-
-        //    return;
-        //}
-
+            return false;
+        }      
 
     }
 
@@ -202,8 +191,8 @@
                                       kendo-validator="true" kendo-messages="messages1" kendo-rules="rules1"
                                       data-ajax-method="post"                                   
                                       data-ajax-complete="completedorderlinemant"
-                                        data-ajax-loading="#loading"
-                                      data-ajax-begin="AddControlPalletsDetail"
+                                      data-ajax-loading="#loading"
+                                      data-ajax-begin="return AddControlPalletsDetail();"
                                       data-ajax="true"
                                       method="post" class="validation-wizard wizard-circle">
                                     <div class="form-body">
@@ -213,7 +202,7 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="GoodsReceiveLinedId" class="control-label" style="width:100%"></label>
-                                                    <input type="number" asp-for="GoodsReceiveLinedId" class="form-control" disabled />
+                                                    <input type="number" asp-for="GoodsReceiveLinedId" class="form-control" style="min-width:100%" disabled />
 
                                                 </div>
                                             </div>
@@ -230,7 +219,7 @@
                                                                 $("#subproductname").val(dataItem.ProductName);
                                                         }
 
-                                                        var hcustom = 0;
+                                                      
                                                         function GetProductTypeIdS() {
                                                             debugger;
                                                             // console.log($("#hcustomerid").val());
@@ -269,17 +258,18 @@
                                                 <div class="form-group">
                                                     <label asp-for="UnitOfMeasureId" class="control-label" style="width:100%"></label>
                                                     <kendo-dropdownlist name="UnitOfMeasureId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        id="UnitOfMeasureId"
+                                                            id="UnitOfMeasureId"
+                                                                        required
                                                                         option-label="Seleccione la unidad de medida"
                                                                         for="UnitOfMeasureId"
                                                                         datatextfield="UnitOfMeasureName"
                                                                         datavaluefield="UnitOfMeasureId"
                                                                         auto-bind="true"
-                                                                        required
+                                                                      
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi">
                                                             <transport>
-                                                                <read url="@Url.Action("Get", "UnitOfMeasure")" />
+                                                                <read url="@Url.Action("GetUnitOfMeasure", "UnitOfMeasure")" />
                                                             </transport>
                                                         </datasource>
 
@@ -302,9 +292,11 @@
 
                                                     </script>
                                                     <label asp-for="WareHouseId" class="control-label"></label>
-                                                    <kendo-dropdownlist name="WarehouseId" for="WareHouseId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                    <kendo-dropdownlist name="WareHouseId" for="WareHouseId"
+                                                       filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         option-label="Seleccione Bodega"
                                                                         cascade-from="BranchId"
+
                                                                         required
                                                                         auto-bind="false"
                                                                         datatextfield="WarehouseName"

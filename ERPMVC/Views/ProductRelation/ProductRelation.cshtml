@@ -1,0 +1,146 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "ProductRelationo";
+
+}
+
+<script>
+
+    function onsave(e) {
+        //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+        // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+    function caidata(data) {
+        data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+        data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    }
+
+     function AddProductRelation() {
+
+         $('#ModalProductRelation').find(':input').not(':submit').val('');
+         $("#ProductRelationId").val('0');
+         $('#ModalProductRelation').modal('show');
+       
+
+
+
+
+    }
+
+
+         function EditProductRelation(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+             var dataObject = {
+                 RelationProductId: dataItem.RelationProductId,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddProductRelation", "ProductRelation")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                   // console.log('success', result)
+
+                    $("#numProductRelation").html('');
+                    $("#numProductRelation").html(result);
+
+
+                    //$("#btnCAI").hide();
+                    $('#ModalProductRelation').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+    }
+
+    function RefrescarGrid() {
+
+        var grid = $("#gridProductRelation").getKendoGrid();
+        grid.dataSource.read();
+
+    }
+
+
+</script>
+
+<h3 class="text-themecolor">Relación de Producto con Sub Producto</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.ProductRelation>
+                  ()
+
+                    .Name("gridProductRelation")
+
+                    .Columns(columns =>
+                    {
+                        columns.Bound(p => p.RelationProductId).Width(150);
+                        columns.Bound(p => p.SubProduct.ProductName).Width(170);
+                        columns.Bound(p => p.Product.ProductName).Width(170);
+                        columns.Command(command =>
+                        {
+                            //command.Custom("Ver detalles").Click("Detalles");
+                            command.Custom("Editar").Click("EditProductRelation");
+                            command.Destroy();
+                        }).Width(250);
+
+                    })
+
+
+                    .ToolBar(tools =>
+                    {
+
+                        //tools.Create();
+                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                              .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddProductRelation()" });
+                        tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                        tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                    })
+                    .Editable(e => e.Mode(GridEditMode.PopUp))
+                    .Sortable()
+                    .Pageable()
+                    .Filterable()
+                    .Scrollable()
+                    .Pdf(pdf => pdf.FileName("ProductRelationReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                    .Excel(excel => excel.FileName("ProductRelationReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                    .DataSource(dataSource =>
+                    dataSource
+                    .WebApi()
+                    .AutoSync(true)
+                    .ServerOperation(true)
+                    .Model(model =>
+                    {
+                        model.Id(p => p.RelationProductId);
+                        model.Field(p => p.RelationProductId).Editable(false);
+
+                    })
+                    .Events(events => events.Error("error_handler"))
+                    .Read(read => read.Action("GetProductRelation", "ProductRelation").Type(HttpVerbs.Get))
+                   //.Create(create => create.Action("Insert", "ProductRelation").Type(HttpVerbs.Post))
+                   //.Update(update => update.Action("Update", "ProductRelation").Type(HttpVerbs.Post))
+                   .Destroy(destroy => destroy.Action("Delete", "ProductRelation").Type(HttpVerbs.Post))
+                    )
+                    .Events(e =>
+                    {
+                        e.Save("onsave");
+
+                    })
+)
+
+<div id="numProductRelation">
+    @await Html.PartialAsync("pvwAddProductRelation", new ERPMVC.DTO.ProductRelationDTO { RelationProductId = 0 })
+</div>
+

@@ -1,0 +1,145 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "Empleado";
+
+}
+
+<script>
+
+    function onsave(e) {
+        //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+        // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+    function caidata(data) {
+        data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+        data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    }
+
+     function AddEmployees() {
+
+         $('#ModalEmployees').find(':input').not(':submit').val('');
+         $('#ModalEmployees').modal('show');
+         $("#IdEmpleado").val('0');
+    }
+
+
+         function EditEmployees(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+             var dataObject = {
+                 IdEmpleado: dataItem.IdEmpleado,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddEmployees", "Employees")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    console.log('success', result)
+
+                    $("#numEmployees").html('');
+                    $("#numEmployees").html(result);
+
+
+                    //$("#btnCAI").hide();
+                    $('#ModalEmployees').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+    }
+
+    function RefrescarGrid() {
+
+        var grid = $("#gridEmployees").getKendoGrid();
+        grid.dataSource.read();
+
+    }
+
+
+
+</script>
+
+<h3 class="text-themecolor">Empleado</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.Employees>
+                  ()
+
+                    .Name("gridEmployees")
+
+                    .Columns(columns =>
+                    {
+                        columns.Bound(p => p.IdEmpleado).Width(150);
+                        columns.Bound(p => p.NombreEmpleado).Width(170);
+                        columns.Bound(p => p.Correo).Width(170);
+                        columns.Bound(p => p.NombrePuesto).Width(200);
+                        columns.Bound(p => p.Genero).Width(150);
+                        columns.Command(command =>
+                        {
+                            //command.Custom("Ver detalles").Click("Detalles");
+                            command.Custom("Editar").Click("EditEmployees");
+                            command.Destroy();
+                        }).Width(250);
+
+                    })
+
+
+                    .ToolBar(tools =>
+                    {
+
+                        //tools.Create();
+                       
+                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                              .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddEmployees()"});
+                        tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                        tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                    })
+                    .Editable(e => e.Mode(GridEditMode.PopUp))
+                    .Sortable()
+                    .Pageable()
+                    .Filterable()
+                    .Scrollable()
+                    .Pdf(pdf => pdf.FileName("EmployeesReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                    .Excel(excel => excel.FileName("EmployeesReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                    .DataSource(dataSource =>
+                    dataSource
+                    .WebApi()
+
+                    .ServerOperation(true)
+                    .Model(model =>
+                    {
+                        model.Id(p => p.IdEmpleado);
+                        model.Field(p => p.IdEmpleado).Editable(false);
+
+                    })
+                    .Events(events => events.Error("error_handler"))
+                    .Read(read => read.Action("Get", "Employees"))
+                   //.Create(create => create.Action("Insert", "Employees").Type(HttpVerbs.Post))
+                   //.Update(update => update.Action("Update", "Employees").Type(HttpVerbs.Post))
+                   .Destroy(destroy => destroy.Action("Delete", "Employees").Type(HttpVerbs.Post))
+                    )
+                    .Events(e =>
+                    {
+                        e.Save("onsave");
+
+                    })
+)
+
+<div id="numEmployees">
+    @await Html.PartialAsync("pvwAddEmployees", new ERPMVC.DTO.EmployeesDTO { IdEmpleado = 0 })
+</div>
+

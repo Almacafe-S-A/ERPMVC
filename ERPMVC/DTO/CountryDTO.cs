@@ -8,11 +8,10 @@ namespace ERPMVC.DTO
 {
     public class CountryDTO : Country
     {
-        public List<Branch> _Country { get; set; }
+        public List<Country> _Country { get; set; }
 
         public int editar { get; set; } = 1;
 
         public string token { get; set; }
     }
 }
-

@@ -18,6 +18,7 @@
 
     <link href="~/css/ej.web.all.min.css" rel="stylesheet" />
     <link href="~/css/ej.widgets.core.office-365.min.css" rel="stylesheet" />
+    <link href="~/css/material.css" rel="stylesheet" />
 
     <link rel="icon" type="image/png" sizes="16x16" href="~/admp/assets/images/favicon.png">
 
@@ -32,7 +33,8 @@
     <!-- morris CSS -->
     <link href="~/admp/assets/plugins/morrisjs/morris.css" rel="stylesheet">
     <!-- Vector CSS -->
-    <link href="~/admp/assets/plugins/vectormap/jquery-jvectormap-2.0.2.css" rel="stylesheet" />
+    <!--  <link href="~/admp/assets/plugins/vectormap/jquery-jvectormap-2.0.2.css" rel="stylesheet" /> -->
+    <link href="~/admp/assets/plugins/vectormap/jquery-jvectormap-2.0.3.css" rel="stylesheet" />
     <!-- Custom CSS -->
     <link href="~/admp/css/style.css" rel="stylesheet">
     <!-- You can change the theme colors from here -->
@@ -53,7 +55,8 @@
     <link href='http://fonts.googleapis.com/css?family=Medula+One' rel='stylesheet' type='text/css'>
     <link href='http://fonts.googleapis.com/css?family=Limelight' rel='stylesheet' type='text/css'>
 
-    <script src="~/lib/jquery/dist/jquery.js"></script>
+    <script src="~/js/jquery.js"></script>
+    @*<script src="~/lib/jquery/dist/jquery.js"></script>*@
     @*<script src="~/js/kendo/2019.1.220/jquery.min.js"></script>*@
 
     @*<script src="~/lib/bootstrap/dist/js/bootstrap.js"></script>*@
@@ -63,6 +66,8 @@
     <script src="~/scripts/jquery.easing.1.3.min.js"></script>
     <script src="~/scripts/jsrender.min.js"></script>
     <script src="~/scripts/ej.web.all.min.js"></script>
+
+
     <script src="~/css/fontawesome/js/all.js"></script>
 
 
@@ -71,6 +76,7 @@
     <script src="~/admp/assets/plugins/bootstrap/js/bootstrap.min.js"></script>
     <!-- slimscrollbar scrollbar JavaScript -->
     <script src="~/admp/js/jquery.slimscroll.js"></script>
+    <script src="~/admp/assets/plugins/blockUI/jquery.blockUI.js"></script>
     <!--Wave Effects -->
     <script src="~/admp/js/waves.js"></script>
     <!--Menu sidebar -->
@@ -93,7 +99,8 @@
     <script src="~/admp/assets/plugins/raphael/raphael-min.js"></script>
     <script src="~/admp/assets/plugins/morrisjs/morris.min.js"></script>
     <!-- Vector map JavaScript -->
-    <script src="~/admp/assets/plugins/vectormap/jquery-jvectormap-2.0.2.min.js"></script>
+    @*<script src="~/admp/assets/plugins/vectormap/jquery-jvectormap-2.0.2.min.js"></script>*@
+    <script src="~/admp/assets/plugins/vectormap/jquery-jvectormap-2.0.3.min.js"></script>
     <script src="~/admp/assets/plugins/vectormap/jquery-jvectormap-world-mill-en.js"></script>
 
     <!-- ============================================================== -->
@@ -112,21 +119,42 @@
     <script src="~/admp/assets/plugins/moment/min/moment.min.js"></script>
     <script src="~/admp/assets/plugins/wizard/jquery.steps.min.js"></script>
     <script src="~/admp/assets/plugins/wizard/jquery.validate.min.js"></script>
-
     <script src="~/admp/assets/plugins/styleswitcher/jQuery.style.switcher.js"></script>
-
     <script src="~/admp/assets/plugins/toast-master/js/jquery.toast.js"></script>
 
+    <script src="~/admp/js/typeahead.js"></script>
+    <script src="~/js/FileSaver.min.js"></script>
+
+
+
+    @*<script src="https://cdn.syncfusion.com/ej2/dist/ej2.min.js"></script>*@
 
     @*<script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>*@
 
     <script>
         function error_handler(e) {
-            var errors = $.parseJSON(e.xhr.responseText);
-
-            if (errors) {
-                alert("Errors:\n" + errors.join("\n"));
+            var notification = $("#notification").data("kendoNotification");
+            //  console.log(e);
+            if (e.status == "customerror") {
+                //alert(e.errors);
+                notification.show({
+                    title: "Validacion",
+                    message: e.errors
+                }, "error");
             }
+            else {
+                notification.show({
+                    title: "Validacion",
+                    message: "Generic server error."
+                }, "error");
+                //  alert("Generic server error.");
+            }
+
+            //var errors = $.parseJSON(e.xhr.responseText);
+            //console.log(errors);
+            //if (errors) {
+            //    alert("Errors:\n" + errors.join("\n"));
+            //}
         }
 
 
@@ -154,7 +182,7 @@
 </head>
 
 
-<body class="fix-header fix-sidebar card-no-border">
+<body class="fix-header fix-sidebar card-no-border" onload="MiZoom();">
 
     <kendo-notification name="notification"
                         stacking="NotificationStackingSettings.Down"
@@ -199,7 +227,7 @@
 
     <div class="preloader">
         <svg class="circular" viewBox="25 25 50 50">
-            <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2" stroke-miterlimit="10" ></circle>
+            <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2" stroke-miterlimit="10"></circle>
         </svg>
     </div>
     <div id="main-wrapper">
@@ -510,12 +538,13 @@
                                         </div>
                                     </li>
                                     <li role="separator" class="divider"></li>
-                                    @*<li><a href="#"><i class="ti-user"></i> My Profile</a></li>
-                                        <li><a href="#"><i class="ti-wallet"></i> My Balance</a></li>
-                                        <li><a href="#"><i class="ti-email"></i> Inbox</a></li>
-                                        <li role="separator" class="divider"></li>
-                                        <li><a href="#"><i class="ti-settings"></i> Account Setting</a></li>
-                                        <li role="separator" class="divider"></li>*@
+                                               @*<li><a href="#"><i class="ti-user"></i> My Profile</a></li>
+                                              <li><a href="#"><i class="ti-wallet"></i> My Balance</a></li>
+                                              <li><a href="#"><i class="ti-email"></i> Inbox</a></li>
+                                              <li role="separator" class="divider"></li>
+                                              <li><a href="#"><i class="ti-settings"></i> Account Setting</a></li>
+                                              <li role="separator" class="divider"></li>*@
+                                    <li><a href="@Url.Action("ChangePassword","Account")"><i class="fa fa-repeat-alt "></i> Cambiar Contraseña</a></li>
                                     <li><a href="@Url.Action("Logout","Account")"><i class="fa fa-power-off"></i> Logout</a></li>
                                 </ul>
                             </div>
@@ -542,8 +571,8 @@
                     </ol>
                 </div>
                 @*<div>
-                    <button class="right-side-toggle waves-effect waves-light btn-inverse btn btn-circle btn-sm pull-right m-l-10"><i class="ti-settings text-white"></i></button>
-                </div>*@
+                        <button class="right-side-toggle waves-effect waves-light btn-inverse btn btn-circle btn-sm pull-right m-l-10"><i class="ti-settings text-white"></i></button>
+                    </div>*@
             </div>
             <!-- ============================================================== -->
             <!-- End Bread crumb and right sidebar toggle -->
@@ -551,7 +580,17 @@
             <!-- ============================================================== -->
             <!-- Container fluid  -->
             <!-- ============================================================== -->
-            <div class="container-fluid">
+            <script>
+                function MiZoom() {
+                    var scale = 'scale(1)';
+                    document.body.style.webkitTransform =  // Chrome, Opera, Safari
+                    document.body.style.msTransform =      // IE 9
+                        document.body.style.transform = scale;
+                   // alert('hace el zoom');
+                }
+            </script>
+
+            <div class="container-fluid" >
                 <!-- ============================================================== -->
                 <!-- Start Page Content -->
                 <!-- ============================================================== -->
@@ -593,6 +632,7 @@
 
 
     @RenderSection("scripts", required: false)
+    <ejs-scripts></ejs-scripts>
     <script>
         $(document).ready(function () {
             //$("#responsive-panel").kendoResponsivePanel({
@@ -600,10 +640,22 @@
             //    autoClose: false,
             //    orientation: "top"
             //});
+
+            //jQuery(window).bind('resize load', function () {
+            //    contentWidth = 2000;
+            //    jQuery('body').css('zoom', jQuery(window).width() / contentWidth);
+            //});
+
+
+            //SOLUCION PROVISIONAL PARA ELIMINAR EL # DE LA URL
+            $('.k-button').attr('href', 'javascript:void(0)');
+
+
         });
-        function onclick(e) {
-            $("#responsive-panel").getKendoResponsivePanel().toggle();
-        }
+
+        //function onclick(e) {
+        //    $("#responsive-panel").getKendoResponsivePanel().toggle();
+        //}
     </script>
 </body>
 </html>

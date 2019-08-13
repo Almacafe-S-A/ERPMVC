@@ -1,0 +1,178 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "Dependientes";
+}
+
+<script>
+
+    function onsave(e) {
+        //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+        // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+    function caidata(data) {
+        data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+        data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    }
+
+
+    function AddDependientes() {
+
+        $('#ModalDependientes').find(':input').not(':submit').val('');
+        $('#ModalDependientes').modal('show');
+        $("#IdDependientes").val('0');
+    }
+
+
+    function EditDependientes(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                IdDependientes: dataItem.IdDependientes,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddDependientes", "Dependientes")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#numDependientes").html('');
+                    $("#numDependientes").html(result);
+
+
+                    //$("#btnCity").hide();
+                    $('#ModalDependientes').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+         }
+
+    function RefrescarGrid() {
+
+        var grid = $("#gridDependientes").getKendoGrid();
+            grid.dataSource.read();
+
+    }
+
+
+</script>
+
+<h3 class="text-themecolor">Dependientes</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.Dependientes>
+                  ()
+
+                    .Name("gridDependientes")
+
+                    .Columns(columns =>
+                    {
+                        columns.Bound(p => p.IdDependientes).Width(200);
+                        columns.Bound(p => p.NombreDependientes).Width(220);
+                        columns.Bound(p => p.Parentezco).Width(170);
+                        columns.Bound(p => p.Telefono).Width(200);
+                        columns.Bound(p => p.Direccion).Width(200);
+                        columns.Bound(p => p.IdEmpleado).Width(180);
+
+            //columns.Bound(p => p.UsuarioCreacion).Width(170);
+            //columns.Bound(p => p.UsuarioModificacion).Width(190);
+            columns.Command(command =>
+                        {
+                //command.Custom("Ver detalles").Click("Detalles");
+                command.Custom("Editar").Click("EditDependientes");
+                            command.Destroy();
+                        }).Width(250);
+
+                    })
+                        .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                   .Clear()
+                                                   .Contains("Contiene")
+                                                   .DoesNotContain("No contiene")
+                                                   .EndsWith("Termina con")
+                                                   .IsEqualTo("Es igual a")
+                                                   .IsNotEqualTo("No es igual a")
+                                                   .IsNull("Es nulo")
+                                                   .StartsWith("Inicia con")
+
+
+                                             )
+                                             .ForNumber(n => n
+                                               .Clear()
+                                               .IsEqualTo("Es igual a")
+                                               .IsGreaterThan("Es mayor que")
+                                               .IsLessThan("Es menor que")
+                                               .IsNull("Es nulo")
+                                               .IsLessThanOrEqualTo("Es menor o igual que")
+                                               .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                             )
+                                             .ForDate(d => d
+                                             .Clear()
+                                             .IsEqualTo("Es igual que")
+                                             .IsGreaterThan("Es mayor que")
+                                             .IsLessThan("Es menor que")
+                                             .IsLessThanOrEqualTo("Es menor o igual que")
+                                             .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                             .IsNotEqualTo("No es igual que")
+                                              )
+                                           ))
+
+                    .ToolBar(tools =>
+                    {
+
+            //tools.Create();
+            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                              .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddDependientes()" });
+                        tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                        tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                    })
+                    .Editable(e => e.Mode(GridEditMode.PopUp))
+                    .Sortable()
+                    .Pageable()
+                    .Filterable()
+                    .Scrollable()
+                    .Pdf(pdf => pdf.FileName("DependientesReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                    .Excel(excel => excel.FileName("DependientesReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                    .DataSource(dataSource =>
+                    dataSource
+                    .WebApi()
+
+                    .ServerOperation(true)
+                    .Model(model =>
+                    {
+                        model.Id(p => p.IdDependientes);
+                        model.Field(p => p.IdDependientes).Editable(false);
+
+
+                    })
+                    .Events(events => events.Error("error_handler"))
+                    .Read(read => read.Action("Get", "Dependientes"))
+                    .Create(create => create.Action("Insert", "Dependientes").Type(HttpVerbs.Post))
+                    .Update(update => update.Action("Update", "Dependientes").Type(HttpVerbs.Put))
+                    .Destroy(destroy => destroy.Action("Delete", "Dependientes").Type(HttpVerbs.Post))
+
+                    )
+                    .Events(e =>
+                    {
+                        e.Save("onsave");
+
+                    })
+)
+
+<div id="numDependientes">
+    @await Html.PartialAsync("pvwAddDependientes", new ERPMVC.DTO.DependientesDTO { IdDependientes = 0 })
+</div>
+
+

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using ERPMVC.Models;
-using ERPAPI.Models;
+using ERPMVC.DTO;
 
 namespace ERP.Contexts
 {
@@ -36,6 +36,10 @@ namespace ERP.Contexts
 
             base.OnModelCreating(modelBuilder);
         }
+
+
+
+      
 
 
         

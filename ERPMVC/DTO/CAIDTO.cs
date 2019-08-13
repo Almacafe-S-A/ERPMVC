@@ -10,6 +10,8 @@ namespace ERPMVC.DTO
     {
         public List<CAI> _CAIs { get; set; }
 
+        public string elcai { get; set; }
+
         public int editar { get; set; } = 1;
 
         public string token { get; set; }

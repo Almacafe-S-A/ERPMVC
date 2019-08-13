@@ -34,6 +34,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> pvwKardex(Int64 Id = 0)
         {
             Kardex _Kardex = new Kardex();
@@ -109,6 +110,60 @@ namespace ERPMVC.Controllers
 
 
             return _Kardex.ToDataSourceResult(request);
+
+        }
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> GetSaldoProductoByCertificado([DataSourceRequest]DataSourceRequest request, [FromBody]KardexParam _Kardexp)
+        //public async Task<ActionResult> GetSaldoProductoByCertificado([DataSourceRequest]DataSourceRequest request, [FromBody]dynamic _Kardexd)
+        {
+            List<KardexLine> _KardexLine = new List<KardexLine>();
+            KardexLine _saldo = new KardexLine();
+            Kardex _Kardexq = new Kardex { DocumentId = _Kardexp.DocumentId, DocumentName = _Kardexp.DocumentName };
+            try
+            {
+                // _Kardexq = JsonConvert.DeserializeObject<Kardex>(_Kardexd);
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoByNoCD/" + _Kardexq.DocumentId);
+                string valorrespuesta = "";
+                CertificadoDeposito _cd = new CertificadoDeposito();
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _cd = JsonConvert.DeserializeObject<CertificadoDeposito>(valorrespuesta);
+
+                }
+
+                if (_cd != null)
+                {
+
+                    _Kardexq.DocumentId = _cd.IdCD;
+
+                    _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    result = await _client.PostAsJsonAsync(baseadress + "api/Kardex/GetSaldoProductoByCertificado", _Kardexq);
+                    valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _KardexLine = JsonConvert.DeserializeObject<List<KardexLine>>(valorrespuesta);
+
+                    }
+
+                    _saldo = _KardexLine.Where(q => q.SubProducId == _Kardexp.SubProducId).FirstOrDefault();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return Json(_saldo);
 
         }
 

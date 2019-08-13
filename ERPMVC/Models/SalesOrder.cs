@@ -46,7 +46,8 @@ namespace ERPMVC.Models
         public string BranchName { get; set; }
 
         [Display(Name = "Cliente")]
-        public Int64 CustomerId { get; set; }
+      
+        public Int64? CustomerId { get; set; }
 
         [Display(Name = "Fecha de vencimiento")]
         public DateTime ExpirationDate { get; set; }
@@ -108,6 +109,8 @@ namespace ERPMVC.Models
         [Display(Name = "Estado")]
         public Int64 IdEstado { get; set; }
         public string Estado { get; set; }
+
+        public string Impreso { get; set; }
 
         public List<SalesOrderLine> SalesOrderLines { get; set; } = new List<SalesOrderLine>();
 

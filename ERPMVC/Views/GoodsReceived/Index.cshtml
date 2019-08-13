@@ -1,9 +1,10 @@
-﻿
+﻿@using Microsoft.AspNetCore.Http;
 <script>
-    function AddGoodsReceived() {
 
+
+    function clearsession() {
         var dataObject = ["listadoproductosgoodsreceived"];
-         $.ajax({
+        $.ajax({
             url: '@Url.Action("ClearSession","Common")',
             method: 'POST',
             datatype: "json",
@@ -11,13 +12,21 @@
             async: false,
             data: JSON.stringify(dataObject),
             success: function (result) {
-                  //  $('#myModalSalesOrder').modal('show');
+                //  $('#myModalSalesOrder').modal('show');
             },
-             error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
-              }
-         });
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
 
+      $(document).ready(function () {
+        clearsession();
+    });
+
+
+    function AddGoodsReceived() {
+     clearsession();
 
          var dataObject = {
              GoodsReceivedId: 0,
@@ -48,11 +57,13 @@
     }
 
     function EditGoodsReceived(e) {
-         e.preventDefault();
+        e.preventDefault();
+
+        clearsession();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         var dataObject = {
             GoodsReceivedId: dataItem.GoodsReceivedId,
-            editar : 0
+            editar: 0
         };
 
         $.ajax({
@@ -69,17 +80,17 @@
                 $("#CustomerId").val(0);
                 $("#CustomerId").data("kendoDropDownList").select(customer);
                 $("#CustomerId").data("kendoDropDownList").value(customer);
-            
+
                 hcustom = customer;
                 GetProductTypeIdS();
                 $("#SubProductId").data("kendoDropDownList").dataSource.read();
-               // var sapProject = $("#CustomerId").data("kendoDropDownList").bind("select", onChange(customer));
+                // var sapProject = $("#CustomerId").data("kendoDropDownList").bind("select", onChange(customer));
 
                 $('#myModalGoodsReceived').modal('show');
             },
-             error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
-              }
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
         });
     }
 
@@ -90,8 +101,21 @@
     function ImprimirGoodsReceived(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        @*window.location.href = '@Url.Action("SFGoodsReceived", "GoodsReceived")/' + dataItem.GoodsReceivedId;*@
 
-        window.location.href = '@Url.Action("SFGoodsReceived", "GoodsReceived")/' + dataItem.GoodsReceivedId;
+        var url = '@Url.Action("SFGoodsReceived", "GoodsReceived")/' + dataItem.GoodsReceivedId;
+           var win = window.open(url, '_blank');
+           win.focus();
+    }
+
+       function ImprimirBoletaDeSalida(e) {
+           e.preventDefault();
+           debugger;
+           var dataItem = this.dataItem($(e.currentTarget).closest("tr")); 
+              //window.location.href = '@Url.Action("SFBoletaDeSalida", "BoletaDeSalida")/' + dataItem.KardexId;     
+           var url = '@Url.Action("SFBoletaDeSalida", "BoletaDeSalida")/' + dataItem.ExitTicket;
+           var win = window.open(url, '_blank');
+           win.focus();
     }
 
 
@@ -105,118 +129,146 @@
 <h3 class="text-themecolor">Recibo de mercaderías</h3>
 
 @(Html.Kendo().Grid<ERPMVC.Models.GoodsReceived>()
-                              .Name("gridGoodsReceived")
-                              .Columns(columns =>
-                              {
-                                  columns.Command(command =>
+                                  .Name("gridGoodsReceived")
+                                  .Columns(columns =>
                                   {
-                                      command.Custom("Editar").Click("EditGoodsReceived");
-                                      command.Custom("Imprimir").Click("ImprimirGoodsReceived");
-                                        //  command.Edit(); command.Destroy();
-                                   }).Width(250);
+                                      columns.Command(command =>
+                                      {
+                                          command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditGoodsReceived");
+                                          command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirGoodsReceived");
 
-                                  columns.Bound(p => p.GoodsReceivedId).Title("Id").Width(150);
-                                  columns.Bound(p => p.DocumentDate).Format("{0:dd/MM/yyyy}").ClientTemplate("#=kendo.toString(DocumentDate,'dd/MM/yyyy')#").Title("Fecha Documento").Width(150);
-                                  //columns.Bound(p => p.OrderDate).Format("{0:dd/MM/yyyy}").Width(150);
-                                  columns.Bound(p => p.Name).Width(150);
-                                  columns.Bound(p => p.ProductId).Title("Producto").Width(150);
-                                  columns.Bound(p => p.ProductName).Title("Descripcion").Width(150);
-                                   //columns.Bound(p => p.BranchId).Title("Branch Id").Width(150);
-                                  columns.Bound(p => p.BranchName).Title("Sucursal").Width(150);
-                                  columns.Bound(p => p.WarehouseName).Title("Bodega").Width(150);
-                                  columns.Bound(p => p.ExitTicket).Title("Ticket de salida").Width(150);
-                                  columns.Bound(p => p.Reference).Title("Referencia").Width(150);
+                                          command.Custom("ImprimirBoletaDeSalida").Text(" ").IconClass("mdi mdi-printer").Click("ImprimirBoletaDeSalida");
+                                          //  command.Edit(); command.Destroy();
+                                      }).Width(250);
 
-                              })
-                              .Filterable(f=>f.Operators(o=>o.ForString(s=>s
-                                   .Clear()                                   
-                                   .Contains("Contiene")
-                                   .DoesNotContain("No contiene")
-                                   .EndsWith("Termina con")
-                                   .IsEqualTo("Es igual a")
-                                   .IsNotEqualTo("No es igual a")                           
-                                   .IsNull("Es nulo")
-                                   .StartsWith("Inicia con")
-                                  
-                                  
-                               )
-                               .ForNumber(n=>n
-                                 .Clear()
-                                 .IsEqualTo("Es igual a")
-                                 .IsGreaterThan("Es mayor que")
-                                 .IsLessThan("Es menor que")
-                                 .IsNull("Es nulo")
-                                 .IsLessThanOrEqualTo("Es menor o igual que")
-                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                               )
-                               .ForDate(d=>d
-                               .Clear()
-                               .IsEqualTo("Es igual que")
-                               .IsGreaterThan("Es mayor que")
-                               .IsLessThan("Es menor que")
-                               .IsLessThanOrEqualTo("Es menor o igual que")
-                               .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                               .IsNotEqualTo("No es igual que")
-                                )
-                               ))
-                               
-                              .ToolBar(tools =>
-                              {
-                                 //tools.Create();
-                                 tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                  .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddGoodsReceived();" });
+                                      columns.Bound(p => p.GoodsReceivedId).Title("Id").Width(150);
+                                      columns.Bound(p => p.DocumentDate).Format("{0:dd/MM/yyyy}").ClientTemplate("#=kendo.toString(DocumentDate,'dd/MM/yyyy')#").Title("Fecha Documento").Width(150);
+                                      //columns.Bound(p => p.OrderDate).Format("{0:dd/MM/yyyy}").Width(150);
+                                      columns.Bound(p => p.Name).Width(150);
+                                      columns.Bound(p => p.ProductId).Title("Producto").Width(150);
+                                      columns.Bound(p => p.ProductName).Title("Descripcion").Width(150);
+                                      //columns.Bound(p => p.BranchId).Title("Branch Id").Width(150);
+                                      columns.Bound(p => p.BranchName).Title("Sucursal").Width(150);
+                                      columns.Bound(p => p.WarehouseName).Title("Bodega").Width(150);
+                                      columns.Bound(p => p.ExitTicket).Title("Ticket de salida").Width(150);
+                                      columns.Bound(p => p.Reference).Title("Referencia").Width(150);
 
-                                  tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
-                                  tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+                                  })
+                                  .Filterable(f => f.Operators(o => o.ForString(s => s
+                                           .Clear()
+                                           .Contains("Contiene")
+                                           .DoesNotContain("No contiene")
+                                           .EndsWith("Termina con")
+                                           .IsEqualTo("Es igual a")
+                                           .IsNotEqualTo("No es igual a")
+                                           .IsNull("Es nulo")
+                                           .StartsWith("Inicia con")
 
 
-                              })
-                               .Editable(e => e.Mode(GridEditMode.PopUp))
-                                .Sortable()
-                                .AutoBind(true)
-                                .Pageable()
-                                .Filterable()
-                                .Scrollable()
-                                // .ClientDetailTemplateId("template")
-                                .Pdf(pdf => pdf.FileName("GoodsReceivedReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                  .Excel(excel => excel.FileName("GoodsReceivedReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                //.Events(e=>e.Save("onsave"))
-                                .DataSource(dataSource =>
+                                     )
+                                     .ForNumber(n => n
+                                       .Clear()
+                                       .IsEqualTo("Es igual a")
+                                       .IsGreaterThan("Es mayor que")
+                                       .IsLessThan("Es menor que")
+                                       .IsNull("Es nulo")
+                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                     )
+                                     .ForDate(d => d
+                                     .Clear()
+                                     .IsEqualTo("Es igual que")
+                                     .IsGreaterThan("Es mayor que")
+                                     .IsLessThan("Es menor que")
+                                     .IsLessThanOrEqualTo("Es menor o igual que")
+                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                     .IsNotEqualTo("No es igual que")
+                                      )
+                                   ))
 
-                               dataSource
-                               //.Ajax()
-                               .WebApi()
-                                .ServerOperation(true)
-                                .Model(model =>
-                                {
-                                    model.Id(p => p.GoodsReceivedId);
-                                    model.Field(p => p.GoodsReceivedId).Editable(true);
-                                    model.Field(p => p.CustomerId).Editable(true);
+                                  .ToolBar(tools =>
+                                  {
+                                      //tools.Create();
+                                      tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                       .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddGoodsReceived();" });
+
+                                      tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                                      tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
 
 
-                                })
-                                .Events(events =>
-                                {
-                                    events.Error("error_handler");
-                        //events.upda("EditHandler");
+                                  })
+                                   .Editable(e => e.Mode(GridEditMode.PopUp))
+                                    .Sortable()
+                                    .AutoBind(true)
+                                    .Pageable()
+                                    .Filterable()
+                                    .Scrollable()
+                                    // .ClientDetailTemplateId("template")
+                                    .Pdf(pdf => pdf.FileName("GoodsReceivedReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                      .Excel(excel => excel.FileName("GoodsReceivedReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                    //.Events(e=>e.Save("onsave"))
+                                    .DataSource(dataSource =>
 
-                    })
-                                .Read(read => read.Action("Get", "GoodsReceived"))
-                                .Create(create => create.Action("Insert", "GoodsReceived"))
-                                .Update(update => update.Action("Update", "GoodsReceived", new { id = "{0}" }))
-                                .Destroy(destroy => destroy.Action("Delete", "GoodsReceived", new { id = "{0}" }))
-                          )
+                                   dataSource
+                                   //.Ajax()
+                                   .WebApi()
+                                    .ServerOperation(true)
+                                    .Model(model =>
+                                    {
+                                        model.Id(p => p.GoodsReceivedId);
+                                        model.Field(p => p.GoodsReceivedId).Editable(true);
+                                        model.Field(p => p.CustomerId).Editable(true);
+
+
+                                    })
+                                    .Events(events =>
+                                    {
+                                        events.Error("error_handler");
+                                        //events.upda("EditHandler");
+
+                                    })
+                                    .Read(read => read.Action("Get", "GoodsReceived"))
+                                    .Create(create => create.Action("Insert", "GoodsReceived"))
+                                    .Update(update => update.Action("Update", "GoodsReceived", new { id = "{0}" }))
+                                    .Destroy(destroy => destroy.Action("Delete", "GoodsReceived", new { id = "{0}" }))
+                              )
 )
 
 <div id="goodsReceived">
-    @await Html.PartialAsync("pvwGoodsReceived", new ERPMVC.DTO.GoodsReceivedDTO { GoodsReceivedId = 0, DocumentDate = DateTime.Now, OrderDate = DateTime.Now })
+    @await Html.PartialAsync("pvwGoodsReceived", new ERPMVC.DTO.GoodsReceivedDTO { GoodsReceivedId = 0, DocumentDate = DateTime.Now, OrderDate = DateTime.Now
+    ,BranchId = Convert.ToInt64(Context.Session.GetString("BranchId"))
+})
 </div>
 
 
+<script>
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridGoodsReceived").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridGoodsReceived").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-button k-button-icontext k-grid-Agregar k-i-plus-sm", "Agregar un nuevo registro");
+    //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
+    setRowButtonTooltip(".k-grid-Anular", "Anular !");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir");
+    setRowButtonTooltip(".k-grid-ImprimirBoletaDeSalida", "Imprimir Boleta de salida");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+
+</script>
 
 
 <div id="ConditionView">

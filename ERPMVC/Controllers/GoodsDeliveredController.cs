@@ -9,6 +9,7 @@ using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -19,6 +20,7 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
+    [EnableCors("AllowAllOrigins")]
     public class GoodsDeliveredController : Controller
     {
         private readonly IOptions<MyConfig> config;
@@ -36,7 +38,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult> pvwGoodsDelivered(Int64 Id = 0)
+        public async Task<ActionResult> pvwGoodsDelivered([FromBody]GoodsDeliveredDTO _GoodsDeliveredDTO)
         {
             GoodsDeliveredDTO _GoodsDelivered = new GoodsDeliveredDTO();
             try
@@ -44,7 +46,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/GoodsDelivered/GetGoodsDeliveredById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/GoodsDelivered/GetGoodsDeliveredById/" + _GoodsDeliveredDTO.GoodsDeliveredId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -55,7 +57,10 @@ namespace ERPMVC.Controllers
 
                 if (_GoodsDelivered == null)
                 {
-                    _GoodsDelivered = new GoodsDeliveredDTO { DocumentDate=DateTime.Now, ExpirationDate = DateTime.Now, OrderDate=DateTime.Now, editar=1 };
+                    _GoodsDelivered = new GoodsDeliveredDTO { DocumentDate=DateTime.Now, ExpirationDate = DateTime.Now, OrderDate=DateTime.Now, editar=1
+                        ,
+                        BranchId = Convert.ToInt64(HttpContext.Session.GetString("BranchId"))
+                    };
                 }
                 else
                 {
@@ -108,11 +113,116 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<GoodsDelivered>> SaveGoodsDelivered([FromBody]GoodsDelivered _GoodsDelivered)
+        public async Task<ActionResult> GetGoodsDeliveredById([FromBody]GoodsDelivered _GoodsDeliveredp)
+        //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
         {
+            GoodsDelivered _GoodsDelivered = new GoodsDelivered();
+            try
+            {
+
+                //GoodsDelivered _GoodsDeliveredp = JsonConvert.DeserializeObject<GoodsDelivered>(dto);
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/GoodsDelivered/GetGoodsDeliveredById/" + _GoodsDeliveredp.GoodsDeliveredId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _GoodsDelivered = JsonConvert.DeserializeObject<GoodsDelivered>(valorrespuesta);
+
+                }
+
+                if (_GoodsDelivered == null)
+                {
+                    _GoodsDelivered = new GoodsDelivered();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_GoodsDelivered);
+        }
+
+        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request)
+        {
+            var res = await GetGoodsDelivered();
+            return Json(res.ToDataSourceResult(request));
+        }
+
+        public async Task<ActionResult> Orders_ValueMapper(Int64[] values)
+        {
+            var indices = new List<Int64>();
+
+            if (values != null && values.Any())
+            {
+                var index = 0;
+
+                foreach (var order in await GetGoodsDelivered())
+                {
+                    if (values.Contains(order.GoodsDeliveredId))
+                    {
+                        indices.Add(index);
+                    }
+
+                    index += 1;
+                }
+            }
+
+            return Json(indices);
+        }
+
+        [HttpGet("[controller]/[action]")]
+        private async Task<List<GoodsDelivered>> GetGoodsDelivered()
+        {
+            List<GoodsDelivered> _GoodsDelivered = new List<GoodsDelivered>();
 
             try
             {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/GoodsDelivered/GetGoodsDeliveredNoSelected");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _GoodsDelivered = JsonConvert.DeserializeObject<List<GoodsDelivered>>(valorrespuesta);
+                    _GoodsDelivered = (from c in _GoodsDelivered
+                                       select new GoodsDelivered
+                                       {
+                                                  GoodsDeliveredId = c.GoodsDeliveredId,
+                                                       CustomerName = "Numero de recibo de entrega: " + c.GoodsDeliveredId + "  ||Nombre:" + c.CustomerName + " ||Fecha: "
+                                             +           c.DocumentDate + " ||Fecha de documento:" + c.DocumentDate + " || Boleta de peso:" + c.WeightBallot + " || Cliente:" + c.CustomerName,
+                                                       DocumentDate = c.DocumentDate,
+
+                                        }
+                                      ).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            // return Json(_CustomerConditions.ToDataSourceResult(request));
+            return _GoodsDelivered;
+        }
+
+
+
+             [HttpPost("[controller]/[action]")]
+             public async Task<ActionResult<GoodsDelivered>> SaveGoodsDelivered([FromBody]GoodsDelivered _GoodsDelivered)
+            // public async Task<ActionResult<GoodsDelivered>> SaveGoodsDelivered([FromBody]dynamic dto)
+        {
+
+            //GoodsDelivered _GoodsDelivered = new GoodsDelivered();
+            try
+            {
+              //  _GoodsDelivered = JsonConvert.DeserializeObject<GoodsDelivered>(dto.ToString());
                 GoodsDelivered _listGoodsDelivered = new GoodsDelivered();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
@@ -136,6 +246,13 @@ namespace ERPMVC.Controllers
                     _GoodsDelivered.FechaCreacion = DateTime.Now;
                     _GoodsDelivered.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_GoodsDelivered);
+                    var value = (insertresult.Result as ObjectResult).Value;
+                    _GoodsDelivered = ((GoodsDelivered)(value));
+                    if (_GoodsDelivered.GoodsDeliveredId == 0)
+                    {
+                        return await Task.Run(() => BadRequest("No se genero el documento!"));
+                    }
+
                 }
                 else
                 {
@@ -202,7 +319,7 @@ namespace ERPMVC.Controllers
 
             }
             catch (Exception ex)
-            {
+            { 
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
@@ -239,6 +356,15 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsDelivered }, Total = 1 });
         }
 
+
+        [HttpGet]
+        public ActionResult SFGoodsDelivered(Int64 id)
+        {
+
+            GoodsDeliveredDTO _GoodsDelivered = new GoodsDeliveredDTO { GoodsDeliveredId = id, };
+
+            return View(_GoodsDelivered);
+        }
 
 
 

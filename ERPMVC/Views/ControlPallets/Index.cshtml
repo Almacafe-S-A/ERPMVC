@@ -1,8 +1,8 @@
-﻿
+﻿@using Microsoft.AspNetCore.Http;
 <script>
-    function AddControlPallet() {
 
-         var dataObject = ["listadoproductos"];
+    function clearsession() {
+        var dataObject = ["listadoproductospallet"];
          $.ajax({
             url: '@Url.Action("ClearSession","Common")',
             method: 'POST',
@@ -17,7 +17,14 @@
                     alert(textStatus + ": " + XMLHttpRequest.responseText);
               }
          });
+    }
 
+    function AddControlPallet() {
+
+
+       // $('#Alto').data("kendoNumericTextBox").value(null);
+
+        clearsession();
 
          var dataObject = {
              ControlPalletsId: 0,
@@ -46,10 +53,18 @@
         });
 
 
+     
+      
+
     }
 
+ 
+   
+
     function EditControlPallet(e) {
-         e.preventDefault();
+        e.preventDefault();
+
+        clearsession();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         var dataObject = {
             ControlPalletsId: dataItem.ControlPalletsId,
@@ -67,8 +82,8 @@
             success: function (result) {
                 $("#controlpallets").html('');
                 $("#controlpallets").html(result);
-                var customer = $("#CustomerId").val();               
-                $("#CustomerId").data("kendoDropDownList").value(customer);            
+                var customer = $("#CustomerId").val();
+                $("#CustomerId").data("kendoDropDownList").value(customer);
                 $('#myModalControlPallets').modal('show');
             },
              error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -85,7 +100,11 @@
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
 
-        window.location.href = '@Url.Action("SFControlPallets", "ControlPallets")/' + dataItem.ControlPalletsId;
+        var url = '@Url.Action("SFControlPallets", "ControlPallets")/' + dataItem.ControlPalletsId;
+           var win = window.open(url, '_blank');
+           win.focus();
+
+        //window.location.href = '@Url.Action("SFControlPallets", "ControlPallets")/' + dataItem.ControlPalletsId;
     }
 
 
@@ -99,113 +118,114 @@
 <h3 class="text-themecolor">Control de ingresos</h3>
 
 @(Html.Kendo().Grid<ERPMVC.Models.ControlPallets>()
-                              .Name("gridEstibas")
-                              .Columns(columns =>
-                              {
-                                  columns.Command(command =>
+                                  .Name("gridEstibas")
+                                  .Columns(columns =>
                                   {
-                                      command.Custom("Editar").Click("EditControlPallet");
-                                      command.Custom("Imprimir").Click("ImprimirControlPallet");
-                                      //  command.Edit(); command.Destroy();
-                                  }).Width(250);
+                                      columns.Command(command =>
+                                      {
+                                          command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditControlPallet");
+                                          command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirControlPallet");
+                              //  command.Edit(); command.Destroy();
+                          }).Width(250);
 
-                                  columns.Bound(p => p.ControlPalletsId).Title("Id").Width(150);
-                                  columns.Bound(p => p.DocumentDate).Format("{0:dd/MM/yyyy}").Title("Fecha Documento").Width(150);
-                                  columns.Bound(p => p.CustomerName).Title("Cliente").Width(150);
-                                  columns.Bound(p => p.ProductId).Title("Producto").Width(150);
-                                  columns.Bound(p => p.DescriptionProduct).Title("Descripcion").Width(150);
-                                  //columns.Bound(p => p.BranchId).Title("Branch Id").Width(150);
-                                  columns.Bound(p => p.Placa).Title("Placa").Width(150);
-                                  columns.Bound(p => p.Marca).Title("Marca").Width(150);
-                                  columns.Bound(p => p.EsIngreso).Title("Es Ingreso").Width(150);
-                                  columns.Bound(p => p.SubTotal).Title("SubTotal").Width(150);
-                                  columns.Bound(p => p.TotalSacos).Title("Total Sacos").Width(150);
-                              })
-                                  .Filterable(f => f.Operators(o => o.ForString(s => s
+                                      columns.Bound(p => p.ControlPalletsId).Title("Id").Width(150);
+                                      columns.Bound(p => p.DocumentDate).Format("{0:dd/MM/yyyy}").Title("Fecha Documento").Width(150);
+                                      columns.Bound(p => p.CustomerName).Title("Cliente").Width(150);
+                                      columns.Bound(p => p.ProductId).Title("Producto").Width(150);
+                                      columns.Bound(p => p.DescriptionProduct).Title("Descripcion").Width(150);
+                          //columns.Bound(p => p.BranchId).Title("Branch Id").Width(150);
+                          columns.Bound(p => p.Placa).Title("Placa").Width(150);
+                                      columns.Bound(p => p.Marca).Title("Marca").Width(150);
+                                      columns.Bound(p => p.EsIngreso).Title("Es Ingreso").Width(150);
+                                      columns.Bound(p => p.SubTotal).Title("SubTotal").Width(150);
+                                      columns.Bound(p => p.TotalSacos).Title("Total Sacos").Width(150);
+                                  })
+                                      .Filterable(f => f.Operators(o => o.ForString(s => s
+                                           .Clear()
+                                           .Contains("Contiene")
+                                           .DoesNotContain("No contiene")
+                                           .EndsWith("Termina con")
+                                           .IsEqualTo("Es igual a")
+                                           .IsNotEqualTo("No es igual a")
+                                           .IsNull("Es nulo")
+                                           .StartsWith("Inicia con")
+
+
+                                     )
+                                     .ForNumber(n => n
                                        .Clear()
-                                       .Contains("Contiene")
-                                       .DoesNotContain("No contiene")
-                                       .EndsWith("Termina con")
                                        .IsEqualTo("Es igual a")
-                                       .IsNotEqualTo("No es igual a")
+                                       .IsGreaterThan("Es mayor que")
+                                       .IsLessThan("Es menor que")
                                        .IsNull("Es nulo")
-                                       .StartsWith("Inicia con")
+                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                     )
+                                     .ForDate(d => d
+                                     .Clear()
+                                     .IsEqualTo("Es igual que")
+                                     .IsGreaterThan("Es mayor que")
+                                     .IsLessThan("Es menor que")
+                                     .IsLessThanOrEqualTo("Es menor o igual que")
+                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                     .IsNotEqualTo("No es igual que")
+                                      )
+                                   ))
+                                  .ToolBar(tools =>
+                                  {
+                          //tools.Create();
+                          tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                      .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddControlPallet();" });
+
+                                      tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                                      tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
 
 
-                                 )
-                                 .ForNumber(n => n
-                                   .Clear()
-                                   .IsEqualTo("Es igual a")
-                                   .IsGreaterThan("Es mayor que")
-                                   .IsLessThan("Es menor que")
-                                   .IsNull("Es nulo")
-                                   .IsLessThanOrEqualTo("Es menor o igual que")
-                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                 )
-                                 .ForDate(d => d
-                                 .Clear()
-                                 .IsEqualTo("Es igual que")
-                                 .IsGreaterThan("Es mayor que")
-                                 .IsLessThan("Es menor que")
-                                 .IsLessThanOrEqualTo("Es menor o igual que")
-                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                 .IsNotEqualTo("No es igual que")
-                                  )
-                               ))
-                              .ToolBar(tools =>
-                              {
-                                  //tools.Create();
-                                  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                  .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddControlPallet();" });
+                                  })
+                                   .Editable(e => e.Mode(GridEditMode.PopUp))
+                                    .Sortable()
+                                    .AutoBind(true)
+                                    .Pageable()
+                                    .Filterable()
+                                    .Scrollable()
+                                    // .ClientDetailTemplateId("template")
+                                    .Pdf(pdf => pdf.FileName("ControlPalletsReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                      .Excel(excel => excel.FileName("ControlPalletsReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                    //.Events(e=>e.Save("onsave"))
+                                    .DataSource(dataSource =>
 
-                                  tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
-                                  tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+                                   dataSource
+                                   //.Ajax()
+                                   .WebApi()
+                                    .ServerOperation(true)
+                                    .Model(model =>
+                                    {
+                                        model.Id(p => p.ControlPalletsId);
+                                        model.Field(p => p.ControlPalletsId).Editable(true);
+                                        model.Field(p => p.CustomerId).Editable(true);
 
 
-                              })
-                               .Editable(e => e.Mode(GridEditMode.PopUp))
-                                .Sortable()
-                                .AutoBind(true)
-                                .Pageable()
-                                .Filterable()
-                                .Scrollable()
-                                // .ClientDetailTemplateId("template")
-                                .Pdf(pdf => pdf.FileName("ControlPalletsReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                  .Excel(excel => excel.FileName("ControlPalletsReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                //.Events(e=>e.Save("onsave"))
-                                .DataSource(dataSource =>
+                                    })
+                                    .Events(events =>
+                                    {
+                                        events.Error("error_handler");
+                            //events.upda("EditHandler");
 
-                               dataSource
-                               //.Ajax()
-                               .WebApi()
-                                .ServerOperation(true)
-                                .Model(model =>
-                                {
-                                    model.Id(p => p.ControlPalletsId);
-                                    model.Field(p => p.ControlPalletsId).Editable(true);
-                                    model.Field(p => p.CustomerId).Editable(true);
-
-
-                                })
-                                .Events(events =>
-                                {
-                                    events.Error("error_handler");
-                                    //events.upda("EditHandler");
-
-                                })
-                                .Read(read => read.Action("Get", "ControlPallets"))
-                                .Create(create => create.Action("Insert", "ControlPallets"))
-                                .Update(update => update.Action("Update", "ControlPallets", new { id = "{0}" }))
-                                .Destroy(destroy => destroy.Action("Delete", "ControlPallets", new { id = "{0}" }))
-                          )
+                        })
+                                    .Read(read => read.Action("Get", "ControlPallets"))
+                                    .Create(create => create.Action("Insert", "ControlPallets"))
+                                    .Update(update => update.Action("Update", "ControlPallets", new { id = "{0}" }))
+                                    .Destroy(destroy => destroy.Action("Delete", "ControlPallets", new { id = "{0}" }))
+                              )
 )
 
 <div id="controlpallets">
-    @await Html.PartialAsync("pvwControlPallets", new ERPMVC.DTO.ControlPalletsDTO { ControlPalletsId = 0, DocumentDate = DateTime.Now, })
+    @await Html.PartialAsync("pvwControlPallets", new ERPMVC.DTO.ControlPalletsDTO { ControlPalletsId = 0, DocumentDate = DateTime.Now
+    , BranchId = Convert.ToInt64(Context.Session.GetString("BranchId")) })
 </div>
 
 

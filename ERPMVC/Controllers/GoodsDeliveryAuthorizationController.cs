@@ -19,6 +19,7 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
+    //[Route("GoodsDeliveryAuthorization")]
     public class GoodsDeliveryAuthorizationController : Controller
     {
         private readonly IOptions<MyConfig> config;
@@ -30,13 +31,15 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet("[controller]/[action]")]
+        [HttpGet("[action]")]
         public IActionResult Index()
         {
             return View();
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult> pvwGoodsDeliveryAuthorization([FromBody]GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorizationDTO )
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwGoodsDeliveryAuthorization([FromBody]GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorizationDTO)
         {
             GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorizationDTO();
             try
@@ -55,11 +58,19 @@ namespace ERPMVC.Controllers
 
                 if (_GoodsDeliveryAuthorization == null)
                 {
-                    _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorizationDTO { AuthorizationDate = DateTime.Now, DocumentDate = DateTime.Now, editar = 1 };
+                    _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorizationDTO
+                    {
+                        AuthorizationDate = DateTime.Now,
+                        DocumentDate = DateTime.Now,
+                        editar = 1
+                        ,
+                        BranchId = Convert.ToInt64(HttpContext.Session.GetString("BranchId"))
+                    };
                 }
                 else
                 {
                     _GoodsDeliveryAuthorization.editar = 0;
+
                 }
 
 
@@ -79,11 +90,8 @@ namespace ERPMVC.Controllers
 
 
 
-
-
-
-
         [HttpGet("[controller]/[action]")]
+        [HttpGet("[action]")]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
             List<GoodsDeliveryAuthorization> _GoodsDeliveryAuthorization = new List<GoodsDeliveryAuthorization>();
@@ -113,8 +121,11 @@ namespace ERPMVC.Controllers
 
         }
 
-       // [HttpGet("[controller]/[action]/{Id}")]
-        public async Task<ActionResult> GetDeliveryAuthorizationById(Int64 Id)
+        //[HttpGet("GoodsDeliveryAuthorization/GetDeliveryAuthorizationById/{Id}")]
+        //[HttpGet("/GoodsDeliveryAuthorization/GetDeliveryAuthorizationById/{Id}")]
+        //[HttpGet("[action]/{Id}")]
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> GetDeliveryAuthorizationById([FromBody]GoodsDeliveryAuthorization _GoodsDeliveryAuthorizationp)
         {
             GoodsDeliveryAuthorization _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorization();
             try
@@ -122,7 +133,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/GoodsDeliveryAuthorization/GetGoodsDeliveryAuthorizationById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/GoodsDeliveryAuthorization/GetGoodsDeliveryAuthorizationById/" + _GoodsDeliveryAuthorizationp.GoodsDeliveryAuthorizationId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -148,14 +159,15 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[controller]/[action]")]
-          public async Task<ActionResult<GoodsDeliveryAuthorization>> SaveGoodsDeliveryAuthorization([FromBody]GoodsDeliveryAuthorization _GoodsDeliveryAuthorization)
-        //public async Task<ActionResult<GoodsDeliveryAuthorization>> SaveGoodsDeliveryAuthorization([FromBody]dynamic dto)
+        [HttpPost("[action]")]
+        // public async Task<ActionResult<GoodsDeliveryAuthorization>> SaveGoodsDeliveryAuthorization([FromBody]GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorization)
+        public async Task<ActionResult<GoodsDeliveryAuthorization>> SaveGoodsDeliveryAuthorization([FromBody]dynamic dto)
         {
-          //  GoodsDeliveryAuthorization _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorization();
+            GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorizationDTO();
 
             try
             {
-            //    _GoodsDeliveryAuthorization = JsonConvert.DeserializeObject<GoodsDeliveryAuthorization>(dto.ToString());
+                _GoodsDeliveryAuthorization = JsonConvert.DeserializeObject<GoodsDeliveryAuthorizationDTO>(dto.ToString());
                 if (_GoodsDeliveryAuthorization != null)
                 {
                     GoodsDeliveryAuthorization _listGoodsDeliveryAuthorization = new GoodsDeliveryAuthorization();
@@ -171,6 +183,7 @@ namespace ERPMVC.Controllers
 
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _listGoodsDeliveryAuthorization = JsonConvert.DeserializeObject<GoodsDeliveryAuthorization>(valorrespuesta);
+
                     }
 
                     if (_listGoodsDeliveryAuthorization == null) { _listGoodsDeliveryAuthorization = new GoodsDeliveryAuthorization(); }
@@ -180,6 +193,12 @@ namespace ERPMVC.Controllers
                         _GoodsDeliveryAuthorization.FechaCreacion = DateTime.Now;
                         _GoodsDeliveryAuthorization.UsuarioCreacion = HttpContext.Session.GetString("user");
                         var insertresult = await Insert(_GoodsDeliveryAuthorization);
+                        var value = (insertresult.Result as ObjectResult).Value;
+                        _GoodsDeliveryAuthorization = ((GoodsDeliveryAuthorizationDTO)(value));
+                        if (_GoodsDeliveryAuthorization.GoodsDeliveryAuthorizationId == 0)
+                        {
+                            return await Task.Run(() => BadRequest("No se genero el documento!"));
+                        }
                     }
                     else
                     {
@@ -188,7 +207,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    return BadRequest("No llego correctamente el modelo!");
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
                 }
 
 
@@ -232,6 +251,8 @@ namespace ERPMVC.Controllers
             return Json(indices);
         }
 
+        [HttpGet("[controller]/[action]")]
+        [HttpGet("[action]")]
         private async Task<List<GoodsDeliveryAuthorization>> GetGoodsDeliveryAuthorization()
         {
             List<GoodsDeliveryAuthorization> _GoodsDeliveryAuthorization = new List<GoodsDeliveryAuthorization>();
@@ -249,12 +270,13 @@ namespace ERPMVC.Controllers
                     _GoodsDeliveryAuthorization = JsonConvert.DeserializeObject<List<GoodsDeliveryAuthorization>>(valorrespuesta);
                     _GoodsDeliveryAuthorization = (from c in _GoodsDeliveryAuthorization
                                                    select new GoodsDeliveryAuthorization
-                                       {
-                                           GoodsDeliveryAuthorizationId = c.GoodsDeliveryAuthorizationId,
-                                           CustomerName ="Numero de autorización"+ c.GoodsDeliveryAuthorizationId + "|| Nombre:" + c.CustomerName + "|| Fecha: " + c.DocumentDate + " ||Fecha de autorización:"+c.AuthorizationDate + " || Total:" + c.TotalCertificado,
-                                           DocumentDate = c.DocumentDate,
+                                                   {
+                                                       GoodsDeliveryAuthorizationId = c.GoodsDeliveryAuthorizationId,
+                                                       CustomerName = "Numero de autorización: " + c.GoodsDeliveryAuthorizationId + "  ||Nombre:" + c.CustomerName + " ||Fecha: "
+                                             + c.DocumentDate + " ||Fecha de autorización:" + c.AuthorizationDate + " || Total Certificado:" + c.TotalCertificado + " || Total Financiado:" + c.TotalFinanciado,
+                                                       DocumentDate = c.DocumentDate,
 
-                                       }
+                                                   }
                                       ).ToList();
                 }
             }
@@ -272,7 +294,7 @@ namespace ERPMVC.Controllers
         // POST: GoodsDeliveryAuthorization/Insert
         [HttpPost("[controller]/[action]")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<GoodsDeliveryAuthorization>> Insert(GoodsDeliveryAuthorization _GoodsDeliveryAuthorization)
+        public async Task<ActionResult<GoodsDeliveryAuthorization>> Insert(GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorization)
         {
             try
             {
@@ -287,7 +309,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _GoodsDeliveryAuthorization = JsonConvert.DeserializeObject<GoodsDeliveryAuthorization>(valorrespuesta);
+                    _GoodsDeliveryAuthorization = JsonConvert.DeserializeObject<GoodsDeliveryAuthorizationDTO>(valorrespuesta);
                 }
 
             }
@@ -300,7 +322,7 @@ namespace ERPMVC.Controllers
             // return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsDeliveryAuthorization }, Total = 1 });
         }
 
-        [HttpPut("{id}")]
+        [HttpPut("[controller]/[action]/{id}")]
         public async Task<ActionResult<GoodsDeliveryAuthorization>> Update(Int64 id, GoodsDeliveryAuthorization _GoodsDeliveryAuthorization)
         {
             try
@@ -358,6 +380,14 @@ namespace ERPMVC.Controllers
 
 
 
+        [HttpGet("[controller]/[action]/{id}")]
+        public ActionResult SFGoodsDeliveryAuthorization(Int64 id)
+        {
+
+            GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorizationDTO { GoodsDeliveryAuthorizationId = id, };
+
+            return View(_GoodsDeliveryAuthorization);
+        }
 
 
 
