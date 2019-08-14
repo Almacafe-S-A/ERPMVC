@@ -64,12 +64,12 @@ namespace ERPMVC.Controllers
                         var estados = JsonConvert.DeserializeObject<List<Estados>>(valorrespuesta);
                         if (_CustomerProduct == null)
                         {
-                            ViewData["estados"] = new SelectList(estados, "IdEstado", "NombreEstado");
+                            //ViewData["estados"] = new SelectList(estados, "IdEstado", "NombreEstado");
                             _CustomerProduct = new CustomerProduct();
                         }
                         else
                         {
-                            ViewData["estados"] = new SelectList(estados, "IdEstado", "NombreEstado", _CustomerProduct.IdEstado);
+                            //ViewData["estados"] = new SelectList(estados, "IdEstado", "NombreEstado", _CustomerProduct.IdEstado);
                             //ViewData["estadoUnidad"] = _UnitOfMeasure.IdEstado;
                         }
 
@@ -89,11 +89,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        /// <summary>
-        /// Listado de Productos por Cliente
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
+        // GET: Obtener Listado de Productos por Cliente
         [HttpGet("[action]")]
         public async Task<DataSourceResult> GetCustomerProduct([DataSourceRequest]DataSourceRequest request)
         {
@@ -111,7 +107,7 @@ namespace ERPMVC.Controllers
                     _CustomerProduct = JsonConvert.DeserializeObject<List<CustomerProduct>>(valorrespuesta);
 
                 }
-                
+
             }
             catch (Exception ex)
             {
@@ -122,13 +118,90 @@ namespace ERPMVC.Controllers
 
             return _CustomerProduct.ToDataSourceResult(request);
         }
-        
+
+
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetCustomerProductByCustomerId([DataSourceRequest]DataSourceRequest request, Int64 CustomerId)
+        {
+            List<CustomerProduct> _CustomerProduct = new List<CustomerProduct>();
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CustomerProduct/GetCustomerProduct");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerProduct = JsonConvert.DeserializeObject<List<CustomerProduct>>(valorrespuesta);
+                    _CustomerProduct = _CustomerProduct.Where(Q => Q.CustomerId == CustomerId).ToList();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _CustomerProduct.ToDataSourceResult(request);
+        }
+
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<CustomerProduct>> SaveCustomerProduct([FromBody]CustomerProduct _CustomerProduct)
+        {
+
+            try
+            {
+                CustomerProduct _listCustomerProduct = new CustomerProduct();
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CustomerProduct/GetCustomerProductById/" + _CustomerProduct.CustomerProductId);
+                string valorrespuesta = "";
+                _CustomerProduct.FechaModificacion = DateTime.Now;
+                _CustomerProduct.UsuarioModificacion = HttpContext.Session.GetString("user");
+                if (result.IsSuccessStatusCode)
+                {
+
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _listCustomerProduct = JsonConvert.DeserializeObject<CustomerProduct>(valorrespuesta);
+                }
+
+                if (_listCustomerProduct == null) { _listCustomerProduct = new CustomerProduct(); }
+
+                if (_listCustomerProduct.CustomerProductId == 0)
+                {
+                    _CustomerProduct.FechaCreacion = DateTime.Now;
+                    _CustomerProduct.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_CustomerProduct);
+                }
+                else
+                {
+
+                    var updateresult = await Update(_CustomerProduct.CustomerProductId, _CustomerProduct);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_CustomerProduct);
+        }
+
         // POST: Guardar
         [HttpPost]
         public async Task<ActionResult<CustomerProduct>> Insert([FromBody]CustomerProduct _CustomerProduct)
         {
             try
             {
+                // TODO: Add insert logic here
                 string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -152,12 +225,7 @@ namespace ERPMVC.Controllers
             return Ok(_CustomerProduct);
         }
 
-        /// <summary>
-        /// Actualizar relación.
-        /// </summary>
-        /// <param name="id"></param>
-        /// <param name="_CustomerProduct"></param>
-        /// <returns></returns>
+        // PUT: Actualizar
         [HttpPut("[controller]/[action]/{id}")]
         public async Task<ActionResult<CustomerProduct>> Update(Int64 id, [FromBody]CustomerProduct _CustomerProduct)
         {
@@ -184,7 +252,35 @@ namespace ERPMVC.Controllers
 
             return Ok(_CustomerProduct);
         }
-        
+
+
+        //Obtener subProductos
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> GetSubProductosCliente([DataSourceRequest]DataSourceRequest request)
+        {
+            List<SubProduct> _clientes = new List<SubProduct>();
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CustomerProduct/GetSubProductosCliente/" + 1);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _clientes = JsonConvert.DeserializeObject<List<SubProduct>>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_clientes.ToDataSourceResult(request));
+        }
 
     }
 }
