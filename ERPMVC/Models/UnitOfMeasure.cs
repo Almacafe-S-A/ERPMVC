@@ -25,8 +25,10 @@ namespace ERPMVC.Models
         public string Estado { get; set; }
 
         [Required]
+        [Display(Name = "Usuario de creación")]
         public string UsuarioCreacion { get; set; }
         [Required]
+        [Display(Name = "Usuario de modificación")]
         public string UsuarioModificacion { get; set; }
         [Required]
         public DateTime FechaCreacion { get; set; }

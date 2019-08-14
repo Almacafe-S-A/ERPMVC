@@ -11,11 +11,20 @@ namespace ERPMVC.Models
     {
 
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Display(Name = "Id")]
         public long IdDependientes { get; set; }
+        [Display(Name = "Nombre de dependientes")]
         public string NombreDependientes { get; set; }
+        [Display(Name = "Parentezco")]
         public string Parentezco { get; set; }
+
+        [Display(Name = "Telefono")]
         public string Telefono { get; set; }
+
+        [Display(Name = "Dirección")]
         public string Direccion { get; set; }
+
+        [Display(Name = "Empleado")]
         public long? IdEmpleado { get; set; }
 
         public string Usuariocreacion { get; set; }

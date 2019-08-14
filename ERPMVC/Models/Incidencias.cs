@@ -12,10 +12,14 @@ namespace ERPMVC.Models
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long IdIncidencia { get; set; }
+        [Display(Name = "Fecha de inicio")]
         public DateTime? FechaInicio { get; set; }
+        [Display(Name = "Fecha de fin")]
         public DateTime? FechaFin { get; set; }
         public long? IdEmpleado { get; set; }
+        [Display(Name = "Descripción de incidencia")]
         public string DescripcionIncidencia { get; set; }
+        [Display(Name = "Tipo de incidencia")]
         public long? IdTipoIncidencia { get; set; }
 
         public DateTime? FechaCreacion { get; set; }

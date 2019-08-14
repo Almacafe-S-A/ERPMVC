@@ -11,8 +11,11 @@ namespace ERPMVC.Models
     public class TipoIncidencia
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Display(Name = "Id")]
         public long IdTipoIncidencia { get; set; }
+        [Display(Name = "Nombre de tipo de incidencia")]
         public string NombreTipoIncidencia { get; set; }
+        [Display(Name = "Estado")]
         public long? IdEstado { get; set; }
 
         public string Usuariocreacion { get; set; }

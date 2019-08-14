@@ -11,11 +11,18 @@ namespace ERPMVC.Models
         [Key]
         public long Id { get; set; } 
         public string Nombre { get; set; }
+        [Display(Name = "Descripción")]
         public string Descripcion { get; set; }
-        public string Estado { get; set; } 
-        public long? Idconfiguracion { get; set; } 
-        public double? Valordecimal { get; set; } 
-        public string Valorstring { get; set; } 
+        [Display(Name = "Estado")]
+        public string Estado { get; set; }
+        [Display(Name = "Configuración")]
+        public long? Idconfiguracion { get; set; }
+        [Display(Name = "Valor decimal")]
+        public double? Valordecimal { get; set; }
+        [Display(Name = "Valor cadena")]
+        public string Valorstring { get; set; }
+
+        [Display(Name = "Valor cadena 2")]
         public string Valorstring2 { get; set; } 
         public string Formula { get; set; }
         public string UsuarioCreacion { get; set; }
