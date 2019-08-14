@@ -28,6 +28,8 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+
+        [HttpGet("[controller]/[action]")]
         public IActionResult Index()
         {
             return PartialView();
