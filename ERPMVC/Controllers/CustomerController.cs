@@ -50,7 +50,10 @@ namespace ERPMVC.Controllers
             return await Task.Run(() => PartialView());
         }
 
-
+        public ActionResult CustomerProduct()
+        {
+            return PartialView();
+        }
 
 
         public async Task<ActionResult> CertificadoDepositoCustomer()

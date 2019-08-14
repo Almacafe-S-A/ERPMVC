@@ -326,7 +326,7 @@ namespace ERPMVC.Controllers
                         if (resultado.SalesOrderId > 0)
                         {
 
-                            if (_SalesOrder.IdEstado == 5)
+                            if (_SalesOrder.IdEstado == 7 || _SalesOrder.IdEstado==5)
                             {
 
                                 string baseadress = _config.Value.urlbase;
@@ -334,16 +334,18 @@ namespace ERPMVC.Controllers
                                 Alert _alert = new Alert
                                 {
                                     AlertName = "Sancionados",
-                                    DescriptionAlert = "Listados sancionados"
-                                        ,
+                                    DescriptionAlert = "Listados sancionados,Nombre de persona que intenta ingresar al sistema " +
+                                    " de planilla se encuentra en lista OFAC,  Informacion Mediatica, ONU. ",                                      
+                                   
                                     UsuarioCreacion = _SalesOrder.UsuarioCreacion,
-                                    UsuarioModificacion = _SalesOrder.UsuarioModificacion
-                                        ,
+                                    UsuarioModificacion = _SalesOrder.UsuarioModificacion,
+                                    Code   = "PERSON002",
+                                    Type = _SalesOrder.listadossancionados,
                                     DocumentId = resultado.SalesOrderId,
-                                    DocumentName = "COT"
-                                       ,
+                                    DocumentName = "COT",                                     
                                     FechaCreacion = DateTime.Now,
                                     FechaModificacion = DateTime.Now
+                                   
                                 };
                                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                                 var result = await _client.PostAsJsonAsync(baseadress + "api/Alert/Insert", _alert);
@@ -391,7 +393,7 @@ namespace ERPMVC.Controllers
                                     .From(_config.Value.emailsender)
                                      .To("freddy.chinchilla@bi-dss.com")
                                      .To("freddys18@yahoo.com")
-                                     .To("cumplimiento@almacafehn.com")                                    
+                                    // .To("cumplimiento@almacafehn.com")                                    
                                      .To("informatica@almacafehn.com")                                 
                                      .To("gerencia@almacafehn.com")
                                      //.To("mperez@almacafehn.com")

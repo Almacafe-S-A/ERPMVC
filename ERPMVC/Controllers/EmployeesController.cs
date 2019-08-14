@@ -30,9 +30,21 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-        public IActionResult Employees()
+        public IActionResult Index()
         {
             return View();
+        }
+
+        //Listado Vacaciones
+        public ActionResult Vacaciones()
+        {
+            return PartialView();
+        }
+
+        //Listado de Incapacidades.
+        public ActionResult Incapacidades()
+        {
+            return PartialView();
         }
 
         //Vista de Edición/Ingreso

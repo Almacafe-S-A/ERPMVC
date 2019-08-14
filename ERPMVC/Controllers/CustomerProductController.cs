@@ -64,12 +64,12 @@ namespace ERPMVC.Controllers
                         var estados = JsonConvert.DeserializeObject<List<Estados>>(valorrespuesta);
                         if (_CustomerProduct == null)
                         {
-                            ViewData["estados"] = new SelectList(estados, "IdEstado", "NombreEstado");
+                            //ViewData["estados"] = new SelectList(estados, "IdEstado", "NombreEstado");
                             _CustomerProduct = new CustomerProduct();
                         }
                         else
                         {
-                            ViewData["estados"] = new SelectList(estados, "IdEstado", "NombreEstado", _CustomerProduct.IdEstado);
+                            //ViewData["estados"] = new SelectList(estados, "IdEstado", "NombreEstado", _CustomerProduct.IdEstado);
                             //ViewData["estadoUnidad"] = _UnitOfMeasure.IdEstado;
                         }
 
@@ -107,7 +107,7 @@ namespace ERPMVC.Controllers
                     _CustomerProduct = JsonConvert.DeserializeObject<List<CustomerProduct>>(valorrespuesta);
 
                 }
-                
+
             }
             catch (Exception ex)
             {
@@ -121,7 +121,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet("[action]")]
-        public async Task<DataSourceResult> GetCustomerProductByCustomerId([DataSourceRequest]DataSourceRequest request,Int64 CustomerId)
+        public async Task<DataSourceResult> GetCustomerProductByCustomerId([DataSourceRequest]DataSourceRequest request, Int64 CustomerId)
         {
             List<CustomerProduct> _CustomerProduct = new List<CustomerProduct>();
             try
@@ -181,7 +181,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                   
+
                     var updateresult = await Update(_CustomerProduct.CustomerProductId, _CustomerProduct);
                 }
 
@@ -278,7 +278,7 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-            
+
             return Json(_clientes.ToDataSourceResult(request));
         }
 

@@ -13,6 +13,8 @@ namespace ERPMVC.DTO
 
         public int editar { get; set; } = 1;
 
+        public string listadossancionados { get; set; }
+
       //  public string token { get; set; } = "";
     }
 
