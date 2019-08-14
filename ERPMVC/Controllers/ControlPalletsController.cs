@@ -169,7 +169,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ControlPallets = JsonConvert.DeserializeObject<List<ControlPallets>>(valorrespuesta);
-
+                    _ControlPallets = _ControlPallets.OrderByDescending(q => q.ControlPalletsId).ToList();
                 }
 
             }

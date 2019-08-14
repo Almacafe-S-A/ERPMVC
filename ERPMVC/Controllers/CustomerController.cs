@@ -199,7 +199,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _customers = JsonConvert.DeserializeObject<List<Customer>>(valorrespuesta);
-
+                    _customers = _customers.OrderByDescending(q => q.CustomerId).ToList();
                 }
 
 
