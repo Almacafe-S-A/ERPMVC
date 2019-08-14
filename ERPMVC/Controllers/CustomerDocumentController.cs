@@ -223,7 +223,7 @@ namespace ERPMVC.Controllers
         // POST: CustomerDocument/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<CustomerDocumentDTO>> Insert(CustomerDocument _CustomerDocument)
+        public async Task<ActionResult<CustomerDocumentDTO>> Insert(CustomerDocumentDTO _CustomerDocument)
         {
             CustomerDocumentDTO _custo = new CustomerDocumentDTO();
             try
@@ -253,8 +253,9 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<CustomerDocument>> Update(Int64 id, CustomerDocument _CustomerDocument)
+        public async Task<ActionResult<CustomerDocumentDTO>> Update(Int64 id, CustomerDocumentDTO _CustomerDocument)
         {
+            CustomerDocumentDTO _CustomerDocumentDTO = new CustomerDocumentDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -266,7 +267,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CustomerDocument = JsonConvert.DeserializeObject<CustomerDocument>(valorrespuesta);
+                    _CustomerDocumentDTO = JsonConvert.DeserializeObject<CustomerDocumentDTO>(valorrespuesta);
                 }
 
             }
@@ -276,7 +277,7 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerDocument }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerDocumentDTO }, Total = 1 });
         }
 
         [HttpPost("[action]")]
