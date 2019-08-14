@@ -75,6 +75,7 @@
               .Pageable()
               .Filterable()
               .Scrollable()
+             
               .Pdf(pdf => pdf.FileName("ClienteReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
                .ProxyURL(Url.Action("Export", "Home")).AllPages())
@@ -84,6 +85,7 @@
               .DataSource(dataSource =>
                   dataSource
                     .WebApi()
+                    .Events(q=>q.RequestEnd("OnRequestEnd_TopLinePriceGrid"))
                     .ServerOperation(true)
                     .Model(model =>
                     {
@@ -99,6 +101,18 @@
               )
                 .Events(e =>
                 {
+                   
                     //e.Save("onsave");
                 })
 )
+
+
+<script>
+    function OnRequestEnd_TopLinePriceGrid(e) {
+        console.log(e.type);
+        if (e.type === "update" || e.type === "create") {
+            var grid = $('#grid').data('kendoGrid');
+            grid.dataSource.read();
+        }
+    }
+</script>
