@@ -155,7 +155,8 @@ namespace ERPMVC.Controllers
         {
 
             try
-            {
+            {               
+
                 CustomerDocument _listCustomerDocument = new CustomerDocument();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
@@ -165,6 +166,8 @@ namespace ERPMVC.Controllers
 
                 foreach (var file in files)
                 {
+
+                   
                     FileInfo info = new FileInfo(file.FileName);
                     if (info.Extension.Equals(".pdf") || info.Extension.Equals(".jpg") 
                         || info.Extension.Equals(".png")
@@ -195,9 +198,12 @@ namespace ERPMVC.Controllers
                             var updateresult = await Update(_CustomerDocument.CustomerDocumentId, _CustomerDocument);
                         }
 
-
+                       
+                       
                         var filePath = _hostingEnvironment.WebRootPath + "/CustomerDocuments/" + _CustomerDocument.CustomerDocumentId+"_" 
-                            + file.FileName.Split("") +"_"+ _CustomerDocument.DocumentTypeId+"_"+_CustomerDocument.DocumentTypeName;
+                            + file.FileName.Replace(info.Extension,"") +"_"+ _CustomerDocument.DocumentTypeId+"_"+_CustomerDocument.DocumentTypeName
+                            + info.Extension;
+
                         using (var stream = new FileStream(filePath, FileMode.Create))
                         {
                             await file.CopyToAsync(stream);

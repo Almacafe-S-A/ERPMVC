@@ -62,8 +62,27 @@ namespace ERPMVC.Controllers
                 var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = model.Email, Password = model.Password });
                 if (result.Succeeded)
                 {
+                 
+                 
+
                     string webtoken = await (resultlogin.Content.ReadAsStringAsync());
                     UserToken _userToken = JsonConvert.DeserializeObject<UserToken>(webtoken);
+
+
+                    if (_userToken.LastPasswordChangedDate != null)
+                    {
+                        if (_userToken != null
+                      && _userToken.LastPasswordChangedDate.Date.AddDays(_userToken.Passworddias) < DateTime.Now.Date
+                            && !Request.Path.ToString().EndsWith("/Account/ChangePassword.aspx"))
+                        {
+                            HttpContext.Session.SetString("token", _userToken.Token);
+                            HttpContext.Session.SetString("user", model.Email);
+                            HttpContext.Session.SetString("Expiration", _userToken.Expiration.ToString());
+                            return RedirectToAction("ChangePassword", "Account");
+                        }
+                    }
+
+
 
                     if (_userToken.IsEnabled.Value)
                     {

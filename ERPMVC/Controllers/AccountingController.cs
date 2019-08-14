@@ -28,13 +28,13 @@ namespace ERPMVC.Controllers
             this.config = config;
             this._logger = logger;
         }
-
-        public IActionResult Accounting()
+        // GET: Accounting
+        public ActionResult Accounting()
         {
             return View();
         }
         [HttpGet("[action]")]
-        public async Task<DataSourceResult> GetAccount([DataSourceRequest]DataSourceRequest request)
+        public async Task<JsonResult> GetAccount([DataSourceRequest]DataSourceRequest request)
         {
             List<Account> _Account = new List<Account>();
             try
@@ -61,7 +61,37 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _Account.ToDataSourceResult(request);
+            return Json(_Account.ToDataSourceResult(request));
+
+        }
+        [HttpGet]
+        public async Task<JsonResult> GetAccounting([DataSourceRequest]DataSourceRequest request)
+        {
+            List<Account> _customers = new List<Account>();
+
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Account/GetAccount");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _customers = JsonConvert.DeserializeObject<List<Account>>(valorrespuesta);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return Json(_customers.ToDataSourceResult(request));
 
         }
 

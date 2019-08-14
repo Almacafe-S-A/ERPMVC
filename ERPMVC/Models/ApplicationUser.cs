@@ -17,6 +17,8 @@ namespace ERPMVC.Models
 
         [DataType(DataType.Password)]
         public override string PasswordHash { get; set; }
+
+        public DateTime LastPasswordChangedDate { get; set; }
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
