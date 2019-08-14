@@ -1,0 +1,188 @@
+﻿
+
+<h3 class="text-themecolor">Socios</h3>
+<script>
+
+      @*function clearsession() {
+            var dataObject = ["listadoproductos"];
+         $.ajax({
+            url: '@Url.Action("ClearSession","Common")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                  //  $('#myModalcustomerpartner').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+          });
+      }*@
+
+    function AddCustomerPartners() {
+
+       //  clearsession();
+
+        var mcustomerid = GetCustomerId();
+        console.log(mcustomerid);
+
+         var dataObject = {
+             PartnerId: 0,
+             CustomerId: mcustomerid.CustomerId,
+             editar : 1
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwCustomerPartner", "CustomerPartners")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#customerpartner").html('');
+                $("#customerpartner").html(result);
+                //RefreshCotizacionesDetail();
+                // $("#btnSaveCotizacion").show();
+                $('#myModalCustomerPartner').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+
+
+    }
+
+
+    function EditCustomerPartners(e) {
+        e.preventDefault();
+
+       // clearsession();
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            PartnerId: dataItem.PartnerId,
+            editar : 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwCustomerPartner", "CustomerPartners")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#customerpartner").html('');
+                $("#customerpartner").html(result);
+
+                $('#myModalCustomerPartner').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+    }
+
+
+</script>
+
+@(Html.Kendo().Grid<ERPMVC.Models.CustomerPartners>()
+                      .Name("gridCustomerPartners")
+                      .Columns(columns =>
+                      {
+                          columns.Command(command =>
+                          {
+                              command.Custom("Editar").Click("EditCustomerPartners");
+                              // command.Custom("Ver detalles").Click("Detalles");
+                              // command.Edit(); command.Destroy();
+                          }).Width(170);
+                          columns.Bound(p => p.PartnerId).Width(100);
+                          columns.Bound(p => p.CustomerId).Visible(false).Width(100);
+                          columns.Bound(p => p.PartnerName).Width(100);
+                          columns.Bound(p => p.Correo).Width(150);
+                          columns.Bound(p => p.RTN).Width(100);
+                          columns.Bound(p => p.Telefono).Width(100);                        
+
+
+                      })
+                          .Filterable(f => f.Operators(o => o.ForString(s => s
+                                               .Clear()
+                                               .Contains("Contiene")
+                                               .DoesNotContain("No contiene")
+                                               .EndsWith("Termina con")
+                                               .IsEqualTo("Es igual a")
+                                               .IsNotEqualTo("No es igual a")
+                                               .IsNull("Es nulo")
+                                               .StartsWith("Inicia con")
+
+
+                                         )
+                                         .ForNumber(n => n
+                                           .Clear()
+                                           .IsEqualTo("Es igual a")
+                                           .IsGreaterThan("Es mayor que")
+                                           .IsLessThan("Es menor que")
+                                           .IsNull("Es nulo")
+                                           .IsLessThanOrEqualTo("Es menor o igual que")
+                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                         )
+                                         .ForDate(d => d
+                                         .Clear()
+                                         .IsEqualTo("Es igual que")
+                                         .IsGreaterThan("Es mayor que")
+                                         .IsLessThan("Es menor que")
+                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                         .IsNotEqualTo("No es igual que")
+                                          )
+                                       ))
+                      .ToolBar(tools =>
+                      {
+                          //tools.Create();
+                          tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerAuthorizedSignature();" });
+
+                          tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                          tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+                      })
+                      .Editable(e => e.Mode(GridEditMode.PopUp))
+                      .Sortable()
+                      .Pageable()
+                      .Filterable()
+                      .Scrollable()
+                      .Pdf(pdf => pdf.FileName("CustomerPartnersReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                       + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                       .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                         .Excel(excel => excel.FileName("CustomerPartnersReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                       + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                       .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                      .DataSource(dataSource =>
+                          dataSource
+                            .WebApi()
+                            .ServerOperation(true)
+                            .Model(model =>
+                            {
+                                model.Id(p => p.CustomerId);
+                                model.Field(p => p.CustomerId).Editable(false);
+                            })
+                            .Events(events => events.Error("error_handler"))
+                            .Read(read => read.Action("GetCustomerPartnersByCustomerId", "CustomerPartners").Data("GetCustomerId"))
+                            .Create(create => create.Action("Post", "CustomerPartners"))
+                            .Update(update => update.Action("Put", "CustomerPartners", new { id = "{0}" }))
+                            .Destroy(destroy => destroy.Action("Delete", "CustomerPartners", new { id = "{0}" }))
+                      )
+                        .Events(e =>
+                        {
+                            //e.Save("onsave");
+                        })
+)
+
+<div id="customerpartner">
+    @await Html.PartialAsync("pvwCustomerPartner", new ERPMVC.Models.CustomerPartners { PartnerId = 0 })
+</div>
