@@ -10,10 +10,15 @@ namespace ERPMVC.Models
     public class Empresa
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Display(Name = "Id")]
         public long IdEmpresa { get; set; }
+        [Display(Name = "Nombre de empresa")]
         public string NombreEmpresa { get; set; }
+        [Display(Name = "Nombre de contacto")]
         public string NombreContacto { get; set; }
+        [Display(Name = "Teléfono ")]
         public string Telefono { get; set; }
+        [Display(Name = "Dirección")]
         public string Direccion { get; set; }
 
         public string Usuariocreacion { get; set; }

@@ -14,11 +14,14 @@ namespace ERPMVC.Models
         public Guid Id { get; set; }
 
         [Required]
+        [Display(Name = "Id Politica")]
         public Guid IdPolicy { get; set; }
 
         [Required]
+        [Display(Name = "Rol")]
         public Guid IdRol { get; set; }
 
+        [Display(Name = "Estado")]
         public Int64 IdEstado { get; set; }
         public string Estado { get; set; }
 

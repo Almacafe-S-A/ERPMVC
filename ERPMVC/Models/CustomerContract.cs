@@ -60,6 +60,7 @@ namespace ERPMVC.Models
         [Display(Name = "Recepción de la mercadería")]
         public string Reception { get; set; }
 
+        [Display(Name = "Bodegas")]
         public string WareHouses { get; set; }
 
         [Display(Name = "Valor documento certificado de deposito")]
