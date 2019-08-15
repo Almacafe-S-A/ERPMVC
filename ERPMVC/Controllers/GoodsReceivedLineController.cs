@@ -308,7 +308,7 @@ namespace ERPMVC.Controllers
             {
 
                 List<GoodsReceivedLine> _GoodsReceivedLineLIST =
-                    JsonConvert.DeserializeObject<List<GoodsReceivedLine>>(HttpContext.Session.GetString("listadoproductos"));
+                    JsonConvert.DeserializeObject<List<GoodsReceivedLine>>(HttpContext.Session.GetString("listadoproductosgoodsreceived"));
 
                 if (_GoodsReceivedLineLIST != null)
                 {

@@ -26,6 +26,9 @@ namespace ERPMVC.Models
         [Display(Name = "Telefono")]
         public string Telefono { get; set; }
 
+        [Display(Name = "Listados sancionados")]
+        public string Listados { get; set; }
+
         [EmailAddress]
         public string Correo { get; set; }
 
