@@ -97,7 +97,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        public async Task<ActionResult<Account>> SaveAccount([FromBody]AccountDTO _AccountP)
+        public async Task<ActionResult<Account>> SaveAccounting([FromBody]AccountDTO _AccountP)
         {
             Account _Account = _AccountP;
             try
@@ -139,7 +139,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_Account);
+            return Json(_AccountP);
         }
 
 
