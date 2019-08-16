@@ -169,6 +169,42 @@ namespace ERPMVC.Controllers
                     _CustomerAuthorizedSignature.FechaCreacion = DateTime.Now;
                     _CustomerAuthorizedSignature.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_CustomerAuthorizedSignature);
+                    var value = (insertresult.Result as ObjectResult).Value;
+                    _listCustomerAuthorizedSignature = ((CustomerAuthorizedSignature)(value));
+                    if (_listCustomerAuthorizedSignature.CustomerAuthorizedSignatureId == 0)
+                    {
+                        return await Task.Run(() => BadRequest("No se genero el documento!"));
+                    }
+                    else
+                    {
+                        Alert _alert = new Alert
+                        {
+                            AlertName = "Sancionados",
+                            DescriptionAlert = "Listados sancionados,Nombre de persona que intenta ingresar al sistema " +
+                                 " de planilla se encuentra en lista OFAC,  Informacion Mediatica, ONU. ",
+
+                            UsuarioCreacion = _CustomerAuthorizedSignature.UsuarioCreacion,
+                            UsuarioModificacion = _CustomerAuthorizedSignature.UsuarioModificacion,
+                            Code = "PERSON002",
+                            Type = _CustomerAuthorizedSignature.Listados,
+                            DocumentId = _listCustomerAuthorizedSignature.CustomerAuthorizedSignatureId,
+                            DocumentName = "FIRMAAUTORIZADA",
+                            FechaCreacion = DateTime.Now,
+                            FechaModificacion = DateTime.Now
+
+                        };
+
+                        _client = new HttpClient();
+                        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                        result = await _client.PostAsJsonAsync(baseadress + "api/Alert/Insert", _alert);
+                        valorrespuesta = "";
+                        if (result.IsSuccessStatusCode)
+                        {
+                            valorrespuesta = await (result.Content.ReadAsStringAsync());
+                            _alert = JsonConvert.DeserializeObject<Alert>(valorrespuesta);
+                        }
+                    }
+
                 }
                 else
                 {

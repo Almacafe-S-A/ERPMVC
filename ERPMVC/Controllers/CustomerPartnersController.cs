@@ -55,7 +55,7 @@ namespace ERPMVC.Controllers
 
                 if (_CustomerPartners == null)
                 {
-                    _CustomerPartners = new CustomerPartners();
+                    _CustomerPartners = new CustomerPartners {  CustomerId = _CustomerPartnersp.CustomerId };
                 }
             }
             catch (Exception ex)
@@ -156,11 +156,48 @@ namespace ERPMVC.Controllers
                     _listCustomerPartners = JsonConvert.DeserializeObject<CustomerPartners>(valorrespuesta);
                 }
 
+                if (_listCustomerPartners == null) { _listCustomerPartners = new CustomerPartners(); }
+
                 if (_listCustomerPartners.PartnerId == 0)
                 {
                     _CustomerPartners.FechaCreacion = DateTime.Now;
                     _CustomerPartners.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_CustomerPartners);
+                    var value = (insertresult.Result as ObjectResult).Value;
+                    _listCustomerPartners = ((CustomerPartners)(value));
+                    if (_listCustomerPartners.PartnerId == 0)
+                    {
+                        return await Task.Run(() => BadRequest("No se genero el documento!"));
+                    }
+                    else
+                    {
+                        Alert _alert = new Alert
+                        {
+                            AlertName = "Sancionados",
+                            DescriptionAlert = "Listados sancionados,Nombre de persona que intenta ingresar al sistema " +
+                                 " de planilla se encuentra en lista OFAC,  Informacion Mediatica, ONU. ",
+
+                            UsuarioCreacion = _CustomerPartners.UsuarioCreacion,
+                            UsuarioModificacion = _CustomerPartners.UsuarioModificacion,
+                            Code = "PERSON003",
+                            Type = _CustomerPartners.Listados,
+                            DocumentId = _listCustomerPartners.PartnerId,
+                            DocumentName = "SOCIOS",
+                            FechaCreacion = DateTime.Now,
+                            FechaModificacion = DateTime.Now
+
+                        };
+
+                        _client = new HttpClient();
+                        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                        result = await _client.PostAsJsonAsync(baseadress + "api/Alert/Insert", _alert);
+                        valorrespuesta = "";
+                        if (result.IsSuccessStatusCode)
+                        {
+                            valorrespuesta = await (result.Content.ReadAsStringAsync());
+                            _alert = JsonConvert.DeserializeObject<Alert>(valorrespuesta);
+                        }
+                    }
                 }
                 else
                 {

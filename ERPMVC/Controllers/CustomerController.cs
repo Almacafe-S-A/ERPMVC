@@ -134,7 +134,7 @@ namespace ERPMVC.Controllers
                     _Customer.UsuarioCreacion = _listCustomer.UsuarioCreacion == "" ? HttpContext.Session.GetString("user") : _listCustomer.UsuarioCreacion;
                     _Customer.FechaCreacion = _listCustomer.FechaCreacion==null?DateTime.Now: _listCustomer.FechaCreacion;
 
-                    var updateresult = await Put(_Customer.CustomerId, _Customer);
+                    var updateresult = await Put(_Customer);
                 }
 
             }
@@ -343,8 +343,8 @@ namespace ERPMVC.Controllers
             // return await Task.Run(() => new ObjectResult(new DataSourceResult { Data = new[] { _customer }, Total = 1 }));
         }
 
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Put(Int64 id, Customer _customer)
+        [HttpPost]
+        public async Task<IActionResult> Put(Customer _customer)
         {
             try
             {
