@@ -1,0 +1,149 @@
+﻿
+@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "Alertas";
+
+}
+
+<script>
+
+    function onsave(e) {
+        //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+        // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+    function caidata(data) {
+        data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+        data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    }
+
+    function AddAlert() {
+
+        $('#ModalAlert').find(':input').not(':submit').val('');
+        $('#ModalAlert').modal('show');
+        $("#AlertId").val('0');
+    }
+
+
+    function EditAlert(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            AlertId: dataItem.AlertId,
+            editar: 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwAddAlert", "Alert")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                //console.log('success', result)
+
+                $("#numAlert").html('');
+                $("#numAlert").html(result);
+
+
+                //$("#btnCAI").hide();
+                $('#ModalAlert').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+
+    function RefrescarGrid() {
+
+        var grid = $("#gridAlert").getKendoGrid();
+        grid.dataSource.read();
+
+    }
+
+
+
+</script>
+
+<h3 class="text-themecolor">Alertas</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.Alert>()
+                    .Name("gridAlert")
+                    .Columns(columns =>
+                    {
+                        columns.Command(command =>
+                        {
+                            //command.Custom("Ver detalles").Click("Detalles");
+                            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditAlert");
+                           // command.Destroy();
+                        }).Width(100);
+
+                        columns.Bound(p => p.AlertId).Width(190);
+                        columns.Bound(p => p.AlertName).Width(220);
+                        columns.Bound(p => p.DocumentName).Width(190);
+                       // columns.Bound(p => p.ActionTakenName).Width(220);
+                        columns.Bound(p => p.CloseDate).Format("{0:dd/MM/yyyy}").Width(190);
+                        columns.Bound(p => p.Description).Width(190);
+                        columns.Bound(p => p.DescriptionAlert).Width(270);
+                        columns.Bound(p => p.FalsoPositivo).Width(190);
+                        columns.Bound(p => p.IdEstado).Width(190);
+                        columns.Bound(p => p.Estado).Width(190);
+                        columns.Bound(p => p.SujetaARos).Width(190);
+                        columns.Bound(p => p.Estado).Width(190);
+                    })
+
+
+                    .ToolBar(tools =>
+                    {
+
+                        //tools.Create();
+                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                   .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddAlert()" });
+                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                    })
+                    .Editable(e => e.Mode(GridEditMode.PopUp))
+                    .Sortable()
+                    .Pageable()
+                    .Filterable()
+                    .Scrollable()
+                    .Pdf(pdf => pdf.FileName("AlertReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                    .Excel(excel => excel.FileName("AlertReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                    .DataSource(dataSource =>
+                    dataSource
+                    .WebApi()
+
+                    .ServerOperation(true)
+                    .Model(model =>
+                    {
+                        model.Id(p => p.AlertId);
+                        model.Field(p => p.AlertId).Editable(false);
+
+                    })
+                    .Events(events => events.Error("error_handler"))
+                    .Read(read => read.Action("Get", "Alert"))
+                   //.Create(create => create.Action("Insert", "Alert").Type(HttpVerbs.Post))
+                   //.Update(update => update.Action("Update", "Alert").Type(HttpVerbs.Post))
+                   .Destroy(destroy => destroy.Action("Delete", "Alert").Type(HttpVerbs.Post))
+                    )
+                    .Events(e =>
+                    {
+                        e.Save("onsave");
+
+                    })
+)
+
+@*<div id="numAlert">
+    @await Html.PartialAsync("pvwAddAlert", new ERPMVC.DTO.AlertDTO { AlertId = 0 })
+</div>*@
+
