@@ -10,7 +10,9 @@ namespace ERPMVC.Models
     public class AccountClass
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Display(Name = "Id Clase Cuenta")]
         public Int64 AccountClassid { get; set; }
+        [Display(Name = "Nombre")]
         public string Name { get; set; }
         public string NormalBalance { get; set; }
         public virtual ICollection<Account> Accounts { get; set; }
@@ -23,7 +25,8 @@ namespace ERPMVC.Models
         [Required]
         [Display(Name = "Fecha de creacion")]
         public DateTime FechaCreacion { get; set; }
-        [Required]
+            [Required]
+        [Display(Name = "Fecha de Modificacion")]
         public DateTime FechaModificacion { get; set; }
 
     }
