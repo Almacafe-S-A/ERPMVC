@@ -33,6 +33,8 @@ namespace ERPMVC.Models
         public bool IsContraAccount { get; set; }
         [Display(Name = "Nivel Contable")]
         public Int64 HierarchyAccount { get; set; }
+        [Display(Name = "Bloqueo para Diarios:")]
+        public bool BlockedInJournal { get; set; }
 
         [Required]
         [Display(Name = "Usuario de creacion")]
