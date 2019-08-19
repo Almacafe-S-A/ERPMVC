@@ -10,19 +10,29 @@ namespace ERPMVC.Models
     public class Escala
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public long IdEscala { get; set; } 
+        public long IdEscala { get; set; }
+        [Display(Name = "Nombre de escala")]
         public string NombreEscala { get; set; }
-        public string DescripcionEscala { get; set; } 
+        [Display(Name = "Descripción escala")]
+        public string DescripcionEscala { get; set; }
+        [Display(Name = "Valor inicial")]
         public decimal? ValorInicial { get; set; }
-        public decimal? ValorFinal { get; set; } 
-        public decimal? Porcentaje { get; set; } 
+        [Display(Name = "Valor final")]
+        public decimal? ValorFinal { get; set; }
+        [Display(Name = "Porcentaje")]
+        public decimal? Porcentaje { get; set; }
+        [Display(Name = "Valor del calculo")]
         public decimal? ValorCalculo { get; set; }
         public long? Idpadre { get; set; }
         public long? IdEstado { get; set; } 
-        public string Estado { get; set; } 
-        public DateTime? FechaCreacion { get; set; } 
-        public DateTime? FechaModificacion { get; set; } 
-        public string Usuariocreacion { get; set; } 
+        public string Estado { get; set; }
+        [Display(Name = "Fecha de creación")]
+        public DateTime? FechaCreacion { get; set; }
+        [Display(Name = "Fecha de mofificación")]
+        public DateTime? FechaModificacion { get; set; }
+        [Display(Name = "Usuario de creación")]
+        public string Usuariocreacion { get; set; }
+        [Display(Name = "Usuario de modificación")]
         public string Usuariomodificacion { get; set; }
 
     }

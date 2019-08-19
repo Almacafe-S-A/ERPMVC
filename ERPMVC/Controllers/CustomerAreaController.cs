@@ -53,7 +53,19 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CustomerArea = JsonConvert.DeserializeObject<CustomerArea>(valorrespuesta);
+                    if (_CustomerArea != null)
+                    {
+                        if (_CustomerArea.CustomerAreaProduct != null)
+                        {
 
+                            int i = 1;
+                            foreach (var item in _CustomerArea.CustomerAreaProduct)
+                            {
+                                _CustomerArea.Productos.Add(item.ProductId);
+                                _CustomerArea.listaproductos += item.ProductId + (i< _CustomerArea.CustomerAreaProduct.Count?",":"");
+                            }
+                        }
+                    }
                 }
 
                 if (_CustomerArea == null)
@@ -90,7 +102,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CustomerArea = JsonConvert.DeserializeObject<List<CustomerArea>>(valorrespuesta);
-
+                    _CustomerArea = _CustomerArea.OrderByDescending(q => q.CustomerAreaId).ToList();
                 }
 
 

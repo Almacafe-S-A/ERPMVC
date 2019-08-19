@@ -76,5 +76,7 @@ namespace ERPMVC.Models
 
         public List<Int64> Productos { get; set; } = new List<Int64>();
 
+        public string listaproductos { get; set; }
+
     }
 }
