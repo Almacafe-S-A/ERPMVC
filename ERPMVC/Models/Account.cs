@@ -35,6 +35,8 @@ namespace ERPMVC.Models
         public Int64 HierarchyAccount { get; set; }
         [Display(Name = "Bloqueo para Diarios:")]
         public bool BlockedInJournal { get; set; }
+        [Display(Name = "Id")]
+        public Int64 TypeAccountId { get; set; }
 
         [Required]
         [Display(Name = "Usuario de creacion")]

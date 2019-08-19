@@ -1,0 +1,171 @@
+﻿@model ERPMVC.DTO.TypeAccountDTO
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+   // {"required","Valor requerido" }
+};
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<script>
+
+    function customFunction(input) {
+
+        if (input.attr('name') === "TypeAccountId" && input.val() === "0") {
+            return false;
+        }
+
+    }
+
+    //$('#btnprueba').val("");
+</script>
+
+
+
+
+
+<div id="ModalTypeAccount" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Tipos de Cuenta</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmTypeAccount" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveTypeAccount"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <h3 class="card-title">Tipos de Cuentas</h3>
+                                        <hr>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="TypeAccountId" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="TypeAccountId" name="TypeAccountId" class="form-control" disabled="disabled" style="width:100%" />
+                                                    <span asp-validation-for="TypeAccountId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-8">
+                                                <div class="form-group">
+                                                    <label asp-for="TypeAccountName" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="TypeAccountName" name="TypeAccountName" class="form-control" autocomplete="off" style="width:100%" />
+                                                    <span asp-validation-for="TypeAccountName" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button id="btnTypeAccount" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                            </div>
+                                        </div>
+
+
+
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function RefrescarGrid() {
+
+        var grid = $("#gridNumeracionTypeAccount").getKendoGrid();
+        grid.dataSource.read();
+    }
+    function SaveTypeAccount(e) {
+
+            var notification = $("#notification").data("kendoNotification");
+           // e.preventDefault();
+        $("#btnTypeAccount").hide();
+        $("#btnTypeAccount").prop("disabled", true);
+
+        var displayedData = $("#gridNumeracionTypeAccount").data().kendoGrid.dataSource.view();
+
+        var dataObject = {
+            'TypeAccountId': $("#TypeAccountId").val(),
+              'TypeAccountName': $("#TypeAccountName").val(),
+                'CreatedDate': $("#CreatedDate").val(),
+                'ModifiedDate': $("#ModifiedDate").val(),
+                'CreatedUser': $("#CreatedUser").val(),
+                'ModifiedUser': $("#ModifiedUser").val(),
+            '_TypeAccount': displayedData
+            };
+
+           // console.log(JSON.stringify(dataObject));
+            //var form = $("#frmNumeracion");
+           // form.validate();
+
+        var validator = $("#frmTypeAccount").data("kendoValidator");
+                 var status = $(".status");
+
+
+                if (validator.validate()) {
+
+                    $.ajax({
+                        url: '@Url.Action("SaveTypeAccount", "TypeAccount")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+
+                            //notification.show({
+                            //    message: "Guardado correctamente!"
+                            //}, "upload-success");
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: 'Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+
+                            RefrescarGrid();
+
+                            $('#ModalTypeAccount').modal('hide');
+
+
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                            notification.show({
+                                title: "Validación",
+                                message: textStatus + ": " + XMLHttpRequest.responseText
+                            }, "error");
+
+                        }
+                    });
+
+                }
+                else {
+                    status.text("Oops! There is invalid data in the form.")
+                        .removeClass("valid")
+                        .addClass("invalid");
+                }
+
+
+        $("#btnTypeAccount").show();
+        $("#btnTypeAccount").prop("disabled", false);
+    }
+</script>
