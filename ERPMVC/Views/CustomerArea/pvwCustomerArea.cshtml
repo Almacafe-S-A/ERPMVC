@@ -125,19 +125,12 @@
 
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <script>
-                                                        function CustomerArea() {
-
-                                                            hcustom = $("#CustomerId").val();
-                                                            $("#CustomerAreaProduct").data("kendoMultiSelect").dataSource.read();
-
-                                                        }
-                                                    </script>
+                                                 
                                                     <label asp-for="CustomerId" class="  control-label" style="width:100%"></label>
 
                                                     <kendo-dropdownlist name="CustomerId" for="@Model.CustomerId"
                                                                         filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        option-label="Select CustomerId"
+                                                                        option-label="Seleccione el Cliente"
                                                                         required
                                                                         datatextfield="CustomerName"
                                                                         datavaluefield="CustomerId"
@@ -163,14 +156,26 @@
                                                                 'CustomerId': hcustom,
                                                             }
                                                         }
-                                                    </script>
-                                                    <label asp-for="CustomerAreaProduct" class="control-label" style="width:100%"></label>
 
-                                                    <kendo-multiselect name="CustomerAreaProduct" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                       for="CustomerAreaProduct"
+                                                        function seleccionar() {
+                                                            CustomerAreaProductvalues = $("#listaproductos").val();
+                                                            var arreglo = CustomerAreaProductvalues.split(',');
+                                                            if (arreglo.length == 0) {
+                                                                arreglo.push(CustomerAreaProductvalues);
+                                                               // console.log('length 0');
+                                                            }
+
+                                                            $("#CustomerAreaProduct").getKendoMultiSelect().value(arreglo);
+
+                                                        }
+                                                    </script>
+                                                    <label asp-for="CustomerAreaProduct" class="control-label" style="width:100%"></label>                                                 
+                                                    <kendo-multiselect id="CustomerAreaProduct" name="CustomerAreaProduct" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                       for="Productos"                 
                                                                        option-label="Seleccione el/los Producto(s)"
                                                                        datatextfield="ProductName"
                                                                        datavaluefield="SubproductId"
+                                                                            on-data-bound="seleccionar"
                                                                        required
                                                                        style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi">
@@ -180,6 +185,7 @@
                                                         </datasource>
                                                     </kendo-multiselect>
                                                     <span asp-validation-for="CustomerAreaProduct" class="text-danger"></span>
+                                                    <input type="hidden" asp-for="listaproductos" id="listaproductos" />
                                                 </div>
                                             </div>
 
@@ -187,13 +193,13 @@
                                                 <div class="form-group">
                                                     <script>
 
-                                                        function FillWareHouse(e) {
+                                                        function FillWareHouse() {
                                                             //var WarehouseId = $("#WarehouseId").getkendoDropDownList();
                                                             //WarehouseId.dataSource.read();
                                                             //$("#SubProductId").data("kendoDropDownList").dataSource.read();
-                                                            var dataItem = e.dataItem;
-                                                            $("#warehousesetid").val(dataItem.BranchId);
-                                                            $("#WarehouseId").data("kendoDropDownList").dataSource.read();
+                                                            //var dataItem = e.dataItem;
+                                                           // $("#warehousesetid").val(dataItem.BranchId);
+                                                            $("#WareHouseId").data("kendoDropDownList").dataSource.read();
 
                                                         }
 
@@ -206,6 +212,7 @@
                                                                         option-label="Seleccione Sucursal"
                                                                         datatextfield="BranchName"
                                                                         datavaluefield="BranchId"
+                                                                      
                                                                         required
                                                                         auto-bind="true"
                                                                         style="width: 100%;">
@@ -233,7 +240,7 @@
                                                     <kendo-dropdownlist name="TypeId"
                                                                         for="TypeId"
                                                                         filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        option-label="Select TypeId"
+                                                                        option-label="Seleccione el tipo"
                                                                         datatextfield="Nombre"
                                                                         datavaluefield="Id"
                                                                         style="width: 100%;">
@@ -261,7 +268,7 @@
 
                                                     </script>
                                                     <label asp-for="WareHouseId" class="control-label"></label>
-                                                    <kendo-dropdownlist name="WarehouseId" for="WareHouseId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                    <kendo-dropdownlist name="WareHouseId" for="WareHouseId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         option-label="Seleccione Bodega"
                                                                         cascade-from="BranchId"
                                                                         required
@@ -448,7 +455,9 @@
             'CustomerId': $("#CustomerId").val(),
             'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
             'DocumentDate': $("#DocumentDate").getKendoDateTimePicker().value().toJSON(),
-          //  'ProductId': $("#ProductId").val(),
+            'UnitOfMeasureId': $("#UnitOfMeasureId").data("kendoDropDownList").value(),
+            'UnitOfMeasureName': $("#UnitOfMeasureId").data("kendoDropDownList").text(),
+           //  'ProductId': $("#ProductId").val(),
            // 'ProductName': $("#ProductId").data("kendoDropDownList").text(),
             'BranchId': $("#BranchId").val(),
             'BranchName': $("#BranchId").data("kendoDropDownList").text(),
@@ -482,11 +491,11 @@
 
                         $.toast({
                             heading: 'Satisfactorio',
-                            text: 'Datos guardados correctamente.',
+                            text: '<br/><br/>Datos guardados correctamente.',
                             position: 'top-right',
                             loaderBg: '#ff6849',
                             icon: 'success',
-                            hideAfter: 30000,
+                            hideAfter: 4000,
                             stack: 6
                         });
 
@@ -507,6 +516,11 @@
 
             }
             else {
+                notification.show({
+                    title: "Validación",
+                    message: "Datos incorrectos en el formulario"
+                }, "error");
+
                 $("#btnSaveCustomerArea").show();
                 $("#btnSaveCustomerArea").prop("disabled", false);
 

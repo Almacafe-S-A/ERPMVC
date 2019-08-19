@@ -13,7 +13,7 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Display(Name = "Id")]
         public long Id { get; set; }
-        [Display(Name = "Nombre")]
+        [Display(Name = "Ciudad")]
         public string Name { get; set; }
 
         [Display(Name = "Departamento")]

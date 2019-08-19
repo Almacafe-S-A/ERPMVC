@@ -10,9 +10,13 @@ namespace ERPMVC.Models
     public class GeneralLedgerLine
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Display(Name = "Id")]
         public Int64 GeneralLedgerHeaderId { get; set; }
+        [Display(Name = "Id de Cuenta Contable")]
         public int AccountId { get; set; }
+        [Display(Name = "Debito o Credito")]
         public int DrCr { get; set; }
+        [Display(Name = "Monto")]
         public decimal Amount { get; set; }
         public virtual Account Account { get; set; }
         public virtual GeneralLedgerHeader GeneralLedgerHeader { get; set; }
@@ -26,6 +30,7 @@ namespace ERPMVC.Models
         [Display(Name = "Fecha de creacion")]
         public DateTime FechaCreacion { get; set; }
         [Required]
+        [Display(Name = "Fecha de modificacion")]
         public DateTime FechaModificacion { get; set; }
 
     }

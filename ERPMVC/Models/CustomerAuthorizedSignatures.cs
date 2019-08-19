@@ -23,6 +23,9 @@ namespace ERPMVC.Models
         [Display(Name = "Telefono")]
         public string Telefono { get; set; }
 
+        [Display(Name = "Listados sancionados")]
+        public string Listados { get; set; }
+
         [EmailAddress]
         [RegularExpression(@"\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*", ErrorMessage = "Correo invalido")]
         [DataType(DataType.EmailAddress)]        

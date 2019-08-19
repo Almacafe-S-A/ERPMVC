@@ -18,7 +18,7 @@ namespace ERPMVC.Models
         [Display(Name = "Parentezco")]
         public string Parentezco { get; set; }
 
-        [Display(Name = "Telefono")]
+        [Display(Name = "Teléfono")]
         public string Telefono { get; set; }
 
         [Display(Name = "Dirección")]

@@ -18,6 +18,11 @@ namespace ERPMVC.Models
         public int DimCode { get; set; }
         [StringLength(60)]
         public string Description { get; set; }
+        [Display(Name = "Id de estado")]
+        public Int64 IdEstado { get; set; }
+        [Display(Name = "Estado")]
+        public string Estado { get; set; }
+
         [Required]
         public string UsuarioCreacion { get; set; }
         [Required]

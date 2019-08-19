@@ -82,15 +82,19 @@ namespace ERPMVC.Models
 
 
         [Required]
+        [Display(Name = "Usuario de creación")]
         public string UsuarioCreacion { get; set; }
 
         [Required]
+        [Display(Name = "Usuario de modificación")]
         public string UsuarioModificacion { get; set; }
 
         [Required]
+        [Display(Name = "Fecha de creación")]
         public DateTime FechaCreacion { get; set; }
 
         [Required]
+        [Display(Name = "Fecha de modificación")]
         public DateTime FechaModificacion { get; set; }
 
         //  public List<CustomersOfCustomer> _Customers { get; set; }

@@ -96,8 +96,42 @@ namespace ERPMVC.Controllers
             return Json(_customers.ToDataSourceResult(request));
 
         }
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> GetAccountClass([DataSourceRequest]DataSourceRequest request)
+        {
+            List<AccountClass> _clientes = new List<AccountClass>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Account/GetEnumClass" );
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _clientes = JsonConvert.DeserializeObject<List<AccountClass>>(valorrespuesta);
+                }
 
-        public async Task<ActionResult<Account>> SaveAccount([FromBody]AccountDTO _AccountP)
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            //  JsonSerializerSettings settings = new JsonSerializerSettings();
+            //  settings.Formatting = Formatting.Indented;
+            //  settings.TypeNameHandling = TypeNameHandling.Auto;
+            //settingall
+            // return Json(new { _clientes });
+
+
+
+            return Json(_clientes.ToDataSourceResult(request));
+        }   
+
+        public async Task<ActionResult<Account>> SaveAccounting([FromBody]AccountDTO _AccountP)
         {
             Account _Account = _AccountP;
             try
@@ -139,7 +173,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_Account);
+            return Json(_AccountP);
         }
 
 
