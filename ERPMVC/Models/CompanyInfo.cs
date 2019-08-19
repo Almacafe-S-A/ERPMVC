@@ -23,7 +23,7 @@ namespace ERPMVC.Models
         [Display(Name = "Código Postal")]
         public string PostalCode { get; set; }
 
-        [Display(Name = "Telefono")]
+        [Display(Name = "Teléfono ")]
         public string Phone { get; set; }
 
         [Display(Name = "Fax")]
