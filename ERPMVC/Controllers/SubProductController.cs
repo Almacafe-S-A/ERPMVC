@@ -256,7 +256,8 @@ namespace ERPMVC.Controllers
 
                 if (_SubProduct == null)
                 {
-                    _SubProduct = new SubProductDTO();
+
+                    _SubProduct = new SubProductDTO {  IsEnable= _sarpara.IsEnable };
                 }
             }
             catch (Exception ex)
