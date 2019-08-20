@@ -39,6 +39,14 @@ namespace ERP.Contexts
 
 
 
+        public DbSet<ERPMVC.Models.TypeAccount> TypeAccount { get; set; }
+
+
+
+        public DbSet<ERPMVC.DTO.TypeAccountDTO> TypeAccountDTO { get; set; }
+
+
+
       
 
 

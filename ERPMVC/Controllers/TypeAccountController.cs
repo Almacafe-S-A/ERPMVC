@@ -20,37 +20,37 @@ namespace ERPMVC.Controllers
     [Authorize]
     [CustomAuthorization]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-    public class AccountingController : Controller
+    public class TypeAccountController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public AccountingController(ILogger<AccountingController> logger, IOptions<MyConfig> config)
+        public TypeAccountController(ILogger<TypeAccountController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
         }
-        // GET: Accounting
-        public ActionResult Accounting()
+        // GET: TypeAccount
+        public ActionResult TypeAccount()
         {
             return View();
         }
 
         [HttpGet("[action]")]
-        public async Task<JsonResult> GetAccount([DataSourceRequest]DataSourceRequest request)
+        public async Task<JsonResult> GetTypeAccount([DataSourceRequest]DataSourceRequest request)
         {
-            List<Account> _Account = new List<Account>();
+            List<TypeAccount> _TypeAccount = new List<TypeAccount>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Account/GetAccount");
+                var result = await _client.GetAsync(baseadress + "api/TypeAccount/GetTypeAccount");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Account = JsonConvert.DeserializeObject<List<Account>>(valorrespuesta);
+                    _TypeAccount = JsonConvert.DeserializeObject<List<TypeAccount>>(valorrespuesta);
 
                 }
 
@@ -63,10 +63,10 @@ namespace ERPMVC.Controllers
             }
 
 
-            return Json(_Account.ToDataSourceResult(request));
+            return Json(_TypeAccount.ToDataSourceResult(request));
 
         }
-        [HttpGet]
+        /*[HttpGet]
         public async Task<JsonResult> GetAccounting([DataSourceRequest]DataSourceRequest request)
         {
             List<Account> _customers = new List<Account>();
@@ -95,75 +95,41 @@ namespace ERPMVC.Controllers
 
             return Json(_customers.ToDataSourceResult(request));
 
-        }
-        [HttpGet("[controller]/[action]")]
-        public async Task<ActionResult> GetAccountClass([DataSourceRequest]DataSourceRequest request)
+        }*/
+        
+        public async Task<ActionResult<TypeAccount>> SaveTypeAccount([FromBody]TypeAccountDTO _TypeAccountP)
         {
-            List<AccountClass> _clientes = new List<AccountClass>();
+            TypeAccount _TypeAccount = _TypeAccountP;
             try
             {
+                TypeAccount _listAccount = new TypeAccount();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Account/GetEnumClass" );
+                var result = await _client.GetAsync(baseadress + "api/TypeAccount/GetTypeAccountById/" + _TypeAccount.TypeAccountId);
                 string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _clientes = JsonConvert.DeserializeObject<List<AccountClass>>(valorrespuesta);
-                }
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-            //  JsonSerializerSettings settings = new JsonSerializerSettings();
-            //  settings.Formatting = Formatting.Indented;
-            //  settings.TypeNameHandling = TypeNameHandling.Auto;
-            //settingall
-            // return Json(new { _clientes });
-
-
-
-            return Json(_clientes.ToDataSourceResult(request));
-        }   
-
-        public async Task<ActionResult<Account>> SaveAccounting([FromBody]AccountDTO _AccountP)
-        {
-            Account _Account = _AccountP;
-            try
-            {
-                Account _listAccount = new Account();
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Account/GetAccountById/" + _Account.AccountId);
-                string valorrespuesta = "";
-                _Account.FechaModificacion = DateTime.Now;
-                _Account.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _TypeAccount.ModifiedDate = DateTime.Now;
+                _TypeAccount.ModifiedUser = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Account = JsonConvert.DeserializeObject<Account>(valorrespuesta);
+                    _TypeAccount = JsonConvert.DeserializeObject<TypeAccount>(valorrespuesta);
                 }
 
-                if (_Account == null) { _Account = new Models.Account(); }
+                if (_TypeAccount == null) { _TypeAccount = new Models.TypeAccount(); }
 
-                if (_AccountP.AccountId == 0)
+                if (_TypeAccountP.TypeAccountId == 0)
                 {
-                    _Account.FechaCreacion = DateTime.Now;
-                    _Account.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_AccountP);
+                    _TypeAccount.CreatedDate = DateTime.Now;
+                    _TypeAccount.CreatedUser = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_TypeAccountP);
                 }
                 else
                 {
-                    _AccountP.UsuarioCreacion = _Account.UsuarioCreacion;
-                    _AccountP.FechaCreacion = _Account.FechaCreacion;
-                    var updateresult = await Update(_Account.AccountId, _AccountP);
+                    _TypeAccountP.CreatedUser = _TypeAccount.CreatedUser;
+                    _TypeAccountP.CreatedDate = _TypeAccount.CreatedDate;
+                    var updateresult = await Update(_TypeAccount.TypeAccountId, _TypeAccountP);
                 }
 
             }
@@ -173,31 +139,31 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_AccountP);
+            return Json(_TypeAccountP);
         }
 
 
         [HttpPost("[action]")]
-        public async Task<ActionResult> pvwAddAccount([FromBody]AccountDTO _sarpara)
+        public async Task<ActionResult> pvwAddTypeAccount([FromBody]TypeAccountDTO _sarpara)
         {
-            AccountDTO _Account = new AccountDTO();
+            TypeAccountDTO _TypeAccount = new TypeAccountDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Account/GetAccountById/" + _sarpara.AccountId);
+                var result = await _client.GetAsync(baseadress + "api/TypeAccount/GetTypeAccountById/" + _sarpara.TypeAccountId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Account = JsonConvert.DeserializeObject<AccountDTO>(valorrespuesta);
+                    _TypeAccount = JsonConvert.DeserializeObject<TypeAccountDTO>(valorrespuesta);
 
                 }
 
-                if (_Account == null)
+                if (_TypeAccount == null)
                 {
-                    _Account = new AccountDTO();
+                    _TypeAccount = new TypeAccountDTO();
                 }
             }
             catch (Exception ex)
@@ -208,14 +174,14 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_Account);
+            return PartialView(_TypeAccount);
 
         }
 
-        // POST: Account/Insert
+        // POST: TypeAccount/Insert
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public async Task<ActionResult> Insert(Account _Account)
+        public async Task<ActionResult> Insert(TypeAccount _TypeAccount)
         {
             try
             {
@@ -223,15 +189,16 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _Account.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _Account.FechaCreacion = DateTime.Now;
-                _Account.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Account/Insert", _Account);
+                _TypeAccount.CreatedUser = HttpContext.Session.GetString("user");
+                _TypeAccount.CreatedDate = DateTime.Now;
+                _TypeAccount.ModifiedUser = HttpContext.Session.GetString("user");
+                _TypeAccount.ModifiedDate = DateTime.Now;
+                var result = await _client.PostAsJsonAsync(baseadress + "api/TypeAccount/Insert", _TypeAccount);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Account = JsonConvert.DeserializeObject<Account>(valorrespuesta);
+                    _TypeAccount = JsonConvert.DeserializeObject<TypeAccount>(valorrespuesta);
                 }
 
             }
@@ -241,23 +208,23 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Account }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _TypeAccount }, Total = 1 });
         }
 
-        [HttpPut("AccountId")]
-        public async Task<IActionResult> Update(Int64 AccountId, Account _Account)
+        [HttpPut("TypeAccountId")]
+        public async Task<IActionResult> Update(Int64 TypeAccountId, TypeAccount _TypeAccount)
         {
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PutAsJsonAsync(baseadress + "api/Account/Update", _Account);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/TypeAccount/Update", _TypeAccount);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Account = JsonConvert.DeserializeObject<Account>(valorrespuesta);
+                    _TypeAccount = JsonConvert.DeserializeObject<TypeAccount>(valorrespuesta);
                 }
 
             }
@@ -267,9 +234,8 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Account }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _TypeAccount }, Total = 1 });
         }
-
 
     }
 }
