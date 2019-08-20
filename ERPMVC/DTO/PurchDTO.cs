@@ -6,14 +6,13 @@ using System.Threading.Tasks;
 
 namespace ERPMVC.DTO
 {
-    public class SubProductDTO : SubProduct
+    public class PurchDTO:Purch
     {
-        public List<SubProduct> _SubProduct { get; set; }
+        public List<Purch> _Purch { get; set; }
 
         public int editar { get; set; } = 1;
 
         public string token { get; set; }
 
-        public bool IsEnable { get; set; } = true;
     }
 }
