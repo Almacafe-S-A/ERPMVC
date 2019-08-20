@@ -225,7 +225,7 @@ namespace ERPMVC.Controllers
 
         public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request)
         {
-            var res = await GetGoodsDeliveryAuthorization();
+            var res = await GetGoodsDeliveryAuthorizationNoSelectedBoletaSalida();
             return Json(res.ToDataSourceResult(request));
         }
 
@@ -237,7 +237,7 @@ namespace ERPMVC.Controllers
             {
                 var index = 0;
 
-                foreach (var order in await GetGoodsDeliveryAuthorization())
+                foreach (var order in await GetGoodsDeliveryAuthorizationNoSelectedBoletaSalida())
                 {
                     if (values.Contains(order.GoodsDeliveryAuthorizationId))
                     {
@@ -250,6 +250,46 @@ namespace ERPMVC.Controllers
 
             return Json(indices);
         }
+
+        
+        [HttpGet("[controller]/[action]")]
+        [HttpGet("[action]")]
+        private async Task<List<GoodsDeliveryAuthorization>> GetGoodsDeliveryAuthorizationNoSelectedBoletaSalida()
+        {
+            List<GoodsDeliveryAuthorization> _GoodsDeliveryAuthorization = new List<GoodsDeliveryAuthorization>();
+
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/GoodsDeliveryAuthorization/GetGoodsDeliveryAuthorizationNoSelectedBoletaSalida");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _GoodsDeliveryAuthorization = JsonConvert.DeserializeObject<List<GoodsDeliveryAuthorization>>(valorrespuesta);
+                    _GoodsDeliveryAuthorization = (from c in _GoodsDeliveryAuthorization
+                                                   select new GoodsDeliveryAuthorization
+                                                   {
+                                                       GoodsDeliveryAuthorizationId = c.GoodsDeliveryAuthorizationId,
+                                                       CustomerName = "Numero de autorización: " + c.GoodsDeliveryAuthorizationId + "  ||Nombre:" + c.CustomerName + " ||Fecha: "
+                                                      + c.DocumentDate + " ||Fecha de autorización:" + c.AuthorizationDate + " || Total Certificado:" + c.TotalCertificado + " || Total Financiado:" + c.TotalFinanciado,
+                                                       DocumentDate = c.DocumentDate,
+
+                                                   }
+                                      ).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            // return Json(_CustomerConditions.ToDataSourceResult(request));
+            return _GoodsDeliveryAuthorization;
+        }
+
 
         [HttpGet("[controller]/[action]")]
         [HttpGet("[action]")]
