@@ -58,13 +58,17 @@ namespace ERPMVC.Controllers
             }
 
         }
-        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request)
+
+
+
+
+        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request,int ingreso=1)
         {
-            var res = await GetControlPallets();
+            var res = await GetControlPallets(ingreso);
             return Json(res.ToDataSourceResult(request));
         }
 
-        public async Task<ActionResult> Orders_ValueMapper(Int64[] values)
+        public async Task<ActionResult> Orders_ValueMapper(Int64[] values, int ingreso = 1)
         {
             var indices = new List<Int64>();
 
@@ -72,7 +76,7 @@ namespace ERPMVC.Controllers
             {
                 var index = 0;
 
-                foreach (var order in await GetControlPallets())
+                foreach (var order in await GetControlPallets(ingreso))
                 {
                     if (values.Contains(order.ControlPalletsId))
                     {
@@ -86,7 +90,7 @@ namespace ERPMVC.Controllers
             return Json(indices);
         }
 
-        private async Task<List<ControlPallets>> GetControlPallets()
+        private async Task<List<ControlPallets>> GetControlPallets(int ingreso=1)
         {
             List<ControlPallets> _ControlPallets = new List<ControlPallets>();
 
@@ -101,11 +105,13 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ControlPallets = JsonConvert.DeserializeObject<List<ControlPallets>>(valorrespuesta);
+                    
                     _ControlPallets = (from c in _ControlPallets
+                                       .Where(q=>q.EsIngreso==ingreso)
                                        select new ControlPallets
                                        {
                                            ControlPalletsId = c.ControlPalletsId,
-                                           CustomerName = "Nombre:" + c.CustomerName + "|| Fecha: " + c.DocumentDate + " || Total:" + c.TotalSacos,
+                                           CustomerName ="Id:"+c.PalletId + " || Nombre:" + c.CustomerName + "|| Fecha: " + c.DocumentDate + " || Total:" + c.TotalSacos,
                                            DocumentDate = c.DocumentDate,
 
                                        }
