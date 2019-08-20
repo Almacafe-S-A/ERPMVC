@@ -209,14 +209,14 @@ namespace ERPMVC.Controllers
                     _ElementoConfiguracionS.FechaCreacion = DateTime.Now;
                     _ElementoConfiguracionS.UsuarioCreacion = HttpContext.Session.GetString("user");
 
-                    if (_ElementoConfiguracionS.Estado == "Activo")
-                    {
-                        _ElementoConfiguracionS.Estado = "A";
-                    }
-                    else {
-                        _ElementoConfiguracionS.Estado = "I";
+                    //if (_ElementoConfiguracionS.Estado == "Activo")
+                    //{
+                    //    _ElementoConfiguracionS.Estado = "A";
+                    //}
+                    //else {
+                    //    _ElementoConfiguracionS.Estado = "I";
 
-                    }
+                    //}
                     
                     var insertresult = await Insert(_ElementoConfiguracionS);
                 }

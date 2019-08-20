@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -179,7 +180,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("PostUsuario")]
-        public async Task<ActionResult<ApplicationUser>> PostUsuario(ApplicationUser _usuario)
+        public async Task<ActionResult<ApplicationUser>> PostUsuario(ApplicationUserDTO _usuario)
         {
             try
             {
@@ -191,12 +192,13 @@ namespace ERPMVC.Controllers
                 _usuario.FechaCreacion = DateTime.Now;
                 _usuario.UsuarioModificacion = HttpContext.Session.GetString("user");
                 _usuario.UserName = _usuario.Email;
+                _usuario.IsEnabled = true;
                 var result = await _client.PostAsJsonAsync(baseadress + "api/Usuario/PostUsuario", _usuario);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _usuario = JsonConvert.DeserializeObject<ApplicationUser>(valorrespuesta);
+                    _usuario = JsonConvert.DeserializeObject<ApplicationUserDTO>(valorrespuesta);
 
                     _usuario.PasswordHash = "**********************";
                 }
@@ -231,8 +233,8 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpPost("ChangePassword")]
-        public async Task<ActionResult<ApplicationUser>> ChangePassword([FromBody]ApplicationUser _usuario)
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<ApplicationUser>> ChangePassword([FromBody]ApplicationUserDTO _usuario)
         {
             try
             {
@@ -249,16 +251,16 @@ namespace ERPMVC.Controllers
 
                     string password = _usuario.PasswordHash;
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _usuario = JsonConvert.DeserializeObject<ApplicationUser>(valorrespuesta);
+                    _usuario = JsonConvert.DeserializeObject<ApplicationUserDTO>(valorrespuesta);
 
                     _usuario.PasswordHash = password;
-
+                    _usuario.cambiarpassword = true;
                      result = await _client.PostAsJsonAsync(baseadress + "api/Usuario/ChangePassword", _usuario);
                      valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _usuario = JsonConvert.DeserializeObject<ApplicationUser>(valorrespuesta);
+                        _usuario = JsonConvert.DeserializeObject<ApplicationUserDTO>(valorrespuesta);
 
                         _usuario.PasswordHash = "**********************";
                     }
@@ -296,7 +298,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPut("PutUsuario")]
-        public async Task<ActionResult<ApplicationUser>> PutUsuario(string Id, ApplicationUser _usuario)
+        public async Task<ActionResult<ApplicationUser>> PutUsuario(string Id, ApplicationUserDTO _usuario)
         {
             try
             {
@@ -304,6 +306,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 _usuario.UserName = _usuario.Email;
                 HttpClient _client = new HttpClient();
+                _usuario.cambiarpassword = _usuario.cambiarpassword == null ? false : true;
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.PutAsJsonAsync(baseadress + "api/Usuario/PutUsuario", _usuario);
                 string valorrespuesta = "";
@@ -311,7 +314,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _usuario = JsonConvert.DeserializeObject<ApplicationUser>(valorrespuesta);
+                    _usuario = JsonConvert.DeserializeObject<ApplicationUserDTO>(valorrespuesta);
                 }
                 else
                 {
