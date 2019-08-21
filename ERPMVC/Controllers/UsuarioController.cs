@@ -319,7 +319,7 @@ namespace ERPMVC.Controllers
                 else
                 {
 
-                    _usuario.PasswordHash = await result.Content.ReadAsStringAsync() + " El password debe tener mayusculas y minusculas!";
+                    _usuario.PasswordHash = await result.Content.ReadAsStringAsync() + " El password debe tener mayusculas, minusculas y caracteres especiales!";
                     string error = await result.Content.ReadAsStringAsync();
                     return this.Json(new DataSourceResult
                     {
