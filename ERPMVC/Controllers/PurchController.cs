@@ -36,20 +36,48 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public ActionResult Proveedores()
+        /*public ActionResult Proveedores()
         {
             return View();
-        }
+        }*/
         // GET: Purch/Details/5
-        public ActionResult Details(int id)
-        {
-            return View();
-        }
+       // public ActionResult Details(int id)
+        //{
+          //  return View();
+        //}
 
         // GET: Purch/Create
         public ActionResult Create()
         {
             return View();
+        }
+
+        public async Task<ActionResult> Proveedores(Int64 PurchId)
+        {
+            Purch _customers = new Purch();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Purch/GetPurchById/" + PurchId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _customers = JsonConvert.DeserializeObject<Purch>(valorrespuesta);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return await Task.Run(() => View(_customers));
         }
 
 
@@ -249,5 +277,67 @@ namespace ERPMVC.Controllers
             return PartialView(_Purch);
 
         }
+        // GET: Customer/Details/5
+
+/*
+        [HttpGet("[action]")]
+        public async Task<ActionResult> Proveedores(Int64 PurchId)
+        {
+            Purch _customers = new Purch();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Purch/GetPurchById/" + PurchId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _customers = JsonConvert.DeserializeObject<Purch>(valorrespuesta);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return await Task.Run(() => View(_customers));
+        }
+  */      
+        [HttpGet("[action]")]
+        public async Task<ActionResult> GetPurchById(Int64 PurchId)
+        {
+            Purch _customers = new Purch();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Customer/GetPurchById/" + PurchId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _customers = JsonConvert.DeserializeObject<Purch>(valorrespuesta);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return await Task.Run(() => Json(_customers));
+        }
+
+
     }
 }
