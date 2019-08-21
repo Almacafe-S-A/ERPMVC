@@ -118,6 +118,7 @@ namespace ERPMVC.Controllers
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _GoodsReceivedLine = JsonConvert.DeserializeObject<List<ProformaInvoiceLine>>(valorrespuesta);
+                        HttpContext.Session.SetString("listadoproductosproformainvoice", JsonConvert.SerializeObject(_GoodsReceivedLine).ToString());
                     }
                 }
                 else

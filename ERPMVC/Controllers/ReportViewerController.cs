@@ -101,9 +101,9 @@ namespace ERPMVC.Controllers
             //var res = reportOption.ReportModel.DataSourceCredentials.Select(q => q.ConnectionString);
             //reportOption.ReportModel.DataSourceCredentials.Add(new DataSourceCredentials("AdventureWorks", "sa", "sql20.14"));
 
-            reportOption.ReportModel.DataSourceCredentials.Remove(new Syncfusion.Report.DataSourceCredentials { Name="DataSource1" });
+            //reportOption.ReportModel.DataSourceCredentials.Remove(new Syncfusion.Report.DataSourceCredentials { Name="DataSource1" });
 
-            reportOption.ReportModel.DataSourceCredentials.Add(new Syncfusion.Report.DataSourceCredentials { ConnectionString= "Data Source=DESKTOP-RFQ3R0I;Initial Catalog=ERP;User id=sa;password=sql20.15;", UserId="sa",Password="sql20.14" });
+//            reportOption.ReportModel.DataSourceCredentials.Add(new Syncfusion.Report.DataSourceCredentials { ConnectionString= "Data Source=DESKTOP-RFQ3R0I;Initial Catalog=ERP;User id=sa;password=sql20.15;", UserId="sa",Password="sql20.14" });
 
             string basePath = _hostingEnvironment.WebRootPath;
             FileStream inputStream = new FileStream(basePath + reportOption.ReportModel.ReportPath, FileMode.Open, FileAccess.Read);

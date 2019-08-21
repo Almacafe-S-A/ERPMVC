@@ -88,6 +88,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
+                    if(HttpContext.Session.GetString("listadoproductospallet")!=null)
                     _ControlPalletsLine = JsonConvert.DeserializeObject<List<ControlPalletsLine>>(HttpContext.Session.GetString("listadoproductospallet"));
                 }
 
@@ -108,6 +109,8 @@ namespace ERPMVC.Controllers
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _ControlPalletsLine = JsonConvert.DeserializeObject<List<ControlPalletsLine>>(valorrespuesta);
+
+                        HttpContext.Session.SetString("listadoproductospallet", JsonConvert.SerializeObject(_ControlPalletsLine).ToString());
                     }
                 }
                 else
