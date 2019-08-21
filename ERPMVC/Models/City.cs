@@ -17,7 +17,7 @@ namespace ERPMVC.Models
         public string Name { get; set; }
 
         [Display(Name = "Departamento")]
-        public long? State_Id { get; set; }
+        public long? StateId { get; set; }
 
     }
 }

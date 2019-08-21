@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using ERPMVC.DTO;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -28,31 +29,32 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-        public IActionResult Index()
+        public IActionResult State()
         {
             return View();
         }
 
-        public async Task<ActionResult> pvwState(Int64 Id = 0)
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwAddState([FromBody]StateDTO _sarpara)
         {
-            State _State = new State();
+            StateDTO _State = new StateDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/State/GetStateById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/State/GetStateById/" + _sarpara.Id);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _State = JsonConvert.DeserializeObject<State>(valorrespuesta);
+                    _State = JsonConvert.DeserializeObject<StateDTO>(valorrespuesta);
 
                 }
 
                 if (_State == null)
                 {
-                    _State = new State();
+                    _State = new StateDTO();
                 }
             }
             catch (Exception ex)
@@ -66,6 +68,7 @@ namespace ERPMVC.Controllers
             return PartialView(_State);
 
         }
+
 
 
         [HttpGet]
@@ -100,36 +103,41 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult<State>> SaveState([FromBody]State _State)
+
+        [HttpPost]
+        public async Task<ActionResult<State>> SaveState([FromBody]StateDTO _StateS)
         {
 
+            State _State = _StateS;
             try
             {
-                State _listState = new State();
+                // DTO_NumeracionSAR _liNumeracionSAR = new DTO_NumeracionSAR();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/State/GetStateById/" + _State.Id);
                 string valorrespuesta = "";
                 _State.FechaModificacion = DateTime.Now;
-              //  _State.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _State.Usuariomodificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
-
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listState = JsonConvert.DeserializeObject<State>(valorrespuesta);
+                    _State = JsonConvert.DeserializeObject<StateDTO>(valorrespuesta);
                 }
 
-                if (_listState.Id == 0)
+                if (_State == null) { _State = new Models.State(); }
+
+                if (_StateS.Id == 0)
                 {
-                    _State.FechaCreacion = DateTime.Now;
-                  //  _State.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_State);
+                    //_CAI.FechaCreacion = DateTime.Now;
+                    //_CAI.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_StateS);
                 }
                 else
                 {
-                    var updateresult = await Update(_State.Id, _State);
+                    _StateS.Usuariocreacion = _State.Usuariocreacion;
+                    _StateS.FechaCreacion = _State.FechaCreacion;
+                    var updateresult = await Update(_State.Id, _StateS);
                 }
 
             }
@@ -200,15 +208,16 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _State }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult<State>> Delete([FromBody]State _State)
+        [HttpPost]
+        public async Task<ActionResult<State>> Delete(Int64 Id, State _Statep)
         {
+            State _State = _Statep;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.PostAsJsonAsync(baseadress + "api/State/Delete", _State);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -220,11 +229,8 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error: {ex.Message}");
+                return BadRequest($"Ocurrio un error{ex.Message}");
             }
-
-
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _State }, Total = 1 });
         }
