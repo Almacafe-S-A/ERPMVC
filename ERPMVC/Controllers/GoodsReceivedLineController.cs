@@ -214,6 +214,7 @@ namespace ERPMVC.Controllers
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _GoodsReceivedLine = JsonConvert.DeserializeObject<List<GoodsReceivedLine>>(valorrespuesta);
+                        HttpContext.Session.SetString("listadoproductosgoodsreceived", JsonConvert.SerializeObject(_GoodsReceivedLine).ToString());
                     }
                 }
                 else

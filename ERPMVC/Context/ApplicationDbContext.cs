@@ -43,6 +43,14 @@ namespace ERP.Contexts
 
 
 
+        public DbSet<ERPMVC.Models.JournalEntry> JournalEntry { get; set; }
+
+
+
+        public DbSet<ERPMVC.DTO.JournalEntryDTO> JournalEntryDTO { get; set; }
+
+
+
        
 
 
