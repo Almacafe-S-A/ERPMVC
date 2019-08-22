@@ -50,6 +50,8 @@ namespace ERPMVC.Models
         [Required]
         [Display(Name = "Fecha de Modificacion")]
         public DateTime FechaModificacion { get; set; }
+        [Display(Name = "Saldo Contable")]
+        public double AccountBalance { get; set; }
 
         [Column(TypeName = "timestamp")]
         [DatabaseGenerated(DatabaseGeneratedOption.Computed)]
@@ -67,5 +69,32 @@ namespace ERPMVC.Models
         public virtual ICollection<MainContraAccount> ContraAccounts { get; set; }
         public virtual ICollection<GeneralLedgerLine> GeneralLedgerLines { get; set; }
 
+        public decimal GetBalance()
+        {
+            decimal balance = 0;
+
+            var dr = from d in GeneralLedgerLines
+                     where d.DrCr == 1
+                     select d;
+
+            var cr = from c in GeneralLedgerLines
+                     where c.DrCr == 2
+                     select c;
+
+            decimal drAmount = dr.Sum(d => d.Amount);
+            decimal crAmount = cr.Sum(c => c.Amount);
+
+            if (AccountClass.NormalBalance == "Dr")
+            {
+                balance = drAmount - crAmount;
+            }
+            else
+            {
+                balance = crAmount - drAmount;
+            }
+
+            return balance;
+        }
     }
+
 }
