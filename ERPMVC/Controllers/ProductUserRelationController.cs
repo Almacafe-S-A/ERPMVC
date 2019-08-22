@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
-using ERPMVC.DTO;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -19,42 +18,41 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
-    public class StateController : Controller
+    public class ProductUserRelationController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public StateController(ILogger<StateController> logger, IOptions<MyConfig> config)
+        public ProductUserRelationController(ILogger<ProductUserRelationController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
         }
 
-        public IActionResult State()
+        public IActionResult Index()
         {
             return View();
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult> pvwAddState([FromBody]StateDTO _sarpara)
+        public async Task<ActionResult> pvwProductUserRelation(Int64 Id = 0)
         {
-            StateDTO _State = new StateDTO();
+            ProductUserRelation _ProductUserRelation = new ProductUserRelation();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/State/GetStateById/" + _sarpara.Id);
+                var result = await _client.GetAsync(baseadress + "api/ProductUserRelation/GetProductUserRelationById/" + Id);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _State = JsonConvert.DeserializeObject<StateDTO>(valorrespuesta);
+                    _ProductUserRelation = JsonConvert.DeserializeObject<ProductUserRelation>(valorrespuesta);
 
                 }
 
-                if (_State == null)
+                if (_ProductUserRelation == null)
                 {
-                    _State = new StateDTO();
+                    _ProductUserRelation = new ProductUserRelation();
                 }
             }
             catch (Exception ex)
@@ -65,28 +63,27 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_State);
+            return PartialView(_ProductUserRelation);
 
         }
-
 
 
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<State> _State = new List<State>();
+            List<ProductUserRelation> _ProductUserRelation = new List<ProductUserRelation>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/State/GetState");
+                var result = await _client.GetAsync(baseadress + "api/ProductUserRelation/GetProductUserRelation");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _State = JsonConvert.DeserializeObject<List<State>>(valorrespuesta);
+                    _ProductUserRelation = JsonConvert.DeserializeObject<List<ProductUserRelation>>(valorrespuesta);
 
                 }
 
@@ -99,45 +96,40 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _State.ToDataSourceResult(request);
+            return _ProductUserRelation.ToDataSourceResult(request);
 
         }
 
-
-        [HttpPost]
-        public async Task<ActionResult<State>> SaveState([FromBody]StateDTO _StateS)
+        [HttpPost("[action]")]
+        public async Task<ActionResult<ProductUserRelation>> SaveProductUserRelation([FromBody]ProductUserRelation _ProductUserRelation)
         {
 
-            State _State = _StateS;
             try
             {
-                // DTO_NumeracionSAR _liNumeracionSAR = new DTO_NumeracionSAR();
+                ProductUserRelation _listProductUserRelation = new ProductUserRelation();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/State/GetStateById/" + _State.Id);
+                var result = await _client.GetAsync(baseadress + "api/ProductUserRelation/GetProductUserRelationById/" + _ProductUserRelation.ProductUserRelationId);
                 string valorrespuesta = "";
-                _State.FechaModificacion = DateTime.Now;
-                _State.Usuariomodificacion = HttpContext.Session.GetString("user");
+                _ProductUserRelation.FechaModificacion = DateTime.Now;
+                _ProductUserRelation.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
+
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _State = JsonConvert.DeserializeObject<StateDTO>(valorrespuesta);
+                    _listProductUserRelation = JsonConvert.DeserializeObject<ProductUserRelation>(valorrespuesta);
                 }
 
-                if (_State == null) { _State = new Models.State(); }
-
-                if (_StateS.Id == 0)
+                if (_listProductUserRelation.ProductUserRelationId == 0)
                 {
-                    //_CAI.FechaCreacion = DateTime.Now;
-                    //_CAI.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_StateS);
+                    _ProductUserRelation.FechaCreacion = DateTime.Now;
+                    _ProductUserRelation.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_ProductUserRelation);
                 }
                 else
                 {
-                    _StateS.Usuariocreacion = _State.Usuariocreacion;
-                    _StateS.FechaCreacion = _State.FechaCreacion;
-                    var updateresult = await Update(_State.Id, _StateS);
+                    var updateresult = await Update(_ProductUserRelation.ProductUserRelationId, _ProductUserRelation);
                 }
 
             }
@@ -147,13 +139,13 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_State);
+            return Json(_ProductUserRelation);
         }
 
-        // POST: State/Insert
+        // POST: ProductUserRelation/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<State>> Insert(State _State)
+        public async Task<ActionResult<ProductUserRelation>> Insert(ProductUserRelation _ProductUserRelation)
         {
             try
             {
@@ -161,14 +153,14 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-               // _State.UsuarioCreacion = HttpContext.Session.GetString("user");
-                //_State.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/State/Insert", _State);
+                _ProductUserRelation.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _ProductUserRelation.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/ProductUserRelation/Insert", _ProductUserRelation);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _State = JsonConvert.DeserializeObject<State>(valorrespuesta);
+                    _ProductUserRelation = JsonConvert.DeserializeObject<ProductUserRelation>(valorrespuesta);
                 }
 
             }
@@ -177,12 +169,12 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-            return Ok(_State);
-            // return new ObjectResult(new DataSourceResult { Data = new[] { _State }, Total = 1 });
+            return Ok(_ProductUserRelation);
+            // return new ObjectResult(new DataSourceResult { Data = new[] { _ProductUserRelation }, Total = 1 });
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<State>> Update(Int64 id, State _State)
+        public async Task<ActionResult<ProductUserRelation>> Update(Int64 id, ProductUserRelation _ProductUserRelation)
         {
             try
             {
@@ -190,12 +182,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PutAsJsonAsync(baseadress + "api/State/Update", _State);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/ProductUserRelation/Update", _ProductUserRelation);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _State = JsonConvert.DeserializeObject<State>(valorrespuesta);
+                    _ProductUserRelation = JsonConvert.DeserializeObject<ProductUserRelation>(valorrespuesta);
                 }
 
             }
@@ -205,34 +197,36 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _State }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _ProductUserRelation }, Total = 1 });
         }
 
-        [HttpPost]
-        public async Task<ActionResult<State>> Delete(Int64 Id, State _Statep)
+        [HttpPost("[action]")]
+        public async Task<ActionResult<ProductUserRelation>> Delete([FromBody]ProductUserRelation _ProductUserRelation)
         {
-            State _State = _Statep;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/State/Delete", _State);
+
+                var result = await _client.PostAsJsonAsync(baseadress + "api/ProductUserRelation/Delete", _ProductUserRelation);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _State = JsonConvert.DeserializeObject<State>(valorrespuesta);
+                    _ProductUserRelation = JsonConvert.DeserializeObject<ProductUserRelation>(valorrespuesta);
                 }
 
             }
             catch (Exception ex)
             {
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error: {ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _State }, Total = 1 });
+
+
+            return new ObjectResult(new DataSourceResult { Data = new[] { _ProductUserRelation }, Total = 1 });
         }
 
 

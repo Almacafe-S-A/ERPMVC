@@ -58,6 +58,10 @@ namespace ERPMVC.Models
         [Display(Name = "Unidad de medida")]
         public string UnitOfMeasureName { get; set; }
 
+        [Display(Name = "Boleta de peso")]
+        public Int64 WeightBallot { get; set; }
+
+
         [Display(Name = "Cantidad")]
         public double Quantity { get; set; }
 

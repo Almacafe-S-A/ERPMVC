@@ -27,7 +27,11 @@ namespace ERPMVC.Models
 
         [Display(Name = "Fecha de modificación")]
         public DateTime? FechaModificacion { get; set; }
+        public List<State> State { get; set; }
+
     }
+
+    
 
 
 }

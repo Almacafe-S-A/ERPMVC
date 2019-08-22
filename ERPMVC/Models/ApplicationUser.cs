@@ -10,7 +10,7 @@ namespace ERPMVC.Models
     public class ApplicationUser : IdentityUser<Guid>
     {
         [Display(Name = "Sucursal")]
-        public Int64 BranchId { get; set; }
+        public int BranchId { get; set; }
 
         [Display(Name = "Habilitado")]
         public bool? IsEnabled { get; set; }

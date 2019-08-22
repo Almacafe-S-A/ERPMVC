@@ -14,7 +14,7 @@ namespace ReportSettings
         static void Main(string[] args)
         {
             Console.Write("El programa va a reemplazar el DataSource(cadena de conexión de todos los reportes\n que se encuentren en la ruta del ejecutable ),"
-                +"\n Ejemplo Cadena de conexión: Data Source=localhost;Initial Catalog=ERP;User id=bidss;password=adminBI2018$;"
+                +"\n Ejemplo Cadena de conexión: Data Source=localhost;Initial Catalog=ERP;User id=bidss;password=1234;"
                 +"\n Esta seguro que desea continuar?: (S/N) ");
             string respuesta = Console.ReadLine();
 
