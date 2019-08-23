@@ -38,7 +38,7 @@ namespace ERPMVC.Controllers
         [HttpGet("[action]")]
         public async Task<JsonResult> GetAccount([DataSourceRequest]DataSourceRequest request)
         {
-            List<Account> _Account = new List<Account>();
+            List<Account> __customers = new List<Account>();
             try
             {
 
@@ -50,7 +50,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Account = JsonConvert.DeserializeObject<List<Account>>(valorrespuesta);
+                    __customers = JsonConvert.DeserializeObject<List<Account>>(valorrespuesta);
 
                 }
 
@@ -63,7 +63,7 @@ namespace ERPMVC.Controllers
             }
 
 
-            return Json(_Account.ToDataSourceResult(request));
+            return Json(__customers.ToDataSourceResult(request));
 
         }
         [HttpGet]

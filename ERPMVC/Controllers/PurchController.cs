@@ -84,7 +84,7 @@ namespace ERPMVC.Controllers
         [HttpGet("[action]")]
         public async Task<JsonResult> GetPurch([DataSourceRequest]DataSourceRequest request)
         {
-            List<Purch> _Purch = new List<Purch>();
+            List<Purch> _customers = new List<Purch>();
             try
             {
 
@@ -96,7 +96,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Purch = JsonConvert.DeserializeObject<List<Purch>>(valorrespuesta);
+                    _customers = JsonConvert.DeserializeObject<List<Purch>>(valorrespuesta);
 
                 }
 
@@ -109,7 +109,7 @@ namespace ERPMVC.Controllers
             }
 
 
-            return Json(_Purch.ToDataSourceResult(request));
+            return Json(_customers.ToDataSourceResult(request));
 
         }
 
@@ -318,7 +318,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Customer/GetPurchById/" + PurchId);
+                var result = await _client.GetAsync(baseadress + "api/Purch/GetPurchById/" + PurchId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
