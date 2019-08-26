@@ -238,14 +238,38 @@ namespace ERPMVC.Controllers
 
         private async Task<bool> IsPasswordHistory(string userId, string newPassword)
         {
-            PasswordHasher<ApplicationUser> passwordhasher = new PasswordHasher<ApplicationUser>();
-
+        //    PasswordHasher<ApplicationUser> passwordhasher = new PasswordHasher<ApplicationUser>();
             var user = await _userManager.FindByIdAsync(userId);
-            if (user.PasswordHistory.OrderByDescending(o => o.CreatedDate)
-                .Select(s => s.PasswordHash)
-                .Take(5)
-                .Where(w => passwordhasher.VerifyHashedPassword(user, w, newPassword) != PasswordVerificationResult.Failed).Any())
-                return true;
+            
+            string baseadress = config.Value.urlbase;
+            HttpClient _client = new HttpClient();
+            _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+            var result = await _client.GetAsync(baseadress + "api/PasswordHistory/GetPasswordHistoryByUserId/" + user.Id.ToString());
+            string valorrespuesta = "";
+            List<PasswordHistory> _listhistory = new List<PasswordHistory>();//user.PasswordHistory.OrderByDescending(o => o.CreatedDate).Take(5).ToList();
+            if (result.IsSuccessStatusCode)
+            {
+                valorrespuesta = await (result.Content.ReadAsStringAsync());
+                _listhistory = JsonConvert.DeserializeObject<List<PasswordHistory>>(valorrespuesta);
+                _listhistory = _listhistory.OrderByDescending(q => q.CreatedDate).Take(5).ToList();
+            }
+
+              
+
+            foreach (var item in _listhistory)
+            {
+                var res =  _userManager.PasswordHasher.VerifyHashedPassword(user, item.PasswordHash, newPassword);
+                if(res ==PasswordVerificationResult.Success)
+                {
+                    return true;
+                }
+            }
+
+            //if (user.PasswordHistory.OrderByDescending(o => o.CreatedDate)
+            //    .Select(s => s.PasswordHash)
+            //    .Take(5)
+            //    .Where(w => passwordhasher.VerifyHashedPassword(user, user.PasswordHash, newPassword) != PasswordVerificationResult.Failed).Any())
+             
             return false;
         }
 
@@ -260,7 +284,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-
+             
                 var result = await _client.GetAsync(baseadress + "api/Usuario/GetUserByEmail/"+ _usuario.Email);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -269,35 +293,46 @@ namespace ERPMVC.Controllers
                     string password = _usuario.PasswordHash;
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _usuario = JsonConvert.DeserializeObject<ApplicationUserDTO>(valorrespuesta);
+                    var hasher = new PasswordHasher<ApplicationUser>();
+
 
                     _usuario.PasswordHash = password;
                     _usuario.cambiarpassword = true;
-                     result = await _client.PostAsJsonAsync(baseadress + "api/Usuario/ChangePassword", _usuario);
-                     valorrespuesta = "";
-                    if (result.IsSuccessStatusCode)
+                    //hasher.HashPassword(_usuario,_usuario.PasswordHash)
+                    if (!await IsPasswordHistory(_usuario.Id.ToString(),_usuario.PasswordHash ))
                     {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _usuario = JsonConvert.DeserializeObject<ApplicationUserDTO>(valorrespuesta);
 
-                        _usuario.PasswordHash = "**********************";
+                        result = await _client.PostAsJsonAsync(baseadress + "api/Usuario/ChangePassword", _usuario);
+                        valorrespuesta = "";
+                        if (result.IsSuccessStatusCode)
+                        {
+                            valorrespuesta = await (result.Content.ReadAsStringAsync());
+                            _usuario = JsonConvert.DeserializeObject<ApplicationUserDTO>(valorrespuesta);
+
+                            _usuario.PasswordHash = "**********************";
+                        }
+                        else
+                        {
+
+                            //   _usuario.PasswordHash = await result.Content.ReadAsStringAsync() + " El password debe tener mayusculas y minusculas!";
+                            string error = await result.Content.ReadAsStringAsync();
+                            return await Task.Run(() => BadRequest($"{error}"));
+
+                            //return this.Json(new DataSourceResult
+                            //{
+                            //    //Data=  _usuario ,
+                            //    Errors = $"Ocurrio un error:{error} El password debe tener mayusculas y minusculas!"
+
+                            //});
+
+                            // return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
+                            //return await Task.Run(() => BadRequest($"Ocurrio un error:{result.Content.ReadAsStringAsync()} El password debe tener mayusculas y minusculas!"));
+                            //  throw new Exception($"Ocurrio un error:{result.Content.ReadAsStringAsync()} El password debe tener mayusculas y minusculas!");
+                        }
                     }
                     else
                     {
-
-                     //   _usuario.PasswordHash = await result.Content.ReadAsStringAsync() + " El password debe tener mayusculas y minusculas!";
-                        string error = await result.Content.ReadAsStringAsync();
-                        return await Task.Run(() => BadRequest($"{error}"));
-
-                        //return this.Json(new DataSourceResult
-                        //{
-                        //    //Data=  _usuario ,
-                        //    Errors = $"Ocurrio un error:{error} El password debe tener mayusculas y minusculas!"
-
-                        //});
-
-                        // return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
-                        //return await Task.Run(() => BadRequest($"Ocurrio un error:{result.Content.ReadAsStringAsync()} El password debe tener mayusculas y minusculas!"));
-                        //  throw new Exception($"Ocurrio un error:{result.Content.ReadAsStringAsync()} El password debe tener mayusculas y minusculas!");
+                        return await Task.Run(() => BadRequest($"No puede utilizar las ultimas contraseñas "));
                     }
                 }
 

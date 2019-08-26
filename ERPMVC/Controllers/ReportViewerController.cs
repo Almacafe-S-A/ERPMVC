@@ -25,7 +25,7 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
-    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+   // [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class ReportViewerController : Controller , IReportController
     {
         private IMemoryCache _cache;
@@ -81,6 +81,8 @@ namespace ERPMVC.Controllers
             return ReportHelper.GetResource(resource, this, _cache);
         }
 
+
+
         [HttpPost]
         public object PostFormReportAction()
         {
@@ -109,7 +111,7 @@ namespace ERPMVC.Controllers
             string basePath = _hostingEnvironment.WebRootPath;
             FileStream inputStream = new FileStream(basePath + reportOption.ReportModel.ReportPath, FileMode.Open, FileAccess.Read);
             reportOption.ReportModel.Stream = inputStream;
-
+            reportOption.ReportModel.EmbedImageData = true;
 
 
             //reportOption.ReportModel.ProcessingMode = Syncfusion.EJ.ReportViewer.ProcessingMode.Local;
