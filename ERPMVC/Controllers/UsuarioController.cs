@@ -10,6 +10,7 @@ using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -25,12 +26,15 @@ namespace ERPMVC.Controllers
 
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
+        private readonly UserManager<ApplicationUser> _userManager;
 
         public UsuarioController(ILogger<UserRolController> logger
+             ,UserManager<ApplicationUser> userManager
             , IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
+            this._userManager = userManager;
         }
 
         [Authorize(Policy = "Admin")]
@@ -230,6 +234,19 @@ namespace ERPMVC.Controllers
 
             _usuario.PasswordHash = "**********************";
             return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
+        }
+
+        private async Task<bool> IsPasswordHistory(string userId, string newPassword)
+        {
+            PasswordHasher<ApplicationUser> passwordhasher = new PasswordHasher<ApplicationUser>();
+
+            var user = await _userManager.FindByIdAsync(userId);
+            if (user.PasswordHistory.OrderByDescending(o => o.CreatedDate)
+                .Select(s => s.PasswordHash)
+                .Take(5)
+                .Where(w => passwordhasher.VerifyHashedPassword(user, w, newPassword) != PasswordVerificationResult.Failed).Any())
+                return true;
+            return false;
         }
 
 

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
 using AutoMapper;
 using ERPMVC.Helpers;
@@ -117,6 +118,22 @@ namespace ERPMVC.Controllers
 
         public  void OnReportLoaded(ReportViewerOptions reportOption)
         {
+
+            //Assembly assembly = typeof(ReportViewerController).GetTypeInfo().Assembly;
+            //var resourceName = "ReportSample_core.wwwroot.ReportRDL.ARIALUNI.TTF";
+
+            //if (reportOption.ReportModel.PDFOptions == null)
+            //{
+            //    reportOption.ReportModel.PDFOptions = new Syncfusion.ReportWriter.PDFOptions();
+            //}
+
+            //if (reportOption.ReportModel.PDFOptions.Fonts == null)
+            //{
+            //    reportOption.ReportModel.PDFOptions.Fonts = new Dictionary<string, Stream>(StringComparer.OrdinalIgnoreCase);
+            //}
+
+            //reportOption.ReportModel.PDFOptions.Fonts.Add("Arial", Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName));
+
             var parameters = new List<ReportParameter>();
             if (DefaultParam != null)
             {

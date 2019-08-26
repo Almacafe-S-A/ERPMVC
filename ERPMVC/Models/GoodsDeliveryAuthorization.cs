@@ -24,6 +24,10 @@ namespace ERPMVC.Models
         [Display(Name = "Número de certificado de deposito")]
         public Int64 NoCD { get; set; }
 
+
+        [Display(Name = "Comentarios")]
+        public string Comments { get; set; }
+
         [Display(Name = "Descripción")]
         public string Name { get; set; }
 
@@ -42,9 +46,9 @@ namespace ERPMVC.Models
         public Int64 BankId { get; set; }
         [Display(Name = "Banco")]
         public string BankName { get; set; }
-        [Display(Name = "Producto")]
+        [Display(Name = "Servicio")]
         public Int64 ProductId { get; set; }
-        [Display(Name = "Producto")]
+        [Display(Name = "Servicio")]
         public string ProductName { get; set; }
 
         [Display(Name = "Sucursal")]

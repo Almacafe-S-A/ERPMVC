@@ -15,12 +15,26 @@ namespace ERPMVC.Models
         [Required]
         [Display(Name = "Nombre del cliente")]
         public string CustomerName { get; set; }
+
+        [Display(Name = "Identidad Gerente/Apoderado")]
+        public string IdentidadApoderado { get; set; }
+
+        [Display(Name = "Nombre Gerente/Apoderado")]
+        public string NombreApoderado { get; set; }
+
+        [Display(Name = "Número  de referencia de cliente")]
+        public string CustomerRefNumber { get; set; }
+
         [Required]
         [Display(Name = "RTN del cliente")]
         public string RTN { get; set; }
 
         [Display(Name = "Tipo de cliente")]
         public int CustomerTypeId { get; set; }
+
+        [Display(Name = "Tipo de cliente")]
+        public string CustomerTypeName { get; set; }
+
         [Display(Name = "Dirección")]
         public string Address { get; set; }
         [Display(Name = "Ciudad")]

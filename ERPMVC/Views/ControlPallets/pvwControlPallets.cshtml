@@ -431,29 +431,29 @@
                                                     }
                                                 </script>
                                                 <label asp-for="WeightBallot" class="control-label" style="width: 100%;"></label>
-                                                @(Html.Kendo().DropDownListFor(m=>m.WeightBallot)
-                                                                   //.Name("WeightBallotddl")
-                                                                   .Filter(Kendo.Mvc.UI.FilterType.Contains)
-                                                                   .OptionLabel("Buscar")
-                                                                   .DataTextField("observa_e")
-                                                                   .DataValueField("clave_e")
-                                                                   .HtmlAttributes(new { style = "width:100%" , id= "WeightBallotddl" })
-                                                                   .Height(290)
-                                                                   .Events(e =>
-                                                                   {
-                                                                       e.Change("CallPesaje");
-                                                                       // e.Filtering("applyFilterCustomer");
-                                                                   })
-                                                                   .AutoBind(true)
-                                                                   .DataSource(source =>
-                                                                   {
-                                                                       source.Ajax()
-                                                                       .PageSize(80)
+                                                @(Html.Kendo().DropDownListFor(m => m.WeightBallot)
+                                                                           //.Name("WeightBallotddl")
+                                                                           .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                                                                           .OptionLabel("Buscar")
+                                                                           .DataTextField("observa_e")
+                                                                           .DataValueField("clave_e")
+                                                                           .HtmlAttributes(new { style = "width:100%", id = "WeightBallotddl" })
+                                                                           .Height(290)
+                                                                           .Events(e =>
+                                                                           {
+                                                                               e.Change("CallPesaje");
+                                                                                                               // e.Filtering("applyFilterCustomer");
+                                                                                                           })
+                                                                           .AutoBind(true)
+                                                                           .DataSource(source =>
+                                                                           {
+                                                                               source.Ajax()
+                                                                               .PageSize(80)
 
-                                                                       .Read("Virtualization_Read", "Boleto_Ent");
-                                                                   })
-                                                                   .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapperWB"))
-                                                )                               
+                                                                               .Read("Virtualization_Read", "Boleto_Ent");
+                                                                           })
+                                                                           .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapperWB"))
+                                                )
 
                                                 <span asp-validation-for="SubProductId" class="text-danger"></span>
                                             </div>
@@ -463,7 +463,7 @@
                                                     function GetBoletaPeso() {
 
                                                         var notification = $("#notification").data("kendoNotification");
-                                                        var dataObject = { 'clave_e': $("#WeightBallot").val()};
+                                                        var dataObject = { 'clave_e': $("#WeightBallotddl").val()};
                                                         $.ajax({
                                                             url: '@Url.Action("GetBoleto_EntById", "Boleto_Ent")',
                                                             method: 'GET',
@@ -474,16 +474,18 @@
                                                             success: function (result) {
                                                                 //console.log('Restful API:');
                                                                 // console.log(result);
+                                                               // debugger;
+
                                                                 var resultados = result;
-                                                                var pesobruto = (result.Boleto_Sal.peso_n / 100);
-                                                                setearvalor("QQPesoBruto", pesobruto);
 
-                                                                var tarapolietileno = ($("#TotalSacosPolietileno").val() * 0.5)/100;
-                                                                var tarayute = ($("#TotalSacosYute").val() * 1)/100;
+                                                                var tarapolietileno = ($("#TotalSacosPolietileno").val() * 0.5) / 100;
+                                                                var tarayute = ($("#TotalSacosYute").val() * 1) / 100;
                                                                 var ts = tarapolietileno + tarayute;
-
                                                                 setearvalor("Tara", ts);
-                                                                setearvalor("QQPesoNeto", pesobruto - ts);
+
+                                                                //var pesobruto = (result.Boleto_Sal.peso_n / 100);
+                                                                //setearvalor("QQPesoBruto", pesobruto);
+                                                                //setearvalor("QQPesoNeto", pesobruto - ts);
 
                                                                 $("#Motorista").val(resultados.conductor);
                                                                 $("#Placa").val(resultados.placas);
@@ -595,6 +597,34 @@
                                                 </div>
                                             </div>
 
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <script>
+                                                        function GetBranchId() {
+
+                                                            return { 'BranchId': $("#BranchId").val() }
+                                                        }
+
+                                                    </script>
+                                                    <label asp-for="WarehouseId" class="control-label"></label>
+                                                    <kendo-dropdownlist name="WareHouseId" for="WarehouseId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione Bodega"
+                                                                        cascade-from="BranchId"
+                                                                        required
+                                                                        auto-bind="false"
+                                                                        datatextfield="WarehouseName"
+                                                                        datavaluefield="WarehouseId"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-filtering="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("Get", "Warehouse")" data="GetBranchId" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="WarehouseId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
                                         </div>
 
 
@@ -603,7 +633,7 @@
                                                 <div class="col-md-2">
                                                     <div class="form-group">
                                                         <label asp-for="Motorista" class="control-label" style="width: 100%;"></label>
-                                                        <input type="text" id="Motorista" required class="form-control" style="min-width:100%;" asp-for="Motorista" />
+                                                        <input type="text" id="Motorista" required readonly class="form-control" style="min-width:100%;" asp-for="Motorista" />
                                                     </div>
                                                 </div>
                                                 <div class="col-md-2">
@@ -616,7 +646,7 @@
                                                 <div class="col-md-2">
                                                     <div class="form-group">
                                                         <label asp-for="Placa" class="control-label" style="width: 100%;"></label>
-                                                        <input type="text" id="Placa" required class="form-control" style="min-width:100%;" asp-for="Placa" />
+                                                        <input type="text" id="Placa" required readonly class=" form-control" style="min-width:100%;" asp-for="Placa" />
                                                     </div>
                                                 </div>
                                                 <div class="col-md-2">
@@ -637,6 +667,7 @@
                                                         <kendo-numerictextbox name="EsIngreso"
                                                                               format="n"
                                                                               min="0"
+                                                                              decimals="0"
                                                                               disabled
                                                                               max="99999999"
                                                                               step="1"

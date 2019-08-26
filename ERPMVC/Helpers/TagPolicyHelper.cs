@@ -59,23 +59,35 @@ namespace ERPMVC
     {
         private readonly IAuthorizationService _authService;
         private readonly ClaimsPrincipal _principal;
+        private readonly ILogger _logger;
 
-        public DeshabilitarTagHelper(IAuthorizationService authService, IHttpContextAccessor httpContextAccessor)
+        public DeshabilitarTagHelper(IAuthorizationService authService,  ILogger<DeshabilitarTagHelper> logger, IHttpContextAccessor httpContextAccessor)
         {
             _authService = authService;
             _principal = httpContextAccessor.HttpContext.User;
+            this._logger = logger;
         }
 
         public string deshabilitar { get; set; }
 
         public override async Task ProcessAsync(TagHelperContext context, TagHelperOutput output)
         {
-            // if (!await _authService.AuthorizeAsync(_principal, Policy)) ASP.NET Core 1.x
-           // if(Policy!=null)
-            if (!(await _authService.AuthorizeAsync(_principal, deshabilitar)).Succeeded)
-               output.Attributes.SetAttribute("disabled","disabled");
-               output.Attributes.SetAttribute("class","noclick");
-           
+           try
+            {
+                if (!(await _authService.AuthorizeAsync(_principal, deshabilitar)).Succeeded)
+                {
+                    output.Attributes.SetAttribute("disabled", "disabled");
+                  //  output.Attributes.SetAttribute("class", "noclick");
+                }
+            }
+            catch (Exception ex)
+            {
+                output.Attributes.SetAttribute("disabled", "disabled");
+                //output.SuppressOutput();
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+
+                // throw ex;
+            }
 
         }
     }

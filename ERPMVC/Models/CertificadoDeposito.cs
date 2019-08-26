@@ -33,7 +33,7 @@ namespace ERPMVC.Models
         public Int64 WarehouseId { get; set; }
         [Display(Name = "Bodega")]
         public string WarehouseName { get; set; }
-        [Display(Name = "Tipo Servicio")]
+        [Display(Name = "Servicio")]
         public Int64 ServicioId { get; set; }
 
         [Display(Name = "Servicio")]

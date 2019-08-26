@@ -8,7 +8,7 @@ namespace ERPMVC.Models
 {
     public class ControlPallets
     {
-        [Display(Name = "Estiba Id")]
+        [Display(Name = "Control Ingresos Id")]
         public Int64 ControlPalletsId { get; set; }
         public string Motorista { get; set; }      
 
@@ -26,17 +26,19 @@ namespace ERPMVC.Models
         [Display(Name = "Producto Cliente")]
         public string SubProductName { get; set; }
 
-        [Display(Name = "Producto")]
+        [Display(Name = "Servicio")]
         public Int64 ProductId { get; set; }
         [Display(Name = "Cliente")]
         public Int64 CustomerId { get; set; }
         [Display(Name = "Nombre de Cliente")]
         public string CustomerName { get; set; }
-        [Display(Name = "Descripción de producto")]
+        [Display(Name = "Descripción de servicio")]
         public string DescriptionProduct { get; set; }
         public string Placa { get; set; }
         public string Marca { get; set; }
+        [Display(Name = "Estado")]
         public Int64 IdEstado { get; set; }
+        [Display(Name = "Estado")]
         public string Estado { get; set; }
         [Display(Name = "Estiba No.")]
         public int PalletId { get; set; }        
@@ -45,13 +47,27 @@ namespace ERPMVC.Models
         [Display(Name = "Es Salida")]
         public int EsSalida { get; set; }
         public int SubTotal { get; set; }
+
+        [Display(Name = "Total Sacos")]
         public int TotalSacos { get; set; }
+
+        [Display(Name = "Total Sacos Yute")]
         public int TotalSacosYute { get; set; }
+
+        [Display(Name = "Total sacos polietileno")]
         public int TotalSacosPolietileno { get; set; }
+
+        [Display(Name = "Sacos devueltos")]
         public int SacosDevueltos { get; set; }
+
+        [Display(Name = "QQ Peso Bruto")]
         public double QQPesoBruto { get; set; }
         public double Tara { get; set; }
+
+        [Display(Name = "QQ Peso Neto")]
         public double QQPesoNeto { get; set; }
+
+        [Display(Name = "QQ Peso Final")]
         public double QQPesoFinal { get; set; }
         public DateTime? FechaCreacion { get; set; }
         public DateTime? FechaModificacion { get; set; }
