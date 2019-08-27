@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Reflection;
 using System.Threading.Tasks;
 using AutoMapper;
 using ERPMVC.Helpers;
@@ -24,7 +25,7 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
-    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+   // [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class ReportViewerController : Controller , IReportController
     {
         private IMemoryCache _cache;
@@ -80,6 +81,8 @@ namespace ERPMVC.Controllers
             return ReportHelper.GetResource(resource, this, _cache);
         }
 
+
+
         [HttpPost]
         public object PostFormReportAction()
         {
@@ -108,7 +111,7 @@ namespace ERPMVC.Controllers
             string basePath = _hostingEnvironment.WebRootPath;
             FileStream inputStream = new FileStream(basePath + reportOption.ReportModel.ReportPath, FileMode.Open, FileAccess.Read);
             reportOption.ReportModel.Stream = inputStream;
-
+            reportOption.ReportModel.EmbedImageData = true;
 
 
             //reportOption.ReportModel.ProcessingMode = Syncfusion.EJ.ReportViewer.ProcessingMode.Local;
@@ -117,6 +120,22 @@ namespace ERPMVC.Controllers
 
         public  void OnReportLoaded(ReportViewerOptions reportOption)
         {
+
+            //Assembly assembly = typeof(ReportViewerController).GetTypeInfo().Assembly;
+            //var resourceName = "ReportSample_core.wwwroot.ReportRDL.ARIALUNI.TTF";
+
+            //if (reportOption.ReportModel.PDFOptions == null)
+            //{
+            //    reportOption.ReportModel.PDFOptions = new Syncfusion.ReportWriter.PDFOptions();
+            //}
+
+            //if (reportOption.ReportModel.PDFOptions.Fonts == null)
+            //{
+            //    reportOption.ReportModel.PDFOptions.Fonts = new Dictionary<string, Stream>(StringComparer.OrdinalIgnoreCase);
+            //}
+
+            //reportOption.ReportModel.PDFOptions.Fonts.Add("Arial", Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName));
+
             var parameters = new List<ReportParameter>();
             if (DefaultParam != null)
             {

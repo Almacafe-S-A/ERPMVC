@@ -19,6 +19,13 @@ namespace ERPMVC.Models
         [Display(Name = "Cliente")]
         public string CustomerName { get; set; }
 
+
+        [Display(Name = "País de origen")]
+        public Int64 CountryId { get; set; }
+
+        [Display(Name = "País de origen")]
+        public string CountryName { get; set; }
+
         [Display(Name = "Sucursal")]
         public Int64 BranchId { get; set; }
 
@@ -31,10 +38,10 @@ namespace ERPMVC.Models
         [Display(Name = "Bodega")]
         public string WarehouseName { get; set; }
 
-        [Display(Name = "Producto")]
+        [Display(Name = "Servicio")]
         public Int64 ProductId { get; set; }
 
-        [Display(Name = "Producto")]
+        [Display(Name = "Servicio")]
         public string ProductName { get; set; }
 
         [Display(Name = "Producto Cliente")]

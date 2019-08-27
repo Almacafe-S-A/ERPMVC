@@ -40,7 +40,7 @@ namespace ERPMVC.Models
         public string LogicalCondition { get; set; }
         [Display(Name = "Valor a evaluar")]
         public string ValueToEvaluate { get; set; }
-        [Display(Name = "Valor Decimal")]
+        [Display(Name = "% de comisión")]
         public double ValueDecimal { get; set; }
         [Display(Name = "Valor cadena")]
         public string ValueString { get; set; }

@@ -111,7 +111,7 @@ namespace ERPMVC.Controllers
                                        select new ControlPallets
                                        {
                                            ControlPalletsId = c.ControlPalletsId,
-                                           CustomerName ="Id:"+c.PalletId + " || Nombre:" + c.CustomerName + "|| Fecha: " + c.DocumentDate + " || Total:" + c.TotalSacos,
+                                           CustomerName ="Id:"+c.PalletId + " || Nombre:" + c.CustomerName +" || Placa:"+c.Placa + " || Motorista:"+c.Motorista + " || Fecha: " + c.DocumentDate + " || Total:" + c.TotalSacos,
                                            DocumentDate = c.DocumentDate,
 
                                        }

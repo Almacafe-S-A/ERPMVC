@@ -3,7 +3,8 @@
 @using Syncfusion.JavaScript
 
 <div style=" align-items:center; height:525px;width: 100%;">
-    <ej-report-viewer id="reportviewer1" rendering-begin="renderingBegin" processing-mode="Remote" ajax-before-load="ajaxBeforeLoad" report-service-url="/ReportViewer"  report-loaded="onReportLoaded" report-path="/ReportsTemplate/ControlEstibas.rdl" />
+    <ej-report-viewer id="reportviewer1" rendering-begin="renderingBegin"  processing-mode="Remote" auto-render="true" print-option="NewTab"  print-mode="true"
+  ajax-before-load="ajaxBeforeLoad" report-service-url="/ReportViewer" report-print="onPrintReport"  report-loaded="onReportLoaded" report-path="/ReportsTemplate/ControlEstibas.rdl" />
 </div>
 
 
@@ -30,6 +31,42 @@
         }
         ];
     }
+
+
+    function onPrintReport(args) {
+        var data = $("#reportviewer1").data('ejReportViewer');
+        if (data._browserInfo.name != "msie") {
+            args.printWind.printDelay = 2000 * data._pageModel.TotalPages;
+        }
+    }
+
+    function onPrintProgressChanged(args) {
+        if (args.stage == "beginPrint") {
+            $('#reportviewer1').ejWaitingPopup({ showOnInit: true, cssClass: "customStyle", text: "Preparing print data.. Please wait..." });
+        }
+        if (args.stage == "printStarted") {
+            var popupObj = $('#reportviewer1').data('ejWaitingPopup');
+            popupObj.hide();
+        }
+        else if (args.stage == "preparation") {
+            console.log(args.stage);
+            if (args.preparationStage == "dataPreparation") {
+                console.log(args.preparationStage);
+                console.log(args.totalPages);
+                console.log(args.currentPage);
+                if (args.totalPages > 1 && args.currentPage > 1) {
+                    var progressPercentage = Math.floor((args.currentPage / args.totalPages) * 100);
+                    if (progressPercentage > 0) {
+                        var popupObj = $('#reportviewer1').data('ejWaitingPopup');
+                        popupObj.setModel({ text: "Preparing print data.." + progressPercentage + " % completed.. Please wait..." });
+                    }
+                }
+            }
+        }
+
+        args.handled = true;
+    }
+
 
 </script>
 

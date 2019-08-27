@@ -339,19 +339,26 @@ namespace ERPMVC.Controllers
 
                 document.Save(stream, FormatType.Docx);
                 DocIORenderer render = new DocIORenderer();
-               
-                 PdfDocument pdfDocument = render.ConvertToPDF(document);
+
+                //  document.Save(stream, FormatType.Rtf);
+                //  PdfDocument pdfDocument = render.ConvertToPDF(document);
+                PdfDocument pdfDocument = new PdfDocument();
+                await Task.Run( () =>  {  pdfDocument = render.ConvertToPDF(document); });
                 
-                document.Dispose();
+       
 
                 //using (FileStream file = new FileStream(basePath + "/ContratosTemplate/file.docx", FileMode.Create, System.IO.FileAccess.Write))
                 //    stream.WriteTo(file);
-
+               
                 document.Close();
 
+                render.Dispose();
                 MemoryStream outputStream = new MemoryStream();
 
                 pdfDocument.Save(outputStream);
+
+               
+                document.Dispose();
                 string completepath = basePath + $"/ContratosTemplate/Contrato_Cliente_{_customercontract.CustomerName}_ContratoNumero_{_customercontract.CustomerContractId}.pdf";
 
 

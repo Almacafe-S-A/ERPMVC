@@ -109,11 +109,12 @@ namespace ERPMVC
                       options.Lockout.MaxFailedAccessAttempts = maxfailed;
 
                     
-                      options.Password.RequiredLength = 6;
+                      options.Password.RequiredLength = 9;
                       options.Password.RequiredUniqueChars = 3;
                       options.Password.RequireLowercase = false;
                       options.Password.RequireNonAlphanumeric = false;
                       options.Password.RequireUppercase = true;
+                      
 
                       options.SignIn.RequireConfirmedEmail = false;
                       options.User.RequireUniqueEmail = true;
