@@ -12,11 +12,13 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Display(Name = "Id Linea")]
         public Int64 ControlPalletsLineId { get; set; }
-        [Display(Name = "Id estiba")]
+        [Display(Name = "Id Control")]
         public Int64 ControlPalletsId { get; set; }
         public int Alto { get; set; }
         public int Ancho { get; set; }
         public int Otros { get; set; }
+
+        [Display(Name = "Total de Línea")]
         public double Totallinea { get; set; }
 
         [Display(Name = "Cantidad de Sacos Yute")]
@@ -24,9 +26,14 @@ namespace ERPMVC.Models
 
         [Display(Name = "Cantidad de Sacos de Polietileno")]
         public int cantidadPoliEtileno { get; set; }
+        [Display(Name = "Fecha de creación")]
         public DateTime? FechaCreacion { get; set; }
+        [Display(Name = "Fecha de modificación")]
         public DateTime? FechaModificacion { get; set; }
+        [Display(Name = "Usuario de creación")]
         public string UsuarioCreacion { get; set; }
+
+        [Display(Name = "Usuario de modificación")]
         public string UsuarioModificacion { get; set; }
 
     }

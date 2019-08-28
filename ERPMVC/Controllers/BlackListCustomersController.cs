@@ -35,7 +35,12 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-      
+
+        public IActionResult BlackListFind()
+        {
+            return PartialView();
+        }
+
 
 
         [HttpGet]

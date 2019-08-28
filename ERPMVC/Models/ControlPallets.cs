@@ -8,7 +8,7 @@ namespace ERPMVC.Models
 {
     public class ControlPallets
     {
-        [Display(Name = "Control Ingresos Id")]
+        [Display(Name = "Control Id")]
         public Int64 ControlPalletsId { get; set; }
         public string Motorista { get; set; }      
 
@@ -69,15 +69,26 @@ namespace ERPMVC.Models
 
         [Display(Name = "QQ Peso Final")]
         public double QQPesoFinal { get; set; }
+        [Display(Name = "Fecha de creación")]
         public DateTime? FechaCreacion { get; set; }
+        [Display(Name = "Fecha de modificación")]
         public DateTime? FechaModificacion { get; set; }
+        [Display(Name = "Usuario de creación")]
         public string UsuarioCreacion { get; set; }
+
+        [Display(Name = "Fecha de modificación")]
         public string UsuarioModificacion { get; set; }
 
         public string Impreso { get; set; }
 
         [Display(Name = "Boleta de peso")]
         public Int64 WeightBallot { get; set; }
+
+        [Display(Name = "Unidad de medida")]
+        public Int64 UnitOfMeasureId { get; set; }
+
+        [Display(Name = "Unidad de medida")]
+        public string UnitOfMeasureName { get; set; }
 
         [Display(Name = "Id Autorización")]
         public Int64 GoodsDeliveryAuthorizationId { get; set; }

@@ -111,7 +111,8 @@ namespace ERPMVC.Controllers
                                        select new ControlPallets
                                        {
                                            ControlPalletsId = c.ControlPalletsId,
-                                           CustomerName ="Id:"+c.PalletId + " || Nombre:" + c.CustomerName +" || Placa:"+c.Placa + " || Motorista:"+c.Motorista + " || Fecha: " + c.DocumentDate + " || Total:" + c.TotalSacos,
+                                           CustomerName ="Id:"+c.ControlPalletsId +" || Control de ingresos:"+c.PalletId 
+                                              + " || Nombre:" + c.CustomerName +" || Placa:"+c.Placa + " || Motorista:"+c.Motorista + " || Fecha: " + c.DocumentDate + " || Total:" + c.TotalSacos,
                                            DocumentDate = c.DocumentDate,
 
                                        }
@@ -148,6 +149,70 @@ namespace ERPMVC.Controllers
                 {
                     _ControlPallets = new ControlPallets();
                 }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_ControlPallets);
+        }
+
+
+        public async Task<ActionResult> GetControlPalletsByIdCalculo(Int64 Id)
+        {
+            ControlPalletsDTO _ControlPallets = new ControlPalletsDTO();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPalletsById/" + Id);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _ControlPallets = JsonConvert.DeserializeObject<ControlPalletsDTO>(valorrespuesta);
+                }
+
+
+                if (_ControlPallets == null)
+                {
+                    _ControlPallets = new ControlPalletsDTO();
+                }
+
+                _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                result = await _client.GetAsync(baseadress + "api/Boleto_Ent/GetBoleto_EntById/"+ _ControlPallets.WeightBallot);
+                valorrespuesta = "";
+                Boleto_Ent _Boleto_Ent = new Boleto_Ent();
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Boleto_Ent = JsonConvert.DeserializeObject<Boleto_Ent>(valorrespuesta);
+                }
+
+                                
+                if(_Boleto_Ent.peso_e > _Boleto_Ent.Boleto_Sal.peso_n)
+                {
+                    _ControlPallets.taracamion = (_Boleto_Ent.peso_e - _Boleto_Ent.Boleto_Sal.peso_n)/100;
+                }
+                else if (_Boleto_Ent.peso_e < _Boleto_Ent.Boleto_Sal.peso_n)
+                {
+                    _ControlPallets.taracamion = (_Boleto_Ent.peso_e)/100 ;
+                }
+
+                _ControlPallets.pesobruto = _Boleto_Ent.peso_e / 100;
+
+                _ControlPallets.pesoneto = _ControlPallets.pesobruto - _ControlPallets.taracamion;
+
+              
+               double yute =  ( _ControlPallets.TotalSacosYute * 1)/100;
+               double polietileno = (_ControlPallets.TotalSacosPolietileno * 0.5) / 100;
+
+               _ControlPallets.pesoneto2 = _ControlPallets.pesoneto - (yute+polietileno);
+
             }
             catch (Exception ex)
             {
