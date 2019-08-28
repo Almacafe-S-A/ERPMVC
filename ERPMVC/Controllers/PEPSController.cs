@@ -35,6 +35,11 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        public IActionResult PEPSFind()
+        {
+            return View();
+        }
+
         [HttpPost("[action]")]
         public async Task<ActionResult> pvwAddPEPS([FromBody]PESPDTO _sarpara)
         {

@@ -64,5 +64,11 @@ namespace ERPMVC.Controllers
         }
 
 
+        public IActionResult ONULISTFind()
+        {
+            return PartialView();
+        }
+
+
     }
 }

@@ -65,5 +65,13 @@ namespace ERPMVC.Controllers
         }
 
 
+        public IActionResult Index()
+        {
+            return PartialView();
+        }
+
+
+
+
     }
 }
