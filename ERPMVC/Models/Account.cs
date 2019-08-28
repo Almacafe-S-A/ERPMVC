@@ -13,7 +13,7 @@ namespace ERPMVC.Models
         [Display(Name = "Id")]
         public Int64 AccountId { get; set; }
         [Display(Name = "Id Jerarquia Contable")]
-        public int? ParentAccountId { get; set; }
+        public Int64 ParentAccountId { get; set; }
         [Display(Name = "Id de la Empresa")]
         public Int64 CompanyInfoId { get; set; }
         [Required]
