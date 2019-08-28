@@ -24,17 +24,16 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public AccountingController(ILogger<AccountingController> logger, IOptions<MyConfig> config)
+        public AccountingController(ILogger<HomeController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
         }
         // GET: Accounting
-        public ActionResult Accounting()
+        public ActionResult Index()
         {
             return View();
         }
-
         [HttpGet("[action]")]
         public async Task<JsonResult> GetAccount([DataSourceRequest]DataSourceRequest request)
         {
@@ -96,44 +95,11 @@ namespace ERPMVC.Controllers
             return Json(_customers.ToDataSourceResult(request));
 
         }
-        [HttpGet("[controller]/[action]")]
-        public async Task<ActionResult> GetAccountClass([DataSourceRequest]DataSourceRequest request)
+
+
+        public async Task<ActionResult<Account>> SaveAccounting([FromBody]AccountDTO _Accounting)
         {
-            List<AccountClass> _clientes = new List<AccountClass>();
-            try
-            {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Account/GetEnumClass" );
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _clientes = JsonConvert.DeserializeObject<List<AccountClass>>(valorrespuesta);
-                }
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-            //  JsonSerializerSettings settings = new JsonSerializerSettings();
-            //  settings.Formatting = Formatting.Indented;
-            //  settings.TypeNameHandling = TypeNameHandling.Auto;
-            //settingall
-            // return Json(new { _clientes });
-
-
-
-            return Json(_clientes.ToDataSourceResult(request));
-        }   
-
-        public async Task<ActionResult<Account>> SaveAccounting([FromBody]AccountDTO _AccountP)
-        {
-            Account _Account = _AccountP;
+            Account _Account = _Accounting;
             try
             {
                 Account _listAccount = new Account();
@@ -153,17 +119,17 @@ namespace ERPMVC.Controllers
 
                 if (_Account == null) { _Account = new Models.Account(); }
 
-                if (_AccountP.AccountId == 0)
+                if (_Accounting.AccountId == 0)
                 {
                     _Account.FechaCreacion = DateTime.Now;
                     _Account.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_AccountP);
+                    var insertresult = await Insert(_Accounting);
                 }
                 else
                 {
-                    _AccountP.UsuarioCreacion = _Account.UsuarioCreacion;
-                    _AccountP.FechaCreacion = _Account.FechaCreacion;
-                    var updateresult = await Update(_Account.AccountId, _AccountP);
+                    _Accounting.UsuarioCreacion = _Account.UsuarioCreacion;
+                    _Accounting.FechaCreacion = _Account.FechaCreacion;
+                    var updateresult = await Update(_Account.AccountId, _Accounting);
                 }
 
             }
@@ -173,12 +139,12 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_AccountP);
+            return Json(_Accounting);
         }
-
+        
 
         [HttpPost("[action]")]
-        public async Task<ActionResult> pvwAddAccount([FromBody]AccountDTO _sarpara)
+        public async Task<ActionResult> pvwAddAccounting([FromBody]AccountDTO _sarpara)
         {
             AccountDTO _Account = new AccountDTO();
             try
@@ -269,7 +235,6 @@ namespace ERPMVC.Controllers
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _Account }, Total = 1 });
         }
-
-
+       
     }
 }
