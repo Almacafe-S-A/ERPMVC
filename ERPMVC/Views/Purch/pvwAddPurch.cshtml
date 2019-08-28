@@ -19,13 +19,21 @@
     //$('#btnprueba').val("");
 </script>
 
-@await Html.PartialAsync("~/Views/OFAC/Index.cshtml")
+<div id="divPEPSFind">
+    @await Html.PartialAsync("~/Views/PEPS/PEPSFind.cshtml")
+</div>
 
-@await Html.PartialAsync("~/Views/PEPS/PEPSFind.cshtml")
+<div id="divBlackListFind">
+    @await Html.PartialAsync("~/Views/BlackListCustomers/BlackListFind.cshtml")
+</div>
 
-@await Html.PartialAsync("~/Views/BlackListCustomers/BlackListFind.cshtml")
+<div id="divONULISTFind">
+    @await Html.PartialAsync("~/Views/ONU/ONULISTFind.cshtml")
+</div>
 
-@await Html.PartialAsync("~/Views/ONU/ONULISTFind.cshtml")
+<div id="divOFACFind">
+    @await Html.PartialAsync("~/Views/OFAC/Index.cshtml")
+</div>
 
 
 
@@ -72,11 +80,11 @@
                                                     <label asp-for="PurchName" class="control-label" style="width:100%"></label>
                                                     <span>
                                                         <input asp-for="PurchName" required class="form-control form-control-line" onchange="RefreshOFAC();" style="min-width: 80%" />
-                                                        @*<button type="button" onclick="return RefreshOFAC();" class="k-button k-primary"><i class="fa fa-search"></i>LISTADOS</button>*@
+                                                        <button type="button" onclick="return RefreshOFAC();" class="k-button k-primary"><i class="fa fa-search"></i>LISTADOS</button>
                                                     </span>
                                                     <span asp-validation-for="PurchName" class="text-danger"></span>
 
-                                                   </div>
+                                                </div>
                                             </div>
 
 
@@ -194,8 +202,17 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="QtyMin" class=" control-label" style="width:100%"></label>
-                                                    <input type="text" asp-for="QtyMin" name="QtyMin" class="form-control" style="width:100%" />
+                                                    <kendo-numerictextbox name="QtyMin"
+                                                                          format="n2" spinners="false"
+                                                                          min="0"
+                                                                         
+                                                                          required class="control-label right bold"
+                                                                          style="width: 100%;text-align:right;padding-right: 3px"
+                                                                          max="999999999"
+                                                                          step="1"
+                                                                          value="Model.QtyMin"></kendo-numerictextbox>
                                                     <span asp-validation-for="QtyMin" class="text-danger"></span>
+
                                                 </div>
                                             </div>
                                         </div>
@@ -203,21 +220,30 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="QtyMonth" class=" control-label" style="width:100%"></label>
-                                                    <input type="text" asp-for="QtyMonth" name="QtyMonth" class="form-control" style="width:100%" />
+                                                     <kendo-numerictextbox name="QtyMonth"
+                                                                          format="n2" spinners="false"
+                                                                          min="0"
+                                                                         
+                                                                          required class="control-label right bold"
+                                                                          style="width: 100%;text-align:right;padding-right: 3px"
+                                                                          max="999999999"
+                                                                          step="1"
+                                                                          value="Model.QtyMonth"></kendo-numerictextbox>
                                                     <span asp-validation-for="QtyMonth" class="text-danger"></span>
+
                                                 </div>
                                             </div>
                                         </div>
-                                            <div class="row">
-                                                <div class="col-md-12">
-                                                    <button id="btnPurch" class="form-control btn-miboton" type="submit"> Guardar </button>
-                                                </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button id="btnPurch" class="form-control btn-miboton" type="submit"> Guardar </button>
                                             </div>
-
-
-
                                         </div>
-</form>
+
+
+
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -240,43 +266,89 @@
            // e.preventDefault();
         $("#btnPurch").hide();
         $("#btnPurch").prop("disabled", true);
+        RefreshOFAC();
+        var validadetalle = true;
 
         var displayedData = $("#gridNumeracionPurch").data().kendoGrid.dataSource.view();
+        var listadoenqueaparece = "";
+        var gridListaOFAC = $("#gridListaOFAC").data().kendoGrid.dataSource.data();
+        var gridListaPEPS = $("#gridListaPEPS").data().kendoGrid.dataSource.data();
+        var gridListaNegra = $("#gridListaNegra").data().kendoGrid.dataSource.data();
+        var gridListaONU = $("#gridListaONU").data().kendoGrid.dataSource.data();
+        debugger;
+        var confirmaexpecion = false;
 
-        var dataObject = {
-            'PurchId': $("#PurchId").val(),
-            'PurchName': $("#PurchName").val(),
-            'PurchCode': $("#PurchCode").val(),
-            'RTN': $("#RTN").val(),
-            'City': $("#City").val(),
-            'Address': $("#Address").val(),
-            'State': $("#State").val(),
-            'Phone': $("#Phone").val(),
-            'Identidad': $("#Identidad").val(),
-            'Email': $("#Email").val(),
-            'ContactPerson': $("#ContactPerson").val(),
-            'IdEstado': $("#IdEstado").val(),
-            'Estado': $("#IdEstado").data("kendoDropDownList").text(),
-            'CompanyReferenceone': $("#CompanyReferenceone").val(),
-            'CompanyReferencetwo': $("#CompanyReferencetwo").val(),
-            'QtyMin': $("#QtyMin").val(),
-            'QtyMonth': $("#QtyMonth").val(),
-            'CreatedDate': $("#CreatedDate").val(),
+        if (
+            gridListaPEPS.length > 0
+
+        )
+        {
+            if (confirm("¿Desea crear una excepción para este Proveedor y enviar a aprobación?, esto notificara a Gerencia")) {
+                validadetalle = true;
+                confirmaexpecion = true;
+                Estado = 'Enviada a Aprobacion'
+                listadoenqueaparece += gridListaPEPS.length > 0 ? "PEPS" : "";
+            }
+            else {
+                validadetalle = false;
+                notification.show(
+                {
+                    title: "Validación",
+                    message: "No puede guardar este para este Proveedor ya que aparece en los listados!"
+                }, "error");
+            }
+
+        }
+        else if (gridListaOFAC.length > 0
+            || gridListaNegra.length > 0
+            || gridListaONU.length > 0
+                        )
+              {
+                    listadoenqueaparece += gridListaOFAC.length > 0 ? "OFAC" : "";
+                    listadoenqueaparece += gridListaNegra.length > 0 ? "ListaNegra" : "";
+                    listadoenqueaparece += gridListaONU.length > 0 ? "ListadoONU" : "";
+
+
+                    validadetalle = true;
+                   
+                    notification.show({
+                        title: "Validación",
+                        message: "Esta Proveedor se muestra como estado rechazado!"
+                    }, "error");
+
+        }
+        if (validadetalle) {
+            var dataObject = {
+                'PurchId': $("#PurchId").val(),
+                'PurchName': $("#PurchName").val(),
+                'PurchCode': $("#PurchCode").val(),
+                'RTN': $("#RTN").val(),
+                'City': $("#City").val(),
+                'Address': $("#Address").val(),
+                'State': $("#State").val(),
+                'Phone': $("#Phone").val(),
+                'Identidad': $("#Identidad").val(),
+                'Email': $("#Email").val(),
+                'ContactPerson': $("#ContactPerson").val(),
+                'IdEstado': $("#IdEstado").val(),
+                'Estado': $("#IdEstado").data("kendoDropDownList").text(),
+                'CompanyReferenceone': $("#CompanyReferenceone").val(),
+                'CompanyReferencetwo': $("#CompanyReferencetwo").val(),
+                'QtyMin': $("#QtyMin").val(),
+                'QtyMonth': $("#QtyMonth").val(),
+                'CreatedDate': $("#CreatedDate").val(),
                 'ModifiedDate': $("#ModifiedDate").val(),
                 'CreatedUser': $("#CreatedUser").val(),
                 'ModifiedUser': $("#ModifiedUser").val(),
-            '_Purch': displayedData
+                '_Purch': displayedData
             };
 
            // console.log(JSON.stringify(dataObject));
             //var form = $("#frmNumeracion");
            // form.validate();
-
-        var validator = $("#frmPurch").data("kendoValidator");
-                 var status = $(".status");
-
-
-                if (validator.validate()) {
+            var validator = $("#frmPurch").data("kendoValidator");
+            var status = $(".status");
+            if (validator.validate()) {
 
                     $.ajax({
                         url: '@Url.Action("SavePurch", "Purch")',
@@ -317,15 +389,24 @@
                     });
 
                 }
-                else {
-                    status.text("Oops! There is invalid data in the form.")
+            else {
+                $("#btnPurch").show();
+                $("#btnPurch").prop("disabled", false);
+                    status.text("Oops! Hay datos invalidos en el formulario.")
                         .removeClass("valid")
                         .addClass("invalid");
                 }
 
 
-        $("#btnPurch").show();
-        $("#btnPurch").prop("disabled", false);
+
+        } else
+        {
+            $("#btnSaveCotizacion").show();
+            $("#btnSaveCotizacion").prop("disabled", false);
+
+        }
+
+       
     }
 </script>
 
