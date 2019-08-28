@@ -13,7 +13,7 @@ namespace ERPMVC.Models
         [Display(Name = "Id")]
         public Int64 AccountId { get; set; }
         [Display(Name = "Id Jerarquia Contable")]
-        public Int64 ParentAccountId { get; set; }
+        public int? ParentAccountId { get; set; }
         [Display(Name = "Id de la Empresa")]
         public Int64 CompanyInfoId { get; set; }
         [Required]
@@ -63,38 +63,13 @@ namespace ERPMVC.Models
 
         public virtual CompanyInfo Company { get; set; }
 
-        public virtual ICollection<Account> ChildAccounts { get; set; }
+      //  public virtual ICollection<Account> ChildAccounts { get; set; }
 
-        [NotMapped]
-        public virtual ICollection<MainContraAccount> ContraAccounts { get; set; }
-        public virtual ICollection<GeneralLedgerLine> GeneralLedgerLines { get; set; }
+       // [NotMapped]
+       // public virtual ICollection<MainContraAccount> ContraAccounts { get; set; }
+       // public virtual ICollection<GeneralLedgerLine> GeneralLedgerLines { get; set; }
 
-        public decimal GetBalance()
-        {
-            decimal balance = 0;
-
-            var dr = from d in GeneralLedgerLines
-                     where d.DrCr == 1
-                     select d;
-
-            var cr = from c in GeneralLedgerLines
-                     where c.DrCr == 2
-                     select c;
-
-            decimal drAmount = dr.Sum(d => d.Amount);
-            decimal crAmount = cr.Sum(c => c.Amount);
-
-            if (AccountClass.NormalBalance == "Dr")
-            {
-                balance = drAmount - crAmount;
-            }
-            else
-            {
-                balance = crAmount - drAmount;
-            }
-
-            return balance;
-        }
+      
     }
 
 }

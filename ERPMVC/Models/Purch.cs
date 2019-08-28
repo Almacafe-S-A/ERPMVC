@@ -38,7 +38,10 @@ namespace ERPMVC.Models
         public string State { get; set; }
         [Display(Name = "Zip Code")]
         public string ZipCode { get; set; }
-
+        [Display(Name = "Monto Minimo")]
+        public double QtyMin { get; set; }
+        [Display(Name = "Monto Mensual")]
+        public double QtyMonth { get; set; }
         [Display(Name = "Telefono")]
         public string Phone { get; set; }
 
