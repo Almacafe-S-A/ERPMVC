@@ -217,13 +217,13 @@ namespace ERPMVC.Controllers
         //}
 
 
-        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request,Int32 ingreso=0)
+        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request, Customer _customerp)
         {
-            var res = await GetBoletaEntrada(ingreso);
+            var res = await GetBoletaEntrada(_customerp);
             return Json(res.ToDataSourceResult(request));
         }
 
-        public async Task<ActionResult> Orders_ValueMapper(Int64[] values,Int32 idingreso)
+        public async Task<ActionResult> Orders_ValueMapper(Int64[] values, Customer _customerp)
         {
             var indices = new List<Int64>();
 
@@ -231,7 +231,7 @@ namespace ERPMVC.Controllers
             {
                 var index = 0;
 
-                foreach (var order in await GetBoletaEntrada(idingreso))
+                foreach (var order in await GetBoletaEntrada(_customerp))
                 {
                     if (values.Contains(order.clave_e))
                     {
@@ -245,7 +245,7 @@ namespace ERPMVC.Controllers
             return Json(indices);
         }
 
-        private async Task<List<Boleto_Ent>> GetBoletaEntrada(Int32 ingreso)
+        private async Task<List<Boleto_Ent>> GetBoletaEntrada(Customer _customerp)
         {
             List<Boleto_Ent> _Boleto_Ent = new List<Boleto_Ent>();
 
@@ -259,37 +259,60 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-
                     _Boleto_Ent = JsonConvert.DeserializeObject<List<Boleto_Ent>>(valorrespuesta);
 
-                    if (ingreso == 1)
+                    Customer _customer = new Customer();
+
+                    _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    result = await _client.GetAsync(baseadress + "api/Customer/GetCustomerById/"+ _customerp.CustomerId);
+                    valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
                     {
-                        //Boleto_Sal.peso_s > resultados.peso_e
-                        _Boleto_Ent = (from c in _Boleto_Ent
-                                      // .Where(q => q.Boleto_Sal.peso_s < q.peso_e)
-                                       .Where(q=>q.Boleto_Sal !=null)
-                                       .OrderByDescending(q => q.clave_e)
-                                       select new Boleto_Ent
-                                       {
-                                           clave_e = c.clave_e,
-                                           observa_e = "Placas:" + c.placas + " ||Boleta de peso No.:" + c.clave_e + "  || Conductor:" + c.conductor + "|| Fecha:" + c.fecha_e + "|| Hora:" + c.hora_e,
-                                           //CustomerId = c.CustomerId,
-                                       }).ToList();
-                    }
-                    else
-                    {
-                        _Boleto_Ent = (from c in _Boleto_Ent                             
-                                 .Where(q => q.Boleto_Sal.peso_s > q.peso_e)
-                               .OrderByDescending(q => q.clave_e)
-                                       select new Boleto_Ent
-                                       {
-                                           clave_e = c.clave_e,
-                                           observa_e = "Placas:" + c.placas + " ||Boleta de peso No.:" + c.clave_e + "  || Conductor:" + c.conductor + "|| Fecha:" + c.fecha_e + "|| Hora:" + c.hora_e,
-                                           //CustomerId = c.CustomerId,
-                                       }).ToList();
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _customer = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
                     }
 
-            
+                    if (_customer != null)
+                    {
+                        if (_customerp.CustomerTypeId == 1)
+                        {
+                            //Boleto_Sal.peso_s > resultados.peso_e
+                            _Boleto_Ent = (from c in _Boleto_Ent
+                                           .Where(q => q.clave_C == _customer.CustomerRefNumber)
+                                           .Where(q => q.Boleto_Sal != null)
+                                           .OrderByDescending(q => q.clave_e)
+                                           select new Boleto_Ent
+                                           {
+                                               clave_e = c.clave_e,
+                                               observa_e = "Placas:" + c.placas + " || Boleta de peso No.:" + c.clave_e + "  || Conductor:" + c.conductor + "|| Fecha:" + c.fecha_e + "|| Hora:" + c.hora_e,
+                                               Boleto_Sal = c.Boleto_Sal,
+                                               peso_e = c.peso_e
+                                               //CustomerId = c.CustomerId,
+                                           }).ToList();
+
+                            _Boleto_Ent = _Boleto_Ent.Where(q => q.Boleto_Sal.peso_s < q.peso_e).ToList();
+                        }
+                        else
+                        {
+                            _Boleto_Ent = (from c in _Boleto_Ent
+                                           .Where(q => q.Boleto_Sal != null)
+                                            .Where(q => q.clave_C == _customer.CustomerRefNumber)
+                                             //.Where(q => q.Boleto_Sal.peso_s > q.peso_e)
+                                             .OrderByDescending(q => q.clave_e)
+                                           select new Boleto_Ent
+                                           {
+                                               clave_e = c.clave_e,
+                                               observa_e = "Placas:" + c.placas + " || Boleta de peso No.:" + c.clave_e + "  || Conductor:" + c.conductor + "|| Fecha:" + c.fecha_e + "|| Hora:" + c.hora_e,
+                                               Boleto_Sal = c.Boleto_Sal,
+                                               peso_e = c.peso_e
+                                               //CustomerId = c.CustomerId,
+                                           }).ToList();
+
+                            _Boleto_Ent = _Boleto_Ent.Where(q => q.Boleto_Sal.peso_s > q.peso_e).ToList();
+                        }
+                    }
+
                 }
             }
             catch (Exception ex)

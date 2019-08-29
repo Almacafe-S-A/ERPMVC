@@ -15,6 +15,9 @@ namespace ERPMVC.Models
         [Display(Name = "Sucursal")]
         public Int64 BranchId { get; set; }
 
+        [Display(Name = "Sucursal")]
+        public string BranchName { get; set; }
+
         [Display(Name = "Bodega")]
         public int WarehouseId { get; set; }
         [Display(Name = "Fecha control de estiba")]
@@ -28,6 +31,10 @@ namespace ERPMVC.Models
 
         [Display(Name = "Servicio")]
         public Int64 ProductId { get; set; }
+
+        [Display(Name = "Producto")]
+        public string ProductName { get; set; }
+
         [Display(Name = "Cliente")]
         public Int64 CustomerId { get; set; }
         [Display(Name = "Nombre de Cliente")]

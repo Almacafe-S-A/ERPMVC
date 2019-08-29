@@ -207,7 +207,9 @@ namespace ERPMVC.Controllers
 
                 _ControlPallets.pesoneto = _ControlPallets.pesobruto - _ControlPallets.taracamion;
 
-              
+                _ControlPallets._Boleto_Ent = _Boleto_Ent;
+
+
                double yute =  ( _ControlPallets.TotalSacosYute * 1)/100;
                double polietileno = (_ControlPallets.TotalSacosPolietileno * 0.5) / 100;
 
