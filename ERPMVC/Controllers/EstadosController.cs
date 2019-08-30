@@ -38,6 +38,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> pvwAddEstado([FromBody]EstadoDTO _sarpara)
         {
             

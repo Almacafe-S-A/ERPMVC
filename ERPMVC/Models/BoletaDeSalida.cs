@@ -19,6 +19,9 @@ namespace ERPMVC.Models
         [Display(Name = "A/R No.")]
         public Int64 GoodsDeliveryAuthorizationId { get; set; }
 
+        [Display(Name = "R/M No.")]
+        public Int64 GoodsReceivedId { get; set; }
+
         [Display(Name = "Sr. Vigilante")]
         public string Vigilante { get; set; }
 

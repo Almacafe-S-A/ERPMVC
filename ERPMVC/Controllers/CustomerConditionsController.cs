@@ -300,8 +300,8 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerConditions }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult<CustomerConditions>> Delete([FromBody]CustomerConditions _CustomerConditions)
+        [HttpPost]
+        public async Task<ActionResult<CustomerConditions>> Delete(Int64 CustomerConditionId, CustomerConditions _CustomerConditions)
         {
             try
             {

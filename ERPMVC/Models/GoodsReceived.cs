@@ -88,6 +88,10 @@ namespace ERPMVC.Models
 
         [Display(Name = "Tara de transporte")]
         public double TaraTransporte { get; set; }
+
+        [Display(Name = "Tara de camión")]
+        public double TaraCamion { get; set; }
+
         [Display(Name = "Peso neto")]
         public double PesoNeto { get; set; }
         [Display(Name = "Tara unidad de medida")]
