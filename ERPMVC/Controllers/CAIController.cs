@@ -52,7 +52,8 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                  _cais  = JsonConvert.DeserializeObject<List<CAI>>(valorrespuesta);
+                   _cais  = JsonConvert.DeserializeObject<List<CAI>>(valorrespuesta);
+                   _cais = _cais.OrderByDescending(q => q.IdCAI).ToList();
 
                 }
 

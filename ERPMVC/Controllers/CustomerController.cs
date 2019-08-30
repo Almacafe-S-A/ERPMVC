@@ -323,13 +323,28 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 _customer.UsuarioCreacion = HttpContext.Session.GetString("user");
                 _customer.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Customer/Insert", _customer);
+
+                var result = await _client.GetAsync(baseadress + "api/Customer/GetCustomerByRTN/"+ _customer.RTN);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _customer = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
+                    string error = await result.Content.ReadAsStringAsync();
+                    return this.Json(new DataSourceResult
+                    {
+                        Errors = $"El RTN del cliente ya existe!"
+                    });
+                   // return await Task.Run(() => BadRequest("El RTN del cliente ya existe"));
+                }
+                else
+                {
+                    result = await _client.PostAsJsonAsync(baseadress + "api/Customer/Insert", _customer);
+                    valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _customer = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
 
+                    }
                 }
 
             }
