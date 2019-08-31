@@ -62,7 +62,7 @@ namespace ERPMVC
                 // Set a short timeout for easy testing.
                 options.IdleTimeout = TimeSpan.FromMinutes(30);
                 //options.IdleTimeout = TimeSpan.FromSeconds(20);
-               // options.Cookie.HttpOnly = true;
+                // options.Cookie.HttpOnly = true;
                 // Make the session cookie essential
                 options.Cookie.IsEssential = true;
             });
@@ -85,7 +85,7 @@ namespace ERPMVC
                 options.MinimumSameSitePolicy = SameSiteMode.None;
             });
 
-              services.Configure<MyConfig>(Configuration.GetSection("AppSettings"));
+            services.Configure<MyConfig>(Configuration.GetSection("AppSettings"));
 
             var client = new SmtpClient();
             client.Credentials = new NetworkCredential("erp@almacafehn.com", "Almacafe09");
@@ -101,27 +101,31 @@ namespace ERPMVC
             services.AddScoped<ViewRender, ViewRender>();
 
             var value = (GetQuantityFailedRequest().Result as Int32?);
-            int maxfailed =  value==null?3:value.Value ;
+            int maxfailed = value == null ? 3 : value.Value;
 
-                services.AddIdentity<ApplicationUser, ApplicationRole>(
-                  options =>
-                  {
-                      options.Lockout.MaxFailedAccessAttempts = maxfailed;
 
-                    
-                      options.Password.RequiredLength = 9;
-                      options.Password.RequiredUniqueChars = 3;
-                      options.Password.RequireLowercase = false;
-                      options.Password.RequireNonAlphanumeric = false;
-                      options.Password.RequireUppercase = true;
-                      
+            var valuecaracteresminimos = (GetCaracteresMinimos().Result as Int32?);
+            int caracteresminimos = valuecaracteresminimos == null ? 8 : valuecaracteresminimos.Value;
 
-                      options.SignIn.RequireConfirmedEmail = false;
-                      options.User.RequireUniqueEmail = true;
 
-                  })
-                  .AddEntityFrameworkStores<ApplicationDbContext>()
-                  .AddDefaultTokenProviders();
+            services.AddIdentity<ApplicationUser, ApplicationRole>(
+              options =>
+              {
+                  options.Lockout.MaxFailedAccessAttempts = maxfailed;
+
+                  options.Password.RequiredLength = caracteresminimos;
+                  options.Password.RequiredUniqueChars = 3;
+                  options.Password.RequireLowercase = false;
+                  options.Password.RequireNonAlphanumeric = false;
+                  options.Password.RequireUppercase = true;
+
+
+                  options.SignIn.RequireConfirmedEmail = false;
+                  options.User.RequireUniqueEmail = true;
+
+              })
+              .AddEntityFrameworkStores<ApplicationDbContext>()
+              .AddDefaultTokenProviders();
 
             //services.AddScoped<Filters.SessionsAuthorizationFilter>();
 
@@ -140,8 +144,8 @@ namespace ERPMVC
                             //  .WithMethods("GET")
                             //  .WithOrigins("http://localhost:9200");
                             .AllowCredentials();
-                      
-                  }));
+
+            }));
 
 
             services.AddMvc(config =>
@@ -205,6 +209,42 @@ namespace ERPMVC
                 maxaccess = 0;
             }
            
+
+            return maxaccess;
+
+        }
+
+
+        private async Task<int> GetCaracteresMinimos()
+        {
+            int maxaccess = 0;
+            try
+            {
+                var config = Configuration.GetSection("AppSettings").Get<MyConfig>();
+                string baseadress = config.urlbase;
+                HttpClient _client = new HttpClient();
+                var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = config.UserEmail, Password = config.UserPassword });
+                if (resultlogin.IsSuccessStatusCode)
+                {
+                    string webtoken = await (resultlogin.Content.ReadAsStringAsync());
+                    UserToken _userToken = JsonConvert.DeserializeObject<UserToken>(webtoken);
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + _userToken.Token);
+                    var result = await _client.GetAsync(baseadress + "api/ElementoConfiguracion/GetElementoConfiguracionById/" + 21);
+                    //string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        string res = await result.Content.ReadAsStringAsync();
+                        ElementoConfiguracion _elc = JsonConvert.DeserializeObject<ElementoConfiguracion>(res);
+                        if (_elc == null) { _elc = new ElementoConfiguracion { Valordecimal = 0 }; }
+                        maxaccess = Convert.ToInt32(_elc.Valordecimal);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                maxaccess = 0;
+            }
+
 
             return maxaccess;
 

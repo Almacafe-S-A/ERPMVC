@@ -13,7 +13,7 @@ namespace ERPMVC.Models
         [Display(Name = "Id Cliente")]
         public Int64 CustomerId { get; set; }
         [Required]
-        [Display(Name = "Nombre del cliente")]
+        [Display(Name = "Razón o denominación social ")]
         public string CustomerName { get; set; }
 
         [Display(Name = "Identidad Gerente/Apoderado")]

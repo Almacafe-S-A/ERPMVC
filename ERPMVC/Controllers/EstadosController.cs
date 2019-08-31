@@ -38,6 +38,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> pvwAddEstado([FromBody]EstadoDTO _sarpara)
         {
             
@@ -95,7 +96,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Estados = JsonConvert.DeserializeObject<List<Estados>>(valorrespuesta);
-
+                    _Estados = _Estados.OrderByDescending(q => q.IdEstado).ToList();
                 }
 
 

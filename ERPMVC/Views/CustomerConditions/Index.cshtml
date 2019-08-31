@@ -28,18 +28,74 @@
         seteardropdowns("ProductId_CC", $("#ProductId").val());
         seteardropdowns("IdTipoDocumento", 12 );
         seteardropdowns("CustomerId_CC", $("#CustomerId").val() );
-        //setearcombobox("ProductId_CC", $("#ProductId").val());
-       
-      
+         //setearcombobox("ProductId_CC", $("#ProductId").val());       
+         //$('#ConditionId_CC').val('0');
+         //$('#ProductId').data("kendoDropDownList").value(0);
+
+        $('#SubProductId').data("kendoDropDownList").value('0');      
+        $('#IdTipoDocumento').data("kendoDropDownList").value(0);
+        $('#CustomerConditionName').val('');       
+        $('#CustomerConditionName').val('');
+        $("#Description").val('');
+        $("#btnGuardarCustomerCondition").prop("disabled", false);
+
         $("#myModalCustomerConditionsMant").modal('show');
         
     }
 
+
+    function EditCustomerCondition(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            Id: dataItem.CustomerConditionId,
+            editar: 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwCustomerConditions", "CustomerConditions")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#numElementoConfiguracion").html('');
+                $("#numElementoConfiguracion").html(result);
+
+                $('#ModalElementoConfiguracion').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                //alert(textStatus + ": " + XMLHttpRequest.responseText);
+                //console.log('RESULTADO', result);
+                console.log(textStatus + ": " + XMLHttpRequest.responseText)
+            }
+        });
+    }
+
+
     function filterdatacc() {
-        return {'DocumentId': $("#SalesOrderId").val(),
+        return {
+            'DocumentId': $("#SalesOrderId").val(),
             'IdTipoDocumento': 12
         };
     }
+
+
+    function dataBoundCustomerConditions(e) {
+        $.each(this.dataSource.data(), function () {
+            console.log($("#IdEstado").val());
+            if ($("#IdEstado").val()!= 8) {
+                //  console.log(this.SalesOrderId);
+                $('[data-uid=' + this.uid + ']').find('.k-grid-delete').hide();
+
+            }
+            //if (Number(this.CustomerId) > 0) {
+            //    $('[data-uid=' + this.uid + ']').find('.k-grid-CrearCliente').hide();
+            //}
+        })
+    }
+
 </script>
 
 @await Html.PartialAsync("~/Views/CustomerConditions/pvwCustomerConditions.cshtml", new ERPMVC.Models.CustomerConditions ())
@@ -62,6 +118,12 @@
                                                 .Name("gridCustomerCondition")
                                                 .Columns(columns =>
                                                 {
+                                                   
+                                                    columns.Command(command =>
+                                                    {                                                        
+                                                        //command.Edit().Text("Editar");
+                                                        command.Destroy().Text("Eliminar");
+                                                    }).Width(250);
                                                     columns.Bound(p => p.CustomerConditionId).Width(140);
                                                     columns.Bound(p => p.ConditionId).Width(140);
                                                     columns.Bound(p => p.CustomerConditionName).Width(140);
@@ -69,11 +131,7 @@
                                                     columns.Bound(p => p.LogicalCondition).Width(150);
                                                     columns.Bound(p => p.ValueToEvaluate).Width(150);
                                                     columns.Bound(p => p.ValueDecimal).Width(150);
-                                                    columns.Command(command =>
-                                                    {
-                                                        //command.Edit().Text("Editar");
-                                                        command.Destroy().Text("Eliminar");
-                                                    }).Width(250);
+
                                                 })
                                                     .Filterable(f => f.Operators(o => o.ForString(s => s
                                               .Clear()
@@ -107,15 +165,15 @@
                                                 )
                                              ))
                                                               .ToolBar(tools =>
-                                                {
-                                                    //tools.Create();
-                                                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                    .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerCondition();" });
-                                                    tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                                    tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                                              {
+                                                                  //tools.Create();
+                                                                  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                  .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerCondition();" });
+                                                                  tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                                  tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
 
 
-                                                })
+                                                              })
                                                 .Editable(e => e.Mode(GridEditMode.PopUp))
                                                 .Sortable()
                                                 .Pageable()
@@ -127,6 +185,7 @@
                                                     .Excel(excel => excel.FileName("CustomerConditionReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                                                 + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
                                                 .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                                 .Events(e => e.DataBound("dataBoundCustomerConditions"))
                                                 .DataSource(dataSource =>
                                                     dataSource
                                                     .WebApi()
@@ -147,7 +206,7 @@
                                                          .Type(HttpVerbs.Get).Data("filterdatacc"))
                                                     .Create(create => create.Action("Insert", "CustomerConditions").Type(HttpVerbs.Post))
                                                     .Update(update => update.Action("Update", "CustomerConditions", new { id = "{0}" }))
-                                                    .Destroy(destroy => destroy.Action("Delete", "CustomerConditions", new { id = "{0}" }))
+                                                    .Destroy(destroy => destroy.Action("Delete", "CustomerConditions").Type(HttpVerbs.Post))
 
                                                 )
                                                 .Events(e =>

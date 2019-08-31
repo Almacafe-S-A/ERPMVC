@@ -193,27 +193,33 @@ namespace ERPMVC.Controllers
                     _Boleto_Ent = JsonConvert.DeserializeObject<Boleto_Ent>(valorrespuesta);
                 }
 
-                                
-                if(_Boleto_Ent.peso_e > _Boleto_Ent.Boleto_Sal.peso_n)
+                if (_Boleto_Ent.Boleto_Sal != null)
                 {
-                    _ControlPallets.taracamion = (_Boleto_Ent.peso_e - _Boleto_Ent.Boleto_Sal.peso_n)/100;
+                    if (_Boleto_Ent.peso_e > _Boleto_Ent.Boleto_Sal.peso_n)
+                    {
+                        _ControlPallets.taracamion = (_Boleto_Ent.peso_e - _Boleto_Ent.Boleto_Sal.peso_n) / 100;
+                    }
+                    else if (_Boleto_Ent.peso_e < _Boleto_Ent.Boleto_Sal.peso_n)
+                    {
+                        _ControlPallets.taracamion = (_Boleto_Ent.peso_e) / 100;
+                    }
+
+                    _ControlPallets.pesobruto = _Boleto_Ent.peso_e / 100;
+
+                    _ControlPallets.pesoneto = _ControlPallets.pesobruto - _ControlPallets.taracamion;
+
+                    _ControlPallets._Boleto_Ent = _Boleto_Ent;
+
+
+                    double yute = (_ControlPallets.TotalSacosYute * 1) / 100;
+                    double polietileno = (_ControlPallets.TotalSacosPolietileno * 0.5) / 100;
+
+                    _ControlPallets.pesoneto2 = _ControlPallets.pesoneto - (yute + polietileno);
                 }
-                else if (_Boleto_Ent.peso_e < _Boleto_Ent.Boleto_Sal.peso_n)
+                else
                 {
-                    _ControlPallets.taracamion = (_Boleto_Ent.peso_e)/100 ;
+                    return await Task.Run(() => BadRequest("No se ha completado esta boleta!, cierre el proceso"));
                 }
-
-                _ControlPallets.pesobruto = _Boleto_Ent.peso_e / 100;
-
-                _ControlPallets.pesoneto = _ControlPallets.pesobruto - _ControlPallets.taracamion;
-
-                _ControlPallets._Boleto_Ent = _Boleto_Ent;
-
-
-               double yute =  ( _ControlPallets.TotalSacosYute * 1)/100;
-               double polietileno = (_ControlPallets.TotalSacosPolietileno * 0.5) / 100;
-
-               _ControlPallets.pesoneto2 = _ControlPallets.pesoneto - (yute+polietileno);
 
             }
             catch (Exception ex)

@@ -117,7 +117,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _GrupoConfiguracion = JsonConvert.DeserializeObject<List<GrupoConfiguracion>>(valorrespuesta);
-
+                    _GrupoConfiguracion = _GrupoConfiguracion.OrderByDescending(q => q.IdConfiguracion).ToList();
                 }
 
 

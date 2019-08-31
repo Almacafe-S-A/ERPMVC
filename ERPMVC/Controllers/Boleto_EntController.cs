@@ -280,8 +280,9 @@ namespace ERPMVC.Controllers
                             //Boleto_Sal.peso_s > resultados.peso_e
                             _Boleto_Ent = (from c in _Boleto_Ent
                                            .Where(q => q.clave_C == _customer.CustomerRefNumber)
-                                           .Where(q => q.Boleto_Sal != null)
-                                           .OrderByDescending(q => q.clave_e)
+                                          // .Where(q => q.Boleto_Sal == null)
+                                            .Where(q=>q.completo==false)
+                                            .OrderByDescending(q => q.clave_e)
                                            select new Boleto_Ent
                                            {
                                                clave_e = c.clave_e,
@@ -291,12 +292,13 @@ namespace ERPMVC.Controllers
                                                //CustomerId = c.CustomerId,
                                            }).ToList();
 
-                            _Boleto_Ent = _Boleto_Ent.Where(q => q.Boleto_Sal.peso_s < q.peso_e).ToList();
+                           // _Boleto_Ent = _Boleto_Ent.Where(q => q.Boleto_Sal.peso_s < q.peso_e).ToList();
                         }
                         else
                         {
                             _Boleto_Ent = (from c in _Boleto_Ent
-                                           .Where(q => q.Boleto_Sal != null)
+                                            //.Where(q => q.Boleto_Sal != null)
+                                            .Where(q => q.completo == false)
                                             .Where(q => q.clave_C == _customer.CustomerRefNumber)
                                              //.Where(q => q.Boleto_Sal.peso_s > q.peso_e)
                                              .OrderByDescending(q => q.clave_e)
@@ -309,7 +311,7 @@ namespace ERPMVC.Controllers
                                                //CustomerId = c.CustomerId,
                                            }).ToList();
 
-                            _Boleto_Ent = _Boleto_Ent.Where(q => q.Boleto_Sal.peso_s > q.peso_e).ToList();
+                            //_Boleto_Ent = _Boleto_Ent.Where(q => q.Boleto_Sal.peso_s > q.peso_e).ToList();
                         }
                     }
 
