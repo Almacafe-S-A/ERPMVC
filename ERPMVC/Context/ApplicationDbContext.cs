@@ -39,14 +39,6 @@ namespace ERP.Contexts
 
 
 
-        public DbSet<ERPMVC.DTO.AccountDTO> AccountDTO { get; set; }
-
-
-
-        public DbSet<ERPMVC.Models.Account> Account { get; set; }
-
-
-
        
         
     }

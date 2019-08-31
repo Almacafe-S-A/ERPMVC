@@ -1,0 +1,171 @@
+﻿@model ERPMVC.DTO.TypeJournalDTO
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+// {"required","Valor requerido" }
+};
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<script>
+
+    function customFunction(input) {
+
+        if (input.attr('name') === "TypeJournalId" && input.val() === "0") {
+            return false;
+        }
+
+    }
+
+    //$('#btnprueba').val("");
+</script>
+
+
+
+
+
+<div id="ModalTypeJournal" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Tipos de Vouchers</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmTypeJournal" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveTypeJournal"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <h3 class="card-title">Tipos de Vouchers</h3>
+                                        <hr>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="TypeJournalId" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="TypeJournalId" name="TypeJournalId" class="form-control" disabled="disabled" style="width:100%" />
+                                                    <span asp-validation-for="TypeJournalId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-8">
+                                                <div class="form-group">
+                                                    <label asp-for="TypeJournalName" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="TypeJournalName" name="TypeJournalName" class="form-control" autocomplete="off" style="width:100%" />
+                                                    <span asp-validation-for="TypeJournalName" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button id="btnTypeJournal" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                            </div>
+                                        </div>
+
+
+
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function RefrescarGrid() {
+
+        var grid = $("#gridNumeracionTypeJournal").getKendoGrid();
+        grid.dataSource.read();
+    }
+    function SaveTypeJournal(e) {
+
+            var notification = $("#notification").data("kendoNotification");
+           // e.preventDefault();
+        $("#btnTypeJournal").hide();
+        $("#btnTypeJournal").prop("disabled", true);
+
+        var displayedData = $("#gridNumeracionTypeJournal").data().kendoGrid.dataSource.view();
+
+        var dataObject = {
+            'TypeJournalId': $("#TypeJournalId").val(),
+            'TypeJournalName': $("#TypeJournalName").val(),
+                'CreatedDate': $("#CreatedDate").val(),
+                'ModifiedDate': $("#ModifiedDate").val(),
+                'CreatedUser': $("#CreatedUser").val(),
+                'ModifiedUser': $("#ModifiedUser").val(),
+            '_TypeJournal': displayedData
+            };
+
+           // console.log(JSON.stringify(dataObject));
+            //var form = $("#frmNumeracion");
+           // form.validate();
+
+        var validator = $("#frmTypeJournal").data("kendoValidator");
+                 var status = $(".status");
+
+
+                if (validator.validate()) {
+
+                    $.ajax({
+                        url: '@Url.Action("SaveTypeJournal", "TypeJournal")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+
+                            //notification.show({
+                            //    message: "Guardado correctamente!"
+                            //}, "upload-success");
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: '<br/><br/>Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+
+                            RefrescarGrid();
+
+                            $('#ModalTypeJournal').modal('hide');
+
+
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                            notification.show({
+                                title: "Validación",
+                                message: textStatus + ": " + XMLHttpRequest.responseText
+                            }, "error");
+
+                        }
+                    });
+
+                }
+                else {
+                    status.text("Oops! There is invalid data in the form.")
+                        .removeClass("valid")
+                        .addClass("invalid");
+                }
+
+
+        $("#btnTypeJournal").show();
+        $("#btnTypeJournal").prop("disabled", false);
+    }
+</script>

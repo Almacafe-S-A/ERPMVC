@@ -66,37 +66,6 @@ namespace ERPMVC.Controllers
             return Json(_TypeAccount.ToDataSourceResult(request));
 
         }
-        /*[HttpGet]
-        public async Task<JsonResult> GetAccounting([DataSourceRequest]DataSourceRequest request)
-        {
-            List<Account> _customers = new List<Account>();
-
-            try
-            {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Account/GetAccount");
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _customers = JsonConvert.DeserializeObject<List<Account>>(valorrespuesta);
-
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-
-
-            return Json(_customers.ToDataSourceResult(request));
-
-        }*/
-        
         public async Task<ActionResult<TypeAccount>> SaveTypeAccount([FromBody]TypeAccountDTO _TypeAccountP)
         {
             TypeAccount _TypeAccount = _TypeAccountP;

@@ -17,40 +17,41 @@ using Newtonsoft.Json;
 
 namespace ERPMVC.Controllers
 {
-     [Authorize]
+    
+    [Authorize]
     [CustomAuthorization]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-    public class ExchangeRateController : Controller
+    public class TypeJournalController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public ExchangeRateController(ILogger<ExchangeRateController> logger, IOptions<MyConfig> config)
+        public TypeJournalController(ILogger<TypeJournalController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
         }
-        // GET: ExchangeRate
-        public ActionResult ExchangeRate()
+        // GET: TypeAccount
+        public ActionResult TypeJournal()
         {
             return View();
         }
 
         [HttpGet("[action]")]
-        public async Task<JsonResult> GetExchangeRate([DataSourceRequest]DataSourceRequest request)
+        public async Task<JsonResult> GetTypeJournal([DataSourceRequest]DataSourceRequest request)
         {
-            List<ExchangeRate> _ExchangeRate = new List<ExchangeRate>();
+            List<TypeJournal> _TypeJournal = new List<TypeJournal>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ExchangeRate/GetExchangeRate");
+                var result = await _client.GetAsync(baseadress + "api/TypeJournal/GetTypeJournal");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ExchangeRate = JsonConvert.DeserializeObject<List<ExchangeRate>>(valorrespuesta);
+                    _TypeJournal = JsonConvert.DeserializeObject<List<TypeJournal>>(valorrespuesta);
 
                 }
 
@@ -63,42 +64,42 @@ namespace ERPMVC.Controllers
             }
 
 
-            return Json(_ExchangeRate.ToDataSourceResult(request));
+            return Json(_TypeJournal.ToDataSourceResult(request));
 
         }
-        public async Task<ActionResult<ExchangeRate>> SaveExchangeRate([FromBody]ExchangeRateDTO _ExchangeRateP)
+        public async Task<ActionResult<TypeJournal>> SaveTypeAccount([FromBody]TypeJournalDTO _TypeJournalP)
         {
-            ExchangeRate _ExchangeRate = _ExchangeRateP;
+            TypeJournal _TypeJournal = _TypeJournalP;
             try
             {
-                ExchangeRate _listAccount = new ExchangeRate();
+                TypeJournal _listAccount = new TypeJournal();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ExchangeRate/GetExchangeRateById/" + _ExchangeRate.ExchangeRateId);
+                var result = await _client.GetAsync(baseadress + "api/TypeJournal/GetTypeJournalById/" + _TypeJournal.TypeJournalId);
                 string valorrespuesta = "";
-                _ExchangeRate.ModifiedDate = DateTime.Now;
-                _ExchangeRate.ModifiedUser = HttpContext.Session.GetString("user");
+                _TypeJournal.ModifiedDate = DateTime.Now;
+                _TypeJournal.ModifiedUser = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ExchangeRate = JsonConvert.DeserializeObject<ExchangeRate>(valorrespuesta);
+                    _TypeJournal = JsonConvert.DeserializeObject<TypeJournal>(valorrespuesta);
                 }
 
-                if (_ExchangeRate == null) { _ExchangeRate = new Models.ExchangeRate(); }
+                if (_TypeJournal == null) { _TypeJournal = new Models.TypeJournal(); }
 
-                if (_ExchangeRateP.ExchangeRateId == 0)
+                if (_TypeJournalP.TypeJournalId == 0)
                 {
-                    _ExchangeRate.CreatedDate = DateTime.Now;
-                    _ExchangeRate.CreatedUser = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_ExchangeRateP);
+                    _TypeJournal.CreatedDate = DateTime.Now;
+                    _TypeJournal.CreatedUser = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_TypeJournalP);
                 }
                 else
                 {
-                    _ExchangeRateP.CreatedUser = _ExchangeRate.CreatedUser;
-                    _ExchangeRateP.CreatedDate = _ExchangeRate.CreatedDate;
-                    var updateresult = await Update(_ExchangeRate.ExchangeRateId, _ExchangeRateP);
+                    _TypeJournalP.CreatedUser = _TypeJournal.CreatedUser;
+                    _TypeJournalP.CreatedDate = _TypeJournal.CreatedDate;
+                    var updateresult = await Update(_TypeJournal.TypeJournalId, _TypeJournalP);
                 }
 
             }
@@ -108,31 +109,31 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_ExchangeRateP);
+            return Json(_TypeJournalP);
         }
 
 
         [HttpPost("[action]")]
-        public async Task<ActionResult> pvwAddExchangeRate([FromBody]ExchangeRateDTO _sarpara)
+        public async Task<ActionResult> pvwAddTypeJournal([FromBody]TypeJournalDTO _sarpara)
         {
-            ExchangeRateDTO _ExchangeRate = new ExchangeRateDTO();
+            TypeJournalDTO _TypeJournal = new TypeJournalDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ExchangeRate/GetExchangeRateById/" + _sarpara.ExchangeRateId);
+                var result = await _client.GetAsync(baseadress + "api/TypeJournal/GetTypeJournalById/" + _sarpara.TypeJournalId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ExchangeRate = JsonConvert.DeserializeObject<ExchangeRateDTO>(valorrespuesta);
+                    _TypeJournal = JsonConvert.DeserializeObject<TypeJournalDTO>(valorrespuesta);
 
                 }
 
-                if (_ExchangeRate == null)
+                if (_TypeJournal == null)
                 {
-                    _ExchangeRate = new ExchangeRateDTO();
+                    _TypeJournal = new TypeJournalDTO();
                 }
             }
             catch (Exception ex)
@@ -143,14 +144,14 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_ExchangeRate);
+            return PartialView(_TypeJournal);
 
         }
 
-        // POST: ExchangeRate/Insert
+        // POST: TypeJournal/Insert
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public async Task<ActionResult> Insert(ExchangeRate _ExchangeRate)
+        public async Task<ActionResult> Insert(TypeJournal _TypeJournal)
         {
             try
             {
@@ -158,16 +159,16 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _ExchangeRate.CreatedUser = HttpContext.Session.GetString("user");
-                _ExchangeRate.CreatedDate = DateTime.Now;
-                _ExchangeRate.ModifiedUser = HttpContext.Session.GetString("user");
-                _ExchangeRate.ModifiedDate = DateTime.Now;
-                var result = await _client.PostAsJsonAsync(baseadress + "api/ExchangeRate/Insert", _ExchangeRate);
+                _TypeJournal.CreatedUser = HttpContext.Session.GetString("user");
+                _TypeJournal.CreatedDate = DateTime.Now;
+                _TypeJournal.ModifiedUser = HttpContext.Session.GetString("user");
+                _TypeJournal.ModifiedDate = DateTime.Now;
+                var result = await _client.PostAsJsonAsync(baseadress + "api/TypeJournal/Insert", _TypeJournal);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ExchangeRate = JsonConvert.DeserializeObject<ExchangeRate>(valorrespuesta);
+                    _TypeJournal = JsonConvert.DeserializeObject<TypeJournal>(valorrespuesta);
                 }
 
             }
@@ -177,23 +178,23 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _ExchangeRate }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _TypeJournal }, Total = 1 });
         }
 
-        [HttpPut("ExchangeRateId")]
-        public async Task<IActionResult> Update(Int64 ExchangeRateId, ExchangeRate _ExchangeRate)
+        [HttpPut("TypeJournalId")]
+        public async Task<IActionResult> Update(Int64 TypeJournalId, TypeJournal _TypeJournal)
         {
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PutAsJsonAsync(baseadress + "api/ExchangeRate/Update", _ExchangeRate);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/TypeJournal/Update", _TypeJournal);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ExchangeRate = JsonConvert.DeserializeObject<ExchangeRate>(valorrespuesta);
+                    _TypeJournal = JsonConvert.DeserializeObject<TypeJournal>(valorrespuesta);
                 }
 
             }
@@ -203,7 +204,7 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _ExchangeRate }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _TypeJournal }, Total = 1 });
         }
 
     }
