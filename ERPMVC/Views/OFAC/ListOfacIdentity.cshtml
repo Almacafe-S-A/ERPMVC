@@ -1,0 +1,252 @@
+﻿<script>
+
+
+    function sleep(miliseconds) {
+        var currentTime = new Date().getTime();
+
+        while (currentTime + miliseconds >= new Date().getTime()) {
+        }
+    }
+
+
+
+    function RefreshOFACIdentity() {
+        debugger;
+
+
+       // var dataObject = ["detenerflujoreadgrid"];
+
+
+        
+
+
+        $.ajax({
+            url: '@Url.Action("GetPersonByIdentity", "OFAC")',
+            method: 'GET',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: DataOFACIdentity(),
+            success: function (data) {
+               // debugger;
+               // $("#divOFACFind").html('');
+               // $("#divOFACFind").html(data);
+                var grid = $("#gridListaOFACIdentity").getKendoGrid();
+                var datasource = grid.dataSource;
+                var raw = datasource._data;
+                for (i = datasource._data.length - 1; i >= 0; i--) {
+                    var item = raw[i];
+                    datasource.remove(item);
+                }
+
+                for (var i = 0; i < data.Data.length; i++) {
+                    datasource.insert(data.Data[i]);
+                }
+
+                // d2.async = false;
+                  //  d2.read();
+
+                    //grid.refresh();
+                var gridListaOFAClen = $("#gridListaOFACIdentity").data().kendoGrid.dataSource.data();
+                    //console.log('Listado OFAC: ' + gridListaOFAClen.length);
+                    if (gridListaOFAClen.length > 0) {
+                        $("#myModalOFACIdentity").modal('show');
+                    }
+                    else {
+                        $("#myModalOFACIdentity").modal('hide');
+                    }
+
+
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                notification.show({
+                    title: "Validación",
+                    message: textStatus + ": " + XMLHttpRequest.responseText
+                }, "error");
+
+            }
+        });
+
+        
+
+        // sleep(3000);
+        //RefreshOFAC();
+    }
+
+
+    function DataOFACIdentity() {
+        debugger;
+        var mfirstname = $("#Identidad").val();
+        
+      /*  if (($("#SalesOrderName").val() == '' || $("#SalesOrderName").val() == null)
+            && ($("#PartnerName").val() != '' || $("#PartnerName").val() != null)) {
+            mfirstname = $("#PartnerName").val();
+            mlastName = $("#PartnerName").val();
+        }
+        else if (($("#SalesOrderName").val() == '' || $("#SalesOrderName").val() == null) && ($("#PartnerName").val() == '' || $("#PartnerName").val() == null)) {
+            mfirstname = $("#NombreAS").val();
+            mlastName = $("#NombreAS").val();
+        }
+        else if (($("#SalesOrderName").val() == '' || $("#SalesOrderName").val() == null)
+            && ($("#PartnerName").val() == '' || $("#PartnerName").val() == null)
+            && ($("#NombreAS").val() == '' || $("#NombreAS").val() == null)
+
+        ) {
+            mfirstname = $("#NombreApoderado").val(),
+           mlastName = $("#NombreApoderado").val();
+        }
+        //Cambio de Marvin Guillen para validar el Nombre del Proveedore
+        if (($("#SalesOrderName").val() == '' || $("#SalesOrderName").val() == null)
+            && ($("#PartnerName").val() == '' || $("#PartnerName").val() == null)
+            && ($("#NombreAS").val() == '' || $("#NombreAS").val() == null)
+            && ($("#NombreApoderado").val() == '' || $("#NombreApoderado").val() == null)
+            && ($("#PurchName").val() != '' || $("#PurchName").val() != null))
+         {
+            mfirstname = $("#PurchName").val(),
+                mlastName = $("#PurchName").val();
+        }
+        //Cambio de Marvin Guillen para validar el Nombre del Proveedore
+        */
+
+       return {
+           idNumber: mfirstname,
+                 };
+
+    }
+
+    function ListaOfacClose() {
+        debugger;
+        $("#myModalOFACIdentity").modal('hide');
+        $("#gridListaOFACIdentity").getKendoGrid().dataSource.read();
+
+    }
+</script>
+
+<div id="myModalOFACIdentity" class="modal fade" role="dialog" style="z-index:9999">
+    <div class="modal-dialog modal-lg">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" onclick="ListaOfacClose();">&times;</button>
+                <h4 class="modal-title">Información Listados OFAC</h4>
+            </div>
+            <div class="form-body">
+                <h3 class="card-title">Busqueda de Identidad</h3>
+                <hr>
+
+                <div class="row">
+                    <div class="form-group">
+                        <label class="control-label" style="width: 100%;">    Ingrese el numero de identidad:</label>
+                        <input type="text" id="Identidad" required class="form-control" style="min-width:100%;" />
+                        <button type="button" class="form-control btn-miboton" onclick="RefreshOFACIdentity();">Buscar</button>
+
+
+                    </div>
+                </div>
+            </div>
+            <div class="modal-body">
+
+                @( Html.Kendo().Grid<OFAC.sdnListSdnEntryIDM>
+                                           ()
+                                           .Name("gridListaOFACIdentity")
+                                           .Columns(columns =>
+                                           {
+                                               columns.Bound(p => p.uid).Width(100);
+                                               columns.Bound(p => p.idType).Width(150);
+                                               columns.Bound(p => p.idNumber).Width(100);
+                                               columns.Bound(p => p.idCountry).Width(100);
+                                               columns.Bound(p => p.issueDate).Width(100);
+                                               columns.Command(command =>
+                                               {
+                                                       //command.Custom("Ver detalles").Click("Detalles");
+                                                       //command.Edit();
+                                                       // command.Destroy();
+                                                   }).Width(150);
+
+                                           })
+                                               .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                               .Clear()
+                                                               .Contains("Contiene")
+                                                               .DoesNotContain("No contiene")
+                                                               .EndsWith("Termina con")
+                                                               .IsEqualTo("Es igual a")
+                                                               .IsNotEqualTo("No es igual a")
+                                                               .IsNull("Es nulo")
+                                                               .StartsWith("Inicia con")
+
+
+                                                         )
+                                                         .ForNumber(n => n
+                                                           .Clear()
+                                                           .IsEqualTo("Es igual a")
+                                                           .IsGreaterThan("Es mayor que")
+                                                           .IsLessThan("Es menor que")
+                                                           .IsNull("Es nulo")
+                                                           .IsLessThanOrEqualTo("Es menor o igual que")
+                                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                         )
+                                                         .ForDate(d => d
+                                                         .Clear()
+                                                         .IsEqualTo("Es igual que")
+                                                         .IsGreaterThan("Es mayor que")
+                                                         .IsLessThan("Es menor que")
+                                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                         .IsNotEqualTo("No es igual que")
+                                                          )
+                                                       ))
+                                           .ToolBar(tools =>
+                                           {
+                                                   // tools.Create();
+                                                   tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                               tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+                                           })
+                                           .Editable(e => e.Mode(GridEditMode.PopUp))
+                                           .Sortable()
+                                           .Pageable()
+                                           .Filterable()
+                                           .Scrollable()
+                                           .Pdf(pdf => pdf.FileName("OFACIdentityReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                           .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                               .Excel(excel => excel.FileName("OFACIdentityReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                           .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                           .DataSource(dataSource =>
+                                               dataSource
+                                               .WebApi()
+                                               // .AutoSync(false)
+                                               .ServerOperation(true)
+                                               .Model(model =>
+                                               {
+                                                   model.Id(p => p.Id);
+                                                   model.Field(p => p.Id).Editable(false);
+                                                   model.Field(p => p.uid).Editable(true);
+                                                   model.Field(p => p.idType).Editable(true);
+                                                   model.Field(p => p.idNumber).Editable(false);
+                                                   model.Field(p => p.idCountry).Editable(false);
+                                                   model.Field(p => p.issueDate).Editable(false);
+
+
+                                               })
+                                               .Events(events => events.Error("error_handler"))
+                                               .Read(read => read.Action("GetPersonByIdentity", "OFAC").Data("DataOFAC"))
+                                               .Create(create => create.Action("Insert", "OFAC"))
+                                               .Update(update => update.Action("Update", "OFAC", new { IdPuntoEmision = "{0}" }).Type(HttpVerbs.Post))
+                                               .Destroy(destroy => destroy.Action("Delete", "OFAC", new { IdPuntoEmision = "{0}" }).Type(HttpVerbs.Delete))
+
+                                           )
+                                           .Events(e =>
+                                           {
+                                                   // e.Save("onsave");
+
+                                               })
+                )
+
+            </div>
+        </div>
+    </div>
+</div>

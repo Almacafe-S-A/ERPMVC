@@ -70,8 +70,45 @@ namespace ERPMVC.Controllers
             return PartialView();
         }
 
+        //Changed by Marvin Guillen to Purch 
+        [HttpGet("[action]")]
+        public async Task<ActionResult<DataSourceResult>> GetPersonByIdentity([DataSourceRequest]DataSourceRequest request
+            , sdnListSdnEntryIDM _sdnListSdnEntryIDM)
+        {
+            List<sdnListSdnEntryIDM> _sdnListSdnEntryIDMlist = new List<sdnListSdnEntryIDM>();
+
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/OFAC/GetPersonByNumber", _sdnListSdnEntryIDM);
+                string valorrespuesta = "";
+                // _ControlPalletsDTO.FechaModificacion = DateTime.Now;
+                // ControlPalletsDTO.UsuarioModificacion = HttpContext.Session.GetString("user");
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _sdnListSdnEntryIDMlist = JsonConvert.DeserializeObject<List<sdnListSdnEntryIDM>>(valorrespuesta);
+                }
 
 
+            }
+            catch (Exception ex)
+            {
 
+                throw ex;
+            }
+
+            return _sdnListSdnEntryIDMlist.ToDataSourceResult(request);
+            //return Json(_sdnListSdnEntryMlist);
+        }
+
+        public IActionResult ListOfacIdentity()
+        {
+            return PartialView();
+        }
+
+        //Changed by Marvin Guillen to Purch 
     }
 }

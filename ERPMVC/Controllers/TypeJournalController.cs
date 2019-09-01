@@ -67,7 +67,7 @@ namespace ERPMVC.Controllers
             return Json(_TypeJournal.ToDataSourceResult(request));
 
         }
-        public async Task<ActionResult<TypeJournal>> SaveTypeAccount([FromBody]TypeJournalDTO _TypeJournalP)
+        public async Task<ActionResult<TypeJournal>> SaveTypeJournal([FromBody]TypeJournalDTO _TypeJournalP)
         {
             TypeJournal _TypeJournal = _TypeJournalP;
             try
