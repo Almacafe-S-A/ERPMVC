@@ -21,14 +21,19 @@ namespace ERPMVC.Models
         public int? GeneralLedgerHeaderId { get; set; }
         public int? PartyId { get; set; }
         [Display(Name = "Tipos de Voucher")]
-        public int? VoucherType { get; set; }
-        [Display(Name = "Fecha")]
+        public Int32 VoucherType { get; set; }
+        [Display(Name = "Nombre de Tipo de Voucher")]
+        public string TypeJournalName { get; set; }
+
+        [Display(Name = "Fecha de creacion")]
         public DateTime Date { get; set; }
+        [Display(Name = "Fecha de Posteo")]
+        public DateTime DatePosted { get; set; }
         public string Memo { get; set; }
         public string ReferenceNo { get; set; }
         public bool? Posted { get; set; }
-        public virtual GeneralLedgerHeader GeneralLedgerHeader { get; set; }
-        public virtual int Party { get; set; }
+        //public virtual GeneralLedgerHeader GeneralLedgerHeader { get; set; }
+        //public virtual int Party { get; set; }
         [Display(Name = "Id de Registro Pago")]
         public Int64 IdPaymentCode { get; set; }
         public Int64 IdTypeofPayment { get; set; }
