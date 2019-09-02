@@ -104,6 +104,38 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpGet]
+        public async Task<JsonResult> GetJson([DataSourceRequest]DataSourceRequest request,Int64 CountryId)
+        {
+            List<State> _State = new List<State>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/State/GetState");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _State = JsonConvert.DeserializeObject<List<State>>(valorrespuesta);
+                    _State= _State.Where(q => q.CountryId == CountryId).ToList();
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return Json(_State.ToDataSourceResult(request));
+        }
+
+
         [HttpPost]
         public async Task<ActionResult<State>> SaveState([FromBody]StateDTO _StateS)
         {

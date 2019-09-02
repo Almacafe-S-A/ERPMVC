@@ -71,6 +71,39 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpGet]
+        public async Task<JsonResult> GetCityJson([DataSourceRequest]DataSourceRequest request,Int64 StateId)
+        {
+            List<City> _City = new List<City>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/City/GetCity");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _City = JsonConvert.DeserializeObject<List<City>>(valorrespuesta);
+                    _City = _City.Where(q => q.StateId == StateId).ToList();
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return Json(_City.ToDataSourceResult(request));
+
+        }
+
+
         [HttpGet("[action]")]
         public async Task<DataSourceResult> GetByProductType([DataSourceRequest]DataSourceRequest request)
         {
