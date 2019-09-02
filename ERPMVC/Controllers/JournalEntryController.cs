@@ -42,31 +42,20 @@ namespace ERPMVC.Controllers
             return View();
         }*/
         // GET: Purch/Details/5
-        // public ActionResult Details(int id)
-        //{
-        //  return View();
-        //}
-
-        // GET: Purch/Create
-        public ActionResult Create()
+        public async Task<ActionResult> Details(Int64 JournalEntryId)
         {
-            return View();
-        }
-        /*
-        public async Task<ActionResult> Proveedores(Int64 PurchId)
-        {
-            Purch _customers = new Purch();
+            JournalEntry _customers = new JournalEntry();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Purch/GetPurchById/" + PurchId);
+                var result = await _client.GetAsync(baseadress + "api/JournalEntry/GetJournalEntryById/" + JournalEntryId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _customers = JsonConvert.DeserializeObject<Purch>(valorrespuesta);
+                    valorrespuesta = await(result.Content.ReadAsStringAsync());
+                    _customers = JsonConvert.DeserializeObject<JournalEntry>(valorrespuesta);
 
                 }
             }
@@ -77,6 +66,14 @@ namespace ERPMVC.Controllers
             }
 
 
+            return await Task.Run(() => View(_customers));
+        }
+
+        // GET: Purch/Create
+        /*
+        public async Task<ActionResult> Proveedores(Int64 PurchId)
+        {
+           
 
             return await Task.Run(() => View(_customers));
         }
@@ -177,29 +174,8 @@ namespace ERPMVC.Controllers
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _JournalEntry }, Total = 1 });
         }
-        // GET: JournalEntry/Delete/5
-        public ActionResult Delete(int id)
-        {
-            return View();
-        }
-
-        // POST: JournalEntry/Delete/5
-        [HttpPost]
-        //[ValidateAntiForgeryToken]
-        public ActionResult Delete(int id, IFormCollection collection)
-        {
-            try
-            {
-                // TODO: Add delete logic here
-
-                return RedirectToAction(nameof(Index));
-            }
-            catch
-            {
-                return View();
-            }
-        }
-        public async Task<ActionResult<Purch>> SaveJournalEntry([FromBody]JournalEntryDTO _JournalEntryP)
+        
+        public async Task<ActionResult<JournalEntry>> SaveJournalEntry([FromBody]JournalEntryDTO _JournalEntryP)
         {
             JournalEntry _JournalEntry = _JournalEntryP;
             try
