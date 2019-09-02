@@ -12,26 +12,38 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Display(Name = "Id")]
         public int BranchId { get; set; }
-        [Required]
+       // [Required(ErrorMessage ="Valor requerido")]
         [Display(Name = "Nombre Sucursal")]
 
         public string BranchName { get; set; }
 
-        [Display(Name = "Descripcion")]
+        [Display(Name = "Descripción")]
         public string Description { get; set; }
         [Display(Name = "Moneda")]
         public int CurrencyId { get; set; }
         [Display(Name = "Moneda")]
         public string CurrencyName { get; set; }
-        [Display(Name = "Direccion")]
+        [Display(Name = "Dirección")]
         public string Address { get; set; }
+
+        [Display(Name = "Ciudad")]
+        public int CityId { get; set; }
+
         [Display(Name = "Ciudad")]
         public string City { get; set; }
+
+        [Display(Name = "País")]
+        public int CountryId { get; set; }
+
+        [Display(Name = "País")]
+        public string CountryName { get; set; }
+
         [Display(Name = "Departamento")]
+        public int StateId { get; set; }
         public string State { get; set; }
         [Display(Name = "Code Zip ")]
         public string ZipCode { get; set; }
-        [Display(Name = "Telefono ")]
+        [Display(Name = "Teléfono ")]
         public string Phone { get; set; }
         [Display(Name = "Correo ")]
         public string Email { get; set; }

@@ -12,6 +12,8 @@ namespace ERPMVC.Models
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Int64 IdCAI { get; set; }
+
+        [Required]
         public string _cai { get; set; }
         public DateTime FechaRecepcion { get; set; }
         public DateTime FechaLimiteEmision { get; set; }
