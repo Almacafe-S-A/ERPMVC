@@ -1,5 +1,70 @@
 ﻿
 
+<script>
+    function databranch() {
+        return {
+            BranchId: $("#BranchId").val()
+        }
+    }
+
+
+    function AddWarehouse() {
+
+        $('#ModalWareHouse').find(':input').not(':submit').val('');
+      
+           $.ajax({
+                url: '@Url.Action("pvwWarehouse", "Warehouse")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#divpvwWarehouse").html('');
+                    $("#divpvwWarehouse").html(result);
+                    
+                    //$("#btnCAI").hide();
+                    $('#ModalWareHouse').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+
+       
+    }
+
+    function EditWarehouse(e) {
+          e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                WarehouseId: dataItem.WarehouseId,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwWarehouse", "Warehouse")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#divpvwWarehouse").html('');
+                    $("#divpvwWarehouse").html(result);
+
+                
+                    //$("#btnCAI").hide();
+                    $('#ModalWareHouse').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+    }
+
+</script>
+
 @(Html.Kendo().Grid<ERPMVC.Models.Warehouse>()
             .Name("gridWarehouse")
             .Columns(columns =>
@@ -9,7 +74,7 @@
                     //command.Custom("Ver detalles").Click("Detalles");
                     command.Custom("Editar").Click("EditWarehouse");
                     command.Destroy().Text("Eliminar");
-                }).Width(250);
+                }).Width(170);
 
                 columns.Bound(p => p.WarehouseId).Width(150);
                 columns.Bound(p => p.WarehouseName).Width(170);
@@ -27,7 +92,7 @@
                 tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
 
             })
-            .Editable(e => e.Mode(GridEditMode.PopUp))
+            .Editable(e => e.Mode(GridEditMode.InLine))
             .Sortable()
             .Pageable()
             .Filterable()
@@ -51,7 +116,7 @@
 
             })
             .Events(events => events.Error("error_handler"))
-            .Read(read => read.Action("Get", "Warehouse"))
+            .Read(read => read.Action("Get", "Warehouse").Data("databranch"))
             .Create(create => create.Action("Insert", "Warehouse").Type(HttpVerbs.Post))
             .Update(update => update.Action("Update", "Warehouse").Type(HttpVerbs.Post))
             .Destroy(destroy => destroy.Action("Delete", "Warehouse").Type(HttpVerbs.Post))
@@ -63,3 +128,7 @@
 
             })
 )
+
+<div id="divpvwWarehouse">
+    @await  Html.PartialAsync("pvwWarehouse.cshtml",new ERPMVC.Models.Warehouse () )
+</div>

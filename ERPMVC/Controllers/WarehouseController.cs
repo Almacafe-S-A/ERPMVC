@@ -34,7 +34,8 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwWarehouse(Int64 Id = 0)
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwWarehouse([FromBody]Warehouse _warehouse)
         {
             Warehouse _Warehouse = new Warehouse();
             try
@@ -42,7 +43,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouseById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouseById/" + _warehouse.WarehouseId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -64,7 +65,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_Warehouse);
+            return PartialView("~/Views/Branch/pvwWarehouse.cshtml",_Warehouse);
 
         }
 
@@ -100,6 +101,8 @@ namespace ERPMVC.Controllers
 
         }
 
+        
+      
 
         public async Task<ActionResult<Warehouse>> SaveWarehouse([FromBody]Warehouse _Warehouse)
         {
