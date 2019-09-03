@@ -12,11 +12,12 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Display(Name = "Id")]
         public Int64 SubproductId { get; set; }
-        [Display(Name = "Producto")]
+        [Display(Name = "SubServicio")]
         public string ProductName { get; set; }
-        [Display(Name = "Tipo de producto")]
+        [Display(Name = "Tipo de Subservicio")]
         public Int64 ProductTypeId { get; set; }
-        [Display(Name = "Tipo de producto")]
+
+        [Display(Name = "Tipo de Subservicio")]
         public string ProductTypeName { get; set; }
         [Display(Name = "Saldo Quintales")]
         public double Balance { get; set; }
@@ -32,8 +33,11 @@ namespace ERPMVC.Models
         public int? UnitOfMeasureId { get; set; }
         [Display(Name = "Unidad de medida")]
         public string UnitOfMeasureName { get; set; }
+        [Display(Name = "Merma")]
         public double Merma { get; set; }
+        [Display(Name = "Fecha de creación")]
         public DateTime FechaCreacion { get; set; }
+        [Display(Name = "Fecha de modificación")]
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
         public string UsuarioModificacion { get; set; }
