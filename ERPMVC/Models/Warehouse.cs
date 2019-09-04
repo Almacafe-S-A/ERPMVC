@@ -13,7 +13,7 @@ namespace ERPMVC.Models
         [Display(Name = "Id")]
         public int WarehouseId { get; set; }
 
-        [Required]
+        [Required(ErrorMessage ="Campo requerido")]
         [Display(Name = "Nombre del almacén")]
         public string WarehouseName { get; set; }
         [Display(Name = "Descripción")]
