@@ -17,7 +17,7 @@ namespace ERPMVC.Models
         [Display(Name = "Id de la Empresa")]
         public Int64 CompanyInfoId { get; set; }
         [Required]
-        [Display(Name = "Codigo Contable")]
+        [Display(Name = "Cuenta:")]
         [StringLength(50)]
         public string AccountCode { get; set; }
         [Required]
