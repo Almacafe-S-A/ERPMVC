@@ -44,6 +44,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                //Error
                 var result = await _client.GetAsync(baseadress + "api/Account/GetAccount");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)

@@ -12,9 +12,9 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Display(Name = "Id")]
         public Int64 ExchangeRateId { get; set; }
-        [Display(Name = "Dia de Tasa")]
+        [Display(Name = "Fecha")]
         public DateTime DayofRate { get; set; }
-        [Display(Name = "Monto")]
+        [Display(Name = "Tasa de Venta")]
         public double ExchangeRateValue { get; set; }
 
         [Required]
