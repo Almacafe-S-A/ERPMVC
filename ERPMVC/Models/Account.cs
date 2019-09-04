@@ -37,8 +37,6 @@ namespace ERPMVC.Models
         public bool BlockedInJournal { get; set; }
         [Display(Name = "Id")]
         public Int64 TypeAccountId { get; set; }
-        //[MaxLength(5000)]
-        //public string Descripcion { get; set; }
         [Required]
         [Display(Name = "Usuario de creacion")]
         public string UsuarioCreacion { get; set; }
@@ -64,13 +62,13 @@ namespace ERPMVC.Models
 
         public virtual CompanyInfo Company { get; set; }
 
-      //  public virtual ICollection<Account> ChildAccounts { get; set; }
+        public virtual ICollection<Account> ChildAccounts { get; set; }
 
-       // [NotMapped]
-       // public virtual ICollection<MainContraAccount> ContraAccounts { get; set; }
-       // public virtual ICollection<GeneralLedgerLine> GeneralLedgerLines { get; set; }
+        [NotMapped]
+        public virtual ICollection<MainContraAccount> ContraAccounts { get; set; }
+        public virtual ICollection<GeneralLedgerLine> GeneralLedgerLines { get; set; }
+        
 
-      
     }
 
 }
