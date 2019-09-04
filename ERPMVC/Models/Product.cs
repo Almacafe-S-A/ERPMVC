@@ -12,9 +12,9 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Int64 ProductId { get; set; }
         [Required]
-        [Display(Name = "Producto")]
+        [Display(Name = "Servicio")]
         public string ProductName { get; set; }
-        [Display(Name = "Código de producto")]
+        [Display(Name = "Código de Servicio")]
         public string ProductCode { get; set; }
         [Display(Name = "Código de barra")]
         public string Barcode { get; set; }
@@ -29,20 +29,26 @@ namespace ERPMVC.Models
 
         [Display(Name = "Unidad de medida")]
         public int UnitOfMeasureId { get; set; }
+        [Display(Name = "Precio de compra")]
         public double DefaultBuyingPrice { get; set; } = 0.0;
+        [Display(Name = "Precio de venta")]
         public double DefaultSellingPrice { get; set; } = 0.0;
         [Display(Name = "Sucursal")]
         public int BranchId { get; set; }
         [Display(Name = "Moneda")]
         public int CurrencyId { get; set; }
         [Required]
+        [Display(Name = "Usuario de creación")]
         public string UsuarioCreacion { get; set; }
         [Required]
+        [Display(Name = "Usuario de modificación")]
         public string UsuarioModificacion { get; set; }
         [Required]
+        [Display(Name = "Fecha de creación")]
         public DateTime FechaCreacion { get; set; }
 
         [Required]
+        [Display(Name = "Fecha de modificación")]
         public DateTime FechaModificacion { get; set; }
     }
 }
