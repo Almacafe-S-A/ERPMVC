@@ -26,7 +26,7 @@ namespace ERPMVC.Models
         [Display(Name = "Tipo de Movimiento")]
         public int DrCr { get; set; }
         [Display(Name = "Monto Movimiento")]
-        public decimal Amount { get; set; }
+        public double Amount { get; set; }
         public string Memo { get; set; }
         public virtual JournalEntry JournalEntry { get; set; }
         public virtual Account Account { get; set; }
