@@ -22,14 +22,27 @@ namespace ERPMVC.Models
         public Int64 IdEstado { get; set; }
         public string Estado { get; set; }
         [Display(Name = "Sucursal")]
-        public int BranchId { get; set; }        
+        public int BranchId { get; set; }
+
+        [Display(Name = "Capacidad Bodega")]
+        public double CapacidadBodega { get; set; }
+
+        [Display(Name = "Unidad de medida")]
+        public int UnitOfMeasureId { get; set; }
+
+        [Display(Name = "Unidad de medida")]
+        public string UnitOfMeasureName { get; set; }
         [Required]
+        [Display(Name = "Usuario de creación")]
         public string UsuarioCreacion { get; set; }
         [Required]
+        [Display(Name = "Usuario de modificación")]
         public string UsuarioModificacion { get; set; }
         [Required]
+        [Display(Name = "Fecha de creación")]
         public DateTime FechaCreacion { get; set; }
         [Required]
+        [Display(Name = "Fecha de modificación")]
         public DateTime FechaModificacion { get; set; }
     }
 }

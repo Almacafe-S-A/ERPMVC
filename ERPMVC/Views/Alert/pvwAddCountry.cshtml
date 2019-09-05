@@ -1,0 +1,184 @@
+﻿@model ERPMVC.DTO.CountryDTO
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+           // {"required","Valor requerido" }
+        };
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<script>
+
+    function customFunction(input) {
+
+        if (input.attr('name') === "BranchId" && input.val() === "0") {
+            return false;
+        }
+
+    }
+
+    //$('#btnprueba').val("");
+</script>
+
+
+
+<div id="ModalCountry" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">País</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmCountry" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveCountry"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <h3 class="card-title">País</h3>
+                                        <hr>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Id" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="Id" name="Id" class="form-control" disabled="disabled" style="width:100%" />
+                                                    <span asp-validation-for="Id" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="SortName" class=" control-label" style="width:100%">Nombre de clasificación</label>
+                                                    <input type="text" asp-for="SortName" name="SortName" class="form-control" autocomplete="off" style="width:100%" />
+                                                    <span asp-validation-for="SortName" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Name" class=" control-label" style="width:100%">Nombre</label>
+                                                    <input type="text" asp-for="Name" name="Name" class="form-control" autocomplete="off" style="width:100%" />
+                                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="PhoneCode" class=" control-label" style="width:100%">Codigo telefonico</label>
+                                                    <input type="text" asp-for="PhoneCode" name="PhoneCode" class="form-control" autocomplete="off" style="width:100%" />
+                                                    <span asp-validation-for="PhoneCode" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button id="btnCountry" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+        function SaveCountry(e) {
+
+            var notification = $("#notification").data("kendoNotification");
+           // e.preventDefault();
+            $("#btnCountry").hide();
+            $("#btnCountry").prop("disabled", true);
+
+            var displayedData = $("#gridCountry").data().kendoGrid.dataSource.view();
+
+            var dataObject = {  'Id': $("#Id").val()===""?"0":$("#Id").val(),
+                           'SortName': $("#SortName").val(),
+                           'Name': $("#Name").val(),
+                           'PhoneCode': $("#PhoneCode").val(),
+                           'FechaCreacion': $("#FechaCreacion").val(),
+                           'FechaModificacion':$("#FechaModificacion").val(),
+                           'Usuariocreacion':$("#Usuariocreacion").val(),
+                           'Usuariomodificacion':$("#Usuariomodificacion").val(),
+                           '_Country': displayedData
+            };
+
+           // console.log(JSON.stringify(dataObject));
+            //var form = $("#frmNumeracion");
+           // form.validate();
+
+            var validator = $("#frmCountry").data("kendoValidator");
+                 var status = $(".status");
+
+                if (validator.validate()) {
+
+                    $.ajax({
+                        url: '@Url.Action("SaveCountry", "Country")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+
+                            //notification.show({
+                            //    message: "Guardado correctamente!"
+                            //}, "upload-success");
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: 'Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+
+                            RefrescarGrid();
+
+                            $('#ModalCountry').modal('hide');
+
+
+                            
+
+
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                            notification.show({
+                                title: "Validación",
+                                message: textStatus + ": " + XMLHttpRequest.responseText
+                            }, "error");
+
+                        }
+                    });
+
+                }
+                else {
+                    notification.show({
+                        title: "Validación",
+                        message: "Datos no validos en el formulario"
+                    }, "error");
+                }
+            
+
+            $("#btnCountry").show();
+            $("#btnCountry").prop("disabled", false);
+    }
+</script>

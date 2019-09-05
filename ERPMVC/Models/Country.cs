@@ -25,6 +25,8 @@ namespace ERPMVC.Models
         [Display(Name = "Fecha de creación")]
         public DateTime? FechaCreacion { get; set; }
 
+        public bool GAFI { get; set; } = false;
+
         [Display(Name = "Fecha de modificación")]
         public DateTime? FechaModificacion { get; set; }
         public List<State> State { get; set; }

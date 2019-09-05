@@ -124,6 +124,10 @@ namespace ERPMVC.Controllers
                     _listWarehouse = JsonConvert.DeserializeObject<Warehouse>(valorrespuesta);
                 }
 
+                if (_listWarehouse == null)
+                {
+                    _listWarehouse = new Warehouse();
+                }
                 if (_listWarehouse.WarehouseId == 0)
                 {
                     _Warehouse.FechaCreacion = DateTime.Now;

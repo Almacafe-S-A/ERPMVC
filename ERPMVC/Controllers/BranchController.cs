@@ -70,7 +70,11 @@ namespace ERPMVC.Controllers
 
         }
 
-        
+
+  
+
+
+
         [HttpGet]
         public async Task<JsonResult> Get([DataSourceRequest]DataSourceRequest request)
         {
