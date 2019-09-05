@@ -32,9 +32,9 @@ namespace ERPMVC.Controllers
         }
 
         // GET: 
-        public ActionResult JournalEntryLine()
+        public IActionResult JournalEntryLine()
         {
-            return View();
+            return PartialView();
         }
          [HttpGet("[action]")]
         public async Task<JsonResult> GetJournalEntryLine([DataSourceRequest]DataSourceRequest request)
