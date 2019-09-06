@@ -107,11 +107,12 @@ namespace ERPMVC.Controllers
         [HttpGet("[controller]/[action]")]
         public async Task<ActionResult> GetBoleto_EntById([DataSourceRequest]DataSourceRequest request, Boleto_Ent _Boleto_Entp)
        {
-            Boleto_Ent _Boleto_Ent = new Boleto_Ent();
+            Boleto_EntDTO _Boleto_Ent = new Boleto_EntDTO();
             try
             {
 
                 string baseadress = config.Value.urlbase;
+                SubProduct _subproduct = new SubProduct();
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/Boleto_Ent/GetBoleto_EntById/" + _Boleto_Entp.clave_e);
@@ -119,11 +120,23 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Boleto_Ent = JsonConvert.DeserializeObject<Boleto_Ent>(valorrespuesta);
+                    _Boleto_Ent = JsonConvert.DeserializeObject<Boleto_EntDTO>(valorrespuesta);
+
+                    _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    result = await _client.GetAsync(baseadress + "api/SubProduct/GetSubProductByCodigoBalanza/" + _Boleto_Entp.clave_p);
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _subproduct = JsonConvert.DeserializeObject<SubProduct>(valorrespuesta);
+                        _Boleto_Ent.ProductId = _subproduct.SubproductId;
+                        _Boleto_Ent.UnitOfMeasureId = _subproduct.UnitOfMeasureId.Value;
+                    }
+
 
                 }
 
-                if (_Boleto_Ent == null) { _Boleto_Ent = new Boleto_Ent(); }
+                if (_Boleto_Ent == null) { _Boleto_Ent = new Boleto_EntDTO(); }
 
                 //string connetionString = null;
                 //OdbcConnection cnn;
