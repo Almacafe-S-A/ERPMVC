@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -72,6 +73,46 @@ namespace ERPMVC.Controllers
 
 
             return PartialView(_Alert);
+
+        }
+
+        public ActionResult Country()
+        {
+            return View();
+        }
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> pvwAddCountry([FromBody]CountryDTO _sarpara)
+        {
+            CountryDTO _Country = new CountryDTO();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Country/GetCountryById/" + _sarpara.Id);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Country = JsonConvert.DeserializeObject<CountryDTO>(valorrespuesta);
+
+                }
+
+                if (_Country == null)
+                {
+                    _Country = new CountryDTO();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return PartialView(_Country);
 
         }
 

@@ -228,9 +228,26 @@ namespace ERPMVC.Controllers
 
                 if (_listUnitOfMeasure.UnitOfMeasureId == 0)
                 {
-                    _UnitOfMeasure.FechaCreacion = DateTime.Now;
-                    _UnitOfMeasure.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_UnitOfMeasure);
+                    _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                     result = await _client.GetAsync(baseadress + "api/UnitOfMeasure/GetUnitOfMeasureByName/" + _UnitOfMeasure.UnitOfMeasureName);
+
+                    if (!result.IsSuccessStatusCode)
+                    {
+                        _UnitOfMeasure.FechaCreacion = DateTime.Now;
+                        _UnitOfMeasure.UsuarioCreacion = HttpContext.Session.GetString("user");
+                        var insertresult = await Insert(_UnitOfMeasure);
+                        var value = (insertresult.Result as ObjectResult).Value;
+                        UnitOfMeasure resultado = ((UnitOfMeasure)(value));
+                        if(resultado.UnitOfMeasureId<=0)
+                        {
+                            return await Task.Run(() => BadRequest("Ocurrio un error!"));
+                        }
+                    }
+                    else
+                    {
+                        return await Task.Run(() => BadRequest("Ya existe la unidad de medida"));
+                    }
                 }
                 else
                 {

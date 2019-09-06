@@ -10,6 +10,7 @@ namespace ERPMVC.Models
     public class Product
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Display(Name = "Id")]
         public Int64 ProductId { get; set; }
         [Required]
         [Display(Name = "Servicio")]

@@ -38,6 +38,26 @@ namespace ERPMVC.Models
         [Display(Name = "Estado")]
         public string Estado { get; set; }
 
+        [Display(Name = "País")]
+        public Int64 CountryId { get; set; }
+
+        [Display(Name = "País")]
+        public string CountryName { get; set; }
+
+        [Display(Name = "Departamento")]
+        public Int64 StateId { get; set; }
+
+        [Display(Name = "Departamento")]
+        public string StateName { get; set; }
+
+        [Display(Name = "Municipio")]
+        public Int64 CityId { get; set; }
+
+        [Display(Name = "Municipio")]
+        public string CityName { get; set; }
+
+
+
         [Display(Name = "Fecha creación")]
         public DateTime FechaCreacion { get; set; }
 
