@@ -16,6 +16,9 @@ namespace ERPMVC.Models
         [Display(Name = "Ciudad")]
         public string Name { get; set; }
 
+        [Display(Name = "País")]
+        public long? CountryId { get; set; }
+
         [Display(Name = "Departamento")]
         public long? StateId { get; set; }
 

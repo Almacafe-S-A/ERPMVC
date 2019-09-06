@@ -81,7 +81,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> pvwAddCountry([FromBody]CountryDTO _sarpara)
         {
             CountryDTO _Country = new CountryDTO();
