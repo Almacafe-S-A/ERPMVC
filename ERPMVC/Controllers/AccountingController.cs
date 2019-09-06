@@ -96,6 +96,36 @@ namespace ERPMVC.Controllers
             return Json(_customers.ToDataSourceResult(request));
 
         }
+        [HttpGet]
+        public async Task<JsonResult> GetAccountingDiary([DataSourceRequest]DataSourceRequest request)
+        {
+            List<Account> _customers = new List<Account>();
+
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Account/GetAccountDiary");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _customers = JsonConvert.DeserializeObject<List<Account>>(valorrespuesta);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return Json(_customers.ToDataSourceResult(request));
+
+        }
 
 
         public async Task<ActionResult<Account>> SaveAccounting([FromBody]AccountDTO _Accounting)
