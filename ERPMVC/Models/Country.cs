@@ -27,6 +27,39 @@ namespace ERPMVC.Models
 
         public bool GAFI { get; set; } = false;
 
+        [Display(Name = "Lista")]
+        public int ListaId { get; set; }
+        [Display(Name = "Lista")]
+        public string ListaName { get; set; }
+
+        [Display(Name = "Actualización")]
+        public DateTime Actualizacion { get; set; }
+
+        [Display(Name = "Nivel de riesgo")]
+        public int NivelRiesgo { get; set; }
+
+        [Display(Name = "Nivel de riesgo")]
+        public string NivelRiesgoName { get; set; }
+
+        [Display(Name = "Tipo alerta")]
+        public int TipoAlertaId { get; set; }
+
+        [Display(Name = "Tipo de alerta")]
+        public string TipoAlertaName { get; set; }
+
+        [Display(Name = "Acción")]
+        public int AccionId { get; set; }
+
+        [Display(Name = "Acción")]
+        public string AccionName { get; set; }
+
+        [Display(Name = "Seguimiento o monitoreo")]
+        public int SeguimientoId { get; set; }
+
+        [Display(Name = "Seguimiento o monitoreo")]
+        public string SeguimientoName { get; set; }
+
+
         [Display(Name = "Fecha de modificación")]
         public DateTime? FechaModificacion { get; set; }
         public List<State> State { get; set; }

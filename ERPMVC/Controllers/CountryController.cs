@@ -38,9 +38,9 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet]
-        public async Task<JsonResult> Get([DataSourceRequest]DataSourceRequest request)
+        public async Task<JsonResult> Get([DataSourceRequest]DataSourceRequest request,bool GAFI)
         {
-            List<Country> _cais = new List<Country>();
+            List<Country> _country = new List<Country>();
             try
             {
 
@@ -52,8 +52,8 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _cais = JsonConvert.DeserializeObject<List<Country>>(valorrespuesta);
-
+                    _country = JsonConvert.DeserializeObject<List<Country>>(valorrespuesta);
+                    _country = _country.Where(q => q.GAFI == GAFI).ToList();
                 }
 
 
@@ -65,7 +65,7 @@ namespace ERPMVC.Controllers
             }
 
 
-            return Json(_cais.ToDataSourceResult(request));
+            return Json(_country.ToDataSourceResult(request));
 
         }
         //--------------------------------------------------------------------------------------

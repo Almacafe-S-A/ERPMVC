@@ -52,7 +52,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ElementoConfiguracion = JsonConvert.DeserializeObject<ElementoConfiguracionDTO>(valorrespuesta);
-
+                   // _ElementoConfiguracion.Estado = _ElementoConfiguracion.Estado=="A"?"Activo":"Inactivo";
                 }
 
                 if (_ElementoConfiguracion == null)
@@ -117,7 +117,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ElementoConfiguracion = JsonConvert.DeserializeObject<List<ElementoConfiguracion>>(valorrespuesta);
-
+                    _ElementoConfiguracion = _ElementoConfiguracion.OrderByDescending(q => q.Id).ToList();
                 }
 
 
