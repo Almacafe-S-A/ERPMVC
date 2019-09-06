@@ -1,0 +1,144 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "Tax";
+
+}
+
+<script>
+
+    function onsave(e) {
+        //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+        // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+    function caidata(data) {
+        data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+        data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    }
+
+     function AddTax() {
+
+         $('#ModalTax').find(':input').not(':submit').val('');
+         $('#ModalTax').modal('show');
+         $("#TaxId").val('0');
+    }
+
+
+         function EditTax(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+             var dataObject = {
+                 TaxId: dataItem.TaxId,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddTax", "Tax")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    //console.log('success', result)
+
+                    $("#numTax").html('');
+                    $("#numTax").html(result);
+
+
+                    //$("#btnCAI").hide();
+                    $('#ModalTax').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+    }
+
+    function RefrescarGrid() {
+
+        var grid = $("#gridTax").getKendoGrid();
+        grid.dataSource.read();
+
+    }
+
+
+
+</script>
+
+<h3 class="text-themecolor">Impuestos</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.Tax>()
+
+                    .Name("gridTax")
+
+                    .Columns(columns =>
+                    {
+                        columns.Command(command =>
+                        {
+                            //command.Custom("Ver detalles").Click("Detalles");
+                            command.Custom("Editar").Click("EditTax");
+                            command.Destroy().Text("Eliminar");
+                        }).Width(250);
+
+                        columns.Bound(p => p.TaxId).Width(190);
+                        columns.Bound(p => p.TaxCode).Width(190);
+                        columns.Bound(p => p.Description).Width(190);
+                        columns.Bound(p => p.IdEstado).Width(190);
+
+                        columns.Bound(p => p.TaxPercentage).Width(190);
+                    })
+
+
+                    .ToolBar(tools =>
+                    {
+
+                        //tools.Create();
+                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddTax()" });
+                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                    })
+                    .Editable(e => e.Mode(GridEditMode.PopUp))
+                    .Sortable()
+                    .Pageable()
+                    .Filterable()
+                    .Scrollable()
+                    .Pdf(pdf => pdf.FileName("TaxReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                    .Excel(excel => excel.FileName("TaxReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                    .DataSource(dataSource =>
+                    dataSource
+                    .WebApi()
+
+                    .ServerOperation(true)
+                    .Model(model =>
+                    {
+                        model.Id(p => p.TaxId);
+                        model.Field(p => p.TaxId).Editable(false);
+
+                    })
+                    .Events(events => events.Error("error_handler"))
+                    .Read(read => read.Action("Get", "Tax"))
+                    .Create(create => create.Action("Insert", "Tax").Type(HttpVerbs.Post))
+                    .Update(update => update.Action("Update", "Tax").Type(HttpVerbs.Post))
+                    .Destroy(destroy => destroy.Action("Delete", "Tax").Type(HttpVerbs.Post))
+                    )
+                    .Events(e =>
+                    {
+                        e.Save("onsave");
+
+                    })
+)
+
+<div id="numTax">
+    @await Html.PartialAsync("pvwAddTax", new ERPMVC.DTO.TaxDTO { TaxId = 0 })
+</div>
+

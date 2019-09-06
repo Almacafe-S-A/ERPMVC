@@ -1,0 +1,196 @@
+﻿@model ERPMVC.DTO.TaxDTO
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+   // {"required","Valor requerido" }
+};
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<script>
+
+    function customFunction(input) {
+
+        if (input.attr('name') === "BranchId" && input.val() === "0") {
+            return false;
+        }
+
+    }
+
+    //$('#btnprueba').val("");
+</script>
+
+
+
+<div id="ModalTax" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Impuestos</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmTax" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveTax"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <h3 class="card-title">Impuestos</h3>
+                                        <hr>
+                                        <div class="row">
+                                          
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="TaxCode" class=" control-label" style="width:100%">Nombre</label>
+                                                    <input type="text" asp-for="TaxCode" name="TaxCode" class="form-control" autocomplete="off" style="width:100%" />
+                                                    <span asp-validation-for="TaxCode" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Description" class=" control-label" style="width:100%">Descripción</label>
+                                                    <input type="text" asp-for="Description" name="Description" class="form-control" autocomplete="off" style="width:100%" />
+                                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="TaxPercentage" class=" control-label" TaxPercentage="width:100%">Porcentaje</label>
+                                                    <input type="text" asp-for="TaxPercentage" name="TaxPercentage" class="form-control" autocomplete="off" style="width:100%" />
+                                                    <span asp-validation-for="TaxPercentage" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label asp-for="IdEstado" class="control-label">Estado</label>
+                                                <kendo-dropdownlist name="EstadoId"
+                                                                    required
+                                                                    for="@Model.IdEstado"
+                                                                    filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                    option-label="Seleccione un Estado"
+                                                                    datatextfield="NombreEstado"
+                                                                    datavaluefield="IdEstado"
+                                                                    style="width: 100%;">
+                                                    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                        <transport>
+                                                            <read url="@Url.Action("Get", "Estados")" />
+                                                        </transport>
+                                                    </datasource>
+                                                </kendo-dropdownlist>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button id="btnTax" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+        function SaveTax(e) {
+
+            var notification = $("#notification").data("kendoNotification");
+           // e.preventDefault();
+            $("#btnTax").hide();
+            $("#btnTax").prop("disabled", true);
+
+            var displayedData = $("#gridTax").data().kendoGrid.dataSource.view();
+
+            var dataObject = {  'TaxId': $("#TaxId").val()===""?"0":$("#TaxId").val(),
+                           'TaxCode': $("#TaxCode").val(),
+                           'Description': $("#Description").val(),
+                            'TaxPercentage': $("#TaxPercentage").val(),
+                           'IdEstado': $("#IdEstado").val(),
+                           'FechaCreacion': $("#FechaCreacion").val(),
+                           'FechaModificacion':$("#FechaModificacion").val(),
+                           'Usuariocreacion':$("#Usuariocreacion").val(),
+                           'Usuariomodificacion':$("#Usuariomodificacion").val(),
+                           '_Tax': displayedData
+            };
+
+           // console.log(JSON.stringify(dataObject));
+            //var form = $("#frmNumeracion");
+           // form.validate();
+
+            var validator = $("#frmTax").data("kendoValidator");
+                 var status = $(".status");
+
+                if (validator.validate()) {
+
+                    $.ajax({
+                        url: '@Url.Action("SaveTax", "Tax")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+
+                            //notification.show({
+                            //    message: "Guardado correctamente!"
+                            //}, "upload-success");
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: 'Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+
+                            RefrescarGrid();
+
+                            $('#ModalTax').modal('hide');
+
+
+
+
+
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                            notification.show({
+                                title: "Validación",
+                                message: textStatus + ": " + XMLHttpRequest.responseText
+                            }, "error");
+
+                        }
+                    });
+
+                }
+                else {
+                    status.text("Oops! There is invalid data in the form.")
+                        .removeClass("valid")
+                        .addClass("invalid");
+                }
+
+
+            $("#btnTax").show();
+            $("#btnTax").prop("disabled", false);
+    }
+</script>
