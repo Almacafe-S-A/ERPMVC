@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using ERPMVC.DTO;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -21,38 +22,155 @@ namespace ERPMVC.Controllers
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class TaxController : Controller
     {
-
-        private readonly IOptions<MyConfig> _config;
+        private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
 
-        public TaxController(ILogger<TaxController> logger
-            ,IOptions<MyConfig> config)
+        public TaxController(ILogger<TaxController> logger, IOptions<MyConfig> config)
         {
-            this._config = config;
+            this.config = config;
             this._logger = logger;
         }
 
-        public IActionResult Index()
+        // GET: Customer
+        public ActionResult Tax()
         {
             return View();
         }
 
-
-        [HttpGet("[controller]/[action]")]
-        public async Task<ActionResult> GetTaxes([DataSourceRequest]DataSourceRequest request)
+        [HttpGet]
+        public async Task<JsonResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<Tax> _Taxes = new List<Tax>();
+            List<Tax> _tax = new List<Tax>();
             try
             {
-                string baseadress = _config.Value.urlbase;
+
+                string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Tax/GetTaxes");
+                var result = await _client.GetAsync(baseadress + "api/Tax/GetTax");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Taxes = JsonConvert.DeserializeObject<List<Tax>>(valorrespuesta);
+                    _tax = JsonConvert.DeserializeObject<List<Tax>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return Json(_tax.ToDataSourceResult(request));
+
+        }
+        //--------------------------------------------------------------------------------------
+        [HttpGet]
+        public async Task<JsonResult> GetBOX([DataSourceRequest]DataSourceRequest request)
+        {
+            List<Tax> _Tax = new List<Tax>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Tax/GetTax");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Tax = JsonConvert.DeserializeObject<List<Tax>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return Json(_Tax);
+
+        }
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwAddTax([FromBody]TaxDTO _sarpara)
+        {
+            TaxDTO _Tax = new TaxDTO();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Tax/GetTaxById/" + _sarpara.TaxId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Tax = JsonConvert.DeserializeObject<TaxDTO>(valorrespuesta);
+
+                }
+
+                if (_Tax == null)
+                {
+                    _Tax = new TaxDTO();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return PartialView(_Tax);
+
+        }
+
+
+        [HttpPost]
+        public async Task<ActionResult<Tax>> SaveTax([FromBody]TaxDTO _TaxP)
+        {
+
+            Tax _Tax = _TaxP;
+            try
+            {
+                // DTO_NumeracionSAR _liNumeracionSAR = new DTO_NumeracionSAR();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Tax/GetTaxById/" + _Tax.TaxId);
+                string valorrespuesta = "";
+                _Tax.FechaModificacion = DateTime.Now;
+                _Tax.UsuarioModificacion = HttpContext.Session.GetString("user");
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Tax = JsonConvert.DeserializeObject<TaxDTO>(valorrespuesta);
+                }
+
+                if (_Tax == null) { _Tax = new Models.Tax(); }
+
+                if (_TaxP.TaxId == 0)
+                {
+                    _Tax.FechaCreacion = DateTime.Now;
+                    _Tax.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_TaxP);
+                }
+                else
+                {
+                    _TaxP.UsuarioCreacion = _Tax.UsuarioCreacion;
+                    _TaxP.FechaCreacion = _Tax.FechaCreacion;
+                    var updateresult = await Update(_Tax.TaxId, _TaxP);
                 }
 
             }
@@ -62,41 +180,100 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_Taxes.ToDataSourceResult(request));
-
+            return Json(_Tax);
         }
 
 
-        [HttpGet("[controller]/[action]")]
-        public async Task<ActionResult<Tax>> GetTaxById([DataSourceRequest]DataSourceRequest request,Int64 TaxId)
+        //--------------------------------------------------------------------------------------
+        // POST: Tax/Insert
+        [HttpPost]
+        //[ValidateAntiForgeryToken]
+        public async Task<ActionResult> Insert(Tax _TaxP)
         {
-            Tax _Taxes = new Tax();
+            Tax _Tax = _TaxP;
             try
             {
-             
-                
-                string baseadress = _config.Value.urlbase;
+                string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Tax/GetTaxById/"+TaxId);
+                _Tax.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _Tax.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _Tax.FechaCreacion = DateTime.Now;
+                _Tax.FechaModificacion = DateTime.Now;
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Tax/Insert", _Tax);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Taxes = JsonConvert.DeserializeObject<Tax>(valorrespuesta);
+                    _Tax = JsonConvert.DeserializeObject<Tax>(valorrespuesta);
                 }
 
             }
             catch (Exception ex)
             {
-                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
+                return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            
-            return _Taxes;
-
+            return new ObjectResult(new DataSourceResult { Data = new[] { _Tax }, Total = 1 });
         }
+
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Update(Int64 Id, Tax _TaxP)
+        {
+            Tax _Tax = _TaxP;
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                _Tax.FechaModificacion = DateTime.Now;
+                _Tax.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PutAsJsonAsync(baseadress + "api/Tax/Update", _Tax);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Tax = JsonConvert.DeserializeObject<Tax>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+
+            return new ObjectResult(new DataSourceResult { Data = new[] { _Tax }, Total = 1 });
+        }
+
+
+
+        [HttpPost]
+        public async Task<ActionResult<Tax>> Delete(Int64 Id, Tax _TaxP)
+        {
+            Tax _Tax = _TaxP;
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Tax/Delete", _Tax);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Tax = JsonConvert.DeserializeObject<Tax>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+
+            return new ObjectResult(new DataSourceResult { Data = new[] { _Tax }, Total = 1 });
+        }
+
 
 
 
