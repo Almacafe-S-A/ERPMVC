@@ -23,6 +23,13 @@ namespace ERPMVC.Models
         [Display(Name = "Descripción")]
         public string Description { get; set; }
 
+        [Display(Name = "Estado")]
+        public string Estado { get; set; }
+
+
+        [Display(Name = "Id Estado")]
+        public Int64 IdEstado { get; set; }
+
         [Display(Name = "Porcentaje impuesto")]
         public double TaxPercentage { get; set; }
         [Display(Name = "Fecha de creación")]
