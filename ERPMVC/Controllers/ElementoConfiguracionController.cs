@@ -74,9 +74,9 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet("[controller]/[action]")]
-        public async Task<ActionResult> GetElementoByIdConfiguracion([DataSourceRequest]DataSourceRequest request,Int64 Id)
+        public async Task<ActionResult> GetElementoByIdConfiguracion([DataSourceRequest]DataSourceRequest request,Int64 Id,string Estado="A")
         {
-            List<ElementoConfiguracion> _clientes = new List<ElementoConfiguracion>();
+            List<ElementoConfiguracion> _ElementoConfiguracion = new List<ElementoConfiguracion>();
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -87,7 +87,8 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _clientes = JsonConvert.DeserializeObject<List<ElementoConfiguracion>>(valorrespuesta);
+                    _ElementoConfiguracion = JsonConvert.DeserializeObject<List<ElementoConfiguracion>>(valorrespuesta);
+                    _ElementoConfiguracion = _ElementoConfiguracion.Where(q => q.Estado == Estado).ToList();
                 }
 
             }
@@ -97,7 +98,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_clientes.ToDataSourceResult(request));
+            return Json(_ElementoConfiguracion.ToDataSourceResult(request));
 
         }
 
