@@ -124,13 +124,16 @@ namespace ERPMVC.Controllers
 
                     _client = new HttpClient();
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    result = await _client.GetAsync(baseadress + "api/SubProduct/GetSubProductByCodigoBalanza/" + _Boleto_Entp.clave_p);
+                    result = await _client.GetAsync(baseadress + "api/SubProduct/GetSubProductByCodigoBalanza/" + _Boleto_Ent.clave_p);
                     if (result.IsSuccessStatusCode)
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _subproduct = JsonConvert.DeserializeObject<SubProduct>(valorrespuesta);
-                        _Boleto_Ent.ProductId = _subproduct.SubproductId;
-                        _Boleto_Ent.UnitOfMeasureId = _subproduct.UnitOfMeasureId.Value;
+                        if (_subproduct != null)
+                        {
+                            _Boleto_Ent.ProductId = _subproduct.SubproductId;
+                            _Boleto_Ent.UnitOfMeasureId = _subproduct.UnitOfMeasureId.Value;
+                        }
                     }
 
 
