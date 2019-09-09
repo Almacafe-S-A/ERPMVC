@@ -211,10 +211,10 @@ namespace ERPMVC.Controllers
                     _ControlPallets._Boleto_Ent = _Boleto_Ent;
 
 
-                    double yute = (_ControlPallets.TotalSacosYute * 1) / 100;
-                    double polietileno = (_ControlPallets.TotalSacosPolietileno * 0.5) / 100;
-
-                    _ControlPallets.pesoneto2 = _ControlPallets.pesoneto - (yute + polietileno);
+                    double yute = Math.Round(Convert.ToDouble(_ControlPallets.TotalSacosYute * 1) / Convert.ToDouble(100),2, MidpointRounding.AwayFromZero);
+                    double polietileno = Math.Round(Convert.ToDouble((_ControlPallets.TotalSacosPolietileno * 0.5)) / Convert.ToDouble(100),2, MidpointRounding.AwayFromZero);
+                    double tarasaco = Math.Round(Math.Round(yute, 2) + Math.Round(polietileno, 2),2,MidpointRounding.AwayFromZero);
+                    _ControlPallets.pesoneto2 = _ControlPallets.pesoneto - tarasaco;
                 }
                 else
                 {

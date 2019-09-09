@@ -23,6 +23,9 @@ namespace ERPMVC.Models
         public Int64 GoodsReceivedId { get; set; }
 
         [Display(Name = "Sr. Vigilante")]
+        public Int64 VigilanteId { get; set; }
+
+        [Display(Name = "Sr. Vigilante")]
         public string Vigilante { get; set; }
 
         [Display(Name = "Fecha y Hora")]

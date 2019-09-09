@@ -55,7 +55,7 @@ namespace ERPMVC.Controllers
 
                 if (_ControlPalletsLine == null)
                 {
-                    _ControlPalletsLine = new ControlPalletsLine();
+                    _ControlPalletsLine = new ControlPalletsLine { cantidadYute = 0 } ;
                 }
             }
             catch (Exception ex)
