@@ -13,14 +13,14 @@ namespace ERPMVC.Models
         [Display(Name = "Id Proveedor")]
         public Int64 PurchId { get; set; }
         [Required]
-        [Display(Name = "Codigo del Proveedor")]
-        public string PurchCode { get; set; }
-        [Required]
         [Display(Name = "Nombre del Proveedor")]
         public string PurchName { get; set; }
         [Required]
         [Display(Name = "RTN del Proveedor")]
         public string RTN { get; set; }
+        [Required]
+        [Display(Name = "Identidad del dueño")]
+        public string Identidad { get; set; }
 
         [Display(Name = "Tipo de Proveedor")]
         public int PurchTypeId { get; set; }
@@ -32,22 +32,20 @@ namespace ERPMVC.Models
         public int CurrencyId { get; set; }
         [Display(Name = "Grupo de Impuestos")]
         public int taxGroup { get; set; }
-        //[Display(Name = "Tipo de Operacion")]
-        //public int OperationType {get; set;}
         [Display(Name = "Estado")]
         public string State { get; set; }
         [Display(Name = "Zip Code")]
         public string ZipCode { get; set; }
+        [Display(Name = "Telefono")]
+        public string Phone { get; set; }
+
+        
+        
         [Display(Name = "Monto Minimo")]
         public double QtyMin { get; set; }
         [Display(Name = "Monto Mensual")]
         public double QtyMonth { get; set; }
-        [Display(Name = "Telefono")]
-        public string Phone { get; set; }
 
-        [Required]
-        [Display(Name = "Identidad del contacto")]
-        public string Identidad { get; set; }
         [Display(Name = "Telefono Referencia")]
         public string PhoneReferenceone { get; set; }
 
@@ -63,18 +61,13 @@ namespace ERPMVC.Models
 
 
 
-        public string Email { get; set; }
-        [Display(Name = "Persona de Contacto ")]
-        public string ContactPerson { get; set; }
-
+        
         [Display(Name = "Activo/Inactivo ")]
         public Int64 IdEstado { get; set; }
         public string Estado { get; set; }
 
 
-        [Display(Name = "Grupo económico")]
-        public string GrupoEconomico { get; set; }
-
+     
         [Required]
         [Display(Name = "Usuario que lo crea")]
         public string CreatedUser { get; set; }
