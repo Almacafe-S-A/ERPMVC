@@ -247,37 +247,5 @@ namespace ERPMVC.Controllers
 
 
 
-        [HttpPost]
-        public async Task<ActionResult<Tax>> Delete(Int64 Id, Tax _TaxP)
-        {
-            Tax _Tax = _TaxP;
-            try
-            {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Tax/Delete", _Tax);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Tax = JsonConvert.DeserializeObject<Tax>(valorrespuesta);
-                }
-
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"Ocurrio un error{ex.Message}");
-            }
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Tax }, Total = 1 });
-        }
-
-
-
-
-
-
     }
 }
