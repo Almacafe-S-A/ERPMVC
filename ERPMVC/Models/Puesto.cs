@@ -15,10 +15,13 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long IdPuesto { get; set; }
         [Display(Name = "Nombre de puesto")]
+        [Required]
         public string NombrePuesto { get; set; }
         [Display(Name = "Departamento")]
+        [Required]
         public long? IdDepartamento { get; set; }
         [Display(Name = "Departamento")]
+        [Required]
         public string NombreDepartamento { get; set; }
         [Display(Name = "Usuario de creación")]
         public string Usuariocreacion { get; set; }
