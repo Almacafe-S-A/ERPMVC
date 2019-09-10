@@ -93,16 +93,16 @@ namespace ERPMVC.Models
         [Display(Name = "Boleta de peso")]
         public Int64 WeightBallot { get; set; }
 
-        [Display(Name = "Peso bruto")]
+        [Display(Name = "Peso bruto del vehículo")]
         public double PesoBruto { get; set; }
 
         [Display(Name = "Tara de transporte")]
         public double TaraTransporte { get; set; }
 
-        [Display(Name = "Tara de camión")]
+        [Display(Name = "Tara de Vehículo")]
         public double TaraCamion { get; set; }
 
-        [Display(Name = "Peso neto")]
+        [Display(Name = "Peso Neto")]
         public double PesoNeto { get; set; }
         [Display(Name = "Tara unidad de medida")]
         public double TaraUnidadMedida { get; set; }

@@ -308,18 +308,19 @@ namespace ERPMVC.Controllers
                                                //CustomerId = c.CustomerId,
                                            }).ToList();
 
-                            //_client = new HttpClient();
-                            //_client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                            //List<Int64> _boletapeso = new List<long>();
-                            //result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPallets/");
-                            //if (result.IsSuccessStatusCode)
-                            //{
+                            _client = new HttpClient();
+                            _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                            List<Int64> _boletapeso = new List<long>();
+                            result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPallets/");
+                            if (result.IsSuccessStatusCode)
+                            {
 
-                            //    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                            //    List<ControlPallets>  _controlpallets = JsonConvert.DeserializeObject<List<ControlPallets>>(valorrespuesta);
-                            //    _boletapeso = _controlpallets.Select(q => q.WeightBallot).ToList();
-                            //    _Boleto_Ent = _Boleto_Ent.Where(q => !_boletapeso.Contains(q.clave_e)).ToList();
-                            //}
+                                valorrespuesta = await (result.Content.ReadAsStringAsync());
+                                List<ControlPallets> _controlpallets = JsonConvert.DeserializeObject<List<ControlPallets>>(valorrespuesta);
+                                _boletapeso = _controlpallets.Select(q => q.WeightBallot).ToList();
+                                _Boleto_Ent = _Boleto_Ent.Where(q => !_boletapeso.Contains(q.clave_e)).ToList();
+
+                            }
 
                             // _Boleto_Ent = _Boleto_Ent.Where(q => q.Boleto_Sal.peso_s < q.peso_e).ToList();
                         }
