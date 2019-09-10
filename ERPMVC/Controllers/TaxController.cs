@@ -137,6 +137,38 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwEditTax([FromBody]TaxDTO _sarpara)
+        {
+            TaxDTO _Tax = new TaxDTO();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Tax/GetTaxById/" + _sarpara.TaxId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Tax = JsonConvert.DeserializeObject<TaxDTO>(valorrespuesta);
+
+                }
+
+              
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return PartialView(_Tax);
+
+        }
+
         [HttpPost]
         public async Task<ActionResult<Tax>> SaveTax([FromBody]TaxDTO _TaxP)
         {

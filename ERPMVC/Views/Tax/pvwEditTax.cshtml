@@ -1,9 +1,9 @@
-﻿@model ERPMVC.DTO.CountryDTO
+﻿@model ERPMVC.DTO.TaxDTO
 
 @{ Layout = null;
     var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
-           // {"required","Valor requerido" }
-        };
+// {"required","Valor requerido" }
+};
     var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
 }
 
@@ -22,50 +22,50 @@
 
 
 
-<div id="ModalCountry" class="modal fade" role="dialog">
+<div id="ModalEditTax" class="modal fade" role="dialog">
     <!-- Modal content-->
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">País</h4>
+                <h4 class="modal-title">Impuestos</h4>
             </div>
             <div class="modal-body">
                 <div class="row" id="validation">
                     <div class="col-lg-12">
                         <div class="card">
                             <div class="card-body">
-                                <form id="frmCountry" kendo-validator="true"
+                                <form id="frmTax" kendo-validator="true"
                                       data-ajax="true"
                                       data-ajax-method="post"
-                                      data-ajax-begin="SaveCountry"
+                                      data-ajax-begin="SaveTax"
                                       class="validation-wizard wizard-circle">
                                     <div class="form-body">
-                                        <h3 class="card-title">País</h3>
+                                        <h3 class="card-title">Impuestos</h3>
                                         <hr>
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label asp-for="Id" class=" control-label" style="width:100%"></label>
-                                                    <input type="text" asp-for="Id" name="Id" class="form-control" disabled="disabled" style="min-width:100%" />
-                                                    <span asp-validation-for="Id" class="text-danger"></span>
+                                                    <label asp-for="TaxId" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="TaxId" name="TaxId" class="form-control" disabled="disabled" style="width:100%" />
+                                                    <span asp-validation-for="TaxId" class="text-danger"></span>
                                                 </div>
                                             </div>
 
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label asp-for="SortName" class=" control-label" style="width:100%">Nombre de clasificación</label>
-                                                    <input type="text" asp-for="SortName" name="SortName" class="form-control" autocomplete="off" style="min-width:100%" onkeypress="return SoloLetras(event)" />
-                                                    <span asp-validation-for="SortName" class="text-danger"></span>
+                                                    <label asp-for="TaxCode" class=" control-label" style="width:100%">Tipo de Impuesto</label>
+                                                    <input type="text" asp-for="TaxCode" name="TaxCode" class="form-control" disabled="disabled" autocomplete="off" style="width:100%" />
+                                                   
                                                 </div>
                                             </div>
 
 
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label asp-for="Name" class=" control-label" style="width:100%">Nombre</label>
-                                                    <input type="text" asp-for="Name" name="Name" class="form-control" autocomplete="off" style="min-width:100%" onkeypress="return SoloLetras(event)" />
-                                                    <span asp-validation-for="Name" class="text-danger"></span>
+                                                    <label asp-for="Description" class=" control-label" style="width:100%">Descripción</label>
+                                                    <input type="text" asp-for="Description" name="Description" class="form-control" disabled="disabled" autocomplete="off" style="width:100%" />
+                                                    
                                                 </div>
                                             </div>
                                         </div>
@@ -73,16 +73,34 @@
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label asp-for="PhoneCode" class=" control-label" style="width:100%">Codigo telefonico</label>
-                                                    <input type="text" asp-for="PhoneCode" name="PhoneCode" class="form-control" autocomplete="off" style="min-width:100%" onkeypress="return SoloNumeros(event)" />
-                                                    <span asp-validation-for="PhoneCode" class="text-danger"></span>
+                                                    <label asp-for="TaxPercentage" class=" control-label" disabled="disabled" TaxPercentage="width:100%">Porcentaje</label>
+                                                   
                                                 </div>
                                             </div>
 
+                                        </div>
+                                        <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label asp-for="IdEstado" class="control-label">Estado</label>
+                                                <kendo-dropdownlist name="EstadoId"
+                                                                    required
+                                                                    for="@Model.IdEstado"
+                                                                    filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                    option-label="Seleccione un Estado"
+                                                                    datatextfield="NombreEstado"
+                                                                    datavaluefield="IdEstado"
+                                                                    style="width: 100%;">
+                                                    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                        <transport>
+                                                            <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                                                        </transport>
+                                                    </datasource>
+                                                </kendo-dropdownlist>
+                                            </div>
                                         </div>
                                         <div class="row">
                                             <div class="col-md-12">
-                                                <button id="btnCountry" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                                <button id="btnTax" class="form-control btn-miboton" type="submit"> Guardar </button>
                                             </div>
                                         </div>
                                     </div>
@@ -99,78 +117,42 @@
 
 
 <script>
-
-
-    //Validaciones
-    function SoloLetras(e) {
-        key = e.keyCode || e.which;
-        tecla = String.fromCharCode(key).toLowerCase();
-        letras = " áéíóúabcdefghijklmnñopqrstuvwxyz";
-        especiales = "8-37-39-46";
-
-        tecla_especial = false
-        for (var i in especiales) {
-            if (key == especiales[i]) {
-                tecla_especial = true;
-                break;
-            }
-        }
-
-        if (letras.indexOf(tecla) == -1 && !tecla_especial) {
-            return false;
-        }
-    }
-
-   
-    function SoloNumeros(e) {
-        key = e.keyCode || e.which;
-        tecla = String.fromCharCode(key).toLowerCase();
-        letras = "1234567890";
-        especiales = "8-37-39-46";
-
-        tecla_especial = false
-        for (var i in especiales) {
-            if (key == especiales[i]) {
-                tecla_especial = true;
-                break;
-            }
-        }
-
-        if (letras.indexOf(tecla) == -1 && !tecla_especial) {
-            return false;
-        }
-    }
-        function SaveCountry(e) {
+        function SaveTax(e) {
 
             var notification = $("#notification").data("kendoNotification");
            // e.preventDefault();
-            $("#btnCountry").hide();
-            $("#btnCountry").prop("disabled", true);
+            $("#btnTax").hide();
+            $("#btnTax").prop("disabled", true);
 
-            var displayedData = $("#gridCountry").data().kendoGrid.dataSource.view();
-
-            var dataObject = {  'Id': $("#Id").val()===""?"0":$("#Id").val(),
-                           'SortName': $("#SortName").val(),
-                           'Name': $("#Name").val(),
-                           'PhoneCode': $("#PhoneCode").val(),
-                           'FechaCreacion': $("#FechaCreacion").val(),
+            var displayedData = $("#gridTax").data().kendoGrid.dataSource.view();
+            var dataObject = {  'TaxId': $("#TaxId").val()===""?"0":$("#TaxId").val(),
+                           'TaxCode': $("#TaxCode").val(),
+                           'Description': $("#Description").val(),
+                            'TaxPercentage': $("#TaxPercentage").val(),
+                            'IdEstado': $("#IdEstado").val(),
+                            'Estado': $("#IdEstado").data("kendoDropDownList").text(),
+                             'FechaCreacion': $("#FechaCreacion").val(),
                            'FechaModificacion':$("#FechaModificacion").val(),
                            'Usuariocreacion':$("#Usuariocreacion").val(),
                            'Usuariomodificacion':$("#Usuariomodificacion").val(),
-                           '_Country': displayedData
+                           '_Tax': displayedData
             };
 
-           // console.log(JSON.stringify(dataObject));
+            //console.log(JSON.stringify(dataObject));
             //var form = $("#frmNumeracion");
-            // form.validate();
+           // form.validate();
 
-            var validator = $("#frmCountry").data("kendoValidator");
+            var validator = $("#frmTax").data("kendoValidator");
                  var status = $(".status");
 
-                if (validator.validate()) {
+            if (validator.validate() ) {
+                    //Aqui pondria el validado supongo pero no estoy seguro.
 
+                    if (dataObject.TaxPercentage < 0) {
+                        console.log("Prueba a ver si entro")
+                    }
                     $.ajax({
-                        url: '@Url.Action("SaveCountry", "Country")',
+                        url: '@Url.Action("SaveTax", "Tax")',
                         method: 'POST',
                         datatype: "json",
                         contentType: 'application/json',
@@ -193,10 +175,10 @@
 
                             RefrescarGrid();
 
-                            $('#ModalCountry').modal('hide');
+                            $('#ModalTax').modal('hide');
 
 
-                            
+
 
 
                         },
@@ -206,19 +188,20 @@
                                 title: "Validación",
                                 message: textStatus + ": " + XMLHttpRequest.responseText
                             }, "error");
-
                         }
+
                     });
 
                 }
-                else {
+            else {
+               
                     status.text("Oops! There is invalid data in the form.")
                         .removeClass("valid")
                         .addClass("invalid");
                 }
-            
 
-            $("#btnCountry").show();
-            $("#btnCountry").prop("disabled", false);
+
+            $("#btnTax").show();
+            $("#btnTax").prop("disabled", false);
     }
 </script>
