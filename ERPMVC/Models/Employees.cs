@@ -10,10 +10,10 @@ namespace ERPMVC.Models
     public class Employees
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Display(Name ="Id")]
+        [Display(Name = "Id")]
         public long IdEmpleado { get; set; }
         [Required]
-        [Display(Name = "Nombre")]        
+        [Display(Name = "Nombre")]
         public string NombreEmpleado { get; set; }
         [Required]
         [EmailAddress]
@@ -77,7 +77,7 @@ namespace ERPMVC.Models
         public Int64 Idsescalas { get; set; }
         [Display(Name = "Id Activo Inactivo")]
         public long? IdActivoinactivo { get; set; }
-       
+
         [Display(Name = "Foto")]
         public string Foto { get; set; }
         [Required]
@@ -87,7 +87,7 @@ namespace ERPMVC.Models
         [Display(Name = "Cuenta de Banco")]
         public string CuentaBanco { get; set; }
 
-    
+
         [Display(Name = "Fecha de Fin de Contrato")]
         public DateTime FechaFinContrato { get; set; }
         [Required]
@@ -116,6 +116,17 @@ namespace ERPMVC.Models
         [Required]
         [Display(Name = "Departamento")]
         public string NombreDepartamento { get; set; }
+
+
+        [Display(Name = "Tipo de Sangre")]
+        public string TipoSangre { get; set; }
+        [Display(Name = "Nombre del Contacto de Emergencia")]
+        public string NombreContacto { get; set; }
+        [Display(Name = "Telefono")]
+        public string TelefonoContacto { get; set; }
+        [Required]
+        [Display(Name = "Tipo de Planilla")]
+        public int IdPlanilla { get; set; }
 
 
         public string Usuariocreacion { get; set; }
