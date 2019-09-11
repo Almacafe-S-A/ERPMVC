@@ -344,6 +344,8 @@ namespace ERPMVC.Controllers
             {
                 if (_GoodsReceived != null)
                 {
+
+                    
                     GoodsReceived _listGoodsReceived = new GoodsReceived();
                    // _listGoodsReceived = JsonConvert.DeserializeObject<GoodsReceived>(_GoodsReceived.ToString());
                     string baseadress = config.Value.urlbase;

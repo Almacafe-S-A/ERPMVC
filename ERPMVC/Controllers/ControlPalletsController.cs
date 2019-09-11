@@ -197,22 +197,22 @@ namespace ERPMVC.Controllers
                 {
                     if (_Boleto_Ent.peso_e > _Boleto_Ent.Boleto_Sal.peso_n)
                     {
-                        _ControlPallets.taracamion = (_Boleto_Ent.peso_e - _Boleto_Ent.Boleto_Sal.peso_n) / 100;
+                        _ControlPallets.taracamion = Convert.ToDouble((_Boleto_Ent.peso_e - _Boleto_Ent.Boleto_Sal.peso_n) / Convert.ToDouble(100));
                     }
                     else if (_Boleto_Ent.peso_e < _Boleto_Ent.Boleto_Sal.peso_n)
                     {
-                        _ControlPallets.taracamion = (_Boleto_Ent.peso_e) / 100;
+                        _ControlPallets.taracamion = Convert.ToDouble((_Boleto_Ent.peso_e)) / Convert.ToDouble(100);
                     }
 
-                    _ControlPallets.pesobruto = _Boleto_Ent.peso_e / 100;
-                    _ControlPallets.pesoneto = _ControlPallets.pesobruto - _ControlPallets.taracamion;
+                    _ControlPallets.pesobruto = Math.Round(Convert.ToDouble(_Boleto_Ent.peso_e) / Convert.ToDouble(100),2, MidpointRounding.AwayFromZero);
+                    _ControlPallets.pesoneto = Math.Round(Convert.ToDouble(_ControlPallets.pesobruto) - Convert.ToDouble(_ControlPallets.taracamion),2, MidpointRounding.AwayFromZero);
                     _ControlPallets._Boleto_Ent = _Boleto_Ent;
                     
                     double yute = Math.Round(Convert.ToDouble(_ControlPallets.TotalSacosYute * 1) / Convert.ToDouble(100), 2, MidpointRounding.AwayFromZero);
                     double polietileno = Math.Round(Convert.ToDouble((_ControlPallets.TotalSacosPolietileno * 0.5)) / Convert.ToDouble(100), 2, MidpointRounding.AwayFromZero);
                     double tarasaco = Math.Round(Math.Round(yute, 2) + Math.Round(polietileno, 2), 2, MidpointRounding.AwayFromZero);
                     _ControlPallets.Tara = tarasaco;
-                    _ControlPallets.pesoneto2 = _ControlPallets.pesoneto - tarasaco;
+                    _ControlPallets.pesoneto2 = Convert.ToDouble(_ControlPallets.pesoneto) - Convert.ToDouble(tarasaco);
                 }
                 else
                 {

@@ -263,9 +263,43 @@
                                                                 }
 
                                                                 function customerchange() {
-                                                                    $("#WeightBallotddl").data("kendoDropDownList").dataSource.read();
+
+                                                                    kendo.ui.progress($("#myModalControlPallets"), true);
+
+                                                                    //kendo.ui.progress.messages = {
+                                                                    //    loading: "Processing..."
+                                                                    //};
+                                                                    $("#WeightBallotddl").data("kendoDropDownList").enable(true);
+                                                                    var datasource = $("#WeightBallotddl").data("kendoDropDownList").dataSource;
+                                                                    datasource.async = false;
+
+                                                                    var raw = datasource._data;
+                                                                    for (i = datasource._data.length - 1; i >= 0; i--) {
+                                                                        item = raw[i];
+                                                                        datasource.remove(item);
+                                                                    }
+
+                                                                    datasource.read();
+                                                                    $("#WeightBallotddl").data("kendoDropDownList").refresh();
+                                                                  
+                                                                   // kendo.ui.progress($(".chart-loading"), false);
                                                                 }
                                                             </script>
+
+                                                            <style>
+                                                                /* By default the text is hidden, re-position the text */
+                                                                span.k-loading-text {
+                                                                    /*text-indent: 0;
+                                                                    top: 50%;
+                                                                    left: 50%;
+                                                                    background-color: #0F0;*/
+                                                                    z-index:-99999999;
+                                                                }
+
+                                                                /*div.k-loading-image {
+                                                                    display: none;
+                                                                }*/
+                                                            </style>
 
 
                                                             <label asp-for="CustomerId" class="control-label"></label>
@@ -275,11 +309,12 @@
                                                                                 onchange="customerchange();"
                                                                                 datatextfield="CustomerName"
                                                                                 datavaluefield="CustomerId"
+
                                                                                 on-select="GetSubProduct"
                                                                                 style="width: 100%;">
-                                                                <datasource type="DataSourceTagHelperType.WebApi" page-size="20000">
+                                                                <datasource type="DataSourceTagHelperType.WebApi" page-size="990000">
                                                                     <transport>
-                                                                        <read url="@Url.Action("GetCustomer", "Common")" />
+                                                                        <read url="@Url.Action("GetCustomer", "Common")"  />
                                                                     </transport>
                                                                 </datasource>
                                                             </kendo-dropdownlist>
@@ -287,7 +322,10 @@
                                                         </div>
                                                     </div>
 
-                                                 
+                                                    <div class="chart-wrap" style="position: relative;z-index:-99999999">
+                                                        <div id="chart"></div>
+                                                        <div class="chart-loading"></div>
+                                                    </div>
 
                                                     <div class="col-md-3">
                                                         <script>
@@ -311,9 +349,13 @@
                                                                 return data;
                                                             }
 
+                                                            //$("#WeightBallotddl").data("kendoDropDownList").bind("change", function (e) {
+                                                            //    CallPesaje();
+                                                            //});
+
                                                             function CallPesaje() {
                                                                 $("#WeightBallot").data("kendoNumericTextBox").value($("#WeightBallotddl").val());
-                                                                $("#WeightBallot").data("kendoNumericTextBox").trigger('change');
+                                                               // $("#WeightBallot").data("kendoNumericTextBox").trigger('change');
                                                                 GetBoletaPeso();
                                                             }
 
@@ -321,47 +363,56 @@
                                                               //  console.log($("#CustomerId").val());
                                                                 return { CustomerTypeId: 1, CustomerId: $("#CustomerId").val() }
                                                             }
+
+                                                            function onbound() {
+                                                                kendo.ui.progress($("#myModalControlPallets"), false);
+                                                            }
                                                         </script>
                                                         <label asp-for="WeightBallot" class="control-label" style="width: 100%;"></label>
                                                         @(Html.Kendo().DropDownListFor(m => m.WeightBallot)
-                                                                    //.Name("WeightBallotddl")
-                                                                    .Filter(Kendo.Mvc.UI.FilterType.Contains)
-                                                                    .OptionLabel("Buscar")
-                                                                    .DataTextField("observa_e")
-                                                                    .DataValueField("clave_e")
-                                                                    .HtmlAttributes(new { style = "width:100%", id = "WeightBallotddl" })
-                                                                    .Height(290)
-                                                                    .Events(e =>
-                                                                    {
-                                                                        e.Change("CallPesaje");
-                                                                                                                // e.Filtering("applyFilterCustomer");
-                                                                                                            })
-                                                                    .AutoBind(false)
-                                                                    .DataSource(source =>
-                                                                    {
-                                                                        source.Ajax()
-                                                                        .PageSize(80)
-
-                                                                        .Read(r =>
-                                                                        {
-                                                                            r.Action("Virtualization_Read", "Boleto_Ent").Data("GetEsIngreso");
-
-                                                                        });
-                                                                    })
-                                                                    .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapperWB"))
+                                                                            //.Name("WeightBallotddl")
+                                                                            .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                                                                            .OptionLabel("Buscar")
+                                                                            .DataTextField("observa_e")
+                                                                            .DataValueField("clave_e")
+                                                                            .Enable(false)
+                                                                            .HtmlAttributes(new { style = "width:100%", id = "WeightBallotddl" })
+                                                                            .Height(290)
+                                                                            .Events(e =>
+                                                                            {                                                                             
+                                                                               // e.DataBound("onbound");
+                                                                                e.Change("CallPesaje");
+                                                                               // e.Filtering("applyFilterCustomer");
+                                                                           })
+                                                                            .AutoBind(false)
+                                                                            .DataSource(source =>
+                                                                            {
+                                                                                source.Ajax()
+                                                                                .PageSize(80)
+                                                                                .Events(e=>e.RequestEnd("onbound"))
+                                                                                .Read(r =>
+                                                                                {
+                                                                                    r.Action("Virtualization_Read", "Boleto_Ent").Data("GetEsIngreso");
+                                                                                  
+                                                                                });
+                                                                            })
+                                                                            .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapperWB"))
                                                         )
 
-                                                        <span asp-validation-for="SubProductId" class="text-danger"></span>
+                                                        <span asp-validation-for="WeightBallot" class="text-danger"></span>
                                                     </div>
+
+
+
                                                     <div class="col-md-3">
                                                         <div class="form-group">
                                                             <script>
                                                     function GetBoletaPeso() {
 
                                                         var notification = $("#notification").data("kendoNotification");
-                                                        var dataObject = { 'clave_e': $("#WeightBallotddl").val() };
+                                                        var dataObject = { 'clave_e': $("#WeightBallot").val() };
 
-                                                        if (Number($("#WeightBallotddl").val()) > 0) {
+                                                        if (Number($("#WeightBallot").val()) > 0) {
                                                             $.ajax({
                                                                 url: '@Url.Action("GetBoleto_EntById", "Boleto_Ent")',
                                                                 method: 'GET',
@@ -374,22 +425,12 @@
                                                                     //console.log(result);
                                                                     // debugger;
 
+
+
                                                                     var resultados = result;
-                                                                    var tarapolietileno = ($("#TotalSacosPolietileno").val() * 0.5) / 100;
-                                                                    var tarayute = ($("#TotalSacosYute").val() * 1) / 100;
-                                                                    var ts = tarapolietileno + tarayute;
-                                                                    setearvalor("Tara", ts);
 
-                                                                    //var pesobruto = (result.Boleto_Sal.peso_n / 100);
-                                                                    //setearvalor("QQPesoBruto", pesobruto);
-                                                                    //setearvalor("QQPesoNeto", pesobruto - ts);
 
-                                                                    $("#Motorista").val(resultados.conductor);
-                                                                    $("#Placa").val(resultados.placas);
-                                                                    $("#SubProductId").data("kendoDropDownList").value(resultados.ProductId);
-                                                                    $("#UnitOfMeasureId").data("kendoDropDownList").value(resultados.UnitOfMeasureId);
-
-                                                                    if (resultados.clave_e == 0) {
+                                                                           if (resultados.clave_e == 0) {
                                                                         //Web api local
                                                                         var urlbase = "http://localhost:9200/api/code"
                                                                         var dataObject2 = { 'id': $("#WeightBallot").val() };
@@ -449,6 +490,28 @@
                                                                     }
 
 
+                                                                    var tarapolietileno = ($("#TotalSacosPolietileno").val() * 0.5) / 100;
+                                                                    var tarayute = ($("#TotalSacosYute").val() * 1) / 100;
+                                                                    var ts = tarapolietileno + tarayute;
+                                                                    setearvalor("Tara", ts);
+
+                                                                    //var pesobruto = (result.Boleto_Sal.peso_n / 100);
+                                                                    //setearvalor("QQPesoBruto", pesobruto);
+                                                                    //setearvalor("QQPesoNeto", pesobruto - ts);
+
+                                                                    $("#Motorista").val(resultados.conductor);
+                                                                    $("#Placa").val(resultados.placas);
+                                                                    $("#SubProductId").data("kendoDropDownList").value(resultados.ProductId);
+                                                                    $("#UnitOfMeasureId").data("kendoDropDownList").value(resultados.UnitOfMeasureId);
+
+                                                                    $("#SubProductId").data("kendoDropDownList").enable(false);
+                                                                    $("#UnitOfMeasureId").data("kendoDropDownList").enable(false);
+
+
+
+                                                             
+
+
                                                                     if ($("#EsIngreso").val() == 1) {
                                                                         if (resultados.Boleto_Sal != null) {
                                                                             if (resultados.Boleto_Sal.peso_s > resultados.peso_e) {
@@ -491,6 +554,7 @@
                                                             <kendo-numerictextbox name="WeightBallot"
                                                                                   format="n"
                                                                                   required
+                                                                                  enable="false"
                                                                                   min="0"
                                                                                   spinners="false"
                                                                                   max="99999999"
@@ -510,7 +574,7 @@
 
                                                             <kendo-dropdownlist name="ProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                                 for="ProductId"
-                                                                                option-label="Seleccione el Producto"
+                                                                                option-label="Seleccione el Servicio"
                                                                                 datatextfield="ProductName"
                                                                                 datavaluefield="ProductId"
                                                                                 required
@@ -525,7 +589,7 @@
                                                         </div>
                                                     </div>
 
-                                                  
+
 
 
                                                 </div>

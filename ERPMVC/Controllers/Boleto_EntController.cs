@@ -122,6 +122,12 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Boleto_Ent = JsonConvert.DeserializeObject<Boleto_EntDTO>(valorrespuesta);
 
+                    if (_Boleto_Ent == null)
+                    {
+                        _Boleto_Ent = new Boleto_EntDTO();
+                        return Json(_Boleto_Ent);
+                    }
+
                     _client = new HttpClient();
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                     result = await _client.GetAsync(baseadress + "api/SubProduct/GetSubProductByCodigoBalanza/" + _Boleto_Ent.clave_p);
@@ -376,6 +382,11 @@ namespace ERPMVC.Controllers
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _listBoleto_Ent = JsonConvert.DeserializeObject<Boleto_Ent>(valorrespuesta);
+                }
+
+                if(_listBoleto_Ent==null)
+                {
+                    _listBoleto_Ent = new Boleto_Ent();
                 }
 
                 if (_listBoleto_Ent.clave_e == 0)

@@ -122,7 +122,8 @@ namespace IntegregracionBalanzaApiLocal
                          
                          
                     };
-                    resp.Headers.Add("Access-Control-Allow-Origin", ConfigurationManager.AppSettings["clientepermitido"]);
+                   // resp.Headers.Add("Access-Control-Allow-Origin", ConfigurationManager.AppSettings["clientepermitido"]);
+                    resp.Headers.Add("Access-Control-Allow-Origin", ConfigurationManager.AppSettings["clientepermitido2"]);
 
                     return resp;
                    // Request.Headers.Add("Access-Control-Allow-Origin", "http://localhost:1371");

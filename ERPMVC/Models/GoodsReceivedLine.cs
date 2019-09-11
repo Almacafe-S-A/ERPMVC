@@ -39,7 +39,7 @@ namespace ERPMVC.Models
         [Display(Name = "Cantidad")]
         public double Quantity { get; set; }
         [Display(Name = "Sacos")]
-        public int QuantitySacos { get; set; }
+        public int? QuantitySacos { get; set; }
 
         [Display(Name = "Precio")]
         public double Price { get; set; }

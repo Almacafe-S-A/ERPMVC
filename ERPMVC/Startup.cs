@@ -452,7 +452,7 @@ namespace ERPMVC
             //                  .AllowAnyMethod()
             //                  .AllowAnyHeader());
 
-         //   app.UseHttpsRedirection();
+            //   app.UseHttpsRedirection();
             app.UseStaticFiles();
 
             var cookiePolicyOptions = new CookiePolicyOptions
