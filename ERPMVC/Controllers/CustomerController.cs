@@ -328,24 +328,38 @@ namespace ERPMVC.Controllers
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
-                    string error = await result.Content.ReadAsStringAsync();
-                    return this.Json(new DataSourceResult
+                   
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    Customer _customerq = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
+                    if(_customerq==null)
                     {
-                        Errors = $"El RTN del cliente ya existe!"
-                    });
-                   // return await Task.Run(() => BadRequest("El RTN del cliente ya existe"));
-                }
-                else
-                {
-                    result = await _client.PostAsJsonAsync(baseadress + "api/Customer/Insert", _customer);
-                    valorrespuesta = "";
-                    if (result.IsSuccessStatusCode)
-                    {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _customer = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
+                        _customerq = new Customer();
 
                     }
+
+
+                    if (_customerq.CustomerId > 0)
+                    {
+                        string error = await result.Content.ReadAsStringAsync();
+                        return this.Json(new DataSourceResult
+                        {
+                            Errors = $"El RTN del cliente ya existe!"
+                        });
+                    }
+                    else
+                    {
+                        result = await _client.PostAsJsonAsync(baseadress + "api/Customer/Insert", _customer);
+                        valorrespuesta = "";
+                        if (result.IsSuccessStatusCode)
+                        {
+                            valorrespuesta = await (result.Content.ReadAsStringAsync());
+                            _customer = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
+
+                        }
+                    }
+                    // return await Task.Run(() => BadRequest("El RTN del cliente ya existe"));
                 }
+               
 
             }
             catch (Exception ex)
