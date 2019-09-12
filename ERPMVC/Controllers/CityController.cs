@@ -266,6 +266,12 @@ namespace ERPMVC.Controllers
                     if (_City.Id == 0)
                     {
                         var insertresult = await Insert(_CityS);
+                        var value = (insertresult.Result as ObjectResult).Value;
+                        _City = ((City)(value));
+                        if (_City.Id <= 0)
+                        {
+                            return await Task.Run(() => BadRequest("Ocurrio un error!"));
+                        }
                     }
                     else
                     {
