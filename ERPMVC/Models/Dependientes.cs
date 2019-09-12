@@ -27,6 +27,12 @@ namespace ERPMVC.Models
         [Display(Name = "Empleado")]
         public long? IdEmpleado { get; set; }
 
+        [Display(Name = "Edad")]
+        public int Edad { get; set; }
+
+        [Display(Name = "Fecha de Nacimiento")]
+        public DateTime FechaNacimiento { get; set; }
+
         public string Usuariocreacion { get; set; }
         public string Usuariomodificacion { get; set; }
         public DateTime? FechaCreacion { get; set; }

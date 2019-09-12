@@ -1,0 +1,179 @@
+﻿
+
+<script>
+    function customFunction(input) {
+
+        if (input.attr('name') === "ContactPersonId" && input.val() === "0") {
+            return false;
+        }
+
+
+        return true;
+    }
+
+    function onsave(e) {
+     //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+       // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+
+    function AddContactPerson() {
+
+
+
+        $('#ModalContactPerson').find(':input').not(':submit').val('');
+
+        $('#ModalContactPerson').modal('show');
+        $("#ContactPersonId").val('0');
+
+
+
+
+      }
+
+
+    function EditContactPerson(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                ContactPersonId: dataItem.ContactPersonId,
+                 editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddContactPerson", "ContactPerson")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumContactPerson").html('');
+                    $("#NumContactPerson").html(result);
+
+
+                    //$("#btnCAI").hide();
+                    $('#ModalContactPerson').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+    }
+    function VendorId() {
+        return { VendorId: $("#PurchId").val() }
+    }
+
+</script>
+
+<h3 class="text-themecolor">Contactos</h3>
+@(Html.Kendo().Grid<ERPMVC.Models.ContactPerson>
+                            ()
+                            .Name("gridNumeracionContactPerson")
+                            .Columns(columns =>
+                            {
+                                columns.Command(command =>
+                                {
+
+
+                                    command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditContactPerson");
+                                    command.Destroy().Text(" ").IconClass("fa fa-trash");
+                        //  command.Destroy();
+                    }).Width(100);
+                                columns.Bound(p => p.ContactPersonId).Title("Id").Width(1);
+                                columns.Bound(p => p.ContactPersonName).Title("Nombre").Width(200);
+                                columns.Bound(p => p.VendorId).Title("ProveedorId").Width(1);
+                                columns.Bound(p => p.ContactPersonIdentity).Title("Identidad").Width(250);
+                                columns.Bound(p => p.ContactPersonPhone).Title("Telefono").Width(150);
+                                columns.Bound(p => p.ContactPersonCity).Title("Ciudad").Width(200);
+                                columns.Bound(p => p.ContactPersonEmail).Title("Email").Width(250);
+                                columns.Bound(p => p.ContactPersonEstado).Title("Estado ").Width(250);
+                            })
+                            .Filterable(f => f.Operators(o => o.ForString(s => s
+                            .Clear()
+                            .Contains("Contiene")
+                            .DoesNotContain("No contiene")
+                            .EndsWith("Termina con")
+                            .IsEqualTo("Es igual a")
+                            .IsNotEqualTo("No es igual a")
+                            .IsNull("Es nulo")
+                            .StartsWith("Inicia con")
+
+
+                            )
+                            .ForNumber(n => n
+                            .Clear()
+                            .IsEqualTo("Es igual a")
+                            .IsGreaterThan("Es mayor que")
+                            .IsLessThan("Es menor que")
+                            .IsNull("Es nulo")
+                            .IsLessThanOrEqualTo("Es menor o igual que")
+                            .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                            )
+                            .ForDate(d => d
+                            .Clear()
+                            .IsEqualTo("Es igual que")
+                            .IsGreaterThan("Es mayor que")
+                            .IsLessThan("Es menor que")
+                            .IsLessThanOrEqualTo("Es menor o igual que")
+                            .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                            .IsNotEqualTo("No es igual que")
+                            )
+                            ))
+                            .ToolBar(tools =>
+                            {
+                    // tools.Create();
+                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                    .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddContactPerson()" });
+                                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                            })
+                            .Editable(e => e.Mode(GridEditMode.PopUp))
+                            .Sortable()
+                            .Pageable()
+                            .Filterable()
+                            .Scrollable()
+                            .Pdf(pdf => pdf.FileName("ContactPersonReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                            .Excel(excel => excel.FileName("ContactPersonReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                            .DataSource(dataSource =>
+                            dataSource
+                            .WebApi()
+
+                            .ServerOperation(true)
+                            .Model(model =>
+                            {
+                                model.Id(p => p.ContactPersonId);
+                                model.Field(p => p.ContactPersonName).Editable(true);
+                                model.Field(p => p.ContactPersonIdentity).Editable(true);
+                                model.Field(p => p.ContactPersonPhone).Editable(true);
+                                model.Field(p => p.ContactPersonCity).Editable(true);
+                                model.Field(p => p.ContactPersonEmail).Editable(true);
+                                model.Field(p => p.ContactPersonEstado).Editable(true);
+
+
+                            })
+                            .Events(events => events.Error("error_handler"))
+                            .Read(read => read.Action("GetContactPerson", "ContactPerson").Data("VendorId"))
+                            .Create(create => create.Action("Insert", "ContactPerson"))
+                            .Update(update => update.Action("Update", "ContactPerson", new { ContactPersonId = "{0}" }).Type(HttpVerbs.Put))
+                            .Destroy(destroy => destroy.Action("Delete", "ContactPerson", new { ContactPersonId = "{0}" }).Type(HttpVerbs.Delete))
+
+                            )
+                            .Events(e =>
+                            {
+                                e.Save("onsave");
+
+                            })
+)
+
+
+<div id="NumContactPerson">
+    @await Html.PartialAsync("pvwAddContactPerson", new ERPMVC.DTO.ContactPersonDTO { ContactPersonId = 0 })
+</div>
