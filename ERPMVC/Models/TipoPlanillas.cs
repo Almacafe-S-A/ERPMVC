@@ -10,17 +10,20 @@ using System.Threading.Tasks;
 
 namespace ERPMVC.Models
 {
-    public class Planilla
+    public class TipoPlanillas
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Display(Name = "Id")]
-        public long IdPlanilla { get; set; }
+        public long IdTipoPlanilla { get; set; }
         [Display(Name = "Tipo de Planilla")]
         [Required]
         public string TipoPlanilla { get; set; }
         [Display(Name = "Descripción")]
         [Required]
         public string Descripcion { get; set; }
+        [Display(Name = "Estado")]
+        [Required]
+        public string Estado { get; set; }
         [Display(Name = "Estado")]
         [Required]
         public long EstadoId { get; set; }

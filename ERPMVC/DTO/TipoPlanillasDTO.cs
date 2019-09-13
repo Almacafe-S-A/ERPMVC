@@ -7,9 +7,9 @@ using System.Threading.Tasks;
 
 namespace ERPMVC.DTO
 {
-    public class PlanillaDTO : Planilla
+    public class TipoPlanillasDTO : TipoPlanillas
     {
-        public List<Planilla> _Planilla { get; set; }
+        public List<TipoPlanillas> _TipoPlanillas { get; set; }
 
 
         public int editar { get; set; } = 1;
