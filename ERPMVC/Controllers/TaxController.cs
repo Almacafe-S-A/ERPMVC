@@ -37,6 +37,34 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> GetTaxes([DataSourceRequest]DataSourceRequest request)
+        {
+            List<Tax> _Taxes = new List<Tax>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Tax/GetTax");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Taxes = JsonConvert.DeserializeObject<List<Tax>>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_Taxes.ToDataSourceResult(request));
+
+        }
+
         [HttpGet]
         public async Task<JsonResult> Get([DataSourceRequest]DataSourceRequest request)
         {
