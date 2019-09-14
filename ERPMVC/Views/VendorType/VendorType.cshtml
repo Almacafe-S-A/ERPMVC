@@ -1,0 +1,162 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "Tipos de Proveedores";
+}
+
+<script>
+
+    function onsave(e) {
+     //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+       // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+
+    function AddVendorType() {
+
+
+
+        $('#ModalVendorType').find(':input').not(':submit').val('');
+
+        $('#ModalVendorType').modal('show');
+        $("#VendorTypeId").val('0');
+
+
+
+
+      }
+
+
+    function EditVendorType(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                VendorTypeId: dataItem.VendorTypeId,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddVendorType", "VendorType")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumVendorType").html('');
+                    $("#NumVendorType").html(result);
+
+
+                    //$("#btnCAI").hide();
+                    $('#ModalVendorType').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+    }
+
+
+</script>
+
+<h3 class="text-themecolor">Tipos de Proveedor </h3>
+@(Html.Kendo().Grid<ERPMVC.Models.VendorType>
+            ()
+            .Name("gridNumeracionVendorType")
+            .Columns(columns =>
+            {
+                columns.Command(command =>
+                {
+
+                    command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditVendorType");
+
+                }).Width(100);
+
+                columns.Bound(p => p.VendorTypeId).Title("Id").Width(1);
+                columns.Bound(p => p.VendorTypeName).Title("Nombre").Width(250);
+                //
+                columns.Bound(p => p.Description).Title("Descripcion").Width(200);
+                // columns.Bound(p => p.Phone).Title("Telefono").Width(150);
+            })
+            .Filterable(f => f.Operators(o => o.ForString(s => s
+            .Clear()
+            .Contains("Contiene")
+            .DoesNotContain("No contiene")
+            .EndsWith("Termina con")
+            .IsEqualTo("Es igual a")
+            .IsNotEqualTo("No es igual a")
+            .IsNull("Es nulo")
+            .StartsWith("Inicia con")
+
+
+            )
+            .ForNumber(n => n
+            .Clear()
+            .IsEqualTo("Es igual a")
+            .IsGreaterThan("Es mayor que")
+            .IsLessThan("Es menor que")
+            .IsNull("Es nulo")
+            .IsLessThanOrEqualTo("Es menor o igual que")
+            .IsGreaterThanOrEqualTo("Es mayor o igual que")
+            )
+            .ForDate(d => d
+            .Clear()
+            .IsEqualTo("Es igual que")
+            .IsGreaterThan("Es mayor que")
+            .IsLessThan("Es menor que")
+            .IsLessThanOrEqualTo("Es menor o igual que")
+            .IsGreaterThanOrEqualTo("Es mayor o igual que")
+            .IsNotEqualTo("No es igual que")
+            )
+            ))
+            .ToolBar(tools =>
+            {
+                // tools.Create();
+                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddVendorType()" });
+                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+            })
+            .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+            .Sortable()
+            .Pageable()
+            .Filterable()
+            .Scrollable()
+            .Pdf(pdf => pdf.FileName("VendorTypeReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+            .ProxyURL(Url.Action("Export", "Home")).AllPages())
+            .Excel(excel => excel.FileName("VendorTypeReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+            .DataSource(dataSource =>
+            dataSource
+            .WebApi()
+
+            .ServerOperation(true)
+            .Model(model =>
+            {
+                model.Id(p => p.VendorTypeId);
+                model.Field(p => p.VendorTypeName).Editable(true);
+                model.Field(p => p.Description).Editable(true);
+            })
+            .Events(events => events.Error("error_handler"))
+            .Read(read => read.Action("GetVendorType", "VendorType"))
+            .Create(create => create.Action("Insert", "VendorType"))
+            .Update(update => update.Action("Update", "VendorType", new { VendorTypeId = "{0}" }).Type(HttpVerbs.Put))
+            //.Destroy(destroy => destroy.Action("Delete", "Vendor", new { VendorId = "{0}" }).Type(HttpVerbs.Delete))
+
+            )
+            .Events(e =>
+            {
+                e.Save("onsave");
+
+            })
+)
+
+
+<div id="NumVendorType">
+    @await Html.PartialAsync("pvwAddVendorType", new ERPMVC.DTO.VendorTypeDTO { VendorTypeId = 0 })
+</div>

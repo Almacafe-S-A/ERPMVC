@@ -12,9 +12,11 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Int64 VendorId { get; set; }
         [Required]
+        [Display(Name = "Nombre de Proveedor")]
         public string VendorName { get; set; }
-        [Display(Name = "Vendor Type")]
+        //[Display(Name = "Tipo de Proveedor")]
         public Int64 VendorTypeId { get; set; }
+        [Display(Name = "Tipo de Proveedor")]
         [ForeignKey("VendorTypeId")]
         public VendorType VendorType { get; set; }
 
@@ -43,7 +45,7 @@ namespace ERPMVC.Models
         [Display(Name = "RTN del Proveedor")]
         public string RTN { get; set; }
         [Required]
-        [Display(Name = "Identidad del contacto")]
+        [Display(Name = "Identidad")]
         public string Identidad { get; set; }
         [Display(Name = "Moneda")]
         public int CurrencyId { get; set; }
