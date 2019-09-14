@@ -20,19 +20,19 @@ namespace ERPMVC.Controllers
     [Authorize]
     [CustomAuthorization]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-    public class EmpresaController : Controller
+    public class TipoPlanillasController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
 
-        public EmpresaController(ILogger<EmpresaController> logger, IOptions<MyConfig> config)
+        public TipoPlanillasController(ILogger<TipoPlanillasController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
         }
 
         // GET: Customer
-        public ActionResult Empresa()
+        public ActionResult TipoPlanillas()
         {
             return View();
         }
@@ -40,19 +40,19 @@ namespace ERPMVC.Controllers
         [HttpGet]
         public async Task<JsonResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<Empresa> _cais = new List<Empresa>();
+            List<TipoPlanillas> _TipoPlanillas = new List<TipoPlanillas>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Empresa/GetEmpresa");
+                var result = await _client.GetAsync(baseadress + "api/TipoPlanillas/GetTipoPlanillas");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _cais = JsonConvert.DeserializeObject<List<Empresa>>(valorrespuesta);
+                    _TipoPlanillas = JsonConvert.DeserializeObject<List<TipoPlanillas>>(valorrespuesta);
 
                 }
 
@@ -65,26 +65,26 @@ namespace ERPMVC.Controllers
             }
 
 
-            return Json(_cais.ToDataSourceResult(request));
+            return Json(_TipoPlanillas.ToDataSourceResult(request));
 
         }
         //--------------------------------------------------------------------------------------
         [HttpGet]
         public async Task<JsonResult> GetBOX([DataSourceRequest]DataSourceRequest request)
         {
-            List<Empresa> _Empresa = new List<Empresa>();
+            List<TipoPlanillas> _TipoPlanillas = new List<TipoPlanillas>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Empresa/GetEmpresa");
+                var result = await _client.GetAsync(baseadress + "api/TipoPlanillas/GetPlanilla");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Empresa = JsonConvert.DeserializeObject<List<Empresa>>(valorrespuesta);
+                    _TipoPlanillas = JsonConvert.DeserializeObject<List<TipoPlanillas>>(valorrespuesta);
 
                 }
 
@@ -97,31 +97,31 @@ namespace ERPMVC.Controllers
             }
 
 
-            return Json(_Empresa);
+            return Json(_TipoPlanillas);
 
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult> pvwAddEmpresa([FromBody]EmpresaDTO _sarpara)
+        public async Task<ActionResult> pvwAddTipoPlanillas([FromBody]TipoPlanillasDTO _sarpara)
         {
-            EmpresaDTO _Empresa = new EmpresaDTO();
+            TipoPlanillasDTO _TipoPlanillas = new TipoPlanillasDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Empresa/GetEmpresaById/" + _sarpara.IdEmpresa);
+                var result = await _client.GetAsync(baseadress + "api/TipoPlanillas/GetTipoPlanillasById/" + _sarpara.IdTipoPlanilla);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Empresa = JsonConvert.DeserializeObject<EmpresaDTO>(valorrespuesta);
+                    _TipoPlanillas = JsonConvert.DeserializeObject<TipoPlanillasDTO>(valorrespuesta);
 
                 }
 
-                if (_Empresa == null)
+                if (_TipoPlanillas == null)
                 {
-                    _Empresa = new EmpresaDTO();
+                    _TipoPlanillas = new TipoPlanillasDTO();
                 }
             }
             catch (Exception ex)
@@ -132,45 +132,45 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_Empresa);
+            return PartialView(_TipoPlanillas);
 
         }
 
-
+        
         [HttpPost]
-        public async Task<ActionResult<Empresa>> SaveEmpresa([FromBody]EmpresaDTO _EmpresaP)
+        public async Task<ActionResult<TipoPlanillas>> SaveTipoPlanillas([FromBody]TipoPlanillasDTO _TipoPlanillasP)
         {
 
-            Empresa _Empresa = _EmpresaP;
+            TipoPlanillas _TipoPlanillas = _TipoPlanillasP;
             try
             {
                 // DTO_NumeracionSAR _liNumeracionSAR = new DTO_NumeracionSAR();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Empresa/GetEmpresaById/" + _Empresa.IdEmpresa);
+                var result = await _client.GetAsync(baseadress + "api/TipoPlanillas/GetTipoPlanillasById/" + _TipoPlanillas.IdTipoPlanilla);
                 string valorrespuesta = "";
-                _Empresa.FechaModificacion = DateTime.Now;
-                _Empresa.Usuariomodificacion = HttpContext.Session.GetString("user");
+                _TipoPlanillas.FechaModificacion = DateTime.Now;
+                _TipoPlanillas.Usuariomodificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Empresa = JsonConvert.DeserializeObject<EmpresaDTO>(valorrespuesta);
+                    _TipoPlanillas = JsonConvert.DeserializeObject<TipoPlanillasDTO>(valorrespuesta);
                 }
 
-                if (_Empresa == null) { _Empresa = new Models.Empresa(); }
+                if (_TipoPlanillas == null) { _TipoPlanillas = new Models.TipoPlanillas(); }
 
-                if (_EmpresaP.IdEmpresa == 0)
+                if (_TipoPlanillasP.IdTipoPlanilla == 0)
                 {
-                    _Empresa.FechaCreacion = DateTime.Now;
-                    _Empresa.Usuariocreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_EmpresaP);
+                    _TipoPlanillas.FechaCreacion = DateTime.Now;
+                    _TipoPlanillas.Usuariomodificacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_TipoPlanillasP);
                 }
                 else
                 {
-                    _EmpresaP.Usuariocreacion = _Empresa.Usuariocreacion;
-                    _EmpresaP.FechaCreacion = _Empresa.FechaCreacion;
-                    var updateresult = await Update(_Empresa.IdEmpresa, _EmpresaP);
+                    _TipoPlanillasP.Usuariocreacion = _TipoPlanillas.Usuariocreacion;
+                    _TipoPlanillasP.FechaCreacion = _TipoPlanillas.FechaCreacion;
+                    var updateresult = await Update(_TipoPlanillas.IdTipoPlanilla, _TipoPlanillasP);
                 }
 
             }
@@ -180,32 +180,32 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_Empresa);
+            return Json(_TipoPlanillas);
         }
 
 
         //--------------------------------------------------------------------------------------
-        // POST: Empresa/Insert
+        // POST: Planilla/Insert
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public async Task<ActionResult> Insert(Empresa _EmpresaP)
+        public async Task<ActionResult> Insert(TipoPlanillas _TipoPlanillasP)
         {
-            Empresa _Empresa = _EmpresaP;
+            TipoPlanillas _TipoPlanillas = _TipoPlanillasP;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _Empresa.Usuariocreacion = HttpContext.Session.GetString("user");
-                _Empresa.Usuariomodificacion = HttpContext.Session.GetString("user");
-                _Empresa.FechaCreacion = DateTime.Now;
-                _Empresa.FechaModificacion = DateTime.Now;
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Empresa/Insert", _Empresa);
+                _TipoPlanillas.Usuariocreacion = HttpContext.Session.GetString("user");
+                _TipoPlanillas.Usuariomodificacion = HttpContext.Session.GetString("user");
+                _TipoPlanillas.FechaCreacion = DateTime.Now;
+                _TipoPlanillas.FechaModificacion = DateTime.Now;
+                var result = await _client.PostAsJsonAsync(baseadress + "api/TipoPlanillas/Insert", _TipoPlanillas);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Empresa = JsonConvert.DeserializeObject<Empresa>(valorrespuesta);
+                    _TipoPlanillas = JsonConvert.DeserializeObject<TipoPlanillas>(valorrespuesta);
                 }
 
             }
@@ -214,26 +214,26 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Empresa }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _TipoPlanillas }, Total = 1 });
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Int64 Id, Empresa _EmpresaP)
+        public async Task<IActionResult> Update(Int64 Id, TipoPlanillas _TipoPlanillasP)
         {
-            Empresa _Empresa = _EmpresaP;
+            TipoPlanillas _TipoPlanillas = _TipoPlanillasP;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _Empresa.FechaModificacion = DateTime.Now;
-                _Empresa.Usuariomodificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PutAsJsonAsync(baseadress + "api/Empresa/Update", _Empresa);
+                _TipoPlanillas.FechaModificacion = DateTime.Now;
+                _TipoPlanillas.Usuariomodificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PutAsJsonAsync(baseadress + "api/TipoPlanillas/Update", _TipoPlanillas);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Empresa = JsonConvert.DeserializeObject<Empresa>(valorrespuesta);
+                    _TipoPlanillas = JsonConvert.DeserializeObject<TipoPlanillas>(valorrespuesta);
                 }
 
             }
@@ -242,40 +242,8 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Empresa }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _TipoPlanillas }, Total = 1 });
         }
-
-
-
-        [HttpPost]
-        public async Task<ActionResult<Empresa>> Delete(Int64 Id, Empresa _EmpresaP)
-        {
-            Empresa _Empresa = _EmpresaP;
-            try
-            {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Empresa/Delete", _Empresa);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Empresa = JsonConvert.DeserializeObject<Empresa>(valorrespuesta);
-                }
-
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"Ocurrio un error{ex.Message}");
-            }
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Empresa }, Total = 1 });
-        }
-
-
-
 
 
 

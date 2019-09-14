@@ -4,14 +4,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
+
 namespace ERPMVC.DTO
 {
-    public class EmpresaDTO : Empresa
+    public class TipoPlanillasDTO : TipoPlanillas
     {
-        public List<Empresa> _Empresa { get; set; }
+        public List<TipoPlanillas> _TipoPlanillas { get; set; }
+
 
         public int editar { get; set; } = 1;
 
         public string token { get; set; }
     }
 }
+

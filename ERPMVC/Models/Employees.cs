@@ -72,12 +72,7 @@ namespace ERPMVC.Models
         [Required]
         [Display(Name = "Código de Usuario")]
         public string Userid { get; set; }
-        [Required]
-        [Display(Name = "Escalas Id")]
-        public Int64 Idsescalas { get; set; }
-        [Display(Name = "Id Activo Inactivo")]
-        public long? IdActivoinactivo { get; set; }
-
+        
         [Display(Name = "Foto")]
         public string Foto { get; set; }
         [Required]
@@ -124,10 +119,7 @@ namespace ERPMVC.Models
         public string NombreContacto { get; set; }
         [Display(Name = "Telefono")]
         public string TelefonoContacto { get; set; }
-        [Required]
-        [Display(Name = "Tipo de Planilla")]
-        public int IdPlanilla { get; set; }
-
+        
 
         public string Usuariocreacion { get; set; }
         public string Usuariomodificacion { get; set; }
