@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -9,6 +10,7 @@ using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -24,10 +26,13 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public InsurancesController(ILogger<InsurancesController> logger, IOptions<MyConfig> config)
+        private IHostingEnvironment _hostingEnvironment;
+
+        public InsurancesController(IHostingEnvironment hostingEnvironment,ILogger<InsurancesController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
+            _hostingEnvironment = hostingEnvironment;
         }
 
         public ActionResult Insurances()
@@ -66,7 +71,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> Insert(Insurances _Insurances)
+        public async Task<ActionResult<InsurancesDTO>> Insert(Insurances _Insurances)
         {
             try
             {
@@ -122,13 +127,14 @@ namespace ERPMVC.Controllers
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _Insurances }, Total = 1 });
         }
-
-        public async Task<ActionResult<Insurances>> SaveInsurances([FromBody]InsurancesDTO _InsurancesP)
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<Insurances>> SaveInsurances(IEnumerable<IFormFile> files, InsurancesDTO _Insurances)
         {
-            Insurances _Insurances = _InsurancesP;
-            try
+             try
             {
                 //JournalEntry _listItems = new JournalEntry();
+                Insurances _listInsurances = new Insurances();
+
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -136,7 +142,59 @@ namespace ERPMVC.Controllers
                 string valorrespuesta = "";
                 _Insurances.ModifiedDate = DateTime.Now;
                 _Insurances.ModifiedUser = HttpContext.Session.GetString("user");
-                if (result.IsSuccessStatusCode)
+                foreach (var file in files)
+                {
+
+
+                    FileInfo info = new FileInfo(file.FileName);
+                    if (info.Extension.Equals(".pdf") || info.Extension.Equals(".jpg")
+                        || info.Extension.Equals(".png")
+                       || info.Extension.Equals(".xls") || info.Extension.Equals(".xlsx"))
+                    {
+
+                        _Insurances.ModifiedDate = DateTime.Now;
+                        _Insurances.ModifiedUser = HttpContext.Session.GetString("user");
+                        if (result.IsSuccessStatusCode)
+                        {
+
+                            valorrespuesta = await (result.Content.ReadAsStringAsync());
+                            _listInsurances = JsonConvert.DeserializeObject<Insurances>(valorrespuesta);
+                        }
+
+                        if (_listInsurances == null) { _listInsurances = new Models.Insurances(); }
+                        if (_listInsurances.InsurancesId == 0)
+                        {
+                            _Insurances.CreatedDate = DateTime.Now;
+                            _Insurances.DocumentName = file.FileName;
+                            _Insurances.CreatedUser = HttpContext.Session.GetString("user");
+                            var insertresult = await Insert(_Insurances);
+                            var value = (insertresult.Result as ObjectResult).Value;
+                            _Insurances = ((InsurancesDTO)(value));
+                        }
+                        else
+                        {
+                            var updateresult = await Update(_Insurances.InsurancesId, _Insurances);
+                        }
+
+
+
+                        var filePath = _hostingEnvironment.WebRootPath + "/Insurances/" + _Insurances.InsurancesId + "_"
+                            + file.FileName.Replace(info.Extension, "") + "_" + _Insurances.DocumentTypeId + "_" + _Insurances.DocumentTypeName
+                            + info.Extension;
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                            // MemoryStream mstream = new MemoryStream();
+                            //mstream.WriteTo(stream);
+                        }
+
+                        _Insurances.Path = filePath;
+                        var updateresult2 = await Update(_Insurances.InsurancesId, _Insurances);
+                    }
+                }
+
+                /* if (result.IsSuccessStatusCode)
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
@@ -156,7 +214,7 @@ namespace ERPMVC.Controllers
                     _InsurancesP.CreatedUser = _Insurances.CreatedUser;
                     _InsurancesP.CreatedDate = _Insurances.CreatedDate;
                     var updateresult = await Update(_Insurances.InsurancesId, _InsurancesP);
-                }
+                }*/
 
             }
             catch (Exception ex)
@@ -165,7 +223,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_InsurancesP);
+            return Json(_Insurances);
         }
 
 

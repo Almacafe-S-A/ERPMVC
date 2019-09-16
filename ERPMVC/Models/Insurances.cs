@@ -14,8 +14,18 @@ namespace ERPMVC.Models
         public int InsurancesId { get; set; }
         [Display(Name = "Nombre Aseguradora")]
         public string InsurancesName { get; set; }
-        [Display(Name = "Logo Aseguradora")]
-        public string PhotoInsurances { get; set; }
+
+        [Display(Name = "Documento")]
+        public Int64 DocumentTypeId { get; set; }
+
+        [Display(Name = "Documento")]
+        public string DocumentTypeName { get; set; }
+
+        [Display(Name = "Nombre de documento")]
+        public string DocumentName { get; set; }
+
+        [Display(Name = "Ruta")]
+        public string Path { get; set; }
 
         [Required]
         [Display(Name = "Usuario que lo crea")]
