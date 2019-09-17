@@ -147,6 +147,8 @@ namespace ERPMVC.Controllers
             return Json(_Customer);
         }
 
+
+        [Authorize(Policy = "Cliente")]
         // GET: Customer/Details/5
         public async Task<ActionResult> Details(Int64 CustomerId)
         {
