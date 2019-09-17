@@ -19,44 +19,55 @@ using Newtonsoft.Json;
 
 namespace ERPMVC.Controllers
 {
-     [Authorize]
+    [Authorize]
     [CustomAuthorization]
-    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class InsurancesController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
         private IHostingEnvironment _hostingEnvironment;
-
-        public InsurancesController(IHostingEnvironment hostingEnvironment,ILogger<InsurancesController> logger, IOptions<MyConfig> config)
+        public InsurancesController(IHostingEnvironment hostingEnvironment
+            , ILogger<InsurancesController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
             _hostingEnvironment = hostingEnvironment;
+
         }
+        public IActionResult Index()
+        {
+            return View();
+        }
+
 
         public ActionResult Insurances()
         {
             return View();
         }
-        [HttpGet]
-        public async Task<JsonResult> GetInsurances([DataSourceRequest]DataSourceRequest request)
-        {
-            List<Insurances> _Insurances = new List<Insurances>();
 
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> pvwAddInsurances([FromBody]Insurances _InsurancesDocumentp)
+        {
+            Insurances _InsurancesDocument = new Insurances();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Insurances/GetInsurances" );
+                var result = await _client.GetAsync(baseadress + "api/Insurances/GetInsurancesById/" + _InsurancesDocumentp.InsurancesId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Insurances = JsonConvert.DeserializeObject<List<Insurances>>(valorrespuesta);
+                    _InsurancesDocument = JsonConvert.DeserializeObject<Insurances>(valorrespuesta);
 
                 }
+
+                if (_InsurancesDocument == null)
+                {
+                    _InsurancesDocument = new Insurances();
+                }
+
             }
             catch (Exception ex)
             {
@@ -65,83 +76,94 @@ namespace ERPMVC.Controllers
             }
 
 
-
-            return Json(_Insurances.ToDataSourceResult(request));
+            //
+            return PartialView(_InsurancesDocument);
 
         }
 
-        [HttpPost]
-        public async Task<ActionResult<InsurancesDTO>> Insert(Insurances _Insurances)
+
+        [HttpGet]
+        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
+            List<Insurances> _Insurances = new List<Insurances>();
             try
             {
-                // TODO: Add insert logic here
+
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _Insurances.CreatedUser = HttpContext.Session.GetString("user");
-                _Insurances.CreatedDate = DateTime.Now;
-                _Insurances.ModifiedUser = HttpContext.Session.GetString("user");
-                _Insurances.ModifiedDate = DateTime.Now;
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Insurances/Insert", _Insurances);
+                var result = await _client.GetAsync(baseadress + "api/Insurances/GetInsurances");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Insurances = JsonConvert.DeserializeObject<Insurances>(valorrespuesta);
+                    _Insurances = JsonConvert.DeserializeObject<List<Insurances>>(valorrespuesta);
+
                 }
+
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                throw ex;
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Insurances }, Total = 1 });
+
+            return _Insurances.ToDataSourceResult(request);
+
         }
 
 
-        [HttpPut("InsurancesId")]
-        public async Task<IActionResult> Update(Int64 InsurancesId, Insurances _Insurances)
+        /*[HttpGet("[action]")]
+        public async Task<DataSourceResult> GeDocumentByCustomerId([DataSourceRequest]DataSourceRequest request, Int64 CustomerId)
         {
+            List<CustomerDocument> _CustomerDocument = new List<CustomerDocument>();
             try
             {
+
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PutAsJsonAsync(baseadress + "api/Insurances/Update", _Insurances);
+                var result = await _client.GetAsync(baseadress + "api/CustomerDocument/GeDocumentByCustomerId/" + CustomerId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Insurances = JsonConvert.DeserializeObject<Insurances>(valorrespuesta);
+                    _CustomerDocument = JsonConvert.DeserializeObject<List<CustomerDocument>>(valorrespuesta);
+
                 }
+
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                throw ex;
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Insurances }, Total = 1 });
+
+            return _CustomerDocument.ToDataSourceResult(request);
+
         }
+
+    */
+
+
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<Insurances>> SaveInsurances(IEnumerable<IFormFile> files, InsurancesDTO _Insurances)
+        public async Task<ActionResult<Insurances>> SaveInsurancesDocument(IEnumerable<IFormFile> files, InsurancesDTO _InsurancesDTO)
         {
-             try
-            {
-                //JournalEntry _listItems = new JournalEntry();
-                Insurances _listInsurances = new Insurances();
 
+            try
+            {
+
+                Insurances _listInsurances = new Insurances();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Insurances/GetInsurancesById/" + _Insurances.InsurancesId);
+                var result = await _client.GetAsync(baseadress + "api/Insurances/GetInsurancesById/" + _InsurancesDTO.InsurancesId);
                 string valorrespuesta = "";
-                _Insurances.ModifiedDate = DateTime.Now;
-                _Insurances.ModifiedUser = HttpContext.Session.GetString("user");
+
                 foreach (var file in files)
                 {
 
@@ -152,8 +174,8 @@ namespace ERPMVC.Controllers
                        || info.Extension.Equals(".xls") || info.Extension.Equals(".xlsx"))
                     {
 
-                        _Insurances.ModifiedDate = DateTime.Now;
-                        _Insurances.ModifiedUser = HttpContext.Session.GetString("user");
+                        _InsurancesDTO.ModifiedDate = DateTime.Now;
+                        _InsurancesDTO.ModifiedUser = HttpContext.Session.GetString("user");
                         if (result.IsSuccessStatusCode)
                         {
 
@@ -164,22 +186,22 @@ namespace ERPMVC.Controllers
                         if (_listInsurances == null) { _listInsurances = new Models.Insurances(); }
                         if (_listInsurances.InsurancesId == 0)
                         {
-                            _Insurances.CreatedDate = DateTime.Now;
-                            _Insurances.DocumentName = file.FileName;
-                            _Insurances.CreatedUser = HttpContext.Session.GetString("user");
-                            var insertresult = await Insert(_Insurances);
+                            _InsurancesDTO.CreatedDate = DateTime.Now;
+                            _InsurancesDTO.DocumentName = file.FileName;
+                            _InsurancesDTO.CreatedUser = HttpContext.Session.GetString("user");
+                            var insertresult = await Insert(_InsurancesDTO);
                             var value = (insertresult.Result as ObjectResult).Value;
-                            _Insurances = ((InsurancesDTO)(value));
+                            _InsurancesDTO = ((InsurancesDTO)(value));
                         }
                         else
                         {
-                            var updateresult = await Update(_Insurances.InsurancesId, _Insurances);
+                            var updateresult = await Update(_InsurancesDTO.InsurancesId, _InsurancesDTO);
                         }
 
 
 
-                        var filePath = _hostingEnvironment.WebRootPath + "/Insurances/" + _Insurances.InsurancesId + "_"
-                            + file.FileName.Replace(info.Extension, "") + "_" + _Insurances.DocumentTypeId + "_" + _Insurances.DocumentTypeName
+                        var filePath = _hostingEnvironment.WebRootPath + "/Insurances/" + _InsurancesDTO.InsurancesId + "_"
+                            + file.FileName.Replace(info.Extension, "") + "_" + _InsurancesDTO.DocumentTypeId + "_" + _InsurancesDTO.DocumentTypeName
                             + info.Extension;
 
                         using (var stream = new FileStream(filePath, FileMode.Create))
@@ -189,33 +211,11 @@ namespace ERPMVC.Controllers
                             //mstream.WriteTo(stream);
                         }
 
-                        _Insurances.Path = filePath;
-                        var updateresult2 = await Update(_Insurances.InsurancesId, _Insurances);
+                        _InsurancesDTO.Path = filePath;
+                        var updateresult2 = await Update(_InsurancesDTO.InsurancesId, _InsurancesDTO);
                     }
                 }
 
-                /* if (result.IsSuccessStatusCode)
-                {
-
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Insurances = JsonConvert.DeserializeObject<Insurances>(valorrespuesta);
-                }
-
-                if (_Insurances == null) { _Insurances = new Models.Insurances(); }
-
-                if (_InsurancesP.InsurancesId == 0)
-                {
-                    _Insurances.CreatedDate = DateTime.Now;
-                    _Insurances.CreatedUser = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_InsurancesP);
-                }
-                else
-                {
-                    _InsurancesP.CreatedUser = _Insurances.CreatedUser;
-                    _InsurancesP.CreatedDate = _Insurances.CreatedDate;
-                    var updateresult = await Update(_Insurances.InsurancesId, _InsurancesP);
-                }*/
-
             }
             catch (Exception ex)
             {
@@ -223,72 +223,101 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_Insurances);
+            return Json(_InsurancesDTO);
         }
 
+        // POST: CustomerDocument/Insert
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult<InsurancesDTO>> Insert(InsurancesDTO _InsurancesDTO)
+        {
+            InsurancesDTO _custo = new InsurancesDTO();
+            try
+            {
+                // TODO: Add insert logic here
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                _InsurancesDTO.CreatedUser = HttpContext.Session.GetString("user");
+                _InsurancesDTO.ModifiedUser = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Insurances/Insert", _InsurancesDTO);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _custo = JsonConvert.DeserializeObject<InsurancesDTO>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+            return Ok(_custo);
+            // return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerDocument }, Total = 1 });
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<InsurancesDTO>> Update(Int64 id, InsurancesDTO _InsurancesDocument)
+        {
+            InsurancesDTO _InsurancesDTO = new InsurancesDTO();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                var result = await _client.PutAsJsonAsync(baseadress + "api/Insurances/Update", _InsurancesDocument);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _InsurancesDTO = JsonConvert.DeserializeObject<InsurancesDTO>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+
+            return new ObjectResult(new DataSourceResult { Data = new[] { _InsurancesDocument }, Total = 1 });
+        }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult> pvwAddInsurances([FromBody]InsurancesDTO _sarpara)
+        public async Task<ActionResult<Insurances>> Delete([FromBody]Insurances _InsurancesDocument)
         {
-            InsurancesDTO _Insurances = new InsurancesDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Insurances/GetInsurancesById/" + _sarpara.InsurancesId);
+
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Insurances/Delete", _InsurancesDocument);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Insurances = JsonConvert.DeserializeObject<InsurancesDTO>(valorrespuesta);
-
+                    _InsurancesDocument = JsonConvert.DeserializeObject<Insurances>(valorrespuesta);
                 }
 
-                if (_Insurances == null)
-                {
-                    _Insurances = new InsurancesDTO();
-                }
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
+                return BadRequest($"Ocurrio un error: {ex.Message}");
             }
 
 
 
-            return PartialView(_Insurances);
-
+            return new ObjectResult(new DataSourceResult { Data = new[] { _InsurancesDocument }, Total = 1 });
         }
-        [HttpGet("[action]")]
-        public async Task<ActionResult> GetInsurancesById(Int64 InsurancesId)
-        {
-            Insurances _Insurances = new Insurances();
-            try
-            {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Insurances/GetInsurancesById/" + InsurancesId);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Insurances = JsonConvert.DeserializeObject<Insurances>(valorrespuesta);
-
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
 
 
 
-            return await Task.Run(() => Json(_Insurances));
-        }
+
 
     }
 }
