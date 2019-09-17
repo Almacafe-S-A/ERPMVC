@@ -35,6 +35,7 @@ namespace ERPMVC.Models
         public string ContactPersonCity { get; set; }
 
         [EmailAddress]
+        [Display(Name = "Email del contacto")]
         public string ContactPersonEmail { get; set; }
         [Display(Name = "Id de estado")]
         public Int64 ContactPersonIdEstado { get; set; }

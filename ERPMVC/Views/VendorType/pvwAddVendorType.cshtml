@@ -1,0 +1,179 @@
+﻿@model ERPMVC.DTO.VendorTypeDTO
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+// {"required","Valor requerido" }
+};
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<script>
+
+    function customFunction(input) {
+
+        if (input.attr('name') === "VendorTypeId" && input.val() === "0") {
+            return false;
+        }
+
+    }
+
+    //$('#btnprueba').val("");
+</script>
+
+
+
+
+
+<div id="ModalVendorType" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Tipos de Proveedore</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmVendorType" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveVendorType"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <h3 class="card-title">Tipos de Proveedores</h3>
+                                        <hr>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="VendorTypeId" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="VendorTypeId" name="VendorTypeId" class="form-control" disabled="disabled" style="width:100%" />
+                                                    <span asp-validation-for="VendorTypeId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="VendorTypeName" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="VendorTypeName" name="VendorTypeName" class="form-control" autocomplete="off" style="width:100%" />
+                                                    <span asp-validation-for="VendorTypeName" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Description" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="Description" name="Description" class="form-control" autocomplete="off" style="width:100%" />
+                                                    <span asp-validation-for="Description" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button id="btnVendorType" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                            </div>
+                                        </div>
+
+
+
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function RefrescarGrid() {
+
+        var grid = $("#gridNumeracionVendorType").getKendoGrid();
+        grid.dataSource.read();
+    }
+    function SaveVendorType(e) {
+
+            var notification = $("#notification").data("kendoNotification");
+           // e.preventDefault();
+        $("#btnVendorType").hide();
+        $("#btnVendorType").prop("disabled", true);
+
+        var displayedData = $("#gridNumeracionVendorType").data().kendoGrid.dataSource.view();
+
+        var dataObject = {
+            'VendorTypeId': $("#VendorTypeId").val(),
+            'VendorTypeName': $("#VendorTypeName").val(),
+            'Description': $("#Description").val(),
+            'FechaCreacion': $("#FechaCreacion").val(),
+            'FechaModificacion': $("#FechaModificacion").val(),
+            'UsuarioCreacion': $("#UsuarioCreacion").val(),
+            'UsuarioModificacion': $("#UsuarioModificacion").val(),
+            '_VendorType': displayedData
+            };
+
+           // console.log(JSON.stringify(dataObject));
+            //var form = $("#frmNumeracion");
+           // form.validate();
+
+        var validator = $("#frmVendorType").data("kendoValidator");
+                 var status = $(".status");
+
+
+                if (validator.validate()) {
+
+                    $.ajax({
+                        url: '@Url.Action("SaveVendorType", "VendorType")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+
+                            //notification.show({
+                            //    message: "Guardado correctamente!"
+                            //}, "upload-success");
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: '<br/><br/>Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+
+                            RefrescarGrid();
+
+                            $('#ModalVendorType').modal('hide');
+
+
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                            notification.show({
+                                title: "Validación",
+                                message: textStatus + ": " + XMLHttpRequest.responseText
+                            }, "error");
+
+                        }
+                    });
+
+                }
+                else {
+                    status.text("Oops! There is invalid data in the form.")
+                        .removeClass("valid")
+                        .addClass("invalid");
+                }
+
+
+        $("#VendorType").show();
+        $("#btnVendorType").prop("disabled", false);
+    }
+</script>

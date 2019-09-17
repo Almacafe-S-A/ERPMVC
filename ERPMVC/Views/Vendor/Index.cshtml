@@ -1,0 +1,168 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "Proveedores";
+}
+
+<script>
+
+    function onsave(e) {
+     //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+       // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+
+      function AddVendor() {
+
+
+
+          $('#ModalVendor').find(':input').not(':submit').val('');
+
+          $('#ModalVendor').modal('show');
+          $("#VendorId").val('0');
+
+
+
+
+      }
+
+
+    function EditVendor(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                VendorId: dataItem.VendorId,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddVendor", "Vendor")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumVendor").html('');
+                    $("#NumVendor").html(result);
+
+
+                    //$("#btnCAI").hide();
+                    $('#ModalVendor').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+    }
+
+    function DetallesVendor(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        window.location.href = "@Url.Action("Proveedores", "Vendor")?VendorId=" + dataItem.VendorId;
+        //update => update.Action("Update", "Purch", new { TypeAccountId = "{0}" }).Type(HttpVerbs.Put)
+    }
+
+</script>
+
+<h3 class="text-themecolor">Proveedores</h3>
+@(Html.Kendo().Grid<ERPMVC.Models.Vendor>
+    ()
+    .Name("gridNumeracionVendor")
+    .Columns(columns =>
+    {
+        columns.Command(command =>
+        {
+
+            command.Custom("Ver detalles").Text(" ").IconClass("far fa-list-alt").Click("DetallesVendor");
+            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditVendor");
+
+        }).Width(100);
+
+        columns.Bound(p => p.VendorId).Title("Id").Width(1);
+        columns.Bound(p => p.VendorName).Title("Nombre de Proveedor").Width(250);
+        columns.Bound(p => p.FechaCreacion).Title("Fecha de Creación").Format("{0:dd/MM/yyyy}").Width(200);
+        columns.Bound(p => p.Phone).Title("Telefono").Width(150);
+       })
+    .Filterable(f => f.Operators(o => o.ForString(s => s
+    .Clear()
+    .Contains("Contiene")
+    .DoesNotContain("No contiene")
+    .EndsWith("Termina con")
+    .IsEqualTo("Es igual a")
+    .IsNotEqualTo("No es igual a")
+    .IsNull("Es nulo")
+    .StartsWith("Inicia con")
+
+
+    )
+    .ForNumber(n => n
+    .Clear()
+    .IsEqualTo("Es igual a")
+    .IsGreaterThan("Es mayor que")
+    .IsLessThan("Es menor que")
+    .IsNull("Es nulo")
+    .IsLessThanOrEqualTo("Es menor o igual que")
+    .IsGreaterThanOrEqualTo("Es mayor o igual que")
+    )
+    .ForDate(d => d
+    .Clear()
+    .IsEqualTo("Es igual que")
+    .IsGreaterThan("Es mayor que")
+    .IsLessThan("Es menor que")
+    .IsLessThanOrEqualTo("Es menor o igual que")
+    .IsGreaterThanOrEqualTo("Es mayor o igual que")
+    .IsNotEqualTo("No es igual que")
+    )
+    ))
+    .ToolBar(tools =>
+    {
+        // tools.Create();
+        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddVendor()" });
+        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+    })
+    .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+    .Sortable()
+    .Pageable()
+    .Filterable()
+    .Scrollable()
+    .Pdf(pdf => pdf.FileName("VendorReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+    .Excel(excel => excel.FileName("VendorReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+    .DataSource(dataSource =>
+    dataSource
+    .WebApi()
+
+    .ServerOperation(true)
+    .Model(model =>
+    {
+        model.Id(p => p.VendorId);
+        model.Field(p => p.VendorName).Editable(true);
+
+    })
+    .Events(events => events.Error("error_handler"))
+    .Read(read => read.Action("GetVendor", "Vendor"))
+    .Create(create => create.Action("Insert", "Vendor"))
+    .Update(update => update.Action("Update", "Vendor", new { VendorId = "{0}" }).Type(HttpVerbs.Put))
+    //.Destroy(destroy => destroy.Action("Delete", "Vendor", new { VendorId = "{0}" }).Type(HttpVerbs.Delete))
+
+    )
+    .Events(e =>
+    {
+        e.Save("onsave");
+
+    })
+)
+
+
+<div id="NumVendor">
+    @await Html.PartialAsync("pvwAddVendor", new ERPMVC.DTO.VendorDTO { VendorId = 0 })
+</div>
