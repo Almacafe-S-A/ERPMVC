@@ -430,6 +430,10 @@ namespace ERPMVC.Controllers
 
 
                         }
+                        else
+                        {
+                            return await Task.Run(() => BadRequest("No se genero la cotización!"));
+                        }
 
                         return resultsalesorder;
                     }
