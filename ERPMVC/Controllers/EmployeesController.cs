@@ -5,17 +5,18 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
-using ERPMVC.DTO;
-using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
-using Microsoft.AspNetCore.Authorization;
+using Kendo.Mvc;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Protocols;
+using Kendo.Mvc.Extensions;
 using Newtonsoft.Json;
-
+using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Logging;
+using ERPMVC.DTO;
 namespace ERPMVC.Controllers
 {
     [Authorize]
@@ -81,10 +82,8 @@ namespace ERPMVC.Controllers
 
         }
 
-
-        [HttpPost("[controller]/[action]")]
+        [HttpPost]
         public async Task<ActionResult<Employees>> SaveEmployees([FromBody]EmployeesDTO _EmployeesP)
-        //public async Task<ActionResult<Employees>> SaveEmployees([FromBody]EmployeesDTO _EmployeesP)
         {
 
             Employees _Employees = _EmployeesP;
@@ -129,6 +128,56 @@ namespace ERPMVC.Controllers
             return Json(_Employees);
         }
 
+
+
+        //[HttpPost("[controller]/[action]")]
+        //public async Task<ActionResult<Employees>> SaveEmployees([FromBody]EmployeesDTO _EmployeesP)
+        ////public async Task<ActionResult<Employees>> SaveEmployees([FromBody]EmployeesDTO _EmployeesP)
+        //{
+
+        //    Employees _Employees = _EmployeesP;
+        //    try
+        //    {
+        //        // DTO_NumeracionSAR _liNumeracionSAR = new DTO_NumeracionSAR();
+        //        string baseadress = config.Value.urlbase;
+        //        HttpClient _client = new HttpClient();
+        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+        //        var result = await _client.GetAsync(baseadress + "api/Employees/GetEmployeesById/" + _Employees.IdEmpleado);
+        //        string valorrespuesta = "";
+        //        _Employees.FechaModificacion = DateTime.Now;
+        //        _Employees.Usuariomodificacion = HttpContext.Session.GetString("user");
+        //        if (result.IsSuccessStatusCode)
+        //        {
+        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
+        //            _Employees = JsonConvert.DeserializeObject<EmployeesDTO>(valorrespuesta);
+        //        }
+
+        //        if (_Employees == null) { _Employees = new Models.Employees(); }
+
+        //        if (_EmployeesP.IdEmpleado == 0)
+        //        {
+        //            _Employees.FechaCreacion = DateTime.Now;
+        //            _Employees.Usuariocreacion = HttpContext.Session.GetString("user");
+        //            var insertresult = await Insert(_EmployeesP);
+        //        }
+        //        else
+        //        {
+        //            _EmployeesP.Usuariocreacion = _Employees.Usuariocreacion;
+        //            _EmployeesP.FechaCreacion = _Employees.FechaCreacion;
+        //            var updateresult = await Update(_Employees.IdEmpleado, _EmployeesP);
+        //        }
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+        //        throw ex;
+        //    }
+
+        //    return Json(_Employees);
+        //}
+
+   
         //public async Task<ActionResult> SaveEmployees([FromBody]dynamic dto)
         ////public async Task<ActionResult> SaveEmployees([FromBody]ProductRelation _ProductRelationp)
         //{
