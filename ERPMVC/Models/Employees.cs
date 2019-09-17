@@ -56,33 +56,24 @@ namespace ERPMVC.Models
         public string Ciudad { get; set; }
         [Required]
         [Display(Name = "País Id")]
-        public long? IdPais { get; set; }
-        [Required]
-        [Display(Name = "País")]
-        public string NombrePais { get; set; }
+        public long? IdCountry { get; set; }
         [Required]
         [Display(Name = "Ciudad Id")]
-        public long? IdCiudad { get; set; }
-        [Required]
-        [Display(Name = "Ciudad")]
-        public string NombreCiudad { get; set; }
+        public long? IdCity { get; set; }
         [Required]
         [Display(Name = "Moneda de Salario")]
-        public long? MonedaSalario { get; set; }
+        public long? IdCurrency { get; set; }
         [Required]
         [Display(Name = "Código de Usuario")]
-        public string Userid { get; set; }
-        
+        public string Userid { get; set; }    
         [Display(Name = "Foto")]
         public string Foto { get; set; }
         [Required]
         [Display(Name = "Código de Banco")]
-        public long? IdBanco { get; set; }
+        public long? IdBank { get; set; }
         [Required]
         [Display(Name = "Cuenta de Banco")]
         public string CuentaBanco { get; set; }
-
-
         [Display(Name = "Fecha de Fin de Contrato")]
         public DateTime FechaFinContrato { get; set; }
         [Required]
@@ -100,8 +91,6 @@ namespace ERPMVC.Models
         public string NombrePuesto { get; set; }
         [Display(Name = "Sucursal Id")]
         public int IdSucursal { get; set; }
-        [Display(Name = "Sucursal")]
-        public string NombreSucursal { get; set; }
         [Required]
         [Display(Name = "Tipo de Contrato")]
         public int IdTipoContrato { get; set; }
@@ -110,16 +99,14 @@ namespace ERPMVC.Models
         public int IdDepartamento { get; set; }
         [Required]
         [Display(Name = "Departamento")]
-        public string NombreDepartamento { get; set; }
-
-
+        public long? IdState { get; set; }
         [Display(Name = "Tipo de Sangre")]
         public string TipoSangre { get; set; }
         [Display(Name = "Nombre del Contacto de Emergencia")]
         public string NombreContacto { get; set; }
         [Display(Name = "Telefono")]
         public string TelefonoContacto { get; set; }
-        
+        public int IdBranch { get; set; }
 
         public string Usuariocreacion { get; set; }
         public string Usuariomodificacion { get; set; }
