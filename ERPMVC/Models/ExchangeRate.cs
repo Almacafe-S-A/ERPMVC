@@ -15,7 +15,13 @@ namespace ERPMVC.Models
         [Display(Name = "Fecha")]
         public DateTime DayofRate { get; set; }
         [Display(Name = "Tasa de Venta")]
-        public double ExchangeRateValue { get; set; }
+        public decimal ExchangeRateValue { get; set; }
+
+        [Display(Name = "Id Moneda")]
+        public Int64 CurrencyId { get; set; }
+
+        [Display(Name = "Moneda")]
+        public string CurrencyName { get; set; }
 
         [Required]
         [Display(Name = "Usuario que lo crea")]
