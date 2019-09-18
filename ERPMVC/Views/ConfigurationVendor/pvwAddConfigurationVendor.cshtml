@@ -1,0 +1,222 @@
+﻿@model ERPMVC.DTO.ConfigurationVendorDTO
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+// {"required","Valor requerido" }
+};
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<script>
+
+    function customFunction(input) {
+
+        if (input.attr('name') === "ConfigurationVendorId" && input.val() === "0") {
+            return false;
+        }
+
+    }
+
+    //$('#btnprueba').val("");
+</script>
+
+
+
+
+
+<div id="ModalConfigurationVendor" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Configuracion de Proveedores</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmConfigurationVendor" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveConfigurationVendor"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <h3 class="card-title">Configuracion de Proveedores</h3>
+                                        <hr>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="ConfigurationVendorId" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="ConfigurationVendorId" name="ConfigurationVendorId" class="form-control" disabled="disabled" style="width:100%" />
+                                                    <span asp-validation-for="ConfigurationVendorId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Estado" class="control-label" style="width:100%"></label>
+                                                    <kendo-dropdownlist name="IdEstado"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar Estado"
+                                                                        datatextfield="NombreEstado"
+                                                                        datavaluefield="IdEstado"
+                                                                        require
+                                                                        onchange="Dropchange();">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+
+
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="QtyMin" class=" control-label" style="width:100%"></label>
+                                                    <kendo-numerictextbox name="QtyMin"
+                                                                          format="n2" spinners="false"
+                                                                          min="0"
+                                                                          required class="control-label right bold"
+                                                                          style="width: 100%;text-align:right;padding-right: 3px"
+                                                                          max="999999999"
+                                                                          step="1"
+                                                                          value="Model.QtyMin"></kendo-numerictextbox>
+                                                    <span asp-validation-for="QtyMin" class="text-danger"></span>
+
+                                                </div>
+                                            </div>
+
+
+
+                                        </div>
+                                        <div class="row">
+                                            
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="QtyMonth" class=" control-label" style="width:100%"></label>
+                                                    <kendo-numerictextbox name="QtyMonth"
+                                                                          format="n2" spinners="false"
+                                                                          min="0"
+                                                                          required class="control-label right bold"
+                                                                          style="width: 100%;text-align:right;padding-right: 3px"
+                                                                          max="999999999"
+                                                                          step="1"
+                                                                          value="Model.QtyMonth"></kendo-numerictextbox>
+                                                    <span asp-validation-for="QtyMonth" class="text-danger"></span>
+
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button id="btnConfigurationVendor" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                            </div>
+                                        </div>
+
+
+
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function RefrescarGrid() {
+
+        var grid = $("#gridNumeracionConfigurationVendor").getKendoGrid();
+        grid.dataSource.read();
+    }
+    function SaveConfigurationVendor(e) {
+
+            var notification = $("#notification").data("kendoNotification");
+           // e.preventDefault();
+        $("#btnConfigurationVendor").hide();
+        $("#btnConfigurationVendor").prop("disabled", true);
+
+        var displayedData = $("#gridNumeracionConfigurationVendor").data().kendoGrid.dataSource.view();
+
+        var dataObject = {
+            'ConfigurationVendorId': $("#ConfigurationVendorId").val(),
+            'IdEstado': $("#IdEstado").val(),
+            'Estado': $("#IdEstado").data("kendoDropDownList").text(),
+            'QtyMin': $("#QtyMin").val(),
+            'QtyMonth': $("#QtyMonth").val(),
+            'CreatedDate': $("#CreatedDate").val(),
+                'ModifiedDate': $("#ModifiedDate").val(),
+                'CreatedUser': $("#CreatedUser").val(),
+                'ModifiedUser': $("#ModifiedUser").val(),
+            '_ConfigurationVendor': displayedData
+            };
+
+           // console.log(JSON.stringify(dataObject));
+            //var form = $("#frmNumeracion");
+           // form.validate();
+
+        var validator = $("#frmConfigurationVendor").data("kendoValidator");
+                 var status = $(".status");
+
+
+                if (validator.validate()) {
+
+                    $.ajax({
+                        url: '@Url.Action("SaveConfigurationVendor", "ConfigurationVendor")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+
+                            //notification.show({
+                            //    message: "Guardado correctamente!"
+                            //}, "upload-success");
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: '<br/><br/>Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+
+                            RefrescarGrid();
+
+                            $('#ModalConfigurationVendor').modal('hide');
+
+
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                            notification.show({
+                                title: "Validación",
+                                message: textStatus + ": " + XMLHttpRequest.responseText
+                            }, "error");
+
+                        }
+                    });
+
+                }
+                else {
+                    status.text("Oops! There is invalid data in the form.")
+                        .removeClass("valid")
+                        .addClass("invalid");
+                }
+
+
+        $("#btnConfigurationVendor").show();
+        $("#btnConfigurationVendor").prop("disabled", false);
+    }
+</script>
