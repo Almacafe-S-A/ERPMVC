@@ -7,22 +7,17 @@
     var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
 }
 
-<script>
 
+<script>
     function customFunction(input) {
 
         if (input.attr('name') === "ExchangeRateId" && input.val() === "0") {
             return false;
         }
-
     }
 
     //$('#btnprueba').val("");
 </script>
-
-
-
-
 
 <div id="ModalExchangeRate" class="modal fade" role="dialog">
     <!-- Modal content-->
@@ -56,45 +51,78 @@
 
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label asp-for="DayofRate" class=" control-label" style="width:100%"></label>
-                                                    <kendo-datetimepicker name="DayofRate" style="width: 100%;"
-        format="dd/MM/yyyy hh:mm:ss"
-        time-format="hh:mm:ss"
-        data-val-required="La fecha es requerida"
-        value="Model.DayofRate"></kendo-datetimepicker>
-                                                    @* <input type="date" asp-for="DayofRate" name="DayofRate" class="form-control" autocomplete="off" style="width:100%" />*@
-                                                    <span asp-validation-for="DayofRate" class="text-danger"></span>
+                                                    <label asp-for="ExchangeRateValue" class=" control-label" style="width:100%"></label>
+                                                    <input type="number" asp-for="ExchangeRateValue"
+                                                           name="ExchangeRateValue"
+                                                           class="form-control"
+                                                           style=" width:100%"
+                                                           min="0.0000"
+                                                           max="999999999.9999" />
+                                                    <style>
+                                                        input[type=number]::-webkit-outer-spin-button,
+                                                        input[type=number]::-webkit-inner-spin-button {
+                                                            -webkit-appearance: none;
+                                                            margin: 0;
+                                                        }
 
-
+                                                        input[type=number] {
+                                                            -moz-appearance: textfield;
+                                                        }
+                                                    </style>
+                                                    <span asp-validation-for="ExchangeRateValue" class="text-danger"></span>
                                                 </div>
                                             </div>
 
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label asp-for="ExchangeRateValue" class=" control-label" style="width:100%"></label>
-                                                    <kendo-numerictextbox name="ExchangeRateValue"
-                                                                          format="n4" spinners="false"
-                                                                          min="0.00"
-                                                                          required class="control-label right bold"
-                                                                          style="width: 100%;text-align:right;padding-right: 3px"
-                                                                          max="999999999.9999"
-                                                                          step="1"
-                                                                          value="Model.ExchangeRateValue" />
-
-                                                    <span asp-validation-for="ExchangeRateValue" class="text-danger"></span>
-
+                                                    <label asp-for="DayofRate" class=" control-label" style="width:100%"></label>
+                                                    <kendo-datetimepicker name="DayofRate"
+                                                                          style="width: 100%;"
+                                                                          format="dd/MM/yyyy hh:mm:ss"
+                                                                          time-format="hh:mm:ss"
+                                                                          data-val-required="La fecha es requerida"
+                                                                          value="Model.DayofRate"></kendo-datetimepicker>
+                                                    <span asp-validation-for="DayofRate" class="text-danger"></span>
                                                 </div>
                                             </div>
-
+                                            @*<div class="col-md-4">
+         <div class="form-group">
+             <label asp-for="ExchangeRateValue" class=" control-label" style="width:100%"></label>
+             <kendo-numerictextbox name="ExchangeRateValue"
+                                   format="n4" spinners="false"
+                                   min="0.0000"
+                                   required class="control-label right bold"
+                                   style="width: 100%;text-align:right;padding-right: 3px"
+                                   max="999999999.9999"
+                                   step="1"
+                                   value="Model.ExchangeRateValue" />
+                                   <span asp-validation-for="ExchangeRateValue" class="text-danger"></span>
+               </div>
+        </div>*@
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="CurrencyId" class="control-label"></label>
+                                                    <kendo-dropdownlist name="CurrencyId" for="CurrencyId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione la moneda"
+                                                                        datatextfield="CurrencyName"
+                                                                        datavaluefield="CurrencyId"
+                                                                        required
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi">
+                                                            <transport>
+                                                                <read url="@Url.Action("Get", "Currency")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="CurrencyId" class="text-danger"></span>
+                                                </div>
+                                            </div>
                                         </div>
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <button id="btnExchangeRate" class="form-control btn-miboton" type="submit"> Guardar </button>
                                             </div>
                                         </div>
-
-
-
                                     </div>
                                 </form>
                             </div>
@@ -112,6 +140,7 @@
 
         var grid = $("#gridNumeracionExchangeRate").getKendoGrid();
         grid.dataSource.read();
+
     }
     function SaveExchangeRate(e) {
         debugger;
@@ -119,30 +148,24 @@
            // e.preventDefault();
         $("#btnExchangeRate").hide();
         $("#btnExchangeRate").prop("disabled", true);
+        var ExchangeRateValue = $("#ExchangeRateValue").val();
+        var ExchangeRateDecimal = $("#ExchangeRateDecimal").val();
 
         var displayedData = $("#gridNumeracionExchangeRate").data().kendoGrid.dataSource.view();
-
         var dataObject = {
             'ExchangeRateId': $("#ExchangeRateId").val(),
             'DayofRate': $("#DayofRate").getKendoDateTimePicker().value().toJSON(),
-            'ExchangeRateValue': $("#ExchangeRateValue").val(),
-                'CreatedDate': $("#CreatedDate").val(),
-                'ModifiedDate': $("#ModifiedDate").val(),
-                'CreatedUser': $("#CreatedUser").val(),
-                'ModifiedUser': $("#ModifiedUser").val(),
-            '_ExchangeRate': displayedData
-            };
+            'CurrencyId': $("#CurrencyId").data("kendoDropDownList").text(),
+            'CurrencyId': $("#CurrencyId").val(),
+            'CurrencyName': $("#CurrencyId").data("kendoDropDownList").text(),
+            'ExchangeRateValue': (ExchangeRateValue),
+            'ExchangeRateDecimal': (ExchangeRateDecimal),
+        };
 
-           // console.log(JSON.stringify(dataObject));
-            //var form = $("#frmNumeracion");
-           // form.validate();
 
         var validator = $("#frmExchangeRate").data("kendoValidator");
                  var status = $(".status");
-
-
                 if (validator.validate()) {
-
                     $.ajax({
                         url: '@Url.Action("SaveExchangeRate", "ExchangeRate")',
                         method: 'POST',
@@ -151,7 +174,6 @@
                         async: false,
                         data: JSON.stringify(dataObject),
                         success: function (data) {
-
                             //notification.show({
                             //    message: "Guardado correctamente!"
                             //}, "upload-success");
@@ -164,32 +186,25 @@
                                 hideAfter: 30000,
                                 stack: 6
                             });
-
                             RefrescarGrid();
 
                             $('#ModalExchangeRate').modal('hide');
-
-
                         },
                         error: function (XMLHttpRequest, textStatus, errorThrown) {
-
                             notification.show({
                                 title: "Validación",
                                 message: textStatus + ": " + XMLHttpRequest.responseText
                             }, "error");
-
                         }
                     });
-
                 }
                 else {
                     status.text("Oops! There is invalid data in the form.")
                         .removeClass("valid")
                         .addClass("invalid");
                 }
-
-
         $("#btnExchangeRate").show();
         $("#btnExchangeRate").prop("disabled", false);
     }
 </script>
+
