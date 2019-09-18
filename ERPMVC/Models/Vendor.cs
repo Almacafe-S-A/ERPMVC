@@ -14,18 +14,25 @@ namespace ERPMVC.Models
         [Required]
         [Display(Name = "Nombre de Proveedor")]
         public string VendorName { get; set; }
-        //[Display(Name = "Tipo de Proveedor")]
-        public Int64 VendorTypeId { get; set; }
         [Display(Name = "Tipo de Proveedor")]
+        public Int64 VendorTypeId { get; set; }
         [ForeignKey("VendorTypeId")]
         public VendorType VendorType { get; set; }
 
         [Display(Name = "Dirección")]
         public string Address { get; set; }
-        [Display(Name = "Ciudad")]
-        public string City { get; set; }
-        [Display(Name = "Departamento")]
-        public string State { get; set; }
+
+
+        public long CountryId { get; set; }
+        [ForeignKey("CountryId")]
+        public Country Country { get; set; }
+        public long StateId { get; set; }
+        [ForeignKey("StateId")]
+        public State State { get; set; }
+        public long CityId { get; set; }
+        [ForeignKey("CityId")]
+        public City City { get; set; }
+
         [Display(Name = "Zip Code")]
         public string ZipCode { get; set; }
         [Display(Name = "Telefono")]
@@ -49,6 +56,8 @@ namespace ERPMVC.Models
         public string Identidad { get; set; }
         [Display(Name = "Moneda")]
         public int CurrencyId { get; set; }
+        [ForeignKey("CurrencyId")]
+        public Currency Currency { get; set; }
         [Required]
         [Display(Name = "Monto Minimo")]
         public double QtyMin { get; set; }
@@ -69,7 +78,11 @@ namespace ERPMVC.Models
         public string CompanyReferencetwo { get; set; }
         [Display(Name = "Activo/Inactivo ")]
         public Int64 IdEstado { get; set; }
+        [ForeignKey("IdEstado")]
+        public Estados Estados { get; set; }
         public string Estado { get; set; }
+
+
 
 
     }

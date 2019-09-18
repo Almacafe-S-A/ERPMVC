@@ -199,8 +199,8 @@ namespace ERPMVC.Controllers
 
                 if (_VendorP.VendorId == 0)
                 {
-                    _Vendor.FechaCreacion = DateTime.Now;
-                    _Vendor.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    _VendorP.FechaCreacion = DateTime.Now;
+                    _VendorP.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_VendorP);
                 }
                 else
