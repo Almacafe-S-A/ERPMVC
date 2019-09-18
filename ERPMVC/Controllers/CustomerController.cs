@@ -134,7 +134,7 @@ namespace ERPMVC.Controllers
                     _Customer.UsuarioCreacion = _listCustomer.UsuarioCreacion == "" ? HttpContext.Session.GetString("user") : _listCustomer.UsuarioCreacion;
                     _Customer.FechaCreacion = _listCustomer.FechaCreacion==null?DateTime.Now: _listCustomer.FechaCreacion;
 
-                    var updateresult = await Put(_Customer);
+                    var updateresult = await Put(_Customer,1);
                 }
 
             }
@@ -358,6 +358,11 @@ namespace ERPMVC.Controllers
                             _customer = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
 
                         }
+                        else
+                        {
+                            return BadRequest($"Ocurrio un error: {result.Content.ReadAsStringAsync()}");
+                        }
+
                     }
                     // return await Task.Run(() => BadRequest("El RTN del cliente ya existe"));
                 }
@@ -375,7 +380,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Put(Customer _customer)
+        public async Task<IActionResult> Put(Customer _customer,int fromsave=0)
         {
             try
             {
@@ -383,12 +388,66 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Customer/Update", _customer);
+                Customer _listCustomer = new Customer();
+                var result = await _client.GetAsync(baseadress + "api/Customer/GetCustomerById/" + _customer.CustomerId);
                 string valorrespuesta = "";
+
+                _customer.FechaModificacion = DateTime.Now;
+                _customer.UsuarioModificacion = HttpContext.Session.GetString("user");
+
+                if (fromsave == 0)
+                {
+                    if (result.IsSuccessStatusCode)
+                    {
+
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _listCustomer = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
+                    }
+
+                    _customer.City = _listCustomer.City;
+                    _customer.CityId = _listCustomer.CityId;
+                    _customer.Address = _listCustomer.Address;
+                    _customer.ClienteRecoger = _listCustomer.ClienteRecoger;
+                    _customer.CustomerRefNumber = _listCustomer.CustomerRefNumber;
+                    _customer.Email = _listCustomer.Email;
+                    _customer.EnviarlaMensajero = _listCustomer.EnviarlaMensajero;
+                    _customer.IdentidadApoderado = _listCustomer.IdentidadApoderado;
+                    _customer.MontoActivos = _listCustomer.MontoActivos;
+                    _customer.MontoIngresosAnuales = _listCustomer.MontoIngresosAnuales;
+                    _customer.NombreApoderado = _listCustomer.NombreApoderado;
+                    _customer.PerteneceEmpresa = _listCustomer.PerteneceEmpresa;
+                    _customer.Proveedor1 = _listCustomer.Proveedor1;
+                    _customer.Proveedor2 = _listCustomer.Proveedor2;
+                    _customer.ZipCode = _listCustomer.ZipCode;
+                    _customer.State = _listCustomer.State;
+                    _customer.StateId = _listCustomer.StateId;
+                    _customer.IdEstado = _listCustomer.IdEstado;
+                    _customer.Estado = _listCustomer.Estado;
+                    _customer.GrupoEconomico = _listCustomer.GrupoEconomico;
+                    _customer.Phone = _listCustomer.Phone;
+                    _customer.CountryId = _listCustomer.CountryId;
+                    _customer.CountryName = _listCustomer.CountryName;
+                }
+
+                _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                result = await _client.PostAsJsonAsync(baseadress + "api/Customer/Update", _customer);
+                 valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _customer = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
+
+                    _customer.CityId = _customer.CityId == null ? 0 : _customer.CityId;
+                    _customer.CountryId = _customer.CountryId == null ? 0 : _customer.CountryId;
+                    _customer.StateId = _customer.StateId == null ? 0 : _customer.StateId;
+                    _customer.IdEstado = _customer.IdEstado == null ? 0 : _customer.IdEstado;
+                    _customer.CustomerTypeId = _customer.CustomerTypeId == null ? 0 : _customer.CustomerTypeId;
+
+                }
+                else
+                {
+                    return BadRequest($"Ocurrio un error: {result.Content.ReadAsStringAsync()}");
                 }
 
             }

@@ -30,7 +30,7 @@ namespace ERPMVC.Models
         public string RTN { get; set; }
 
         [Display(Name = "Tipo de cliente")]
-        public int CustomerTypeId { get; set; }
+        public long? CustomerTypeId { get; set; }
 
         [Display(Name = "Tipo de cliente")]
         public string CustomerTypeName { get; set; }
@@ -39,19 +39,19 @@ namespace ERPMVC.Models
         public string Address { get; set; }
 
         [Display(Name = "País")]
-        public int CountryId { get; set; }
+        public long? CountryId { get; set; }
 
         [Display(Name = "País")]
         public string CountryName { get; set; }
 
         [Display(Name = "Ciudad")]
-        public int CityId { get; set; }
+        public long? CityId { get; set; }
 
         [Display(Name = "Ciudad")]
         public string City { get; set; }
 
         [Display(Name = "Departamento")]
-        public int StateId { get; set; }
+        public long? StateId { get; set; }
 
         [Display(Name = "Departamento")]
         public string State { get; set; }
@@ -68,9 +68,8 @@ namespace ERPMVC.Models
         [Display(Name = "Persona de Contacto ")]
         public string ContactPerson { get; set; }
 
-
         [Display(Name = "Activo/Inactivo ")]
-        public Int64 IdEstado { get; set; }
+        public Int64? IdEstado { get; set; }
 
         public string Estado { get; set; }
 

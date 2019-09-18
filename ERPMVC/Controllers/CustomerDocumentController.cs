@@ -45,6 +45,8 @@ namespace ERPMVC.Controllers
             return PartialView();
         }
 
+
+
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> pvwCustomerDocumentUpload([FromBody]CustomerDocument _CustomerDocumentp)
         {
@@ -112,6 +114,37 @@ namespace ERPMVC.Controllers
 
             return _CustomerDocument.ToDataSourceResult(request);
 
+        }
+
+
+        public async Task<ActionResult> SFCustomerDocument(Int64 id)
+        {
+
+            try
+            {
+                CustomerDocument _CustomerDocument = new CustomerDocument();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CustomerDocument/GetCustomerDocumentById/" + id);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerDocument = JsonConvert.DeserializeObject<CustomerDocument>(valorrespuesta);
+
+                }
+
+                ViewBag.pathcontrato = _CustomerDocument.Path;
+            }
+            catch (Exception ex)
+            {
+
+                throw ex; 
+            }
+       
+
+            return View();
         }
 
 

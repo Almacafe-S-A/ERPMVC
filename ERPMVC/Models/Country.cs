@@ -29,6 +29,9 @@ namespace ERPMVC.Models
 
         public bool GAFI { get; set; } = false;
 
+        [Display(Name = "Comentarios")]
+        public string Comments { get; set; }
+
         [Display(Name = "Lista")]
         public int ListaId { get; set; }
         [Display(Name = "Lista")]

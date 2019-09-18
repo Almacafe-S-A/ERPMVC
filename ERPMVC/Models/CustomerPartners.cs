@@ -18,6 +18,11 @@ namespace ERPMVC.Models
         [Display(Name = "Cliente")]
         public Int64 CustomerId { get; set; }
 
+        [Display(Name = "Funcionario publico")]
+        public bool FuncionarioPublico { get; set; }
+
+        [Display(Name = "Cargo publico que desempeña")]
+        public string CargoPublico { get; set; }
 
         [Display(Name = "Identidad")]
         public string Identidad { get; set; }
