@@ -186,7 +186,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _UnitOfMeasure = JsonConvert.DeserializeObject<List<UnitOfMeasure>>(valorrespuesta);
-
+                    _UnitOfMeasure = _UnitOfMeasure.OrderByDescending(q => q.UnitOfMeasureId).ToList();
                 }
 
 
@@ -232,7 +232,17 @@ namespace ERPMVC.Controllers
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                      result = await _client.GetAsync(baseadress + "api/UnitOfMeasure/GetUnitOfMeasureByName/" + _UnitOfMeasure.UnitOfMeasureName);
 
-                    if (!result.IsSuccessStatusCode)
+                    valorrespuesta = "";
+                    if(result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _listUnitOfMeasure = JsonConvert.DeserializeObject<UnitOfMeasure>(valorrespuesta);
+                    }
+
+                    if (_listUnitOfMeasure == null) { _listUnitOfMeasure = new Models.UnitOfMeasure(); }
+
+
+                    if (_listUnitOfMeasure.UnitOfMeasureId==0)
                     {
                         _UnitOfMeasure.FechaCreacion = DateTime.Now;
                         _UnitOfMeasure.UsuarioCreacion = HttpContext.Session.GetString("user");
