@@ -32,8 +32,18 @@ namespace ERPMVC.Controllers
         // GET: Accounting
         public ActionResult Index()
         {
-            return View();
+          /*  var items = new List<NodeViewModel>();
+
+            var root = new NodeViewModel { Id = 1, Title = "Root" };
+            items.Add(root);
+
+            root.Children.Add(new NodeViewModel { Id = 2, Title = "One" });
+            root.Children.Add(new NodeViewModel { Id = 3, Title = "Two" });
+
+            this.ViewBag.Tree = items;
+            */return View();
         }
+        
         [HttpGet("[action]")]
         public async Task<JsonResult> GetAccount([DataSourceRequest]DataSourceRequest request)
         {
@@ -45,7 +55,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 //Error
-                var result = await _client.GetAsync(baseadress + "api/Account/GetAccount");
+                var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccount");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -76,7 +86,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Account/GetAccount");
+                var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccount");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -106,7 +116,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Account/GetAccountDiary");
+                var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountDiary");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -137,7 +147,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Account/GetAccountById/" + _Account.AccountId);
+                var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountById/" + _Account.AccountId);
                 string valorrespuesta = "";
                 _Account.FechaModificacion = DateTime.Now;
                 _Account.UsuarioModificacion = HttpContext.Session.GetString("user");
@@ -183,7 +193,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Account/GetAccountById/" + _sarpara.AccountId);
+                var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountById/" + _sarpara.AccountId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -223,7 +233,7 @@ namespace ERPMVC.Controllers
                 _Account.UsuarioCreacion = HttpContext.Session.GetString("user");
                 _Account.FechaCreacion = DateTime.Now;
                 _Account.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Account/Insert", _Account);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Accounting/Insert", _Account);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -249,7 +259,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PutAsJsonAsync(baseadress + "api/Account/Update", _Account);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/Accounting/Update", _Account);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {

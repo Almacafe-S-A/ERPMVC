@@ -7,22 +7,22 @@ using System.Threading.Tasks;
 
 namespace ERPMVC.Models
 {
-    public class ExchangeRate
+    public class ConfigurationVendor
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Display(Name = "Id")]
-        public Int64 ExchangeRateId { get; set; }
-        [Display(Name = "Fecha")]
-        public DateTime DayofRate { get; set; }
-        [Display(Name = "Tasa de Venta")]
-        public decimal ExchangeRateValue { get; set; }
+        public Int64 ConfigurationVendorId { get; set; }
 
-        [Display(Name = "Id Moneda")]
-        public Int64 CurrencyId { get; set; }
-
-        [Display(Name = "Moneda")]
-        public string CurrencyName { get; set; }
-
+        [Required]
+        [Display(Name = "Monto Minimo")]
+        public double QtyMin { get; set; }
+        [Required]
+        [Display(Name = "Monto Mensual")]
+        public double QtyMonth { get; set; }
+        [Display(Name = "Id de estado")]
+        public Int64 IdEstado { get; set; }
+        [Display(Name = "Estado")]
+        public string Estado { get; set; }
         [Required]
         [Display(Name = "Usuario que lo crea")]
         public string CreatedUser { get; set; }
@@ -38,6 +38,7 @@ namespace ERPMVC.Models
         [Required]
         [Display(Name = "Fecha de Modificacion")]
         public DateTime ModifiedDate { get; set; }
+
 
     }
 }
