@@ -37,7 +37,8 @@ namespace ERPMVC.Models
 
         [Display(Name = "País")]
         public string CountryName { get; set; }
-
+        [Display(Name = "Limite de CNBS")]
+        public decimal? LimitCNBS { get; set; }
         [Display(Name = "Departamento")]
         public int StateId { get; set; }
         public string State { get; set; }
