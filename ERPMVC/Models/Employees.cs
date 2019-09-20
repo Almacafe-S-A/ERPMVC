@@ -46,7 +46,7 @@ namespace ERPMVC.Models
         [Display(Name = "Genero")]
         public string Genero { get; set; }
         [Required]
-        [Display(Name = "Código Estado")]
+        [Display(Name = "Estado")]
         public long? IdEstado { get; set; }
         [Required]
         [Display(Name = "Estado")]

@@ -1,4 +1,4 @@
-﻿@model ERPMVC.DTO.DependientesDTO
+﻿@model ERPMVC.Models.Dependientes
 
 @{ Layout = null;
     var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
@@ -18,6 +18,25 @@
         }
 
         //$('#btnprueba').val("");
+
+
+    function closeDependientes() {
+        $('#ModalDependientes').find(':input').not(':submit').val('0');
+        // $('#myModalCustomerPhones').find(':select').not(':submit').val('0');
+        //$("#ProductId").data("kendoDropDownList").value(0);
+        //$("#BranchId").data("kendoDropDownList").value(0);
+        //$("#TypeId").data("kendoDropDownList").value(0);
+        //$("#CustomerId").data("kendoDropDownList").value(0);
+
+        RefreshGridDependientes();
+        $("#ModalDependientes").modal('hide');
+    }
+
+    function RefreshGridDependientes() {
+        var grid = $("#gridDependientes").getKendoGrid();
+        grid.dataSource.read();
+        grid.refresh();
+    }
 </script>
 
 
@@ -51,7 +70,30 @@
                                                     <span asp-validation-for="IdDependientes" class="text-danger"></span>
                                                 </div>
                                             </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    
+                                                    <label asp-for="IdEmpleado" class="control-label" style="width:100%"></label>
 
+                                                    <kendo-dropdownlist for="@Model.IdEmpleado"
+                                                                        id="IdEmpleado"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione el Empleado"
+                                                                        enable="false"
+                                                                        required
+                                                                        datatextfield="NombreEmpleado"
+                                                                        datavaluefield="IdEmpleado"
+                                                                        style="width: 100%;">
+
+                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="10000">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetEmployees", "Common")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="IdEmpleado" class="text-danger"></span>
+                                                </div>
+                                            </div>
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="NombreDependientes" class=" control-label" style="width:100%"></label>
@@ -86,30 +128,11 @@
                                                     <span asp-validation-for="Direccion" class="text-danger"></span>
                                                 </div>
                                             </div>
-
-                                            @*<div class="col-md-4">
-                                                    <div class="form-group">
-                                                        <label asp-for="IdEmpleado" class="control-label">Estado</label>
-                                                        <kendo-dropdownlist name="IdEstado"
-                                                                            for="@Model.IdEmpleado"
-                                                                            filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                            option-label="Seleccionar Estado"
-                                                                            datatextfield="NombreEstado"
-                                                                            datavaluefield="IdEstado"
-                                                                            style="width: 100%;">
-                                                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
-                                                                <transport>
-                                                                    <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
-                                                                </transport>
-                                                            </datasource>
-                                                        </kendo-dropdownlist>
-                                                    </div>
-                                                </div>*@
                                         </div>
 
                                         <div class="row">
                                             <div class="col-md-12">
-                                                <button id="btnDependientes" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                                <button id="btnSaveDependientes" type="submit" class="form-control btn-miboton" onclick="SaveDependientes(this);">Guardar</button>
                                             </div>
                                         </div>
                                     </div>
@@ -136,6 +159,7 @@
             //var displayedData = $("#gridDependientes").data().kendoGrid.dataSource.view();
 
             var dataObject = {  'IdDependientes': $("#IdDependientes").val()===""?"0":$("#IdDependientes").val(),
+                           'IdEmpleado': $("#IdEmpleado").val(),
                            'NombreDependientes': $("#NombreDependientes").val(),
                            'Parentezco': $("#Parentezco").val(),
                            'Telefono': $("#Telefono").val(),
@@ -144,7 +168,7 @@
                            'FechaModificacion':$("#FechaModificacion").val(),
                            'Usuariocreacion':$("#Usuariocreacion").val(),
                            'Usuariomodificacion':$("#Usuariomodificacion").val(),
-                           '_Dependientes': displayedData
+                          
             };
 
            // console.log(JSON.stringify(dataObject));
