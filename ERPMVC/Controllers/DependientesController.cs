@@ -33,9 +33,9 @@ namespace ERPMVC.Controllers
         }
 
         // GET: Dependientes
-        public ActionResult Dependientes()
+        public ActionResult Index()
         {
-            return View();
+            return PartialView();
         }
 
 
@@ -103,27 +103,28 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult> pvwAddDependientes([FromBody]DependientesDTO _sarpara)
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> pvwAddDependientes([FromBody]Dependientes _Dependientesp)
         {
-            DependientesDTO _Dependientes = new DependientesDTO();
+            Dependientes _Dependientes = new Dependientes();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Dependientes/GetDependientes/" + _sarpara.IdDependientes);
+                var result = await _client.GetAsync(baseadress + "api/Dependientes/GetDependientesById/" + _Dependientesp.IdDependientes);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Dependientes = JsonConvert.DeserializeObject<DependientesDTO>(valorrespuesta);
+                    _Dependientes = JsonConvert.DeserializeObject<Dependientes>(valorrespuesta);
 
                 }
 
                 if (_Dependientes == null)
                 {
-                    _Dependientes = new DependientesDTO();
+                    _Dependientes = new Dependientes { IdDependientes = _Dependientesp.IdDependientes };
                 }
             }
             catch (Exception ex)
@@ -137,8 +138,7 @@ namespace ERPMVC.Controllers
             return PartialView(_Dependientes);
 
         }
-
-
+        
         [HttpPost]
         public async Task<ActionResult<Dependientes>> SaveDependientes([FromBody]DependientesDTO _DependientesS)
         {

@@ -46,11 +46,14 @@ namespace ERPMVC.Models
         [Display(Name = "Genero")]
         public string Genero { get; set; }
         [Required]
-        [Display(Name = "Código Estado")]
+        [Display(Name = "Estado")]
         public long? IdEstado { get; set; }
         [Required]
         [Display(Name = "Estado")]
         public string NombreEstado { get; set; }
+        [Required]
+        [Display(Name = "Activo-Inactivo")]
+        public long? IdActivoinactivo { get; set; }
         [Required]
         [Display(Name = "Ciudad")]
         public string Ciudad { get; set; }
@@ -65,7 +68,7 @@ namespace ERPMVC.Models
         public long? IdCurrency { get; set; }
         [Required]
         [Display(Name = "Código de Usuario")]
-        public string Userid { get; set; }    
+        public Guid ApplicationUserId { get; set; }    
         [Display(Name = "Foto")]
         public string Foto { get; set; }
         [Required]

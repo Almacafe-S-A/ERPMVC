@@ -32,16 +32,17 @@ namespace ERPMVC.Controllers
         // GET: Accounting
         public ActionResult Index()
         {
-          /*  var items = new List<NodeViewModel>();
+            /* var items = new List<NodeViewModel>();
 
-            var root = new NodeViewModel { Id = 1, Title = "Root" };
-            items.Add(root);
+             var root = new NodeViewModel { Id = 1, Title = "Root" };
+             items.Add(root);
 
-            root.Children.Add(new NodeViewModel { Id = 2, Title = "One" });
-            root.Children.Add(new NodeViewModel { Id = 3, Title = "Two" });
+             root.Children.Add(new NodeViewModel { Id = 2, Title = "One" });
+             root.Children.Add(new NodeViewModel { Id = 3, Title = "Two" });
 
-            this.ViewBag.Tree = items;
-            */return View();
+             this.ViewBag.Tree = items;
+             */
+            return View();
         }
         
         [HttpGet("[action]")]
