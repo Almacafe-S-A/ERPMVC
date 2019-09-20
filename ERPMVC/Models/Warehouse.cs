@@ -13,7 +13,6 @@ namespace ERPMVC.Models
         [Display(Name = "Id")]
         public int WarehouseId { get; set; }
 
-        [Required(ErrorMessage ="Campo requerido")]
         [Display(Name = "Nombre del almacén")]
         public string WarehouseName { get; set; }
         [Display(Name = "Descripción")]
@@ -32,6 +31,24 @@ namespace ERPMVC.Models
 
         [Display(Name = "Unidad de medida")]
         public string UnitOfMeasureName { get; set; }
+
+        [Display(Name = "Número de poliza")]
+        public string NoPoliza { get; set; }
+
+        [Display(Name = "Moneda")]
+        public Int64 CurrencyId { get; set; }
+        [Display(Name = "Moneda")]
+        public string CurrencyName { get; set; }
+
+        [Display(Name = "Cantidad de la póliza")]
+        public double CantidadPoliza { get; set; }
+
+        [Display(Name = "Fecha de emisión póliza")]
+        public DateTime FechaEmisionPoliza { get; set; }
+        [Display(Name = "Fecha de vencimiento póliza")]
+        public DateTime FechaVencimientoPoliza { get; set; }
+
+
         [Required]
         [Display(Name = "Usuario de creación")]
         public string UsuarioCreacion { get; set; }
