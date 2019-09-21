@@ -30,19 +30,83 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
         // GET: Accounting
-        public ActionResult Index()
+        public async Task<ActionResult> Index()
         {
-            /* var items = new List<NodeViewModel>();
+            List<Accounting> __customers = new List<Accounting>();
+            try
+            {
 
-             var root = new NodeViewModel { Id = 1, Title = "Root" };
-             items.Add(root);
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                //Error
+                var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccount");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await(result.Content.ReadAsStringAsync());
+                    __customers = JsonConvert.DeserializeObject<List<Accounting>>(valorrespuesta);
 
-             root.Children.Add(new NodeViewModel { Id = 2, Title = "One" });
-             root.Children.Add(new NodeViewModel { Id = 3, Title = "Two" });
+                }
 
-             this.ViewBag.Tree = items;
-             */
-            return View();
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            
+
+            // return Json(__customers.ToDataSourceResult(request));
+
+
+            var items = new List<NodeViewModel>();
+            foreach (Accounting Cuenta in __customers) {
+                var root = new NodeViewModel { Id = Convert.ToInt32(Cuenta.AccountId),
+                                                Title = Cuenta.AccountName };
+                items.Add(root);
+                List<AccountingChilds> __childs = new List<AccountingChilds>();
+                try
+                {
+
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    //Error
+                    var result = await _client.GetAsync(baseadress + "api/AccountingChilds/GetAccountingChildsById/" + Cuenta.AccountId);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        __childs = JsonConvert.DeserializeObject<List<AccountingChilds>>(valorrespuesta);
+
+                    }
+
+
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                    throw ex;
+                }
+                foreach (AccountingChilds CuentaChield in __childs)
+                {
+
+                    root.Children.Add(new NodeViewModel { Id = Convert.ToInt32(CuentaChield.AccountingChildsId), Title = CuentaChield.AccountName});
+                }
+            }
+
+
+            //foreach (Accounting in )
+
+            // root.Children.Add(new NodeViewModel { Id = 2, Title = "One" });
+            // root.Children.Add(new NodeViewModel { Id = 3, Title = "Two" });
+
+            this.ViewBag.Tree = items;
+
+           // return View();
+            return await Task.Run(() => View());
         }
         
         [HttpGet("[action]")]
