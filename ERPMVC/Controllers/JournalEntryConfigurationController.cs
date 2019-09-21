@@ -69,93 +69,6 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpGet("[action]")]
-        public async Task<DataSourceResult> GetSalesOrderLine([DataSourceRequest]DataSourceRequest request, JournalEntryConfigurationLine _JournalEntryConfigurationLine)
-        {
-            List<JournalEntryConfigurationLine> _JournalEntryConfigurationLinelist = new List<JournalEntryConfigurationLine>();
-
-            try
-            {
-
-                if (HttpContext.Session.Get("JournalEntryConfigurationLine") == null
-                    || HttpContext.Session.GetString("JournalEntryConfigurationLine") == "")
-                {
-                    if (_JournalEntryConfigurationLine.JournalEntryConfigurationId > 0)
-                    {
-                        string serialzado = JsonConvert.SerializeObject(_JournalEntryConfigurationLinelist).ToString();
-                        HttpContext.Session.SetString("JournalEntryConfigurationLine", serialzado);
-                    }
-                }
-                else
-                {
-                    _JournalEntryConfigurationLinelist = JsonConvert.DeserializeObject<List<JournalEntryConfigurationLine>>(HttpContext.Session.GetString("listadoproductos"));
-                }
-                if (_JournalEntryConfigurationLine.JournalEntryConfigurationId > 0)
-                {
-
-                    string baseadress = config.Value.urlbase;
-                    HttpClient _client = new HttpClient();
-
-                    //_client.DefaultRequestHeaders.Add("SalesOrderId", _salesorder.SalesOrderId.ToString());
-                   // _client.DefaultRequestHeaders.Add("JournalEntryConfigurationId", _JournalEntryConfigurationLine.JournalEntryConfigurationId.ToString());
-
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/SalesOrderLine/");
-                    string valorrespuesta = "";
-                    if (result.IsSuccessStatusCode)
-                    {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _JournalEntryConfigurationLinelist = JsonConvert.DeserializeObject<List<JournalEntryConfigurationLine>>(valorrespuesta);
-                    }
-                }
-                else
-                {
-
-                    List<JournalEntryConfigurationLine> _existelinea = new List<JournalEntryConfigurationLine>();
-                    if (HttpContext.Session.GetString("JournalEntryConfigurationLine") != "")
-                    {
-                        _JournalEntryConfigurationLinelist = JsonConvert.DeserializeObject<List<JournalEntryConfigurationLine>>(HttpContext.Session.GetString("listadoproductos"));
-                        _existelinea = _JournalEntryConfigurationLinelist.Where(q => q.JournalEntryConfigurationLineId == _JournalEntryConfigurationLine.JournalEntryConfigurationLineId).ToList();
-                    }
-
-
-
-                    if (_JournalEntryConfigurationLine.JournalEntryConfigurationLineId > 0 && _existelinea.Count == 0)
-                    {
-                        _JournalEntryConfigurationLinelist.Add(_JournalEntryConfigurationLine);
-                        HttpContext.Session.SetString("JournalEntryConfigurationLine", JsonConvert.SerializeObject(_JournalEntryConfigurationLinelist).ToString());
-                    }
-                    else
-                    {
-                        var obj = _JournalEntryConfigurationLinelist.FirstOrDefault(x => x.JournalEntryConfigurationLineId == _JournalEntryConfigurationLine.JournalEntryConfigurationLineId);
-                        if (obj != null)
-                        {
-                            obj.AccountId = _JournalEntryConfigurationLine.AccountId;
-                            obj.AccountName = _JournalEntryConfigurationLine.AccountName;
-                            obj.DebitCredit = _JournalEntryConfigurationLine.DebitCredit;
-
-                        }
-
-                        HttpContext.Session.SetString("JournalEntryConfigurationLine", JsonConvert.SerializeObject(_JournalEntryConfigurationLinelist).ToString());
-
-                    }
-
-
-
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-
-            return _JournalEntryConfigurationLinelist.ToDataSourceResult(request);
-        }
-
 
 
         [HttpGet]
@@ -190,7 +103,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<JournalEntryConfiguration>> SaveJournalEntryConfiguration([FromBody]JournalEntryConfiguration _JournalEntryConfiguration)
         {
 
@@ -211,11 +124,18 @@ namespace ERPMVC.Controllers
                     _listJournalEntryConfiguration = JsonConvert.DeserializeObject<JournalEntryConfiguration>(valorrespuesta);
                 }
 
+                if (_listJournalEntryConfiguration == null)
+                {
+                    _listJournalEntryConfiguration = new JournalEntryConfiguration();
+                }
+
                 if (_listJournalEntryConfiguration.JournalEntryConfigurationId == 0)
                 {
                     _JournalEntryConfiguration.FechaCreacion = DateTime.Now;
                     _JournalEntryConfiguration.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_JournalEntryConfiguration);
+                    var value = (insertresult.Result as ObjectResult).Value;
+                    _JournalEntryConfiguration = ((JournalEntryConfiguration)(value));
                 }
                 else
                 {

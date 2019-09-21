@@ -8,9 +8,10 @@ namespace ERPMVC.Models
 {
     public class JournalEntryConfigurationLine
     {
+        [Display(Name = "Id")]
         public Int64 JournalEntryConfigurationLineId { get; set; }
 
-        [Display(Name = "Fecha de creación")]
+        [Display(Name = "Configuración Id")]
         public Int64 JournalEntryConfigurationId { get; set; }
 
         [Display(Name = "Cuenta Contable")]
