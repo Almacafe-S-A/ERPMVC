@@ -112,8 +112,8 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/IncomeAndExpenseAccountLine/GetIncomeAndExpenseAccountLineById/" + _IncomeAndExpenseAccountLine.IncomeAndExpenseAccountLineId);
                 string valorrespuesta = "";
-                _IncomeAndExpenseAccountLine.FechaModificacion = DateTime.Now;
-                _IncomeAndExpenseAccountLine.UsuarioModificacion = HttpContext.Session.GetString("user");
+              //  _IncomeAndExpenseAccountLine.FechaModificacion = DateTime.Now;
+               // _IncomeAndExpenseAccountLine.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
 
@@ -123,8 +123,8 @@ namespace ERPMVC.Controllers
 
                 if (_listIncomeAndExpenseAccountLine.IncomeAndExpenseAccountLineId == 0)
                 {
-                    _IncomeAndExpenseAccountLine.FechaCreacion = DateTime.Now;
-                    _IncomeAndExpenseAccountLine.UsuarioCreacion = HttpContext.Session.GetString("user");
+                   // _IncomeAndExpenseAccountLine.FechaCreacion = DateTime.Now;
+                    //_IncomeAndExpenseAccountLine.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_IncomeAndExpenseAccountLine);
                 }
                 else
@@ -153,8 +153,8 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _IncomeAndExpenseAccountLine.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _IncomeAndExpenseAccountLine.UsuarioModificacion = HttpContext.Session.GetString("user");
+                //_IncomeAndExpenseAccountLine.UsuarioCreacion = HttpContext.Session.GetString("user");
+                //_IncomeAndExpenseAccountLine.UsuarioModificacion = HttpContext.Session.GetString("user");
                 var result = await _client.PostAsJsonAsync(baseadress + "api/IncomeAndExpenseAccountLine/Insert", _IncomeAndExpenseAccountLine);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
