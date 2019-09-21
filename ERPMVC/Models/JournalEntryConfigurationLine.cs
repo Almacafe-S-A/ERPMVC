@@ -11,7 +11,7 @@ namespace ERPMVC.Models
         public Int64 JournalEntryConfigurationLineId { get; set; }
 
         [Display(Name = "Fecha de creación")]
-        public string JournalEntryConfigurationId { get; set; }
+        public Int64 JournalEntryConfigurationId { get; set; }
 
         [Display(Name = "Cuenta Contable")]
         public Int64 AccountId { get; set; }
@@ -20,8 +20,8 @@ namespace ERPMVC.Models
         public string AccountName { get; set; }
 
         [Display(Name = "Indicador Débito o Crédito")]
-        public string DebitCredit { get; set; }      
-      
+        public string DebitCredit { get; set; }
+
 
         [Display(Name = "Fecha de creación")]
         public DateTime FechaCreacion { get; set; }
