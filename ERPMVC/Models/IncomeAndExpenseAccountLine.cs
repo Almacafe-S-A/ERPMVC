@@ -23,6 +23,9 @@ namespace ERPMVC.Models
         [Display(Name = "Fecha de documento")]
         public DateTime DocumentDate { get; set; }
 
+        [Display(Name = "Descripción")]
+        public string Description { get; set; }
+
         [Display(Name = "Débito/Crédito")]
         public string DebitCredit { get; set; }
         

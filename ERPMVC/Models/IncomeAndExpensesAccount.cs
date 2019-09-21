@@ -19,6 +19,12 @@ namespace ERPMVC.Models
         [Display(Name = "Banco")]
         public string BankName { get; set; }
 
+        [Display(Name = "Moneda")]
+        public Int64 CurrencyId { get; set; }
+
+        [Display(Name = "Moneda")]
+        public string CurrencyName { get; set; }
+
         [Display(Name = "Tipo de cuenta")]
         public Int64 TypeAccountId { get; set; }
         [Display(Name = "Tipo de cuenta")]
