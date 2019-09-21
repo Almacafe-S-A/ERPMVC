@@ -56,6 +56,8 @@ namespace ERPMVC.Models
         [Display(Name = "Municipio")]
         public string CityName { get; set; }
 
+        [Display(Name = "Observación")]
+        public string Comments { get; set; }
 
 
         [Display(Name = "Fecha creación")]

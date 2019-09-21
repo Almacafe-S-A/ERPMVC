@@ -1,0 +1,351 @@
+﻿@model ERPMVC.DTO.JournalEntryConfigurationDTO
+
+
+
+<script>
+
+
+    function GetJournalEntryConfigurationId() {
+        var subproductname = '', unidaddemedida = '';
+        if ($("#UnitOfMeasureId") != null) {
+            if ($("#UnitOfMeasureId").data("kendoDropDownList") != null) {
+                unidaddemedida = $("#UnitOfMeasureId").data("kendoDropDownList").text();
+            }
+        }
+        if ($("#SubProductId") != null) {
+            if ($("#SubProductId").data("kendoDropDownList") != null) {
+                subproductname = $("#SubProductId").data("kendoDropDownList").text();
+            }
+        }
+
+        var displayedData = $("#gridJournalEntryConfigurationLine").data().kendoGrid.dataSource.data();
+        var id = -999999;
+        debugger;
+        if (Number($("#JournalEntryConfigurationLineId").val()) === 0) {
+            if (displayedData.length > 0) {
+                for (var i = 0; i < displayedData.length; i++) {
+                    if (displayedData[i].JournalEntryConfigurationLineId > id)
+                        id = displayedData[i].JournalEntryConfigurationLineId;
+
+                }
+
+                id = id + 1;
+            }
+            else if ($("#Quantity").val() > 0) {
+                id = 1;
+            }
+
+        }
+        else {
+            id = $("#JournalEntryConfigurationLineId").val();
+        }
+
+
+        return {
+            JournalEntryConfigurationLineId: id,
+            JournalEntryConfigurationId: @Model.JournalEntryConfigurationId ,
+
+
+            UnitOfMeasureId: $("#UnitOfMeasureId").val(),
+            UnitOfMeasureName: unidaddemedida,
+            SubProductId: $("#SubProductId").val(),
+            SubProductName: subproductname,
+            Description: $("#DescriptionDetail").val(),
+            Quantity: $("#Quantity").val(),
+            Price: $("#Price").val(),
+            Amount: $("#AmountLine").val(),
+            DiscountPercentage: $("#DiscountPercentage").val(),
+            DiscountAmount: $("#DiscountAmount").val(),
+            SubTotal: $("#SubTotalLine").val(),
+            TaxPercentage: $("#TaxPercentage").val(),
+            TaxCode: $("#TaxCode").val(),
+            TaxAmount: $("#TaxAmount").val(),
+            Total: $("#TotalLine").val(),
+        }
+    }
+
+    function RefreshCotizacionesDetail() {
+        var grid = $("#gridJournalEntryConfigurationLine").getKendoGrid();
+        grid.dataSource.read();
+        grid.refresh();
+    }
+
+
+    function AddCotizacionDetalle() {
+        var notification = $("#notification").data("kendoNotification");
+      //  console.log($("#ProductId").val());
+        if ($("#ProductId").val() !== '' && $("#ProductId").val() !== '0'  ) {
+
+            llenarsubproduct();
+            $("#frmJournalEntryConfigurationLine :input").not('#JournalEntryConfigurationId').prop("disabled", false);
+            $('#TaxCode').val(0);
+            $('#ModalJournalEntryConfigurationLine').modal('show');
+        } else {
+            var notification = $("#notification").data("kendoNotification");
+            notification.show({
+                title: "Validación",
+                message: "Debe seleccionar un servicio!"
+            }, "error");
+
+        }
+
+        return true;
+    }
+
+    function llenarsubproduct() {
+        var combobox = $('#SubProductId').getKendoDropDownList();
+
+            var dataObject = { 'ProductId': $("#ProductId").val() };
+              $.ajax({
+                    url: '@Url.Action("GetSubProductByProductId", "ProductRelation")',
+                    method: 'GET',
+                    datatype: "json",
+                    contentType: 'application/json',
+                    async: false,
+                    data: dataObject,
+                    success: function (data) {
+                        combobox.setDataSource(data);
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                      //  $("#btngenerarfactura").show();
+                        notification.show({
+                            title: "Validación",
+                            message: textStatus + ": " + XMLHttpRequest.responseText
+                        }, "error");
+
+                    }
+                });
+    }
+
+    function EditCotizacionDetalle(e) {
+
+        e.preventDefault();
+        var notification = $("#notification").data("kendoNotification");
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        var subproducto = 0;
+        var dataObject = { 'JournalEntryConfigurationLineId': dataItem.JournalEntryConfigurationLineId };
+
+        var codigoimpuesto = 0;
+
+        if (dataItem.JournalEntryConfigurationId > 0) {
+            $.ajax({
+                url: '@Url.Action("pvwJournalEntryConfigurationDetailMant", "JournalEntryConfigurationLine")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    $("#JournalEntryConfigurationLineMant").html('');
+                    $("#JournalEntryConfigurationLineMant").html(data);
+                    var txt = $(data);
+                    var found = $("#SubProductId", txt);
+                    subproducto = $(found).val();                
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    //  $("#btngenerarfactura").show();
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+
+                }
+            });
+
+
+           // console.log(subproducto);
+            $("#frmJournalEntryConfigurationLine :input").prop("disabled", true);
+            llenarsubproduct();
+            var combobox = $('#SubProductId').getKendoDropDownList();
+            combobox.value(subproducto);
+            combobox.trigger('change');
+
+        }
+        else {
+            $("#JournalEntryConfigurationLineId").val(dataItem.JournalEntryConfigurationLineId);
+            $("#Quantity").data("kendoNumericTextBox").value(dataItem.Quantity);
+            $("#Price").data("kendoNumericTextBox").value(dataItem.Price);
+            $("#Description").val(dataItem.Description);
+            $("#Amount").data("kendoNumericTextBox").value(dataItem.Amount);
+            $("#Total").data("kendoNumericTextBox").value(dataItem.Total);
+            $("#TaxPercentage").data("kendoNumericTextBox").value(dataItem.TaxPercentage);
+            $("#TaxAmount").data("kendoNumericTextBox").value(dataItem.TaxAmount);
+            $("#SubTotal").data("kendoNumericTextBox").value(dataItem.SubTotal);
+            $("#DiscountAmount").data("kendoNumericTextBox").value(dataItem.DiscountAmount);
+            $("#DiscountPercentage").data("kendoNumericTextBox").value(dataItem.DiscountPercentage);
+            $("#SubProductId").data("kendoDropDownList").dataSource.read();
+            $("#TaxCode").data("kendoDropDownList").value(dataItem.TaxCode);
+            $("#UnitOfMeasureId").data("kendoDropDownList").value(dataItem.UnitOfMeasureId);
+            $("#SubProductId").data("kendoDropDownList").value(dataItem.SubProductId);
+
+        }
+
+        $('#ModalJournalEntryConfigurationLine').modal('show');
+
+    }
+
+
+        function Delete(e) {
+
+        e.preventDefault();
+        if (confirm('Esta seguro que desea eliminar la fila?')) {
+            var notification = $("#notification").data("kendoNotification");
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+            $.ajax({
+                url: '@Url.Action("Delete", "JournalEntryConfigurationLine")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataItem),
+                success: function (data) {
+                    //$("#ControlPalletsLineMant").html('');
+                    //$("#ControlPalletsLineMant").html(data);
+                    //var txt = $(data);
+                    //var found = $("#SubProductId", txt);
+                    //subproducto = $(found).val();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    //  $("#btngenerarfactura").show();
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+
+                }
+            });
+
+            var grid = $("#gridJournalEntryConfigurationLine").data("kendoGrid");
+            grid.dataSource.remove(dataItem);
+            //Sync it with the grid
+            //grid.dataSource.sync();
+        }
+    }
+
+</script>
+
+
+
+<div class="box">
+    <div class="box-body">
+
+        @(Html.Kendo().Grid<ERPMVC.Models.JournalEntryConfigurationLine>()
+                                                  .Name("gridJournalEntryConfigurationLine")
+                                                  .Columns(columns =>
+                                                  {
+                                                      columns.Command(command =>
+                                                      {
+                                                          if (Model.editar == 1)
+                                                          {
+                                                              command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+                                                          }
+                                                          command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCotizacionDetalle");
+                                                             // command.Custom("Imprimir").Click("ImprimirCotizacion");
+                                                            //  command.Edit(); command.Destroy();
+                                                          }).Width(150);
+
+                                                      columns.Bound(p => p.JournalEntryConfigurationLineId).Title("Id Line").Width(150);
+                                                      columns.Bound(p => p.JournalEntryConfigurationId).Title("Cotización Id").Width(150);
+                                                      columns.Bound(p => p.AccountId);
+                                                      columns.Bound(p => p.AccountName).Title("Producto").Width(150);
+                                                      columns.Bound(p => p.DebitCredit).Title("Descripcion").Width(150);                                                      
+
+                                                  })
+                                                      .Filterable(f => f.Operators(o => o.ForString(s => s
+                                               .Clear()
+                                               .Contains("Contiene")
+                                               .DoesNotContain("No contiene")
+                                               .EndsWith("Termina con")
+                                               .IsEqualTo("Es igual a")
+                                               .IsNotEqualTo("No es igual a")
+                                               .IsNull("Es nulo")
+                                               .StartsWith("Inicia con")
+
+
+                                         )
+                                         .ForNumber(n => n
+                                           .Clear()
+                                           .IsEqualTo("Es igual a")
+                                           .IsGreaterThan("Es mayor que")
+                                           .IsLessThan("Es menor que")
+                                           .IsNull("Es nulo")
+                                           .IsLessThanOrEqualTo("Es menor o igual que")
+                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                         )
+                                         .ForDate(d => d
+                                         .Clear()
+                                         .IsEqualTo("Es igual que")
+                                         .IsGreaterThan("Es mayor que")
+                                         .IsLessThan("Es menor que")
+                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                         .IsNotEqualTo("No es igual que")
+                                          )
+                                       ))
+                                                  .ToolBar(tools =>
+                                                  {
+                                                      if (Model.editar == 1)
+                                                      {
+                                                          tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                          .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacionDetalle();" });
+                                                      }
+
+                                                      tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                      tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+                                                  })
+                                                   .Editable(e => e.Mode(GridEditMode.PopUp))
+                                                    .Sortable()
+                                                    .AutoBind(true)
+                                                    .Pageable()
+                                                    .Filterable()
+                                                    .Scrollable()
+                                                    // .ClientDetailTemplateId("template")
+                                                    .Pdf(pdf => pdf.FileName("ConfiguracionAsientosDetalleReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                                      .Excel(excel => excel.FileName("ConfiguracionAsientosReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                                    //.Events(e=>e.Save("onsave"))
+                                                    .DataSource(dataSource =>
+
+                                                   dataSource
+                                                   //.Ajax()
+                                                   .WebApi()
+
+                                                    .ServerOperation(true)
+                                                    .Model(model =>
+                                                    {
+                                                        model.Id(p => p.JournalEntryConfigurationId);
+                                                        model.Field(p => p.JournalEntryConfigurationLineId).Editable(false);
+                                                        model.Field(p => p.JournalEntryConfigurationId).Editable(false);
+
+                                                    })
+                                                    .Events(events =>
+                                                    {
+                                                        events.Error("error_handler");
+                                                //events.upda("EditHandler");
+
+                                            })
+                                                    .Read(read => read.Action("GetJournalEntryConfigurationLine", "JournalEntryConfigurationLine").Data("GetJournalEntryConfigurationId"))
+                                              //.Create(create => create.Action("Insert", "JournalEntryConfigurationLine"))
+                                              //.Update(update => update.Action("Update", "JournalEntryConfigurationLine", new { JournalEntryConfigurationLineId = "{0}" }))
+                                              //.Destroy(destroy => destroy.Action("Delete", "JournalEntryConfigurationLine", new { JournalEntryConfigurationLineId = "{0}" }))
+                                              )
+        )
+
+    </div>
+</div>
+
+
+<script>
+
+</script>
