@@ -62,20 +62,20 @@ namespace ERPMVC.Controllers
         }
         public async Task<ActionResult> GetAccountingByParentId(Accounting Cuenta)
         {
-            List<AccountingChilds> _childs = new List<AccountingChilds>();
+            List<Accounting> _childs = new List<Accounting>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                //Error
-                var result = await _client.GetAsync(baseadress + "api/AccountingChilds/GetFathersAccounting/" + Cuenta.AccountId);
-                string valorrespuesta = "";
+                //Error             
+                var result = await _client.GetAsync(baseadress + "api/Accounting/GetFathers/"+Cuenta.AccountId);
+                string valorrespuesta = "";// GetFathersAccounting
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _childs = JsonConvert.DeserializeObject<List<AccountingChilds>>(valorrespuesta);
+                    _childs = JsonConvert.DeserializeObject<List<Accounting>>(valorrespuesta);
 
                 }
 
@@ -193,7 +193,7 @@ namespace ERPMVC.Controllers
                     var Padres = await GetAccountingByParentId(_AccountingP);
 
 
-                    var PadresConHijos=await GetTreeAccounting(_AccountingP.AccountId, false);
+                    //var PadresConHijos=await GetTreeAccounting(_AccountingP.AccountId, false);
                     // 
 
                 }
