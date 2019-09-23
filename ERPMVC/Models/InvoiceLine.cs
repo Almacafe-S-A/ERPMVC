@@ -11,14 +11,16 @@ namespace ERPMVC.Models
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Display(Name = "Id")]
-        public Int64 SalesOrderLineId { get; set; }
-
-        [Display(Name = "Númeracion Cotización ")]
-        public int SalesOrderId { get; set; }
-        [Display(Name = "Cotizacion")]
-        public SalesOrder SalesOrder { get; set; }
-        [Display(Name = "Product Item")]
+        public Int64 InvoiceLineId { get; set; }
+        [Display(Name = "Factura")]
+        public int InvoiceId { get; set; }
+        [Display(Name = "Factura")]
+        public Invoice Invoice { get; set; }
+        [Display(Name = "Producto")]
         public Int64 ProductId { get; set; }
+
+        [Display(Name = "Nombre producto")]
+        public string ProductName { get; set; }
 
         [Display(Name = "SubProducto")]
         public Int64 SubProductId { get; set; }
@@ -36,7 +38,7 @@ namespace ERPMVC.Models
         [Display(Name = "Centro de costos")]
         public Int64 CenterCostId { get; set; }
 
-        [Display(Name = "Descripcion")]
+        [Display(Name = "Descripción")]
         public string Description { get; set; }
           [Display(Name = "Cantidad")]
         public double Quantity { get; set; }

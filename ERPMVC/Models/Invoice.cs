@@ -18,11 +18,18 @@ namespace ERPMVC.Models
         public DateTime InvoiceDate { get; set; }
         [Display(Name = "Fecha de vencimiento")]
         public DateTime InvoiceDueDate { get; set; }
+
+        [Display(Name = "Fecha de vencimiento")]
+        public DateTime ExpirationDate { get; set; }
+
         [Display(Name = "Tipo de Factura")]
         public int InvoiceTypeId { get; set; }
 
         [Display(Name = "Cotización Asociada")]
-        public Int64 SalesOrderId { get; set; }
+        public Int64 OrderId { get; set; }
+
+        [Display(Name = "Punto de emisión")]
+        public Int64 IdPuntoEmision { get; set; }
 
         [Display(Name = "Certificado depósito")]
         public Int64 CertificadoDepositoId { get; set; }
@@ -30,7 +37,7 @@ namespace ERPMVC.Models
         [Display(Name = "Sucursal")]
         public string Sucursal { get; set; }
 
-        [Display(Name = "Sucursal")]
+        [Display(Name = "Punto de emisión")]
         public string Caja { get; set; }
 
         [Display(Name = "Numero de Factura")]
@@ -75,15 +82,36 @@ namespace ERPMVC.Models
 
         [Display(Name = "Sucursal")]
         public int BranchId { get; set; }
+
+        [Display(Name = "Sucursal")]
+        public string BranchName { get; set; }
+
         [Display(Name = "Cliente")]
         public Int64 CustomerId { get; set; }
+
+        [Display(Name = "Cliente")]
+        public string CustomerName { get; set; }
+
+        [Display(Name = "Producto")]
+        public Int64 ProductId { get; set; }
+
+        [Display(Name = "Nombre Producto")]
+        public string ProductName { get; set; }
+
+
         [Display(Name = "Fecha factura")]
         public DateTime OrderDate { get; set; }
         [Display(Name = "Fecha de entrega")]
         public DateTime DeliveryDate { get; set; }
 
-        [Display(Name = "Currency")]
+        [Display(Name = "Moneda")]
         public int CurrencyId { get; set; }
+
+        [Display(Name = "Moneda")]
+        public string CurrencyName { get; set; }
+
+        [Display(Name = "Moneda tasa")]
+        public double Currency { get; set; }
 
         [Display(Name = "Numero de referencia de cliente")]
         public string CustomerRefNumber { get; set; }
@@ -129,7 +157,7 @@ namespace ERPMVC.Models
 
         public string Impreso { get; set; }
 
-        public List<InvoiceLine> InvoiceLines { get; set; } = new List<InvoiceLine>();
+        public List<InvoiceLine> InvoiceLine { get; set; } = new List<InvoiceLine>();
 
     }
 }

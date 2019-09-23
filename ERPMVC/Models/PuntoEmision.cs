@@ -16,6 +16,11 @@ namespace ERPMVC.Models
         [Display(Name = "Código de Punto de emisión")]
         public string PuntoEmisionCod { get; set; }
 
+        [Display(Name = "Sucursal")]
+        public Int64 BranchId { get; set; }
+        [Display(Name = "Sucursal")]
+        public string BranchName { get; set; }
+
         [Display(Name = "Estado")]
         public Int64 IdEstado { get; set; }
         public string Estado { get; set; }

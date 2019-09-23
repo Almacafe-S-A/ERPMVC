@@ -17,6 +17,9 @@ namespace ERPMVC.Models
 
         public Int64 IdCAI { get; set; }
 
+        [Display(Name = "Cai")]
+        public string _cai { get; set; }
+
         [Display(Name = "Número de inicio")]
         public string NoInicio { get; set; }
 
@@ -33,6 +36,12 @@ namespace ERPMVC.Models
         [Display(Name = "Siguiente número")]
 
         public string SiguienteNumero { get; set; }
+
+        [Display(Name = "Sucursal")]
+        public Int64 BranchId { get; set; }
+
+        [Display(Name = "Sucursal")]
+        public string BranchName { get; set; }
 
         [Display(Name = "Punto de emisión")]
         public Int64 IdPuntoEmision { get; set; }

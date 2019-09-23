@@ -98,6 +98,34 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> GetPuntoEmisionByBranchId([DataSourceRequest]DataSourceRequest request, PuntoEmision _PuntoEmisionp)
+        {
+            List<PuntoEmision> _PuntoEmision = new List<PuntoEmision>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/PuntoEmision/GetPuntoEmisionByBranchId/" + _PuntoEmisionp.BranchId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _PuntoEmision = JsonConvert.DeserializeObject<List<PuntoEmision>>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+
+            return Json(_PuntoEmision.ToDataSourceResult(request));
+
+        }
+
         [HttpPost]
         public async Task<ActionResult<PuntoEmision>> SavePuntoEmision([FromBody]PuntoEmisionDTO _PuntoEmisionS)
         {

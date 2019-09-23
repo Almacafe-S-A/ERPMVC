@@ -1,11 +1,11 @@
-﻿@model ERPMVC.DTO.ProformaInvoiceDTO
+﻿@model ERPMVC.DTO.InvoiceDTO
 
 
 
 <script>
 
 
-    function GetSalesOrderId() {
+    function GetInvoiceId() {
        // console.log($("#DescriptionDetail").val());
         var subproductname = '', unidaddemedida = '';
         if ($("#UnitOfMeasureId") != null) {
@@ -20,33 +20,33 @@
             }
         }
 
-        var displayedData = $("#gridProformaInvoiceDetail").data().kendoGrid.dataSource.view();
+        var displayedData = $("#gridInvoiceDetail").data().kendoGrid.dataSource.view();
         var id = -999999;
         debugger;
-        if (Number($("#ProformaLineId").val()) === 0) {
+        if (Number($("#InvoiceLineId").val()) === 0) {
             if (displayedData.length > 0) {
                 for (var i = 0; i < displayedData.length; i++) {
-                    //console.log('Linea:' + displayedData[i].ProformaLineId);
+                    //console.log('Linea:' + displayedData[i].InvoiceLineId);
                     //console.log('Linea:' + id);
-                    if (displayedData[i].ProformaLineId > id)
-                        id = displayedData[i].ProformaLineId;
+                    if (displayedData[i].InvoiceLineId > id)
+                        id = displayedData[i].InvoiceLineId;
 
                 }
 
                 id = id + 1;
             }
-            else {
-                id = 1;
+            else if ($("#SubProductId").val() > 0) {
+                id =  1;
             }
         }
         else {
-            id = $("#ProformaLineId").val();
+            id = $("#InvoiceLineId").val();
         }
 
 
         return {
-                ProformaLineId : id,
-                ProformaInvoiceId: @Model.ProformaId,
+                InvoiceLineId : id,
+                InvoiceId: @Model.InvoiceId,
                 /*ProductId: $("#ProductId").val(),*/
                 SubProductId: $("#SubProductId").val(),
                 SubProductName: subproductname,
@@ -66,8 +66,8 @@
             }
         }
 
-    function RefreshCotizacionesDetail() {
-        var grid = $("#gridProformaInvoiceDetail").getKendoGrid();
+    function RefreshInvoiceDetail() {
+        var grid = $("#gridInvoiceDetail").getKendoGrid();
         grid.dataSource.read();
     }
 
@@ -80,7 +80,7 @@
             llenarsubproduct();
             $("#frmSalesOrderLine :input").not('#SalesOrderId').prop("disabled", false);
             $('#TaxCode').val(0);
-            $('#myModalSalesOrderLine').modal('show');
+            $('#myModalInvoiceLine').modal('show');
         } else {
             var notification = $("#notification").data("kendoNotification");
             notification.show({
@@ -126,12 +126,12 @@
         var notification = $("#notification").data("kendoNotification");
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         //  debugger;
-        if (dataItem.ProformaInvoiceId > 0) {
+        if (dataItem.InvoiceId > 0) {
              $("#btnActualizarCotizacionLinea").prop("disabled", true);
             var subproducto = 0;
-            var dataObject = { 'Id': dataItem.ProformaLineId };
+            var dataObject = { 'Id': dataItem.InvoiceLineId };
             $.ajax({
-                url: '@Url.Action("pvwProformaInvoiceLine", "ProformaInvoiceLine")',
+                url: '@Url.Action("pvwInvoiceLine", "InvoiceLine")',
                 method: 'POST',
                 datatype: "json",
                 contentType: 'application/json',
@@ -170,10 +170,10 @@
         }
         else {
 
-            var dataObject = { 'ProformaInvoiceId': 0, 'IdCD': ($("#cbxBuscarCertificadosDeposito").val() == '' ? 0 : $("#cbxBuscarCertificadosDeposito").val()) };
-            console.log(dataObject);
-           $.ajax({
-                url: '@Url.Action("pvwProformaInvoiceLine", "ProformaInvoiceLine")',
+            var dataObject = { 'InvoiceId': 0, 'IdCD': ($("#cbxBuscarCertificadosDeposito").val() == '' ? 0 : $("#cbxBuscarCertificadosDeposito").val()) };
+            //console.log(dataObject);
+           @*$.ajax({
+                url: '@Url.Action("pvwInvoiceLine", "InvoiceLine")',
                 method: 'POST',
                 datatype: "json",
                 contentType: 'application/json',
@@ -199,11 +199,11 @@
                     }, "error");
 
                 }
-            });
+            });*@
 
 
             $("#btnActualizarCotizacionLinea").prop("disabled", false);
-            $("#ProformaLineId").val(dataItem.ProformaLineId);
+            $("#InvoiceLineId").val(dataItem.InvoiceLineId);
             $("#IdCD").val($("#cbxBuscarCertificadosDeposito").val());
             hcustom = $("#CustomerId").val();
             //console.log(hcustom);
@@ -214,7 +214,7 @@
             $("#SubProductId").data("kendoDropDownList").dataSource.read();
             $("#SubProductId").data("kendoDropDownList").value(dataItem.SubProductId);
             $("#UnitOfMeasureId").data("kendoDropDownList").value(dataItem.UnitOfMeasureId);
-            $("#UnitOfMeasureId").data("kendoDropDownList").value(dataItem.UnitOfMeasureId);
+          //  $("#UnitOfMeasureId").data("kendoDropDownList").value(dataItem.UnitOfMeasureId);
             $("#TaxCode").data("kendoDropDownList").value(dataItem.TaxCode);
             $("#DescriptionDetail").val(dataItem.Description);
 
@@ -228,7 +228,7 @@
 
 
 
-        $('#myModalSalesOrderLine').modal('show');
+        $('#myModalInvoiceLine').modal('show');
 
     }
 
@@ -241,7 +241,7 @@
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
 
             $.ajax({
-                url: '@Url.Action("Delete", "ProformaInvoiceLine")',
+                url: '@Url.Action("Delete", "InvoiceLine")',
                 method: 'POST',
                 datatype: "json",
                 contentType: 'application/json',
@@ -265,7 +265,7 @@
                 }
             });
 
-            var grid = $("#gridProformaInvoiceDetail").data("kendoGrid");
+            var grid = $("#gridInvoiceDetail").data("kendoGrid");
             grid.dataSource.remove(dataItem);
             //Sync it with the grid
             //grid.dataSource.sync();
@@ -279,8 +279,8 @@
 <div class="box">
     <div class="box-body">
 
-        @(Html.Kendo().Grid<ERPMVC.Models.ProformaInvoiceLine>()
-                                                  .Name("gridProformaInvoiceDetail")
+        @(Html.Kendo().Grid<ERPMVC.Models.InvoiceLine>()
+                                                  .Name("gridInvoiceDetail")
                                                   .Columns(columns =>
                                                   {
                                                       columns.Command(command =>
@@ -290,20 +290,20 @@
                                                               command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
                                                           }
                                                           command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCotizacionDetalle");
-                                                  // command.Custom("Imprimir").Click("ImprimirCotizacion");
-                                                  //  command.Edit(); command.Destroy();
+                                                            // command.Custom("Imprimir").Click("ImprimirCotizacion");
+                                                            //  command.Edit(); command.Destroy();
                                               }).Width(150);
 
-                                                      columns.Bound(p => p.ProformaLineId).Title("Id Linea").Width(150);
-                                                      columns.Bound(p => p.ProformaInvoiceId).Title("Proforma Id").Width(150);
+                                                      columns.Bound(p => p.InvoiceLineId).Title("Id Linea").Width(150);
+                                                      columns.Bound(p => p.InvoiceId).Title("Proforma Id").Width(150);
                                                       columns.Bound(p => p.SubProductId).Title("IdProducto").Visible(false);
                                                       columns.Bound(p => p.SubProductName).Title("Producto").Width(150);
                                                       columns.Bound(p => p.Description).Title("Descripcion").Width(150);
                                                       columns.Bound(p => p.Quantity).Format("{0:n2}").Title("Cantidad").Width(150);
                                                       columns.Bound(p => p.Price).Format("{0:n2}").Title("Precio").Format("{0:n2}").Width(150);
                                                       columns.Bound(p => p.UnitOfMeasureId).Title("Unidad de medida").Visible(false);
-                                              //  columns.Bound(p => p.TaxPercentage).Title("Porcentaje impuestos").Width(150);
-                                              columns.Bound(p => p.SubTotal).Format("{0:n2}").Title("Sub Total").Width(150);
+                                                       //  columns.Bound(p => p.TaxPercentage).Title("Porcentaje impuestos").Width(150);
+                                                      columns.Bound(p => p.SubTotal).Format("{0:n2}").Title("Sub Total").Width(150);
                                                       columns.Bound(p => p.DiscountAmount).Format("{0:n2}").Title("Descuentos").Width(150);
                                                       columns.Bound(p => p.TaxCode).Title("Tipo Impuesto").Width(150);
                                               // columns.Bound(p => p.tax).Title("Tipo Impuesto").Width(150);
@@ -363,10 +363,10 @@
                                                     .Filterable()
                                                     .Scrollable()
                                                     // .ClientDetailTemplateId("template")
-                                                    .Pdf(pdf => pdf.FileName("CotizacionDetalleReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                    .Pdf(pdf => pdf.FileName("FacturaDetalleReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                                                     + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
                                                     .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                                      .Excel(excel => excel.FileName("CotizacionDetalleReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                      .Excel(excel => excel.FileName("FacturaDetalleReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                                                     + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
                                                     .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
                                                     //.Events(e=>e.Save("onsave"))
@@ -379,9 +379,9 @@
                                                     .ServerOperation(true)
                                                     .Model(model =>
                                                     {
-                                                        model.Id(p => p.ProformaLineId);
-                                                        model.Field(p => p.ProformaLineId).Editable(false);
-                                                        model.Field(p => p.ProformaInvoiceId).Editable(false);
+                                                        model.Id(p => p.InvoiceLineId);
+                                                        model.Field(p => p.InvoiceLineId).Editable(false);
+                                                        model.Field(p => p.InvoiceId).Editable(false);
 
                                                     })
                                                     .Events(events =>
@@ -390,7 +390,7 @@
                                                 //events.upda("EditHandler");
 
                                             })
-                                                    .Read(read => read.Action("GetProformaInvoiceLineByProformaInvoiceId", "ProformaInvoiceLine").Data("GetSalesOrderId"))
+                                                    .Read(read => read.Action("GetInvoiceLineByInvoiceId", "InvoiceLine").Data("GetInvoiceId"))
                                               //.Create(create => create.Action("Insert", "SalesOrderLine"))
                                               //.Update(update => update.Action("Update", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
                                               //.Destroy(destroy => destroy.Action("Delete", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
