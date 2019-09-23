@@ -60,7 +60,7 @@ namespace ERPMVC.Controllers
             return Json(_customers);
 
         }
-        public async Task<ActionResult> GetAccountingByParentId(Accounting Cuenta)
+        public async Task<JsonResult> GetAccountingByParentId(Accounting Cuenta)
         {
             List<Accounting> _childs = new List<Accounting>();
             try
@@ -70,7 +70,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 //Error             
-                var result = await _client.GetAsync(baseadress + "api/Accounting/GetFathers/"+Cuenta.AccountId);
+                var result = await _client.GetAsync(baseadress + "api/Accounting/GetFathersAccounting/" + Cuenta.AccountId);
                 string valorrespuesta = "";// GetFathersAccounting
                 if (result.IsSuccessStatusCode)
                 {
@@ -91,7 +91,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        public async Task<ActionResult> GetAccountingChildsByParentId(Accounting Cuenta)
+        public async Task<JsonResult> GetAccountingChildsByParentId(Accounting Cuenta)
         {
             List<AccountingChilds> _childs = new List<AccountingChilds>();
             try
@@ -152,7 +152,7 @@ namespace ERPMVC.Controllers
             return Json(_Accounting);
         }
         // [HttpPost("[action]")]
-        public async Task<ActionResult> GetTreeAccounting(Int64 ParentAccountId,bool raiz) {
+        public async Task<JsonResult> GetTreeAccounting(Int64 ParentAccountId,bool raiz) {
             List<NodeViewModel> items = new List<NodeViewModel>();
 
           
@@ -166,10 +166,15 @@ namespace ERPMVC.Controllers
                 var Padre = await AccountingByTypeAccount(ParentAccountId);
                 Accounting resultado = ((Accounting)Padre.Value);
                var Arbol= await GetTreeAccounting(resultado.AccountId, false);
+                List<NodeViewModel> ArbolNodo = ((List<NodeViewModel>)Arbol.Value);
+                items = ArbolNodo;
+               /* foreach (NodeViewModel nodo in ArbolNodo)
+                {
+                    items.Add(nodo);
+                }*/
 
 
-             
-                
+
             }
             else
                 {
@@ -186,39 +191,46 @@ namespace ERPMVC.Controllers
                     Id = Convert.ToInt32(_AccountingP.AccountId),
                     Title = _AccountingP.AccountName
                 };
-
+                
                 if (_AccountingP != null)
                 {
                     items.Add(root);
-                    var Padres = await GetAccountingByParentId(_AccountingP);
+                    var CuentasPadres = await GetAccountingByParentId(_AccountingP);
+                    List<Accounting> ListaPadres = ((List<Accounting>)CuentasPadres.Value);
+                    foreach (Accounting Cuenta in ListaPadres)
+                    {
+                        var PadresConHijos = await GetTreeAccounting(Cuenta.AccountId, false);
+                        var PadreconHijosNodo = ((List<NodeViewModel>)PadresConHijos.Value);
+                        /*var Hijos = await GetAccountingChildsByParentId(Cuenta);
+                        List<AccountingChilds> ListaHijos = ((List<AccountingChilds>)Hijos.Value);
+                            foreach (AccountingChilds Childs in ListaHijos) {
+                        PadreconHijosNodo.Children.Add(new NodeViewModel
+                        {
+                            Id = Convert.ToInt32(Childs.AccountingChildsId),
+                            Title = _AccountingP.AccountName
+                        });
+                        }*/
+                        foreach (NodeViewModel nodo in PadreconHijosNodo) {
+                            root.Children.Add(nodo);
 
+                            //  root.Children.Add
+                            //      (nodo);
+                        }
+                    }
+                    var HijosCuenta = await GetAccountingChildsByParentId(_AccountingP);
+                    List<AccountingChilds> ListaHijos_AccountingP = ((List<AccountingChilds>)HijosCuenta.Value);
+                    foreach (AccountingChilds Childs in ListaHijos_AccountingP)
+                    {
+                        root.Children.Add(new NodeViewModel
+                        {
+                            Id = Convert.ToInt32(Childs.AccountingChildsId),
+                            Title = Childs.AccountName
+                        });
+                    }
+                  }
+                
 
-                    //var PadresConHijos=await GetTreeAccounting(_AccountingP.AccountId, false);
-                    // 
-
-                }
-                else {
-
-                    var Hijos = await GetAccountingChildsByParentId(_AccountingP);
-                    root.Children.Add(new NodeViewModel {
-                        Id = Convert.ToInt32(_AccountingP.AccountId),
-                        Title = _AccountingP.AccountName });
-
-                    //
-
-                }
-
-                // foreach (Accounting Cuenta in Padres) 
-
-                //  Accounting Cuenta = JsonConvert.DeserializeObject<Accounting>(valorrespue);
-                /* var root = new NodeViewModel
-                 {
-                     Id = Convert.ToInt32(Padres.a),
-                     Title = Cuenta.AccountName
-                 };
-                 items.Add(root);
-                 */
-
+            
             }
 
             return Json(items);
@@ -258,12 +270,12 @@ namespace ERPMVC.Controllers
         // GET: Accounting
         public async Task<ActionResult> Index()
         {
-            var items = new List<NodeViewModel>();
-            await GetTreeAccounting(1, true);
+           // var items = new List<NodeViewModel>();
+            var arbol=await GetTreeAccounting(1, true);
+            List<NodeViewModel> items = ((List<NodeViewModel>)arbol.Value);
             this.ViewBag.Tree = items;
-
-            // return View();
             return await Task.Run(() => View());
+            //return  View();
         }
         
         [HttpGet("[action]")]
