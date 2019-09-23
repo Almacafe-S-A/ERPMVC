@@ -22,7 +22,7 @@ namespace ERPMVC.Controllers
     public class ExchangeRateController : Controller
     {
         private readonly IOptions<MyConfig> config;
-        private readonly IMapper mapper;
+       // private readonly IMapper mapper;
         private readonly ILogger _logger;
         public ExchangeRateController(ILogger<ExchangeRateController> logger, IOptions<MyConfig> config)
         {

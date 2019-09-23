@@ -29,10 +29,9 @@ namespace ERPMVC.Controllers
             this.config = config;
             this._logger = logger;
         }
-        // GET: Accounting
-        public async Task<ActionResult> Index()
+        public async Task<JsonResult> AccountingByTypeAccount(Int64 TypeAccountId)
         {
-            List<Accounting> __customers = new List<Accounting>();
+            Accounting _customers = new Accounting();
             try
             {
 
@@ -40,12 +39,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 //Error
-                var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccount");
+                var result = await _client.GetAsync(baseadress + "api/Accounting/GetFatherAccountById/"+TypeAccountId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
-                    valorrespuesta = await(result.Content.ReadAsStringAsync());
-                    __customers = JsonConvert.DeserializeObject<List<Accounting>>(valorrespuesta);
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _customers = JsonConvert.DeserializeObject<Accounting>(valorrespuesta);
 
                 }
 
@@ -56,8 +55,182 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-            
 
+
+            return Json(_customers);
+
+        }
+        public async Task<ActionResult> GetAccountingByParentId(Accounting Cuenta)
+        {
+            List<Accounting> _childs = new List<Accounting>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                //Error             
+                var result = await _client.GetAsync(baseadress + "api/Accounting/GetFathers/"+Cuenta.AccountId);
+                string valorrespuesta = "";// GetFathersAccounting
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _childs = JsonConvert.DeserializeObject<List<Accounting>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_childs);
+
+        }
+
+        public async Task<ActionResult> GetAccountingChildsByParentId(Accounting Cuenta)
+        {
+            List<AccountingChilds> _childs = new List<AccountingChilds>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                //Error
+                var result = await _client.GetAsync(baseadress + "api/AccountingChilds/GetAccountingChildsByParentId/" + Cuenta.AccountId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _childs = JsonConvert.DeserializeObject<List<AccountingChilds>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_childs);
+
+        }
+        public async Task<JsonResult> GetAccountingById(Int64 AccountId)
+        {
+            Accounting _Accounting  = new Accounting();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountById/" + AccountId);
+                string valorrespuesta = "";
+                _Accounting.FechaModificacion = DateTime.Now;
+                _Accounting.UsuarioModificacion = HttpContext.Session.GetString("user");
+                if (result.IsSuccessStatusCode)
+                {
+
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Accounting = JsonConvert.DeserializeObject<Accounting>(valorrespuesta);
+                }
+
+                
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_Accounting);
+        }
+        // [HttpPost("[action]")]
+        public async Task<ActionResult> GetTreeAccounting(Int64 ParentAccountId,bool raiz) {
+            List<NodeViewModel> items = new List<NodeViewModel>();
+
+          
+
+                //Es Padre Contable de todos los Padres e Hijos Contables
+           if (raiz == true)
+                {
+                //Accounting Padres = //JsonConvert.SerializeObject<>(
+                // );
+
+                var Padre = await AccountingByTypeAccount(ParentAccountId);
+                Accounting resultado = ((Accounting)Padre.Value);
+               var Arbol= await GetTreeAccounting(resultado.AccountId, false);
+
+
+             
+                
+            }
+            else
+                {
+                var parametro = await GetAccountingById(ParentAccountId);
+
+                Accounting _AccountingP = ((Accounting)parametro.Value);
+                /*
+                 *  var value = (resultsalesorder.Result as ObjectResult).Value;
+                        SalesOrder resultado = ((SalesOrder)(value));
+                       
+                 */
+                var root = new NodeViewModel
+                {
+                    Id = Convert.ToInt32(_AccountingP.AccountId),
+                    Title = _AccountingP.AccountName
+                };
+
+                if (_AccountingP != null)
+                {
+                    items.Add(root);
+                    var Padres = await GetAccountingByParentId(_AccountingP);
+
+
+                    //var PadresConHijos=await GetTreeAccounting(_AccountingP.AccountId, false);
+                    // 
+
+                }
+                else {
+
+                    var Hijos = await GetAccountingChildsByParentId(_AccountingP);
+                    root.Children.Add(new NodeViewModel {
+                        Id = Convert.ToInt32(_AccountingP.AccountId),
+                        Title = _AccountingP.AccountName });
+
+                    //
+
+                }
+
+                // foreach (Accounting Cuenta in Padres) 
+
+                //  Accounting Cuenta = JsonConvert.DeserializeObject<Accounting>(valorrespue);
+                /* var root = new NodeViewModel
+                 {
+                     Id = Convert.ToInt32(Padres.a),
+                     Title = Cuenta.AccountName
+                 };
+                 items.Add(root);
+                 */
+
+            }
+
+            return Json(items);
+
+        }
+
+
+
+
+
+        /*
+        
             // return Json(__customers.ToDataSourceResult(request));
 
 
@@ -66,30 +239,6 @@ namespace ERPMVC.Controllers
                 var root = new NodeViewModel { Id = Convert.ToInt32(Cuenta.AccountId),
                                                 Title = Cuenta.AccountName };
                 items.Add(root);
-                List<AccountingChilds> __childs = new List<AccountingChilds>();
-                try
-                {
-
-                    string baseadress = config.Value.urlbase;
-                    HttpClient _client = new HttpClient();
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    //Error
-                    var result = await _client.GetAsync(baseadress + "api/AccountingChilds/GetAccountingChildsById/" + Cuenta.AccountId);
-                    string valorrespuesta = "";
-                    if (result.IsSuccessStatusCode)
-                    {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        __childs = JsonConvert.DeserializeObject<List<AccountingChilds>>(valorrespuesta);
-
-                    }
-
-
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                    throw ex;
-                }
                 foreach (AccountingChilds CuentaChield in __childs)
                 {
 
@@ -105,7 +254,15 @@ namespace ERPMVC.Controllers
 
             this.ViewBag.Tree = items;
 
-           // return View();
+             */
+        // GET: Accounting
+        public async Task<ActionResult> Index()
+        {
+            var items = new List<NodeViewModel>();
+            await GetTreeAccounting(1, true);
+            this.ViewBag.Tree = items;
+
+            // return View();
             return await Task.Run(() => View());
         }
         

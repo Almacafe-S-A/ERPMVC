@@ -152,7 +152,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<PurchDocument>> SavePurchDocument(IEnumerable<IFormFile> files, PurchDocumentDTO _PurchDocument)
+        public async Task<ActionResult<PurchDocument>> SavePurchDocument(IEnumerable<IFormFile> files, PurchDocumentDTO _PurchDocumentd)
         {
 
             try
@@ -162,7 +162,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/PurchDocument/GetPurchDocumentById/" + _PurchDocument.PurchDocumentId);
+                var result = await _client.GetAsync(baseadress + "api/PurchDocument/GetPurchDocumentById/" + _PurchDocumentd.PurchDocumentId);
                 string valorrespuesta = "";
 
                 foreach (var file in files)
@@ -175,8 +175,8 @@ namespace ERPMVC.Controllers
                        || info.Extension.Equals(".xls") || info.Extension.Equals(".xlsx"))
                     {
 
-                        _PurchDocument.ModifiedDate = DateTime.Now;
-                        _PurchDocument.ModifiedUser = HttpContext.Session.GetString("user");
+                        _PurchDocumentd.ModifiedDate = DateTime.Now;
+                        _PurchDocumentd.ModifiedUser = HttpContext.Session.GetString("user");
                         if (result.IsSuccessStatusCode)
                         {
 
@@ -187,22 +187,22 @@ namespace ERPMVC.Controllers
                         if (_listPurchDocument == null) { _listPurchDocument = new Models.PurchDocument(); }
                         if (_listPurchDocument.PurchDocumentId == 0)
                         {
-                            _PurchDocument.CreatedDate = DateTime.Now;
-                            _PurchDocument.DocumentName = file.FileName;
-                            _PurchDocument.CreatedUser = HttpContext.Session.GetString("user");
-                            var insertresult = await Insert(_PurchDocument);
+                            _PurchDocumentd.CreatedDate = DateTime.Now;
+                            _PurchDocumentd.DocumentName = file.FileName;
+                            _PurchDocumentd.CreatedUser = HttpContext.Session.GetString("user");
+                            var insertresult = await Insert(_PurchDocumentd);
                             var value = (insertresult.Result as ObjectResult).Value;
-                            _PurchDocument = ((PurchDocumentDTO)(value));
+                            _PurchDocumentd = ((PurchDocumentDTO)(value));
                         }
                         else
                         {
-                            var updateresult = await Update(_PurchDocument.PurchDocumentId, _PurchDocument);
+                            var updateresult = await Update(_PurchDocumentd.PurchDocumentId, _PurchDocumentd);
                         }
 
 
 
-                        var filePath = _hostingEnvironment.WebRootPath + "/PurchDocuments/" + _PurchDocument.PurchDocumentId + "_"
-                            + file.FileName.Replace(info.Extension, "") + "_" + _PurchDocument.DocumentTypeId + "_" + _PurchDocument.DocumentTypeName
+                        var filePath = _hostingEnvironment.WebRootPath + "/PurchDocuments/" + _PurchDocumentd.PurchDocumentId + "_"
+                            + file.FileName.Replace(info.Extension, "") + "_" + _PurchDocumentd.DocumentTypeId + "_" + _PurchDocumentd.DocumentTypeName
                             + info.Extension;
 
                         using (var stream = new FileStream(filePath, FileMode.Create))
@@ -212,8 +212,8 @@ namespace ERPMVC.Controllers
                             //mstream.WriteTo(stream);
                         }
 
-                        _PurchDocument.Path = filePath;
-                        var updateresult2 = await Update(_PurchDocument.PurchDocumentId, _PurchDocument);
+                        _PurchDocumentd.Path = filePath;
+                        var updateresult2 = await Update(_PurchDocumentd.PurchDocumentId, _PurchDocumentd);
                     }
                 }
 
@@ -224,13 +224,13 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_PurchDocument);
+            return Json(_PurchDocumentd);
         }
 
         // POST: PurchDocument/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<PurchDocumentDTO>> Insert(PurchDocumentDTO _PurchDocument)
+        public async Task<ActionResult<PurchDocumentDTO>> Insert(PurchDocumentDTO _PurchDocumentd)
         {
             PurchDocumentDTO _custo = new PurchDocumentDTO();
             try
@@ -239,9 +239,9 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _PurchDocument.CreatedUser = HttpContext.Session.GetString("user");
-                _PurchDocument.ModifiedUser = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/PurchDocument/Insert", _PurchDocument);
+                _PurchDocumentd.CreatedUser = HttpContext.Session.GetString("user");
+                _PurchDocumentd.ModifiedUser = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/PurchDocument/Insert", _PurchDocumentd);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -260,7 +260,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PurchDocumentDTO>> Update(Int64 id, PurchDocumentDTO _PurchDocument)
+        public async Task<ActionResult<PurchDocumentDTO>> Update(Int64 id, PurchDocumentDTO _PurchDocumentd)
         {
             PurchDocumentDTO _PurchDocumentDTO = new PurchDocumentDTO();
             try
@@ -269,7 +269,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PutAsJsonAsync(baseadress + "api/PurchDocument/Update", _PurchDocument);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/PurchDocument/Update", _PurchDocumentd);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
