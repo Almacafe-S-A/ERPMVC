@@ -92,7 +92,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ProformaInvoice = JsonConvert.DeserializeObject<List<ProformaInvoice>>(valorrespuesta);
-
+                    _ProformaInvoice = _ProformaInvoice.OrderByDescending(q => q.ProformaId).ToList();
                 }
 
 
@@ -323,6 +323,12 @@ namespace ERPMVC.Controllers
                         _ProformaInvoice.FechaCreacion = DateTime.Now;
                         _ProformaInvoice.UsuarioCreacion = HttpContext.Session.GetString("user");
                         var insertresult = await Insert(_ProformaInvoice);
+                        var value = (insertresult.Result as ObjectResult).Value;
+                        ProformaInvoice resultado = ((ProformaInvoice)(value));
+                        if (resultado.ProformaId <= 0)
+                        {
+                            return await Task.Run(() => BadRequest("No se genero la factura proforma!"));
+                        }
                     }
                     else
                     {

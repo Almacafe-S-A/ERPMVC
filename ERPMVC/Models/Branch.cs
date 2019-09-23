@@ -17,6 +17,9 @@ namespace ERPMVC.Models
 
         public string BranchName { get; set; }
 
+        [Display(Name = "Codigo de sucursal")]
+        public string BranchCode { get; set; }
+
         [Display(Name = "Descripción")]
         public string Description { get; set; }
         [Display(Name = "Moneda")]

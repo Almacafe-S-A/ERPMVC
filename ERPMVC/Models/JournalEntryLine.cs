@@ -23,24 +23,39 @@ namespace ERPMVC.Models
 
         [Display(Name = "Cuenta")]
         public int AccountId { get; set; }
-        [Display(Name = "Tipo de Movimiento")]
-        public int DrCr { get; set; }
-        [Display(Name = "Monto Movimiento")]
-        public double Amount { get; set; }
+        //  [Display(Name = "Tipo de Movimiento")]
+        //   public int DrCr { get; set; }
+        //[Display(Name = "Monto Movimiento")]
+        //public double Amount { get; set; }
+
+        [Display(Name = "Débito")]
+        public double Debit { get; set; }
+        [Display(Name = "Crédito")]
+        public double Credit { get; set; }
+
+        [Display(Name = "Débito moneda del sistema ")]
+        public double DebitSy { get; set; }
+        [Display(Name = "Crédito moneda del sistema")]
+        public double CreditSy { get; set; }
+
+        [Display(Name = "Débito moneda extranjera ")]
+        public double DebitME { get; set; }
+        [Display(Name = "Crédito moneda extranjera")]
+        public double CreditME { get; set; }
         public string Memo { get; set; }
         public virtual JournalEntry JournalEntry { get; set; }
         public virtual Account Account { get; set; }
         [Required]
-        [Display(Name = "Usuario de creacion")]
+        [Display(Name = "Usuario de creación")]
         public string CreatedUser { get; set; }
         [Required]
-        [Display(Name = "Usuario de modificacion")]
+        [Display(Name = "Usuario de modificación")]
         public string ModifiedUser { get; set; }
         [Required]
-        [Display(Name = "Fecha de creacion")]
+        [Display(Name = "Fecha de creación")]
         public DateTime CreatedDate { get; set; }
         [Required]
-        [Display(Name = "Fecha de Modificacion")]
+        [Display(Name = "Fecha de Modificación")]
         public DateTime ModifiedDate { get; set; }
 
     }

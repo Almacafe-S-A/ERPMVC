@@ -96,8 +96,43 @@ namespace ERPMVC.Controllers
             return Json(_tax.ToDataSourceResult(request));
 
         }
+
+
+
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult<Tax>> GetTaxById([DataSourceRequest]DataSourceRequest request, Int64 TaxId)
+        {
+            Tax _Taxes = new Tax();
+            try
+            {
+
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Tax/GetTaxById/" + TaxId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Taxes = JsonConvert.DeserializeObject<Tax>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _Taxes;
+
+        }
+
+
         //--------------------------------------------------------------------------------------
-        [HttpGet]
+        [HttpGet("[controller]/[action]")]
         public async Task<JsonResult> GetBOX([DataSourceRequest]DataSourceRequest request)
         {
             List<Tax> _Tax = new List<Tax>();
@@ -129,7 +164,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> pvwAddTax([FromBody]TaxDTO _sarpara)
         {
             TaxDTO _Tax = new TaxDTO();

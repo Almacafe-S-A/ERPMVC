@@ -9,11 +9,15 @@ namespace ERPMVC.Models
     public class JournalEntryConfiguration
     {
          [Display(Name = "Id")]
-         public Int64 JournalEntryConfigurationId { get; set; }
-         [Display(Name = "Transacción")]
-         public Int64 TransactionId { get; set; }
-         [Display(Name = "Transacción")]
-         public string Transaction { get; set; }
+        public Int64 JournalEntryConfigurationId { get; set; }
+
+        [Display(Name = "Transacción/Tipo Documento")]
+        public Int64 TransactionId { get; set; }
+        [Display(Name = "Transacción/Tipo Documento")]
+        public string Transaction { get; set; }
+
+        [Display(Name = "Descripción")]
+        public string Description { get; set; }
 
         [Display(Name = "Moneda")]
         public Int64 CurrencyId { get; set; }

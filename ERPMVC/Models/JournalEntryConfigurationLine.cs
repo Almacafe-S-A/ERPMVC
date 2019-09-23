@@ -23,6 +23,12 @@ namespace ERPMVC.Models
         [Display(Name = "Indicador Débito o Crédito")]
         public string DebitCredit { get; set; }
 
+        [Display(Name = "Centro de costos")]
+        public Int64 CenterCostId { get; set; }
+
+        [Display(Name = "Centro de costos")]
+        public string CenterCostName { get; set; }
+
 
         [Display(Name = "Fecha de creación")]
         public DateTime FechaCreacion { get; set; }

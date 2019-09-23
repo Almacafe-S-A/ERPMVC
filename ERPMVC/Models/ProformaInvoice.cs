@@ -49,7 +49,7 @@ namespace ERPMVC.Models
         public Int64 CustomerAreaId { get; set; }
 
 
-        [Display(Name = "Id")]
+        [Display(Name = "Producto")]
         public Int64 ProductId { get; set; }
 
         [Display(Name = "Nombre Producto")]

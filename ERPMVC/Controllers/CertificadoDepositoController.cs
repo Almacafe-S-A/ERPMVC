@@ -376,7 +376,7 @@ namespace ERPMVC.Controllers
                         var insertresult = await Insert(_CertificadoDeposito);
                         var value = (insertresult.Result as ObjectResult).Value;
                         _CertificadoDeposito = ((CertificadoDepositoDTO)(value));
-                        if (_CertificadoDeposito.IdCD == 0)
+                        if (_CertificadoDeposito.IdCD <= 0)
                         {
                             return await Task.Run(() => BadRequest("No se genero el documento!"));
                         }
