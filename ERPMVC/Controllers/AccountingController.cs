@@ -224,36 +224,13 @@ namespace ERPMVC.Controllers
                         root.Children.Add(new NodeViewModel
                         {
                             Id = Convert.ToInt32(Childs.AccountingChildsId),
-                            Title = _AccountingP.AccountName
+                            Title = Childs.AccountName
                         });
                     }
-                    //items.Add(PadreconHijosNodo);
+                  }
+                
 
-                    //  var Hijos = await GetAccountingChildsByParentId(_AccountingP);
-                    //root.Children.Add(new NodeViewModel {
-                    //  Id = Convert.ToInt32(_AccountingP.AccountId),
-                    //Title = _AccountingP.AccountName });
-
-                    //var value = (CuentasPadres.Result as ObjectResult).Value;
-                    //SalesOrder resultado = ((SalesOrder)(value));
-                    //= ((Accounting)CuentasPadres.Value);
-                }
-                else {
-
-                 
-                }
-
-                // foreach (Accounting Cuenta in Padres) 
-
-                //  Accounting Cuenta = JsonConvert.DeserializeObject<Accounting>(valorrespue);
-                /* var root = new NodeViewModel
-                 {
-                     Id = Convert.ToInt32(Padres.a),
-                     Title = Cuenta.AccountName
-                 };
-                 items.Add(root);
-                 */
-
+            
             }
 
             return Json(items);
@@ -297,7 +274,7 @@ namespace ERPMVC.Controllers
             var arbol=await GetTreeAccounting(1, true);
             List<NodeViewModel> items = ((List<NodeViewModel>)arbol.Value);
             this.ViewBag.Tree = items;
-            return await Task.Run(() => View(items));
+            return await Task.Run(() => View());
             //return  View();
         }
         
