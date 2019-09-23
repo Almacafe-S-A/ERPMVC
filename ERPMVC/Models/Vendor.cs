@@ -10,6 +10,7 @@ namespace ERPMVC.Models
     public class Vendor
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Display(Name = "Id de Proveedor")]
         public Int64 VendorId { get; set; }
         [Required]
         [Display(Name = "Nombre de Proveedor")]
