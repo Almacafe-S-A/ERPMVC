@@ -161,7 +161,7 @@ namespace ERPMVC.Controllers
         // POST: Invoice/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<Invoice>> Insert(Invoice _Invoice)
+        public async Task<ActionResult<Invoice>> Insert(InvoiceDTO _Invoice)
         {
             try
             {
@@ -176,7 +176,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Invoice = JsonConvert.DeserializeObject<Invoice>(valorrespuesta);
+                    _Invoice = JsonConvert.DeserializeObject<InvoiceDTO>(valorrespuesta);
                 }
 
             }

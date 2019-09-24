@@ -88,6 +88,7 @@ namespace ERPMVC.Controllers
                 {
                     _JournalEntryConfigurationLinelist = JsonConvert.DeserializeObject<List<JournalEntryConfigurationLine>>(HttpContext.Session.GetString("JournalEntryConfigurationLine"));
                 }
+
                 if (_JournalEntryConfigurationLine.JournalEntryConfigurationId > 0)
                 {
 
@@ -98,12 +99,19 @@ namespace ERPMVC.Controllers
                     // _client.DefaultRequestHeaders.Add("JournalEntryConfigurationId", _JournalEntryConfigurationLine.JournalEntryConfigurationId.ToString());
 
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/SalesOrderLine/");
+                    var result = await _client.GetAsync(baseadress + "api/JournalEntryConfigurationLine/GetJournalEntryConfigurationLineByConfigurationId/" + _JournalEntryConfigurationLine.JournalEntryConfigurationId);
                     string valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _JournalEntryConfigurationLinelist = JsonConvert.DeserializeObject<List<JournalEntryConfigurationLine>>(valorrespuesta);
+
+                        if (_JournalEntryConfigurationLine.JournalEntryConfigurationLineId > 0)
+                        {
+                            _JournalEntryConfigurationLinelist.Add(_JournalEntryConfigurationLine);
+                        }
+
+                        HttpContext.Session.SetString("JournalEntryConfigurationLine", JsonConvert.SerializeObject(_JournalEntryConfigurationLinelist).ToString());
                     }
                 }
                 else
@@ -131,7 +139,8 @@ namespace ERPMVC.Controllers
                             obj.AccountId = _JournalEntryConfigurationLine.AccountId;
                             obj.AccountName = _JournalEntryConfigurationLine.AccountName;
                             obj.DebitCredit = _JournalEntryConfigurationLine.DebitCredit;
-
+                            obj.CenterCostId = _JournalEntryConfigurationLine.CenterCostId;
+                            obj.CenterCostName = _JournalEntryConfigurationLine.CenterCostName;
                         }
 
                         HttpContext.Session.SetString("JournalEntryConfigurationLine", JsonConvert.SerializeObject(_JournalEntryConfigurationLinelist).ToString());

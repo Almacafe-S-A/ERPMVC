@@ -18,7 +18,6 @@
         }
 
     }
-
     //$('#btnprueba').val("");
 </script>
 
@@ -56,7 +55,7 @@
 
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label asp-for="PartyId" class=" control-label" style="width:100%"></label>
+                                                    <label asp-for="PartyId"  class=" control-label" style="width:100%"></label>
                                                     <input type="text" asp-for="PartyId" name="PartyId" autocomplete="off" class="form-control" style="min-width:100%" />
                                                     <span asp-validation-for="PartyId" class="text-danger"></span>
                                                 </div>
@@ -70,7 +69,7 @@
                                                                         filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         option-label="Seleccionar Tipo"
                                                                         datatextfield="TypeJournalName"
-                                                                        datavaluefield="TypeJournalId"
+                                                                        datavaluefield="VoucherTypeId"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
                                                             <transport>
@@ -96,26 +95,31 @@
 
                                                 </div>
                                             </div>
-
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label asp-for="IdPaymentCode" class=" control-label" style="width:100%"></label>
-                                                    <kendo-dropdownlist name="IdPaymentCode"
-                                                                        for="@Model.IdPaymentCode"
-                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        option-label="Seleccionar una opción"
-                                                                        datatextfield="PurchName"
-                                                                        datavaluefield="PurchId"
-                                                                        style="width: 100%;">
-                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
-                                                            <transport>
-                                                                <read url="@Url.Action("GetPurch", "Purch")" />
-                                                            </transport>
-                                                        </datasource>
-                                                    </kendo-dropdownlist>
-
+                                                    <label asp-for="GeneralLedgerHeaderId" style="width:100%"></label>
+                                                    <input type="text" asp-for="GeneralLedgerHeaderId" name="GeneralLedgerHeaderId" class="form-control" style="min-width:100%" />
+                                                    <span asp-validation-for="GeneralLedgerHeaderId" class="text-danger k-invalid-msg" data-for="GeneralLedgerHeaderId"></span>
                                                 </div>
                                             </div>
+                                            @*<div class="col-md-4">
+            <div class="form-group">
+                <label asp-for="IdPaymentCode" class=" control-label" style="width:100%"></label>
+                 <kendo-dropdownlist name="IdPaymentCode"
+                                for="@Model.IdPaymentCode"
+                                filter="Kendo.Mvc.UI.FilterType.Contains"
+                                option-label="Seleccionar una opción"
+                                datatextfield="PurchName"
+                                datavaluefield="PurchId"
+                                style="width: 100%;">
+                <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                    <transport>
+                        <read url="@Url.Action("GetPurch", "Purch")" />
+                    </transport>
+                </datasource>
+            </kendo-dropdownlist>
+            </div>
+        </div>*@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="IdTypeofPayment" class=" control-label" style="width:100%"></label>
@@ -151,14 +155,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="row">
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label asp-for="GeneralLedgerHeaderId" style="width:100%"></label>
-                                                    <input type="text" asp-for="GeneralLedgerHeaderId" name="GeneralLedgerHeaderId" class="form-control" style="min-width:100%" />
-                                                    <span asp-validation-for="GeneralLedgerHeaderId" class="text-danger k-invalid-msg" data-for="GeneralLedgerHeaderId"></span>
-                                                </div>
-                                            </div>
+                                        <div class="row">                                          
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Memo" style="width:100%"></label>
@@ -167,9 +164,6 @@
                                                 </div>
                                             </div>
                                         </div>
-
-
-
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <button id="btnJournalEntry" class="form-control btn-miboton" type="submit"> Guardar </button>
@@ -177,6 +171,10 @@
                                         </div>
                                     </div>
                                 </form>
+                            </div>
+
+                            <div id="divJournalEntryLine">
+                                @await Html.PartialAsync("JournalEntryLine", Model)
                             </div>
                         </div>
                     </div>
@@ -201,26 +199,33 @@
         $("#btnJournalEntry").prop("disabled", true);
 
         var displayedData = $("#gridNumeracionJournalEntry").data().kendoGrid.dataSource.view();
+        var referencia = $("#ReferenceNo").val();
+        var posted = $("#Posted").val();
+        var id = $("#PartyId").val()
+        console.log("Referencia", referencia)
+        console.log("Posted", posted)
+        console.log("Id", id)
+
+
 
         var dataObject = {
-                            'JournalEntryId': $("#JournalEntryId").val()===""?"0":$("#JournalEntryId").val(),
-                            'PartyId': $("#PartyId").val(),
-            'VoucherType': $("#VoucherType").val(),
-            //'TypeJournalName': $("#TypeJournalName").data("kendoDropDownList").text(),
-                            'IdPaymentCode': $("#IdPaymentCode").val(),
-                            'IdTypeofPayment': $("#IdTypeofPayment").val(),
-                            'Date': $("#Date").getKendoDateTimePicker().value().toJSON(),
-            'DatePosted': $("#DatePosted").getKendoDateTimePicker().value().toJSON(),
-            'ReferenceNo': $("#ReferenceNo").val(),
-            'Posted': $("#Posted").val(),
+            'JournalEntryId': $("#JournalEntryId").val() === "" ? "0" : $("#JournalEntryId").val(),
             'GeneralLedgerHeaderId': $("#GeneralLedgerHeaderId").val(),
-                            'Memo': $("#Memo").val(),
-                             'CreatedDate': $("#CreatedDate").val(),
-                            'ModifiedDate': $("#ModifiedDate").val(),
-                            'CreatedUser': $("#CreatedUser").val(),
-                            'ModifiedUser': $("#ModifiedUser").val(),
-
-                           '_JournalEntry': displayedData
+            'PartyId': $("#PartyId").val(),
+            'VoucherType': (id),
+            'TypeJournalName': $("#VoucherType").data("kendoDropDownList").text(),
+            'Date': $("#Date").getKendoDateTimePicker().value().toJSON(),
+            'DatePosted': $("#DatePosted").getKendoDateTimePicker().value().toJSON(),
+            'Memo': $("#Memo").val(),
+            'ReferenceNo': (referencia),
+            //'Posted': $("#Posted").val() ,
+            //'IdPaymentCode': $("#IdPaymentCode").val(),
+            'IdTypeofPayment': $("#IdTypeofPayment").val(),          
+            'CreatedDate': $("#CreatedDate").val(),
+            'ModifiedDate': $("#ModifiedDate").val(),
+            'CreatedUser': $("#CreatedUser").val(),
+            'ModifiedUser': $("#ModifiedUser").val(),
+            '_JournalEntry': displayedData
             };
 
            // console.log(JSON.stringify(dataObject));
@@ -229,10 +234,7 @@
 
         var validator = $("#frmJournalEntry").data("kendoValidator");
                  var status = $(".status");
-
-
                 if (validator.validate()) {
-
                     $.ajax({
                         url: '@Url.Action("SaveJournalEntry", "JournalEntry")',
                         method: 'POST',
@@ -254,12 +256,8 @@
                                 hideAfter: 30000,
                                 stack: 6
                             });
-
                             RefrescarGrid();
-
                             $('#ModalJournalEntry').modal('hide');
-
-
                         },
                         error: function (XMLHttpRequest, textStatus, errorThrown) {
 
@@ -267,18 +265,14 @@
                                 title: "Validacion",
                                 message: textStatus + ": " + XMLHttpRequest.responseText
                             }, "error");
-
                         }
                     });
-
                 }
                 else {
                     status.text("Oops! There is invalid data in the form.")
                         .removeClass("valid")
                         .addClass("invalid");
                 }
-
-
         $("#btnJournalEntry").show();
         $("#btnJournalEntry").prop("disabled", false);
     }
