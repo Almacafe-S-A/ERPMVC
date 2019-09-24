@@ -152,6 +152,7 @@ namespace ERPMVC.Controllers
             return Json(_Accounting);
         }
         // [HttpPost("[action]")]
+
         public async Task<JsonResult> GetTreeAccounting(Int64 ParentAccountId,bool raiz) {
             List<NodeViewModel> items = new List<NodeViewModel>();
 
@@ -186,10 +187,14 @@ namespace ERPMVC.Controllers
                         SalesOrder resultado = ((SalesOrder)(value));
                        
                  */
-                var root = new NodeViewModel
+                var condicion = _AccountingP.IsCash ? _AccountingP.AccountBalance.ToString() : "";
+
+             var root = new NodeViewModel
                 {
-                    Id = Convert.ToInt32(_AccountingP.AccountId),
-                    Title = _AccountingP.AccountName
+                    Id = _AccountingP.AccountId,
+                    
+                    Title = _AccountingP.AccountName +"  "+condicion
+                    // Balance = _AccountingP.AccountBalance
                 };
                 
                 if (_AccountingP != null)
@@ -221,10 +226,14 @@ namespace ERPMVC.Controllers
                     List<AccountingChilds> ListaHijos_AccountingP = ((List<AccountingChilds>)HijosCuenta.Value);
                     foreach (AccountingChilds Childs in ListaHijos_AccountingP)
                     {
+                        var condicion2 = _AccountingP.IsCash ? _AccountingP.AccountBalance.ToString() : "";
+
                         root.Children.Add(new NodeViewModel
                         {
                             Id = Convert.ToInt32(Childs.AccountingChildsId),
-                            Title = Childs.AccountName
+                            Title = Childs.AccountName+"  " + condicion2
+
+
                         });
                     }
                   }
@@ -241,6 +250,37 @@ namespace ERPMVC.Controllers
 
 
 
+        
+        public async Task<JsonResult> GetTypeAccount()
+        {
+            List<TypeAccount> _TypeAccount = new List<TypeAccount>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/TypeAccount/GetTypeAccount");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _TypeAccount = JsonConvert.DeserializeObject<List<TypeAccount>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return Json(_TypeAccount);
+
+        }
         /*
         
             // return Json(__customers.ToDataSourceResult(request));
@@ -268,16 +308,41 @@ namespace ERPMVC.Controllers
 
              */
         // GET: Accounting
+        /*[HttpGet]
         public async Task<ActionResult> Index()
         {
-           // var items = new List<NodeViewModel>();
-            var arbol=await GetTreeAccounting(1, true);
+          
+                this.ViewBag.Tree = new List<NodeViewModel>();
+                var TypesAccounting = await GetTypeAccount();
+                List<TypeAccount> TiposCuentas = ((List<TypeAccount>)TypesAccounting.Value);
+                this.ViewBag.ListTypeAccount = TiposCuentas;
+                return await Task.Run(() => View());
+            
+            
+        }*/
+        
+        [HttpGet]
+        public async Task<ActionResult> Index(Int64 TypeAccountId)
+        {
+            if (TypeAccountId == 0) {
+                this.ViewBag.Tree = new List<NodeViewModel>();
+                var TypesAccounting = await GetTypeAccount();
+                List<TypeAccount> TiposCuentas = ((List<TypeAccount>)TypesAccounting.Value);
+                this.ViewBag.ListTypeAccount = TiposCuentas;
+                return await Task.Run(() => View());
+            }
+            else { 
+            var arbol = await GetTreeAccounting(TypeAccountId, true);
             List<NodeViewModel> items = ((List<NodeViewModel>)arbol.Value);
             this.ViewBag.Tree = items;
+            var TypesAccounting = await GetTypeAccount();
+            List<TypeAccount> TiposCuentas = ((List<TypeAccount>)TypesAccounting.Value);
+            this.ViewBag.ListTypeAccount = TiposCuentas;
+
             return await Task.Run(() => View());
-            //return  View();
+            }
+
         }
-        
         [HttpGet("[action]")]
         public async Task<JsonResult> GetAccount([DataSourceRequest]DataSourceRequest request)
         {
