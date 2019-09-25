@@ -15,9 +15,9 @@
             }
         }
 
-        if ($("#DebitCredit").data("kendoDropDownList") != null) {
-            if ($("#DebitCredit").val() != null) {
-                debitocredito = $("#DebitCredit").data("kendoDropDownList").text();
+        if ($("#DebitCreditId").data("kendoDropDownList") != null) {
+            if ($("#DebitCreditId").val() != null) {
+                debitocredito = $("#DebitCreditId").data("kendoDropDownList").text();
             }
         }
 
@@ -56,6 +56,7 @@
             'JournalEntryConfigurationId': @Model.JournalEntryConfigurationId ,        
             'AccountId': $("#AccountId").val(),
             'AccountName': cuenta,
+            'DebitCreditId': $("#DebitCreditId").val(),
             'DebitCredit': debitocredito,
             'CenterCostId': $("#CenterCostId").val(),
             'CenterCostName': centrodecostos
@@ -77,24 +78,38 @@
 
     function AddCotizacionDetalle() {
         var notification = $("#notification").data("kendoNotification");
-     
-        if ($("#CurrencyId").val() !== '' && $("#CurrencyId").val() !== '0' && ($("#CurrencyId").val() !== '' && $("#CurrencyId").val() !== '0')  ) {
-          
+
+        var dataObject = { 'JournalEntryConfigurationLineId': 0 };
+
+        // var codigoimpuesto = 0;
+
+      
+            $.ajax({
+                url: '@Url.Action("pvwJournalEntryConfigurationLine", "JournalEntryConfigurationLine")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    $("#JournalEntryConfigurationLineMant").html('');
+                    $("#JournalEntryConfigurationLineMant").html(data);
+                    // var txt = $(data);
+                    //  var found = $("#SubProductId", txt);
+                    // subproducto = $(found).val();                
+                    $('#ModalJournalEntryConfigurationLine').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    //  $("#btngenerarfactura").show();
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+
+                }
+            });
         
-            $("#frmJournalEntryConfigurationLine :input").not('#JournalEntryConfigurationId').prop("disabled", false);
-            $("#btnActualizarJournalEntryConfiguration").prop("disabled", false);
-         
-            $('#ModalJournalEntryConfigurationLine').modal('show');
-        } else {
-            var notification = $("#notification").data("kendoNotification");
-            notification.show({
-                title: "Validación",
-                message: "Debe seleccionar una moneda o una transacción!"
-            }, "error");
-
-        }
-
-        return true;
     }
 
 
@@ -105,14 +120,14 @@
         var notification = $("#notification").data("kendoNotification");
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
 
-        var subproducto = 0;
+      //  var subproducto = 0;
         var dataObject = { 'JournalEntryConfigurationLineId': dataItem.JournalEntryConfigurationLineId };
 
-        var codigoimpuesto = 0;
+       // var codigoimpuesto = 0;
 
         if (dataItem.JournalEntryConfigurationId > 0) {
             $.ajax({
-                url: '@Url.Action("pvwJournalEntryConfigurationDetailMant", "JournalEntryConfigurationLine")',
+                url: '@Url.Action("pvwJournalEntryConfigurationLine", "JournalEntryConfigurationLine")',
                 method: 'POST',
                 datatype: "json",
                 contentType: 'application/json',
@@ -121,9 +136,9 @@
                 success: function (data) {
                     $("#JournalEntryConfigurationLineMant").html('');
                     $("#JournalEntryConfigurationLineMant").html(data);
-                    var txt = $(data);
-                    var found = $("#SubProductId", txt);
-                    subproducto = $(found).val();                
+                   // var txt = $(data);
+                  //  var found = $("#SubProductId", txt);
+                   // subproducto = $(found).val();                
 
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
