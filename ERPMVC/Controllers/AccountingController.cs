@@ -349,6 +349,10 @@ namespace ERPMVC.Controllers
                 var arbol = await GetTreeAccounting(TypeAccountId, true);
                 List<NodeViewModel> items = ((List<NodeViewModel>)arbol.Value);
                 this.ViewBag.Tree = items;
+                var TypesAccounting = await GetTypeAccount();
+                List<TypeAccount> TiposCuentas = ((List<TypeAccount>)TypesAccounting.Value);
+                this.ViewBag.ListTypeAccount = TiposCuentas;
+                this.ViewBag.AccountingParameter = TypeAccountId;
             }
             catch (Exception ex)
             {
@@ -357,7 +361,7 @@ namespace ERPMVC.Controllers
             }
 
 
-            return await Task.Run(() => View());
+            return await Task.Run(() => PartialView());
             //return PartialView(_Vendor);
 
         }
