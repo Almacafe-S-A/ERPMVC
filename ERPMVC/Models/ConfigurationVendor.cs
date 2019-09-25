@@ -12,10 +12,6 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Display(Name = "Id")]
         public Int64 ConfigurationVendorId { get; set; }
-
-        [Required]
-        [Display(Name = "Monto Minimo")]
-        public double QtyMin { get; set; }
         [Required]
         [Display(Name = "Monto Mensual")]
         public double QtyMonth { get; set; }
