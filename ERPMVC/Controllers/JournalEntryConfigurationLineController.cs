@@ -153,7 +153,10 @@ namespace ERPMVC.Controllers
                               
                                 _JournalEntryConfigurationLinelist.Add(_JournalEntryConfigurationLine);
                                 _JournalEntryConfigurationLine.JournalEntryConfigurationLineId = 0;
-                                await Insert(_JournalEntryConfigurationLine);
+                                var resultline = await Insert(_JournalEntryConfigurationLine);
+                                var value = (resultline.Result as ObjectResult).Value;
+                                JournalEntryConfigurationLine resultado = ((JournalEntryConfigurationLine)(value));
+                                _JournalEntryConfigurationLine.JournalEntryConfigurationLineId = resultado.JournalEntryConfigurationLineId;
                                 // HttpContext.Session.SetString("JournalEntryConfigurationLine", JsonConvert.SerializeObject(_JournalEntryConfigurationLinelist).ToString());
                             }
 
@@ -343,7 +346,8 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _JournalEntryConfigurationLine }, Total = 1 });
+          return  Ok(_JournalEntryConfigurationLine);
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _JournalEntryConfigurationLine }, Total = 1 });
         }
 
         [HttpPost("[action]")]
