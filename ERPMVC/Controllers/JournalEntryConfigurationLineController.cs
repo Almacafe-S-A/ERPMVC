@@ -33,7 +33,8 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwJournalEntryConfigurationLine(Int64 Id = 0)
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwJournalEntryConfigurationLine([FromBody]JournalEntryConfigurationLine _JournalEntryConfigurationLinep)
         {
             JournalEntryConfigurationLine _JournalEntryConfigurationLine = new JournalEntryConfigurationLine();
             try
@@ -41,7 +42,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/JournalEntryConfigurationLine/GetJournalEntryConfigurationLineById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/JournalEntryConfigurationLine/GetJournalEntryConfigurationLineById/" + _JournalEntryConfigurationLinep.JournalEntryConfigurationLineId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -63,7 +64,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_JournalEntryConfigurationLine);
+            return PartialView("~/Views/JournalEntryConfiguration/pvwJournalEntryConfigurationMant.cshtml", _JournalEntryConfigurationLine);
 
         }
 
@@ -106,9 +107,56 @@ namespace ERPMVC.Controllers
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _JournalEntryConfigurationLinelist = JsonConvert.DeserializeObject<List<JournalEntryConfigurationLine>>(valorrespuesta);
 
-                        if (_JournalEntryConfigurationLine.JournalEntryConfigurationLineId > 0)
+                        if (_JournalEntryConfigurationLinelist.Count <= 0)
                         {
-                            _JournalEntryConfigurationLinelist.Add(_JournalEntryConfigurationLine);
+                            if (_JournalEntryConfigurationLine.JournalEntryConfigurationLineId > 0)
+                            {
+                                _JournalEntryConfigurationLinelist.Add(_JournalEntryConfigurationLine);
+                            }
+                        }
+
+
+                        _client = new HttpClient();
+                        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                         result = await _client.GetAsync(baseadress + "api/JournalEntryConfigurationLine/GetJournalEntryConfigurationLineById/" + _JournalEntryConfigurationLine.JournalEntryConfigurationLineId);
+                         valorrespuesta = "";
+                        JournalEntryConfigurationLine qJournalEntryConfigurationLine = new JournalEntryConfigurationLine();
+                        if (result.IsSuccessStatusCode)
+                        {
+                            valorrespuesta = await (result.Content.ReadAsStringAsync());
+                            qJournalEntryConfigurationLine = JsonConvert.DeserializeObject<JournalEntryConfigurationLine>(valorrespuesta);
+
+                        }
+
+                        if(qJournalEntryConfigurationLine != null)
+                        {
+
+                            var actualizacion = await Update(_JournalEntryConfigurationLine.JournalEntryConfigurationLineId, _JournalEntryConfigurationLine);
+
+                            var obj = _JournalEntryConfigurationLinelist.FirstOrDefault(x => x.JournalEntryConfigurationLineId == _JournalEntryConfigurationLine.JournalEntryConfigurationLineId);
+                            if (obj != null)
+                            {
+                                obj.AccountId = _JournalEntryConfigurationLine.AccountId;
+                                obj.AccountName = _JournalEntryConfigurationLine.AccountName;
+                                obj.DebitCreditId = _JournalEntryConfigurationLine.DebitCreditId;
+                                obj.DebitCredit = _JournalEntryConfigurationLine.DebitCredit;
+                                obj.CenterCostId = _JournalEntryConfigurationLine.CenterCostId;
+                                obj.CenterCostName = _JournalEntryConfigurationLine.CenterCostName;
+                            }
+
+
+                        }
+                        else
+                        {
+                            if (_JournalEntryConfigurationLine.JournalEntryConfigurationLineId > 0)
+                            {
+                              
+                                _JournalEntryConfigurationLinelist.Add(_JournalEntryConfigurationLine);
+                                _JournalEntryConfigurationLine.JournalEntryConfigurationLineId = 0;
+                                await Insert(_JournalEntryConfigurationLine);
+                                // HttpContext.Session.SetString("JournalEntryConfigurationLine", JsonConvert.SerializeObject(_JournalEntryConfigurationLinelist).ToString());
+                            }
+
                         }
 
                         HttpContext.Session.SetString("JournalEntryConfigurationLine", JsonConvert.SerializeObject(_JournalEntryConfigurationLinelist).ToString());
