@@ -25,6 +25,8 @@ namespace ERPMVC.Models
         public string UsuarioModificacion { get; set; }
 
         public virtual List<PasswordHistory> PasswordHistory { get; set; } = new List<PasswordHistory>();
+        [UIHint("Branches")]
+        public virtual Branch Branch { get; set; }
 
 
     }
