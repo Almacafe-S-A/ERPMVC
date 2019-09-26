@@ -37,7 +37,7 @@ namespace ERPMVC.Models
         public string UsuarioModificacion { get; set; }      
 
 
-        List<JournalEntryConfigurationLine> JournalEntryConfigurationLine = new List<JournalEntryConfigurationLine>();
+       public List<JournalEntryConfigurationLine> JournalEntryConfigurationLine = new List<JournalEntryConfigurationLine>();
 
     }
 }

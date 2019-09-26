@@ -156,7 +156,7 @@ namespace ERPMVC.Controllers
         public async Task<JsonResult> GetTreeAccounting(Int64 ParentAccountId,bool raiz) {
             List<NodeViewModel> items = new List<NodeViewModel>();
 
-          
+            try { 
 
                 //Es Padre Contable de todos los Padres e Hijos Contables
            if (raiz == true)
@@ -165,10 +165,13 @@ namespace ERPMVC.Controllers
                 // );
 
                 var Padre = await AccountingByTypeAccount(ParentAccountId);
-                Accounting resultado = ((Accounting)Padre.Value);
-               var Arbol= await GetTreeAccounting(resultado.AccountId, false);
-                List<NodeViewModel> ArbolNodo = ((List<NodeViewModel>)Arbol.Value);
-                items = ArbolNodo;
+                    if (Padre.Value != null)
+                    {
+                        Accounting resultado = ((Accounting)Padre.Value);
+                        var Arbol = await GetTreeAccounting(resultado.AccountId, false);
+                        List<NodeViewModel> ArbolNodo = ((List<NodeViewModel>)Arbol.Value);
+                        items = ArbolNodo;
+                    }
                /* foreach (NodeViewModel nodo in ArbolNodo)
                 {
                     items.Add(nodo);
@@ -187,7 +190,7 @@ namespace ERPMVC.Controllers
                         SalesOrder resultado = ((SalesOrder)(value));
                        
                  */
-                var condicion = _AccountingP.IsCash ? _AccountingP.AccountBalance.ToString() : "";
+                var condicion = _AccountingP.IsCash ? _AccountingP.AccountBalance.ToString("N4") : "";
 
              var root = new NodeViewModel
                 {
@@ -226,7 +229,7 @@ namespace ERPMVC.Controllers
                     List<AccountingChilds> ListaHijos_AccountingP = ((List<AccountingChilds>)HijosCuenta.Value);
                     foreach (AccountingChilds Childs in ListaHijos_AccountingP)
                     {
-                        var condicion2 = _AccountingP.IsCash ? _AccountingP.AccountBalance.ToString() : "";
+                        var condicion2 = _AccountingP.IsCash ? _AccountingP.AccountBalance.ToString("N4") : "";
 
                         root.Children.Add(new NodeViewModel
                         {
@@ -240,6 +243,13 @@ namespace ERPMVC.Controllers
                 
 
             
+            }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
             }
 
             return Json(items);
@@ -320,29 +330,69 @@ namespace ERPMVC.Controllers
             
             
         }*/
-        
         [HttpGet]
-        public async Task<ActionResult> Index(Int64 TypeAccountId)
+        public async Task<ActionResult> CatalagueAccounting(Int64 TypeAccountId)
         {
             if (TypeAccountId == 0) {
-                this.ViewBag.Tree = new List<NodeViewModel>();
-                var TypesAccounting = await GetTypeAccount();
-                List<TypeAccount> TiposCuentas = ((List<TypeAccount>)TypesAccounting.Value);
-                this.ViewBag.ListTypeAccount = TiposCuentas;
-                return await Task.Run(() => View());
+                List<NodeViewModel> items = new List<NodeViewModel>();
+                this.ViewBag.Tree2 = items;
+                var TypesAccounting2 = await GetTypeAccount();
+                    List<TypeAccount> TiposCuentas2 = ((List<TypeAccount>)TypesAccounting2.Value);
+                    this.ViewBag.ListTypeAccount2 = TiposCuentas2;
             }
-            else { 
-            var arbol = await GetTreeAccounting(TypeAccountId, true);
-            List<NodeViewModel> items = ((List<NodeViewModel>)arbol.Value);
-            this.ViewBag.Tree = items;
+            else {
+                var TypesAccounting2 = await GetTypeAccount();
+                List<TypeAccount> TiposCuentas2 = ((List<TypeAccount>)TypesAccounting2.Value);
+                this.ViewBag.ListTypeAccount2 = TiposCuentas2;
+                var arbol = await GetTreeAccounting(TypeAccountId, true);
+                List<NodeViewModel> items = ((List<NodeViewModel>)arbol.Value);
+                this.ViewBag.Tree2 = items;
+
+            }
+
+            return await Task.Run(() => View());
+
+        }
+
+
+        [HttpGet]
+        public async Task<ActionResult> Index()
+        {
             var TypesAccounting = await GetTypeAccount();
             List<TypeAccount> TiposCuentas = ((List<TypeAccount>)TypesAccounting.Value);
             this.ViewBag.ListTypeAccount = TiposCuentas;
 
+           
             return await Task.Run(() => View());
-            }
 
         }
+
+
+        
+        public async Task<ActionResult> pvwTreeAccounting(Int64 TypeAccountId)
+        {
+            try
+            {
+                var arbol = await GetTreeAccounting(TypeAccountId, true);
+                List<NodeViewModel> items = ((List<NodeViewModel>)arbol.Value);
+                this.ViewBag.Tree = items;
+                var TypesAccounting = await GetTypeAccount();
+                List<TypeAccount> TiposCuentas = ((List<TypeAccount>)TypesAccounting.Value);
+                this.ViewBag.ListTypeAccount = TiposCuentas;
+                this.ViewBag.AccountingParameter = TypeAccountId;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return await Task.Run(() => PartialView());
+            //return PartialView(_Vendor);
+
+        }
+
         [HttpGet("[action]")]
         public async Task<JsonResult> GetAccount([DataSourceRequest]DataSourceRequest request)
         {
