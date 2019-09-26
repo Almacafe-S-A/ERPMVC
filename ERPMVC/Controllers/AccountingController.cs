@@ -330,7 +330,31 @@ namespace ERPMVC.Controllers
             
             
         }*/
-        
+        [HttpGet]
+        public async Task<ActionResult> CatalagueAccounting(Int64 TypeAccountId)
+        {
+            if (TypeAccountId == 0) {
+                List<NodeViewModel> items = new List<NodeViewModel>();
+                this.ViewBag.Tree2 = items;
+                var TypesAccounting2 = await GetTypeAccount();
+                    List<TypeAccount> TiposCuentas2 = ((List<TypeAccount>)TypesAccounting2.Value);
+                    this.ViewBag.ListTypeAccount2 = TiposCuentas2;
+            }
+            else {
+                var TypesAccounting2 = await GetTypeAccount();
+                List<TypeAccount> TiposCuentas2 = ((List<TypeAccount>)TypesAccounting2.Value);
+                this.ViewBag.ListTypeAccount2 = TiposCuentas2;
+                var arbol = await GetTreeAccounting(TypeAccountId, true);
+                List<NodeViewModel> items = ((List<NodeViewModel>)arbol.Value);
+                this.ViewBag.Tree2 = items;
+
+            }
+
+            return await Task.Run(() => View());
+
+        }
+
+
         [HttpGet]
         public async Task<ActionResult> Index()
         {

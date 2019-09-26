@@ -1,0 +1,160 @@
+﻿
+
+@model ERPMVC.Models.NodeViewModel
+@using Kendo.Mvc.UI
+
+<script>
+
+    function onsave(e) {
+        //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+        // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+    //function caidata(data) {
+    //  data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+    //data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    //}
+
+    function AddAccounting() {
+
+
+
+        $('#ModalAccounting').find(':input').not(':submit').val('');
+
+        $('#ModalAccounting').modal('show');
+        $("#AccountId").val('0');
+
+
+
+
+
+    }
+
+
+       function EditAccount(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+             var dataObject = {
+                 AccountId: dataItem.AccountId,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddAccounting", "Accounting")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumAccounting").html('');
+                    $("#NumAccounting").html(result);
+
+
+                    //$("#btnCAI").hide();
+                    $('#ModalAccounting').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+         }
+
+   @* *@
+
+</script>
+<h3 class="text-themecolor">Catálogo de Cuentas</h3>
+
+<div id="example">
+
+    <div class="demo-section2 k-content" style="width: 100%;">
+
+        <div id="tabstrip-right2" class="card-body">
+            <ul class="menu">
+                @foreach (ERPMVC.Models.TypeAccount Tipo in ViewBag.ListTypeAccount2)
+
+                {
+                    if (ViewBag.AccountingParameter == @Tipo.TypeAccountId)
+                    {
+                        <li id='Action @Tipo.TypeAccountId' class="k-state-active">
+                            <a href='@Url.Action("CatalagueAccounting", "Accounting", new { TypeAccountId = @Tipo.TypeAccountId })'> @Tipo.TypeAccountName.Trim() </a>
+
+                        </li>
+
+                    }
+                    else
+                    {
+                        <li id='Action @Tipo.TypeAccountId'>
+                            <a href='@Url.Action("CatalagueAccounting", "Accounting", new { TypeAccountId = @Tipo.TypeAccountId })'> @Tipo.TypeAccountName.Trim() </a>
+
+                        </li>
+
+                    }
+
+
+                }
+            </ul>
+            @foreach (ERPMVC.Models.TypeAccount Tipo in ViewBag.ListTypeAccount2)
+            {
+            <div id='Result @Tipo.TypeAccountId' >
+                <h4>@Tipo.TypeAccountName</h4>
+                @(Html.Kendo().TreeView()
+                .Name("TreeViewTemplateBiding")
+                .TemplateId("TreeViewTemplate")
+
+                .BindTo((List<ERPMVC.Models.NodeViewModel>
+                    )ViewBag.Tree2, (Kendo.Mvc.UI.Fluent.NavigationBindingFactory<TreeViewItem>
+                        mappings) =>
+                        {
+                        mappings.For<ERPMVC.Models.NodeViewModel>
+                            (binding => binding.ItemDataBound((item, node) =>
+                            {
+                            item.Id = node.Id.ToString();
+                            item.Text = node.Title;
+                            item.Expanded = node.Expanded;
+                            })
+                            .Children(node => node.Children));
+                            }).Checkboxes(true)
+                            )
+
+            </div>
+            }
+
+        </div>
+
+    </div>
+    <style>
+        .demo-section2 * + h4 {
+            margin-top: 2em;
+        }
+
+        .demo-section2 .k-tabstrip .k-content {
+            height: 440px;
+        }
+    </style>
+    <script>
+        $(function () {
+            $('ul.menu li').click(function (e) {
+                alert("Seleccionaste: " + this.id);
+                div =document.getElementById('#Result '@ViewBag.AccountingParameter);
+                div.style.display = '';
+                /* Aquí si quieres lanzar más acciones de acuerdo al li
+                    seleccionado puedes implementar un if then else
+                    u otra estructura de condicionales */
+            });
+        });
+
+        $(document).ready(function () {
+
+            $("#tabstrip-right2").kendoTabStrip({
+                tabPosition: "right",
+                animation: { open: { effects: "fadeIn" } }
+            });
+
+
+        });
+    </script>
+</div>
+
+
+
