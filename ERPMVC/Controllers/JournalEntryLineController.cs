@@ -37,26 +37,77 @@ namespace ERPMVC.Controllers
             return PartialView();
         }
          [HttpGet("[action]")]
-        public async Task<JsonResult> GetJournalEntryLine([DataSourceRequest]DataSourceRequest request)
+        public async Task<DataSourceResult> GetJournalEntryLine([DataSourceRequest]DataSourceRequest request,JournalEntryLine _JournalEntryLinep)
         {
             List<JournalEntryLine> _JournalEntryLine = new List<JournalEntryLine>();
             try
             {
-
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/JournalEntryLine/GetJournalEntry");
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _JournalEntryLine = JsonConvert.DeserializeObject<List<JournalEntryLine>>(valorrespuesta);
 
+                if (HttpContext.Session.Get("journalentryline") == null
+                   || HttpContext.Session.GetString("journalentryline") == "")
+                {
+                    if (_JournalEntryLinep.JournalEntryId > 0)
+                    {
+                        string serialzado = JsonConvert.SerializeObject(_JournalEntryLinep).ToString();
+                        HttpContext.Session.SetString("journalentryline", serialzado);
+                    }
+                }
+                else
+                {
+                    _JournalEntryLine = JsonConvert.DeserializeObject<List<JournalEntryLine>>(HttpContext.Session.GetString("journalentryline"));
+                }
+
+                if (_JournalEntryLinep.JournalEntryId > 0)
+                {
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/JournalEntryLine/GetJournalEntry");
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _JournalEntryLine = JsonConvert.DeserializeObject<List<JournalEntryLine>>(valorrespuesta);
+
+                    }
+                }
+                else
+                {
+
+                    List<JournalEntryLine> _existelinea = new List<JournalEntryLine>();
+                    if (HttpContext.Session.GetString("journalentryline") != "" && HttpContext.Session.GetString("journalentryline") !=null)
+                    {
+                        _JournalEntryLine = JsonConvert.DeserializeObject<List<JournalEntryLine>>(HttpContext.Session.GetString("journalentryline"));
+                        _existelinea = _JournalEntryLine.Where(q => q.JournalEntryLineId == _JournalEntryLinep.JournalEntryLineId).ToList();
+                    }
+
+
+                    if (_JournalEntryLinep.JournalEntryLineId > 0 && _existelinea.Count == 0)
+                    {
+                        _JournalEntryLine.Add(_JournalEntryLinep);
+                        HttpContext.Session.SetString("journalentryline", JsonConvert.SerializeObject(_JournalEntryLine).ToString());
+                    }
+                    else
+                    {
+                        var obj = _JournalEntryLine.Where(x => x.JournalEntryLineId == _JournalEntryLinep.JournalEntryLineId).FirstOrDefault();
+                        if (obj != null)
+                        {
+                            obj.Description = _JournalEntryLinep.Description;
+                            obj.Credit = _JournalEntryLinep.Credit;
+                            obj.Debit = _JournalEntryLinep.Debit;
+                            obj.AccountId = _JournalEntryLinep.AccountId;
+
+                        }
+
+                        HttpContext.Session.SetString("journalentryline", JsonConvert.SerializeObject(_JournalEntryLine).ToString());
+
+                    }
                 }
 
 
-            }
+
+
+                }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
@@ -64,7 +115,7 @@ namespace ERPMVC.Controllers
             }
 
 
-            return Json(_JournalEntryLine.ToDataSourceResult(request));
+            return (_JournalEntryLine.ToDataSourceResult(request));
 
         }
 
