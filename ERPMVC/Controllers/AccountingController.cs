@@ -165,10 +165,13 @@ namespace ERPMVC.Controllers
                 // );
 
                 var Padre = await AccountingByTypeAccount(ParentAccountId);
-                Accounting resultado = ((Accounting)Padre.Value);
-               var Arbol= await GetTreeAccounting(resultado.AccountId, false);
-                List<NodeViewModel> ArbolNodo = ((List<NodeViewModel>)Arbol.Value);
-                items = ArbolNodo;
+                    if (Padre.Value != null)
+                    {
+                        Accounting resultado = ((Accounting)Padre.Value);
+                        var Arbol = await GetTreeAccounting(resultado.AccountId, false);
+                        List<NodeViewModel> ArbolNodo = ((List<NodeViewModel>)Arbol.Value);
+                        items = ArbolNodo;
+                    }
                /* foreach (NodeViewModel nodo in ArbolNodo)
                 {
                     items.Add(nodo);
