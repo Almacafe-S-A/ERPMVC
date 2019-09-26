@@ -32,7 +32,7 @@
 
     }
 
-    
+
        function EditAccount(e) {
              e.preventDefault();
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
@@ -70,63 +70,177 @@
 
 
 
-<script>
-    function onSelect(e) {
-      
-        $(e.contentElement).html("");
-    }
 
 
-    $(document).ready(function () {
-     
-     //   var tabStrip = $("#tabstrip-right").data("kendoTabStrip");
-       // tabStrip.select(0);
-    });
-</script>
+
+@*@(Html.Kendo().TabStrip()
+        .Name("tabstrip-right")
+     .TabPosition(TabStripTabPosition.Right)
+      .Events(e =>
+     {
+          e.Activate("reloadTab");
+          e.Select("onSelect");
+        })
+        .BindTo((List<ERPMVC.Models.TypeAccount>)ViewBag.ListTypeAccount, (tabStripItem, tab) =>
+        {
+            
+            tabStripItem.Text = tab.TypeAccountName;
+            tabStripItem.ContentUrl = Url.Action("pvwTreeAccounting", "Accounting") + "/" + tab.TypeAccountId;
+        })
+
+)*@
+           
 
 
 
     @(Html.Kendo().TabStrip()
-       .Name("tabstrip-right")
-       .TabPosition(TabStripTabPosition.Right)
-       .Animation(animation =>
-       {
-           animation.Open(config =>
-           {
-               config.Fade(FadeDirection.In);
-           });
-       })
-       .SelectedIndex(0)
-       .Events(e =>
-       {
-           e.Select("onSelect");
-       })
-       .Items(items =>
-       {
+                   .Name("tabstrip-right")
+                   .TabPosition(TabStripTabPosition.Right)
+                   //.Animation(animation =>
+                   //{
+                   //    animation.Open(config =>
+                   //    {
+                   //        config.Fade(FadeDirection.In);
+                   //    });
+                   //})
+                   .SelectedIndex(0)
+                   .Events(e =>
+                   {
 
-           foreach (ERPMVC.Models.TypeAccount Tipo in ViewBag.ListTypeAccount)
+                      // e.Activate("reloadTab");
+                       e.Select("onSelect");
+                   })
+                   .Items(items =>
+                   {
 
-           {
-               // <a href = '@Url.Action("Index", "Accounting", new { TypeAccountId = @Tipo.TypeAccountId })' > @Tipo.TypeAccountName.Trim() </ a>
-               items.Add().Text(@Tipo.TypeAccountName.Trim())
-               .LoadContentFrom("pvwTreeAccounting", "Accounting", new { TypeAccountId = @Tipo.TypeAccountId });
+                       foreach (ERPMVC.Models.TypeAccount Tipo in ViewBag.ListTypeAccount)
+
+                       {
+                           // <a href = '@Url.Action("Index", "Accounting", new { TypeAccountId = @Tipo.TypeAccountId })' > @Tipo.TypeAccountName.Trim() </ a>
+                           items.Add().Text(@Tipo.TypeAccountName.Trim()).Encoded(false)
+                      .LoadContentFrom("pvwTreeAccounting", "Accounting", new { TypeAccountId = @Tipo.TypeAccountId });
 
 
-           }
-       })
-    )
+                       }
+                   })
+        )
+
+
+    <script type = "text/javascript">
+            function reloadTab(e) {
+        console.log(e.item);
+         $('#tabstrip-right').data('kendoTabStrip').reload(e.item);
+
+              
+        var tabToReload = 2;
+        var tabstrip = $("#tabstrip-right").data("kendoTabStrip");
+        loadTabStripTab($(tabstrip.contentElement(tabToReload)), '@Url.Action("pvwTreeAccounting", "Accounting")', 2);
+
+         tabstrip = $('#tabstrip-right').getKendoTabStrip();
+        tabstrip.reload("li:first");
+    }
+</script>
+
+    <script>
+        // event handler for activate
+        var onActivate = function (e) {
+            // access the activated item via e.item (Element)
+
+            // detach activate event handler via unbind()
+            tabStrip.unbind("activate", onActivate);
+        };
+
+        // attach activate event handler during initialization
+        var tabStrip = $("#tabstrip-right").kendoTabStrip({
+            activate: onActivate
+        }).data("kendoTabStrip");
+    </script>
+
+<script>
+
+
+//function reloadTabstripItem() {
+//    var selected_pk = $('#database_pk').val();
+//    var index = $("#menu").data("kendoTabStrip").select().index();
+//    switch (index) {
+//        case 0:
+//            actionurl = "/Home/pvwTreeAccounting";
+//            break;
+//        case 1:
+//            actionurl = "/Table/pvwTreeAccounting";
+//            break;
+//        case 2:
+//            actionurl = "/Entity/pvwTreeAccounting";
+//            break;
+//    }
+//    $.ajax({
+//        url: "/Home/DatabaseInfo",
+//        type: 'GET',
+//        data: { database_pk: selected_pk }
+//    }).done(function (html) {
+//        $($("#menu").data("kendoTabStrip").contentElement(0)).html(html);
+//    });
+//}
+
+
+    function loadTabStripTab(tab, actionUrl, someID) {
+        console.log('Llega a loadTabStripTab ');
+        $.ajax({
+            type: "GET",
+            url: actionUrl,
+            datatype: "json",
+            traditional: true,
+            data: { TypeAccountId: someID },
+            success: function (data, status, xhr) {
+               // console.log(data);
+                $($("#tabstrip-right").data("kendoTabStrip").contentElement(0)).html(data);
+            },
+            error: function (xhr, status, error) {
+                $($("#tabstrip-right").data("kendoTabStrip").contentElement(0)).html(error);
+            }
+        });
+    }
+
+    function onSelect(e)
+    {
+
+        // console.log(e);
+        $(e.contentElement).html("");
+
+        onActivate();
+
+        @*var tabToReload = $(e.item).index() + 1;
+        var tabstrip = $("#tabstrip-right").data("kendoTabStrip");
+        loadTabStripTab($(tabstrip.contentElement(tabToReload)), '@Url.Action("pvwTreeAccounting", "Accounting")', tabToReload);
+        tabstrip.select(tabToReload);*@
+    }
+
+
+$(document).ready(function() {
+
+        //   var tabStrip = $("#tabstrip-right").data("kendoTabStrip");
+        // tabStrip.select(0);
+
+        var ts = $("#tabstrip-right").data("kendoTabStrip");
+        ts.tabGroup.on('click', 'li', function(e) {
+            //ts.select(0);
+            ts.reload($(this));
+        })
+});
+</script>
 
 
 
 <style>
-    .demo-section * + h4 {
+.demo-section * +h4 {
         margin-top: 2em;
     }
 
-    .demo-section .k-tabstrip .k-content {
+.demo-section.k-tabstrip.k-content {
         height: 400px;
     }
 </style>
+
 
 
 
@@ -248,3 +362,4 @@
                                                                     })
         )
 *@
+
