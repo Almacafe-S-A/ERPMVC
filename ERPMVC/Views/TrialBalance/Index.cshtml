@@ -1,27 +1,58 @@
-﻿
+﻿@*@( Html.Kendo().TreeView()
+            .Name("TrialBalance")
+    // .TemplateId("treeview-template")
+     //  .DataTextField("AccountName")
+     //.DataSource(dataSource => dataSource
+
+     //       .Read(read => read
+     //           .Action("TrialBalanceRes", "TrialBalance")
+     //       ))
+     .BindTo((List<ERPMVC.DTO.AccountingDTO>)ViewBag.Tree, mappings =>
+                       {
+                           mappings.For<ERPMVC.DTO.AccountingDTO>
+                               (binding => binding
+                                   .ItemDataBound((item, modelItem) =>
+                                   {
+
+                                       item.Text = "Cuenta: "+ modelItem.AccountCode +"-"+ modelItem.AccountName + "\t\t\t\t"
+                                                  +"Debito: "+ modelItem.Debit.ToString("n2") + " Credito: "+modelItem.Credit.ToString("n2") + " Saldo: "+modelItem.AccountBalance;
+                                       item.Id = modelItem.AccountId.ToString();
+                                       item.Expanded = true;
+                                     //  item.ImageUrl = "~/Content/web/treeview/" + modelItem.idTipoDoc + ".png";
+                                   }).Children(c => c.Children));
+                       }))*@
+
+@(Html.Kendo().TreeList<ERPMVC.DTO.AccountingDTO>()
+        .Name("treelist")
+        .Columns(columns =>
+        {
+            columns.Add().Field(f => f.AccountName).Width(550);
+            columns.Add().Field(e => e.Debit);
+            columns.Add().Field(e => e.Credit);
+            columns.Add().Field(e => e.AccountBalance);
+        })
+         .Toolbar(tools => tools.Excel())
+           .Excel(excel => excel.FileName("BalanzaComprobacion.xlsx").ProxyURL(Url.Action("Export", "Home")))
+        .DataSource(dataSource => dataSource
+            .Read(read => read.Action("TrialBalanceRes", "TrialBalance"))
+            .Model(m =>
+            {
+                m.Id(f => f.AccountId);
+                m.ParentId(f => f.ParentAccountId);
+                m.Expanded(true);
+                m.Field(f => f.Debit);
+                m.Field(f => f.Credit);
+                m.Field(f => f.ParentAccountId);
+            })
+        )
+)
 
 
-@( Html.Kendo().TreeView()
-           .Name("TrialBalance")
-    //.TemplateId("TreeViewTemplate")
-    //  .DataTextField("AccountName")
-    //.DataSource(dataSource => dataSource
 
-    //       .Read(read => read
-    //           .Action("TrialBalanceRes", "TrialBalance")
-    //       ))
-    .BindTo((List<ERPMVC.Models.Accounting>)ViewBag.Tree, mappings =>
-                      {
-                          mappings.For<ERPMVC.Models.Accounting>
-                              (binding => binding
-                                  .ItemDataBound((item, modelItem) =>
-                                  {
-                                    
-                                      item.Text = "Cuenta: "+ modelItem.AccountCode +"-"+ modelItem.AccountName + "                             "
-                                                 +"Debito: "+ "Credito: "+" Saldo: "+modelItem.AccountBalance;
-                                      item.Id = modelItem.AccountId.ToString();
-                                      item.Expanded = true;
-                                    //  item.ImageUrl = "~/Content/web/treeview/" + modelItem.idTipoDoc + ".png";
-                                  }).Children(c => c.ChildAccounts));
-                      }))
-
+<script id="treeview-template" type="text/kendo-ui-template">
+    <p>
+        #: item.AccountCode #<br />
+        #: item.AccountName #<br />
+        #: item.AccountBalance #
+    </p>
+</script>

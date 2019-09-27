@@ -9,6 +9,10 @@ namespace ERPMVC.DTO
     public class AccountingDTO : Accounting
     {
 
-        public List<AccountingDTO> Children = new List<AccountingDTO>();
+        public double Debit { get; set; }
+
+        public double Credit { get; set; }
+
+        public List<AccountingDTO> Children { get; set; } = new List<AccountingDTO>();
     }
 }

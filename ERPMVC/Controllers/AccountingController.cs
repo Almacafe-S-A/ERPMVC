@@ -393,6 +393,42 @@ namespace ERPMVC.Controllers
 
         }
 
+
+        public async Task<JsonResult> AccountingRes([DataSourceRequest]DataSourceRequest request, TypeAccount TypeAccount)
+        {
+            List<AccountingDTO> _accounting = new List<AccountingDTO>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));              
+                var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountingType/" + TypeAccount.TypeAccountId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _accounting = JsonConvert.DeserializeObject<List<AccountingDTO>>(valorrespuesta);
+
+                }
+
+                if (_accounting == null)
+                {
+                    _accounting = new List<AccountingDTO>();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            // return Json(_accounting, JsonRequestBehavior.AllowGet);
+            return Json(_accounting.ToTreeDataSourceResult(request));
+
+        }
+
         [HttpGet("[action]")]
         public async Task<JsonResult> GetAccount([DataSourceRequest]DataSourceRequest request)
         {

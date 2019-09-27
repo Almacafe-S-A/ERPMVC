@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using Kendo.Mvc.Extensions;
+using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -38,7 +40,7 @@ namespace ERPMVC.Controllers
         public async Task<IActionResult> Index()
         {
 
-            List<Accounting> _accounting = new List<Accounting>();
+            List<AccountingDTO> _accounting = new List<AccountingDTO>();
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -49,13 +51,13 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await(result.Content.ReadAsStringAsync());
-                    _accounting = JsonConvert.DeserializeObject<List<Accounting>>(valorrespuesta);
+                    _accounting = JsonConvert.DeserializeObject<List<AccountingDTO>>(valorrespuesta);
 
                 }
 
                 if (_accounting == null)
                 {
-                    _accounting = new List<Accounting>();
+                    _accounting = new List<AccountingDTO>();
                 }
 
                 ViewBag.Tree = _accounting;
@@ -73,26 +75,27 @@ namespace ERPMVC.Controllers
         }
 
 
-        public async Task<JsonResult> TrialBalanceRes(int? id)
+        public async Task<JsonResult> TrialBalanceRes([DataSourceRequest]DataSourceRequest request)
         {
-            List<Accounting> _accounting = new List<Accounting>();
+            List<AccountingDTO> _accounting = new List<AccountingDTO>();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/TrialBalance/TrialBalanceRes");
+                //var result = await _client.GetAsync(baseadress + "api/TrialBalance/TrialBalanceRes");
+                var result = await _client.GetAsync(baseadress + "api/TrialBalance/GetAccounting");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await(result.Content.ReadAsStringAsync());
-                    _accounting = JsonConvert.DeserializeObject<List<Accounting>>(valorrespuesta);
+                    _accounting = JsonConvert.DeserializeObject<List<AccountingDTO>>(valorrespuesta);
 
                 }
 
                 if (_accounting == null)
                 {
-                    _accounting = new List<Accounting>();
+                    _accounting = new List<AccountingDTO>();
                 }
 
             }
@@ -103,8 +106,9 @@ namespace ERPMVC.Controllers
             }
 
 
-            return Json(_accounting.ToList());
-           
+           // return Json(_accounting, JsonRequestBehavior.AllowGet);
+            return Json(_accounting.ToTreeDataSourceResult(request) );
+
         }
 
 

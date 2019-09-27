@@ -5,37 +5,89 @@
     var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
 }
 
+<script>
 
-@foreach (ERPMVC.Models.TypeAccount Tipo in ViewBag.ListTypeAccount)
+   
+    var TypeAccountId = 0;
+    function TypeAccounting(TypeAccountIdv) {
+        kendo.ui.progress($("#divClasificacionCuentas"), true);
+        
+        TypeAccountId = TypeAccountIdv;
 
-{
-    if(Tipo.TypeAccountId == ViewBag.AccountingParameter)
-    { 
-    <div id="@Tipo.TypeAccountId" >
-    <h4>@Tipo.TypeAccountName</h4>
-    @(
-                          Html.Kendo().TreeView()
-                          .Name("TreeViewTemplateBiding")
-                          .TemplateId("TreeViewTemplate")
-                          
-                               .BindTo((List<ERPMVC.Models.NodeViewModel>)ViewBag.Tree, (Kendo.Mvc.UI.Fluent.NavigationBindingFactory<TreeViewItem> mappings) =>
-                               {
-                                   mappings.For<ERPMVC.Models.NodeViewModel>(binding => binding.ItemDataBound((item, node) =>
-                                       {
-                                           item.Id = node.Id.ToString();
-                                           item.Text = node.Title;
-                                           item.Expanded = node.Expanded;
-                                       })
-                                 .Children(node => node.Children));
-                               }).Checkboxes(true)
-    )
-    </div>
+        var treelist = $("#AccountingTreelist").data("kendoTreeList");
+        treelist.dataSource.read();
+
+       
     }
-}
-      @*
+
+    function DataTypeAccounting() {
+        return { 'TypeAccountId': TypeAccountId }
+    }
+
+    function onBound() {
+        kendo.ui.progress($("#divClasificacionCuentas"), false);
+    }
+</script>
+
+
+@(Html.Kendo().TreeList<ERPMVC.DTO.AccountingDTO>()
+            .Name("AccountingTreelist")
+            .Columns(columns =>
+            {
+                columns.Add().Field(f => f.AccountName).Width(550);
+                // columns.Add().Field(e => e.Debit);
+                // columns.Add().Field(e => e.Credit);
+                columns.Add().Field(e => e.AccountBalance);
+            })
+            .Events(e=>
+            {
+                e.DataBound("onBound");
+            })
+            .DataSource(dataSource => dataSource
+                .Read(read => read.Action("AccountingRes", "Accounting").Data("DataTypeAccounting"))
+                .Model(m =>
+                {
+                    m.Id(f => f.AccountId);
+                    m.ParentId(f => f.ParentAccountId);
+                    m.Expanded(true);
+                    //    m.Field(f => f.Debit);
+                    //   m.Field(f => f.Credit);
+                    m.Field(f => f.ParentAccountId);
+                })
+            )
+)
+
+
+@*@foreach (ERPMVC.Models.TypeAccount Tipo in ViewBag.ListTypeAccount)
+
+    {
+        if(Tipo.TypeAccountId == ViewBag.AccountingParameter)
+        {
+        <div id="@Tipo.TypeAccountId" >
+        <h4>@Tipo.TypeAccountName</h4>
+        @(
+                              Html.Kendo().TreeView()
+                              .Name("TreeViewTemplateBiding")
+                              .TemplateId("TreeViewTemplate")
+
+                                   .BindTo((List<ERPMVC.Models.NodeViewModel>)ViewBag.Tree, (Kendo.Mvc.UI.Fluent.NavigationBindingFactory<TreeViewItem> mappings) =>
+                                   {
+                                       mappings.For<ERPMVC.Models.NodeViewModel>(binding => binding.ItemDataBound((item, node) =>
+                                           {
+                                               item.Id = node.Id.ToString();
+                                               item.Text = node.Title;
+                                               item.Expanded = node.Expanded;
+                                           })
+                                     .Children(node => node.Children));
+                                   }).Checkboxes(true)
+        )
+        </div>
+        }
+    }*@
+@*
 *@
 
-    <script>
+<script>
 
 
     $(function () {
@@ -49,4 +101,4 @@
                 u otra estructura de condicionales */
         });
     });
-    </script>
+</script>
