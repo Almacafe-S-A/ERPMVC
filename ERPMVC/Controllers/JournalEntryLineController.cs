@@ -96,6 +96,7 @@ namespace ERPMVC.Controllers
                             obj.Credit = _JournalEntryLinep.Credit;
                             obj.Debit = _JournalEntryLinep.Debit;
                             obj.AccountId = _JournalEntryLinep.AccountId;
+                            obj.JournalEntry = _JournalEntryLinep.JournalEntry;
 
                         }
 
@@ -137,6 +138,11 @@ namespace ERPMVC.Controllers
                 _JournalEntryLine.CreatedDate = DateTime.Now;
                 _JournalEntryLine.ModifiedUser = HttpContext.Session.GetString("user");
                 _JournalEntryLine.ModifiedDate = DateTime.Now;
+                _JournalEntryLine.CreditME = 0;
+                _JournalEntryLine.DebitME = 0;
+                _JournalEntryLine.CreditSy = 0;
+                _JournalEntryLine.DebitSy = 0;  
+
                 var result = await _client.PostAsJsonAsync(baseadress + "api/JournalEntryLine/Insert", _JournalEntryLine);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
