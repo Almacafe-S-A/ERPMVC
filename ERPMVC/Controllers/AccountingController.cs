@@ -636,7 +636,15 @@ namespace ERPMVC.Controllers
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _Account }, Total = 1 });
         }
+       public JsonResult Create([DataSourceRequest] DataSourceRequest request, AccountingDTO accountingDTO)
+        {
+            /*if (ModelState.IsValid)
+            {
+                accountingDTO.Insert(AccountingDTO, ModelState);
+            }*/
 
+            return Json(new[] { accountingDTO }.ToTreeDataSourceResult(request, ModelState));
+        }
         [HttpPut("AccountId")]
         public async Task<IActionResult> Update(Int64 AccountId, Account _Account)
         {

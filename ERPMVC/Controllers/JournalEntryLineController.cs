@@ -97,6 +97,7 @@ namespace ERPMVC.Controllers
                             obj.Debit = _JournalEntryLinep.Debit;
                             obj.AccountId = _JournalEntryLinep.AccountId;
                             obj.JournalEntry = _JournalEntryLinep.JournalEntry;
+                            obj.Num = _JournalEntryLinep.Num;
 
                         }
 
