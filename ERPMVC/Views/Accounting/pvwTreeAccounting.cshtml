@@ -6,18 +6,63 @@
 }
 
 <script>
+    function AddAccounting() {
 
-   
+
+
+        $('#ModalAccounting').find(':input').not(':submit').val('');
+
+        $('#ModalAccounting').modal('show');
+        $("#AccountId").val('0');
+
+
+
+
+
+    }
+
+
+       function EditAccount(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+             var dataObject = {
+                 AccountId: dataItem.AccountId,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddAccounting", "Accounting")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumAccounting").html('');
+                    $("#NumAccounting").html(result);
+
+
+                    //$("#btnCAI").hide();
+                    $('#ModalAccounting').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+         }
+
+
+
     var TypeAccountId = 0;
     function TypeAccounting(TypeAccountIdv) {
         kendo.ui.progress($("#divClasificacionCuentas"), true);
-        
+
         TypeAccountId = TypeAccountIdv;
 
         var treelist = $("#AccountingTreelist").data("kendoTreeList");
         treelist.dataSource.read();
 
-       
+
     }
 
     function DataTypeAccounting() {
@@ -31,31 +76,68 @@
 
 
 @(Html.Kendo().TreeList<ERPMVC.DTO.AccountingDTO>()
-            .Name("AccountingTreelist")
-            .Columns(columns =>
-            {
-                columns.Add().Field(f => f.AccountName).Width(550);
-                // columns.Add().Field(e => e.Debit);
-                // columns.Add().Field(e => e.Credit);
-                columns.Add().Field(e => e.AccountBalance);
-            })
-            .Events(e=>
-            {
-                e.DataBound("onBound");
-            })
-            .DataSource(dataSource => dataSource
-                .Read(read => read.Action("AccountingRes", "Accounting").Data("DataTypeAccounting"))
-                .Model(m =>
-                {
-                    m.Id(f => f.AccountId);
-                    m.ParentId(f => f.ParentAccountId);
-                    m.Expanded(true);
-                    //    m.Field(f => f.Debit);
-                    //   m.Field(f => f.Credit);
-                    m.Field(f => f.ParentAccountId);
-                })
-            )
+                    .Name("AccountingTreelist")
+                    //    .Toolbar(toolbar => toolbar.Create().Text("Padre"))
+                    .Columns(columns =>
+                    {
+                        columns.Add().Width(300).Command(c =>
+                        {
+                            c.CreateChild().Text(" ");
+                            c.Edit().Text(" ");  //.IconClass("fa fa-edit").Click("EditAccount");
+
+                        });
+                        columns.Add().Field(f => f.AccountName).Width(550);
+                        // columns.Add().Field(e => e.Debit);
+                        // columns.Add().Field(e => e.Credit);
+                        columns.Add().Field(e => e.AccountBalance).Width(200);
+                        columns.Add().Field(e => e.AccountCode).Width(200);
+                        columns.Add().Field(e => e.BlockedInJournal).Width(200);
+                        columns.Add().Field(e => e.CompanyInfoId).Width(200);
+                        columns.Add().Field(e => e.HierarchyAccount).Width(200);
+                        columns.Add().Field(e => e.IsCash).Width(200);
+                        columns.Add().Field(e => e.ParentAccountId).Width(200);
+                        //  columns.Add().Field(e => e.)
+                        columns.Add().Field(e => e.Description).Width(200);
+                    })
+
+                    .Toolbar(toolbar => toolbar.Create())
+
+
+
+                    .Events(e =>
+                    {
+                        e.DataBound("onBound");
+                    })
+                    .Editable()
+                    .DataSource(dataSource => dataSource
+                        .Create(create => create.Action("pvwAddAccounting", "Accounting").Data("AddAccounting"))
+                    .Read(read => read.Action("AccountingRes", "Accounting").Data("DataTypeAccounting"))
+                    .Update(update => update.Action("Update", "Accounting", new { AccountId = "{0}" }).Type(HttpVerbs.Put))
+                    // update => update.Action("Update", "EmployeeDirectory")
+                    .Model(m =>
+                    {
+                        m.Id(f => f.AccountId);
+                        m.ParentId(f => f.ParentAccountId).Editable(true);
+                        m.Field(f => f.Description).Editable(true);
+                        m.Field(f => f.BlockedInJournal).Editable(true);
+                        m.Field(f => f.HierarchyAccount).Editable(true);
+                        m.Field(f => f.AccountCode).Editable(true);
+                        m.Field(f => f.IsCash).Editable(true);
+                        m.Field(f => f.TypeAccountId).Editable(true);
+                        m.Field(f => f.Credit).Editable(true);
+                        m.Field(f => f.Debit).Editable(true);
+                        m.Field(f => f.CompanyInfoId);
+                        m.Field(f => f.AccountName).Editable(true);
+                        m.Expanded(true);
+
+
+                    })
+
+                ).Height(540)
 )
+<div id="NumAccounting">
+    @await Html.PartialAsync("pvwAddAccounting", new ERPMVC.DTO.AccountDTO { AccountId = 0 })
+</div>
 
 
 @*@foreach (ERPMVC.Models.TypeAccount Tipo in ViewBag.ListTypeAccount)
