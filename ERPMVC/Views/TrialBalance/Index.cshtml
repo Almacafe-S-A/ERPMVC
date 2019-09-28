@@ -1,6 +1,6 @@
 ﻿@*@( Html.Kendo().TreeView()
             .Name("TrialBalance")
-    // .TemplateId("treeview-template")
+    //// .TemplateId("treeview-template")
      //  .DataTextField("AccountName")
      //.DataSource(dataSource => dataSource
 
@@ -22,37 +22,86 @@
                                    }).Children(c => c.Children));
                        }))*@
 
-@(Html.Kendo().TreeList<ERPMVC.DTO.AccountingDTO>()
-        .Name("treelist")
-        .Columns(columns =>
-        {
-            columns.Add().Field(f => f.AccountName).Width(550);
-            columns.Add().Field(e => e.Debit);
-            columns.Add().Field(e => e.Credit);
-            columns.Add().Field(e => e.AccountBalance);
-        })
-         .Toolbar(tools => tools.Excel())
-           .Excel(excel => excel.FileName("BalanzaComprobacion.xlsx").ProxyURL(Url.Action("Export", "Home")))
-        .DataSource(dataSource => dataSource
-            .Read(read => read.Action("TrialBalanceRes", "TrialBalance"))
-            .Model(m =>
-            {
-                m.Id(f => f.AccountId);
-                m.ParentId(f => f.ParentAccountId);
-                m.Expanded(true);
-                m.Field(f => f.Debit);
-                m.Field(f => f.Credit);
-                m.Field(f => f.ParentAccountId);
-            })
-        )
-)
+<script>
+
+    
+    function Filtrar() {
+        kendo.ui.progress($("#divFiltros"), true);     
+
+        var treelist = $("#BalanzaComprobaciontreelist").data("kendoTreeList");
+        treelist.dataSource.read();
 
 
+    }
 
-<script id="treeview-template" type="text/kendo-ui-template">
-    <p>
-        #: item.AccountCode #<br />
-        #: item.AccountName #<br />
-        #: item.AccountBalance #
-    </p>
+    function ParamsTrialBalance() {
+        return {
+            'FechaInicio': $("#FechaInicio").getKendoDateTimePicker().value().toJSON(),
+            'FechaFin': $("#FechaFin").getKendoDateTimePicker().value().toJSON(),
+        }
+    }
+
+    function onBound() {
+        kendo.ui.progress($("#divFiltros"), false);
+    }
 </script>
+
+<div class="card" id="divFiltros">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <label id="lblFechaInicio">Fecha de inicio:</label>
+                <kendo-datetimepicker name="FechaInicio"
+                                      style="width: 100%;"                                     
+                                      format="dd/MM/yyyy"
+                                      time-format="hh:mm:ss"
+                                      data-val-required="La fecha es requerida"
+                                      value="DateTime.Now"></kendo-datetimepicker>
+
+            </div>
+            <div class="col-md-4">
+                <label id="lblFechaFin">Fecha Fin:</label>
+                <kendo-datetimepicker name="FechaFin"
+                                      style="width: 100%;"
+                                      format="dd/MM/yyyy"
+                                      time-format="hh:mm:ss"
+                                      data-val-required="La fecha es requerida"
+                                      value="DateTime.Now"></kendo-datetimepicker>
+
+            </div>
+            <div class="col-md-4">
+                <button id='btnTypeAccount' type="button" onclick="Filtrar()" class="btn waves-effect waves-light btn-lg btn-rounded btn-primary">Buscar</button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+        @(Html.Kendo().TreeList<ERPMVC.DTO.AccountingDTO>()
+                            .Name("BalanzaComprobaciontreelist")
+                            .Columns(columns =>
+                            {
+                                columns.Add().Field(f => f.AccountName).Width(550);
+                                columns.Add().Field(e => e.Debit);
+                                columns.Add().Field(e => e.Credit);
+                                columns.Add().Field(e => e.AccountBalance);
+                            })
+                             .Events(e =>
+                             {
+                                 e.DataBound("onBound");
+                             })
+                             .Toolbar(tools => tools.Excel())
+                               .Excel(excel => excel.FileName("BalanzaComprobacion.xlsx").ProxyURL(Url.Action("Export", "Home")))
+                            .DataSource(dataSource => dataSource
+                                .Read(read => read.Action("TrialBalanceRes", "TrialBalance").Data("ParamsTrialBalance"))
+                                .Model(m =>
+                                {
+                                    m.Id(f => f.AccountId);
+                                    m.ParentId(f => f.ParentAccountId);
+                                    m.Expanded(true);
+                                    m.Field(f => f.Debit);
+                                    m.Field(f => f.Credit);
+                                    m.Field(f => f.ParentAccountId);
+                                })
+                            )
+        )
+
