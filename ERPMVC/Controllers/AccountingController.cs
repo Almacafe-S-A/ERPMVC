@@ -401,6 +401,7 @@ namespace ERPMVC.Controllers
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
+                _client.Timeout = TimeSpan.FromMinutes(15);
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));              
                 var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountingType/" + TypeAccount.TypeAccountId);
                 string valorrespuesta = "";
