@@ -43,24 +43,24 @@ namespace ERPMVC.Controllers
             List<AccountingDTO> _accounting = new List<AccountingDTO>();
             try
             {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/TrialBalance/TrialBalanceRes");
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await(result.Content.ReadAsStringAsync());
-                    _accounting = JsonConvert.DeserializeObject<List<AccountingDTO>>(valorrespuesta);
+                //string baseadress = config.Value.urlbase;
+                //HttpClient _client = new HttpClient();
+                //_client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                //var result = await _client.GetAsync(baseadress + "api/TrialBalance/TrialBalanceRes");
+                //string valorrespuesta = "";
+                //if (result.IsSuccessStatusCode)
+                //{
+                //    valorrespuesta = await(result.Content.ReadAsStringAsync());
+                //    _accounting = JsonConvert.DeserializeObject<List<AccountingDTO>>(valorrespuesta);
 
-                }
+                //}
 
-                if (_accounting == null)
-                {
-                    _accounting = new List<AccountingDTO>();
-                }
+                //if (_accounting == null)
+                //{
+                //    _accounting = new List<AccountingDTO>();
+                //}
 
-                ViewBag.Tree = _accounting;
+                //ViewBag.Tree = _accounting;
 
             }
             catch (Exception ex)
