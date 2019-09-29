@@ -10,7 +10,7 @@ namespace ERPMVC.DTO
     {
 
         public double Debit { get; set; }
-
+        public string Nombre { get; set; }
         public double Credit { get; set; }
 
         public List<AccountingDTO> Children { get; set; } = new List<AccountingDTO>();
