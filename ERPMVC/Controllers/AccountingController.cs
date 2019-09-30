@@ -185,13 +185,16 @@ namespace ERPMVC.Controllers
                 var parametro = await GetAccountingById(ParentAccountId);
 
                 Accounting _AccountingP = ((Accounting)parametro.Value);
-                /*
-                 *  var value = (resultsalesorder.Result as ObjectResult).Value;
-                        SalesOrder resultado = ((SalesOrder)(value));
-                       
-                 */
-                var condicion = _AccountingP.IsCash ? _AccountingP.AccountBalance.ToString("N4") : "";
+                    /*
+                     *  var value = (resultsalesorder.Result as ObjectResult).Value;
+                            SalesOrder resultado = ((SalesOrder)(value));
 
+                     */
+                    string condicion="";
+                    if (_AccountingP.IsCash == true)
+                    {
+                       condicion = _AccountingP.AccountBalance.ToString("N4");
+                    }
              var root = new NodeViewModel
                 {
                     Id = _AccountingP.AccountId,
@@ -229,8 +232,13 @@ namespace ERPMVC.Controllers
                     List<AccountingChilds> ListaHijos_AccountingP = ((List<AccountingChilds>)HijosCuenta.Value);
                     foreach (AccountingChilds Childs in ListaHijos_AccountingP)
                     {
-                        var condicion2 = _AccountingP.IsCash ? _AccountingP.AccountBalance.ToString("N4") : "";
 
+                            string condicion2 = "";
+                            if (_AccountingP.IsCash == true)
+                            {
+                                condicion2 = _AccountingP.AccountBalance.ToString("N4");
+                            }
+                           
                         root.Children.Add(new NodeViewModel
                         {
                             Id = Convert.ToInt32(Childs.AccountingChildsId),
@@ -522,11 +530,48 @@ namespace ERPMVC.Controllers
             return Json(_customers.ToDataSourceResult(request));
 
         }
+        public Int64 HierarchyAccountLevel(string Accountcode) {
+            Int64 Level = 0;
+            if (Accountcode.Length > 3)
+            {
+                Level = 3 + (Accountcode.Length - 3) / 2;
+            }
+            else {
+                Level = Accountcode.Length;
+            }
+            return Level;
+        }
+        public Int64 CheckAccountCode(string Accountcode)
+        {
+            Int64 Level = 0;
+            if (Accountcode.Length > 3)
+            {
+                Level = Accountcode.Length %  2;
+                if (Level == 0)
+                {
+                    Level = -1;
+                }
+            }
+            else
+            {
+                Level = Accountcode.Length;
+            }
+            return Level;
+        }
+      
 
-
-        public async Task<ActionResult<Account>> SaveAccounting([FromBody]AccountDTO _Accounting)
+        [HttpPost]
+        public async Task<ActionResult> SaveAccounting(AccountDTO _Accounting)
         {
             Account _Account = _Accounting;
+            _Account.CompanyInfoId = 1;
+
+            _Account.HierarchyAccount = HierarchyAccountLevel(_Accounting.AccountCode);
+            if (CheckAccountCode(_Accounting.AccountCode) == -1) {
+                _logger.LogError($"Ocurrio un error: El numero de caracteres del codigo de cuenta no es valido.");
+                return BadRequest($"Ocurrio un error: : El numero de caracteres del codigo de cuenta no es valido.");
+            }
+            else { 
             try
             {
                 Account _listAccount = new Account();
@@ -565,13 +610,18 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
-            return Json(_Accounting);
+            }
+            return new ObjectResult(new DataSourceResult { Data = new[] { _Accounting }, Total = 1 });
+            //return Json(_Accounting);
         }
-        
+        /*public async Task<ActionResult> Proveedores(Int64 VendorId)
+        {
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult> pvwAddAccounting([FromBody]AccountDTO _sarpara)
+        }
+        */
+
+        [HttpGet]
+        public async Task<ActionResult> pvwAddAccounting(Int64 AccountingId)
         {
             AccountDTO _Account = new AccountDTO();
             try
@@ -579,7 +629,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountById/" + _sarpara.AccountId);
+                var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountById/" + AccountingId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -601,7 +651,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_Account);
+            return View(_Account);
 
         }
 
@@ -636,15 +686,7 @@ namespace ERPMVC.Controllers
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _Account }, Total = 1 });
         }
-       public JsonResult Create([DataSourceRequest] DataSourceRequest request, AccountingDTO accountingDTO)
-        {
-            /*if (ModelState.IsValid)
-            {
-                accountingDTO.Insert(AccountingDTO, ModelState);
-            }*/
-
-            return Json(new[] { accountingDTO }.ToTreeDataSourceResult(request, ModelState));
-        }
+      
         [HttpPut("AccountId")]
         public async Task<IActionResult> Update(Int64 AccountId, Account _Account)
         {
