@@ -14,7 +14,6 @@
     //  data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
     //data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
     //}
-
     function AddAccounting() {
 
 
@@ -24,6 +23,37 @@
         $('#ModalAccounting').modal('show');
         $("#AccountId").val('0');
 
+
+
+
+
+    }
+
+    function TreeAccounting(someID) {
+
+        debugger;
+
+       // $('#ModalAccounting').find(':input').not(':submit').val('');
+
+//        $('#ModalAccounting').modal('show');
+  //      $("#AccountId").val('0');
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("CatalagueAccounting", "Accounting")',
+            datatype: "json",
+            traditional: true,
+            data: { TypeAccountId: someID },
+            success: function (data, status, xhr) {
+                // console.log(data);
+                //   $($("#tabstrip-right").data("kendoTabStrip").contentElement(0)).html(data);
+                $("#TreeViewTemplateBiding").html(data);
+            },
+            error: function (xhr, status, error) {
+                $("#TreeViewTemplateBiding").html(error);
+              //  $($("#tabstrip-right").data("kendoTabStrip").contentElement(0)).html(error);
+            }
+        });
 
 
 
@@ -60,100 +90,77 @@
             });
          }
 
-   @* *@
+   @* class="form-control btn-miboton" type="submit"*@
 
 </script>
-<h3 class="text-themecolor">Catálogo de Cuentas</h3>
-
-<div id="example">
-
-    <div class="demo-section2 k-content" style="width: 100%;">
-
-        <div id="tabstrip-right2" class="card-body">
-            <ul class="menu">
-                @foreach (ERPMVC.Models.TypeAccount Tipo in ViewBag.ListTypeAccount2)
-
-                {
-                    if (ViewBag.AccountingParameter == @Tipo.TypeAccountId)
-                    {
-                        <li id='Action @Tipo.TypeAccountId' class="k-state-active">
-                            <a href='@Url.Action("CatalagueAccounting", "Accounting", new { TypeAccountId = @Tipo.TypeAccountId })'> @Tipo.TypeAccountName.Trim() </a>
-
-                        </li>
-
-                    }
-                    else
-                    {
-                        <li id='Action @Tipo.TypeAccountId'>
-                            <a href='@Url.Action("CatalagueAccounting", "Accounting", new { TypeAccountId = @Tipo.TypeAccountId })'> @Tipo.TypeAccountName.Trim() </a>
-
-                        </li>
-
-                    }
 
 
-                }
-            </ul>
-            @foreach (ERPMVC.Models.TypeAccount Tipo in ViewBag.ListTypeAccount2)
-            {
-            <div id='Result @Tipo.TypeAccountId' >
-                <h4>@Tipo.TypeAccountName</h4>
-                @(Html.Kendo().TreeView()
-                .Name("TreeViewTemplateBiding")
-                .TemplateId("TreeViewTemplate")
+<div class="modal-open" role="dialog" style="width: 100%; height:100%">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-body">
+                <form id="frmCatalogueAccounting"
+                      data-ajax="true"
+                      data-ajax-method="post"
+                      data-ajax-begin="TreeAccounting">
+                    <div class="card">
 
-                .BindTo((List<ERPMVC.Models.NodeViewModel>
-                    )ViewBag.Tree2, (Kendo.Mvc.UI.Fluent.NavigationBindingFactory<TreeViewItem>
-                        mappings) =>
-                        {
-                        mappings.For<ERPMVC.Models.NodeViewModel>
-                            (binding => binding.ItemDataBound((item, node) =>
-                            {
-                            item.Id = node.Id.ToString();
-                            item.Text = node.Title;
-                            item.Expanded = node.Expanded;
-                            })
-                            .Children(node => node.Children));
-                            }).Checkboxes(true)
+                        <div class="card-body">
+                            <h4 class="card-title">Clasificación de cuentas</h4>
+                            <div class="button-group">
+                                @{ foreach (ERPMVC.Models.TypeAccount Tipo in ViewBag.ListTypeAccount2)
+                                    {
+                                        <div class="col-md-6 col-lg-3 col-xlg-3">
+                                            <button id='btnTypeAccount_@Tipo.TypeAccountId' type="button" onclick="TreeAccounting(@Tipo.TypeAccountId)" class="btn waves-effect waves-light btn-lg btn-rounded btn-primary">@Tipo.TypeAccountName</button>
+                                        </div>
+
+                                    }
+                                }
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="modal-body" style="width: 100%; height:100%">
+                            @(Html.Kendo().TreeView()
+                                                                                 .Name("TreeViewTemplateBiding")
+                                                                                 .TemplateId("TreeViewTemplate")
+
+                                                                                 .BindTo((List<ERPMVC.Models.NodeViewModel>
+                                                                                     )ViewBag.Tree2, (Kendo.Mvc.UI.Fluent.NavigationBindingFactory<TreeViewItem>
+                                                                                         mappings) =>
+                                                                                     {
+                                                                                         mappings.For<ERPMVC.Models.NodeViewModel>
+                                                                                            (binding => binding.ItemDataBound((item, node) =>
+                                                                                            {
+                                                                                                item.Id = node.Id.ToString();
+                                                                                                item.Text = node.Title;
+                                                                                                item.Url = item.Id;
+                                                                                               // item.Action("pvwAddAccounting", "Accounting", null, "http");
+                                                                                                // item.HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddVendor()" });
+                                                                                                // item.Action("<a class='Add-link' onclick='AddAccounting()'>[+]</a>", "Link",item);
+                                                                                                //'@Url.Action("pvwAddAccounting", "Accounting")';
+                                                                                                //item.Url = "<a class='Add-link' onclick='AddAccounting()'>[+]</a>";
+                                                                                                item.Expanded = node.Expanded;
+                                                                                            })
+
+                                                                                                    .Children(node => node.Children));
+
+                                                                                     })//.Checkboxes(true)
+                                                                         .DragAndDrop(true)
+
                             )
 
+
+                        </div>
+                    </div>
+                </form>
+
             </div>
-            }
-
         </div>
-
     </div>
-    <style>
-        .demo-section2 * + h4 {
-            margin-top: 2em;
-        }
-
-        .demo-section2 .k-tabstrip .k-content {
-            height: 440px;
-        }
-    </style>
-    <script>
-        $(function () {
-            $('ul.menu li').click(function (e) {
-                alert("Seleccionaste: " + this.id);
-                div =document.getElementById('#Result '@ViewBag.AccountingParameter);
-                div.style.display = '';
-                /* Aquí si quieres lanzar más acciones de acuerdo al li
-                    seleccionado puedes implementar un if then else
-                    u otra estructura de condicionales */
-            });
-        });
-
-        $(document).ready(function () {
-
-            $("#tabstrip-right2").kendoTabStrip({
-                tabPosition: "right",
-                animation: { open: { effects: "fadeIn" } }
-            });
-
-
-        });
-    </script>
+</div>
+<div id="NumAccounting">
+    @await Html.PartialAsync("pvwAddAccounting", new ERPMVC.DTO.AccountDTO { AccountId = 0 })
 </div>
 
 
