@@ -27,10 +27,10 @@ namespace ERPMVC.Models
         public string DebitCredit { get; set; }
 
         [Display(Name = "Centro de costos")]
-        public Int64 CenterCostId { get; set; }
+        public Int64 CostCenterId { get; set; }
 
         [Display(Name = "Centro de costos")]
-        public string CenterCostName { get; set; }
+        public string CostCenterName { get; set; }
 
 
         [Display(Name = "Fecha de creación")]

@@ -149,7 +149,7 @@ namespace ERPMVC.Controllers
                             obj.UnitOfMeasureId = _InvoiceLinep.UnitOfMeasureId;
                             obj.UnitOfMeasureName = _InvoiceLinep.UnitOfMeasureName;
                             obj.WareHouseId = _InvoiceLinep.WareHouseId;
-                            obj.CenterCostId = _InvoiceLinep.CenterCostId;
+                            obj.CostCenterId = _InvoiceLinep.CostCenterId;
                             obj.DiscountAmount = _InvoiceLinep.DiscountAmount;
                             obj.DiscountPercentage = _InvoiceLinep.DiscountPercentage;
 
