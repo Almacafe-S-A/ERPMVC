@@ -27,12 +27,21 @@ namespace ERPMVC.Controllers
 
         }
 
-        public async Task<IActionResult> SFReciboMercadería()
+        public async Task<IActionResult> SFReciboMercaderia()
         {
 
             return await Task.Run(() => View());
 
         }
+
+
+        public async Task<IActionResult> SFAreas()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+        
 
 
 
