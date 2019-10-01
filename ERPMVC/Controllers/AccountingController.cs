@@ -558,7 +558,7 @@ namespace ERPMVC.Controllers
             }
             return Level;
         }
-      
+
 
         [HttpPost]
         public async Task<ActionResult> SaveAccounting(AccountDTO _Accounting)
@@ -566,26 +566,32 @@ namespace ERPMVC.Controllers
             Account _Account = _Accounting;
             _Account.CompanyInfoId = 1;
 
-            _Account.HierarchyAccount = HierarchyAccountLevel(_Accounting.AccountCode);
-            if (CheckAccountCode(_Accounting.AccountCode) == -1) {
-                _logger.LogError($"Ocurrio un error: El numero de caracteres del codigo de cuenta no es valido.");
-                return BadRequest($"Ocurrio un error: : El numero de caracteres del codigo de cuenta no es valido.");
-            }
-            else { 
+             
             try
             {
                 Account _listAccount = new Account();
                 string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                 HttpClient _client = new HttpClient();
+                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountById/" + _Account.AccountId);
                 string valorrespuesta = "";
                 _Account.FechaModificacion = DateTime.Now;
                 _Account.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
+                    _Account.HierarchyAccount = HierarchyAccountLevel(_Accounting.AccountCode);
+                    if (CheckAccountCode(_Accounting.AccountCode) == -1)
+                    {
+                        string error = await result.Content.ReadAsStringAsync();
+                         return  this.Json(new DataSourceResult
+                             {
+                             Errors = $"Ocurrio un error: : El numero de caracteres del codigo de cuenta no es valido."
+                          } );
+                    }
 
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+
+
+                    valorrespuesta = await(result.Content.ReadAsStringAsync());
                     _Account = JsonConvert.DeserializeObject<Account>(valorrespuesta);
                 }
 
@@ -610,8 +616,9 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-            }
+            
             return new ObjectResult(new DataSourceResult { Data = new[] { _Accounting }, Total = 1 });
+           
             //return Json(_Accounting);
         }
         /*public async Task<ActionResult> Proveedores(Int64 VendorId)
