@@ -381,6 +381,8 @@ namespace ERPMVC.Controllers
         {
             try
             {
+                ViewData["TypeAccounts"] = await GetTypeAccount();
+
                 var arbol = await GetTreeAccounting(TypeAccountId, true);
                 List<NodeViewModel> items = ((List<NodeViewModel>)arbol.Value);
                 this.ViewBag.Tree = items;

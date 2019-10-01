@@ -10,7 +10,7 @@ namespace ERPMVC.Models
     public class CostCenter
     {
 
-        [Display(Name = "Centro de costos")]
+        [Display(Name = "Id Centro de costos")]
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Int64 CostCenterId { get; set; }
 
