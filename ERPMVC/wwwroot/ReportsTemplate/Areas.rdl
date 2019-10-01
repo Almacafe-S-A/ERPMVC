@@ -681,15 +681,21 @@
         <DataSourceName>ERP</DataSourceName>
         <CommandType>Text</CommandType>
         <CommandText>   SELECT * FROM CustomerArea ca
-    WHERE  convert(datetime,DocumentDate,103) &gt;= convert(datetime2, @fechainicio,103) 
-        and  convert(datetime,DocumentDate,103) &lt;= 
-    convert(datetime2, @fechafin,103)</CommandText>
+    WHERE convert(datetime,CONVERT(VARCHAR,DocumentDate,103),103) &gt;= convert(datetime2, @fechainicio,103) 
+        and  convert(datetime,CONVERT(VARCHAR,DocumentDate,103),103) &lt;= 
+    convert(datetime2, @fechafin,103) and ProductId = @ProductId and (CustomerId = (CASE WHEN @CustomerId = 0 THEN CustomerId ELSE @CustomerId END)) </CommandText>
         <QueryParameters>
           <QueryParameter Name="@fechainicio">
             <Value>=Parameters!fechainicio.Value</Value>
           </QueryParameter>
           <QueryParameter Name="@fechafin">
             <Value>=Parameters!fechafin.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@ProductId">
+            <Value>=Parameters!ProductId.Value</Value>
+          </QueryParameter>
+          <QueryParameter Name="@CustomerId">
+            <Value>=Parameters!CustomerId.Value</Value>
           </QueryParameter>
         </QueryParameters>
       </Query>
@@ -709,6 +715,26 @@
         <DataSourceName>ERP</DataSourceName>
         <CommandType>Text</CommandType>
         <CommandText>SELECT ProductId,ProductName FROM Product</CommandText>
+      </Query>
+    </DataSet>
+    <DataSet Name="Customer">
+      <Fields>
+        <Field Name="CustomerId">
+          <DataField>CustomerId</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="CustomerName">
+          <DataField>CustomerName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>ERP</DataSourceName>
+        <CommandType>Text</CommandType>
+        <CommandText>select 0 as CustomerId ,'Todos' as CustomerName 
+union all
+Select CustomerId,CustomerName 
+from customer</CommandText>
       </Query>
     </DataSet>
   </DataSets>
@@ -739,6 +765,24 @@
           <DataSetName>Product</DataSetName>
           <ValueField>ProductId</ValueField>
           <LabelField>ProductName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+    </ReportParameter>
+    <ReportParameter Name="CustomerId">
+      <DataType>String</DataType>
+      <Nullable>true</Nullable>
+      <DefaultValue>
+        <Values>
+          <Value>1</Value>
+        </Values>
+      </DefaultValue>
+      <AllowBlank>true</AllowBlank>
+      <Prompt>Cliente</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>Customer</DataSetName>
+          <ValueField>CustomerId</ValueField>
+          <LabelField>CustomerName</LabelField>
         </DataSetReference>
       </ValidValues>
     </ReportParameter>
