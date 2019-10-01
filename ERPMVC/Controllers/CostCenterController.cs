@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -28,31 +29,32 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-        public IActionResult Index()
+        public ActionResult Index()
         {
             return View();
         }
 
-        public async Task<ActionResult> pvwCostCenter(Int64 Id = 0)
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwCostCenter([FromBody]CostCenterDTO _sarpara)
         {
-            CostCenter _CostCenter = new CostCenter();
+            CostCenterDTO _CostCenter = new CostCenterDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CostCenter/GetCostCenterById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/CostCenter/GetCostCenterById/" + _sarpara.CostCenterId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CostCenter = JsonConvert.DeserializeObject<CostCenter>(valorrespuesta);
+                    _CostCenter = JsonConvert.DeserializeObject<CostCenterDTO>(valorrespuesta);
 
                 }
 
                 if (_CostCenter == null)
                 {
-                    _CostCenter = new CostCenter();
+                    _CostCenter = new CostCenterDTO();
                 }
             }
             catch (Exception ex)
@@ -175,8 +177,8 @@ namespace ERPMVC.Controllers
             // return new ObjectResult(new DataSourceResult { Data = new[] { _CostCenter }, Total = 1 });
         }
 
-        [HttpPut("{id}")]
-        public async Task<ActionResult<CostCenter>> Update(Int64 id, CostCenter _CostCenter)
+        [HttpPut("{CostCenterId}")]
+        public async Task<IActionResult> Update(Int64 CostCenterId, CostCenter _CostCenter)
         {
             try
             {
@@ -198,7 +200,6 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-
             return new ObjectResult(new DataSourceResult { Data = new[] { _CostCenter }, Total = 1 });
         }
 
