@@ -21,8 +21,12 @@ namespace ERPMVC.Models
         [Display(Name = "Nombre de Centro Costo")]
         public string Description { get; set; }
 
+
         [Display(Name = "Cuenta")]
         public int AccountId { get; set; }
+
+        [Display(Name = "Cuenta")]
+        public string AccountName { get; set; }
         //  [Display(Name = "Tipo de Movimiento")]
         //   public int DrCr { get; set; }
         //[Display(Name = "Monto Movimiento")]
