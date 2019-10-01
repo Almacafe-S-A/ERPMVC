@@ -207,7 +207,7 @@ namespace ERPMVC.Controllers
                             obj.WareHouseName = _GoodsDeliveredLinep.WareHouseName;
                             obj.NoCD = _GoodsDeliveredLinep.NoCD;
                             obj.ControlPalletsId = _GoodsDeliveredLinep.ControlPalletsId;
-                            obj.CenterCostId = _GoodsDeliveredLinep.CenterCostId;
+                            obj.CostCenterId = _GoodsDeliveredLinep.CostCenterId;
                             obj.Description = _GoodsDeliveredLinep.Description;
 
                         }

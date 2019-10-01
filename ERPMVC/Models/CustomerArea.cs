@@ -40,6 +40,12 @@ namespace ERPMVC.Models
         [Display(Name = "Sucursal")]
         public string BranchName { get; set; }
 
+        [Display(Name = "Servicio")]
+        public Int64 ProductId { get; set; }
+
+        [Display(Name = "Servicio")]
+        public string ProductName { get; set; }
+
         [Display(Name = "Tipo")]
         public Int64 TypeId { get; set; }
 
