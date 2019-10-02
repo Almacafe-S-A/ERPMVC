@@ -265,10 +265,10 @@ namespace ERPMVC.Controllers
         }
 
 
-
-
-
         
+
+
+
         public async Task<JsonResult> GetTypeAccount()
         {
             List<TypeAccount> _TypeAccount = new List<TypeAccount>();
