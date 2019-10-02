@@ -47,6 +47,13 @@ namespace ERPMVC.Models
         [Display(Name = "Crédito moneda extranjera")]
         public double CreditME { get; set; }
         public string Memo { get; set; }
+
+        [Display(Name = "Id Centro de costos")]
+        public Int64 CostCenterId { get; set; }
+
+        [Display(Name = "Centro de costos")]
+        public string CostCenterName { get; set; }
+
         public virtual JournalEntry JournalEntry { get; set; }
         public virtual Account Account { get; set; }
         [Required]
