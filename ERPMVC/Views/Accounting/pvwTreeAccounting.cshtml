@@ -25,7 +25,7 @@
     }
 
 
-       function EditAccount(e) {
+    @*   function EditAccount(e) {
              e.preventDefault();
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
              var dataObject = {
@@ -53,7 +53,7 @@
                 }
             });
          }
-
+        *@
 
 
     var TypeAccountId = 0;
@@ -75,74 +75,68 @@
     function onBound() {
         kendo.ui.progress($("#divClasificacionCuentas"), false);
     }
+    function onEdit(arg) {
+        var model = arg.model;
+        alert("Seleccionaste: " + model.AccountId + "  " + model.TypeAccounting);
 
-</script>
+        // kendoConsole.log("TreeList edit: " + model.FirstName + " " + model.LastName);
+    }
 
-<script id="typeAccount-template" type="text/x-kendo-template">
-    @*<div class='employee-photo'
-        
-         url='url(@Url.Action("GetTypeAccount", "TypeAccount"));'></div>
-    *@<div class='TypAccountId-name'>#: TypeAccountName #</div>
-    @* <kendo-dropdownlist name="TypeAccountId"
-                            for="@Model.TypeAccountId"
-                            filter="Kendo.Mvc.UI.FilterType.Contains"
-                            option-label="Seleccionar Tipo"
-                            datatextfield="TypeAccountName"
-                            datavaluefield="TypeAccountId"
-                            style="width: 100%;">
-            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
-                <transport>
-                    <read url="@Url.Action("GetTypeAccount", "TypeAccount")" />
-                </transport>
-            </datasource>
-        </kendo-dropdownlist>
-    *@
 </script>
 
 @(Html.Kendo().TreeList<ERPMVC.DTO.AccountingDTO>()
-                        .Name("AccountingTreelist")
-                        .Toolbar(toolbar => toolbar.Create().Text("Padre"))
-                        //.Toolbar(toolbar => toolbar.)
-                        //    .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddAccounting()" })
-                        .Columns(columns =>
-                        {
-
-                            columns.Add().Field(f => f.AccountName).Width(550);
-                            columns.Add().Field(f => f.AccountBalance).Width(200);
-                            columns.Add().Field(f => f.AccountCode).Width(200);
-                            columns.Add().Field(f => f.BlockedInJournal).Width(200);
-                            columns.Add().Field(f => f.IsCash).Width(200);
-                            columns.Add().Field(f => f.TypeAccountId).TemplateId("typeAccount-template").Width(200);//.TemplateId("#=TypeAccount.TypeAccountName#").Sortable(false).Width(200);
-                            columns.Add().Field(f => f.ParentAccountId).Width(200);
-                            columns.Add().Width(300).Command(c =>
+                            .Name("AccountingTreelist")
+                            .Toolbar(toolbar=>
+                            { toolbar.Create().Text("Padre");
+                                toolbar.Save();
+                                toolbar.Cancel();
+                            }
+                             )
+                            //.Toolbar(toolbar => toolbar.)
+                            //    .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddAccounting()" })
+                            .Columns(columns =>
                             {
-                                c.CreateChild().Text(" ");
-                                c.Edit().Text(" ");  //.IconClass("fa fa-edit").Click("EditAccount");
+                                //columns.Add().Field(f => f.AccountId).Width(0);
+                                columns.Add().Field(f => f.AccountName).Width(550);
+                                columns.Add().Field(f => f.AccountBalance).Width(200);
+                                columns.Add().Field(f => f.AccountCode).Width(200);
+                                columns.Add().Field(f => f.BlockedInJournal).Width(200);
+                                columns.Add().Field(f => f.IsCash).Width(200);
+                                columns.Add().Field(f => f.TypeAccountId).Width(200);//.TemplateId("#=TypeAccount.TypeAccountName#").Sortable(false).Width(200);
+                                columns.Add().Field(f => f.ParentAccountId).Width(200);
+                                columns.Add().Width(300).Command(c =>
+                                {
+                                    c.CreateChild().Text(" ");
+                                    //   c.Edit().Text(" ");  //.IconClass("fa fa-edit").Click("EditAccount");
 
-                            });
+                                });
 
-                        })
+                            })
 
-                        //.Toolbar(toolbar => toolbar.Create())
+                            //.Toolbar(toolbar => toolbar.Create())
 
-                        //tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                            //tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
 
 
 
-                        .Events(e =>
-                        {
-                            e.DataBound("onBound");
-                        })
-                        .Editable(/*e => e.Mode(TreeListEditMode.PopUp)*/)
+                            .Events(e =>
+                            {
+                                e.DataBound("onBound");
+                            })
+
+                        .Editable(e => e.Mode("inline")/*e => e.Mode(TreeListEditMode.InCell).Move(false)*/)
                         .DataSource(dataSource => dataSource
+                        .Batch(true)
                             .Create(create => create.Action("SaveAccounting", "Accounting").Type(HttpVerbs.Post))
                         .Read(read => read.Action("AccountingRes", "Accounting").Data("DataTypeAccounting"))
                         .Update(update => update.Action("Update", "Accounting", new { AccountId = "{0}" }).Type(HttpVerbs.Put))
+
                         .Model(m =>
                         {
                             m.Id(f => f.AccountId);
-                            m.ParentId(f => f.ParentAccountId).Editable(false);
 
+                            m.ParentId(f => f.ParentAccountId).Editable(false);
+                            m.Field(f => f.AccountId).Editable(false);
                             m.Field(f => f.BlockedInJournal).Editable(true);
                             m.Field(f => f.AccountCode).Editable(true);
                             m.Field(f => f.IsCash).Editable(true);
@@ -160,6 +154,11 @@
                         })
 
                     ).Height(540)
+                     .Selectable(true)
+                     .Events(events =>
+                     {
+                         events.Edit("onEdit");
+                     })
 )
 
 
@@ -192,25 +191,44 @@
 @*
 *@
 
-<script>
+<script type="text/javascript">
 
 
-    $(function () {
-        $('ul.k-reset.k-tabstrip-items li').click(function (e) {
-            alert("Seleccionaste: " + '#@ViewBag.AccountingParameter');
-        @* //  div = document.getElementById('@ViewBag.AccountingParameter');*@
-            //div.style.display = '';
-            // $( "#resultado" ).text( "Seleccionaste: "+this.id);
-            /* Aquí si quieres lanzar más acciones de acuerdo al li
-                seleccionado puedes implementar un if then else
-                u otra estructura de condicionales */
+    debugger;
+    $('document').ready(function () {
+
+
+        $("#AccountingTreelist").click(function () {
+           // alert('Jquery Tutorial');
+            var treelist = $("#AccountingTreelist").data("kendoTreeList");
+            var row = treelist.select();
+            if (row.length > 0) {
+               /// EditAccount(row);
+                var data = treelist.dataItem(row);
+                alert("Seleccionaste: " + data.AccountId);
+               // console.log(data.AccountId);
+            };
+            
         });
+       
+        $(".clearSelection").click(function () {
+            $("#AccountingTreelist").data("kendoTreeList").clearSelection();
+        });
+        var selectRow = function (e) {
+            if (e.type != "keypress" || kendo.keys.ENTER == e.keyCode) {
+                var treelist = $("#AccountingTreelist").data("kendoTreeList"),
+                    rowIndex = treelist.select(), //$("#selectRow").val(),
+                    row = treelist.content.find("tr:visible").eq(rowIndex);
+                alert("Seleccionaste: " + row.AccountId);
+
+               // treelist.select(row);
+            }
+        };
+       // alert("Seleccionaste: " + selectRow.data.dataItem().AccountId;
+       //".toggleGroup").click(toggleGroup);
+        /* treelist.items().each(function (i, el) {
+             $(el).on("dblclick", function (event) {
+                 alert($(this).text());
+             });*/
     });
-    $(document).ready(function () {
-        var treelist = $("#AccountingTreelist").data("kendoTreeList");
-        treelist.items().each(function (i, el) {
-            $(el).on("dblclick", function (event) {
-           //     alert($(this).text());
-            });
-        })
 </script>
