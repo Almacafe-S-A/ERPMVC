@@ -142,6 +142,8 @@ namespace ERPMVC.Controllers
                                 obj.DebitCredit = _JournalEntryConfigurationLine.DebitCredit;
                                 obj.CostCenterId = _JournalEntryConfigurationLine.CostCenterId;
                                 obj.CostCenterName = _JournalEntryConfigurationLine.CostCenterName;
+                                obj.SubProductId = _JournalEntryConfigurationLine.SubProductId;
+                                obj.SubProductName = _JournalEntryConfigurationLine.SubProductName;
                             }
 
 
@@ -192,6 +194,8 @@ namespace ERPMVC.Controllers
                             obj.DebitCredit = _JournalEntryConfigurationLine.DebitCredit;
                             obj.CostCenterId = _JournalEntryConfigurationLine.CostCenterId;
                             obj.CostCenterName = _JournalEntryConfigurationLine.CostCenterName;
+                            obj.SubProductId = _JournalEntryConfigurationLine.SubProductId;
+                            obj.SubProductName = _JournalEntryConfigurationLine.SubProductName;
                         }
 
                         HttpContext.Session.SetString("JournalEntryConfigurationLine", JsonConvert.SerializeObject(_JournalEntryConfigurationLinelist).ToString());

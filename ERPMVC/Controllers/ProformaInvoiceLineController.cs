@@ -158,6 +158,7 @@ namespace ERPMVC.Controllers
                             obj.CostCenterId = _ProformaInvoiceLinep.CostCenterId;
                             obj.DiscountAmount = _ProformaInvoiceLinep.DiscountAmount;
                             obj.DiscountPercentage = _ProformaInvoiceLinep.DiscountPercentage;
+                            obj.Total = _ProformaInvoiceLinep.Total;
 
                         }
 

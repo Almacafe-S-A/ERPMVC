@@ -26,6 +26,12 @@ namespace ERPMVC.Models
         [Display(Name = "Indicador Débito o Crédito")]
         public string DebitCredit { get; set; }
 
+        [Display(Name = "Sub Servicio")]
+        public Int64 SubProductId { get; set; }
+
+        [Display(Name = "Sub Servicio")]
+        public string SubProductName { get; set; }
+
         [Display(Name = "Centro de costos")]
         public Int64 CostCenterId { get; set; }
 

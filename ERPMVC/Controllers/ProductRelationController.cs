@@ -70,7 +70,39 @@ namespace ERPMVC.Controllers
 
         }
 
-        public async Task<ActionResult> GetSubProductByProductId(Int64 ProductId)
+
+        public async Task<ActionResult> GetSubProductByProductIdRelation([DataSourceRequest]DataSourceRequest request, Int64 ProductId)
+        {
+            List<SubProduct> _clientes = new List<SubProduct>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/ProductRelation/GetSubProductByProductId/" + ProductId);
+                //  var result = await _client.GetAsync(baseadress + "api/ProductRelation/GetSubProductByProductId/" + ProductId.ProductId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _clientes = JsonConvert.DeserializeObject<List<SubProduct>>(valorrespuesta);
+                    _clientes.Add(new SubProduct { SubproductId = 0, ProductName = "Impuesto sobre ventas" });
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            // return Json(_clientes);
+            return Json(_clientes.ToDataSourceResult(request));
+
+        }
+
+
+        public async Task<ActionResult> GetSubProductByProductId([DataSourceRequest]DataSourceRequest request, Int64 ProductId)
         {
             List<SubProduct> _clientes = new List<SubProduct>();
             try
@@ -94,7 +126,8 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_clientes);//.ToDataSourceResult(request));
+            return Json(_clientes);
+           // return Json(_clientes.ToDataSourceResult(request));
 
         }
 
