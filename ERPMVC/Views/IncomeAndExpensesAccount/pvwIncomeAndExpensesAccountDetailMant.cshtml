@@ -1,0 +1,203 @@
+﻿@model ERPMVC.Models.IncomeAndExpenseAccountLine
+
+
+<script>
+
+    function closesaleorderline() {
+        $("#ModalIncomeAndExpenseAccountLine").modal('hide');
+
+    }
+    function AddControlPalletsDetail(e) {
+        alert("entre aqui");
+
+       var notification = $("#notification").data("kendoNotification");
+
+        var dataObject = {
+            'IncomeAndExpenseAccountLineId': $("#IncomeAndExpenseAccountLineId").val(),
+            'IncomeAndExpensesAccountId': $("#IncomeAndExpensesAccountId").val(),
+            'TypeDocument': $("#DocumentId").val(),
+            'DocumentId': $("#DocumentId").val(),
+            'Amount': $("#Amount").val(),
+            'DocumentDate': $("#DocumentDate").val(),
+            'DebitCredit': $("#DebitCredit").val(),
+            'Description': $("#Description").val(),
+            
+
+        }
+
+
+        var validator = $("#frmIncomeAndExpenseAccountLine").data("kendoValidator");
+         var status = $(".status");
+
+            
+        if (validator.validate()) {
+
+            $.ajax({
+                url: '@Url.Action("SaveIncomeAndExpenseAccountLine", "IncomeAndExpenseAccountLine")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: '<br/><br/>Datos guardados correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 7000,
+                        stack: 6
+                    });
+
+                    RefreshIncomeAndExpenseAccountDetail();
+
+                    $('#ModalIncomeAndExpenseAccountLine').modal('hide');
+
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                   
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+
+                }
+            });
+
+        }
+        else {
+            
+            notification.show({
+                title: "Validación",
+                message: "Datos invalidos en el formulario"
+            }, "error");
+        }
+    }
+
+
+
+</script>
+
+<span id="spinner" style="display:none;"><i class="fas fa-spinner fa-spin"></i></span>
+<div id="loading"></div>
+
+<div id="ModalIncomeAndExpenseAccountLine" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" onclick="closesaleorderline();">&times;</button>
+                <h4 class="modal-title">Detalle Cuenta de Gasto de Ingresos</h4>
+            </div>
+            <div class="modal-body">
+
+                @{
+              var messages1 = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+                                                            {"required","Valor requerido" }
+                                                         };
+              var rules1 = new Dictionary<string, string>() { { "custom", "customFunction" } };
+                }
+
+              
+
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">      
+                            <div class="card-body">
+                                <form id="frmIncomeAndExpenseAccountLine"
+                                      kendo-validator="true" kendo-messages="messages1" kendo-rules="rules1"
+                                      data-ajax-method="post"     
+                                      data-ajax-begin="AddControlPalletsDetail"
+                                      data-ajax="true"
+                                      method="post" class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <hr>
+
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="IncomeAndExpensesAccountId" class="control-label" style="width:100%"></label>
+                                                    <input type="number" asp-for="IncomeAndExpensesAccountId" class="form-control" style="min-width:100%" readonly />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="IncomeAndExpenseAccountLineId" class="control-label" style="width:100%"></label>
+                                                    <input type="number" asp-for="IncomeAndExpenseAccountLineId" class="form-control" style="min-width:100%" readonly />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="DocumentId" class="control-label" style="width:100%"></label>
+
+                                                    <kendo-dropdownlist name="DocumentId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        for="DocumentId"
+                                                                        option-label="Seleccione El Documento"
+                                                                        datatextfield="Descripcion"
+                                                                        datavaluefield="IdTipoDocumento"
+                                                                        required
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetTipoDocumento", "TiposDocumento")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="DocumentId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Amount" class="control-label" style="width:100%"></label>
+                                                    <input type="number" asp-for="Amount" class="form-control" style="min-width:100%" />
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="DocumentDate" class=" control-label" style="width:100%">Fecha Recepción</label>
+                                                    <kendo-datetimepicker name="FechaRecepcion" style="width: 100%;"
+                                                                          format="dd/MM/yyyy hh:mm:ss"
+                                                                          time-format="hh:mm:ss"
+                                                                          data-val-required="La fecha es requerida"
+                                                                          value="Model.DocumentDate"></kendo-datetimepicker>
+                                                    @*<input type="date" asp-for="FechaRecepcion" name="FechaRecepcion" class="form-control" autocomplete="off" style="width:100%" />*@
+                                                    <span asp-validation-for="DocumentDate" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="DebitCredit" class="control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="DebitCredit" class="form-control" style="min-width:100%" />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Description" class="control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="Description" class="form-control" style="min-width:100%" />
+                                                </div>
+                                            </div>
+                                            
+                                        </div>
+
+                                    </div>
+                                        <div class="row">
+                                            <button id="btnActualizarCotizacionLinea" type="submit" class="form-control">Actualizar</button>
+                                        </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
