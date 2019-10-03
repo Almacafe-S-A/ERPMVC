@@ -91,36 +91,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        public async Task<JsonResult> GetAccountingChildsByParentId(Accounting Cuenta)
-        {
-            List<AccountingChilds> _childs = new List<AccountingChilds>();
-            try
-            {
-
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                //Error
-                var result = await _client.GetAsync(baseadress + "api/AccountingChilds/GetAccountingChildsByParentId/" + Cuenta.AccountId);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _childs = JsonConvert.DeserializeObject<List<AccountingChilds>>(valorrespuesta);
-
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-            return Json(_childs);
-
-        }
+        
         public async Task<JsonResult> GetAccountingById(Int64 AccountId)
         {
             Accounting _Accounting  = new Accounting();
@@ -228,25 +199,7 @@ namespace ERPMVC.Controllers
                             //      (nodo);
                         }
                     }
-                    var HijosCuenta = await GetAccountingChildsByParentId(_AccountingP);
-                    List<AccountingChilds> ListaHijos_AccountingP = ((List<AccountingChilds>)HijosCuenta.Value);
-                    foreach (AccountingChilds Childs in ListaHijos_AccountingP)
-                    {
-
-                            string condicion2 = "";
-                            if (_AccountingP.IsCash == true)
-                            {
-                                condicion2 = _AccountingP.AccountBalance.ToString("N4");
-                            }
-                           
-                        root.Children.Add(new NodeViewModel
-                        {
-                            Id = Convert.ToInt32(Childs.AccountingChildsId),
-                            Title = Childs.AccountName+"  " + condicion2
-
-
-                        });
-                    }
+                   
                   }
                 
 
@@ -265,10 +218,10 @@ namespace ERPMVC.Controllers
         }
 
 
-
-
-
         
+
+
+
         public async Task<JsonResult> GetTypeAccount()
         {
             List<TypeAccount> _TypeAccount = new List<TypeAccount>();
@@ -297,6 +250,33 @@ namespace ERPMVC.Controllers
 
 
             return Json(_TypeAccount);
+
+        }
+        async Task<IEnumerable<TypeAccount>> ObtenerTypeAccount()
+        {
+            IEnumerable<TypeAccount> branches = null;
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/TypeAccount/GetTypeAccount");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    branches = JsonConvert.DeserializeObject<IEnumerable<TypeAccount>>(valorrespuesta);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            ViewData["defaultAccount"] = branches.FirstOrDefault();
+            return branches;
 
         }
         /*
@@ -381,7 +361,7 @@ namespace ERPMVC.Controllers
         {
             try
             {
-                ViewData["TypeAccounts"] = await GetTypeAccount();
+                ViewData["TypeAccounts"] = await ObtenerTypeAccount();
 
                 var arbol = await GetTreeAccounting(TypeAccountId, true);
                 List<NodeViewModel> items = ((List<NodeViewModel>)arbol.Value);
@@ -443,7 +423,7 @@ namespace ERPMVC.Controllers
         [HttpGet("[action]")]
         public async Task<JsonResult> GetAccount([DataSourceRequest]DataSourceRequest request)
         {
-            List<Account> __customers = new List<Account>();
+            List<Accounting> __customers = new List<Accounting>();
             try
             {
 
@@ -456,7 +436,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    __customers = JsonConvert.DeserializeObject<List<Account>>(valorrespuesta);
+                    __customers = JsonConvert.DeserializeObject<List<Accounting>>(valorrespuesta);
 
                 }
 
@@ -475,7 +455,7 @@ namespace ERPMVC.Controllers
         [HttpGet]
         public async Task<JsonResult> GetAccounting([DataSourceRequest]DataSourceRequest request)
         {
-            List<Account> _customers = new List<Account>();
+            List<Accounting> _customers = new List<Accounting>();
 
             try
             {
@@ -487,7 +467,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _customers = JsonConvert.DeserializeObject<List<Account>>(valorrespuesta);
+                    _customers = JsonConvert.DeserializeObject<List<Accounting>>(valorrespuesta);
 
                 }
             }
@@ -505,7 +485,7 @@ namespace ERPMVC.Controllers
         [HttpGet]
         public async Task<JsonResult> GetAccountingDiary([DataSourceRequest]DataSourceRequest request)
         {
-            List<Account> _customers = new List<Account>();
+            List<Accounting> _customers = new List<Accounting>();
 
             try
             {
@@ -517,7 +497,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _customers = JsonConvert.DeserializeObject<List<Account>>(valorrespuesta);
+                    _customers = JsonConvert.DeserializeObject<List<Accounting>>(valorrespuesta);
 
                 }
             }
@@ -563,15 +543,15 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult> SaveAccounting(AccountDTO _Accounting)
+        public async Task<ActionResult> SaveAccounting([FromBody]AccountingDTO _AccountingP)
         {
-            Account _Account = _Accounting;
+            Accounting _Account = _AccountingP;
             _Account.CompanyInfoId = 1;
 
              
             try
             {
-                Account _listAccount = new Account();
+                Accounting _listAccount = new Accounting();
                 string baseadress = config.Value.urlbase;
                  HttpClient _client = new HttpClient();
                  _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -581,8 +561,8 @@ namespace ERPMVC.Controllers
                 _Account.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
-                    _Account.HierarchyAccount = HierarchyAccountLevel(_Accounting.AccountCode);
-                    if (CheckAccountCode(_Accounting.AccountCode) == -1)
+                    _Account.HierarchyAccount = HierarchyAccountLevel(_AccountingP.AccountCode);
+                    if (CheckAccountCode(_AccountingP.AccountCode) == -1)
                     {
                         string error = await result.Content.ReadAsStringAsync();
                          return  this.Json(new DataSourceResult
@@ -594,22 +574,22 @@ namespace ERPMVC.Controllers
 
 
                     valorrespuesta = await(result.Content.ReadAsStringAsync());
-                    _Account = JsonConvert.DeserializeObject<Account>(valorrespuesta);
+                    _Account = JsonConvert.DeserializeObject<Accounting>(valorrespuesta);
                 }
 
-                if (_Account == null) { _Account = new Models.Account(); }
+                if (_Account == null) { _Account = new Models.Accounting(); }
 
-                if (_Accounting.AccountId == 0)
+                if (_AccountingP.AccountId == 0)
                 {
-                    _Account.FechaCreacion = DateTime.Now;
-                    _Account.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_Accounting);
+                    _AccountingP.FechaCreacion = DateTime.Now;
+                    _AccountingP.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_AccountingP);
                 }
                 else
                 {
-                    _Accounting.UsuarioCreacion = _Account.UsuarioCreacion;
-                    _Accounting.FechaCreacion = _Account.FechaCreacion;
-                    var updateresult = await Update(_Account.AccountId, _Accounting);
+                    _AccountingP.UsuarioCreacion = _Account.UsuarioCreacion;
+                    _AccountingP.FechaCreacion = _Account.FechaCreacion;
+                    var updateresult = await Update(_Account.AccountId, _AccountingP);
                 }
 
             }
@@ -619,37 +599,33 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
             
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Accounting }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _AccountingP }, Total = 1 });
            
             //return Json(_Accounting);
         }
-        /*public async Task<ActionResult> Proveedores(Int64 VendorId)
-        {
 
-        }
-        */
-
-        [HttpGet]
-        public async Task<ActionResult> pvwAddAccounting(Int64 AccountingId)
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwAddAccounting([FromBody]AccountingDTO _sarpara)
         {
-            AccountDTO _Account = new AccountDTO();
+            AccountingDTO _Account = new AccountingDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountById/" + AccountingId);
+                var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountById/" + _sarpara.AccountId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Account = JsonConvert.DeserializeObject<AccountDTO>(valorrespuesta);
+                    _Account = JsonConvert.DeserializeObject<AccountingDTO>(valorrespuesta);
 
                 }
 
                 if (_Account == null)
                 {
-                    _Account = new AccountDTO();
+                    _Account = new AccountingDTO();
+                    _Account.ParentAccountId = _sarpara.ParentAccountId;
                 }
             }
             catch (Exception ex)
@@ -659,15 +635,16 @@ namespace ERPMVC.Controllers
             }
 
 
+            return await Task.Run(() => PartialView(_Account));
 
-            return View(_Account);
+           // return PartialView(_Account);
 
         }
 
         // POST: Account/Insert
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public async Task<ActionResult> Insert(Account _Account)
+        public async Task<ActionResult> Insert(Accounting _Account)
         {
             try
             {
@@ -683,7 +660,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Account = JsonConvert.DeserializeObject<Account>(valorrespuesta);
+                    _Account = JsonConvert.DeserializeObject<Accounting>(valorrespuesta);
                 }
 
             }
@@ -697,7 +674,7 @@ namespace ERPMVC.Controllers
         }
       
         [HttpPut("AccountId")]
-        public async Task<IActionResult> Update(Int64 AccountId, Account _Account)
+        public async Task<IActionResult> Update(Int64 AccountId, Accounting _Account)
         {
             try
             {
@@ -709,7 +686,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Account = JsonConvert.DeserializeObject<Account>(valorrespuesta);
+                    _Account = JsonConvert.DeserializeObject<Accounting>(valorrespuesta);
                 }
 
             }

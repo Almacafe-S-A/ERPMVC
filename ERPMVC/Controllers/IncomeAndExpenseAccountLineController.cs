@@ -33,7 +33,8 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwIncomeAndExpenseAccountLine(Int64 Id = 0)
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwIncomeAndExpensesAccountDetailMant([FromBody]IncomeAndExpenseAccountLine _IncomeAndExpensesAccountDetail)
         {
             IncomeAndExpenseAccountLine _IncomeAndExpenseAccountLine = new IncomeAndExpenseAccountLine();
             try
@@ -41,7 +42,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/IncomeAndExpenseAccountLine/GetIncomeAndExpenseAccountLineById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/IncomeAndExpenseAccountLine/GetIncomeAndExpenseAccountLineById/" + _IncomeAndExpensesAccountDetail.IncomeAndExpenseAccountLineId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -63,13 +64,14 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_IncomeAndExpenseAccountLine);
+            //return PartialView(_IncomeAndExpenseAccountLine);
+            return PartialView("~/Views/IncomeAndExpensesAccount/pvwIncomeAndExpensesAccountDetailMant.cshtml", _IncomeAndExpenseAccountLine);
 
         }
 
 
         [HttpGet]
-        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
+        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request, IncomeAndExpenseAccountLine _IncomeAndExpensesAccountId)
         {
             List<IncomeAndExpenseAccountLine> _IncomeAndExpenseAccountLine = new List<IncomeAndExpenseAccountLine>();
             try
@@ -78,7 +80,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/IncomeAndExpenseAccountLine/GetIncomeAndExpenseAccountLine");
+                var result = await _client.GetAsync(baseadress + "api/IncomeAndExpenseAccountLine/GetIncomeAndExpensesAccountIdByIncomeAndExpenseAccountLineId/" + _IncomeAndExpensesAccountId.IncomeAndExpensesAccountId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -121,7 +123,7 @@ namespace ERPMVC.Controllers
                     _listIncomeAndExpenseAccountLine = JsonConvert.DeserializeObject<IncomeAndExpenseAccountLine>(valorrespuesta);
                 }
 
-                if (_listIncomeAndExpenseAccountLine.IncomeAndExpenseAccountLineId == 0)
+                if (_IncomeAndExpenseAccountLine.IncomeAndExpenseAccountLineId == 0)
                 {
                    // _IncomeAndExpenseAccountLine.FechaCreacion = DateTime.Now;
                     //_IncomeAndExpenseAccountLine.UsuarioCreacion = HttpContext.Session.GetString("user");
@@ -200,8 +202,8 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _IncomeAndExpenseAccountLine }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult<IncomeAndExpenseAccountLine>> Delete([FromBody]IncomeAndExpenseAccountLine _IncomeAndExpenseAccountLine)
+        [HttpDelete("IncomeAndExpenseAccountLine")]
+        public async Task<ActionResult<IncomeAndExpenseAccountLine>> Delete(Int64 IncomeAndExpenseAccountLine, IncomeAndExpenseAccountLine _IncomeAndExpenseAccountLine)
         {
             try
             {
@@ -228,6 +230,10 @@ namespace ERPMVC.Controllers
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _IncomeAndExpenseAccountLine }, Total = 1 });
         }
+
+
+        
+
 
 
 

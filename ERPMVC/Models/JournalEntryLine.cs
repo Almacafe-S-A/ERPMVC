@@ -55,7 +55,7 @@ namespace ERPMVC.Models
         public string CostCenterName { get; set; }
 
         public virtual JournalEntry JournalEntry { get; set; }
-        public virtual Account Account { get; set; }
+        public virtual Accounting Account { get; set; }
         [Required]
         [Display(Name = "Usuario de creación")]
         public string CreatedUser { get; set; }

@@ -18,7 +18,7 @@ namespace ERPMVC.Models
         public int DrCr { get; set; }
         [Display(Name = "Monto")]
         public decimal Amount { get; set; }
-        public virtual Account Account { get; set; }
+        public virtual Accounting Account { get; set; }
         public virtual GeneralLedgerHeader GeneralLedgerHeader { get; set; }
         [Required]
         [Display(Name = "Usuario de creacion")]

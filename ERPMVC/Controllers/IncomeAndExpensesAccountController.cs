@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
+using ERPMVC.DTO;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
@@ -33,26 +34,26 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwIncomeAndExpensesAccount(Int64 Id = 0)
+        public async Task<ActionResult> pvwIncomeAndExpensesAccount([FromBody]IncomeAndExpensesAccountDTO _IncomeAndExpensesAccountDTO)
         {
-            IncomeAndExpensesAccount _IncomeAndExpensesAccount = new IncomeAndExpensesAccount();
+            IncomeAndExpensesAccountDTO _IncomeAndExpensesAccount = new IncomeAndExpensesAccountDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/IncomeAndExpensesAccount/GetIncomeAndExpensesAccountById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/IncomeAndExpensesAccount/GetIncomeAndExpensesAccountById/" + _IncomeAndExpensesAccountDTO.IncomeAndExpensesAccountId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _IncomeAndExpensesAccount = JsonConvert.DeserializeObject<IncomeAndExpensesAccount>(valorrespuesta);
+                    _IncomeAndExpensesAccount = JsonConvert.DeserializeObject<IncomeAndExpensesAccountDTO>(valorrespuesta);
 
                 }
 
                 if (_IncomeAndExpensesAccount == null)
                 {
-                    _IncomeAndExpensesAccount = new IncomeAndExpensesAccount();
+                    _IncomeAndExpensesAccount = new IncomeAndExpensesAccountDTO();
                 }
             }
             catch (Exception ex)
@@ -84,7 +85,14 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _IncomeAndExpensesAccount = JsonConvert.DeserializeObject<List<IncomeAndExpensesAccount>>(valorrespuesta);
-
+                    //_IncomeAndExpensesAccount = (from c in _IncomeAndExpensesAccount
+                    //                                 // .Where(q => q.CustomerId == CustomerId)
+                    //                             select new IncomeAndExpensesAccount
+                    //                             {
+                    //                                 IncomeAndExpensesAccountId = c.IncomeAndExpensesAccountId
+                                           
+                    //                   }
+                    //                  ).ToList();
                 }
 
 
@@ -100,7 +108,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<IncomeAndExpensesAccount>> SaveIncomeAndExpensesAccount([FromBody]IncomeAndExpensesAccount _IncomeAndExpensesAccount)
         {
 
@@ -121,7 +129,7 @@ namespace ERPMVC.Controllers
                     _listIncomeAndExpensesAccount = JsonConvert.DeserializeObject<IncomeAndExpensesAccount>(valorrespuesta);
                 }
 
-                if (_listIncomeAndExpensesAccount.IncomeAndExpensesAccountId == 0)
+                if (_IncomeAndExpensesAccount.IncomeAndExpensesAccountId == 0)
                 {
                     _IncomeAndExpensesAccount.FechaCreacion = DateTime.Now;
                     _IncomeAndExpensesAccount.UsuarioCreacion = HttpContext.Session.GetString("user");
