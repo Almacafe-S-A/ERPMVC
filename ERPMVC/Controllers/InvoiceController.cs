@@ -247,6 +247,24 @@ namespace ERPMVC.Controllers
 
 
 
+        [HttpGet]
+        public async Task<ActionResult> SFInvoice(Int32 id)
+        {
+            try
+            {
+                InvoiceDTO _invoicedto = new InvoiceDTO { InvoiceId = id, };
+                return await Task.Run(()=> View(_invoicedto));
+            }
+            catch (Exception)
+            {
+
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }      
+           
+        }
+
+
+
 
 
     }

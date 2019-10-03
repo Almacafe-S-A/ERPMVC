@@ -70,7 +70,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpGet]
+        [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
             List<CostCenter> _CostCenter = new List<CostCenter>();
@@ -99,6 +99,38 @@ namespace ERPMVC.Controllers
 
 
             return _CostCenter.ToDataSourceResult(request);
+
+        }
+
+        [HttpGet("[controller]/[action]")]
+        public async Task<JsonResult> GetCostCenter([DataSourceRequest]DataSourceRequest request)
+        {
+            List<CostCenter> _CostCenter = new List<CostCenter>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CostCenter/GetCostCenter");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CostCenter = JsonConvert.DeserializeObject<List<CostCenter>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return Json(_CostCenter.ToDataSourceResult(request));
 
         }
 
