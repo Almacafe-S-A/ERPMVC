@@ -69,12 +69,10 @@ namespace ERPMVC.Models
         [Display(Name = "Padre de la cuenta")]
         public virtual Accounting ParentAccount { get; set; }
 
-        public virtual AccountClass AccountClass { get; set; }
-
+       
         public virtual CompanyInfo Company { get; set; }
 
         public virtual ICollection<Accounting> ChildAccounts { get; set; }
-        public virtual List<AccountingChilds> AccountingChilds { get; set; }
         [NotMapped]
         public virtual ICollection<MainContraAccount> ContraAccounts { get; set; }
         public virtual ICollection<GeneralLedgerLine> GeneralLedgerLines { get; set; }
