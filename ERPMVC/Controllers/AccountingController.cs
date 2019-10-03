@@ -252,6 +252,33 @@ namespace ERPMVC.Controllers
             return Json(_TypeAccount);
 
         }
+        async Task<IEnumerable<TypeAccount>> ObtenerTypeAccount()
+        {
+            IEnumerable<TypeAccount> branches = null;
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/TypeAccount/GetTypeAccount");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    branches = JsonConvert.DeserializeObject<IEnumerable<TypeAccount>>(valorrespuesta);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            ViewData["defaultAccount"] = branches.FirstOrDefault();
+            return branches;
+
+        }
         /*
         
             // return Json(__customers.ToDataSourceResult(request));
@@ -334,7 +361,7 @@ namespace ERPMVC.Controllers
         {
             try
             {
-                ViewData["TypeAccounts"] = await GetTypeAccount();
+                ViewData["TypeAccounts"] = await ObtenerTypeAccount();
 
                 var arbol = await GetTreeAccounting(TypeAccountId, true);
                 List<NodeViewModel> items = ((List<NodeViewModel>)arbol.Value);
