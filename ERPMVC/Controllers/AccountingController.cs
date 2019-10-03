@@ -441,7 +441,7 @@ namespace ERPMVC.Controllers
                                   select new Accounting
                                   {
                                       AccountId = c.AccountId,
-                                      AccountName = c.AccountCode + c.AccountName,
+                                      AccountName = c.AccountCode +"--" + c.AccountName,
                                       AccountCode = c.AccountCode,
                                       ParentAccountId = c.ParentAccountId,
                                       IsCash = c.IsCash,
@@ -449,6 +449,8 @@ namespace ERPMVC.Controllers
                                       HierarchyAccount = c.HierarchyAccount,
                                       Description = c.Description,
                                       AccountBalance = c.AccountBalance,
+                                      CompanyInfoId = c.CompanyInfoId,
+                                     ChildAccounts = c.ChildAccounts,
 
                                   }
                                   ).ToList();
