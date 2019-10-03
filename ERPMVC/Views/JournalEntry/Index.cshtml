@@ -12,21 +12,50 @@
     }
 
 
+     function clearsession() {
+         var dataObject = ["journalentryline"];
+         $.ajax({
+            url: '@Url.Action("ClearSession","Common")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                  //  $('#myModalSalesOrder').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+         });
+    }
+
+
     function AddJournalEntry() {
+        clearsession();
+        var dataSource = $("#gridNumeracionJournalEntryLine").data("kendoGrid").dataSource;
+        var raw = dataSource._data;
+        console.log(raw);
+        debugger;
+        for (var i = dataSource._data.length - 1; i >= 0; i--) {
+            item = raw[i];
+            dataSource.remove(item);
+        }
         $('#ModalJournalEntry').find(':input').not(':submit').val('');
         $('#ModalJournalEntry').modal('show');
         $("#JournalEntryId").val('0');
+        document.getElementById("btnJournalEntry").disabled = false;
+       
       }
 
 
     function EditJournalEntry(e) {
-             e.preventDefault();
+        e.preventDefault();
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
             var dataObject = {
                 JournalEntryId: dataItem.JournalEntryId,
-                editar : 0
+                editar: 1,
             };
-
             $.ajax({
                 url: '@Url.Action("pvwAddJournalEntry", "JournalEntry")',
                 method: 'POST',
@@ -39,12 +68,16 @@
                     $("#NumJournalEntry").html(result);
                     //$("#btnCAI").hide();
                     $('#ModalJournalEntry').modal('show');
+                    document.getElementById("btnJournalEntry").disabled = true;
+                   
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     alert(textStatus + ": " + XMLHttpRequest.responseText);
                 }
-            });
+        });
+      
     }
+    
 
     function DetallesJournalEntry(e) {
         e.preventDefault();

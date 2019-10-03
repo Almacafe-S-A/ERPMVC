@@ -81,7 +81,7 @@ namespace ERPMVC.Models
         public string Estado { get; set; }
         [Display(Name = "Identidad del repressentante Legal")]
         public string IdentityRepresentative { get; set; }
-        [Display(Name = "RTN del Proveedor")]
+        [Display(Name = "RTN del Representante Legal")]
         public string RTNRepresentative { get; set; }
         [Display(Name = "Nombre del Repreentante")]
         public string RepresentativeName { get; set; }

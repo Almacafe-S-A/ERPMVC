@@ -25,16 +25,16 @@ namespace ERPMVC.Models
         [MaxLength(5000)]
         [Display(Name = "Descripcion de la cuenta")]
         public string Description { get; set; }
-        [Display(Name = "Estado")]
-        public bool IsCash { get; set; }
+        [Display(Name = "Mostrar Saldos")]
+        public bool? IsCash { get; set; }
         [Display(Name = "Tipo de Cuenta")]
         public int AccountClasses { get; set; }
         [Display(Name = "Contracuenta:")]
         public bool IsContraAccount { get; set; }
-        [Display(Name = "Id")]
+        [Display(Name = "Tipo de Cuenta")]
         public Int64 TypeAccountId { get; set; }
         [Display(Name = "Bloqueo para Diarios:")]
-        public bool BlockedInJournal { get; set; }
+        public bool? BlockedInJournal { get; set; }
         [Required]
         [StringLength(50)]
         [Display(Name = "Codigo Contable")]
@@ -69,12 +69,10 @@ namespace ERPMVC.Models
         [Display(Name = "Padre de la cuenta")]
         public virtual Accounting ParentAccount { get; set; }
 
-        public virtual AccountClass AccountClass { get; set; }
-
+       
         public virtual CompanyInfo Company { get; set; }
 
         public virtual ICollection<Accounting> ChildAccounts { get; set; }
-        public virtual List<AccountingChilds> AccountingChilds { get; set; }
         [NotMapped]
         public virtual ICollection<MainContraAccount> ContraAccounts { get; set; }
         public virtual ICollection<GeneralLedgerLine> GeneralLedgerLines { get; set; }

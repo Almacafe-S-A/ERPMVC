@@ -63,6 +63,12 @@ namespace ERPMVC.Models
         [Display(Name = "Fecha de vencimiento")]
         public DateTime FechaVencimiento { get; set; }
 
+        [Display(Name = "Aduana")]
+        public string Aduana { get; set; }
+
+        [Display(Name = "Carta de porte o manifiesto No.")]
+        public string ManifiestoNo { get; set; }
+
         [Display(Name = "Almacenaje")]
         public string Almacenaje { get; set; }
         [Display(Name = "Seguro")]

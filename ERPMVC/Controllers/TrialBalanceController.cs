@@ -43,24 +43,24 @@ namespace ERPMVC.Controllers
             List<AccountingDTO> _accounting = new List<AccountingDTO>();
             try
             {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/TrialBalance/TrialBalanceRes");
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await(result.Content.ReadAsStringAsync());
-                    _accounting = JsonConvert.DeserializeObject<List<AccountingDTO>>(valorrespuesta);
+                //string baseadress = config.Value.urlbase;
+                //HttpClient _client = new HttpClient();
+                //_client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                //var result = await _client.GetAsync(baseadress + "api/TrialBalance/TrialBalanceRes");
+                //string valorrespuesta = "";
+                //if (result.IsSuccessStatusCode)
+                //{
+                //    valorrespuesta = await(result.Content.ReadAsStringAsync());
+                //    _accounting = JsonConvert.DeserializeObject<List<AccountingDTO>>(valorrespuesta);
 
-                }
+                //}
 
-                if (_accounting == null)
-                {
-                    _accounting = new List<AccountingDTO>();
-                }
+                //if (_accounting == null)
+                //{
+                //    _accounting = new List<AccountingDTO>();
+                //}
 
-                ViewBag.Tree = _accounting;
+                //ViewBag.Tree = _accounting;
 
             }
             catch (Exception ex)
@@ -75,16 +75,17 @@ namespace ERPMVC.Controllers
         }
 
 
-        public async Task<JsonResult> TrialBalanceRes([DataSourceRequest]DataSourceRequest request)
+        public async Task<JsonResult> TrialBalanceRes([DataSourceRequest]DataSourceRequest request,Fechas _Fecha)
         {
             List<AccountingDTO> _accounting = new List<AccountingDTO>();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
+                _client.Timeout = TimeSpan.FromMinutes(15);
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 //var result = await _client.GetAsync(baseadress + "api/TrialBalance/TrialBalanceRes");
-                var result = await _client.GetAsync(baseadress + "api/TrialBalance/GetAccounting");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/TrialBalance/GetAccounting", _Fecha);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -110,6 +111,47 @@ namespace ERPMVC.Controllers
             return Json(_accounting.ToTreeDataSourceResult(request) );
 
         }
+
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<JsonResult> Totales([DataSourceRequest]DataSourceRequest request, [FromBody]Fechas _Fecha)
+        {
+            List<AccountingDTO> _accounting = new List<AccountingDTO>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.Timeout = TimeSpan.FromMinutes(15);
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                //var result = await _client.GetAsync(baseadress + "api/TrialBalance/TrialBalanceRes");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/TrialBalance/Totales", _Fecha);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _accounting = JsonConvert.DeserializeObject<List<AccountingDTO>>(valorrespuesta);
+
+                }
+
+                if (_accounting == null)
+                {
+                    _accounting = new List<AccountingDTO>();
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            // return Json(_accounting, JsonRequestBehavior.AllowGet);
+            return Json(_accounting);
+
+        }
+
+
 
 
 

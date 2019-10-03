@@ -1,6 +1,6 @@
 ﻿@*@( Html.Kendo().TreeView()
             .Name("TrialBalance")
-    // .TemplateId("treeview-template")
+    //// .TemplateId("treeview-template")
      //  .DataTextField("AccountName")
      //.DataSource(dataSource => dataSource
 
@@ -22,37 +22,157 @@
                                    }).Children(c => c.Children));
                        }))*@
 
-@(Html.Kendo().TreeList<ERPMVC.DTO.AccountingDTO>()
-        .Name("treelist")
-        .Columns(columns =>
-        {
-            columns.Add().Field(f => f.AccountName).Width(550);
-            columns.Add().Field(e => e.Debit);
-            columns.Add().Field(e => e.Credit);
-            columns.Add().Field(e => e.AccountBalance);
-        })
-         .Toolbar(tools => tools.Excel())
-           .Excel(excel => excel.FileName("BalanzaComprobacion.xlsx").ProxyURL(Url.Action("Export", "Home")))
-        .DataSource(dataSource => dataSource
-            .Read(read => read.Action("TrialBalanceRes", "TrialBalance"))
-            .Model(m =>
-            {
-                m.Id(f => f.AccountId);
-                m.ParentId(f => f.ParentAccountId);
-                m.Expanded(true);
-                m.Field(f => f.Debit);
-                m.Field(f => f.Credit);
-                m.Field(f => f.ParentAccountId);
-            })
-        )
-)
+<script>
+
+    
+    function Filtrar() {
+        kendo.ui.progress($("#divFiltros"), true);     
+
+        var treelist = $("#BalanzaComprobaciontreelist").data("kendoTreeList");
+        treelist.dataSource.read();
 
 
+    }
 
-<script id="treeview-template" type="text/kendo-ui-template">
-    <p>
-        #: item.AccountCode #<br />
-        #: item.AccountName #<br />
-        #: item.AccountBalance #
-    </p>
+    function ParamsTrialBalance() {
+        return {
+            'FechaInicio': $("#FechaInicio").getKendoDateTimePicker().value().toJSON(),
+            'FechaFin': $("#FechaFin").getKendoDateTimePicker().value().toJSON(),
+        }
+    }
+
+    function onBound() {
+        var notification = $("#notification").data("kendoNotification");
+           $.ajax({
+                url: '@Url.Action("Totales", "TrialBalance")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(ParamsTrialBalance()),
+                success: function (data) {
+                    console.log(data);
+                    $("#TotalDebito").data("kendoNumericTextBox").value(data[0].TotalDebit);
+                    $("#TotalCredito").data("kendoNumericTextBox").value(data[0].TotalCredit);
+                    $("#Balance").data("kendoNumericTextBox").value(data[0].AccountBalance);
+                      
+                    
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    //  $("#btngenerarfactura").show();
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+
+                }
+            });
+
+        kendo.ui.progress($("#divFiltros"), false);
+    }
 </script>
+
+<div class="card" id="divFiltros">
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <label id="lblFechaInicio">Fecha de inicio:</label>
+                <kendo-datetimepicker name="FechaInicio"
+                                      style="width: 100%;"                                     
+                                      format="dd/MM/yyyy"
+                                      time-format="hh:mm:ss"
+                                      data-val-required="La fecha es requerida"
+                                      value="DateTime.Now"></kendo-datetimepicker>
+
+            </div>
+            <div class="col-md-4">
+                <label id="lblFechaFin">Fecha Fin:</label>
+                <kendo-datetimepicker name="FechaFin"
+                                      style="width: 100%;"
+                                      format="dd/MM/yyyy"
+                                      time-format="hh:mm:ss"
+                                      data-val-required="La fecha es requerida"
+                                      value="DateTime.Now"></kendo-datetimepicker>
+
+            </div>
+            <div class="col-md-4">
+                <button id='btnTypeAccount' type="button" onclick="Filtrar()" class="btn waves-effect waves-light btn-lg btn-rounded btn-primary">Buscar</button>
+            </div>
+        </div>
+        </div>
+    </div>
+
+        @(Html.Kendo().TreeList<ERPMVC.DTO.AccountingDTO>()
+                            .Name("BalanzaComprobaciontreelist")
+                            .Columns(columns =>
+                            {
+                                columns.Add().Field(f => f.AccountName).Width(550);
+                                columns.Add().Field(e => e.Debit);
+                                columns.Add().Field(e => e.Credit);
+                                columns.Add().Field(e => e.AccountBalance);
+                            })
+
+                             .Events(e =>
+                             {
+                                 e.DataBound("onBound");
+                             })
+                             .Toolbar(tools => tools.Excel())
+                               .Excel(excel => excel.FileName("BalanzaComprobacion.xlsx").ProxyURL(Url.Action("Export", "Home")))
+                            .DataSource(dataSource => dataSource
+                            .Aggregates(agg=>{
+                              //  agg.Add(m => m.Debit).Sum();
+                               // agg.Add(m => m.Credit).Sum();
+                               // agg.Add(m => m.AccountBalance).Sum();
+                            })
+                                .Read(read => read.Action("TrialBalanceRes", "TrialBalance").Data("ParamsTrialBalance"))
+                                .Model(m =>
+                                {
+                                    m.Id(f => f.AccountId);
+                                    m.ParentId(f => f.ParentAccountId);
+                                    m.Expanded(true);
+                                    m.Field(f => f.Debit);
+                                    m.Field(f => f.Credit);
+                                    m.Field(f => f.ParentAccountId);
+                                })
+                            )
+        )
+
+<div class="row">
+    <div class="col-md-3">
+    </div>
+    <div class="col-md-3">
+        <label id="lblTotalDebito">Total Débito</label>
+        <kendo-numerictextbox name="TotalDebito"
+                              format="n2"
+                              enable="false"
+                              min="0"
+                              step="1"
+                              required
+                              onchange="CalcularTotal();"
+                              style="width:100%" ></kendo-numerictextbox>
+        
+    </div>
+    <div class="col-md-3">
+        <label id="lblTotalCredito">Total Crédito</label>
+        <kendo-numerictextbox name="TotalCredito"
+                              format="n2"
+                              enable="false"
+                              min="0"
+                              step="1"
+                              required
+                              onchange="CalcularTotal();"
+                              style="width:100%"></kendo-numerictextbox>
+    </div>
+    <div class="col-md-3">
+        <label id="lblBalance">Balance</label>
+        <kendo-numerictextbox name="Balance"
+                              enable="false"
+                              format="n2"
+                              min="0"
+                              step="1"
+                              required
+                              onchange="CalcularTotal();"
+                              style="width:100%"></kendo-numerictextbox>
+    </div>
+    </div>

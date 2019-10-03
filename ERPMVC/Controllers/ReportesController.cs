@@ -16,16 +16,35 @@ namespace ERPMVC.Controllers
         public async  Task<IActionResult> SFDetalladoPorProducto()
         {
 
-            return View();
+            return await Task.Run(()=> View());
 
         }
 
 
         public async Task<IActionResult> SFIngresos()
         {
-            return View();
+            return await Task.Run(() => View());
 
         }
+
+        public async Task<IActionResult> SFReciboMercaderia()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+
+
+        public async Task<IActionResult> SFAreas()
+        {
+
+            return await Task.Run(() => View());
+
+        }
+        
+
+
+
 
 
 

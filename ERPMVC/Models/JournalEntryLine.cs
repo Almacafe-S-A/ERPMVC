@@ -21,8 +21,12 @@ namespace ERPMVC.Models
         [Display(Name = "Nombre de Centro Costo")]
         public string Description { get; set; }
 
+
         [Display(Name = "Cuenta")]
         public int AccountId { get; set; }
+
+        [Display(Name = "Cuenta")]
+        public string AccountName { get; set; }
         //  [Display(Name = "Tipo de Movimiento")]
         //   public int DrCr { get; set; }
         //[Display(Name = "Monto Movimiento")]
@@ -43,8 +47,15 @@ namespace ERPMVC.Models
         [Display(Name = "Crédito moneda extranjera")]
         public double CreditME { get; set; }
         public string Memo { get; set; }
+
+        [Display(Name = "Id Centro de costos")]
+        public Int64 CostCenterId { get; set; }
+
+        [Display(Name = "Centro de costos")]
+        public string CostCenterName { get; set; }
+
         public virtual JournalEntry JournalEntry { get; set; }
-        public virtual Account Account { get; set; }
+        public virtual Accounting Account { get; set; }
         [Required]
         [Display(Name = "Usuario de creación")]
         public string CreatedUser { get; set; }
