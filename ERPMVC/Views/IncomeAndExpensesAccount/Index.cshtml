@@ -1,0 +1,158 @@
+﻿@using Kendo.Mvc.UI
+<script>
+
+    function AddIncomeAndExpensesAccount() {
+
+         var dataObject = {
+             IncomeAndExpensesAccountId: 0,
+            editar : 1
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwIncomeAndExpensesAccount", "IncomeAndExpensesAccount")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#divIncomeAndExpensesAccount").html('');
+                $("#divIncomeAndExpensesAccount").html(result);
+                $('#ModalIncomeAndExpensesAccount').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+
+
+    }
+
+    function EditIncomeAndExpensesAccount(e) {
+        e.preventDefault();
+
+        //clearsession();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            IncomeAndExpensesAccountId: dataItem.IncomeAndExpensesAccountId,
+            editar: 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwIncomeAndExpensesAccount", "IncomeAndExpensesAccount")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#divIncomeAndExpensesAccount").html('');
+                $("#divIncomeAndExpensesAccount").html(result);
+                $('#ModalIncomeAndExpensesAccount').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+</script>
+
+<h3 class="text-themecolor">Ingresar las entradas y las salidas de efectivos en las cuentas</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.IncomeAndExpensesAccount>()
+                                      .Name("gridIncomeAndExpensesAccount")
+                                      .Columns(columns =>
+                                      {
+                                          columns.Command(command =>{command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditIncomeAndExpensesAccount");}).Width(250);
+                                          columns.Bound(p => p.IncomeAndExpensesAccountId).Width(150);
+                                          columns.Bound(p => p.AccountDescription).Width(150);
+                                          columns.Bound(p => p.BankName).Width(150);
+                                          columns.Bound(p => p.TypeAccountName).Width(150);
+                                          columns.Bound(p => p.EstadoName).Width(150);
+                                          columns.Bound(p => p.CurrencyName).Width(150);
+
+
+                          })
+                                      .Filterable(f => f.Operators(o => o.ForString(s => s
+                                               .Clear()
+                                               .Contains("Contiene")
+                                               .DoesNotContain("No contiene")
+                                               .EndsWith("Termina con")
+                                               .IsEqualTo("Es igual a")
+                                               .IsNotEqualTo("No es igual a")
+                                               .IsNull("Es nulo")
+                                               .StartsWith("Inicia con")
+
+
+                                         )
+                                         .ForNumber(n => n
+                                           .Clear()
+                                           .IsEqualTo("Es igual a")
+                                           .IsGreaterThan("Es mayor que")
+                                           .IsLessThan("Es menor que")
+                                           .IsNull("Es nulo")
+                                           .IsLessThanOrEqualTo("Es menor o igual que")
+                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                         )
+                                         .ForDate(d => d
+                                         .Clear()
+                                         .IsEqualTo("Es igual que")
+                                         .IsGreaterThan("Es mayor que")
+                                         .IsLessThan("Es menor que")
+                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                         .IsNotEqualTo("No es igual que")
+                                          )
+                                       ))
+
+                                      .ToolBar(tools =>
+                                      {
+                              //tools.Create();
+                              tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                           .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddIncomeAndExpensesAccount();" });
+
+                                          tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                          tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+                                      })
+                                       .Editable(e => e.Mode(GridEditMode.PopUp))
+                                        .Sortable()
+                                        .AutoBind(true)
+                                        .Pageable()
+                                        .Filterable()
+                                        .Scrollable()
+                                        // .ClientDetailTemplateId("template")
+                                        .Pdf(pdf => pdf.FileName("GoodsReceivedReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                          .Excel(excel => excel.FileName("GoodsReceivedReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                        //.Events(e=>e.Save("onsave"))
+                                        .DataSource(dataSource =>
+
+                                       dataSource
+                                       //.Ajax()
+                                       .WebApi()
+                                        .ServerOperation(true)
+                                        .Model(model =>
+                                        {
+                                            model.Id(p => p.IncomeAndExpensesAccountId);
+                                            model.Field(p => p.IncomeAndExpensesAccountId).Editable(true);
+                                            model.Field(p => p.CurrencyId).Editable(true);
+
+
+                                        })
+                                        .Events(events =>events.Error("error_handler"))
+                                        .Read(read => read.Action("Get", "IncomeAndExpensesAccount"))
+                                        .Create(create => create.Action("Insert", "IncomeAndExpensesAccount"))
+                                        .Update(update => update.Action("Update", "IncomeAndExpensesAccount", new { IncomeAndExpensesAccountId = "{0}" }))
+                                        .Destroy(destroy => destroy.Action("Delete", "IncomeAndExpensesAccount", new { IncomeAndExpensesAccountId = "{0}" }))
+                                  )
+)
+
+<div id="divIncomeAndExpensesAccount">
+    @await Html.PartialAsync("pvwIncomeAndExpensesAccount", new ERPMVC.DTO.IncomeAndExpensesAccountDTO { IncomeAndExpensesAccountId = 0})
+</div>
+
