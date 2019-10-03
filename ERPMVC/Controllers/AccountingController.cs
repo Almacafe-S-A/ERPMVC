@@ -437,6 +437,21 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     __customers = JsonConvert.DeserializeObject<List<Accounting>>(valorrespuesta);
+                    __customers = (from c in __customers.OrderBy(q => q.AccountCode)
+                                  select new Accounting
+                                  {
+                                      AccountId = c.AccountId,
+                                      AccountName = c.AccountCode + c.AccountName,
+                                      AccountCode = c.AccountCode,
+                                      ParentAccountId = c.ParentAccountId,
+                                      IsCash = c.IsCash,
+                                      TypeAccountId = c.TypeAccountId,
+                                      HierarchyAccount = c.HierarchyAccount,
+                                      Description = c.Description,
+                                      AccountBalance = c.AccountBalance,
+
+                                  }
+                                  ).ToList();
 
                 }
 
