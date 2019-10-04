@@ -40,7 +40,7 @@ $(".validation-wizard").steps({
         if (0 === currentIndex && $("#CustomerIdAsociarRecibo").val() === '') {
             //form.valid();
             $("#alertamsj").css('display', 'block');
-            $("#alertamsj").text('Campos requerido!');
+            $("#alertamsj").text('Campos requeridos!');
             return false;
         }
         else if (1 === currentIndex && $("#ddlRecibosAsociados").children('option').length === 0 && (currentIndex < newIndex) )
