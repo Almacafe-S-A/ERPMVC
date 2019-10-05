@@ -493,9 +493,9 @@ namespace ERPMVC.Controllers
         }
 
 
-        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request)
+        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request,Int64 CustomerId)
         {
-            var res = await GetCertificados();
+            var res = await GetCertificados(CustomerId);
             return Json(res.ToDataSourceResult(request));
         }
 
@@ -507,7 +507,7 @@ namespace ERPMVC.Controllers
             {
                 var index = 0;
 
-                foreach (var order in await GetCertificados())
+                foreach (var order in await GetCertificados(0))
                 {
                     if (values.Contains(order.IdCD))
                     {
@@ -521,7 +521,7 @@ namespace ERPMVC.Controllers
             return Json(indices);
         }
 
-        private async Task<List<CertificadoDeposito>> GetCertificados()
+        private async Task<List<CertificadoDeposito>> GetCertificados(Int64 CustomerId)
         {
             List<CertificadoDeposito> _CertificadoDeposito = new List<CertificadoDeposito>();
 
@@ -530,7 +530,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoLiberados");
+                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoLiberados/"+CustomerId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -542,7 +542,7 @@ namespace ERPMVC.Controllers
                                             select new CertificadoDeposito
                                             {
                                                 IdCD = c.IdCD,
-                                                CustomerName = "Id:" + c.IdCD + " ||Número de certificado:" + c.NoCD + "  || Nombre:" + c.CustomerName + "|| Fecha:" + c.FechaCertificado + "|| Total:" + c.Total,
+                                                CustomerName = "Id:" + c.IdCD + " || Número de certificado:" + c.NoCD + "  || Nombre:" + c.CustomerName + "|| Fecha:" + c.FechaCertificado + "|| Total:" + c.Total,
                                                 CustomerId = c.CustomerId,
                                             }).ToList();
 
