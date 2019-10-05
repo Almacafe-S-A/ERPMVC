@@ -1,4 +1,5 @@
-﻿using System;
+﻿
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -22,13 +23,13 @@ namespace ERPMVC.Controllers
     
     [Authorize]
     [CustomAuthorization]
-    public class PurchDocumentController : Controller
+    public class VendorDocumentController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
         private IHostingEnvironment _hostingEnvironment;
-        public PurchDocumentController(IHostingEnvironment hostingEnvironment
-            , ILogger<PurchDocumentController> logger, IOptions<MyConfig> config)
+        public VendorDocumentController(IHostingEnvironment hostingEnvironment
+            , ILogger<VendorDocumentController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
@@ -36,37 +37,34 @@ namespace ERPMVC.Controllers
 
         }
 
-        public IActionResult Index()
-        {
-            return View();
-        }
+        
 
-        public IActionResult PurchDocument()
+        public IActionResult VendorDocument()
         {
             return PartialView();
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult> pvwPurchDocumentUpload([FromBody]PurchDocument _PurchDocumentp)
+        public async Task<ActionResult> pvwVendorDocumentUpload([FromBody]VendorDocument _VendorDocumentp)
         {
-            PurchDocument _PurchDocument = new PurchDocument();
+            VendorDocument _VendorDocument = new VendorDocument();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/PurchDocument/GetPurchDocumentById/" + _PurchDocumentp.PurchDocumentId);
+                var result = await _client.GetAsync(baseadress + "api/VendorDocument/GetVendorDocumentById/" + _VendorDocumentp.VendorDocumentId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PurchDocument = JsonConvert.DeserializeObject<PurchDocument>(valorrespuesta);
+                    _VendorDocument = JsonConvert.DeserializeObject<VendorDocument>(valorrespuesta);
 
                 }
 
-                if (_PurchDocument == null)
+                if (_VendorDocument == null)
                 {
-                    _PurchDocument = new PurchDocument();
+                    _VendorDocument = new VendorDocument();
                 }
 
             }
@@ -78,7 +76,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_PurchDocument);
+            return PartialView(_VendorDocument);
 
         }
 
@@ -86,19 +84,19 @@ namespace ERPMVC.Controllers
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<PurchDocument> _PurchDocument = new List<PurchDocument>();
+            List<VendorDocument> _VendorDocument = new List<VendorDocument>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/PurchDocument/GetPurchDocument");
+                var result = await _client.GetAsync(baseadress + "api/VendorDocument/GetVendorDocument");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PurchDocument = JsonConvert.DeserializeObject<List<PurchDocument>>(valorrespuesta);
+                    _VendorDocument = JsonConvert.DeserializeObject<List<VendorDocument>>(valorrespuesta);
 
                 }
 
@@ -111,27 +109,27 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _PurchDocument.ToDataSourceResult(request);
+            return _VendorDocument.ToDataSourceResult(request);
 
         }
 
 
         [HttpGet("[action]")]
-        public async Task<DataSourceResult> GeDocumentByPurchId([DataSourceRequest]DataSourceRequest request, Int64 PurchId)
+        public async Task<DataSourceResult> GeDocumentByVendorId([DataSourceRequest]DataSourceRequest request, Int64 VendorId)
         {
-            List<PurchDocument> _PurchDocument = new List<PurchDocument>();
+            List<VendorDocument> _VendorDocument = new List<VendorDocument>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/PurchDocument/GeDocumentByPurchId/" + PurchId);
+                var result = await _client.GetAsync(baseadress + "api/VendorDocument/GeDocumentByVendorId/" + VendorId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PurchDocument = JsonConvert.DeserializeObject<List<PurchDocument>>(valorrespuesta);
+                    _VendorDocument = JsonConvert.DeserializeObject<List<VendorDocument>>(valorrespuesta);
 
                 }
 
@@ -144,7 +142,7 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _PurchDocument.ToDataSourceResult(request);
+            return _VendorDocument.ToDataSourceResult(request);
 
         }
 
@@ -152,17 +150,17 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<PurchDocument>> SavePurchDocument(IEnumerable<IFormFile> files, PurchDocumentDTO _PurchDocumentd)
+        public async Task<ActionResult<VendorDocument>> SaveVendorDocument(IEnumerable<IFormFile> files, VendorDocumentDTO _VendorDocumentd)
         {
 
             try
             {
 
-                PurchDocument _listPurchDocument = new PurchDocument();
+                VendorDocument _listVendorDocument = new VendorDocument();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/PurchDocument/GetPurchDocumentById/" + _PurchDocumentd.PurchDocumentId);
+                var result = await _client.GetAsync(baseadress + "api/VendorDocument/GetVendorDocumentById/" + _VendorDocumentd.VendorDocumentId);
                 string valorrespuesta = "";
 
                 foreach (var file in files)
@@ -175,34 +173,34 @@ namespace ERPMVC.Controllers
                        || info.Extension.Equals(".xls") || info.Extension.Equals(".xlsx"))
                     {
 
-                        _PurchDocumentd.ModifiedDate = DateTime.Now;
-                        _PurchDocumentd.ModifiedUser = HttpContext.Session.GetString("user");
+                        _VendorDocumentd.ModifiedDate = DateTime.Now;
+                        _VendorDocumentd.ModifiedUser = HttpContext.Session.GetString("user");
                         if (result.IsSuccessStatusCode)
                         {
 
                             valorrespuesta = await (result.Content.ReadAsStringAsync());
-                            _listPurchDocument = JsonConvert.DeserializeObject<PurchDocument>(valorrespuesta);
+                            _listVendorDocument = JsonConvert.DeserializeObject<VendorDocument>(valorrespuesta);
                         }
 
-                        if (_listPurchDocument == null) { _listPurchDocument = new Models.PurchDocument(); }
-                        if (_listPurchDocument.PurchDocumentId == 0)
+                        if (_listVendorDocument == null) { _listVendorDocument = new Models.VendorDocument(); }
+                        if (_listVendorDocument.VendorDocumentId == 0)
                         {
-                            _PurchDocumentd.CreatedDate = DateTime.Now;
-                            _PurchDocumentd.DocumentName = file.FileName;
-                            _PurchDocumentd.CreatedUser = HttpContext.Session.GetString("user");
-                            var insertresult = await Insert(_PurchDocumentd);
+                            _VendorDocumentd.CreatedDate = DateTime.Now;
+                            _VendorDocumentd.DocumentName = file.FileName;
+                            _VendorDocumentd.CreatedUser = HttpContext.Session.GetString("user");
+                            var insertresult = await Insert(_VendorDocumentd);
                             var value = (insertresult.Result as ObjectResult).Value;
-                            _PurchDocumentd = ((PurchDocumentDTO)(value));
+                            _VendorDocumentd = ((VendorDocumentDTO)(value));
                         }
                         else
                         {
-                            var updateresult = await Update(_PurchDocumentd.PurchDocumentId, _PurchDocumentd);
+                            var updateresult = await Update(_VendorDocumentd.VendorDocumentId, _VendorDocumentd);
                         }
 
 
 
-                        var filePath = _hostingEnvironment.WebRootPath + "/PurchDocuments/" + _PurchDocumentd.PurchDocumentId + "_"
-                            + file.FileName.Replace(info.Extension, "") + "_" + _PurchDocumentd.DocumentTypeId + "_" + _PurchDocumentd.DocumentTypeName
+                        var filePath = _hostingEnvironment.WebRootPath + "/VendorDocuments/" + _VendorDocumentd.VendorDocumentId + "_"
+                            + file.FileName.Replace(info.Extension, "") + "_" + _VendorDocumentd.DocumentTypeId + "_" + _VendorDocumentd.DocumentTypeName
                             + info.Extension;
 
                         using (var stream = new FileStream(filePath, FileMode.Create))
@@ -212,8 +210,8 @@ namespace ERPMVC.Controllers
                             //mstream.WriteTo(stream);
                         }
 
-                        _PurchDocumentd.Path = filePath;
-                        var updateresult2 = await Update(_PurchDocumentd.PurchDocumentId, _PurchDocumentd);
+                        _VendorDocumentd.Path = filePath;
+                        var updateresult2 = await Update(_VendorDocumentd.VendorDocumentId, _VendorDocumentd);
                     }
                 }
 
@@ -224,29 +222,29 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_PurchDocumentd);
+            return Json(_VendorDocumentd);
         }
 
         // POST: PurchDocument/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<PurchDocumentDTO>> Insert(PurchDocumentDTO _PurchDocumentd)
+        public async Task<ActionResult<VendorDocumentDTO>> Insert(VendorDocumentDTO _VendorDocumentd)
         {
-            PurchDocumentDTO _custo = new PurchDocumentDTO();
+            VendorDocumentDTO _VendorDocumento = new VendorDocumentDTO();
             try
             {
                 // TODO: Add insert logic here
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _PurchDocumentd.CreatedUser = HttpContext.Session.GetString("user");
-                _PurchDocumentd.ModifiedUser = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/PurchDocument/Insert", _PurchDocumentd);
+                _VendorDocumentd.CreatedUser = HttpContext.Session.GetString("user");
+                _VendorDocumentd.ModifiedUser = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/VendorDocument/Insert", _VendorDocumentd);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _custo = JsonConvert.DeserializeObject<PurchDocumentDTO>(valorrespuesta);
+                    _VendorDocumento = JsonConvert.DeserializeObject<VendorDocumentDTO>(valorrespuesta);
                 }
 
             }
@@ -255,26 +253,26 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-            return Ok(_custo);
+            return Ok(_VendorDocumento);
             // return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerDocument }, Total = 1 });
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PurchDocumentDTO>> Update(Int64 id, PurchDocumentDTO _PurchDocumentd)
+        public async Task<ActionResult<VendorDocumentDTO>> Update(Int64 id, VendorDocumentDTO _VendorDocumentd)
         {
-            PurchDocumentDTO _PurchDocumentDTO = new PurchDocumentDTO();
+            VendorDocumentDTO _VendorDocumentDTO = new VendorDocumentDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PutAsJsonAsync(baseadress + "api/PurchDocument/Update", _PurchDocumentd);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/VendorDocument/Update", _VendorDocumentd);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PurchDocumentDTO = JsonConvert.DeserializeObject<PurchDocumentDTO>(valorrespuesta);
+                    _VendorDocumentDTO = JsonConvert.DeserializeObject<VendorDocumentDTO>(valorrespuesta);
                 }
 
             }
@@ -284,11 +282,11 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _PurchDocumentDTO }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _VendorDocumentDTO }, Total = 1 });
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<PurchDocument>> Delete([FromBody]PurchDocument _PurchDocument)
+        public async Task<ActionResult<VendorDocument>> Delete([FromBody]VendorDocument _VendorDocument)
         {
             try
             {
@@ -296,12 +294,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/PurchDocument/Delete", _PurchDocument);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/VendorDocument/Delete", _VendorDocument);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PurchDocument = JsonConvert.DeserializeObject<PurchDocument>(valorrespuesta);
+                    _VendorDocument = JsonConvert.DeserializeObject<VendorDocument>(valorrespuesta);
                 }
 
             }
@@ -313,7 +311,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _PurchDocument }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _VendorDocument }, Total = 1 });
         }
 
 

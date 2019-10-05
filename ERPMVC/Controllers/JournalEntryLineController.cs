@@ -38,7 +38,7 @@ namespace ERPMVC.Controllers
         }
          [HttpGet("[action]")]
         public async Task<DataSourceResult> GetJournalEntryLine([DataSourceRequest]DataSourceRequest request,JournalEntryLine _JournalEntryLinep)
-        {
+         {
             List<JournalEntryLine> _JournalEntryLine = new List<JournalEntryLine>();
             try
             {
@@ -98,7 +98,7 @@ namespace ERPMVC.Controllers
                             obj.AccountId = _JournalEntryLinep.AccountId;
                             obj.AccountName = _JournalEntryLinep.AccountName;
                             obj.JournalEntry = _JournalEntryLinep.JournalEntry;
-                            obj.Num = _JournalEntryLinep.Num;
+                            //obj.Num = _JournalEntryLinep.Num;
                             obj.CostCenterId = _JournalEntryLinep.CostCenterId;
                             obj.CostCenterName = _JournalEntryLinep.CostCenterName;
 

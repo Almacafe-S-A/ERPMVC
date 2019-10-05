@@ -6,13 +6,12 @@ using System.Threading.Tasks;
 
 namespace ERPMVC.DTO
 {
-    public class PurchDTO:Purch
+    public class VendorDocumentDTO: VendorDocument
     {
-        public List<Purch> _Purch { get; set; }
+        public List<VendorDocument> _VendorDocument { get; set; }
 
         public int editar { get; set; } = 1;
 
         public string token { get; set; }
-
     }
 }
