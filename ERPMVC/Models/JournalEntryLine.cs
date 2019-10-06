@@ -52,7 +52,7 @@ namespace ERPMVC.Models
         public Int64 CostCenterId { get; set; }
 
         [Display(Name = "Centro de costos")]
-        public string CostCenterName { get; set; }
+        public Int64 CostCenterName { get; set; }
 
         public virtual JournalEntry JournalEntry { get; set; }
         public virtual Accounting Account { get; set; }
