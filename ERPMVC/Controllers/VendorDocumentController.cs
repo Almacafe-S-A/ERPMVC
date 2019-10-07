@@ -114,6 +114,36 @@ namespace ERPMVC.Controllers
         }
 
 
+        public async Task<ActionResult> SFVendorDocument(Int64 id)
+        {
+
+            try
+            {
+                VendorDocument _VendorDocument = new VendorDocument();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/VendorDocument/GetVendorDocumentById/" + id);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _VendorDocument = JsonConvert.DeserializeObject<VendorDocument>(valorrespuesta);
+
+                }
+
+                ViewBag.pathcontrato = _VendorDocument.Path;
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+
+
+            return View();
+        }
+
         [HttpGet("[action]")]
         public async Task<DataSourceResult> GeDocumentByVendorId([DataSourceRequest]DataSourceRequest request, Int64 VendorId)
         {
