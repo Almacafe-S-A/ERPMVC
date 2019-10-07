@@ -133,7 +133,7 @@ namespace ERPMVC.Controllers
                     _Invoice.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_Invoice);
                     var value = (insertresult.Result as ObjectResult).Value;
-
+                    
                     InvoiceDTO resultado = ((InvoiceDTO)(value));
                     if (resultado.InvoiceId <= 0)
                     {
@@ -193,7 +193,8 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return await Task.Run(()=> BadRequest($"Ocurrio un error{ex.Message}"));
+                throw (ex);
+                // return await Task.Run(()=> BadRequest($"Ocurrio un error{ex.Message}"));
             }
             return Ok(_Invoice);
             // return new ObjectResult(new DataSourceResult { Data = new[] { _Invoice }, Total = 1 });
