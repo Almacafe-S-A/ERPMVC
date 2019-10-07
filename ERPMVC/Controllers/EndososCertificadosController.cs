@@ -198,7 +198,6 @@ namespace ERPMVC.Controllers
                     _EndososCertificados.UsuarioModificacion = HttpContext.Session.GetString("user");
                     if (result.IsSuccessStatusCode)
                     {
-
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _listEndososCertificados = JsonConvert.DeserializeObject<EndososCertificados>(valorrespuesta);
                     }

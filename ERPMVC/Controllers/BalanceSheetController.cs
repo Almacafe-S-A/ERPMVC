@@ -11,14 +11,19 @@ namespace ERPMVC.Controllers
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     [Authorize]
     [CustomAuthorization]
-    public class RecibosCertificadoController : Controller
+    public class BalanceSheetController : Controller
     {
         public IActionResult Index()
         {
             return View();
         }
+
+        public async Task<IActionResult> SFBalance()
+        {
+            return await Task.Run(() => View());
+
+        }
+
+
     }
-
-
-
 }
