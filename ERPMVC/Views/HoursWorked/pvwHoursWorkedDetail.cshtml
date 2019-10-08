@@ -30,11 +30,11 @@
         }
     }
 
-    function RefreshHoursWorkedDetail() {
-        var grid = $("#gridHWD").getKendoGrid();
-        grid.dataSource.read();
-        grid.refresh();
-    }
+    //function RefreshHoursWorkedDetail() {
+    //    var grid = $("#gridHWD").getKendoGrid();
+    //    grid.dataSource.read();
+    //    grid.refresh();
+    //}
 
     function AddHoursWorkedDetail() {
         var notification = $("#notification").data("kendoNotification");
@@ -184,17 +184,21 @@
                             {
                                 //if (Model.editar == 1)
                                 //{
-                                command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+                                //command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
                                 //}
                                 //command.Custom("Ver detalles").Click("Detalles");
-                                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditHoursWorkedDetail()");
+                                //command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditHoursWorkedDetail()");
+                                command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText("Actualizar").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "GetData()" }).CancelText("Cancelar"); ; command.Destroy();
+
                                 //command.Destroy().Text("Eliminar");
 
                             }).Width(150).Title("Acciones");
                             columns.Bound(p => p.IdDetallehorastrabajadas).Width(80).Title("Id");
-                            columns.Bound(p => p.Horaentrada).Format("{0:dd/MM/yyyy hh-mm-ss}").Title("Entrada").Width(150);
-                            columns.Bound(p => p.Horasalida).Format("{0:dd/MM/yyyy hh-mm-ss}").Title("Salida").Width(150);
+                            //columns.Bound(p => p.Horaentrada).ClientTemplate("#=kendo.toString(Horaentrada,'MM-dd-yyyy')#").Title("Entrada").Width(150);
+                            columns.Bound(p => p.Horaentrada).ClientTemplate("#=kendo.toString(kendo.parseDate(Horaentrada), 'dd/MM/yyyy')#").Width(150);
+                            columns.Bound(p => p.Horasalida).ClientTemplate("#=kendo.toString(Horasalida,'dd-MM-yyyy')#").Title("Salida").Width(150);
                             columns.Bound(p => p.Multiplicahoras).Title("Multiplicar por").Width(150);
+
                         })
                             .Filterable(f => f.Operators(o => o.ForString(s => s
                                                        .Clear()
@@ -232,16 +236,17 @@
                             //tools.Create();
                             //if (Model.editar == 1)
                             //{
-                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                                  .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddHoursWorkedDetail()" });
+                            //tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                            //                                      .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddHoursWorkedDetail()" });
                             //}
+                            tools.Create().HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "format()" });
                             //tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
                             //tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
 
 
 
                         })
-                        .Editable(e => e.Mode(GridEditMode.PopUp))
+                        .Editable(e => e.Mode(GridEditMode.InLine))
                         .Sortable()
                         .Pageable()
                         .Filterable()
@@ -259,17 +264,53 @@
                         .ServerOperation(true)
                         .Model(model =>
                         {
+
                             model.Id(p => p.IdDetallehorastrabajadas);
                             model.Field(p => p.IdDetallehorastrabajadas).Editable(false);
                             model.Field(p => p.IdHorasTrabajadas).Editable(false);
+                            model.Field(p => p.Horaentrada).Editable(true);
+
+                            model.Field(p => p.Horasalida).Editable(true);
+                            model.Field(p => p.Multiplicahoras).Editable(true);
 
                         })
                         .Events(events => events.Error("error_handler"))
                         .Read(read => read.Action("GetHoursWorkedDetailByIdHorasTrabajadas", "HoursWorkedDetail").Data("GetIdHorasTrabajadas()"))
-                            //.Create(create => create.Action("Insert", "HoursWorkedDetail").Type(HttpVerbs.Post))
-                            //.Update(update => update.Action("Update", "HoursWorkedDetail").Type(HttpVerbs.Post))
-                            //.Destroy(destroy => destroy.Action("Delete", "HoursWorkedDetail").Type(HttpVerbs.Delete))
+                        .Create(create => create.Action("PostHoursWorkedDetail", "HoursWorkedDetail").Data("GetData()"))
+                        //.Create(create => create.Action("Post", "HoursWorkedDetail"))
+                        .Update(update => update.Action("PutHoursWorkedDetail", "HoursWorkedDetail", new { id = "{0}" }))
+                        //.Destroy(destroy => destroy.Action("DeleteRole", "Roles", new { id = "{0}" }))
                             )
                      )
     </div>
 </div>
+<script>
+    function GetData() {
+        var datepicker = $("#Horaentrada").data("kendoDatePicker");
+        var value = datepicker;
+        kendo.toString(value, "dd/MM/YYYY")
+        console.log(kendo.toString(value, "dd/MM/YYYY"));
+        return {
+            'Multiplicahoras': $("#Multiplicahoras").val(),
+            'IdDetallehorastrabajadas': 0,
+            'IdHorasTrabajadas': @Model.IdHorastrabajadas,
+            'Horaentrada': $("#Horaentrada").val(),
+            'Horasalida': $("#Horasalida").val(),
+        }
+    }
+
+</script>
+<script>
+    function format() {
+        ClearSession();
+        //console.log("hOAL");
+        //$("#Horaentrada").kendoDateTimePicker({ format: "dd/MM/yyyy" });
+    }
+</script>
+<script>
+    //$("#gridHWD").kendoGrid({
+    //    columns: [{
+    //        format: "{0: dd-MM-yyyy HH:mm:ss}"
+    //    }],
+    //});
+</script>
