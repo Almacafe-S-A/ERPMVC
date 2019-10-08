@@ -557,7 +557,7 @@ namespace ERPMVC.Controllers
             }
             return Level;
         }
-
+       
 
         [HttpPost]
         public async Task<ActionResult> SaveAccounting([FromBody]AccountingDTO _AccountingP)
@@ -584,11 +584,32 @@ namespace ERPMVC.Controllers
                         string error = await result.Content.ReadAsStringAsync();
                          return  this.Json(new DataSourceResult
                              {
-                             Errors = $"Ocurrio un error: : El numero de caracteres del codigo de cuenta no es valido."
+                             Errors = $"Ocurrio un error: {error} El numero de caracteres del codigo de cuenta no es valido."
                           } );
                     }
 
+                    AccountingDTO _AccountDuplicated = new AccountingDTO();
+                   // string baseadress = config.Value.urlbase;
+                    HttpClient _client2 = new HttpClient();
+                    _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var resultado = await _client.GetAsync(baseadress + "api/Accounting/GetAccountingByAccountCode/" +_AccountingP.AccountCode);
+                    string valorrespuesta2 = "";
 
+                    if (resultado.IsSuccessStatusCode)
+                    {
+                        valorrespuesta2 = await (resultado.Content.ReadAsStringAsync());
+                        _AccountDuplicated = JsonConvert.DeserializeObject<AccountingDTO>(valorrespuesta2);
+
+                    }
+                    if (_AccountDuplicated != null)
+                    {
+                        string error = await result.Content.ReadAsStringAsync();
+                        return this.Json(new DataSourceResult
+                        {
+                            Errors = $"Ocurrio un error:{error} El codigo de cuenta ya esta ingresado."
+                            
+                        });
+                    }
 
                     valorrespuesta = await(result.Content.ReadAsStringAsync());
                     _Account = JsonConvert.DeserializeObject<Accounting>(valorrespuesta);
@@ -643,6 +664,18 @@ namespace ERPMVC.Controllers
                 {
                     _Account = new AccountingDTO();
                     _Account.ParentAccountId = _sarpara.ParentAccountId;
+                    AccountingDTO _AccountParentId = new AccountingDTO();
+                    HttpClient _client2 = new HttpClient();
+                    _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var resultado = await _client2.GetAsync(baseadress + "api/Accounting/GetAccountById/" + _sarpara.ParentAccountId);
+                    var valorrespuesta2 = "";
+                    if (resultado.IsSuccessStatusCode)
+                    {
+                        valorrespuesta2 = await (resultado.Content.ReadAsStringAsync());
+                        _AccountParentId = JsonConvert.DeserializeObject<AccountingDTO>(valorrespuesta2);
+
+                    }
+                    _Account.TypeAccountId = _AccountParentId.TypeAccountId;
                 }
             }
             catch (Exception ex)
@@ -666,6 +699,7 @@ namespace ERPMVC.Controllers
             try
             {
                 // TODO: Add insert logic here
+
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
