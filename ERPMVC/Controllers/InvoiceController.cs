@@ -49,13 +49,19 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Invoice = JsonConvert.DeserializeObject<InvoiceDTO>(valorrespuesta);
-
+                   
                 }
 
                 if (_Invoice == null)
                 {
                     _Invoice = new InvoiceDTO { OrderDate = DateTime.Now, DeliveryDate = DateTime.Now, ExpirationDate = DateTime.Now.AddDays(30), editar = 1 };
                 }
+                else
+                {
+                    _Invoice.NumeroDEIString = $"{_Invoice.Sucursal}-{_Invoice.Caja}-01-{_Invoice.NumeroDEI.ToString().PadLeft(8, '0')} ";
+                }
+
+
             }
             catch (Exception ex)
             {
@@ -141,7 +147,7 @@ namespace ERPMVC.Controllers
                     }
                     else
                     {
-                        _Invoice.NumeroDEIString = $"{_Invoice.Sucursal}-{_Invoice.Caja}-001-{_Invoice.NumeroDEI.ToString().PadLeft(8, '0')} ";
+                        _Invoice.NumeroDEIString = $"{_Invoice.Sucursal}-{_Invoice.Caja}-01-{_Invoice.NumeroDEI.ToString().PadLeft(8, '0')} ";
                     }
 
                 }

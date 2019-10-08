@@ -161,7 +161,9 @@ namespace ERPMVC
             //    manager.FeatureProviders.Remove(oldMetadataReferenceFeatureProvider);
             //    manager.FeatureProviders.Add(new ReferencesMetadataReferenceFeatureProvider());
             //})
-            .AddJsonOptions(options => options.SerializerSettings.ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver())
+            .AddJsonOptions(options => { options.SerializerSettings.ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver();
+                options.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Local;
+            })
             .SetCompatibilityVersion(CompatibilityVersion.Version_2_2);
             services.AddAutoMapper();
 
@@ -429,7 +431,7 @@ namespace ERPMVC
           
 
             app.UseAuthentication();
-
+          
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
@@ -467,6 +469,7 @@ namespace ERPMVC
 
             app.UseMvc(routes =>
             {
+             
                 routes.MapRoute(
                     name: "default",
                     template: "{controller=Home}/{action=Index}/{id?}");
