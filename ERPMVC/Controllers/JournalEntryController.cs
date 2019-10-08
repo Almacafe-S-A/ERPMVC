@@ -130,6 +130,8 @@ namespace ERPMVC.Controllers
                 _JournalEntry.CreatedDate = DateTime.Now;
                 _JournalEntry.ModifiedUser = HttpContext.Session.GetString("user");
                 _JournalEntry.ModifiedDate = DateTime.Now;
+                _JournalEntry.IdPaymentCode = 0;
+                _JournalEntry.IdTypeofPayment = 0;
                 var result = await _client.PostAsJsonAsync(baseadress + "api/JournalEntry/Insert", _JournalEntry);
                 string jsonresult = "";
                 jsonresult = JsonConvert.SerializeObject(_JournalEntry);
