@@ -290,7 +290,153 @@ namespace ERPMVC.Controllers
 
 
 
+        [HttpPost("PostHoursWorkedDetail")]
+        public async Task<DataSourceResult> PostHoursWorkedDetail([DataSourceRequest]DataSourceRequest request, HoursWorkedDetail _HoursWorkedDetailP)
+        {
+            List<HoursWorkedDetail> _HoursWorkedDetail = new List<HoursWorkedDetail>();
+            try
+            {
+                if (HttpContext.Session.Get("listadoHoursWorkedDetail") == null
+                   || HttpContext.Session.GetString("listadoHoursWorkedDetail") == "")
+                {
+                    if (_HoursWorkedDetailP.IdHorasTrabajadas > 0)
+                    {
+                        string serialzado = JsonConvert.SerializeObject(_HoursWorkedDetailP).ToString();
+                        HttpContext.Session.SetString("listadoHoursWorkedDetail", serialzado);
+                    }
+                }
+                else
+                {
+                    _HoursWorkedDetail = JsonConvert.DeserializeObject<List<HoursWorkedDetail>>(HttpContext.Session.GetString("listadoHoursWorkedDetail"));
+                }
 
 
+                if (_HoursWorkedDetailP.IdHorasTrabajadas > 0)
+                {
+
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/HoursWorkedDetail/GetHoursWorkedDetailByIdHorasTrabajadas/" + _HoursWorkedDetailP.IdHorasTrabajadas);
+                    string valorrespuesta = "";
+
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _HoursWorkedDetail = JsonConvert.DeserializeObject<List<HoursWorkedDetail>>(valorrespuesta);
+                        HttpContext.Session.SetString("listadoHoursWorkedDetail", JsonConvert.SerializeObject(_HoursWorkedDetail).ToString());
+                    }
+                }
+                else
+                {
+                    if (_HoursWorkedDetailP.Multiplicahoras > 0)
+                    {
+                        _HoursWorkedDetail.Add(_HoursWorkedDetailP);
+                        HttpContext.Session.SetString("listadoHoursWorkedDetail", JsonConvert.SerializeObject(_HoursWorkedDetail).ToString());
+                        HttpContext.Session.SetString("listadoHoursWorkedDetail", "");
+                    }
+                }
+
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _HoursWorkedDetail.ToDataSourceResult(request);
+
+        }
+
+        //[HttpPost("Post")]
+        //public async Task<ActionResult<HoursWorkedDetail>> Post(HoursWorkedDetail _HoursWorkedDetailA)
+        //{
+        //    List<HoursWorkedDetail> _HoursWorkedDetail = new List<HoursWorkedDetail>();
+        //    try
+        //    {
+        //        if (HttpContext.Session.Get("listadoHoursWorkedDetail") == null
+        //           || HttpContext.Session.GetString("listadoHoursWorkedDetail") == "")
+        //        {
+        //            if (_HoursWorkedDetailA.IdHorasTrabajadas > 0)
+        //            {
+        //                string serialzado = JsonConvert.SerializeObject(_HoursWorkedDetailA).ToString();
+        //                HttpContext.Session.SetString("listadoHoursWorkedDetail", serialzado);
+        //            }
+        //        }
+        //        else
+        //        {
+        //            _HoursWorkedDetail = JsonConvert.DeserializeObject<List<HoursWorkedDetail>>(HttpContext.Session.GetString("listadoHoursWorkedDetail"));
+        //        }
+
+
+        //        if (_HoursWorkedDetailA.IdHorasTrabajadas > 0)
+        //        {
+
+        //            string baseadress = config.Value.urlbase;
+        //            HttpClient _client = new HttpClient();
+
+        //            _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+        //            var result = await _client.GetAsync(baseadress + "api/HoursWorkedDetail/GetHoursWorkedDetailByIdHorasTrabajadas/" + _HoursWorkedDetailA.IdHorasTrabajadas);
+        //            string valorrespuesta = "";
+
+        //            if (result.IsSuccessStatusCode)
+        //            {
+        //                valorrespuesta = await (result.Content.ReadAsStringAsync());
+        //                _HoursWorkedDetail = JsonConvert.DeserializeObject<List<HoursWorkedDetail>>(valorrespuesta);
+        //                HttpContext.Session.SetString("listadoHoursWorkedDetail", JsonConvert.SerializeObject(_HoursWorkedDetail).ToString());
+        //            }
+        //        }
+        //        else
+        //        {
+        //            if (_HoursWorkedDetailA.Multiplicahoras > 0)
+        //            {
+        //                _HoursWorkedDetail.Add(_HoursWorkedDetailA);
+        //                HttpContext.Session.SetString("listadoHoursWorkedDetail", JsonConvert.SerializeObject(_HoursWorkedDetail).ToString());
+        //                HttpContext.Session.SetString("listadoHoursWorkedDetail", "");
+        //            }
+        //        }
+
+
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+        //        throw ex;
+        //    }
+
+        //    //return await Task.Run(() => Ok(_customer));
+        //    return await Task.Run(() => new ObjectResult(new DataSourceResult { Data = new[] { _HoursWorkedDetail }, Total = 1 }));
+        //}
+
+        [HttpPut("PutHoursWorkedDetail")]
+        public async Task<IActionResult> PutHoursWorkedDetail(Int64 Id, HoursWorkedDetail _HoursWorkedDetail)
+        {
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PutAsJsonAsync(baseadress + "api/HoursWorkedDetail/Update", _HoursWorkedDetail);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _HoursWorkedDetail = JsonConvert.DeserializeObject<HoursWorkedDetail>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+
+            return new ObjectResult(new DataSourceResult { Data = new[] { _HoursWorkedDetail }, Total = 1 });
+        }
     }
 }

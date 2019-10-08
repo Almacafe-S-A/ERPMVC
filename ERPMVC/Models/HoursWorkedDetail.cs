@@ -12,7 +12,9 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long IdDetallehorastrabajadas { get; set; } 
         public long? IdHorasTrabajadas { get; set; }
-        public DateTime? Horaentrada { get; set; } 
+        [DataType(DataType.DateTime)]
+        public DateTime? Horaentrada { get; set; }
+        [DataType(DataType.DateTime)]
         public DateTime? Horasalida { get; set; } 
         public decimal? Multiplicahoras { get; set; }
         public string UsuarioCreacion { get; set; } 

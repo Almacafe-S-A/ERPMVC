@@ -24,7 +24,7 @@ namespace ERPMVC.Models
 
         #region Associations
 
-        //public List<HoursWorkedDetail> idhorastrabajadasconstrains { get; set; } = new List<HoursWorkedDetail>();
+        public List<HoursWorkedDetail> idhorastrabajadasconstrains { get; set; } = new List<HoursWorkedDetail>();
 
         #endregion
 
