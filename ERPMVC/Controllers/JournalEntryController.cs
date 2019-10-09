@@ -36,6 +36,14 @@ namespace ERPMVC.Controllers
         {
             return View();
         }
+        public ActionResult JournalEntryLine()
+        {
+            return View();
+        }
+        public ActionResult JournalEntryLineAjuste()
+        {
+            return View();
+        }
 
         /*public ActionResult Proveedores()
         {
