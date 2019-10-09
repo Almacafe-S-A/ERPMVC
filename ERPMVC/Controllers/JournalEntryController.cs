@@ -36,6 +36,11 @@ namespace ERPMVC.Controllers
         {
             return View();
         }
+
+        public ActionResult IndexAjustes()
+        {
+            return View();
+        }
         public ActionResult JournalEntryLine()
         {
             return View();
