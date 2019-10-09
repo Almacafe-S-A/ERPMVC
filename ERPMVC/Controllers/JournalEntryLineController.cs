@@ -273,6 +273,38 @@ namespace ERPMVC.Controllers
             return PartialView(_JournalEntryLine);
 
         }
+
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwAddJournalEntryLineAjuste([FromBody]JournalEntryLineDTO _sarpara)
+        {
+            JournalEntryLineDTO _JournalEntryLine = new JournalEntryLineDTO();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/JournalEntryLine/GetJournalEntryById/" + _sarpara.JournalEntryLineId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _JournalEntryLine = JsonConvert.DeserializeObject<JournalEntryLineDTO>(valorrespuesta);
+
+                }
+
+                if (_JournalEntryLine == null)
+                {
+                    _JournalEntryLine = new JournalEntryLineDTO();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return PartialView(_JournalEntryLine);
+        }
         [HttpGet("[action]")]
         public async Task<ActionResult> GetJournalEntryLineById(Int64 JournalEntryLineId)
         {

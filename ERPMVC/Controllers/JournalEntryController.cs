@@ -283,6 +283,41 @@ namespace ERPMVC.Controllers
             return PartialView(_JournalEntry);
 
         }
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwAddJournalEntryAjuste([FromBody]JournalEntryDTO _sarpara)
+        {
+            JournalEntryDTO _JournalEntry = new JournalEntryDTO();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/JournalEntry/GetJournalEntryById/" + _sarpara.JournalEntryId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _JournalEntry = JsonConvert.DeserializeObject<JournalEntryDTO>(valorrespuesta);
+
+                }
+
+                if (_JournalEntry == null)
+                {
+                    _JournalEntry = new JournalEntryDTO();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return PartialView(_JournalEntry);
+
+        }
         // GET: Customer/Details/5
 
         /*
