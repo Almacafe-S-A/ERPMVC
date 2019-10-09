@@ -20,6 +20,11 @@ namespace ERPMVC.Models
 
         [Display(Name = "Id Libro Mayor")]
         public int? GeneralLedgerHeaderId { get; set; }
+        [Display(Name = "Tipo de Socio de negocios")]
+        public int PartyTypeId { get; set; }
+
+        [Display(Name = "Tipo de Socio de negocios")]
+        public string PartyTypeName { get; set; }
         [Display(Name = "Socio de negocio")]
         public int? PartyId { get; set; }
         [Display(Name = "Tipos de Voucher")]

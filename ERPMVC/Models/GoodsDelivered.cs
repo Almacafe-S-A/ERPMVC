@@ -19,6 +19,9 @@ namespace ERPMVC.Models
         [Display(Name = "Por cuenta de ")]
         public string CustomerName { get; set; }
 
+        [Display(Name = "Control Id")]
+        public Int64 ControlId { get; set; }
+
         [Display(Name = "Fecha")]
         public DateTime OrderDate { get; set; }
         [Display(Name = "Fecha de documento")]

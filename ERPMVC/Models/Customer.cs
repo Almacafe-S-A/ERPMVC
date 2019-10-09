@@ -73,6 +73,8 @@ namespace ERPMVC.Models
 
         public string Estado { get; set; }
 
+        [Display(Name = "Grupo económico")]
+        public Int64? GrupoEconomicoId { get; set; }
 
         [Display(Name = "Grupo económico")]
         public string GrupoEconomico { get; set; }

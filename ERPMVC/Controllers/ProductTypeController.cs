@@ -103,6 +103,38 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpGet]
+        public async Task<JsonResult> GetTypeJson([DataSourceRequest]DataSourceRequest request)
+        {
+            List<ProductType> _ProductType = new List<ProductType>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/ProductType/GetProductType");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _ProductType = JsonConvert.DeserializeObject<List<ProductType>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return Json(_ProductType.ToDataSourceResult(request));
+
+        }
+
         [HttpPost("[action]")]
         public async Task<ActionResult<ProductType>> SaveProductType([FromBody]ProductTypeDTO _ProductTypeS)
         {
