@@ -172,7 +172,7 @@ namespace ERPMVC.Controllers
                     if (resultado.IsSuccessStatusCode)
                     {
                         valorrespuesta2 = await (resultado.Content.ReadAsStringAsync());
-                        _CostCenter = JsonConvert.DeserializeObject<CostCenterDTO>(valorrespuesta2);
+                        _CostCenterDuplicated = JsonConvert.DeserializeObject<CostCenterDTO>(valorrespuesta2);
 
                     }
                     if (_CostCenterDuplicated != null)
