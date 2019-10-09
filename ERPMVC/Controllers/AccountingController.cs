@@ -578,21 +578,31 @@ namespace ERPMVC.Controllers
                 _Account.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
+                   
+
+                   
+                    valorrespuesta = await(result.Content.ReadAsStringAsync());
+                    _Account = JsonConvert.DeserializeObject<Accounting>(valorrespuesta);
+                }
+
+                if (_Account == null) { _Account = new Models.Accounting(); }
+
+                if (_AccountingP.AccountId == 0)
+                {
                     _Account.HierarchyAccount = HierarchyAccountLevel(_AccountingP.AccountCode);
                     if (CheckAccountCode(_AccountingP.AccountCode) == -1)
                     {
                         string error = await result.Content.ReadAsStringAsync();
-                         return  this.Json(new DataSourceResult
-                             {
-                             Errors = $"Ocurrio un error: {error} El numero de caracteres del codigo de cuenta no es valido."
-                          } );
+                        return this.Json(new DataSourceResult
+                        {
+                            Errors = $"Ocurrio un error: {error} El numero de caracteres del codigo de cuenta no es valido."
+                        });
                     }
-
                     AccountingDTO _AccountDuplicated = new AccountingDTO();
-                   // string baseadress = config.Value.urlbase;
+                    // string baseadress = config.Value.urlbase;
                     HttpClient _client2 = new HttpClient();
                     _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var resultado = await _client.GetAsync(baseadress + "api/Accounting/GetAccountingByAccountCode/" +_AccountingP.AccountCode);
+                    var resultado = await _client.GetAsync(baseadress + "api/Accounting/GetAccountingByAccountCode/" + _AccountingP.AccountCode);
                     string valorrespuesta2 = "";
 
                     if (resultado.IsSuccessStatusCode)
@@ -607,18 +617,10 @@ namespace ERPMVC.Controllers
                         return this.Json(new DataSourceResult
                         {
                             Errors = $"Ocurrio un error:{error} El codigo de cuenta ya esta ingresado."
-                            
+
                         });
                     }
 
-                    valorrespuesta = await(result.Content.ReadAsStringAsync());
-                    _Account = JsonConvert.DeserializeObject<Accounting>(valorrespuesta);
-                }
-
-                if (_Account == null) { _Account = new Models.Accounting(); }
-
-                if (_AccountingP.AccountId == 0)
-                {
                     _AccountingP.FechaCreacion = DateTime.Now;
                     _AccountingP.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_AccountingP);

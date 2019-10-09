@@ -34,6 +34,38 @@ namespace ERPMVC.Controllers
         {
             return View();
         }
+        [HttpGet("[action]")]
+        public async Task<JsonResult> GetConfigurationVendorActive([DataSourceRequest]DataSourceRequest request)
+        {
+            ConfigurationVendor _ConfigurationVendor = new ConfigurationVendor();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/ConfigurationVendor/GetConfigurationVendorActive");
+     
+                string valorrespuesta = ""; // 
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _ConfigurationVendor = JsonConvert.DeserializeObject<ConfigurationVendor>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return Json(_ConfigurationVendor);
+
+        }
 
         [HttpGet("[action]")]
         public async Task<JsonResult> GetConfigurationVendor([DataSourceRequest]DataSourceRequest request)
