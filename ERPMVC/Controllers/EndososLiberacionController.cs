@@ -110,6 +110,14 @@ namespace ERPMVC.Controllers
 
             try
             {
+
+                if(_EndososLiberacion.Quantity >_EndososLiberacion.Saldo)
+                {
+                    return await Task.Run(() => BadRequest("La cantidad no puede ser mayor que el saldo disponible"));
+                }
+
+                _EndososLiberacion.Saldo = _EndososLiberacion.Saldo - _EndososLiberacion.Quantity;
+
                 EndososLiberacion _listEndososLiberacion = new EndososLiberacion();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();

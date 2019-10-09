@@ -125,7 +125,7 @@ namespace ERPMVC.Controllers
                 {
 
                     List<ProformaInvoiceLine> _existelinea = new List<ProformaInvoiceLine>();
-                    if (HttpContext.Session.GetString("listadoproductosproformainvoice") != "")
+                    if (HttpContext.Session.GetString("listadoproductosproformainvoice") != "" && HttpContext.Session.GetString("listadoproductosproformainvoice") != null)
                     {
                         _GoodsReceivedLine = JsonConvert.DeserializeObject<List<ProformaInvoiceLine>>(HttpContext.Session.GetString("listadoproductosproformainvoice"));
                         _existelinea = _GoodsReceivedLine.Where(q => q.ProformaLineId == _ProformaInvoiceLinep.ProformaLineId).ToList();
@@ -155,9 +155,10 @@ namespace ERPMVC.Controllers
                             obj.UnitOfMeasureId = _ProformaInvoiceLinep.UnitOfMeasureId;
                             obj.UnitOfMeasureName = _ProformaInvoiceLinep.UnitOfMeasureName;
                             obj.WareHouseId = _ProformaInvoiceLinep.WareHouseId;
-                            obj.CenterCostId = _ProformaInvoiceLinep.CenterCostId;
+                            obj.CostCenterId = _ProformaInvoiceLinep.CostCenterId;
                             obj.DiscountAmount = _ProformaInvoiceLinep.DiscountAmount;
                             obj.DiscountPercentage = _ProformaInvoiceLinep.DiscountPercentage;
+                            obj.Total = _ProformaInvoiceLinep.Total;
 
                         }
 

@@ -121,6 +121,8 @@ namespace ERPMVC.Controllers
         public  void OnReportLoaded(ReportViewerOptions reportOption)
         {
 
+
+           
             //Assembly assembly = typeof(ReportViewerController).GetTypeInfo().Assembly;
             //var resourceName = "ReportSample_core.wwwroot.ReportRDL.ARIALUNI.TTF";
 

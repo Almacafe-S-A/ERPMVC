@@ -13,8 +13,10 @@ namespace ERPMVC.Models
             this.Children = new List<NodeViewModel>();
         }
 
-        public int Id { get; set; }
+        public Int64 Id { get; set; }
         public string Title { get; set; }
+        public double Balance { get; set; }
+
         public bool Expanded { get; set; }
 
         public bool HasChildren

@@ -1,0 +1,183 @@
+﻿@*@model ERPMVC.DTO.IncomeAndExpensesAccountDTO*@
+
+<script>
+    function dataIncomeAndExpensesAccount() {
+        return {
+            IncomeAndExpensesAccountId: $("#IncomeAndExpensesAccountId").val()
+        }
+    }
+    function AddIncomeAndExpenseAccountDetalle() {
+        if ($("#IncomeAndExpensesAccountId").val() == 0) {
+            alert('No puede agregar detalle');
+            $('#ModalIncomeAndExpenseAccountLine').modal('hide');
+        }
+        else {
+            $('#ModalIncomeAndExpenseAccountLine').find(':input').not(':submit').val('');
+        var grid = $("#gridIncomeAndExpenseAccountDetail").getKendoGrid();
+            grid.dataSource.read();
+            $('#ModalIncomeAndExpenseAccountLine').modal('show');
+            $("#IncomeAndExpenseAccountLineId").val('0');
+        }
+        $("#IncomeAndExpensesAccountId").val($("#IncomeAndExpensesAccountId").val());
+        document.frmIncomeAndExpenseAccountLine.IncomeAndExpensesAccountId.value = $("#IncomeAndExpensesAccountId").val()
+    }
+    
+
+    function RefreshIncomeAndExpenseAccountDetail() {
+      //  console.log('Refresca Entrada de mercaderias');
+        var grid = $("#gridIncomeAndExpenseAccountDetail").getKendoGrid();
+        grid.dataSource.read();
+        grid.refresh();
+    }
+
+    function EditIncomeAndExpenseAccountDetalle(e) {
+        e.preventDefault();
+        var notification = $("#notification").data("kendoNotification");
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            IncomeAndExpenseAccountLineId: dataItem.IncomeAndExpenseAccountLineId,
+            editar: 0
+        };
+            $.ajax({
+                url: '@Url.Action("pvwIncomeAndExpensesAccountDetailMant", "IncomeAndExpenseAccountLine")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    $("#divIncomeAndExpenseAccountLineMant").html('');
+                    $("#divIncomeAndExpenseAccountLineMant").html(data);
+                    $('#ModalIncomeAndExpenseAccountLine').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+
+                }
+            });
+    }
+</script>
+
+
+
+<div class="box">
+    <div class="box-body">
+
+        @(Html.Kendo().Grid<ERPMVC.Models.IncomeAndExpenseAccountLine>()
+                                                  .Name("gridIncomeAndExpenseAccountDetail")
+                                                  .Columns(columns =>
+                                                  {
+                                                      columns.Command(command =>
+                                                      {
+                                                          if (Model.editar == 1)
+                                                          {
+                                                              //command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+                                                              command.Destroy().Text("ELIMINAR").IconClass("fa fa-trash-alt");
+                                                          }
+                                                          command.Custom("Editar").Text("").IconClass("fa fa-edit").Click("EditIncomeAndExpenseAccountDetalle");
+                                                          
+                                                      }).Width(100);
+                                                      columns.Bound(p => p.IncomeAndExpensesAccountId).Title("Id Master").Width(150);
+                                                      columns.Bound(p => p.IncomeAndExpenseAccountLineId).Title("Id Detalle").Width(120);
+                                                      columns.Bound(p => p.TypeDocument).Title("Tipo Documento").Width(150);
+                                                      columns.Bound(p => p.DocumentId).Title("Id Documento").Width(150);
+                                                      columns.Bound(p => p.Amount).Visible(false).Title("Cantidad").Width(0);
+                                                      columns.Bound(p => p.DocumentDate).Title("Fecha Documento").Visible(false).Width(100);
+                                                      columns.Bound(p => p.DebitCredit).Title("Débito/Crédito").Visible(false).Width(150);
+                                                      columns.Bound(p => p.Description).Title("Descripción").Width(150);
+                                                  })
+                                                      .Filterable(f => f.Operators(o => o.ForString(s => s
+                                               .Clear()
+                                               .Contains("Contiene")
+                                                       .DoesNotContain("No contiene")
+                                                       .EndsWith("Termina con")
+                                                       .IsEqualTo("Es igual a")
+                                                       .IsNotEqualTo("No es igual a")
+                                                       .IsNull("Es nulo")
+                                                       .StartsWith("Inicia con")
+
+
+                                                 )
+                                                 .ForNumber(n => n
+                                                   .Clear()
+                                                   .IsEqualTo("Es igual a")
+                                                   .IsGreaterThan("Es mayor que")
+                                                   .IsLessThan("Es menor que")
+                                                   .IsNull("Es nulo")
+                                                   .IsLessThanOrEqualTo("Es menor o igual que")
+                                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                 )
+                                                 .ForDate(d => d
+                                                 .Clear()
+                                                 .IsEqualTo("Es igual que")
+                                                 .IsGreaterThan("Es mayor que")
+                                                 .IsLessThan("Es menor que")
+                                                 .IsLessThanOrEqualTo("Es menor o igual que")
+                                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                 .IsNotEqualTo("No es igual que")
+                                                  )
+                                               ))
+                                                  .ToolBar(tools =>
+                                                  {
+                                                      if (Model.editar == 1)
+                                                      {
+                                                          tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                          .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddIncomeAndExpenseAccountDetalle();" });
+                                                      }
+
+                                                      tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                      tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+                                                  })
+                                                   .Editable(e => e.Mode(GridEditMode.PopUp))
+                                                    .Sortable()
+                                                    .AutoBind(true)
+                                                    .Pageable()
+                                                    .Filterable()
+                                                    .Scrollable()
+                                                    // .ClientDetailTemplateId("template")
+                                                    .Pdf(pdf => pdf.FileName("ReciboMercaderiaDetalleReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                                      .Excel(excel => excel.FileName("ReciboMercaderiaDetalleReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                                    //.Events(e=>e.Save("onsave"))
+                                                    .DataSource(dataSource =>
+
+                                                   dataSource
+                                                   //.Ajax()
+                                                   .WebApi()
+
+                                                    .ServerOperation(true)
+                                                    .Model(model =>
+                                                    {
+                                                        model.Id(p => p.IncomeAndExpenseAccountLineId);
+                                                        model.Field(p => p.IncomeAndExpenseAccountLineId).Editable(false);
+                                                        model.Field(p => p.IncomeAndExpensesAccountId).Editable(false);
+
+                                                    })
+                                                    .Events(events =>
+                                                    {
+                                                        events.Error("error_handler");
+                                                        //events.upda("EditHandler");
+
+                                                    })
+                                                    .Read(read => read.Action("Get", "IncomeAndExpenseAccountLine").Data("dataIncomeAndExpensesAccount"))
+                                                    //.Create(create => create.Action("Insert", "IncomeAndExpenseAccountLine").Type(HttpVerbs.Post))
+                                                    //.Update(update => update.Action("Update", "IncomeAndExpenseAccountLine").Type(HttpVerbs.Post))
+                                                    .Destroy(destroy => destroy.Action("Delete", "IncomeAndExpenseAccountLine", new { IncomeAndExpenseAccountLineId = "{0}" }).Type(HttpVerbs.Delete))
+                                              )
+        )
+
+    </div>
+</div>
+
+
+<script>
+
+</script>

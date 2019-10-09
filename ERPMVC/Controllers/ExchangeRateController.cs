@@ -121,8 +121,27 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
+                    var result = await _client.GetAsync(baseadress + "api/ExchangeRate/GetExchangeRateById/" + _ExchangeRate.ExchangeRateId);
+                    string valorrespuesta = "";
+
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _ExchangeRate = JsonConvert.DeserializeObject<ExchangeRate>(valorrespuesta);
+
+                        if (_ExchangeRate == null)
+                        {
+                            _ExchangeRate = new Models.ExchangeRate();
+                        }
+
+                       
+                    }
+
                     _ExchangeRateP.CreatedUser = _ExchangeRate.CreatedUser;
                     _ExchangeRateP.CreatedDate = _ExchangeRate.CreatedDate;
+                    _ExchangeRateP.ModifiedUser = HttpContext.Session.GetString("user");
+                    _ExchangeRateP.ModifiedDate = DateTime.Now;
+
                     var updateresult = await Update(_ExchangeRate.ExchangeRateId, _ExchangeRateP);
                 }
             }
@@ -168,7 +187,8 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-            return PartialView(_ExchangeRate);
+            return await Task.Run(() => PartialView(_ExchangeRate));
+            //return PartialView(_ExchangeRate);
         }
 
 

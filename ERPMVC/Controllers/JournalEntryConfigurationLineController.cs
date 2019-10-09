@@ -33,7 +33,8 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwJournalEntryConfigurationLine(Int64 Id = 0)
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwJournalEntryConfigurationLine([FromBody]JournalEntryConfigurationLine _JournalEntryConfigurationLinep)
         {
             JournalEntryConfigurationLine _JournalEntryConfigurationLine = new JournalEntryConfigurationLine();
             try
@@ -41,7 +42,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/JournalEntryConfigurationLine/GetJournalEntryConfigurationLineById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/JournalEntryConfigurationLine/GetJournalEntryConfigurationLineById/" + _JournalEntryConfigurationLinep.JournalEntryConfigurationLineId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -63,7 +64,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_JournalEntryConfigurationLine);
+            return PartialView("~/Views/JournalEntryConfiguration/pvwJournalEntryConfigurationMant.cshtml", _JournalEntryConfigurationLine);
 
         }
 
@@ -88,6 +89,7 @@ namespace ERPMVC.Controllers
                 {
                     _JournalEntryConfigurationLinelist = JsonConvert.DeserializeObject<List<JournalEntryConfigurationLine>>(HttpContext.Session.GetString("JournalEntryConfigurationLine"));
                 }
+
                 if (_JournalEntryConfigurationLine.JournalEntryConfigurationId > 0)
                 {
 
@@ -98,12 +100,71 @@ namespace ERPMVC.Controllers
                     // _client.DefaultRequestHeaders.Add("JournalEntryConfigurationId", _JournalEntryConfigurationLine.JournalEntryConfigurationId.ToString());
 
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/SalesOrderLine/");
+                    var result = await _client.GetAsync(baseadress + "api/JournalEntryConfigurationLine/GetJournalEntryConfigurationLineByConfigurationId/" + _JournalEntryConfigurationLine.JournalEntryConfigurationId);
                     string valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _JournalEntryConfigurationLinelist = JsonConvert.DeserializeObject<List<JournalEntryConfigurationLine>>(valorrespuesta);
+
+                        if (_JournalEntryConfigurationLinelist.Count <= 0)
+                        {
+                            if (_JournalEntryConfigurationLine.JournalEntryConfigurationLineId > 0)
+                            {
+                                _JournalEntryConfigurationLinelist.Add(_JournalEntryConfigurationLine);
+                            }
+                        }
+
+
+                        _client = new HttpClient();
+                        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                         result = await _client.GetAsync(baseadress + "api/JournalEntryConfigurationLine/GetJournalEntryConfigurationLineById/" + _JournalEntryConfigurationLine.JournalEntryConfigurationLineId);
+                         valorrespuesta = "";
+                        JournalEntryConfigurationLine qJournalEntryConfigurationLine = new JournalEntryConfigurationLine();
+                        if (result.IsSuccessStatusCode)
+                        {
+                            valorrespuesta = await (result.Content.ReadAsStringAsync());
+                            qJournalEntryConfigurationLine = JsonConvert.DeserializeObject<JournalEntryConfigurationLine>(valorrespuesta);
+
+                        }
+
+                        if(qJournalEntryConfigurationLine != null)
+                        {
+
+                            var actualizacion = await Update(_JournalEntryConfigurationLine.JournalEntryConfigurationLineId, _JournalEntryConfigurationLine);
+
+                            var obj = _JournalEntryConfigurationLinelist.FirstOrDefault(x => x.JournalEntryConfigurationLineId == _JournalEntryConfigurationLine.JournalEntryConfigurationLineId);
+                            if (obj != null)
+                            {
+                                obj.AccountId = _JournalEntryConfigurationLine.AccountId;
+                                obj.AccountName = _JournalEntryConfigurationLine.AccountName;
+                                obj.DebitCreditId = _JournalEntryConfigurationLine.DebitCreditId;
+                                obj.DebitCredit = _JournalEntryConfigurationLine.DebitCredit;
+                                obj.CostCenterId = _JournalEntryConfigurationLine.CostCenterId;
+                                obj.CostCenterName = _JournalEntryConfigurationLine.CostCenterName;
+                                obj.SubProductId = _JournalEntryConfigurationLine.SubProductId;
+                                obj.SubProductName = _JournalEntryConfigurationLine.SubProductName;
+                            }
+
+
+                        }
+                        else
+                        {
+                            if (_JournalEntryConfigurationLine.JournalEntryConfigurationLineId > 0)
+                            {
+                              
+                                _JournalEntryConfigurationLinelist.Add(_JournalEntryConfigurationLine);
+                                _JournalEntryConfigurationLine.JournalEntryConfigurationLineId = 0;
+                                var resultline = await Insert(_JournalEntryConfigurationLine);
+                                var value = (resultline.Result as ObjectResult).Value;
+                                JournalEntryConfigurationLine resultado = ((JournalEntryConfigurationLine)(value));
+                                _JournalEntryConfigurationLine.JournalEntryConfigurationLineId = resultado.JournalEntryConfigurationLineId;
+                                // HttpContext.Session.SetString("JournalEntryConfigurationLine", JsonConvert.SerializeObject(_JournalEntryConfigurationLinelist).ToString());
+                            }
+
+                        }
+
+                        HttpContext.Session.SetString("JournalEntryConfigurationLine", JsonConvert.SerializeObject(_JournalEntryConfigurationLinelist).ToString());
                     }
                 }
                 else
@@ -131,7 +192,10 @@ namespace ERPMVC.Controllers
                             obj.AccountId = _JournalEntryConfigurationLine.AccountId;
                             obj.AccountName = _JournalEntryConfigurationLine.AccountName;
                             obj.DebitCredit = _JournalEntryConfigurationLine.DebitCredit;
-
+                            obj.CostCenterId = _JournalEntryConfigurationLine.CostCenterId;
+                            obj.CostCenterName = _JournalEntryConfigurationLine.CostCenterName;
+                            obj.SubProductId = _JournalEntryConfigurationLine.SubProductId;
+                            obj.SubProductName = _JournalEntryConfigurationLine.SubProductName;
                         }
 
                         HttpContext.Session.SetString("JournalEntryConfigurationLine", JsonConvert.SerializeObject(_JournalEntryConfigurationLinelist).ToString());
@@ -286,7 +350,8 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _JournalEntryConfigurationLine }, Total = 1 });
+          return  Ok(_JournalEntryConfigurationLine);
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _JournalEntryConfigurationLine }, Total = 1 });
         }
 
         [HttpPost("[action]")]

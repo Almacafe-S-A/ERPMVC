@@ -20,6 +20,11 @@ namespace ERPMVC.Models
 
         [Display(Name = "Id Libro Mayor")]
         public int? GeneralLedgerHeaderId { get; set; }
+        [Display(Name = "Tipo de Socio de negocios")]
+        public int PartyTypeId { get; set; }
+
+        [Display(Name = "Tipo de Socio de negocios")]
+        public string PartyTypeName { get; set; }
         [Display(Name = "Socio de negocio")]
         public int? PartyId { get; set; }
         [Display(Name = "Tipos de Voucher")]
@@ -43,6 +48,19 @@ namespace ERPMVC.Models
         public Int32 IdPaymentCode { get; set; }
         [Display(Name = "Tipo de Pago")]
         public Int32 IdTypeofPayment { get; set; }
+
+        [Display(Name = "Total Débito")]
+        public double TotalDebit { get; set; }
+
+        [Display(Name = "Total Crédito")]
+        public double TotalCredit { get; set; }
+
+        [Display(Name = "Tipo de ajuste")]
+        public Int32 TypeOfAdjustmentId { get; set; }
+
+        [Display(Name = "Tipo de ajuste")]
+        public string TypeOfAdjustmentName { get; set; }
+
         public virtual ICollection<JournalEntryLine> JournalEntryLines { get; set; }
         [Required]
         [Display(Name = "Usuario de creacion")]

@@ -1,0 +1,202 @@
+﻿@model ERPMVC.DTO.HoursWorkedDTO
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+     {"required","Valor requerido" }
+};
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<script>
+    function customFunction(input) {
+        if (input.attr('name') === "IdHorastrabajadas" && input.val() === "0") {
+            return false;
+        }
+    }
+</script>
+
+<div id="myModalHoursWorked" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Horas Trabajadas</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmHoursWorked" kendo-validator="true"
+                                        data-ajax-begin="SaveHoursWorked"
+                                      method="post" class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <h3 class="card-title">Horas Trabadas</h3>
+                                        <hr>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="IdHorastrabajadas" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="IdHorastrabajadas" name="IdHorastrabajadas" class="form-control" disabled="disabled" style="min-width:100%" />
+                                                    <span asp-validation-for="IdHorastrabajadas" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="IdEmpleado" class="control-label"></label>
+                                                    <kendo-dropdownlist name="IdEmpleado"
+                                                                        for="@Model.IdEmpleado"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar Empleado"
+                                                                        datatextfield="NombreEmpleado"
+                                                                        datavaluefield="IdEmpleado"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("Get", "Employees")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="FechaEntrada" class=" control-label" style="width:100%">Fecha Entrada</label>
+                                                    <kendo-datetimepicker name="FechaEntrada" style="width: 100%;"
+                                                                          format="dd/MM/yyyy"
+                                                                          data-val-required="La fecha es requerida"
+                                                                          value="Model.FechaEntrada"></kendo-datetimepicker>
+                                                    <span asp-validation-for="FechaEntrada" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="EsFeriado" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="EsFeriado" name="EsFeriado" class="form-control" required autocomplete="off" style="min-width:100%" />
+                                                    <span asp-validation-for="EsFeriado" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="MultiplicaHoras" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="MultiplicaHoras" name="MultiplicaHoras" class="form-control" required autocomplete="off" style="min-width:100%" />
+                                                    <span asp-validation-for="MultiplicaHoras" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @*<div class="row">
+                <div class="col-md-12">
+                    <button id="btnHW" class="form-control btn-miboton" type="submit"> Guardar </button>
+                </div>
+            </div>*@
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div id="numHoursWorkedDetail">
+                                        @await Html.PartialAsync("pvwHoursWorkedDetail", Model)
+                                    </div>
+
+                                    <div class="clearfix">&nbsp;</div>
+                                    <div class="clearfix">&nbsp;</div>
+
+                                    <div class="row">
+                                        @*@if (Model.editar == 1)
+                                        {
+                                            <button id="btnHW" type="submit" class="form-control btn-miboton" onclick="SaveEndosos(this);">Guardar</button>
+                                        }*@
+                                        <button id="btnHoursWorked" type="submit" class="form-control btn-miboton" onclick="SaveHoursWorked(this);">Guardar</button>
+
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    function SaveHoursWorked(e)
+    {
+        var notification = $("#notification").data("kendoNotification");
+        $("#btnHW").hide();
+        $("#btnHW").prop("disabled", true);
+
+        var displayedData = $("#gridHWD").data().kendoGrid.dataSource.view();
+        console.log(displayedData);
+        var dataObject =
+        {
+            'IdHorastrabajadas': $("#IdHorastrabajadas").val() === "" ? "0" : $("#IdHorastrabajadas").val(),
+            'IdEmpleado': $("#IdEmpleado").val(),
+            'FechaEntrada': $("#FechaEntrada").getKendoDateTimePicker().value().toJSON(),
+            'NombreEmpleado': $("#IdEmpleado").data("kendoDropDownList").text(),
+            'EsFeriado': $("#EsFeriado").val(),
+            'MultiplicaHoras': $("#MultiplicaHoras").val(),
+            'idhorastrabajadasconstrains': displayedData
+            };
+
+        var validator = $("#frmHoursWorked").data("kendoValidator");
+        var status = $(".status");
+        //if (displayedData.length > 0) {
+            if (validator.validate()) {
+
+                //if (validator.validate()) {
+
+                $.ajax({
+                    url: '@Url.Action("SaveHoursWorked", "HoursWorked")',
+                    method: 'POST',
+                    datatype: "json",
+                    contentType: 'application/json',
+                    async: false,
+                    data: JSON.stringify(dataObject),
+                    success: function (data) {
+                        $.toast({
+                            heading: 'Satisfactorio',
+                            text: '<br/><br/>Datos guardados correctamente.',
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'success',
+                            hideAfter: 30000,
+                            stack: 6
+                        });
+                        $('#myModalHoursWorked').modal('hide');
+                        RefrescarGrid();
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        notification.show({
+                            title: "Validación",
+                            message: textStatus + ": " + XMLHttpRequest.responseText
+                        }, "error");
+                    }
+                });
+            }
+            else {
+                notification.show({
+                    title: "Validación",
+                    message: "Datos invalidos"
+                }, "error");
+            }
+        
+        //else {
+        //    $("#btnHoursWorked").show();
+        //    $("#btnHoursWorked").prop("disabled", false);
+        //    notification.show({
+        //        title: "Validacion",
+        //        message: "Debe agregar el Detalle!"
+        //    }, "error");
+
+        //}
+        
+    }
+    
+</script>

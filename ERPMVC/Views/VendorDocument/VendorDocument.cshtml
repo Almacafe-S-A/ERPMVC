@@ -1,0 +1,245 @@
+﻿
+<h3 class="text-themecolor">Documentos del Proveedor</h3>
+<script>
+
+      function clearsession() {
+            var dataObject = ["listadoproductos"];
+         $.ajax({
+            url: '@Url.Action("ClearSession","Common")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                  //  $('#myModalCustomerDocument').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+          });
+      }
+
+    function AddVendorDocument() {
+
+       //  clearsession();
+         var dataObject = {
+             VendorDocumentId: 0,
+            editar : 1
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwVendorDocumentUpload", "VendorDocument")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                //$("#CustomerDocument").html('');
+                //$("#CustomerDocument").html(result);
+                //RefreshCotizacionesDetail();
+                // $("#btnSaveCotizacion").show();
+                $('#myModalVendorDocumentUpload').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+
+
+    }
+
+
+    function EditVendorDocument(e) {
+        e.preventDefault();
+
+       // clearsession();
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            VendorDocumentId: dataItem.VendorDocumentId,
+            editar : 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwVendorDocumentUpload", "VendorDocument")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#VendorDocument").html('');
+                $("#Vendorocument").html(result);
+
+                $("#DocumentTypeId").data("kendoDropDownList").trigger('change');
+                $('#myModalVendorDocumentUpload').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+    }
+    function ImprimirVendorDocumento(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));       
+        var url = '@Url.Action("SFVendorDocument", "VendorDocument")/' + dataItem.VendorDocumentId;
+           var win = window.open(url, '_blank');
+           win.focus();
+    }
+
+
+    function Descargar(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        @*var dataObject = { 'tpath' : "test" };
+         $.ajax({
+            url: '@Url.Action("Download", "Download")',
+            method: 'GET',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: (dataObject),
+             success: function (result) {
+
+                //  saveAs(result, "save");
+                //$("#CustomerDocument").html('');
+                //$("#CustomerDocument").html(result);
+                //$('#myModalCustomerDocumentUpload').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });*@
+
+       // console.log(dataItem.Path);
+         var dataObject = {
+             'tpath': dataItem.Path//"C:\\Users\\tomaturnos\\Desktop\\Old\\Projects\\BI\\ERP\\ERPMVC\\ERPMVC\\wwwroot\\ContratosTemplate\\Proceso.pdf"
+          };
+
+          var ajax = new XMLHttpRequest();
+         ajax.open("Post", '@Url.Action("Download", "Download")' , true);
+          ajax.responseType = "blob";
+          ajax.setRequestHeader("Content-Type", "application/json");
+                            ajax.onreadystatechange = function () {
+                                if (this.readyState == 4) {
+                                    //debugger;
+                                    var blob = new Blob([this.response], { type: "application/vnd.ms-excel;charset=charset=utf-8" });
+                                   // var blob = new  Blob([this.response], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=charset=utf-8" });
+                                    var fileName = dataItem.DocumentName;
+                                    saveAs(blob, fileName);
+                                    //application/octet-stream
+                                }
+        };
+        ajax.send(JSON.stringify(dataObject));
+
+
+    }
+    function RefreshVendorDocument() {
+
+        $("#gridVendorDocument").getKendoGrid().dataSource.read();
+
+
+    }
+</script>
+
+@(Html.Kendo().Grid<ERPMVC.Models.VendorDocument>()
+                              .Name("gridVendorDocument")
+                              .Columns(columns =>
+                              {
+                                  columns.Command(command =>
+                                  {
+                                      command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditVendorDocument");
+                                   //   command.Custom("Descargar").Text(" ").IconClass("fa fa-download").Click("Descargar");
+                                      command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirVendorDocumento");
+
+                                      // command.Custom("Ver detalles").Click("Detalles");
+                                      // command.Edit(); command.Destroy();
+                                  }).Width(100);
+                                  columns.Bound(p => p.VendorDocumentId).Width(100);
+                                  columns.Bound(p => p.VendorId).Visible(false).Width(100);
+                                  columns.Bound(p => p.DocumentName).Width(150);
+                                  columns.Bound(p => p.DocumentTypeId).Width(100);
+                                  columns.Bound(p => p.DocumentTypeName).Width(100);
+                                  columns.Bound(p => p.Path).Visible(false).Width(100);
+                                  columns.Bound(p => p.CreatedDate).Format("{0:dd/MM/yyyy}").Width(100);
+
+                              })
+                                  .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                       .Clear()
+                                                       .Contains("Contiene")
+                                                       .DoesNotContain("No contiene")
+                                                       .EndsWith("Termina con")
+                                                       .IsEqualTo("Es igual a")
+                                                       .IsNotEqualTo("No es igual a")
+                                                       .IsNull("Es nulo")
+                                                       .StartsWith("Inicia con")
+
+
+                                                 )
+                                                 .ForNumber(n => n
+                                                   .Clear()
+                                                   .IsEqualTo("Es igual a")
+                                                   .IsGreaterThan("Es mayor que")
+                                                   .IsLessThan("Es menor que")
+                                                   .IsNull("Es nulo")
+                                                   .IsLessThanOrEqualTo("Es menor o igual que")
+                                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                 )
+                                                 .ForDate(d => d
+                                                 .Clear()
+                                                 .IsEqualTo("Es igual que")
+                                                 .IsGreaterThan("Es mayor que")
+                                                 .IsLessThan("Es menor que")
+                                                 .IsLessThanOrEqualTo("Es menor o igual que")
+                                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                 .IsNotEqualTo("No es igual que")
+                                                  )
+                                               ))
+                              .ToolBar(tools =>
+                              {
+                                  //tools.Create();
+                                  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddVendorDocument();" });
+
+                                  tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                  tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+                              })
+                              .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                              .Sortable()
+                              .Pageable()
+                              .Filterable()
+                              .Scrollable()
+                              .Pdf(pdf => pdf.FileName("VendorDocumentReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                               + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                               .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                 .Excel(excel => excel.FileName("VendorDocumentReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                               + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                               .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                              .DataSource(dataSource =>
+                                  dataSource
+                                    .WebApi()
+                                    .ServerOperation(true)
+                                    .Model(model =>
+                                    {
+                                        model.Id(p => p.VendorDocumentId);
+                                        model.Field(p => p.VendorId).Editable(false);
+                                    })
+                                    .Events(events => events.Error("error_handler"))
+                                    .Read(read => read.Action("GeDocumentByVendorId", "VendorDocument").Data("GetVendorId"))
+                                    .Create(create => create.Action("Insert", "VendorDocument"))
+                                    .Update(update => update.Action("Update", "VendorDocument", new { id = "{0}" }))
+                                    .Destroy(destroy => destroy.Action("Delete", "VendorDocument", new { id = "{0}" }))
+                              )
+                                .Events(e =>
+                                {
+                                    //e.Save("onsave");
+                                })
+)
+
+<div id="NumVendorDocument">
+    @await Html.PartialAsync("pvwVendorDocumentUpload", new ERPMVC.Models.VendorDocument { VendorDocumentId = 0, DocumentName = "" })
+</div>

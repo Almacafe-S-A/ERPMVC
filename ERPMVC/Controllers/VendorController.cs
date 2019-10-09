@@ -243,16 +243,30 @@ namespace ERPMVC.Controllers
                 {
                     _Vendor = new VendorDTO();
                 }
+                
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
+            /*  try
+             {
+                 string baseadress = config.Value.urlbase;
+                 HttpClient _client = new HttpClient();
+                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                 this.ViewBag.ConfigurationVendor = await _client.GetAsync(baseadress + "api/ConfigurationVendor/GetConfigurationVendorActive");
 
 
-
-            return PartialView(_Vendor);
+             }
+             catch (Exception ex)
+             {
+                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                 throw ex;
+             }
+             */
+            return await Task.Run(() => PartialView(_Vendor));
+           // return PartialView(_Vendor);
 
         }
         // GET: Customer/Details/5

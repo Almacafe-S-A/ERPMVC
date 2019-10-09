@@ -49,13 +49,19 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Invoice = JsonConvert.DeserializeObject<InvoiceDTO>(valorrespuesta);
-
+                   
                 }
 
                 if (_Invoice == null)
                 {
                     _Invoice = new InvoiceDTO { OrderDate = DateTime.Now, DeliveryDate = DateTime.Now, ExpirationDate = DateTime.Now.AddDays(30), editar = 1 };
                 }
+                else
+                {
+                    _Invoice.NumeroDEIString = $"{_Invoice.Sucursal}-{_Invoice.Caja}-01-{_Invoice.NumeroDEI.ToString().PadLeft(8, '0')} ";
+                }
+
+
             }
             catch (Exception ex)
             {
@@ -133,15 +139,17 @@ namespace ERPMVC.Controllers
                     _Invoice.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_Invoice);
                     var value = (insertresult.Result as ObjectResult).Value;
+                    
                     InvoiceDTO resultado = ((InvoiceDTO)(value));
-                    if(resultado.InvoiceId<=0)
+                    if (resultado.InvoiceId <= 0)
                     {
                         return await Task.Run(() => BadRequest("No se genero la factura!"));
                     }
                     else
                     {
-                       _Invoice.NumeroDEIString =$"{_Invoice.Sucursal}-{_Invoice.Caja}-001-{_Invoice.NumeroDEI.ToString().PadLeft(8, '0')} ";
+                        _Invoice.NumeroDEIString = $"{_Invoice.Sucursal}-{_Invoice.Caja}-01-{_Invoice.NumeroDEI.ToString().PadLeft(8, '0')} ";
                     }
+
                 }
                 else
                 {
@@ -152,6 +160,8 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return await Task.Run(() => BadRequest($"No se genero la factura : {ex.ToString()}"));
+            
                 throw ex;
             }
 
@@ -161,7 +171,7 @@ namespace ERPMVC.Controllers
         // POST: Invoice/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<Invoice>> Insert(Invoice _Invoice)
+        public async Task<ActionResult<Invoice>> Insert(InvoiceDTO _Invoice)
         {
             try
             {
@@ -176,14 +186,21 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Invoice = JsonConvert.DeserializeObject<Invoice>(valorrespuesta);
+                    _Invoice = JsonConvert.DeserializeObject<InvoiceDTO>(valorrespuesta);
+                }
+                else
+                {
+                    string d =  await (result.Content.ReadAsStringAsync());
+                    throw  new Exception(d);
+                    //return await Task.Run(() => BadRequest($"Ocurrio un error: {d}"));
                 }
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                throw (ex);
+                // return await Task.Run(()=> BadRequest($"Ocurrio un error{ex.Message}"));
             }
             return Ok(_Invoice);
             // return new ObjectResult(new DataSourceResult { Data = new[] { _Invoice }, Total = 1 });
@@ -213,7 +230,8 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Invoice }, Total = 1 });
+            return await Task.Run(() => Ok(_Invoice));
+           // return new ObjectResult(new DataSourceResult { Data = new[] { _Invoice }, Total = 1 });
         }
 
         [HttpPost("[action]")]
@@ -241,8 +259,26 @@ namespace ERPMVC.Controllers
             }
 
 
+            return await Task.Run(() => Ok(_Invoice));
+           // return new ObjectResult(new DataSourceResult { Data = new[] { _Invoice }, Total = 1 });
+        }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Invoice }, Total = 1 });
+
+
+        [HttpGet]
+        public async Task<ActionResult> SFInvoice(Int32 id)
+        {
+            try
+            {
+                InvoiceDTO _invoicedto = new InvoiceDTO { InvoiceId = id, };
+                return await Task.Run(()=> View(_invoicedto));
+            }
+            catch (Exception)
+            {
+
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }      
+           
         }
 
 

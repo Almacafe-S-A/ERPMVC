@@ -1,0 +1,167 @@
+﻿
+
+@model ERPMVC.Models.NodeViewModel
+@using Kendo.Mvc.UI
+
+<script>
+
+    function onsave(e) {
+        //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+        // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+    //function caidata(data) {
+    //  data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+    //data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    //}
+    function AddAccounting() {
+
+
+
+        $('#ModalAccounting').find(':input').not(':submit').val('');
+
+        $('#ModalAccounting').modal('show');
+        $("#AccountId").val('0');
+
+
+
+
+
+    }
+
+    function TreeAccounting(someID) {
+
+        debugger;
+
+       // $('#ModalAccounting').find(':input').not(':submit').val('');
+
+//        $('#ModalAccounting').modal('show');
+  //      $("#AccountId").val('0');
+
+        $.ajax({
+            type: "GET",
+            url: '@Url.Action("CatalagueAccounting", "Accounting")',
+            datatype: "json",
+            traditional: true,
+            data: { TypeAccountId: someID },
+            success: function (data, status, xhr) {
+                // console.log(data);
+                //   $($("#tabstrip-right").data("kendoTabStrip").contentElement(0)).html(data);
+                $("#TreeViewTemplateBiding").html(data);
+            },
+            error: function (xhr, status, error) {
+                $("#TreeViewTemplateBiding").html(error);
+              //  $($("#tabstrip-right").data("kendoTabStrip").contentElement(0)).html(error);
+            }
+        });
+
+
+
+
+    }
+
+
+       function EditAccount(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+             var dataObject = {
+                 AccountId: dataItem.AccountId,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddAccounting", "Accounting")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumAccounting").html('');
+                    $("#NumAccounting").html(result);
+
+
+                    //$("#btnCAI").hide();
+                    $('#ModalAccounting').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+         }
+
+   @* class="form-control btn-miboton" type="submit"*@
+
+</script>
+
+
+<div class="modal-open" role="dialog" style="width: 100%; height:100%">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-body">
+                <form id="frmCatalogueAccounting"
+                      data-ajax="true"
+                      data-ajax-method="post"
+                      data-ajax-begin="TreeAccounting">
+                    <div class="card">
+
+                        <div class="card-body">
+                            <h4 class="card-title">Clasificación de cuentas</h4>
+                            <div class="button-group">
+                                @{ foreach (ERPMVC.Models.TypeAccount Tipo in ViewBag.ListTypeAccount2)
+                                    {
+                                        <div class="col-md-6 col-lg-3 col-xlg-3">
+                                            <button id='btnTypeAccounting_@Tipo.TypeAccountId' type="button" onclick="TreeAccounting(@Tipo.TypeAccountId)" class="btn waves-effect waves-light btn-lg btn-rounded btn-primary">@Tipo.TypeAccountName</button>
+                                        </div>
+
+                                    }
+                                }
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="modal-body" style="width: 100%; height:100%">
+                            @(Html.Kendo().TreeView()
+                                                                                 .Name("TreeViewTemplateBiding")
+                                                                                 .TemplateId("TreeViewTemplate")
+
+                                                                                 .BindTo((List<ERPMVC.Models.NodeViewModel>
+                                                                                     )ViewBag.Tree2, (Kendo.Mvc.UI.Fluent.NavigationBindingFactory<TreeViewItem>
+                                                                                         mappings) =>
+                                                                                     {
+                                                                                         mappings.For<ERPMVC.Models.NodeViewModel>
+                                                                                            (binding => binding.ItemDataBound((item, node) =>
+                                                                                            {
+                                                                                                item.Id = node.Id.ToString();
+                                                                                                item.Text = node.Title;
+                                                                                                
+                                                                                                item.Url =  @Url.Action("pvwAddAccounting", "Accounting",new { AccountingId = item.Id, ParentAccountId = 0 }) ;
+                                                                                                // item.Action("pvwAddAccounting", "Accounting", null, "http");
+                                                                                                // item.HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddVendor()" });
+                                                                                                // item.Action("<a class='Add-link' onclick='AddAccounting()'>[+]</a>", "Link",item);
+                                                                                                //'@Url.Action("pvwAddAccounting", "Accounting")';
+                                                                                                //item.Url = "<a class='Add-link' onclick='AddAccounting()'>[+]</a>";
+                                                                                                // item.Action("pvwAddAccounting", "Accounting", null);
+                                                                                                item.Expanded = node.Expanded;
+                                                                                            })
+
+                                                                                                    .Children(node => node.Children));
+
+                                                                                     })//.Checkboxes(true)
+                                                                         .DragAndDrop(true)
+
+                            )
+
+
+                        </div>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+

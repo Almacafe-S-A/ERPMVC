@@ -5,7 +5,101 @@
 
 }
 
+<script>
+    $(document).ready(function () {
+        ClearSession();
+    });
 
+    function AddHoursWorked() {
+        
+        if ($("#IdEmpleado").val() != 0) {
+            //if ($("#IdEmpleado").data("kendoDropDownList") != null) {
+            $("#IdEmpleado").data("kendoDropDownList").value(0);
+            //}
+        }
+        $('#myModalHoursWorked').find(':input').not(':submit').val('');
+        $('#myModalHoursWorked').modal('show');
+        ClearSession();
+
+         var dataObject = {
+            IdHorastrabajadas: 0,
+            editar : 1
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwAddHoursWorked", "HoursWorked")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#HoursWorked").html('');
+                $("#HoursWorked").html(result);
+
+                //RefreshHoursWorkedDetail();
+                $("#btnSaveHoursWorked").show();
+                $('#myModalHoursWorked').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+
+        
+    }
+
+    function RefrescarGrid() {
+        var grid = $("#gridHW").getKendoGrid();
+        grid.dataSource.read();
+    }
+    function EditHW(e) {
+        e.preventDefault();
+
+        ClearSession();
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            IdHorastrabajadas: dataItem.IdHorastrabajadas,
+            editar : 0
+        };
+        
+        $.ajax({
+            url: '@Url.Action("pvwAddHoursWorked","HoursWorked")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#numHoursWorked").html('');
+                $("#numHoursWorked").html(result);
+                //RefreshHoursWorkedDetail();
+                 $('#myModalHoursWorked').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+        
+    }
+    function ClearSession() {
+        var dataObject = ["listadoHoursWorkedDetail"];
+         $.ajax({
+            url: '@Url.Action("ClearSession","Common")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+         });
+    }
+</script>
 
 <h3 class="text-themecolor">Horas Trabajadas</h3>
 
@@ -16,8 +110,8 @@
                 columns.Command(command =>
                 {
                     //command.Custom("Ver detalles").Click("Detalles");
-                    //command.Custom("Editar").Click("EditEmp");
-                    command.Edit().Text("Editar").UpdateText("Actualizar").CancelText("Cancelar"); ;
+                    command.Custom("Editar").Click("EditHW");
+                    //command.Edit().Text("Editar").UpdateText("Actualizar").CancelText("Cancelar"); ;
                 }).Width(150).Title("Acciones");
                 columns.Bound(p => p.IdHorastrabajadas).Width(80).Title("Id");
                 columns.Bound(p => p.NombreEmpleado).Width(200);
@@ -63,10 +157,10 @@
             {
 
                 //tools.Create();
-                //tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                //                          .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCAI()" });
-                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                          .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddHoursWorked()" });
+                //tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                //tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
 
 
 
@@ -102,6 +196,6 @@
             )
 )
 
-@*<div id="numCAI">
-    @await Html.PartialAsync("pvwAddCAI", new ERPMVC.DTO.CAIDTO { IdCAI = 0, FechaLimiteEmision = DateTime.Now, FechaRecepcion = DateTime.Now })
-</div>*@
+<div id="numHoursWorked">
+    @await Html.PartialAsync("pvwAddHoursWorked", new ERPMVC.DTO.HoursWorkedDTO { IdHorastrabajadas = 0 })
+</div>

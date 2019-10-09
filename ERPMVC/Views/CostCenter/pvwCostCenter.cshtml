@@ -1,0 +1,236 @@
+﻿@model ERPMVC.DTO.CostCenterDTO
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+ {"required","Valor requerido" }
+};
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<script>
+
+    function customFunction(input) {
+
+        if (input.attr('name') === "CostCenterId" && input.val() === "0") {
+            return false;
+        }
+
+    }
+
+    //$('#btnprueba').val("");
+</script>
+
+
+
+
+
+<div id="ModalCostCenter" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Centros de Costo</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmCostCenter" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveCostCenter"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <h3 class="card-title">Centro de Costo</h3>
+                                        <hr>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="CostCenterId" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="CostCenterId" name="CostCenterId" class="form-control" readonly="readonly" autocomplete="off" style="min-width:100%" />
+                                                    <span asp-validation-for="CostCenterId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="CostCenterName" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="CostCenterName" name="CostCenterName" class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    @*  <span asp-validation-for="CostCenterName" class="text-danger"></span>*@
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="IdEstado" class="control-label" style="min-width:100%"></label>
+                                                    <kendo-dropdownlist name="IdEstado"
+                                                                        for="@Model.IdEstado"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar Estado"
+                                                                        datatextfield="NombreEstado"
+                                                                        datavaluefield="IdEstado"
+                                                                        style="min-width:100%">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <div class="row">
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="BranchId" class="control-label" style="min-width:100%"></label>
+                                                    <kendo-dropdownlist name="BranchId"
+                                                                        for="@Model.BranchId"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar Sucursal"
+                                                                        datatextfield="BranchName"
+                                                                        datavaluefield="BranchId"
+                                                                        style="min-width:100%">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetBranch", "Branch")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button id="btnCostCenter" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                            </div>
+                                        </div>
+
+
+
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function RefrescarGrid() {
+
+        var grid = $("#gridNumeracionCostCenter").getKendoGrid();
+        grid.dataSource.read();
+    }
+    function SaveCostCenter(e) {
+
+            var notification = $("#notification").data("kendoNotification");
+           // e.preventDefault();
+        $("#btnCostCenter").hide();
+        $("#btnCostCenter").prop("disabled", true);
+
+        var displayedData = $("#gridNumeracionCostCenter").data().kendoGrid.dataSource.view();
+
+        var dataObject = {
+                          'CostCenterId': $("#CostCenterId").val()===""?"0":$("#CostCenterId").val(),
+                          'CostCenterName': $("#CostCenterName").val(),
+                          'IdEstado': $("#IdEstado").val(),
+                          'Estado': $("#IdEstado").data("kendoDropDownList").text(),
+                          'BranchId': $("#BranchId").val(),
+                          'BranchName': $("#BranchId").data("kendoDropDownList").text(),
+                          'FechaCreacion': $("#FechaCreacion").val(),
+                           'FechaModificacion':$("#FechaModificacion").val(),
+                           'UsuarioCreacion':$("#UsuarioCreacion").val(),
+                           'UsuarioModificacion':$("#UsuarioModificacion").val(),
+                            '_CostCenter': displayedData
+            };
+
+           // console.log(JSON.stringify(dataObject));
+            //var form = $("#frmNumeracion");
+           // form.validate();
+
+        var validator = $("#frmCostCenter").data("kendoValidator");
+                 var status = $(".status");
+
+
+                if (validator.validate()) {
+
+                    $.ajax({
+                        url: '@Url.Action("SaveCostCenter", "CostCenter")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (result) {
+
+                            //notification.show({
+                            //    message: "Guardado correctamente!"
+                            //}, "upload-success");
+
+                            console.log(result);
+                            if (result.Errors === null ||
+                                result.dataObject!==null) {
+
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: '<br/><br/> Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 7000,
+                                stack: 6
+                                });
+                            }
+                            else {
+                                if (result.ReasonPhrase === "Bad Request") { 
+                                $.toast({
+                                    heading: 'Error',
+                                    text: '<br/><br/>' + result.Errors,
+                                    position: 'top-right',
+                                    showHideTransition: 'fade',
+                                    loaderBg: '#ff6849',
+                                    icon: 'error',
+                                    hideAfter: 30000,
+                                    stack: 6
+                                    });
+                                }
+                            }
+
+
+                            RefrescarGrid();
+
+                            $('#ModalCostCenter').modal('hide');
+
+
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                            notification.show({
+                                title: "Validación",
+                                message: textStatus + ": " + XMLHttpRequest.responseText
+                            }, "error");
+
+                        }
+                    });
+
+                }
+                else {
+                    status.text("Oops! There is invalid data in the form.")
+                        .removeClass("valid")
+                        .addClass("invalid");
+                }
+
+
+        $("#btnCostCenter").show();
+        $("#btnCostCenter").prop("disabled", false);
+    }
+</script>

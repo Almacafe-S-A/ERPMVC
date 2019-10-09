@@ -38,8 +38,9 @@ namespace ERPMVC.Controllers
         }
 
         [Authorize(Policy = "Admin")]
-        public IActionResult Usuarios()
+        public async Task<IActionResult> Usuarios()
         {
+            ViewData["Branches"] = await ObtenerBranches();
             return View();
         }
 
@@ -154,6 +155,8 @@ namespace ERPMVC.Controllers
             return _users.ToDataSourceResult(request);
         }
 
+
+
         [HttpGet("[controller]/[action]")]
         public async Task<ActionResult> Details(Int64 UserId)
         {
@@ -196,6 +199,7 @@ namespace ERPMVC.Controllers
                 _usuario.FechaCreacion = DateTime.Now;
                 _usuario.UsuarioModificacion = HttpContext.Session.GetString("user");
                 _usuario.UserName = _usuario.Email;
+                _usuario.BranchId = _usuario.Branch.BranchId;
                 _usuario.IsEnabled = true;
                 var result = await _client.PostAsJsonAsync(baseadress + "api/Usuario/PostUsuario", _usuario);
                 string valorrespuesta = "";
@@ -357,6 +361,7 @@ namespace ERPMVC.Controllers
                 // TODO: Add insert logic here
                 string baseadress = config.Value.urlbase;
                 _usuario.UserName = _usuario.Email;
+                _usuario.BranchId = _usuario.BranchId;
                 HttpClient _client = new HttpClient();
                 _usuario.cambiarpassword = _usuario.cambiarpassword == null ? false : true;
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -422,7 +427,33 @@ namespace ERPMVC.Controllers
         }
 
 
+        async Task<IEnumerable<Branch>> ObtenerBranches()
+        {
+            IEnumerable<Branch> branches = null;
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
 
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Branch/GetBranch");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    branches = JsonConvert.DeserializeObject<IEnumerable<Branch>>(valorrespuesta);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            ViewData["defaultbranch"] = branches.FirstOrDefault();
+            return branches;
+
+        }
 
     }
 }

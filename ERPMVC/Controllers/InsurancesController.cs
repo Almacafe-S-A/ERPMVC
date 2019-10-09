@@ -40,7 +40,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        public ActionResult Insurances()
+        public IActionResult Insurances()
         {
             return View();
         }

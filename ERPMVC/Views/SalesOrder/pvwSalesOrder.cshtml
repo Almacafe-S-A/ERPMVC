@@ -135,8 +135,8 @@
                                               method="post" class="validation-wizard wizard-circle">
                                             @*<div class="form-body">*@
 
-                                            <input type="hidden" asp-for="IdEstado" />
-                                            <input type="hidden" asp-for="Estado" />
+                                            @*<input type="hidden" asp-for="IdEstado" />
+                                            <input type="hidden" asp-for="Estado" />*@
 
                                             <div class="row">
                                                 <div class="col-sm-4 col-md-4">
@@ -318,7 +318,7 @@
                                                                 </transport>
                                                             </datasource>
                                                         </kendo-dropdownlist>
-                                                        <span asp-validation-for="OrderDate" class="text-danger"></span>
+                                                        <span asp-validation-for="CustomerId" class="text-danger"></span>
                                                     </div>
                                                 </div>
 
@@ -340,7 +340,7 @@
                                                                             datavaluefield="BranchId"
                                                                             required
                                                                             style="width: 100%;">
-                                                            <datasource type="DataSourceTagHelperType.WebApi">
+                                                            <datasource type="DataSourceTagHelperType.WebApi" page-size="999999999">
                                                                 <transport>
                                                                     <read url="@Url.Action("Get", "Branch")" />
                                                                 </transport>
@@ -734,218 +734,225 @@
                         grid.dataSource.read();
                     }
 
-                    function SaveCotizacion(e) {
-
-                        var notification = $("#notification").data("kendoNotification");
-                        // e.preventDefault();
-                        $("#btnSaveCotizacion").hide();
-                        $("#btnSaveCotizacion").prop("disabled", true);
-                        RefreshOFAC();
-                        var validadetalle = true;
-                        var displayedData = $("#gridCotizacionesDetail").data().kendoGrid.dataSource.data();
-                        for (var i = 0; i < displayedData.length; i++) {
-                            displayedData[i].SalesOrderLineId = 0;
-                            if (
-                                displayedData[i].Quantity === 0
-                                || displayedData[i].Price === 0
-                                || displayedData[i].Amount === 0
-                                || displayedData[i].SubProductId === null || displayedData[i].SubProductId === 0) {
-                                notification.show({
-                                    title: "Validación",
-                                    message: "Ingrese al detalle todos los datos requeridos"
-                                }, "error");
-                                validadetalle = false;
-                            }
-                        }
-
-                        RefreshOFAC();
-                        RefreshOFAC();
-
-                        var listadoenqueaparece = "";
-                        var gridListaOFAC = $("#gridListaOFAC").data().kendoGrid.dataSource.data();
-                        var gridListaPEPS = $("#gridListaPEPS").data().kendoGrid.dataSource.data();
-                        var gridListaNegra = $("#gridListaNegra").data().kendoGrid.dataSource.data();
-                        var gridListaONU = $("#gridListaONU").data().kendoGrid.dataSource.data();
-                        debugger;
-
-                        var confirmaexpecion = false;
-                        var idEstado = 8;
-                        var Estado = 'Pendiente';
-                        if ($("#IdEstado").val() != null) {
-                            Estado = $("#IdEstado").data("kendoDropDownList").text();
-                        }
-
-                        if (
-                            gridListaPEPS.length > 0
-
-                        ) {
-
-                            // notification.show({
-                            //    title: "Validación",
-                            //    message: "No puede guardar una cotización para este cliente ya que aparece en los listados!"
-                            //}, "error");
+        function SaveCotizacion(e) {
 
 
-                            if (confirm("¿Desea crear una excepción para este cliente y enviar a aprobación?, esto notificara a Gerencia")) {
-                                validadetalle = true;
-                                confirmaexpecion = true;
-                                idEstado = 5;
-                                Estado = 'Enviada a Aprobacion'
-                                listadoenqueaparece += gridListaPEPS.length > 0 ? "PEPS" : "";
-                            }
-                            else {
-                                validadetalle = false;
-                                notification.show({
-                                    title: "Validación",
-                                    message: "No puede guardar una cotización para este cliente ya que aparece en los listados!"
-                                }, "error");
-                            }
-
-                        }
-                        else if (gridListaOFAC.length > 0
-                            || gridListaNegra.length > 0
-                            || gridListaONU.length > 0
-                        )
-
-                        {
-                            listadoenqueaparece += gridListaOFAC.length > 0 ? "OFAC" : "";
-                            listadoenqueaparece += gridListaNegra.length > 0 ? "ListaNegra" : "";
-                            listadoenqueaparece += gridListaONU.length > 0 ? "ListadoONU" : "";
-
-
-                            validadetalle = true;
-                            idEstado = 7;
-                            Estado = 'Rechazado';
-
-                            notification.show({
-                                title: "Validación",
-                                message: "Esta cotización se muestra como estado rechazado!"
-                            }, "error");
-
-                        }
-
-
-                       // debugger;
-
-                        if (validadetalle) {
-
-                            var dataObject = {
-                                'SalesOrderId': $("#SalesOrderId").val() === "" ? "0" : $("#SalesOrderId").val(),
-                                'SalesOrderName': $("#SalesOrderName").val(),
-                                'BranchId': $("#BranchId").val(),
-                                'BranchName': $("#BranchId").data("kendoDropDownList").text(),
-                                'CustomerId': $("#CustomerId").val(),
-                                'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
-                                'ProductId': $("#ProductId").val(),
-                                'ProductName': $("#ProductId").data("kendoDropDownList").text(),
-                                'OrderDate': $("#OrderDate").getKendoDateTimePicker().value().toJSON(),
-                              //  'DeliveryDate': $("#DeliveryDate").getKendoDateTimePicker().value().toJSON(),
-                                'ExpirationDate': $("#ExpirationDate").getKendoDateTimePicker().value().toJSON(),
-                                'CurrencyId': Number($("#CurrencyId").val()),
-                                'CustomerRefNumber': $("#CustomerRefNumber").val(),
-                                'SalesTypeId': $("#SalesTypeId").val(),
-                                'TypeContractId': Number($("#TypeContractId").val()),
-                                'NameContract': $("#TypeContractId").data("kendoDropDownList").text(),
-                                'Remarks': $("#Remarks").val(),
-                                'Amount': $("#Amount").val(),
-                                'SubTotal': $("#SubTotal").val(),
-                                'Discount': $("#Discount").val(),
-                                'Tax': $("#Tax").val(),
-                                'Freight': $("#Freight").val(),
-                                'Total': $("#Total").val(),
-                                'Correo': $("#Correo").val(),
-                                'Direccion': $("#Direccion").val(),
-                                'RTN': $("#RTN").val(),
-                                'Tefono': $("#Tefono").val(),
-                                'TotalExento': $("#TotalExento").val(),
-                                'TotalExonerado': $("#TotalExonerado").val(),
-                                'TotalGravado': $("#TotalGravado").val(),
-                                'SalesOrderLines': displayedData,
-                                'IdEstado': idEstado,
-                                'Estado': Estado,
-                                'listadossancionados': listadoenqueaparece
-                            };
-
-                            //console.log(JSON.stringify(dataObject));
-                            //var form = $("#frmSalesOrder");
-                            //form.validate();
-                            //console.log(JSON.stringify(dataObject));
-                            //console.log(dataObject);
-
-                            var validator = $("#frmSalesOrder").data("kendoValidator");
-                            var validator2 = $("#TotalesDocumento").data("kendoValidator");
-                            var status = $(".status");
+            try {
 
 
 
-                            if (displayedData.length > 0) {
-                                if (validator.validate() && validator2.validate()) {
+                var notification = $("#notification").data("kendoNotification");
+                // e.preventDefault();
+                $("#btnSaveCotizacion").hide();
+                $("#btnSaveCotizacion").prop("disabled", true);
+                RefreshOFAC();
+                var validadetalle = true;
+                var displayedData = $("#gridCotizacionesDetail").data().kendoGrid.dataSource.data();
+                for (var i = 0; i < displayedData.length; i++) {
+                    displayedData[i].SalesOrderLineId = 0;
+                    if (
+                        displayedData[i].Quantity === 0
+                        || displayedData[i].Price === 0
+                        || displayedData[i].Amount === 0
+                        || displayedData[i].SubProductId === null || displayedData[i].SubProductId === 0) {
+                        notification.show({
+                            title: "Validación",
+                            message: "Ingrese al detalle todos los datos requeridos"
+                        }, "error");
+                        validadetalle = false;
+                    }
+                }
 
-                                    $.ajax({
-                                        url: '@Url.Action("SaveSalesOrder", "SalesOrder")',
-                                        method: 'POST',
-                                        datatype: "json",
-                                        //  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-                                        contentType: 'application/json',
-                                        async: false,
-                                        data: JSON.stringify(dataObject),
-                                        success: function (data) {
+                RefreshOFAC();
+                RefreshOFAC();
 
-                                            $("#SalesOrderId").data("kendoNumericTextBox").value(data.SalesOrderId);
+                var listadoenqueaparece = "";
+                var gridListaOFAC = $("#gridListaOFAC").data().kendoGrid.dataSource.data();
+                var gridListaPEPS = $("#gridListaPEPS").data().kendoGrid.dataSource.data();
+                var gridListaNegra = $("#gridListaNegra").data().kendoGrid.dataSource.data();
+                var gridListaONU = $("#gridListaONU").data().kendoGrid.dataSource.data();
+                debugger;
 
-                                            $.toast({
-                                                heading: 'Satisfactorio',
-                                                text: '<br/><br/>Datos guardados correctamente.',
-                                                position: 'top-right',
-                                                loaderBg: '#ff6849',
-                                                icon: 'success',
-                                                hideAfter: 3000,
-                                                stack: 6
-                                            });
-                                            //notification.show({
-                                            //    message: "Guardado correctamente!"
-                                            //}, "upload-success");
+                var confirmaexpecion = false;
+                var idEstado = 8;
+                var Estado = 'Pendiente';
+                //if ($("#IdEstado").val() != null) {
+                //    Estado = $("#IdEstado").data("kendoDropDownList").text();
+                //}
 
-                                            RefreshCotizaciones();
-                                            $('#myModalSalesOrder').modal('hide');
+                if (
+                    gridListaPEPS.length > 0
 
-                                        },
-                                        error: function (XMLHttpRequest, textStatus, errorThrown) {                                     
-                                            notification.show({
-                                                title: "Validación",
-                                                message: textStatus + ": " + XMLHttpRequest.responseText
-                                            }, "error");
+                ) {
 
-                                        }
+                    // notification.show({
+                    //    title: "Validación",
+                    //    message: "No puede guardar una cotización para este cliente ya que aparece en los listados!"
+                    //}, "error");
+
+
+                    if (confirm("¿Desea crear una excepción para este cliente y enviar a aprobación?, esto notificara a Gerencia")) {
+                        validadetalle = true;
+                        confirmaexpecion = true;
+                        idEstado = 5;
+                        Estado = 'Enviada a Aprobacion'
+                        listadoenqueaparece += gridListaPEPS.length > 0 ? "PEPS" : "";
+                    }
+                    else {
+                        validadetalle = false;
+                        notification.show({
+                            title: "Validación",
+                            message: "No puede guardar una cotización para este cliente ya que aparece en los listados!"
+                        }, "error");
+                    }
+
+                }
+                else if (gridListaOFAC.length > 0
+                    || gridListaNegra.length > 0
+                    || gridListaONU.length > 0
+                ) {
+                    listadoenqueaparece += gridListaOFAC.length > 0 ? "OFAC" : "";
+                    listadoenqueaparece += gridListaNegra.length > 0 ? "ListaNegra" : "";
+                    listadoenqueaparece += gridListaONU.length > 0 ? "ListadoONU" : "";
+
+
+                    validadetalle = true;
+                    idEstado = 7;
+                    Estado = 'Rechazado';
+
+                    notification.show({
+                        title: "Validación",
+                        message: "Esta cotización se muestra como estado rechazado!"
+                    }, "error");
+
+                }
+
+
+                // debugger;
+
+                if (validadetalle) {
+
+                    var dataObject = {
+                        'SalesOrderId': $("#SalesOrderId").val() === "" ? "0" : $("#SalesOrderId").val(),
+                        'SalesOrderName': $("#SalesOrderName").val(),
+                        'BranchId': $("#BranchId").val(),
+                        'BranchName': $("#BranchId").data("kendoDropDownList").text(),
+                        'CustomerId': $("#CustomerId").val(),
+                        'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
+                        'ProductId': $("#ProductId").val(),
+                        'ProductName': $("#ProductId").data("kendoDropDownList").text(),
+                        'OrderDate': $("#OrderDate").getKendoDateTimePicker().value().toJSON(),
+                        //  'DeliveryDate': $("#DeliveryDate").getKendoDateTimePicker().value().toJSON(),
+                        'ExpirationDate': $("#ExpirationDate").getKendoDateTimePicker().value().toJSON(),
+                        'CurrencyId': Number($("#CurrencyId").val()),
+                        'CustomerRefNumber': $("#CustomerRefNumber").val(),
+                        'SalesTypeId': $("#SalesTypeId").val(),
+                        'TypeContractId': Number($("#TypeContractId").val()),
+                        'NameContract': $("#TypeContractId").data("kendoDropDownList").text(),
+                        'Remarks': $("#Remarks").val(),
+                        'Amount': $("#Amount").val(),
+                        'SubTotal': $("#SubTotal").val(),
+                        'Discount': $("#Discount").val(),
+                        'Tax': $("#Tax").val(),
+                        'Freight': $("#Freight").val(),
+                        'Total': $("#Total").val(),
+                        'Correo': $("#Correo").val(),
+                        'Direccion': $("#Direccion").val(),
+                        'RTN': $("#RTN").val(),
+                        'Tefono': $("#Tefono").val(),
+                        'TotalExento': $("#TotalExento").val(),
+                        'TotalExonerado': $("#TotalExonerado").val(),
+                        'TotalGravado': $("#TotalGravado").val(),
+                        'SalesOrderLines': displayedData,
+                        'IdEstado': idEstado,
+                        'Estado': Estado,
+                        'listadossancionados': listadoenqueaparece
+                    };
+
+                    //console.log(JSON.stringify(dataObject));
+                    //var form = $("#frmSalesOrder");
+                    //form.validate();
+                    //console.log(JSON.stringify(dataObject));
+                    //console.log(dataObject);
+
+                    var validator = $("#frmSalesOrder").data("kendoValidator");
+                    var validator2 = $("#TotalesDocumento").data("kendoValidator");
+                    var status = $(".status");
+
+
+
+                    if (displayedData.length > 0) {
+                        if (validator.validate() && validator2.validate()) {
+
+                            $.ajax({
+                                url: '@Url.Action("SaveSalesOrder", "SalesOrder")',
+                                method: 'POST',
+                                datatype: "json",
+                                //  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                                contentType: 'application/json',
+                                async: false,
+                                data: JSON.stringify(dataObject),
+                                success: function (data) {
+
+                                    $("#SalesOrderId").data("kendoNumericTextBox").value(data.SalesOrderId);
+
+                                    $.toast({
+                                        heading: 'Satisfactorio',
+                                        text: '<br/><br/>Datos guardados correctamente.',
+                                        position: 'top-right',
+                                        loaderBg: '#ff6849',
+                                        icon: 'success',
+                                        hideAfter: 3000,
+                                        stack: 6
                                     });
+                                    //notification.show({
+                                    //    message: "Guardado correctamente!"
+                                    //}, "upload-success");
 
-                                }
-                                else {
+                                    RefreshCotizaciones();
+                                    $('#myModalSalesOrder').modal('hide');
+
+                                },
+                                error: function (XMLHttpRequest, textStatus, errorThrown) {
                                     $("#btnSaveCotizacion").show();
                                     $("#btnSaveCotizacion").prop("disabled", false);
                                     notification.show({
                                         title: "Validación",
-                                        message: "Hay datos invalidos en el formulario!"
+                                        message: textStatus + ": " + XMLHttpRequest.responseText
                                     }, "error");
+
                                 }
-                            }
-                            else {
-                                notification.show({
-                                    title: "Validación",
-                                    message: "Debe agregar los productos!"
-                                }, "error");
-                                $("#btnSaveCotizacion").show();
-                                $("#btnSaveCotizacion").prop("disabled", false);
-                            }
+                            });
+
                         }
-
-                        else
-                            {
-                               $("#btnSaveCotizacion").show();
-                               $("#btnSaveCotizacion").prop("disabled", false);
-                         }
-
-
-
+                        else {
+                            $("#btnSaveCotizacion").show();
+                            $("#btnSaveCotizacion").prop("disabled", false);
+                            notification.show({
+                                title: "Validación",
+                                message: "Hay datos invalidos en el formulario!"
+                            }, "error");
+                        }
                     }
+                    else {
+                        notification.show({
+                            title: "Validación",
+                            message: "Debe agregar los productos!"
+                        }, "error");
+                        $("#btnSaveCotizacion").show();
+                        $("#btnSaveCotizacion").prop("disabled", false);
+                    }
+                }
+
+                else {
+                    $("#btnSaveCotizacion").show();
+                    $("#btnSaveCotizacion").prop("disabled", false);
+                }
+
+            } catch (e) {
+                $("#btnSaveCotizacion").show();
+                $("#btnSaveCotizacion").prop("disabled", false);
+            }
+
+        }
     </script>

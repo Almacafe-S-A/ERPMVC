@@ -23,10 +23,10 @@ namespace ERPMVC.Models
         public DateTime DocumentDate { get; set; }
 
 
-        [Display(Name = "Producto")]
+        [Display(Name = "Servicio")]
         public Int64 ProductId { get; set; }
 
-        [Display(Name = "Producto")]
+        [Display(Name = "Servicio")]
         public string ProductName { get; set; }
 
         [Display(Name = "Cliente")]

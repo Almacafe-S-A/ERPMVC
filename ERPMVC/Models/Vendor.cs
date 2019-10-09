@@ -29,9 +29,11 @@ namespace ERPMVC.Models
         public Country Country { get; set; }
         public long StateId { get; set; }
         [ForeignKey("StateId")]
+        [Display(Name = "Departamento")]
         public State State { get; set; }
         public long CityId { get; set; }
         [ForeignKey("CityId")]
+        [Display(Name = "Ciudad")]
         public City City { get; set; }
 
         [Display(Name = "Zip Code")]
@@ -52,16 +54,13 @@ namespace ERPMVC.Models
         [Required]
         [Display(Name = "RTN del Proveedor")]
         public string RTN { get; set; }
-        [Required]
+       // [Required]
         [Display(Name = "Identidad")]
         public string Identidad { get; set; }
         [Display(Name = "Moneda")]
         public int CurrencyId { get; set; }
         [ForeignKey("CurrencyId")]
         public Currency Currency { get; set; }
-        [Required]
-        [Display(Name = "Monto Minimo")]
-        public double QtyMin { get; set; }
         [Required]
         [Display(Name = "Monto Mensual")]
         public double QtyMonth { get; set; }
@@ -82,6 +81,12 @@ namespace ERPMVC.Models
         [ForeignKey("IdEstado")]
         public Estados Estados { get; set; }
         public string Estado { get; set; }
+        [Display(Name = "Identidad del repressentante Legal")]
+        public string IdentityRepresentative { get; set; }
+        [Display(Name = "RTN del Representante Legal")]
+        public string RTNRepresentative { get; set; }
+        [Display(Name = "Nombre del Repreentante")]
+        public string RepresentativeName { get; set; }
 
 
 

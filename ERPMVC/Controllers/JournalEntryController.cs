@@ -37,6 +37,19 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        public ActionResult IndexAjustes()
+        {
+            return View();
+        }
+        public ActionResult JournalEntryLine()
+        {
+            return View();
+        }
+        public ActionResult JournalEntryLineAjuste()
+        {
+            return View();
+        }
+
         /*public ActionResult Proveedores()
         {
             return View();
@@ -118,7 +131,7 @@ namespace ERPMVC.Controllers
         // POST: TypeAccount/Insert
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public async Task<ActionResult> Insert(JournalEntry _JournalEntry)
+        public async Task<ActionResult<JournalEntry>> Insert(JournalEntry _JournalEntry)
         {
             try
             {
@@ -130,7 +143,12 @@ namespace ERPMVC.Controllers
                 _JournalEntry.CreatedDate = DateTime.Now;
                 _JournalEntry.ModifiedUser = HttpContext.Session.GetString("user");
                 _JournalEntry.ModifiedDate = DateTime.Now;
+                _JournalEntry.IdPaymentCode = 0;
+                _JournalEntry.IdTypeofPayment = 0;
                 var result = await _client.PostAsJsonAsync(baseadress + "api/JournalEntry/Insert", _JournalEntry);
+                string jsonresult = "";
+                jsonresult = JsonConvert.SerializeObject(_JournalEntry);
+
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -145,7 +163,8 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _JournalEntry }, Total = 1 });
+            return Ok(_JournalEntry);
+           // return new ObjectResult(new DataSourceResult { Data = new[] { _JournalEntry }, Total = 1 });
         }
 
 
@@ -174,12 +193,18 @@ namespace ERPMVC.Controllers
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _JournalEntry }, Total = 1 });
         }
-        
-        public async Task<ActionResult<JournalEntry>> SaveJournalEntry([FromBody]JournalEntryDTO _JournalEntryP)
+
+        public async Task<ActionResult<JournalEntry>> SaveJournalEntry([FromBody]dynamic dto)
+        // public async Task<ActionResult<JournalEntry>> SaveJournalEntry([FromBody]JournalEntryDTO _JournalEntryP)
         {
-            JournalEntry _JournalEntry = _JournalEntryP;
+            JournalEntryDTO _JournalEntryP = new JournalEntryDTO(); //_JournalEntryP;
+            JournalEntry _JournalEntry = new JournalEntry();
+
+
             try
             {
+                _JournalEntryP = JsonConvert.DeserializeObject<JournalEntryDTO>(dto.ToString());
+                _JournalEntry = _JournalEntryP;
                 //JournalEntry _listItems = new JournalEntry();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
@@ -201,8 +226,24 @@ namespace ERPMVC.Controllers
                 {
                     _JournalEntry.CreatedDate = DateTime.Now;
                     _JournalEntry.CreatedUser = HttpContext.Session.GetString("user");
+
+                    foreach (var item in _JournalEntryP.JournalEntryLines)
+                    {
+                        item.CreatedUser = HttpContext.Session.GetString("user");
+                        item.ModifiedUser = HttpContext.Session.GetString("user");
+                    }
+
                     var insertresult = await Insert(_JournalEntryP);
+                  
+                    var value = (insertresult.Result as ObjectResult).Value;
+                    JournalEntry resultado = ((JournalEntry)(value));
+                    if (resultado.JournalEntryId <= 0)
+
+                    {
+                        return BadRequest("No se guardo el formulario!");
+                    }
                 }
+
                 else
                 {
                     _JournalEntryP.CreatedUser = _JournalEntry.CreatedUser;
@@ -223,6 +264,41 @@ namespace ERPMVC.Controllers
 
         [HttpPost("[action]")]
         public async Task<ActionResult> pvwAddJournalEntry([FromBody]JournalEntryDTO _sarpara)
+        {
+            JournalEntryDTO _JournalEntry = new JournalEntryDTO();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/JournalEntry/GetJournalEntryById/" + _sarpara.JournalEntryId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _JournalEntry = JsonConvert.DeserializeObject<JournalEntryDTO>(valorrespuesta);
+
+                }
+
+                if (_JournalEntry == null)
+                {
+                    _JournalEntry = new JournalEntryDTO();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return PartialView(_JournalEntry);
+
+        }
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwAddJournalEntryAjuste([FromBody]JournalEntryDTO _sarpara)
         {
             JournalEntryDTO _JournalEntry = new JournalEntryDTO();
             try
