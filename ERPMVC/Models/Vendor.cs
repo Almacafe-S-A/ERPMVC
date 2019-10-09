@@ -29,9 +29,11 @@ namespace ERPMVC.Models
         public Country Country { get; set; }
         public long StateId { get; set; }
         [ForeignKey("StateId")]
+        [Display(Name = "Departamento")]
         public State State { get; set; }
         public long CityId { get; set; }
         [ForeignKey("CityId")]
+        [Display(Name = "Ciudad")]
         public City City { get; set; }
 
         [Display(Name = "Zip Code")]
@@ -52,7 +54,7 @@ namespace ERPMVC.Models
         [Required]
         [Display(Name = "RTN del Proveedor")]
         public string RTN { get; set; }
-        [Required]
+       // [Required]
         [Display(Name = "Identidad")]
         public string Identidad { get; set; }
         [Display(Name = "Moneda")]

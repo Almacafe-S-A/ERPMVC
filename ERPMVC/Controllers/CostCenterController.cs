@@ -151,31 +151,7 @@ namespace ERPMVC.Controllers
                 _CostCenter.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
-                    CostCenterDTO _CostCenterDuplicated = new CostCenterDTO();
-                    //string baseadress = config.Value.urlbase;
-                    HttpClient _client2 = new HttpClient();
-                    _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var resultado = await _client.GetAsync(baseadress + "api/CostCenter/GetCostCenterByCostCenterName/" + _CostCenter.CostCenterName);
-                    string valorrespuesta2 = "";
-
-                    if (resultado.IsSuccessStatusCode)
-                    {
-                        valorrespuesta = await (resultado.Content.ReadAsStringAsync());
-                        _CostCenter = JsonConvert.DeserializeObject<CostCenterDTO>(valorrespuesta2);
-
-                    }
-                    if (_CostCenterDuplicated != null)
-                    {
-                       
-                          //  Errors = $"Ocurrio un error:{error} El password debe tener mayusculas y minusculas!"
-                       
-                        string error = await result.Content.ReadAsStringAsync();
-                        return this.Json(new DataSourceResult
-                        {
-                            Errors = $"Ocurrio un error: {error} El centro de Costo ya esta ingresado."
-                        });
-                    }
-
+                   
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _listCostCenter = JsonConvert.DeserializeObject<CostCenter>(valorrespuesta);
                 }
@@ -186,6 +162,31 @@ namespace ERPMVC.Controllers
                 {
                     _CostCenter.FechaCreacion = DateTime.Now;
                     _CostCenter.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    CostCenterDTO _CostCenterDuplicated = new CostCenterDTO();
+                    //string baseadress = config.Value.urlbase;
+                    HttpClient _client2 = new HttpClient();
+                    _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var resultado = await _client.GetAsync(baseadress + "api/CostCenter/GetCostCenterByCostCenterName/" + _CostCenter.CostCenterName);
+                    string valorrespuesta2 = "";
+
+                    if (resultado.IsSuccessStatusCode)
+                    {
+                        valorrespuesta2 = await (resultado.Content.ReadAsStringAsync());
+                        _CostCenter = JsonConvert.DeserializeObject<CostCenterDTO>(valorrespuesta2);
+
+                    }
+                    if (_CostCenterDuplicated != null)
+                    {
+
+                        //  Errors = $"Ocurrio un error:{error} El password debe tener mayusculas y minusculas!"
+
+                        string error = await result.Content.ReadAsStringAsync();
+                        return this.Json(new DataSourceResult
+                        {
+                            Errors = $"Ocurrio un error: {error} El centro de Costo ya esta ingresado."
+                        });
+                    }
+
                     var insertresult = await Insert(_CostCenter);
                 }
                 else
