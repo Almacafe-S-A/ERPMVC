@@ -39,7 +39,10 @@ namespace ERPMVC.Models
         [StringLength(50)]
         [Display(Name = "Codigo Contable")]
         public string AccountCode { get; set; }
-
+        [Display(Name = "Id de estado")]
+        public Int64 IdEstado { get; set; }
+        [Display(Name = "Estado")]
+        public string Estado { get; set; }
         [Required]
         [Display(Name = "Nivel de Jerarquia:")]
         public Int64 HierarchyAccount { get; set; }
