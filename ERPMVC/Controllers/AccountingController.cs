@@ -593,10 +593,11 @@ namespace ERPMVC.Controllers
                     if (CheckAccountCode(_AccountingP.AccountCode) == -1)
                     {
                         string error = await result.Content.ReadAsStringAsync();
-                        return this.Json(new DataSourceResult
+                        return await Task.Run(() => BadRequest($"El numero de caracteres del codigo de cuenta no es valido."));
+                       /* return this.Json(new DataSourceResult
                         {
                             Errors = $"Ocurrio un error: {error} El numero de caracteres del codigo de cuenta no es valido."
-                        });
+                        });*/
                     }
                     AccountingDTO _AccountDuplicated = new AccountingDTO();
                     // string baseadress = config.Value.urlbase;
@@ -614,11 +615,13 @@ namespace ERPMVC.Controllers
                     if (_AccountDuplicated != null)
                     {
                         string error = await result.Content.ReadAsStringAsync();
-                        return this.Json(new DataSourceResult
-                        {
-                            Errors = $"Ocurrio un error:{error} El codigo de cuenta ya esta ingresado."
+                        return await Task.Run(() => BadRequest($"El codigo de cuenta ya esta ingresado..."));
 
-                        });
+                        /* return this.Json(new DataSourceResult
+                         {
+                             Errors = $"Ocurrio un error:{error} El codigo de cuenta ya esta ingresado."
+
+                         });*/
                     }
 
                     _AccountingP.FechaCreacion = DateTime.Now;
@@ -643,11 +646,14 @@ namespace ERPMVC.Controllers
                     if (_AccountDuplicated != null)
                     {
                         string error = await result.Content.ReadAsStringAsync();
-                        return this.Json(new DataSourceResult
+
+                        return await Task.Run(() => BadRequest($"El codigo de cuenta ya esta ingresado..."));
+
+                    /*    return this.Json(new DataSourceResult
                         {
                             Errors = $"Ocurrio un error:{error} El codigo de cuenta ya esta ingresado."
 
-                        });
+                        });*/
                     }
 
                     _AccountingP.UsuarioCreacion = _Account.UsuarioCreacion;
@@ -784,7 +790,7 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                return BadRequest($"Ocurrio un Error{ex.Message}");
             }
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _Account }, Total = 1 });
@@ -810,7 +816,7 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                return BadRequest($"Ocurrio un Error{ex.Message}");
             }
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _Account }, Total = 1 });
