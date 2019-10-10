@@ -75,7 +75,7 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="EsFeriado" class=" control-label" style="width:100%"></label>
-                                                    <input type="text" asp-for="EsFeriado" name="EsFeriado" class="form-control" required autocomplete="off" style="min-width:100%" />
+                                                    @(Html.Kendo().SwitchFor(m => m.EsFeriado))
                                                     <span asp-validation-for="EsFeriado" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -87,11 +87,6 @@
                                                 </div>
                                             </div>
                                         </div>
-                                        @*<div class="row">
-                <div class="col-md-12">
-                    <button id="btnHW" class="form-control btn-miboton" type="submit"> Guardar </button>
-                </div>
-            </div>*@
                                     </div>
                                 </form>
                             </div>
@@ -105,10 +100,6 @@
                                     <div class="clearfix">&nbsp;</div>
 
                                     <div class="row">
-                                        @*@if (Model.editar == 1)
-                                        {
-                                            <button id="btnHW" type="submit" class="form-control btn-miboton" onclick="SaveEndosos(this);">Guardar</button>
-                                        }*@
                                         <button id="btnHoursWorked" type="submit" class="form-control btn-miboton" onclick="SaveHoursWorked(this);">Guardar</button>
 
                                     </div>
@@ -126,28 +117,37 @@
 
 <script>
 
-    function SaveHoursWorked(e)
-    {
-        var notification = $("#notification").data("kendoNotification");
-        $("#btnHW").hide();
-        $("#btnHW").prop("disabled", true);
+    function SaveHoursWorked(e) {
+        //if ($("#IdHorastrabajadas").val() == 0 || $("#IdHorastrabajadas").val() == null) {
+        if ($("#IdEmpleado").data("kendoDropDownList").text() == "Seleccionar Empleado" || $("#IdEmpleado").data("kendoDropDownList").text() == null) {
+            alert("Seleccione un Empleado!");
+        }
+        else if ($("#FechaEntrada").getKendoDateTimePicker().value() == "" || $("#FechaEntrada").getKendoDateTimePicker().value() == null) {
+            alert("Selecione una fecha de Entrada!");
+        }
+        else if ($("#MultiplicaHoras").val() == "" || $("#MultiplicaHoras").val() == null) {
+            alert("Favor llene el campo Multiplica Horas!");
+        }
+        else {
+            var notification = $("#notification").data("kendoNotification");
+            $("#btnHW").hide();
+            $("#btnHW").prop("disabled", true);
 
-        var displayedData = $("#gridHWD").data().kendoGrid.dataSource.view();
-        console.log(displayedData);
-        var dataObject =
-        {
-            'IdHorastrabajadas': $("#IdHorastrabajadas").val() === "" ? "0" : $("#IdHorastrabajadas").val(),
-            'IdEmpleado': $("#IdEmpleado").val(),
-            'FechaEntrada': $("#FechaEntrada").getKendoDateTimePicker().value().toJSON(),
-            'NombreEmpleado': $("#IdEmpleado").data("kendoDropDownList").text(),
-            'EsFeriado': $("#EsFeriado").val(),
-            'MultiplicaHoras': $("#MultiplicaHoras").val(),
-            'idhorastrabajadasconstrains': displayedData
+            var displayedData = $("#gridHWD").data().kendoGrid.dataSource.view();
+            var dataObject =
+            {
+                'IdHorastrabajadas': $("#IdHorastrabajadas").val() === "" ? "0" : $("#IdHorastrabajadas").val(),
+                'IdEmpleado': $("#IdEmpleado").val(),
+                'FechaEntrada': $("#FechaEntrada").getKendoDateTimePicker().value().toJSON(),
+                'NombreEmpleado': $("#IdEmpleado").data("kendoDropDownList").text(),
+                'EsFeriado': $("#EsFeriado").is(':checked'),
+                'MultiplicaHoras': $("#MultiplicaHoras").val(),
+                'idhorastrabajadasconstrains': displayedData
             };
 
-        var validator = $("#frmHoursWorked").data("kendoValidator");
-        var status = $(".status");
-        //if (displayedData.length > 0) {
+            var validator = $("#frmHoursWorked").data("kendoValidator");
+            var status = $(".status");
+            //if (displayedData.length > 0) {
             if (validator.validate()) {
 
                 //if (validator.validate()) {
@@ -171,6 +171,8 @@
                         });
                         $('#myModalHoursWorked').modal('hide');
                         RefrescarGrid();
+                        RefreshHoursWorkedDetail();
+                        ClearSession();
                     },
                     error: function (XMLHttpRequest, textStatus, errorThrown) {
                         notification.show({
@@ -186,17 +188,7 @@
                     message: "Datos invalidos"
                 }, "error");
             }
-        
-        //else {
-        //    $("#btnHoursWorked").show();
-        //    $("#btnHoursWorked").prop("disabled", false);
-        //    notification.show({
-        //        title: "Validacion",
-        //        message: "Debe agregar el Detalle!"
-        //    }, "error");
-
-        //}
-        
+        }
     }
     
 </script>

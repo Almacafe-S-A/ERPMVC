@@ -109,7 +109,6 @@ namespace ERPMVC.Controllers
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<HoursWorked>> SaveHoursWorked([FromBody]HoursWorkedDTO _HoursWorked)
         {
-
             try
             {
                 HoursWorked _listHoursWorked = new HoursWorked();
@@ -118,11 +117,8 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/HoursWorked/GetHoursWorkedById/" + _HoursWorked.IdHorastrabajadas);
                 string valorrespuesta = "";
-                _HoursWorked.FechaModificacion = DateTime.Now;
-                _HoursWorked.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
-
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _listHoursWorked = JsonConvert.DeserializeObject<HoursWorked>(valorrespuesta);
                 }
@@ -142,6 +138,8 @@ namespace ERPMVC.Controllers
                 {
                     _HoursWorked.FechaCreacion = _listHoursWorked.FechaCreacion;
                     _HoursWorked.UsuarioCreacion = _listHoursWorked.UsuarioCreacion;
+                    _HoursWorked.FechaModificacion = DateTime.Now;
+                    _HoursWorked.UsuarioModificacion = HttpContext.Session.GetString("user");
                     var updateresult = await Update(_HoursWorked.IdHorastrabajadas, _HoursWorked);
                 }
 
@@ -165,7 +163,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 _HoursWorked.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _HoursWorked.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _HoursWorked.FechaCreacion = DateTime.Now;
                 var result = await _client.PostAsJsonAsync(baseadress + "api/HoursWorked/Insert", _HoursWorked);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -181,7 +179,6 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
             return Ok(_HoursWorked);
-            // return new ObjectResult(new DataSourceResult { Data = new[] { _EndososCertificados }, Total = 1 });
         }
 
         [HttpPut("{id}")]
@@ -192,7 +189,8 @@ namespace ERPMVC.Controllers
                 string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-
+                _HoursWorked.FechaModificacion = DateTime.Now;
+                _HoursWorked.UsuarioModificacion = HttpContext.Session.GetString("user");
                 var result = await _client.PutAsJsonAsync(baseadress + "api/HoursWorked/Update", _HoursWorked);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
