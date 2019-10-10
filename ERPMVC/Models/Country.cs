@@ -64,6 +64,11 @@ namespace ERPMVC.Models
         [Display(Name = "Seguimiento o monitoreo")]
         public string SeguimientoName { get; set; }
 
+        [Display(Name = "Estado")]
+        public long IdEstado { get; set; } // bigint
+        [Display(Name = "Estado")]
+        public string Estado { get; set; } // text
+
 
         [Display(Name = "Fecha de modificación")]
         public DateTime? FechaModificacion { get; set; }

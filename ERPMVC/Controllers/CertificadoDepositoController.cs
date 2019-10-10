@@ -187,45 +187,50 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult> GetCertificadoDepositoByIdKardex([DataSourceRequest]DataSourceRequest request, [FromBody] CertificadoDeposito _Certificado)
+        public async Task<ActionResult> GetCertificadoDepositoByIdKardex([DataSourceRequest]DataSourceRequest request, [FromBody] CertificadoDepositoDTO _listado)
         {
             CertificadoDeposito _CertificadoDeposito = new CertificadoDeposito();
             try
             {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoById/" + _Certificado.IdCD);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDeposito>(valorrespuesta);
 
-                }
-
-                if (_CertificadoDeposito == null)
+                foreach (var _Certificado in _listado.CertificadosList)
                 {
-                    _CertificadoDeposito = new CertificadoDeposito();
-                }
 
-                Kardex _kardexparam = new Kardex { DocumentId = _Certificado.IdCD, DocumentName = "CD" };
-                List<KardexLine> _kardexsaldo = new List<KardexLine>();
-                result = await _client.PostAsJsonAsync(baseadress + "api/Kardex/GetSaldoProductoByCertificado", _kardexparam);
-                valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _kardexsaldo = JsonConvert.DeserializeObject<List<KardexLine>>(valorrespuesta);
-                }
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoById/" + _Certificado);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDeposito>(valorrespuesta);
 
-                // _CertificadoDeposito._CertificadoLine.Clear();
-                foreach (var item in _CertificadoDeposito._CertificadoLine)
-                {
-                    item.Quantity = (from c in _kardexsaldo
-                                     .Where(q => q.SubProducId == item.SubProductId)
-                                     select c.TotalCD
-                                     ).FirstOrDefault();
+                    }
+
+                    if (_CertificadoDeposito == null)
+                    {
+                        _CertificadoDeposito = new CertificadoDeposito();
+                    }
+
+                    Kardex _kardexparam = new Kardex { DocumentId = _Certificado, DocumentName = "CD" };
+                    List<KardexLine> _kardexsaldo = new List<KardexLine>();
+                    result = await _client.PostAsJsonAsync(baseadress + "api/Kardex/GetSaldoProductoByCertificado", _kardexparam);
+                    valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _kardexsaldo = JsonConvert.DeserializeObject<List<KardexLine>>(valorrespuesta);
+                    }
+
+                    // _CertificadoDeposito._CertificadoLine.Clear();
+                    foreach (var item in _CertificadoDeposito._CertificadoLine)
+                    {
+                        item.Quantity = (from c in _kardexsaldo
+                                         .Where(q => q.SubProducId == item.SubProductId)
+                                         select c.TotalCD
+                                         ).FirstOrDefault();
+                    }
                 }
 
 

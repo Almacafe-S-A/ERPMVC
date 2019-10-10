@@ -101,7 +101,7 @@ namespace ERPMVC.Controllers
 
                 if (_Country == null)
                 {
-                    _Country = new CountryDTO();
+                    _Country = new CountryDTO { Actualizacion = DateTime.Now,  };
                 }
             }
             catch (Exception ex)
