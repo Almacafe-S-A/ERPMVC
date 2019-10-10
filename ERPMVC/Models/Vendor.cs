@@ -23,14 +23,17 @@ namespace ERPMVC.Models
         [Display(Name = "Dirección")]
         public string Address { get; set; }
 
-
+        [Display(Name = "Pais")]
         public long CountryId { get; set; }
         [ForeignKey("CountryId")]
         public Country Country { get; set; }
+
+        [Display(Name = "Departamento")]
         public long StateId { get; set; }
         [ForeignKey("StateId")]
         [Display(Name = "Departamento")]
         public State State { get; set; }
+        [Display(Name = "Ciudad")]
         public long CityId { get; set; }
         [ForeignKey("CityId")]
         [Display(Name = "Ciudad")]
