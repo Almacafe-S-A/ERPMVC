@@ -125,7 +125,7 @@ namespace ERPMVC.Controllers
                 }
 
                 if (_Product == null) { _Product = new Models.Product(); }
-
+                _ProductS.UnitOfMeasureId = null;
                 if (_ProductS.ProductId == 0)
                 {
                     _ProductS.FechaCreacion = DateTime.Now;

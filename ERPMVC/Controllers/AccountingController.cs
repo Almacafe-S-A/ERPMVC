@@ -450,7 +450,7 @@ namespace ERPMVC.Controllers
                                       Description = c.Description,
                                       AccountBalance = c.AccountBalance,
                                       CompanyInfoId = c.CompanyInfoId,
-                                     ChildAccounts = c.ChildAccounts,
+                                      ChildAccounts = c.ChildAccounts,
 
                                   }
                                   ).ToList();

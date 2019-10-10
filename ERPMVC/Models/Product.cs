@@ -29,7 +29,7 @@ namespace ERPMVC.Models
         public string Estado { get; set; }
 
         [Display(Name = "Unidad de medida")]
-        public int UnitOfMeasureId { get; set; }
+        public int? UnitOfMeasureId { get; set; }
         [Display(Name = "Precio de compra")]
         public double DefaultBuyingPrice { get; set; } = 0.0;
         [Display(Name = "Precio de venta")]
