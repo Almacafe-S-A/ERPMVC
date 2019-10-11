@@ -181,16 +181,45 @@ namespace ERPMVC.Controllers
                         //  Errors = $"Ocurrio un error:{error} El password debe tener mayusculas y minusculas!"
 
                         string error = await result.Content.ReadAsStringAsync();
-                        return this.Json(new DataSourceResult
-                        {
-                            Errors = $"Ocurrio un error: {error} El centro de Costo ya esta ingresado."
-                        });
+                        return await Task.Run(() => BadRequest($"El nombre del centro de costo ya esta ingresado..."));
+
+                        /* return this.Json(new DataSourceResult
+                         {
+                             Errors = $"Ocurrio un error: {error} El centro de Costo ya esta ingresado."
+                         });*/
                     }
 
                     var insertresult = await Insert(_CostCenter);
                 }
                 else
                 {
+                    CostCenterDTO _CostCenterDuplicated = new CostCenterDTO();
+                    //string baseadress = config.Value.urlbase;
+                    HttpClient _client2 = new HttpClient();
+                    _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var resultado = await _client.GetAsync(baseadress + "api/CostCenter/GetCostCenterByCostCenterName/" + _CostCenter.CostCenterName);
+                    string valorrespuesta2 = "";
+
+                    if (resultado.IsSuccessStatusCode)
+                    {
+                        valorrespuesta2 = await (resultado.Content.ReadAsStringAsync());
+                        _CostCenterDuplicated = JsonConvert.DeserializeObject<CostCenterDTO>(valorrespuesta2);
+
+                    }
+                    if (_CostCenterDuplicated != null)
+                    {
+
+                        //  Errors = $"Ocurrio un error:{error} El password debe tener mayusculas y minusculas!"
+
+                        string error = await result.Content.ReadAsStringAsync();
+                        return await Task.Run(() => BadRequest($"El nombre del centro de costo ya esta ingresado..."));
+
+                        /* return this.Json(new DataSourceResult
+                         {
+                             Errors = $"Ocurrio un error: {error} El centro de Costo ya esta ingresado."
+                         });*/
+                    }
+
                     var updateresult = await Update(_CostCenter.CostCenterId, _CostCenter);
                 }
 
@@ -198,6 +227,8 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un Error{ex.Message}");
+
                 throw ex;
             }
 
@@ -229,7 +260,7 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                return BadRequest($"Ocurrio un Error{ex.Message}");
             }
             return Ok(_CostCenter);
             // return new ObjectResult(new DataSourceResult { Data = new[] { _CostCenter }, Total = 1 });
@@ -256,7 +287,7 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                return BadRequest($"Ocurrio un Error{ex.Message}");
             }
             return new ObjectResult(new DataSourceResult { Data = new[] { _CostCenter }, Total = 1 });
         }
@@ -282,7 +313,7 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error: {ex.Message}");
+                return BadRequest($"Ocurrio un Error: {ex.Message}");
             }
 
 

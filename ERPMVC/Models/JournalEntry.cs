@@ -25,6 +25,9 @@ namespace ERPMVC.Models
 
         [Display(Name = "Tipo de Socio de negocios")]
         public string PartyTypeName { get; set; }
+
+        [Display(Name = "Id Documento")]
+        public Int64 DocumentId { get; set; }
         [Display(Name = "Socio de negocio")]
         public int? PartyId { get; set; }
         [Display(Name = "Tipos de Voucher")]
@@ -60,6 +63,7 @@ namespace ERPMVC.Models
 
         [Display(Name = "Tipo de ajuste")]
         public string TypeOfAdjustmentName { get; set; }
+
 
         public virtual ICollection<JournalEntryLine> JournalEntryLines { get; set; }
         [Required]
