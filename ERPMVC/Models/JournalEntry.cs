@@ -63,6 +63,11 @@ namespace ERPMVC.Models
 
         [Display(Name = "Tipo de ajuste")]
         public string TypeOfAdjustmentName { get; set; }
+        [Display(Name = "Estado")]
+        public Int64 EstadoId { get; set; }
+        [Display(Name = "Estado")]
+        public string EstadoName { get; set; }
+
 
 
         public virtual ICollection<JournalEntryLine> JournalEntryLines { get; set; }

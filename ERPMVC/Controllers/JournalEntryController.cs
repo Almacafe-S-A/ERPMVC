@@ -34,11 +34,13 @@ namespace ERPMVC.Controllers
         // GET: Purch
         public ActionResult Index()
         {
+           
+
             return View();
         }
 
         public ActionResult IndexAjustes()
-        {
+        {         
             return View();
         }
         public ActionResult JournalEntryLine()
@@ -92,6 +94,50 @@ namespace ERPMVC.Controllers
         }
 
             */
+
+
+        //COMIENZA APROVACIÓN
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<JournalEntryDTO>> Aprobar([FromBody]JournalEntryDTO _JournalEntry)
+        {
+            JournalEntryDTO _so = new JournalEntryDTO();
+            if (_JournalEntry != null)
+            {
+                try
+                {
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/JournalEntry/GetJournalEntryById/" + _JournalEntry.JournalEntryId);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _so = JsonConvert.DeserializeObject<JournalEntryDTO>(valorrespuesta);
+                        _so.EstadoId = 6;
+                        _so.EstadoName = "Aprobado";
+                        var resultsalesorder = await Update(_so.JournalEntryId, _so);
+
+                        var value = (resultsalesorder.Result as ObjectResult).Value;
+                        JournalEntry resultado = ((JournalEntry)(value));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                    throw ex;
+                }
+            }
+            else
+            {
+                return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+            }
+
+            return await Task.Run(() => Ok(_so));
+        }
+
+        //TERMINA
+
         [HttpGet("[action]")]
         public async Task<JsonResult> GetJournalEntry([DataSourceRequest]DataSourceRequest request)
         {
@@ -170,20 +216,20 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpPut("JournalEntryId")]
-        public async Task<IActionResult> Update(Int64 JournalEntryId, JournalEntry _JournalEntry)
+        [HttpPut("action")]
+        public async Task<ActionResult<JournalEntry>> Update(Int64 JournalEntryId, JournalEntryDTO _JournalEntryLine)
         {
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PutAsJsonAsync(baseadress + "api/JournalEntry/Update", _JournalEntry);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/JournalEntry/Update", _JournalEntryLine);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _JournalEntry = JsonConvert.DeserializeObject<JournalEntry>(valorrespuesta);
+                    _JournalEntryLine = JsonConvert.DeserializeObject<JournalEntryDTO>(valorrespuesta);
                 }
 
             }
@@ -193,7 +239,8 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _JournalEntry }, Total = 1 });
+            // return new ObjectResult(new DataSourceResult { Data = new[] { _JournalEntry }, Total = 1 });
+            return Ok(_JournalEntryLine);
         }
 
         public async Task<ActionResult<JournalEntry>> SaveJournalEntry([FromBody]dynamic dto)
