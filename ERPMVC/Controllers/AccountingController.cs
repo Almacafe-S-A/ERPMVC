@@ -673,9 +673,11 @@ namespace ERPMVC.Controllers
             //return Json(_Accounting);
         }
         [HttpPost("[action]")]
-        public async Task<ActionResult> pvwAddAccountingFather([FromBody]AccountingDTO _sarpara)
+        public async Task<ActionResult> pvwAddAccountingFather([FromBody]AccountingFatherDTO _sarpara)
         {
-            AccountingDTO _Account = new AccountingDTO();
+            AccountingFatherDTO _Account = new AccountingFatherDTO();
+            AccountingDTO _Accountingfalse = new AccountingDTO();
+
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -686,14 +688,32 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Account = JsonConvert.DeserializeObject<AccountingDTO>(valorrespuesta);
+                    _Accountingfalse = JsonConvert.DeserializeObject<AccountingDTO>(valorrespuesta);
 
                 }
 
                 if (_Account == null)
                 {
                     // AccountingDTO _AccountPadre = new AccountingDTO();
-                    _Account = new AccountingDTO();
+                    AccountingDTO _AccountParentId = new AccountingDTO();
+                    HttpClient _client2 = new HttpClient();
+                    _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var resultado2 = await _client2.GetAsync(baseadress + "api/Accounting/GetAccountById/" + _sarpara.ParentAccountId);
+                    var valorrespuesta2 = "";
+                    if (resultado2.IsSuccessStatusCode)
+                    {
+                        valorrespuesta2 = await (resultado2.Content.ReadAsStringAsync());
+                        _AccountParentId = JsonConvert.DeserializeObject<AccountingDTO>(valorrespuesta2);
+
+                    }
+                    _Accountingfalse = new AccountingDTO();
+                    _Account.ParentAccountId = _sarpara.ParentAccountId;
+                    if (_AccountParentId == null) { }
+                    else
+                    {
+                        _Account.TypeAccountIdPadre = _AccountParentId.TypeAccountId;
+                    }
+                    _Account = new AccountingFatherDTO();
                    
                 }
             }
@@ -744,11 +764,13 @@ namespace ERPMVC.Controllers
 
                     }
                     _Account = new AccountingDTO();
-                        _Account.ParentAccountId = _sarpara.ParentAccountId;
-
+                    _Account.ParentAccountId = _sarpara.ParentAccountId;
+                    if (_AccountParentId == null) { }
+                    else { 
                     _Account.TypeAccountId = _AccountParentId.TypeAccountId;
-                    
-            }
+                    }
+
+                }
             }
             catch (Exception ex)
             {
