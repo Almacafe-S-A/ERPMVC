@@ -17,6 +17,10 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 
+using Syncfusion.XlsIO;
+
+using Syncfusion.Drawing;
+
 
 using Microsoft.Net.Http.Headers;
 
@@ -30,22 +34,22 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        //private IHostingEnvironment _hostingEnvironment;
-        //public ConciliacionController(IHostingEnvironment hostingEnvironment
-        //    , ILogger<ConciliacionController> logger, IOptions<MyConfig> config)
-        //{
-        //    this.config = config;
-        //    this._logger = logger;
-        //    _hostingEnvironment = hostingEnvironment;
-
-        //}
-
-
-        public ConciliacionController(ILogger<HomeController> logger, IOptions<MyConfig> config)
+        private IHostingEnvironment _hostingEnvironment;
+        public ConciliacionController(IHostingEnvironment hostingEnvironment
+            , ILogger<ConciliacionController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
+            _hostingEnvironment = hostingEnvironment;
+
         }
+
+
+        //public ConciliacionController(ILogger<HomeController> logger, IOptions<MyConfig> config)
+        //{
+        //    this.config = config;
+        //    this._logger = logger;
+        //}
 
 
         // GET: Conciliacion
@@ -125,7 +129,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<Conciliacion>> SaveConciliacion(IEnumerable<IFormFile> files, ConciliacionDTO _Conciliaciontp)
+        public async Task<ActionResult<Conciliacion>> SaveConciliacion(List<IFormFile> files, ConciliacionDTO _Conciliaciontp)
         {
 
             try
@@ -200,19 +204,16 @@ namespace ERPMVC.Controllers
             return Json(_Conciliaciontp);
         }
 
-        public ActionResult Submit(IEnumerable<IFormFile> files, ConciliacionDTO _Conciliaciontp)
+        public async Task<ActionResult> Submit(List<IFormFile> files, ConciliacionDTO _Conciliaciontp)
         {
-            IEnumerable<string> fileInfo = new List<string>();
-
             if (files != null)
             {
-                fileInfo = ProcesoConciliacion(files);
+                await ProcesoConciliacion(files);
             }
 
+            
 
-            ViewBag.Informacion = fileInfo;
-
-            return View("Result", fileInfo);
+            return View("Result");
         }
 
         public ActionResult Result()
@@ -220,7 +221,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        private IEnumerable<string> ProcesoConciliacion(IEnumerable<IFormFile> files)
+        private async Task<IActionResult> ProcesoConciliacion(List<IFormFile> files)
         {
             List<string> fileInfo = new List<string>();
 
@@ -229,116 +230,130 @@ namespace ERPMVC.Controllers
                 var fileContent = ContentDispositionHeaderValue.Parse(file.ContentDisposition);
                 var fileName = Path.GetFileName(fileContent.FileName.ToString().Trim('"'));
 
-                fileInfo.Add(string.Format("{0} ({1} bytes)", fileName, file.Length));
+
+                //A existing workbook is opened.              
+                var filePath = _hostingEnvironment.WebRootPath + "/Conciliacion/" + fileName;
+
+                using (var stream = System.IO.File.Create(filePath))
+                {
+                    await file.CopyToAsync(stream);
+                }
+
+                //Aqui va la funcionalidad con syncfusion
+                //New instance of ExcelEngine is created 
+                //Equivalent to launching Microsoft Excel with no workbooks open
+                //Instantiate the spreadsheet creation engine
+                ExcelEngine excelEngine = new ExcelEngine();
+
+                //Instantiate the Excel application object
+                IApplication application = excelEngine.Excel;
+
+                //Assigns default application version
+                application.DefaultVersion = ExcelVersion.Excel2016;
+
+                //A existing workbook is opened.              
+                FileStream sampleFile = new FileStream(filePath, FileMode.Open);
+
+                IWorkbook workbook = application.Workbooks.Open(sampleFile);
+
+                //Access first worksheet from the workbook.
+                IWorksheet worksheet = workbook.Worksheets[0];
+
+                //Set Text in cell A3.
+                //worksheet.Range["A3"].Text;
+
+                string variable = worksheet.Range["A2"].Text;
+
+                //Defining the ContentType for excel file.
+                string ContentType = "Application/msexcel";
+
+                //Define the file name.
+                string fileoutput = "Output.xlsx";
+
+                //Creating stream object.
+                MemoryStream newstream = new MemoryStream();
+
+                //Saving the workbook to stream in XLSX format
+                workbook.SaveAs(newstream);
+
+                newstream.Position = 0;
+
+                //Closing the workbook.
+                workbook.Close();
+
+                //Dispose the Excel engine
+                excelEngine.Dispose();
+
+                //Creates a FileContentResult object by using the file contents, content type, and file name.
+                return File(newstream, ContentType, fileoutput);
+
             }
 
-            return fileInfo;
-
-            //try
-            //{
-
-            //    Conciliacion _listConciliacion = new Conciliacion();
-            //    string baseadress = config.Value.urlbase;
-            //    HttpClient _client = new HttpClient();
-            //    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-            //    var result = await _client.GetAsync(baseadress + "api/Conciliacion/GetConciliacionById/" + _Conciliaciontp.ConciliacionId);
-            //    string valorrespuesta = "";
-
-            //    foreach (var file in files)
-            //    {
 
 
-            //        FileInfo info = new FileInfo(file.FileName);
-            //        if (info.Extension.Equals(".pdf") || info.Extension.Equals(".jpg")
-            //            || info.Extension.Equals(".png")
-            //           || info.Extension.Equals(".xls") || info.Extension.Equals(".xlsx"))
-            //        {
+            return Ok(new {  });
 
-            //            _Conciliaciontp.FechaModificacion = DateTime.Now;
-            //            _Conciliaciontp.UsuarioModificacion = HttpContext.Session.GetString("user");
-            //            if (result.IsSuccessStatusCode)
-            //            {
-
-            //                valorrespuesta = await(result.Content.ReadAsStringAsync());
-            //                _listConciliacion = JsonConvert.DeserializeObject<Conciliacion>(valorrespuesta);
-            //            }
-
-            //            if (_listConciliacion == null) { _listConciliacion = new Models.Conciliacion(); }
-            //            if (_listConciliacion.ConciliacionId == 0)
-            //            {
-            //                _Conciliaciontp.FechaCreacion = DateTime.Now;
-            //                _Conciliacion.DocumentName = file.FileName;
-            //                _Conciliaciontp.UsuarioCreacion = HttpContext.Session.GetString("user");
-            //                var insertresult = await Insert(_Conciliaciontp);
-            //                var value = (insertresult.Result as ObjectResult).Value;
-            //                _Conciliaciontp = ((ConciliacionDTO)(value));
-            //            }
-            //            else
-            //            {
-            //                var updateresult = await Update(_Conciliaciontp.ConciliacionId, _Conciliaciontp);
-            //            }
-
-
-
-            //            var filePath = _hostingEnvironment.WebRootPath + "/Conciliacions/" + _Conciliacion.ConciliacionId + "_"
-            //                + file.FileName.Replace(info.Extension, "") + "_" + _Conciliacion.DocumentTypeId + "_" + _Conciliacion.DocumentTypeName
-            //                + info.Extension;
-
-            //            using (var stream = new FileStream(filePath, FileMode.Create))
-            //            {
-            //                await file.CopyToAsync(stream);
-            //                // MemoryStream mstream = new MemoryStream();
-            //                //mstream.WriteTo(stream);
-            //            }
-
-            //            _Conciliacion.Path = filePath;
-            //            var updateresult2 = await Update(_Conciliaciontp.ConciliacionId, _Conciliaciontp);
-            //        }
-            //    }
-
-            //}
-            //catch (Exception ex)
-            //{
-            //    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-            //    throw ex;
-            //}
         }
-    
+
+        //public async Task<IActionResult> ProcesoConciliacion(List<IFormFile> files)
+        //{
+        //    long size = files.Sum(f => f.Length);
+        //    var filePath = _hostingEnvironment.WebRootPath + "/Conciliacion/" + files;
+
+        //    foreach (var formFile in files)
+        //    {
+        //        if (formFile.Length > 0)
+        //        {
+                    
+
+        //            using (var stream = System.IO.File.Create(filePath))
+        //            {
+        //                await formFile.CopyToAsync(stream);
+        //            }
+        //        }
+        //    }
+
+        //    // Process uploaded files
+        //    // Don't rely on or trust the FileName property without validation.
+
+        //    return Ok(new { count = files.Count, size, filePath });
+        //}
 
 
-    //[HttpGet]
-    //public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
-    //{
-    //    List<Conciliacion> _Conciliacion = new List<Conciliacion>();
-    //    try
-    //    {
 
-    //        string baseadress = config.Value.urlbase;
-    //        HttpClient _client = new HttpClient();
-    //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-    //        var result = await _client.GetAsync(baseadress + "api/Conciliacion/GetConciliacion");
-    //        string valorrespuesta = "";
-    //        if (result.IsSuccessStatusCode)
-    //        {
-    //            valorrespuesta = await (result.Content.ReadAsStringAsync());
-    //            _Conciliacion = JsonConvert.DeserializeObject<List<Conciliacion>>(valorrespuesta);
+        //[HttpGet]
+        //public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
+        //{
+        //    List<Conciliacion> _Conciliacion = new List<Conciliacion>();
+        //    try
+        //    {
 
-    //        }
+        //        string baseadress = config.Value.urlbase;
+        //        HttpClient _client = new HttpClient();
+        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+        //        var result = await _client.GetAsync(baseadress + "api/Conciliacion/GetConciliacion");
+        //        string valorrespuesta = "";
+        //        if (result.IsSuccessStatusCode)
+        //        {
+        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
+        //            _Conciliacion = JsonConvert.DeserializeObject<List<Conciliacion>>(valorrespuesta);
 
-
-    //    }
-    //    catch (Exception ex)
-    //    {
-    //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-    //        throw ex;
-    //    }
+        //        }
 
 
-    //    return _Conciliacion.ToDataSourceResult(request);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+        //        throw ex;
+        //    }
 
-    //}
 
-    [HttpPost]
+        //    return _Conciliacion.ToDataSourceResult(request);
+
+        //}
+
+        [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult<ConciliacionDTO>> Insert(ConciliacionDTO _Conciliacion)
         {
