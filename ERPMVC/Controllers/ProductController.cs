@@ -87,7 +87,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Product = JsonConvert.DeserializeObject<List<Product>>(valorrespuesta);
-
+                    _Product = _Product.OrderByDescending(q => q.ProductId).ToList();
                 }
 
 
