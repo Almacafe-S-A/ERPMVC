@@ -261,6 +261,7 @@ namespace ERPMVC.Controllers
                 }
 
                 _SubProduct.TituloVentana = _sarpara.TituloVentana;
+                _SubProduct.IsEnable = _sarpara.IsEnable;
             }
             catch (Exception ex)
             {
