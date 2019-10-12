@@ -147,7 +147,7 @@ namespace ERPMVC.Controllers
                     }
                     else
                     {
-                        _Invoice.NumeroDEIString = $"{_Invoice.Sucursal}-{_Invoice.Caja}-01-{_Invoice.NumeroDEI.ToString().PadLeft(8, '0')} ";
+                        _Invoice.NumeroDEIString = $"{resultado.Sucursal}-{resultado.Caja}-01-{resultado.NumeroDEI.ToString().PadLeft(8, '0')} ";
                     }
 
                 }
