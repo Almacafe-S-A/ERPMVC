@@ -99,7 +99,7 @@ namespace ERPMVC.Models
         [Display(Name = "Enviarla con el mensajero")]
         public bool EnviarlaMensajero { get; set; }
 
-        [Display(Name = "Dirección de envío con puntos de referencia")]
+        [Display(Name = "Dirección de envío")]
         public string DireccionEnvio { get; set; }
 
         [Display(Name = "Articulos pertenecen a la empresa u otra organización")]
