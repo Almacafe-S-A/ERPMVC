@@ -389,11 +389,13 @@ namespace ERPMVC.Controllers
             List<AccountingDTO> _accounting = new List<AccountingDTO>();
             try
             {
+
+               
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.Timeout = TimeSpan.FromMinutes(15);
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));              
-                var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountingType/" + TypeAccount.TypeAccountId);
+                var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountingType/" + TypeAccount.TypeAccountId);//GetAccountingActive
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -406,7 +408,7 @@ namespace ERPMVC.Controllers
                 {
                     _accounting = new List<AccountingDTO>();
                 }
-
+                
             }
             catch (Exception ex)
             {
@@ -672,6 +674,7 @@ namespace ERPMVC.Controllers
            
             //return Json(_Accounting);
         }
+        
         [HttpPost("[action]")]
         public async Task<ActionResult> pvwAddAccountingFather([FromBody]AccountingFatherDTO _sarpara)
         {
@@ -729,7 +732,7 @@ namespace ERPMVC.Controllers
             // return PartialView(_Account);
 
         }
-
+        
 
         [HttpPost("[action]")]
         public async Task<ActionResult> pvwAddAccounting([FromBody]AccountingDTO _sarpara)
