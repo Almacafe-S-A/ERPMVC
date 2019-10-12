@@ -29,15 +29,19 @@ namespace ERPMVC.Models
         public string Estado { get; set; }
 
         [Display(Name = "Unidad de medida")]
-        public int UnitOfMeasureId { get; set; }
+        public int? UnitOfMeasureId { get; set; }
         [Display(Name = "Precio de compra")]
         public double DefaultBuyingPrice { get; set; } = 0.0;
         [Display(Name = "Precio de venta")]
         public double DefaultSellingPrice { get; set; } = 0.0;
         [Display(Name = "Sucursal")]
         public int BranchId { get; set; }
+        [Display(Name = "Sucursal")]
+        public string BranchName { get; set; }
         [Display(Name = "Moneda")]
         public int CurrencyId { get; set; }
+        [Display(Name = "Moneda")]
+        public string CurrencyName { get; set; }
         [Required]
         [Display(Name = "Usuario de creación")]
         public string UsuarioCreacion { get; set; }

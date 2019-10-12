@@ -25,27 +25,58 @@
             }
         }
 
-        var displayedData = $("#gridGoodsReceivedDetail").data().kendoGrid.dataSource.view();
+        var displayedData = $("#gridGoodsReceivedDetail").data().kendoGrid.dataSource.data();
+
         var id = -999999;
         debugger;
-        if (Number($("#GoodsReceiveLinedId").val()) === 0) {
+        if (Number($("#GoodsReceiveLinedId").val()) === 0) {          
+
+
             if (displayedData.length > 0) {
                 for (var i = 0; i < displayedData.length; i++) {
                     //console.log('Linea:' + displayedData[i].CertificadoLineId);
                     //console.log('Linea:' + id);
+
+                   
+
                     if (displayedData[i].GoodsReceiveLinedId > id)
                         id = displayedData[i].GoodsReceiveLinedId;
+                 
 
                 }
 
                 id = id + 1;
             }
-            else {
+            else if (Number($("#SubProductIddetail").val())>0) {
                 id = 1;
             }
         }
         else {
             id = $("#GoodsReceiveLinedId").val();
+        }
+
+        if (displayedData.length > 0) {
+            var contador = 0;
+            for (var i = 0; i < displayedData.length; i++) {
+                if (displayedData[i].SubProductId == $("#SubProductIddetail").val() &&
+                    displayedData[i].UnitOfMeasureId == $("#UnitOfMeasureId").val() &&
+                    displayedData[i].GoodsReceiveLinedId != id
+                ) {
+                    contador = contador + 1;                 
+
+                  
+                }
+            }
+        }
+
+        console.log(contador);
+        if (contador >= 1 ) {
+            var notification = $("#notification").data("kendoNotification");
+            notification.show({
+                title: "Validación",
+                message: "El producto ya existe en las lineas,favor modificar las cantidades!"
+            }, "error");
+            return;
         }
 
         return {
@@ -302,9 +333,9 @@
                                                               command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
                                                           }
                                                           command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditGoodsReceivedDetalle");
-                                                  // command.Custom("Imprimir").Click("ImprimirCotizacion");
-                                                  //  command.Edit(); command.Destroy();
-                                              }).Width(100);
+                                                          // command.Custom("Imprimir").Click("ImprimirCotizacion");
+                                                          //  command.Edit(); command.Destroy();
+                                                      }).Width(100);
 
                                                       columns.Bound(p => p.GoodsReceiveLinedId).Title("Id Linea").Width(120);
                                                       columns.Bound(p => p.GoodsReceivedId).Title("Recibo de Mercaderia").Width(150);
@@ -315,10 +346,11 @@
                                                       columns.Bound(p => p.SubProductId).Title("Producto").Visible(false).Width(150);
                                                       columns.Bound(p => p.SubProductName).Title("Producto").Width(150);
                                                       columns.Bound(p => p.QuantitySacos).Title("Sacos").Width(150);
-                                                      columns.Bound(p => p.WareHouseId).Title("Bodega").Width(150);
+                                                      columns.Bound(p => p.WareHouseId).Title("Id Bodega").Width(150);
+                                                      columns.Bound(p => p.WareHouseName).Title("Bodega").Width(150);
                                                       columns.Bound(p => p.ControlPalletsId).Title("Estiba No.").Width(150);
-                                              // columns.Bound(p => p.Total).Title("Total").Width(100);
-                                          })
+                                                      // columns.Bound(p => p.Total).Title("Total").Width(100);
+                                                  })
                                                       .Filterable(f => f.Operators(o => o.ForString(s => s
                                                .Clear()
                                                .Contains("Contiene")
@@ -395,9 +427,9 @@
                                                     .Events(events =>
                                                     {
                                                         events.Error("error_handler");
-                                                //events.upda("EditHandler");
+                                                        //events.upda("EditHandler");
 
-                                            })
+                                                    })
                                                     .Read(read => read.Action("GetGoodsReceivedLineByGoodsReceivedId", "GoodsReceivedLine").Data("GetGoodsReceivedLineId"))
                                                     //.Create(create => create.Action("Insert", "SalesOrderLine"))
                                                     //.Update(update => update.Action("Update", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
