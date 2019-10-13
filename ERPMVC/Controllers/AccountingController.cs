@@ -384,38 +384,73 @@ namespace ERPMVC.Controllers
         }
 
 
-        public async Task<JsonResult> AccountingRes([DataSourceRequest]DataSourceRequest request, TypeAccount TypeAccount)
+        public async Task<JsonResult> AccountingRes([DataSourceRequest]DataSourceRequest request, TypeAccount TypeAccount, bool Estado)
         {
             List<AccountingDTO> _accounting = new List<AccountingDTO>();
-            try
+            if (Estado == false)
             {
 
-               
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.Timeout = TimeSpan.FromMinutes(15);
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));              
-                var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountingType/" + TypeAccount.TypeAccountId);//GetAccountingActive
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
+                try
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _accounting = JsonConvert.DeserializeObject<List<AccountingDTO>>(valorrespuesta);
+
+
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.Timeout = TimeSpan.FromMinutes(15);
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountingType/" + TypeAccount.TypeAccountId);//GetAccountingActive
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _accounting = JsonConvert.DeserializeObject<List<AccountingDTO>>(valorrespuesta);
+
+                    }
+
+                    if (_accounting == null)
+                    {
+                        _accounting = new List<AccountingDTO>();
+                    }
 
                 }
-
-                if (_accounting == null)
+                catch (Exception ex)
                 {
-                    _accounting = new List<AccountingDTO>();
+                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                    throw ex;
                 }
-                
             }
-            catch (Exception ex)
+            else
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
+                try
+                {
 
+
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.Timeout = TimeSpan.FromMinutes(15);
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountingActive/" + TypeAccount.TypeAccountId);//GetAccountingActive
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _accounting = JsonConvert.DeserializeObject<List<AccountingDTO>>(valorrespuesta);
+
+                    }
+
+                    if (_accounting == null)
+                    {
+                        _accounting = new List<AccountingDTO>();
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                    throw ex;
+                }
+
+            }
 
             // return Json(_accounting, JsonRequestBehavior.AllowGet);
             return Json(_accounting.ToTreeDataSourceResult(request));
