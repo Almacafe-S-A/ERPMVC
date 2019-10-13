@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -19,48 +18,41 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
-    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-    public class PEPSController : Controller
+    public class DebitNoteController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public PEPSController(ILogger<PEPSController> logger, IOptions<MyConfig> config)
+        public DebitNoteController(ILogger<DebitNoteController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
         }
 
-        public IActionResult PEPS()
+        public IActionResult Index()
         {
             return View();
         }
 
-        public IActionResult PEPSFind()
+        public async Task<ActionResult> pvwDebitNote(Int64 Id = 0)
         {
-            return View();
-        }
-
-        [HttpPost("[action]")]
-        public async Task<ActionResult> pvwAddPEPS([FromBody]PESPDTO _sarpara)
-        {
-            PESPDTO _PEPS = new PESPDTO();
+            DebitNote _DebitNote = new DebitNote();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/PEPS/GetPEPSById/" + _sarpara.PEPSId);
+                var result = await _client.GetAsync(baseadress + "api/DebitNote/GetDebitNoteById/" + Id);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PEPS = JsonConvert.DeserializeObject<PESPDTO>(valorrespuesta);
+                    _DebitNote = JsonConvert.DeserializeObject<DebitNote>(valorrespuesta);
 
                 }
 
-                if (_PEPS == null)
+                if (_DebitNote == null)
                 {
-                    _PEPS = new PESPDTO();
+                    _DebitNote = new DebitNote();
                 }
             }
             catch (Exception ex)
@@ -71,7 +63,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_PEPS);
+            return PartialView(_DebitNote);
 
         }
 
@@ -79,52 +71,19 @@ namespace ERPMVC.Controllers
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<PEPS> _PEPS = new List<PEPS>();
+            List<DebitNote> _DebitNote = new List<DebitNote>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/PEPS/GetPEPS");
+                var result = await _client.GetAsync(baseadress + "api/DebitNote/GetDebitNote");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PEPS = JsonConvert.DeserializeObject<List<PEPS>>(valorrespuesta);
-                    _PEPS = _PEPS.OrderByDescending(q => q.PEPSId).ToList();
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-
-            return _PEPS.ToDataSourceResult(request);
-
-        }
-
-
-        [HttpGet]
-        public async Task<DataSourceResult> GetByParams([DataSourceRequest]DataSourceRequest request,PEPS _PEPSP)
-        {
-            List<PEPS> _PEPS = new List<PEPS>();
-            try
-            {
-               
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/PEPS/GetByParams", _PEPSP);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PEPS = JsonConvert.DeserializeObject<List<PEPS>>(valorrespuesta);
+                    _DebitNote = JsonConvert.DeserializeObject<List<DebitNote>>(valorrespuesta);
 
                 }
 
@@ -137,44 +96,42 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _PEPS.ToDataSourceResult(request);
+            return _DebitNote.ToDataSourceResult(request);
 
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<PEPS>> SavePEPS([FromBody]PESPDTO _PEPSP)
+        public async Task<ActionResult<DebitNote>> SaveDebitNote([FromBody]DebitNote _DebitNote)
         {
-            PEPS _PEPS = _PEPSP;
+
             try
             {
-                PEPS _listPEPS = new PEPS();
+                DebitNote _listDebitNote = new DebitNote();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/PEPS/GetPEPSById/" + _PEPS.PEPSId);
+                var result = await _client.GetAsync(baseadress + "api/DebitNote/GetDebitNoteById/" + _DebitNote.DebitNoteId);
                 string valorrespuesta = "";
-                _PEPS.FechaModificacion = DateTime.Now;
-                _PEPS.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _DebitNote.FechaModificacion = DateTime.Now;
+                _DebitNote.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PEPS = JsonConvert.DeserializeObject<PEPS>(valorrespuesta);
+                    _listDebitNote = JsonConvert.DeserializeObject<DebitNote>(valorrespuesta);
                 }
 
-                if (_PEPS == null) { _PEPS = new Models.PEPS(); }
+                if (_listDebitNote == null) { _listDebitNote = new DebitNote(); }
 
-                if (_PEPSP.PEPSId == 0)
+                if (_listDebitNote.DebitNoteId == 0)
                 {
-                    _PEPSP.FechaCreacion = DateTime.Now;
-                    _PEPSP.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_PEPSP);
+                    _DebitNote.FechaCreacion = DateTime.Now;
+                    _DebitNote.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_DebitNote);
                 }
                 else
                 {
-                    _PEPSP.UsuarioCreacion = _PEPS.UsuarioCreacion;
-                    _PEPSP.FechaCreacion = _PEPS.FechaCreacion;
-                    var updateresult = await Update(_PEPS.PEPSId, _PEPSP);
+                    var updateresult = await Update(_DebitNote.DebitNoteId, _DebitNote);
                 }
 
             }
@@ -184,13 +141,13 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_PEPS);
+            return Json(_DebitNote);
         }
 
-        // POST: PEPS/Insert
+        // POST: DebitNote/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<PEPS>> Insert(PEPS _PEPS)
+        public async Task<ActionResult<DebitNote>> Insert(DebitNote _DebitNote)
         {
             try
             {
@@ -198,14 +155,14 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _PEPS.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _PEPS.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/PEPS/Insert", _PEPS);
+                _DebitNote.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _DebitNote.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/DebitNote/Insert", _DebitNote);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PEPS = JsonConvert.DeserializeObject<PEPS>(valorrespuesta);
+                    _DebitNote = JsonConvert.DeserializeObject<DebitNote>(valorrespuesta);
                 }
 
             }
@@ -214,12 +171,12 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-            return Ok(_PEPS);
-            // return new ObjectResult(new DataSourceResult { Data = new[] { _PEPS }, Total = 1 });
+            return Ok(_DebitNote);
+            // return new ObjectResult(new DataSourceResult { Data = new[] { _DebitNote }, Total = 1 });
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<PEPS>> Update(Int64 id, PEPS _PEPS)
+        public async Task<ActionResult<DebitNote>> Update(Int64 id, DebitNote _DebitNote)
         {
             try
             {
@@ -227,12 +184,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PutAsJsonAsync(baseadress + "api/PEPS/Update", _PEPS);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/DebitNote/Update", _DebitNote);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PEPS = JsonConvert.DeserializeObject<PEPS>(valorrespuesta);
+                    _DebitNote = JsonConvert.DeserializeObject<DebitNote>(valorrespuesta);
                 }
 
             }
@@ -242,12 +199,12 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return Ok(_PEPS);
-           // return new ObjectResult(new DataSourceResult { Data = new[] { _PEPS }, Total = 1 });
+            return Ok(_DebitNote);
+            //  return new ObjectResult(new DataSourceResult { Data = new[] { _DebitNote }, Total = 1 });
         }
 
-        [HttpPost]
-        public async Task<ActionResult<PEPS>> Delete(Int64 PEPSId, PEPS _PEPS)
+        [HttpPost("[action]")]
+        public async Task<ActionResult<DebitNote>> Delete([FromBody]DebitNote _DebitNote)
         {
             try
             {
@@ -255,12 +212,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/PEPS/Delete", _PEPS);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/DebitNote/Delete", _DebitNote);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PEPS = JsonConvert.DeserializeObject<PEPS>(valorrespuesta);
+                    _DebitNote = JsonConvert.DeserializeObject<DebitNote>(valorrespuesta);
                 }
 
             }
@@ -272,7 +229,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _PEPS }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _DebitNote }, Total = 1 });
         }
 
 

@@ -17,8 +17,16 @@ namespace ERPMVC.Models
         [Display(Name = "Tipo de Subservicio")]
         public Int64 ProductTypeId { get; set; }
 
-        [Display(Name = "Tipo de Subservicio")]
+        [Display(Name = "Tipo de producto")]
         public string ProductTypeName { get; set; }
+
+        [Display(Name = "Tipo de prohibición")]
+        public Int64 TipoProhibidoId { get; set; }
+
+        [Display(Name = "Tipo prohibición")]
+        public string TipoProhibidoName { get; set; }
+
+     
         [Display(Name = "Saldo Quintales")]
         public double Balance { get; set; }
         [Display(Name = "Saldo Sacos")]

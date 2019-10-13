@@ -87,6 +87,8 @@ namespace ERPMVC.Models
         [Display(Name = "Partido Politico")]
         public string PartidoPoliticoName { get; set; }
 
+        [Display(Name = "Identidad")]
+        public string Identidad { get; set; }
       
         [Display(Name = "Estado")]
         public Int64 IdEstado { get; set; }

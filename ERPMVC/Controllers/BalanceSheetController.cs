@@ -24,6 +24,12 @@ namespace ERPMVC.Controllers
 
         }
 
+        public async Task<IActionResult> SFAuxiliarMovimientos()
+        {
+            return await Task.Run(() => View());
+
+        }
+
 
 
     }
