@@ -27,6 +27,10 @@ namespace ERPMVC.Models
         public long CountryId { get; set; }
         [ForeignKey("CountryId")]
         public Country Country { get; set; }
+        [Display(Name = "Proveedor Menor")]
+        public Int64? IdEstadoVendorConfi { get; set; }
+        [Display(Name = "Proveedor Menor")]
+        public string EstadoVendorConfi { get; set; }
 
         [Display(Name = "Departamento")]
         public long StateId { get; set; }
