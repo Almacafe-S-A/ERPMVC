@@ -40,7 +40,7 @@ namespace ERPMVC.Models
         [Display(Name = "Codigo Contable")]
         public string AccountCode { get; set; }
         [Display(Name = "Id de estado")]
-        public Int64 IdEstado { get; set; }
+        public Int64? IdEstado { get; set; }
         [Display(Name = "Estado")]
         public string Estado { get; set; }
         [Required]
