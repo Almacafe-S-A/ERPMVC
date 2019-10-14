@@ -245,7 +245,7 @@ namespace ERPMVC.Controllers
                                        select new GoodsReceived
                                        {
                                            GoodsReceivedId = c.GoodsReceivedId,
-                                           ProductName = "Cliente:"+ c.CustomerName+ " ||Nombre:" + c.ProductName +" ||No. Documento:"+c.GoodsReceivedId + "|| Fecha: " + c.DocumentDate + " || Total:" + c.WarehouseName,
+                                           ProductName = " No. Documento:" + c.GoodsReceivedId + " || Cliente:" + c.CustomerName+ " || Nombre:" + c.ProductName +" || Fecha: " + c.DocumentDate ,
                                            //DocumentDate = c.DocumentDate,
                                            CustomerId = c.CustomerId,
                                        }
