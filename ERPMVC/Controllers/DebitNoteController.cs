@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -33,26 +34,59 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwDebitNote(Int64 Id = 0)
+        //public async Task<ActionResult> pvwDebitNote(Int64 Id = 0)
+        //{
+        //    DebitNote _DebitNote = new DebitNote();
+        //    try
+        //    {
+        //        string baseadress = config.Value.urlbase;
+        //        HttpClient _client = new HttpClient();
+        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+        //        var result = await _client.GetAsync(baseadress + "api/DebitNote/GetDebitNoteById/" + Id);
+        //        string valorrespuesta = "";
+        //        if (result.IsSuccessStatusCode)
+        //        {
+        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
+        //            _DebitNote = JsonConvert.DeserializeObject<DebitNote>(valorrespuesta);
+
+        //        }
+
+        //        if (_DebitNote == null)
+        //        {
+        //            _DebitNote = new DebitNote();
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+        //        throw ex;
+        //    }
+
+
+
+        //    return PartialView(_DebitNote);
+
+        //}
+        [HttpPost]
+        public async Task<ActionResult> pvwDebitNote([FromBody]DebitNote _Invoicep)
         {
-            DebitNote _DebitNote = new DebitNote();
+            DebitNoteDTO _Invoice = new DebitNoteDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/DebitNote/GetDebitNoteById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/DebitNote/GetDebitNoteById/" + _Invoicep.DebitNoteId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _DebitNote = JsonConvert.DeserializeObject<DebitNote>(valorrespuesta);
+                    _Invoice = JsonConvert.DeserializeObject<DebitNoteDTO>(valorrespuesta);
 
                 }
-
-                if (_DebitNote == null)
+                if (_Invoice == null)
                 {
-                    _DebitNote = new DebitNote();
+                    _Invoice = new DebitNoteDTO();
                 }
             }
             catch (Exception ex)
@@ -60,14 +94,11 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
-
-
-            return PartialView(_DebitNote);
+            
+            return PartialView(_Invoice);
 
         }
-
-
+        
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
@@ -232,9 +263,7 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _DebitNote }, Total = 1 });
         }
 
-
-
-
+        
 
     }
 }
