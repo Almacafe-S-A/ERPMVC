@@ -11,6 +11,9 @@
        // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
     }
 
+    $(document).ready(function () {
+        clearsession();
+    });
 
      function clearsession() {
          var dataObject = ["journalentryline"];
@@ -52,13 +55,14 @@
 
     function EditJournalEntry(e) {
         e.preventDefault();
+        clearsession();
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
             var dataObject = {
                 JournalEntryId: dataItem.JournalEntryId,
-                editar: 1,
+                editar: 0,
             };
             $.ajax({
-                url: '@Url.Action("pvwAddJournalEntry", "JournalEntry")',
+                url: '@Url.Action("pvwAddJournalEntryAjuste", "JournalEntry")',
                 method: 'POST',
                 datatype: "json",
                 contentType: 'application/json',
@@ -144,7 +148,6 @@
             if (Number(this.EstadoId) != 5 && Number(this.EstadoId) != 8) {
                 //  console.log(this.SalesOrderId);
                 $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
-
             }
         })
     }
@@ -158,17 +161,7 @@
 </script>
 
 <h3 class="text-themecolor">Movimiento Financiero</h3>
-<div id="example">
-    @{
-        bool Gerente = false;
-        //if (await HasPolicyAsync(Enum.GetName(typeof(Politicas),0)))
-        if (await HasPolicyAsync(Politicas.GG))
-        {
-            Gerente = true;
-        }
-
-    }
-
+<div id="example"> 
     @(Html.Kendo().Grid<ERPMVC.Models.JournalEntry>
                             ()
                             .Name("gridNumeracionJournalEntry")
@@ -178,11 +171,7 @@
                                 {
                                     command.Custom("Ver detalles").Text(" ").IconClass("far fa-list-alt").Click("DetallesJournalEntry");
                                     command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditJournalEntry");
-                                    if (Gerente)
-                                    {
-                                        command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("AprobarAjuste");
-                                    }
-
+                                    command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("AprobarAjuste");                                       
                         //  command.Destroy();
                     }).Width(100);
 
@@ -192,8 +181,8 @@
                     columns.Bound(p => p.CreatedDate).Title("Fecha de Creación").Format("{0:dd/MM/yyyy}").Width(250);
                                 columns.Bound(p => p.TypeJournalName).Title("Tipo de Diario").Width(250);
                                 columns.Bound(p => p.PartyId).Title("Id de Partida").Width(250);
-                    //columns.Bound(p => p.Posted).Title("Posteado").Width(200);
-                    columns.Bound(p => p.EstadoName).Title("Estado").Width(170);
+                                //columns.Bound(p => p.Posted).Title("Posteado").Width(200);
+                                columns.Bound(p => p.EstadoName).Title("Estado").Width(170);
                                 columns.Bound(p => p.EstadoId).Hidden().Title("Estado").Width(170);
 
                             })
@@ -241,6 +230,7 @@
                             })
                             .Editable(e => e.Mode(GridEditMode.PopUp))
                             .Sortable()
+                            .AutoBind(true)
                             .Pageable()
                             .Filterable()
                             .Scrollable()
@@ -250,6 +240,7 @@
                             .Excel(excel => excel.FileName("JournalEntryReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                             + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
                             .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                            .Events(e => e.DataBound("dataBound"))
                             .DataSource(dataSource =>
                             dataSource
                             .WebApi()
@@ -285,3 +276,21 @@
     <div id="NumJournalEntry">
         @await Html.PartialAsync("pvwAddJournalEntryAjuste", new ERPMVC.DTO.JournalEntryDTO { JournalEntryId = 0, Date = DateTime.Now, DatePosted = DateTime.Now })
     </div>
+
+    <script>
+
+        function setToolbarTooltip(btn_cl, btn_tooltip) {
+            $("#gridNumeracionJournalEntry").kendoTooltip({
+                filter: btn_cl,
+                content: btn_tooltip
+            });
+        }
+
+        function setRowButtonTooltip(btn_cl, btn_tooltip) {
+            $("#gridNumeracionJournalEntry").kendoTooltip({
+                filter: btn_cl,
+                content: btn_tooltip
+            });
+        }
+        setRowButtonTooltip(".k-grid-Aprobar", "Aprobar Ajuste");
+    </script>

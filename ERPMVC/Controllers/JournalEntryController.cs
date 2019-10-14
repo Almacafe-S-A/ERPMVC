@@ -109,6 +109,8 @@ namespace ERPMVC.Controllers
                     HttpClient _client = new HttpClient();
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                     var result = await _client.GetAsync(baseadress + "api/JournalEntry/GetJournalEntryById/" + _JournalEntry.JournalEntryId);
+                    string jsonresult = "";                 
+                    jsonresult = JsonConvert.SerializeObject(_JournalEntry);
                     string valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
@@ -116,6 +118,7 @@ namespace ERPMVC.Controllers
                         _so = JsonConvert.DeserializeObject<JournalEntryDTO>(valorrespuesta);
                         _so.EstadoId = 6;
                         _so.EstadoName = "Aprobado";
+
                         var resultsalesorder = await Update(_so.JournalEntryId, _so);
 
                         var value = (resultsalesorder.Result as ObjectResult).Value;
@@ -224,21 +227,21 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PutAsJsonAsync(baseadress + "api/JournalEntry/Update", _JournalEntryLine);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/JournalEntry/Update", _JournalEntryLine);
+                string jsonresult = "";
+                jsonresult = JsonConvert.SerializeObject(_JournalEntryLine);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _JournalEntryLine = JsonConvert.DeserializeObject<JournalEntryDTO>(valorrespuesta);
                 }
-
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-
             // return new ObjectResult(new DataSourceResult { Data = new[] { _JournalEntry }, Total = 1 });
             return Ok(_JournalEntryLine);
         }
