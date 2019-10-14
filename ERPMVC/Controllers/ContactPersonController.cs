@@ -147,8 +147,8 @@ namespace ERPMVC.Controllers
 
                 if (_ContactPersonP.ContactPersonId == 0)
                 {
-                    _ContactPerson.CreatedDate = DateTime.Now;
-                    _ContactPerson.CreatedUser = HttpContext.Session.GetString("user");
+                    _ContactPersonP.CreatedDate = DateTime.Now;
+                    _ContactPersonP.CreatedUser = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_ContactPersonP);
                 }
                 else
