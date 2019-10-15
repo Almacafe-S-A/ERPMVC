@@ -29,6 +29,16 @@ namespace ERPMVC.Controllers
             this.config = config;
             this._logger = logger;
         }
+        public async Task<IActionResult> SFAuxiliarMovimientos()
+        {
+            return await Task.Run(() => View());
+
+        }
+        public async Task<IActionResult> SFAuxiliarMovimientosPorDia()
+        {
+            return await Task.Run(() => View());
+
+        }
         public async Task<JsonResult> AccountingByTypeAccount(Int64 TypeAccountId)
         {
             Accounting _customers = new Accounting();
@@ -651,9 +661,11 @@ namespace ERPMVC.Controllers
                     }
                     if (_AccountDuplicated != null)
                     {
-                        string error = await result.Content.ReadAsStringAsync();
-                        return await Task.Run(() => BadRequest($"El codigo de cuenta ya esta ingresado..."));
-
+                        if (_AccountDuplicated.AccountId != _AccountingP.AccountId)
+                        {
+                            string error = await result.Content.ReadAsStringAsync();
+                            return await Task.Run(() => BadRequest($"El codigo de cuenta ya esta ingresado..."));
+                        }
                         /* return this.Json(new DataSourceResult
                          {
                              Errors = $"Ocurrio un error:{error} El codigo de cuenta ya esta ingresado."

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -19,11 +18,11 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
-    public class DebitNoteController : Controller
+    public class FixedAssetGroupController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public DebitNoteController(ILogger<DebitNoteController> logger, IOptions<MyConfig> config)
+        public FixedAssetGroupController(ILogger<FixedAssetGroupController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
@@ -34,59 +33,26 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        //public async Task<ActionResult> pvwDebitNote(Int64 Id = 0)
-        //{
-        //    DebitNote _DebitNote = new DebitNote();
-        //    try
-        //    {
-        //        string baseadress = config.Value.urlbase;
-        //        HttpClient _client = new HttpClient();
-        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-        //        var result = await _client.GetAsync(baseadress + "api/DebitNote/GetDebitNoteById/" + Id);
-        //        string valorrespuesta = "";
-        //        if (result.IsSuccessStatusCode)
-        //        {
-        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
-        //            _DebitNote = JsonConvert.DeserializeObject<DebitNote>(valorrespuesta);
-
-        //        }
-
-        //        if (_DebitNote == null)
-        //        {
-        //            _DebitNote = new DebitNote();
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-        //        throw ex;
-        //    }
-
-
-
-        //    return PartialView(_DebitNote);
-
-        //}
-        [HttpPost]
-        public async Task<ActionResult> pvwDebitNote([FromBody]DebitNote _Invoicep)
+        public async Task<ActionResult> pvwFixedAssetGroup(Int64 Id = 0)
         {
-            DebitNoteDTO _Invoice = new DebitNoteDTO();
+            FixedAssetGroup _FixedAssetGroup = new FixedAssetGroup();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/DebitNote/GetDebitNoteById/" + _Invoicep.DebitNoteId);
+                var result = await _client.GetAsync(baseadress + "api/FixedAssetGroup/GetFixedAssetGroupById/" + Id);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Invoice = JsonConvert.DeserializeObject<DebitNoteDTO>(valorrespuesta);
+                    _FixedAssetGroup = JsonConvert.DeserializeObject<FixedAssetGroup>(valorrespuesta);
 
                 }
-                if (_Invoice == null)
+
+                if (_FixedAssetGroup == null)
                 {
-                    _Invoice = new DebitNoteDTO();
+                    _FixedAssetGroup = new FixedAssetGroup();
                 }
             }
             catch (Exception ex)
@@ -94,27 +60,30 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-            
-            return PartialView(_Invoice);
+
+
+
+            return PartialView(_FixedAssetGroup);
 
         }
-        
+
+
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<DebitNote> _DebitNote = new List<DebitNote>();
+            List<FixedAssetGroup> _FixedAssetGroup = new List<FixedAssetGroup>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/DebitNote/GetDebitNote");
+                var result = await _client.GetAsync(baseadress + "api/FixedAssetGroup/GetFixedAssetGroup");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _DebitNote = JsonConvert.DeserializeObject<List<DebitNote>>(valorrespuesta);
+                    _FixedAssetGroup = JsonConvert.DeserializeObject<List<FixedAssetGroup>>(valorrespuesta);
 
                 }
 
@@ -127,42 +96,42 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _DebitNote.ToDataSourceResult(request);
+            return _FixedAssetGroup.ToDataSourceResult(request);
 
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<DebitNote>> SaveDebitNote([FromBody]DebitNote _DebitNote)
+        public async Task<ActionResult<FixedAssetGroup>> SaveFixedAssetGroup([FromBody]FixedAssetGroup _FixedAssetGroup)
         {
 
             try
             {
-                DebitNote _listDebitNote = new DebitNote();
+                FixedAssetGroup _listFixedAssetGroup = new FixedAssetGroup();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/DebitNote/GetDebitNoteById/" + _DebitNote.DebitNoteId);
+                var result = await _client.GetAsync(baseadress + "api/FixedAssetGroup/GetFixedAssetGroupById/" + _FixedAssetGroup.FixedAssetGroupId);
                 string valorrespuesta = "";
-                _DebitNote.FechaModificacion = DateTime.Now;
-                _DebitNote.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _FixedAssetGroup.FechaModificacion = DateTime.Now;
+                _FixedAssetGroup.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listDebitNote = JsonConvert.DeserializeObject<DebitNote>(valorrespuesta);
+                    _listFixedAssetGroup = JsonConvert.DeserializeObject<FixedAssetGroup>(valorrespuesta);
                 }
 
-                if (_listDebitNote == null) { _listDebitNote = new DebitNote(); }
+                if (_listFixedAssetGroup == null) { _listFixedAssetGroup = new FixedAssetGroup(); }
 
-                if (_listDebitNote.DebitNoteId == 0)
+                if (_listFixedAssetGroup.FixedAssetGroupId == 0)
                 {
-                    _DebitNote.FechaCreacion = DateTime.Now;
-                    _DebitNote.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_DebitNote);
+                    _FixedAssetGroup.FechaCreacion = DateTime.Now;
+                    _FixedAssetGroup.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_FixedAssetGroup);
                 }
                 else
                 {
-                    var updateresult = await Update(_DebitNote.DebitNoteId, _DebitNote);
+                    var updateresult = await Update(_FixedAssetGroup.FixedAssetGroupId, _FixedAssetGroup);
                 }
 
             }
@@ -172,13 +141,13 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_DebitNote);
+            return Json(_FixedAssetGroup);
         }
 
-        // POST: DebitNote/Insert
+        // POST: FixedAssetGroup/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<DebitNote>> Insert(DebitNote _DebitNote)
+        public async Task<ActionResult<FixedAssetGroup>> Insert(FixedAssetGroup _FixedAssetGroup)
         {
             try
             {
@@ -186,14 +155,14 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _DebitNote.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _DebitNote.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/DebitNote/Insert", _DebitNote);
+                _FixedAssetGroup.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _FixedAssetGroup.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/FixedAssetGroup/Insert", _FixedAssetGroup);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _DebitNote = JsonConvert.DeserializeObject<DebitNote>(valorrespuesta);
+                    _FixedAssetGroup = JsonConvert.DeserializeObject<FixedAssetGroup>(valorrespuesta);
                 }
 
             }
@@ -202,12 +171,12 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-            return Ok(_DebitNote);
-            // return new ObjectResult(new DataSourceResult { Data = new[] { _DebitNote }, Total = 1 });
+            return Ok(_FixedAssetGroup);
+            // return new ObjectResult(new DataSourceResult { Data = new[] { _FixedAssetGroup }, Total = 1 });
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<DebitNote>> Update(Int64 id, DebitNote _DebitNote)
+        public async Task<ActionResult<FixedAssetGroup>> Update(Int64 id, FixedAssetGroup _FixedAssetGroup)
         {
             try
             {
@@ -215,12 +184,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PutAsJsonAsync(baseadress + "api/DebitNote/Update", _DebitNote);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/FixedAssetGroup/Update", _FixedAssetGroup);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _DebitNote = JsonConvert.DeserializeObject<DebitNote>(valorrespuesta);
+                    _FixedAssetGroup = JsonConvert.DeserializeObject<FixedAssetGroup>(valorrespuesta);
                 }
 
             }
@@ -230,12 +199,12 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return Ok(_DebitNote);
-            //  return new ObjectResult(new DataSourceResult { Data = new[] { _DebitNote }, Total = 1 });
+            //  return new ObjectResult(new DataSourceResult { Data = new[] { _FixedAssetGroup }, Total = 1 });
+            return Ok(_FixedAssetGroup);
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<DebitNote>> Delete([FromBody]DebitNote _DebitNote)
+        public async Task<ActionResult<FixedAssetGroup>> Delete([FromBody]FixedAssetGroup _FixedAssetGroup)
         {
             try
             {
@@ -243,12 +212,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/DebitNote/Delete", _DebitNote);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/FixedAssetGroup/Delete", _FixedAssetGroup);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _DebitNote = JsonConvert.DeserializeObject<DebitNote>(valorrespuesta);
+                    _FixedAssetGroup = JsonConvert.DeserializeObject<FixedAssetGroup>(valorrespuesta);
                 }
 
             }
@@ -258,12 +227,14 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error: {ex.Message}");
             }
 
+            return Ok(_FixedAssetGroup);
 
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _DebitNote }, Total = 1 });
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _FixedAssetGroup }, Total = 1 });
         }
 
-        
+
+
+
 
     }
 }

@@ -31,7 +31,7 @@ namespace ERPMVC.Models
         [Display(Name = "Socio de negocio")]
         public int? PartyId { get; set; }
         [Display(Name = "Tipos de Voucher")]
-        public Int32 VoucherType { get; set; }
+        public Int32? VoucherType { get; set; }
         [Display(Name = "Nombre de Tipo de Voucher")]
         public string TypeJournalName { get; set; }
         [Display(Name = "Fecha de creación")]

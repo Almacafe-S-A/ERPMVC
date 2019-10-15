@@ -13,7 +13,7 @@ namespace ERPMVC.Models
         [Display(Name = "Linea Id")]
         public Int64 DebitNoteLineId { get; set; }
         [Display(Name = "Nota de débito")]
-        public int DebitNoteId { get; set; }
+        public Int64 DebitNoteId { get; set; }
         [Display(Name = "Nota de débito")]
         public DebitNote DebitNote { get; set; }
 

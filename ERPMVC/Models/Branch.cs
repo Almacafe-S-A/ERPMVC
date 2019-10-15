@@ -17,7 +17,7 @@ namespace ERPMVC.Models
 
         public string BranchName { get; set; }
 
-        [Display(Name = "Codigo de sucursal")]
+        [Display(Name = "Código de Sucursal")]
         public string BranchCode { get; set; }
 
         [Display(Name = "Descripción")]
@@ -40,7 +40,7 @@ namespace ERPMVC.Models
 
         [Display(Name = "País")]
         public string CountryName { get; set; }
-        [Display(Name = "Limite de CNBS")]
+        [Display(Name = "Límite de CNBS")]
         public decimal? LimitCNBS { get; set; }
         [Display(Name = "Departamento")]
         public int StateId { get; set; }

@@ -331,5 +331,33 @@ namespace ERPMVC.Controllers
         }
 
 
+    
+    async Task<IEnumerable<VendorType>> ObtenerVendorTypes()
+    {
+        IEnumerable<VendorType> vendortypes = null;
+        try
+        {
+            string baseadress = config.Value.urlbase;
+            HttpClient _client = new HttpClient();
+
+            _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+            var result = await _client.GetAsync(baseadress + "api/VendorTypes/GetVendorType");
+            string valorrespuesta = "";
+            if (result.IsSuccessStatusCode)
+            {
+                valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    vendortypes = JsonConvert.DeserializeObject<IEnumerable<VendorType>>(valorrespuesta);
+
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+            throw ex;
+        }
+        ViewData["defaultvendor"] = vendortypes.FirstOrDefault();
+        return vendortypes;
+
     }
+   }
 }

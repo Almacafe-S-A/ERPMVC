@@ -16,7 +16,7 @@ namespace ERPMVC.Models
         [Required]
         [Display(Name = "Tipo de Proveedor")]
         public string VendorTypeName { get; set; }
-        [Display(Name = "Decripcion")]
+        [Display(Name = "Descripcion")]
         public string Description { get; set; }
         public string UsuarioCreacion { get; set; }
         [Required]
