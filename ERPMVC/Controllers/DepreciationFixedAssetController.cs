@@ -5,7 +5,6 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
-using ERPMVC.DTO;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -19,11 +18,11 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
-    public class CreditNoteController : Controller
+    public class DepreciationFixedAssetController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public CreditNoteController(ILogger<CreditNoteController> logger, IOptions<MyConfig> config)
+        public DepreciationFixedAssetController(ILogger<DepreciationFixedAssetController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
@@ -34,27 +33,26 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult> pvwCreditNote([FromBody]CreditNote _CreditNotep)
+        public async Task<ActionResult> pvwDepreciationFixedAsset(Int64 Id = 0)
         {
-            CreditNoteDTO _CreditNote = new CreditNoteDTO();
+            DepreciationFixedAsset _DepreciationFixedAsset = new DepreciationFixedAsset();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CreditNote/GetCreditNoteById/" + _CreditNotep.CreditNoteId);
+                var result = await _client.GetAsync(baseadress + "api/DepreciationFixedAsset/GetDepreciationFixedAssetById/" + Id);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CreditNote = JsonConvert.DeserializeObject<CreditNoteDTO>(valorrespuesta);
+                    _DepreciationFixedAsset = JsonConvert.DeserializeObject<DepreciationFixedAsset>(valorrespuesta);
 
                 }
 
-                if (_CreditNote == null)
+                if (_DepreciationFixedAsset == null)
                 {
-                    _CreditNote = new CreditNoteDTO();
+                    _DepreciationFixedAsset = new DepreciationFixedAsset();
                 }
             }
             catch (Exception ex)
@@ -65,7 +63,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_CreditNote);
+            return PartialView(_DepreciationFixedAsset);
 
         }
 
@@ -73,19 +71,19 @@ namespace ERPMVC.Controllers
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<CreditNote> _CreditNote = new List<CreditNote>();
+            List<DepreciationFixedAsset> _DepreciationFixedAsset = new List<DepreciationFixedAsset>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CreditNote/GetCreditNote");
+                var result = await _client.GetAsync(baseadress + "api/DepreciationFixedAsset/GetDepreciationFixedAsset");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CreditNote = JsonConvert.DeserializeObject<List<CreditNote>>(valorrespuesta);
+                    _DepreciationFixedAsset = JsonConvert.DeserializeObject<List<DepreciationFixedAsset>>(valorrespuesta);
 
                 }
 
@@ -98,42 +96,42 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _CreditNote.ToDataSourceResult(request);
+            return _DepreciationFixedAsset.ToDataSourceResult(request);
 
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<CreditNote>> SaveCreditNote([FromBody]CreditNote _CreditNote)
+        public async Task<ActionResult<DepreciationFixedAsset>> SaveDepreciationFixedAsset([FromBody]DepreciationFixedAsset _DepreciationFixedAsset)
         {
 
             try
             {
-                CreditNote _listCreditNote = new CreditNote();
+                DepreciationFixedAsset _listDepreciationFixedAsset = new DepreciationFixedAsset();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CreditNote/GetCreditNoteById/" + _CreditNote.CreditNoteId);
+                var result = await _client.GetAsync(baseadress + "api/DepreciationFixedAsset/GetDepreciationFixedAssetById/" + _DepreciationFixedAsset.DepreciationFixedAssetId);
                 string valorrespuesta = "";
-                _CreditNote.FechaModificacion = DateTime.Now;
-                _CreditNote.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _DepreciationFixedAsset.FechaModificacion = DateTime.Now;
+                _DepreciationFixedAsset.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listCreditNote = JsonConvert.DeserializeObject<CreditNote>(valorrespuesta);
+                    _listDepreciationFixedAsset = JsonConvert.DeserializeObject<DepreciationFixedAsset>(valorrespuesta);
                 }
 
-                if (_listCreditNote == null) { _listCreditNote = new CreditNote(); }
+                if (_listDepreciationFixedAsset == null) { _listDepreciationFixedAsset = new DepreciationFixedAsset(); }
 
-                if (_listCreditNote.CreditNoteId == 0)
+                if (_listDepreciationFixedAsset.DepreciationFixedAssetId == 0)
                 {
-                    _CreditNote.FechaCreacion = DateTime.Now;
-                    _CreditNote.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_CreditNote);
+                    _DepreciationFixedAsset.FechaCreacion = DateTime.Now;
+                    _DepreciationFixedAsset.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_DepreciationFixedAsset);
                 }
                 else
                 {
-                    var updateresult = await Update(_CreditNote.CreditNoteId, _CreditNote);
+                    var updateresult = await Update(_DepreciationFixedAsset.DepreciationFixedAssetId, _DepreciationFixedAsset);
                 }
 
             }
@@ -143,13 +141,13 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_CreditNote);
+            return Json(_DepreciationFixedAsset);
         }
 
-        // POST: CreditNote/Insert
+        // POST: DepreciationFixedAsset/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<CreditNote>> Insert(CreditNote _CreditNote)
+        public async Task<ActionResult<DepreciationFixedAsset>> Insert(DepreciationFixedAsset _DepreciationFixedAsset)
         {
             try
             {
@@ -157,28 +155,28 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _CreditNote.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _CreditNote.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/CreditNote/Insert", _CreditNote);
+                _DepreciationFixedAsset.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _DepreciationFixedAsset.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/DepreciationFixedAsset/Insert", _DepreciationFixedAsset);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CreditNote = JsonConvert.DeserializeObject<CreditNote>(valorrespuesta);
+                    _DepreciationFixedAsset = JsonConvert.DeserializeObject<DepreciationFixedAsset>(valorrespuesta);
                 }
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                  return await Task.Run(()=>BadRequest($"Ocurrio un error{ex.Message}"));
+                return BadRequest($"Ocurrio un error{ex.Message}");
             }
-            return Ok(_CreditNote);
-            // return new ObjectResult(new DataSourceResult { Data = new[] { _CreditNote }, Total = 1 });
+            return Ok(_DepreciationFixedAsset);
+            // return new ObjectResult(new DataSourceResult { Data = new[] { _DepreciationFixedAsset }, Total = 1 });
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<CreditNote>> Update(Int64 id, CreditNote _CreditNote)
+        public async Task<ActionResult<DepreciationFixedAsset>> Update(Int64 id, DepreciationFixedAsset _DepreciationFixedAsset)
         {
             try
             {
@@ -186,27 +184,26 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PutAsJsonAsync(baseadress + "api/CreditNote/Update", _CreditNote);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/DepreciationFixedAsset/Update", _DepreciationFixedAsset);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CreditNote = JsonConvert.DeserializeObject<CreditNote>(valorrespuesta);
+                    _DepreciationFixedAsset = JsonConvert.DeserializeObject<DepreciationFixedAsset>(valorrespuesta);
                 }
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                  return await Task.Run(()=>BadRequest($"Ocurrio un error{ex.Message}"));
+                return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return Ok(_CreditNote);
-            // return new ObjectResult(new DataSourceResult { Data = new[] { _CreditNote }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _DepreciationFixedAsset }, Total = 1 });
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<CreditNote>> Delete([FromBody]CreditNote _CreditNote)
+        public async Task<ActionResult<DepreciationFixedAsset>> Delete([FromBody]DepreciationFixedAsset _DepreciationFixedAsset)
         {
             try
             {
@@ -214,12 +211,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/CreditNote/Delete", _CreditNote);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/DepreciationFixedAsset/Delete", _DepreciationFixedAsset);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CreditNote = JsonConvert.DeserializeObject<CreditNote>(valorrespuesta);
+                    _DepreciationFixedAsset = JsonConvert.DeserializeObject<DepreciationFixedAsset>(valorrespuesta);
                 }
 
             }
@@ -231,7 +228,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _CreditNote }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _DepreciationFixedAsset }, Total = 1 });
         }
 
 
