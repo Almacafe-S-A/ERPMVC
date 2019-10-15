@@ -29,6 +29,16 @@ namespace ERPMVC.Controllers
             this.config = config;
             this._logger = logger;
         }
+        public async Task<IActionResult> SFAuxiliarMovimientos()
+        {
+            return await Task.Run(() => View());
+
+        }
+        public async Task<IActionResult> SFAuxiliarMovimientosPorDia()
+        {
+            return await Task.Run(() => View());
+
+        }
         public async Task<JsonResult> AccountingByTypeAccount(Int64 TypeAccountId)
         {
             Accounting _customers = new Accounting();
