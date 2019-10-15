@@ -213,14 +213,14 @@ namespace ERPMVC.Controllers
                         _CertificadoDeposito = new CertificadoDeposito();
                     }
 
-                    Kardex _kardexparam = new Kardex { DocumentId = _Certificado, DocumentName = "CD" };
+                    KardexDTO _kardexparam = new KardexDTO { Ids = _listado.CertificadosList , DocumentName = "CD" };
                     List<KardexLine> _kardexsaldo = new List<KardexLine>();
-                    result = await _client.PostAsJsonAsync(baseadress + "api/Kardex/GetSaldoProductoByCertificado", _kardexparam);
+                    result = await _client.PostAsJsonAsync(baseadress + "api/Kardex/GetMovimientosCertificados", _kardexparam);
                     valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _kardexsaldo = JsonConvert.DeserializeObject<List<KardexLine>>(valorrespuesta);
+                       // _kardexsaldo = JsonConvert.DeserializeObject<List<KardexLine>>(valorrespuesta);
                     }
 
                     // _CertificadoDeposito._CertificadoLine.Clear();
