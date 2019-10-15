@@ -208,12 +208,12 @@ namespace ERPMVC.Controllers
                     }
                     if (_CostCenterDuplicated != null)
                     {
-
+                        if(_CostCenterDuplicated.CostCenterId !=_CostCenter.CostCenterId)
                         //  Errors = $"Ocurrio un error:{error} El password debe tener mayusculas y minusculas!"
-
-                        string error = await result.Content.ReadAsStringAsync();
-                        return await Task.Run(() => BadRequest($"El nombre del centro de costo ya esta ingresado..."));
-
+                        { 
+                            string error = await result.Content.ReadAsStringAsync();
+                            return await Task.Run(() => BadRequest($"El nombre del centro de costo ya esta ingresado..."));
+                        }
                         /* return this.Json(new DataSourceResult
                          {
                              Errors = $"Ocurrio un error: {error} El centro de Costo ya esta ingresado."
