@@ -12,7 +12,7 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Display(Name = "Id")]
         public Int64 ProductId { get; set; }
-        [Required]
+       
         [Display(Name = "Servicio")]
         public string ProductName { get; set; }
         [Display(Name = "Código de Servicio")]
