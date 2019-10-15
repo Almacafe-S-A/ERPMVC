@@ -19,6 +19,8 @@ namespace ERPMVC.Models
         public Int64 VendorTypeId { get; set; }
         [ForeignKey("VendorTypeId")]
         public VendorType VendorType { get; set; }
+        [Display(Name = "Tipo de Proveedor")]
+        public string VendorTypeName { get; set; }
 
         [Display(Name = "Dirección")]
         public string Address { get; set; }
@@ -27,9 +29,9 @@ namespace ERPMVC.Models
         public long CountryId { get; set; }
         [ForeignKey("CountryId")]
         public Country Country { get; set; }
-        [Display(Name = "Proveedor Menor")]
+        [Display(Name = "Categoria Proveedor")]
         public Int64? IdEstadoVendorConfi { get; set; }
-        [Display(Name = "Proveedor Menor")]
+        [Display(Name = "Categoria Proveedor")]
         public string EstadoVendorConfi { get; set; }
 
         [Display(Name = "Departamento")]
@@ -69,18 +71,16 @@ namespace ERPMVC.Models
         [ForeignKey("CurrencyId")]
         public Currency Currency { get; set; }
         [Required]
-        [Display(Name = "Monto Mensual")]
+        [Display(Name = "Limite Mensual")]
         public double QtyMonth { get; set; }
         [Display(Name = "Telefono Referencia")]
         public string PhoneReferenceone { get; set; }
 
-        [Required]
         [Display(Name = "Empresa Referencia")]
         public string CompanyReferenceone { get; set; }
         [Display(Name = "Telefono Referencia")]
         public string PhoneReferencetwo { get; set; }
 
-        [Required]
         [Display(Name = "Empresa Referencia")]
         public string CompanyReferencetwo { get; set; }
         [Display(Name = "Activo/Inactivo ")]
@@ -88,11 +88,11 @@ namespace ERPMVC.Models
         [ForeignKey("IdEstado")]
         public Estados Estados { get; set; }
         public string Estado { get; set; }
-        [Display(Name = "Identidad del repressentante Legal")]
+        [Display(Name = "Identidad del Representante Legal")]
         public string IdentityRepresentative { get; set; }
         [Display(Name = "RTN del Representante Legal")]
         public string RTNRepresentative { get; set; }
-        [Display(Name = "Nombre del Repreentante")]
+        [Display(Name = "Nombre del Representante")]
         public string RepresentativeName { get; set; }
 
 
