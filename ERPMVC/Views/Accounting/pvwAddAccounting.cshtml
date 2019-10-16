@@ -359,79 +359,137 @@
            // console.log(JSON.stringify(dataObject));
             //var form = $("#frmNumeracion");
            // form.validate();
-
-        var validator = $("#frmAccounting").data("kendoValidator");
-                 var status = $(".status");
-
-
-                if (validator.validate()) {
-
-                    $.ajax({
-                        url: '@Url.Action("SaveAccounting", "Accounting")',
-                        method: 'POST',
-                        datatype: "json",
-                        contentType: 'application/json',
-                        async: false,
-                        data: JSON.stringify(dataObject),
-                        success: function (data) {
-
-                            //notification.show({
-                            //    message: "Guardado correctamente!"
-                            //}, "upload-success");
-                            console.log(data);
-                            //  return (data);
-                            if (data.Errors === null) {
-                                $.toast({
-                                    heading: 'Satisfactorio',
-                                    text: '<br/><br/>Datos guardados correctamente.',
-                                    position: 'top-right',
-                                    loaderBg: '#ff6849',
-                                    icon: 'success',
-                                    hideAfter: 30000,
-                                    stack: 6
-                                });
-                            }
-                            else {
-                                $.toast({
-                                    heading: 'Error',
-                                    text: '<br/><br/>' + data.Errors,
-                                    position: 'top-right',
-                                    showHideTransition: 'fade',
-                                    loaderBg: '#ff6849',
-                                    icon: 'error',
-                                    hideAfter: 30000,
-                                    stack: 6
-                                });
-                            }
-
-                          //  RefrescarGrid();
-                            RefreshTreeList();
-                            $('#ModalAccounting').modal('hide');
-                           
-                            //ModalAccount
-                        },
-                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+        var padreAccounting = FatherAccounting();
+        if (padreAccounting == true) {
+            var validator = $("#frmAccounting").data("kendoValidator");
+            var status = $(".status");
 
 
-                            notification.show({
-                                title: "Validacion",
-                                message: textStatus + ": " + XMLHttpRequest.responseText
-                            }, "error");
-                          //  console.log(XMLHttpRequest.responseText);
+            if (validator.validate()) {
 
+                $.ajax({
+                    url: '@Url.Action("SaveAccounting", "Accounting")',
+                    method: 'POST',
+                    datatype: "json",
+                    contentType: 'application/json',
+                    async: false,
+                    data: JSON.stringify(dataObject),
+                    success: function (data) {
 
+                        //notification.show({
+                        //    message: "Guardado correctamente!"
+                        //}, "upload-success");
+                        console.log(data);
+                        //  return (data);
+                        if (data.Errors === null) {
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: '<br/><br/>Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
                         }
-                    });
+                        else {
+                            $.toast({
+                                heading: 'Error',
+                                text: '<br/><br/>' + data.Errors,
+                                position: 'top-right',
+                                showHideTransition: 'fade',
+                                loaderBg: '#ff6849',
+                                icon: 'error',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+                        }
 
-                }
-                else {
-                    status.text("Oops! There is invalid data in the form.")
-                        .removeClass("valid")
-                        .addClass("invalid");
-                }
+                        //  RefrescarGrid();
+                        RefreshTreeList();
+                        $('#ModalAccounting').modal('hide');
+
+                        //ModalAccount
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+
+                        notification.show({
+                            title: "Validacion",
+                            message: textStatus + ": " + XMLHttpRequest.responseText
+                        }, "error");
+                        //  console.log(XMLHttpRequest.responseText);
+
+
+                    }
+                });
+
+            }
+            else {
+                status.text("Oops! There is invalid data in the form.")
+                    .removeClass("valid")
+                    .addClass("invalid");
+            }
+        }
+        else
+        {
+            $.toast({
+                heading: 'Error',
+                text: '<br/><br/>' + "El campo Tipo de Cuenta no es el mismo del Padre Contable.",
+                position: 'top-right',
+                showHideTransition: 'fade',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+
+        }
 
 
         $("#btnAccounting").show();
         $("#btnAccounting").prop("disabled", false);
+    }
+    function FatherAccounting() {
+        var typeAccount;
+        var dataParentid = {
+            AccountId: $("#ParentAccountId").val()
+           
+        };
+
+         $.ajax({
+            url: '@Url.Action("GetAccountingById", "Accounting")',
+            method: 'GET',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: dataParentid,
+             success: function (result) {
+                 //document.getElementById('TypeAccountId').innerHTML = result.TypeAccountId;
+                // $("#TypeAccountId").val(result.TypeAccountId);
+                // var dropdownlist = $("#TypeAccountId").data("kendoDropDownList");
+               //  dropdownlist.select(result.TypeAccountId);
+             //    dropdownlist.prop("readonly", true);//onfocus="myFunction(this)"
+                 typeAccount = result.TypeAccountId;
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                notification.show({
+                    title: "Error",
+                    message: textStatus + ": " + XMLHttpRequest.responseText
+                }, "error");
+
+            }
+        });
+      
+        if ($("#TypeAccountId").val()!=typeAccount) {
+            return false;
+        } else {
+            //alert("Seleccionaste: todos llenoss");
+
+            //alert("Faltan por llenar campos");
+
+            return true;
+        }
     }
 </script>
