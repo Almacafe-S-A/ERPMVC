@@ -199,6 +199,8 @@ namespace ERPMVC.Controllers
 
                 if (_VendorP.VendorId == 0)
                 {
+                    //cambio para ingresar un valor en Idendtidad
+                    _VendorP.Identidad = HttpContext.Session.GetString("user");
                     _VendorP.FechaCreacion = DateTime.Now;
                     _VendorP.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_VendorP);

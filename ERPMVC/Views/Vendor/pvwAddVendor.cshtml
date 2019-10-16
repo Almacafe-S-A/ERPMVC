@@ -103,7 +103,7 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="RTN" class=" control-label" style="width:100%"></label>
-                                                    <input asp-for="RTN" name="RTN" class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <input asp-for="RTN" name="RTN" class="form-control" autocomplete="off" style="min-width:100%" onkeypress="return SoloNumeros(event)" />
                                                     <span asp-validation-for="RTN" class="text-danger k-invalid-msg" data-for="RTN"></span>
 
 
@@ -452,14 +452,14 @@
                                                 <div class="col-md-4">
                                                     <div class="form-group">
                                                         <label asp-for="IdentityRepresentative" class=" control-label" style="width:100%"></label>
-                                                        <input type="text" asp-for="IdentityRepresentative" name="IdentityRepresentative" class="form-control" style="min-width:100%" />
+                                                        <input type="text" asp-for="IdentityRepresentative" name="IdentityRepresentative" class="form-control" style="min-width:100%" onkeypress="return SoloNumeros(event)" />
                                                     </div>
                                                 </div>
 
                                                 <div class="col-md-4">
                                                     <div class="form-group">
                                                         <label asp-for="RTNRepresentative" class=" control-label" style="width:100%"></label>
-                                                        <input asp-for="RTNRepresentative" name="RTNRepresentative" class="form-control" autocomplete="off" style="min-width:100%" />
+                                                        <input asp-for="RTNRepresentative" name="RTNRepresentative" class="form-control" autocomplete="off" style="min-width:100%" onkeypress="return SoloNumeros(event)" />
 
 
                                                     </div>
@@ -491,10 +491,11 @@
 
 <script>
 
+    var limitmonth;
     $('document').ready(function () {
 
         debugger;
-        var month;
+       
         var dataObjectConfiguration = {};
         $.ajax({
                                 url: '@Url.Action("GetConfigurationVendorActive", "ConfigurationVendor")',
@@ -509,8 +510,8 @@
                                     //    message: "Guardado correctamente!"
                                     //}, "upload-success");
                                     //console.log(result);
-                                    month = result.QtyMonth;
-                                    console.log("El valor de menual "+month);
+                                    limitmonth = result.QtyMonth;
+                                    console.log("El valor de menual " +limitmonth);
 
                                 },
                                 error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -523,7 +524,7 @@
                                 }
                             });
 
-        if ($("#QtyMonth").val() > month) {
+        if ($("#QtyMonth").val() > limitmonth) {
             document.getElementById('myDivCategoriaMayor').style.display = 'block';
 
             //  $('#card').children().attr('readonly', true);
@@ -538,7 +539,28 @@
         }
 
     });
+    function SoloNumeros(e) {
+        key = e.keyCode || e.which;
+        tecla = String.fromCharCode(key).toLowerCase();
+        letras = "1234567890";
+        especiales = "8-37-39-46";
 
+
+
+        tecla_especial = false
+        for (var i in especiales) {
+            if (key == especiales[i]) {
+                tecla_especial = true;
+                break;
+            }
+        }
+
+
+
+        if (letras.indexOf(tecla) == -1 && !tecla_especial) {
+            return false;
+        }
+    }
     function setearvalor(nombrenumerico, valor) {
         var numeric = $("#" + nombrenumerico).data("kendoNumericTextBox");
         numeric.value(valor);
@@ -562,6 +584,7 @@
                                     //notification.show({
                                     //    message: "Guardado correctamente!"
                                     //}, "upload-success");
+                                    console.log("Este es el valor de result");
                                     console.log(result);
                                     mensual = result.QtyMonth;
                                     console.log(mensual);
@@ -665,8 +688,11 @@
                 }
         if (validadetalle)
         {
-            if (validarllenado() === true)
+            debugger;
+            var bandera = validarllenado();
+            if ( bandera== true)
             {
+                //$("#Identidad").val() = ;
                     var dataObject = {
                         'VendorId': $("#VendorId").val(),
                         'VendorName': $("#VendorName").val(),
@@ -680,7 +706,7 @@
                         'IdEstadoVendorConfi': $("#IdEstadoVendorConfi").val(),
                         'EstadoVendorConfi': $("#IdEstadoVendorConfi").data("kendoDropDownList").text(),
                         'Phone': $("#Phone").val(),
-                        //'Identidad': $("#Identidad").val(),
+                        //'Identidad': $("#Identidad").val('0'),
                         'Email': $("#Email").val(),
                         'CurrencyId': $("#CurrencyId").val(),
                         'IdEstado': $("#IdEstado").val(),
@@ -777,12 +803,14 @@
        $("#btnVendor").prop("disabled", false);
     }
     function validarllenado() {
-        if (   ($("#CompanyReferenceone").val() == '' || $("#CompanyReferenceone").val() == null)
+        if   (   ($("#QtyMonth").val() > limitmonth)
+            && ($("#CompanyReferenceone").val() == '' || $("#CompanyReferenceone").val() == null)
             && ($("#CompanyReferencetwo").val() == '' || $("#CompanyReferencetwo").val() == null)
             && ($("#RepresentativeName").val() == '' || $("#RepresentativeName").val() == null)
             && ($("#IdentityRepresentative").val() == '' || $("#IdentityRepresentative").val() == null)
             && ($("#RTNRepresentative").val() == '' || $("#RTNRepresentative").val() == null)
-        ) {
+           )
+         {
              return false;
         } else {
             //alert("Seleccionaste: todos llenoss");

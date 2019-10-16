@@ -73,7 +73,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _SubProduct = JsonConvert.DeserializeObject<List<SubProduct>>(valorrespuesta);
-                    _SubProduct = _SubProduct.Where(q => q.ProductTypeId != 11).ToList();
+                    _SubProduct = _SubProduct.OrderByDescending(q=>q.SubproductId).Where(q => q.ProductTypeId != 11).ToList();
 
                 }
 
@@ -107,7 +107,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _SubProduct = JsonConvert.DeserializeObject<List<SubProduct>>(valorrespuesta);
-                    _SubProduct = _SubProduct.Where(q => q.ProductTypeId == 11).ToList();
+                    _SubProduct = _SubProduct.OrderByDescending(q => q.SubproductId).Where(q => q.ProductTypeId == 11).ToList();
                 }
 
 
@@ -141,7 +141,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _SubProducto = JsonConvert.DeserializeObject<List<SubProduct>>(valorrespuesta);
-
+                    _SubProducto = _SubProducto.OrderByDescending(q => q.SubproductId).ToList();
                 }
             }
             catch (Exception ex)
@@ -169,7 +169,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _SubProducto = JsonConvert.DeserializeObject<List<SubProduct>>(valorrespuesta);
-
+                    _SubProducto = _SubProducto.OrderByDescending(q => q.SubproductId).ToList();
                 }
             }
             catch (Exception ex)
@@ -196,7 +196,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _SubProducto = JsonConvert.DeserializeObject<List<SubProduct>>(valorrespuesta);
-
+                    _SubProducto = _SubProducto.OrderByDescending(q => q.SubproductId).ToList();
                 }
             }
             catch (Exception ex)
@@ -223,7 +223,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _SubProducto = JsonConvert.DeserializeObject<List<SubProduct>>(valorrespuesta);
-
+                    _SubProducto = _SubProducto.OrderByDescending(q => q.SubproductId).ToList();
                 }
             }
             catch (Exception ex)
@@ -251,7 +251,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _SubProduct = JsonConvert.DeserializeObject<SubProductDTO>(valorrespuesta);
-
+                   
                 }
 
                 if (_SubProduct == null)
@@ -294,7 +294,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _SubProducto = JsonConvert.DeserializeObject<List<SubProduct>>(valorrespuesta);
-
+                    _SubProducto = _SubProducto.OrderByDescending(q => q.SubproductId).ToList();
                 }
             }
             catch (Exception ex)
