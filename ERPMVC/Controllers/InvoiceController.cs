@@ -318,39 +318,39 @@ namespace ERPMVC.Controllers
            
         }
 
-        [HttpPost]
-        public async Task<ActionResult> GetInvoiceById([FromBody]Invoice _Invoicep)
-        //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
-        {
-            Invoice _Invoice = new Invoice();
-            try
-            {
-                //GoodsDelivered _GoodsDeliveredp = JsonConvert.DeserializeObject<GoodsDelivered>(dto);
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Invoice/GetInvoiceLineById/" + _Invoicep.InvoiceId);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Invoice = JsonConvert.DeserializeObject<Invoice>(valorrespuesta);
-                }
-                if (_Invoice == null)
-                {
-                    _Invoice = new Invoice();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
+        //[HttpPost]
+        //public async Task<ActionResult> GetInvoiceById([FromBody]Invoice _Invoicep)
+        ////public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
+        //{
+        //    Invoice _Invoice = new Invoice();
+        //    try
+        //    {
+        //        //GoodsDelivered _GoodsDeliveredp = JsonConvert.DeserializeObject<GoodsDelivered>(dto);
+        //        string baseadress = config.Value.urlbase;
+        //        HttpClient _client = new HttpClient();
+        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+        //        var result = await _client.GetAsync(baseadress + "api/Invoice/GetInvoiceLineById/" + _Invoicep.InvoiceId);
+        //        string valorrespuesta = "";
+        //        if (result.IsSuccessStatusCode)
+        //        {
+        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
+        //            _Invoice = JsonConvert.DeserializeObject<Invoice>(valorrespuesta);
+        //        }
+        //        if (_Invoice == null)
+        //        {
+        //            _Invoice = new Invoice();
+        //        }
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+        //        throw ex;
+        //    }
 
 
 
-            return Json(_Invoice);
-        }
+        //    return Json(_Invoice);
+        //}
 
 
 
