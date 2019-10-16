@@ -64,7 +64,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_InvoiceLine);
+            return PartialView("~/Views/Invoice/pvwInvoiceDetailMant.cshtml",_InvoiceLine);
 
         }
 
