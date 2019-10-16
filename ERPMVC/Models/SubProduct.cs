@@ -14,10 +14,10 @@ namespace ERPMVC.Models
         public Int64 SubproductId { get; set; }
         [Display(Name = "SubServicio")]
         public string ProductName { get; set; }
-        [Display(Name = "Tipo de Subservicio")]
+        [Display(Name = "Tipo de Subservicio/Producto")]
         public Int64 ProductTypeId { get; set; }
 
-        [Display(Name = "Tipo de producto")]
+        [Display(Name = "Tipo de Subservicio/Producto")]
         public string ProductTypeName { get; set; }
 
         [Display(Name = "Tipo de prohibición")]
@@ -36,7 +36,7 @@ namespace ERPMVC.Models
         public double Balance { get; set; }
         [Display(Name = "Saldo Sacos")]
         public Int64 BagBalance { get; set; }
-        [Display(Name = "Código de producto")]
+        [Display(Name = "Código de servicio/producto")]
         public string ProductCode { get; set; }
         [Display(Name = "Código de barra")]
         public string Barcode { get; set; }
