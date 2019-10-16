@@ -139,12 +139,14 @@ namespace ERPMVC.Controllers
 
         [HttpPost]
         public async Task<ActionResult<Country>> SaveCountry([FromBody]CountryDTO _CountryP)
+       // public async Task<ActionResult<Country>> SaveCountry([FromBody]dynamic dto)
         {
-
+            //CountryDTO _CountryP = new CountryDTO();
             Country _Country = _CountryP;
             try
             {
-                // DTO_NumeracionSAR _liNumeracionSAR = new DTO_NumeracionSAR();
+               // _CountryP = JsonConvert.DeserializeObject<CountryDTO>(dto.ToString());
+            
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -159,7 +161,7 @@ namespace ERPMVC.Controllers
                 }
 
                 if (_Country == null) { _Country = new Models.Country(); }
-
+                if (_CountryP.SortName == null) { _CountryP.SortName = _CountryP.Name; }
                 if (_CountryP.Id == 0)
                 {
                     _Country.FechaCreacion = DateTime.Now;

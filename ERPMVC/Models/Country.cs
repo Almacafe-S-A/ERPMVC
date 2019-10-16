@@ -14,10 +14,10 @@ namespace ERPMVC.Models
         public long Id { get; set; } // bigint
         [Display(Name = "Nombre ordenado")]
         public string SortName { get; set; } // text
-        [Required]
+       
         [Display(Name = "País")]
         public string Name { get; set; } // text
-        [Required]
+       
         [Display(Name = "Código de area teléfono")]
         public int? PhoneCode { get; set; } // integer
         [Display(Name = "Usuario de creación")]
