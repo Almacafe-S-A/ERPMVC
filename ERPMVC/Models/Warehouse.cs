@@ -17,7 +17,7 @@ namespace ERPMVC.Models
         public string WarehouseName { get; set; }
         [Display(Name = "Descripción")]
         public string Description { get; set; }
-
+        [Display(Name = "Estado")]
         public Int64 IdEstado { get; set; }
         public string Estado { get; set; }
         [Display(Name = "Sucursal")]

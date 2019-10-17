@@ -204,7 +204,7 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="ZipCode" class=" control-label" style="width:100%"></label>
-                                                    <input type="text" asp-for="ZipCode" name="ZipCode" class="form-control" required autocomplete="off" style="min-width:100%"  maxlength="30" />
+                                                    <input type="text" asp-for="ZipCode" name="ZipCode" class="form-control" required autocomplete="off" onkeypress="return SoloNumeros(event)" style="min-width:100%"  maxlength="5" />
                                                     <span asp-validation-for="ZipCode" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -218,8 +218,9 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Phone" class=" control-label" style="width:100%"></label>
-                                                    <input type="text" asp-for="Phone" name="Phone" class="form-control" required autocomplete="off" style="min-width:100%" />
+                                                    <input type="text" asp-for="Phone" name="Phone" class="form-control" required autocomplete="off"  onchange="validar()" style="min-width:100%" />
                                                     <span asp-validation-for="Phone" class="text-danger"></span>
+                                                    <span id="telefono" class="text-danger">Complete el número de teléfono!</span>
                                                 </div>
                                             </div>
                                         </div> 
@@ -272,12 +273,26 @@
     </div>
 </div>
 
-
+<script>
+    function validar() {
+        var cadena = $("#Phone").val();
+        if (cadena.indexOf("_") > -1 == true) {
+            $("#telefono").show();
+        }
+        else {
+            $("#telefono").hide();
+        }
+    }
+</script>
 <script>
     $(document).ready(function () {
         $("#Phone").kendoMaskedTextBox({
             mask: "(999) 0000-0000"
         });
+        $("#ZipCode").on('paste', function (e) {
+            e.preventDefault();
+        })
+        $("#telefono").hide();
     });
     function SoloNumeros(e) {
         key = e.keyCode || e.which;
@@ -302,7 +317,6 @@
         grid.dataSource.read();
     }
     function SaveBranch(e) {
-
             var notification = $("#notification").data("kendoNotification");
            // e.preventDefault();
             $("#btnBranch").hide();
@@ -337,62 +351,65 @@
                           //'UsuarioModificacion': $("#UsuarioModificacion").val(),
 
                            '_Brach': displayedData
-            };
+        };
+        if ($('#telefono').is(':hidden')) {
+
 
             var validator = $("#frmBranch").data("kendoValidator");
-                 var status = $(".status");
-
-            
-                if (validator.validate()) {
-
-                    $.ajax({
-                        url: '@Url.Action("SaveBranch", "Branch")',
-                        method: 'POST',
-                        datatype: "json",
-                        contentType: 'application/json',
-                        async: false,
-                        data: JSON.stringify(dataObject),
-                        success: function (data) {
-
-                            //notification.show({
-                            //    message: "Guardado correctamente!"
-                            //}, "upload-success");
-                            $.toast({
-                                heading: 'Satisfactorio',
-                                text: '<br/><br/>Datos guardados correctamente.',
-                                position: 'top-right',
-                                loaderBg: '#ff6849',
-                                icon: 'success',
-                                hideAfter: 30000,
-                                stack: 6
-                            });
-
-                            RefrescarGrid();
-
-                            $('#ModalBranch').modal('hide');
+            var status = $(".status");
 
 
-                        },
-                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            if (validator.validate()) {
 
-                            notification.show({
-                                title: "Validación",
-                                message: textStatus + ": " + XMLHttpRequest.responseText
-                            }, "error");
+                $.ajax({
+                    url: '@Url.Action("SaveBranch", "Branch")',
+                    method: 'POST',
+                    datatype: "json",
+                    contentType: 'application/json',
+                    async: false,
+                    data: JSON.stringify(dataObject),
+                    success: function (data) {
 
-                        }
-                    });
+                        //notification.show({
+                        //    message: "Guardado correctamente!"
+                        //}, "upload-success");
+                        $.toast({
+                            heading: 'Satisfactorio',
+                            text: '<br/><br/>Datos guardados correctamente.',
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'success',
+                            hideAfter: 30000,
+                            stack: 6
+                        });
 
-                }
-                else {
-                    notification.show({
-                        title: "Validación",
-                        message:"Datos invalidos"
-                    }, "error");
-                }
-           
+                        RefrescarGrid();
 
+                        $('#ModalBranch').modal('hide');
+
+
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                        notification.show({
+                            title: "Validación",
+                            message: textStatus + ": " + XMLHttpRequest.responseText
+                        }, "error");
+
+                    }
+                });
+
+            }
+            else {
+                notification.show({
+                    title: "Validación",
+                    message: "Datos invalidos"
+                }, "error");
+            }
+
+        }
             $("#btnBranch").show();
             $("#btnBranch").prop("disabled", false);
+        
     }
 </script>
