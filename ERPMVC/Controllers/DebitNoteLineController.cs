@@ -67,27 +67,54 @@ namespace ERPMVC.Controllers
 
         }
 
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<GoodsDeliveryAuthorizationLine>> SetLinesInSession([FromBody]DebitNoteLine _DebitNoteLine)
+        {
+
+            try
+            {
+
+                List<DebitNoteLine> _GoodsReceivedLine = new List<DebitNoteLine>();
+                _GoodsReceivedLine = JsonConvert.DeserializeObject<List<DebitNoteLine>>(HttpContext.Session.GetString("listadoproductosCreditNote"));
+
+                if (_GoodsReceivedLine == null) { _GoodsReceivedLine = new List<DebitNoteLine>(); }
+                _GoodsReceivedLine.Add(_DebitNoteLine);
+                HttpContext.Session.SetString("listadoproductosCreditNote", JsonConvert.SerializeObject(_GoodsReceivedLine).ToString());
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return await Task.Run(() => Json(_DebitNoteLine));
+        }
+
+
+
         [HttpGet("[action]")]
         public async Task<DataSourceResult> GetDebitNoteLineByDebitNoteId([DataSourceRequest]DataSourceRequest request, DebitNoteLine _DebitNoteLinep)
         {
             List<DebitNoteLine> __DebitNoteLineList = new List<DebitNoteLine>();
             try
             {
-                if (HttpContext.Session.Get("listadoproductosinvoice") == null
-                   || HttpContext.Session.GetString("listadoproductosinvoice") == "")
+                if (HttpContext.Session.Get("listadoproductosdebitnote") == null
+                   || HttpContext.Session.GetString("listadoproductosdebitnote") == "")
                 {
                     if (_DebitNoteLinep.DebitNoteId > 0)
                     {
                         string serialzado = JsonConvert.SerializeObject(_DebitNoteLinep).ToString();
-                        HttpContext.Session.SetString("listadoproductosinvoice", serialzado);
+                        HttpContext.Session.SetString("listadoproductosdebitnote", serialzado);
                     }
                 }
                 else
                 {
-                    var result = HttpContext.Session.GetString("listadoproductosinvoice");
+                    var result = HttpContext.Session.GetString("listadoproductosdebitnote");
                     try
                     {
-                        __DebitNoteLineList = JsonConvert.DeserializeObject<List<DebitNoteLine>>(HttpContext.Session.GetString("listadoproductosinvoice"));
+                        __DebitNoteLineList = JsonConvert.DeserializeObject<List<DebitNoteLine>>(HttpContext.Session.GetString("listadoproductosdebitnote"));
                     }
                     catch (Exception ex)
                     {
@@ -110,23 +137,23 @@ namespace ERPMVC.Controllers
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         __DebitNoteLineList = JsonConvert.DeserializeObject<List<DebitNoteLine>>(valorrespuesta);
-                        HttpContext.Session.SetString("listadoproductosinvoice", JsonConvert.SerializeObject(__DebitNoteLineList).ToString());
+                        HttpContext.Session.SetString("listadoproductosdebitnote", JsonConvert.SerializeObject(__DebitNoteLineList).ToString());
                     }
                 }
                 else
                 {
 
                     List<DebitNoteLine> _existelinea = new List<DebitNoteLine>();
-                    if (HttpContext.Session.GetString("listadoproductosinvoice") != "" && HttpContext.Session.GetString("listadoproductosinvoice") != null)
+                    if (HttpContext.Session.GetString("listadoproductosdebitnote") != "" && HttpContext.Session.GetString("listadoproductosdebitnote") != null)
                     {
-                        __DebitNoteLineList = JsonConvert.DeserializeObject<List<DebitNoteLine>>(HttpContext.Session.GetString("listadoproductosinvoice"));
+                        __DebitNoteLineList = JsonConvert.DeserializeObject<List<DebitNoteLine>>(HttpContext.Session.GetString("listadoproductosdebitnote"));
                         _existelinea = __DebitNoteLineList.Where(q => q.ProductId == _DebitNoteLinep.ProductId).ToList();
                     }
 
                     if (_DebitNoteLinep.ProductId > 0 && _existelinea.Count == 0)
                     {
                         __DebitNoteLineList.Add(_DebitNoteLinep);
-                        HttpContext.Session.SetString("listadoproductosinvoice", JsonConvert.SerializeObject(__DebitNoteLineList).ToString());
+                        HttpContext.Session.SetString("listadoproductosdebitnote", JsonConvert.SerializeObject(__DebitNoteLineList).ToString());
                     }
                     else
                     {
@@ -157,7 +184,7 @@ namespace ERPMVC.Controllers
 
                         }
 
-                        HttpContext.Session.SetString("listadoproductosinvoice", JsonConvert.SerializeObject(__DebitNoteLineList).ToString());
+                        HttpContext.Session.SetString("listadoproductosdebitnote", JsonConvert.SerializeObject(__DebitNoteLineList).ToString());
 
                     }
                 }
