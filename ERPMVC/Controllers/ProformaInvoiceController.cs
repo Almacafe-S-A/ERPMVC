@@ -298,9 +298,10 @@ namespace ERPMVC.Controllers
         // public async Task<ActionResult<ProformaInvoice>> SaveProformaInvoice([FromBody]ProformaInvoice _ProformaInvoice)
         public async Task<ActionResult<SalesOrder>> SaveProformaInvoice([FromBody]dynamic dto)
         {
-            ProformaInvoice _ProformaInvoice = JsonConvert.DeserializeObject<ProformaInvoice>(dto.ToString());
+            ProformaInvoiceDTO _ProformaInvoice = new ProformaInvoiceDTO();
             try
             {
+                _ProformaInvoice = JsonConvert.DeserializeObject<ProformaInvoice>(dto.ToString());
                 if (_ProformaInvoice != null)
                 {
                     ProformaInvoice _listProformaInvoice = new ProformaInvoice();
@@ -352,8 +353,9 @@ namespace ERPMVC.Controllers
         // POST: ProformaInvoice/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<ProformaInvoice>> Insert(ProformaInvoice _ProformaInvoice)
+        public async Task<ActionResult<ProformaInvoice>> Insert(ProformaInvoiceDTO _ProformaInvoiceDTO)
         {
+            ProformaInvoice _ProformaInvoice = new ProformaInvoice();
             try
             {
                 // TODO: Add insert logic here
