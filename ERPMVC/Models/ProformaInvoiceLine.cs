@@ -51,6 +51,10 @@ namespace ERPMVC.Models
         public double SubTotal { get; set; }
          [Display(Name = "% Impuesto")]
         public double TaxPercentage { get; set; }
+
+        [Display(Name = "Código Impuesto")]
+        public Int64 TaxId { get; set; }
+
         [Display(Name = "Código Impuesto")]
         public string TaxCode { get; set; }
 
