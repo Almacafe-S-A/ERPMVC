@@ -144,6 +144,7 @@ namespace ERPMVC.Controllers
                             obj.AccountName = _DebitNoteLinep.AccountName;
                             obj.SubTotal = _DebitNoteLinep.SubTotal;
                             obj.TaxAmount = _DebitNoteLinep.TaxAmount;
+                            obj.TaxId = _DebitNoteLinep.TaxId;
                             obj.TaxCode = _DebitNoteLinep.TaxCode;
                             obj.TaxPercentage = _DebitNoteLinep.TaxPercentage;
                             obj.UnitOfMeasureId = _DebitNoteLinep.UnitOfMeasureId;

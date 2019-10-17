@@ -175,6 +175,7 @@ namespace ERPMVC.Controllers
                             obj.SubProductName = _CreditNoteLinep.SubProductName;
                             obj.SubTotal = _CreditNoteLinep.SubTotal;
                             obj.TaxAmount = _CreditNoteLinep.TaxAmount;
+                            obj.TaxId = _CreditNoteLinep.TaxId;
                             obj.TaxCode = _CreditNoteLinep.TaxCode;
                             obj.TaxPercentage = _CreditNoteLinep.TaxPercentage;
                             obj.UnitOfMeasureId = _CreditNoteLinep.UnitOfMeasureId;

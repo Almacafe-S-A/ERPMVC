@@ -189,6 +189,7 @@ namespace ERPMVC.Controllers
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> GetCertificadoDepositoByIdKardex([DataSourceRequest]DataSourceRequest request, [FromBody] CertificadoDepositoDTO _listado)
         {
+            ProformaInvoiceDTO _ProformaInvoiceDTO = new ProformaInvoiceDTO();
             CertificadoDeposito _CertificadoDeposito = new CertificadoDeposito();
             try
             {
@@ -214,23 +215,24 @@ namespace ERPMVC.Controllers
                     }
 
                     KardexDTO _kardexparam = new KardexDTO { Ids = _listado.CertificadosList , DocumentName = "CD" };
-                    List<KardexLine> _kardexsaldo = new List<KardexLine>();
+                  //  List<KardexLine> _kardexsaldo = new List<KardexLine>();
+                 
                     result = await _client.PostAsJsonAsync(baseadress + "api/Kardex/GetMovimientosCertificados", _kardexparam);
                     valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
-                       // _kardexsaldo = JsonConvert.DeserializeObject<List<KardexLine>>(valorrespuesta);
+                        _ProformaInvoiceDTO = JsonConvert.DeserializeObject<ProformaInvoiceDTO>(valorrespuesta);
                     }
 
                     // _CertificadoDeposito._CertificadoLine.Clear();
-                    foreach (var item in _CertificadoDeposito._CertificadoLine)
-                    {
-                        item.Quantity = (from c in _kardexsaldo
-                                         .Where(q => q.SubProducId == item.SubProductId)
-                                         select c.TotalCD
-                                         ).FirstOrDefault();
-                    }
+                    //foreach (var item in _CertificadoDeposito._CertificadoLine)
+                    //{
+                    //    item.Quantity = (from c in _kardexsaldo
+                    //                     .Where(q => q.SubProducId == item.SubProductId)
+                    //                     select c.TotalCD
+                    //                     ).FirstOrDefault();
+                    //}
                 }
 
 
@@ -241,7 +243,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_CertificadoDeposito);
+            return Json(_ProformaInvoiceDTO);
         }
 
 
