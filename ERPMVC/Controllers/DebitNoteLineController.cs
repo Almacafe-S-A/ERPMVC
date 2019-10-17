@@ -67,6 +67,112 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetDebitNoteLineByDebitNoteId([DataSourceRequest]DataSourceRequest request, DebitNoteLine _DebitNoteLinep)
+        {
+            List<DebitNoteLine> __DebitNoteLineList = new List<DebitNoteLine>();
+            try
+            {
+                if (HttpContext.Session.Get("listadoproductosinvoice") == null
+                   || HttpContext.Session.GetString("listadoproductosinvoice") == "")
+                {
+                    if (_DebitNoteLinep.DebitNoteId > 0)
+                    {
+                        string serialzado = JsonConvert.SerializeObject(_DebitNoteLinep).ToString();
+                        HttpContext.Session.SetString("listadoproductosinvoice", serialzado);
+                    }
+                }
+                else
+                {
+                    var result = HttpContext.Session.GetString("listadoproductosinvoice");
+                    try
+                    {
+                        __DebitNoteLineList = JsonConvert.DeserializeObject<List<DebitNoteLine>>(HttpContext.Session.GetString("listadoproductosinvoice"));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                    }
+
+                }
+
+
+                if (_DebitNoteLinep.DebitNoteId > 0)
+                {
+
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/DebitNoteLine/GetDebitNoteLineByInvoiceId/" + _DebitNoteLinep.DebitNoteId);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        __DebitNoteLineList = JsonConvert.DeserializeObject<List<DebitNoteLine>>(valorrespuesta);
+                        HttpContext.Session.SetString("listadoproductosinvoice", JsonConvert.SerializeObject(__DebitNoteLineList).ToString());
+                    }
+                }
+                else
+                {
+
+                    List<DebitNoteLine> _existelinea = new List<DebitNoteLine>();
+                    if (HttpContext.Session.GetString("listadoproductosinvoice") != "" && HttpContext.Session.GetString("listadoproductosinvoice") != null)
+                    {
+                        __DebitNoteLineList = JsonConvert.DeserializeObject<List<DebitNoteLine>>(HttpContext.Session.GetString("listadoproductosinvoice"));
+                        _existelinea = __DebitNoteLineList.Where(q => q.ProductId == _DebitNoteLinep.ProductId).ToList();
+                    }
+
+                    if (_DebitNoteLinep.ProductId > 0 && _existelinea.Count == 0)
+                    {
+                        __DebitNoteLineList.Add(_DebitNoteLinep);
+                        HttpContext.Session.SetString("listadoproductosinvoice", JsonConvert.SerializeObject(__DebitNoteLineList).ToString());
+                    }
+                    else
+                    {
+
+                        var obj = __DebitNoteLineList.FirstOrDefault(x => x.ProductId == _DebitNoteLinep.ProductId);
+                        if (obj != null)
+                        {
+                            obj.Description = _DebitNoteLinep.Description;
+                            obj.Price = _DebitNoteLinep.Price;
+                            obj.Quantity = _DebitNoteLinep.Quantity;
+                            obj.Amount = _DebitNoteLinep.Amount;
+                            obj.SubProductId = _DebitNoteLinep.SubProductId;
+                            obj.SubProductName = _DebitNoteLinep.SubProductName;
+                            obj.AccountId = _DebitNoteLinep.AccountId;
+                            obj.AccountName = _DebitNoteLinep.AccountName;
+                            obj.SubTotal = _DebitNoteLinep.SubTotal;
+                            obj.TaxAmount = _DebitNoteLinep.TaxAmount;
+                            obj.TaxCode = _DebitNoteLinep.TaxCode;
+                            obj.TaxPercentage = _DebitNoteLinep.TaxPercentage;
+                            obj.UnitOfMeasureId = _DebitNoteLinep.UnitOfMeasureId;
+                            obj.UnitOfMeasureName = _DebitNoteLinep.UnitOfMeasureName;
+                            obj.WareHouseId = _DebitNoteLinep.WareHouseId;
+                            obj.CostCenterId = _DebitNoteLinep.CostCenterId;
+                            obj.DiscountAmount = _DebitNoteLinep.DiscountAmount;
+                            obj.DiscountPercentage = _DebitNoteLinep.DiscountPercentage;
+                            obj.Total = _DebitNoteLinep.Total;
+
+                        }
+
+                        HttpContext.Session.SetString("listadoproductosinvoice", JsonConvert.SerializeObject(__DebitNoteLineList).ToString());
+
+                    }
+                }
+                
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            
+            return __DebitNoteLineList.ToDataSourceResult(request);
+
+        }
+
+
 
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
