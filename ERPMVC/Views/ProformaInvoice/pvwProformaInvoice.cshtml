@@ -120,9 +120,10 @@
 
                                                             return data;
                                                         }
-                                                        function changesetearvalues() {
+                                            function changesetearvalues() {
+                                                          var notification = $("#notification").data("kendoNotification");
                                                             var dataObject = { 'Id': $("#cbxBuscarCotizaciones").val() };
-
+                                                            ClearSession();
                                                                $.ajax({
                                                                      url: '@Url.Action("GetSalesOrderById", "SalesOrder")',
                                                                      method: 'GET',
@@ -178,8 +179,9 @@
                                                                              }
 
                                                                              for (i = 0; i < data.SalesOrderLines.length; i++) {
-                                                                                 datasource.insert({
-                                                                                     ProformaLineId: 0, ProformaInvoiceId: 0
+
+                                                                                 var midataObject = {
+                                                                                     ProformaLineId: i + 1, ProformaInvoiceId: 0
                                                                                      , TaxCode: data.SalesOrderLines[i].TaxCode
                                                                                      , UnitOfMeasureName: data.SalesOrderLines[i].UnitOfMeasureName, UnitOfMeasureId: data.SalesOrderLines[i].UnitOfMeasureId
                                                                                      , SubProductId: data.SalesOrderLines[i].SubProductId, SubProductName: data.SalesOrderLines[i].SubProductName
@@ -188,7 +190,26 @@
                                                                                      , TaxAmount: data.SalesOrderLines[i].TaxAmount, Total: data.SalesOrderLines[i].Total
                                                                                      , Quantity: data.SalesOrderLines[i].Quantity, WareHouseId: data.SalesOrderLines[i].WarehouseId
                                                                                      , ControlPalletsId: $("#cbxBuscarCotizaciones").val()
-                                                                                 });
+                                                                                 };
+
+                                                                                    $.ajax({
+                                                                                          url: '@Url.Action("SetLinesInSession", "ProformaInvoiceLine")',
+                                                                                          method: 'POST',
+                                                                                          datatype: "json",
+                                                                                          contentType: 'application/json',
+                                                                                          async: false,
+                                                                                          data: JSON.stringify(midataObject),
+                                                                                          success: function (result) {
+                                                                                              // console.log(data);
+                                                                                              // data = result;
+
+                                                                                          },
+                                                                                          error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                                                                              alert(textStatus + ": " + XMLHttpRequest.responseText);
+                                                                                          }
+                                                                                      });
+
+                                                                                 datasource.insert(midataObject);
                                                                              }
                                                                          }
 
@@ -266,7 +287,7 @@
                                     <div class="form-group">
 
 
-                                        <script>
+<script>
                                        function valueMapperCertificado(options) {
                                            $.ajax({
                                                url: "@Url.Action("Orders_ValueMapperByCustomer", "CertificadoDeposito")",
@@ -288,13 +309,17 @@
                                            return data;
                                     }
 
-                                       function changesetearvaluesCertificado() {
-                                           var dataObject = {
-                                               'CertificadosList': $("#cbxBuscarCertificadosDeposito").val(),
-                                               'CustomerId': $("#CustomerIdFilter").val(),
-                                           };
+                                            function changesetearvaluesCertificado() {
 
-                                              $.ajax({
+                                                var notification = $("#notification").data("kendoNotification");
+                                                var dataObject = {
+                                                    'CertificadosList': $("#cbxBuscarCertificadosDeposito").val(),
+                                                    'CustomerId': $("#CustomerIdFilter").val(),
+                                                };
+
+                                                ClearSession();
+
+                                                $.ajax({
                                                     url: '@Url.Action("GetCertificadoDepositoByIdKardex", "CertificadoDeposito")',
                                                     method: 'POST',
                                                     datatype: "json",
@@ -309,6 +334,10 @@
                                                         //$("#DeliveryDate").val(data.DeliveryDate);
                                                         //$("#ExpirationDate").val(data.ExpirationDate);
 
+                                                      
+
+
+
                                                         $("#CustomerId").data("kendoDropDownList").value(data.CustomerId);
                                                         $("#ProformaName").val(data.CustomerName);
                                                         $("#ProductId").data("kendoDropDownList").value(data.ServicioId);
@@ -321,7 +350,7 @@
                                                         $("#Correo").val(data.Correo);
                                                         $("#Direccion").val(data.Direccion);
                                                         $("#RTN").val(data.RTN);
-                                                        $("#Tefono").val(data.Tefono);                                                      
+                                                        $("#Tefono").val(data.Tefono);
                                                         $("#SubTotal").data("kendoNumericTextBox").value(data.SubTotal);
                                                         $("#Discount").data("kendoNumericTextBox").value(data.Discount);
                                                         $("#Tax").data("kendoNumericTextBox").value(data.Tax);
@@ -342,32 +371,53 @@
 
                                                         debugger;
                                                         var grid = $("#gridProformaInvoiceDetail").data("kendoGrid");
-                                                        var datasource = grid.dataSource;                                                      
+                                                        var datasource = grid.dataSource;
 
                                                         for (i = 0; i < data.ProformaInvoiceLine.length; i++) {
 
                                                             console.log(data.ProformaInvoiceLine[i].SubProductId);
-                                                            datasource.insert({
-                                                                ProformaLineId: i+1, ProformaInvoiceId: 0
+
+                                                            var midataObject = {
+                                                                ProformaLineId: i + 1, ProformaInvoiceId: 0
                                                                 , UnitOfMeasureName: data.ProformaInvoiceLine[i].UnitMeasurName, UnitOfMeasureId: data.ProformaInvoiceLine[i].UnitMeasureId
                                                                 , SubProductId: data.ProformaInvoiceLine[i].SubProductId, SubProductName: data.ProformaInvoiceLine[i].SubProductName
                                                                 , SubTotal: data.ProformaInvoiceLine[i].SubTotal, Price: data.ProformaInvoiceLine[i].Price
-                                                                , DiscountAmount: data.ProformaInvoiceLine[i].DiscountAmount, TaxCode: data.ProformaInvoiceLine[i].TaxCode
+                                                                , DiscountAmount: data.ProformaInvoiceLine[i].DiscountAmount, TaxId: data.ProformaInvoiceLine[i].TaxId
+                                                                , TaxCode: data.ProformaInvoiceLine[i].TaxCode
                                                                 , TaxAmount: data.ProformaInvoiceLine[i].TaxAmount, Total: data.ProformaInvoiceLine[i].Total
                                                                 , Quantity: data.ProformaInvoiceLine[i].Quantity, WareHouseId: data.ProformaInvoiceLine[i].WarehouseId
                                                                 , ControlPalletsId: $("#cbxBuscarCotizaciones").val()
-                                                            });
+                                                            };
+
+                                                            $.ajax({
+                                                                   url: '@Url.Action("SetLinesInSession", "ProformaInvoiceLine")',
+                                                                   method: 'POST',
+                                                                   datatype: "json",
+                                                                   contentType: 'application/json',
+                                                                   async: false,
+                                                                  data: JSON.stringify(midataObject),
+                                                                   success: function (result) {
+                                                                       // console.log(data);
+                                                                       // data = result;
+
+                                                                   },
+                                                                   error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                                                       alert(textStatus + ": " + XMLHttpRequest.responseText);
+                                                                   }
+                                                               });
+
+                                                            datasource.insert(midataObject);
 
 
                                                         }
 
-                                                        CalcularTotalDocumento();                                                                                                             
-                                                   
+                                                        CalcularTotalDocumento();
+
 
                                                     },
                                                     error: function (XMLHttpRequest, textStatus, errorThrown) {
 
-                                                      //  $("#btngenerarfactura").show();
+                                                        //  $("#btngenerarfactura").show();
                                                         notification.show({
                                                             title: "Validación",
                                                             message: textStatus + ": " + XMLHttpRequest.responseText
@@ -380,12 +430,12 @@
 
                                             function ClienteId() {
                                                 return {
-                                                    'CustomerId' : $("#CustomerIdFilter").val(),
+                                                    'CustomerId': $("#CustomerIdFilter").val(),
                                                 }
                                             }
 
 
-                                        </script>
+ </script>
 
 
                                         <input type="hidden" id="CustomerIdhidden" value="0" />

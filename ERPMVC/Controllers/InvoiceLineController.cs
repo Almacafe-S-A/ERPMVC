@@ -69,6 +69,33 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<GoodsDeliveryAuthorizationLine>> SetLinesInSession([FromBody]InvoiceLine _InvoiceLine)
+        {
+
+            try
+            {
+
+                List<InvoiceLine> _InvoiceLinelist = new List<InvoiceLine>();
+                _InvoiceLinelist = JsonConvert.DeserializeObject<List<InvoiceLine>>(HttpContext.Session.GetString("listadoproductosinvoice"));
+
+                if (_InvoiceLinelist == null) { _InvoiceLinelist = new List<InvoiceLine>(); }
+                _InvoiceLinelist.Add(_InvoiceLine);
+              
+                HttpContext.Session.SetString("listadoproductosinvoice", JsonConvert.SerializeObject(_InvoiceLinelist).ToString());
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return await Task.Run(() => Json(_InvoiceLine));
+        }
+
+
+
         [HttpGet("[action]")]
         public async Task<DataSourceResult> GetInvoiceLineByInvoiceId([DataSourceRequest]DataSourceRequest request, InvoiceLine _InvoiceLinep)
         {
