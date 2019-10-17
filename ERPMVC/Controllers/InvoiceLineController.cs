@@ -144,6 +144,7 @@ namespace ERPMVC.Controllers
                             obj.SubProductName = _InvoiceLinep.SubProductName;
                             obj.SubTotal = _InvoiceLinep.SubTotal;
                             obj.TaxAmount = _InvoiceLinep.TaxAmount;
+                            obj.TaxId = _InvoiceLinep.TaxId;
                             obj.TaxCode = _InvoiceLinep.TaxCode;
                             obj.TaxPercentage = _InvoiceLinep.TaxPercentage;
                             obj.UnitOfMeasureId = _InvoiceLinep.UnitOfMeasureId;
