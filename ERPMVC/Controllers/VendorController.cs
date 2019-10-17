@@ -207,7 +207,8 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    _VendorP.UsuarioCreacion = _Vendor.UsuarioCreacion;
+                    _VendorP.Identidad = _Vendor.Identidad;
+                   _VendorP.UsuarioCreacion = _Vendor.UsuarioCreacion;
                     _VendorP.FechaCreacion = _Vendor.FechaCreacion;
                     var updateresult = await Update(_Vendor.VendorId, _VendorP);
                 }

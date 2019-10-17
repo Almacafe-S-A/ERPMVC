@@ -163,7 +163,7 @@ namespace ERPMVC.Controllers
                     var insertresult = await Insert(_condition);
                     var value = (insertresult.Result as ObjectResult).Value;
                     _condition.ConditionId = ((Conditions)(value)).ConditionId;
-                  
+                    
 
                 }
                 else

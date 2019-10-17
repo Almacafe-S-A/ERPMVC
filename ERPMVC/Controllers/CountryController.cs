@@ -166,7 +166,22 @@ namespace ERPMVC.Controllers
                 {
                     _Country.FechaCreacion = DateTime.Now;
                     _Country.Usuariocreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_CountryP);
+                    var insertresult = await Insert(_CountryP);                  
+
+                    try
+                    {
+                        var value = (insertresult.Result as ObjectResult).Value;
+                        Country resultado = ((Country)(value));
+                        if (resultado.Id <= 0)
+                        {
+                            return await Task.Run(() => BadRequest($"Ocurrio un error"));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
+                  
                 }
                 else
                 {
@@ -190,7 +205,7 @@ namespace ERPMVC.Controllers
         // POST: Country/Insert
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public async Task<ActionResult> Insert(Country _CountryP)
+        public async Task<ActionResult<Country>> Insert(Country _CountryP)
         {
             Country _Country = _CountryP;
             try
@@ -213,10 +228,11 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                return await Task.Run(()=> BadRequest($"Ocurrio un error{ex.Message}"));
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Country }, Total = 1 });
+            return Ok(_Country);
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _Country }, Total = 1 });
         }
 
         [HttpPut("{id}")]

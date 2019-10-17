@@ -116,40 +116,72 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Branch/GetBranchById/" + _Branch.BranchId);
-                string valorrespuesta = "";
-                _Branch.FechaModificacion = DateTime.Now;
-                _Branch.UsuarioModificacion = HttpContext.Session.GetString("user");
-                if (result.IsSuccessStatusCode)
+               
+                if (_Branch.BranchId == 0)
                 {
-
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Branch = JsonConvert.DeserializeObject<Branch>(valorrespuesta);
+                    var result = await _client.GetAsync(baseadress + "api/Branch/GetBranchByName/" + _Branch.BranchName);
+                    string valorrespuesta = "";
+                    _Branch.FechaModificacion = DateTime.Now;
+                    _Branch.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _Branch = JsonConvert.DeserializeObject<Branch>(valorrespuesta);
+                        if (_Branch == null)
+                        {
+                            _Branch = new Models.Branch();
+                        }
+                        if (_Branch.BranchId > 0)
+                        {
+                            return await Task.Run(() => BadRequest($"Ya existe una sucursal registrada para con ese nombre."));
+                        }
+                    }                 
                 }
-
-                if (_Branch == null) { _Branch = new Models.Branch(); }
+                  
 
                 if (_BranchP.BranchId == 0)
                 {
+                    //_Branch.FechaCreacion = DateTime.Now;
+                    //_Branch.UsuarioCreacion = HttpContext.Session.GetString("user");
                     _Branch.FechaCreacion = DateTime.Now;
                     _Branch.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_BranchP);
+                    var value = (insertresult.Result as ObjectResult).Value;
+                    Branch resultado = ((Branch)(value));
+                    if (resultado.BranchId <= 0)
+                    {
+                        return await Task.Run(() => BadRequest($"No se guardo la sucursal."));
+                    }
                 }
                 else
                 {
+
+                    var result = await _client.GetAsync(baseadress + "api/Branch/GetBranchById/" + _Branch.BranchId);
+                    string valorrespuesta = "";
+
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _Branch = JsonConvert.DeserializeObject<Branch>(valorrespuesta);
+
+                        if (_Branch == null)
+                        {
+                            _Branch = new Models.Branch();
+                        }
+                    }
                     _BranchP.UsuarioCreacion = _Branch.UsuarioCreacion;
                     _BranchP.FechaCreacion = _Branch.FechaCreacion;
+                    _BranchP.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    _BranchP.FechaModificacion = DateTime.Now;
                     var updateresult = await Update(_Branch.BranchId, _BranchP);
                 }
-
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
-            return Json(_Branch);
+            return Json(_BranchP);
         }
 
 
@@ -168,9 +200,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Branch = JsonConvert.DeserializeObject<BranchDTO>(valorrespuesta);
-
                 }
-
                 if (_Branch == null)
                 {
                     _Branch = new BranchDTO();
@@ -181,17 +211,14 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
-
-
             return PartialView(_Branch);
-
         }
 
         // POST: Branch/Insert
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public async Task<ActionResult> Insert(Branch _Branch)
+        //public async Task<ActionResult> Insert(Branch _Branch)
+        public async Task<ActionResult<Branch>> Insert(Branch _Branch)
         {
             try
             {
@@ -217,7 +244,8 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Branch }, Total = 1 });
+            return Ok(_Branch);
+            // return new ObjectResult(new DataSourceResult { Data = new[] { _Branch }, Total = 1 });
         }
 
         [HttpPut("BranchId")]
@@ -228,7 +256,8 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-
+                _Branch.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _Branch.FechaModificacion = DateTime.Now;
                 var result = await _client.PutAsJsonAsync(baseadress + "api/Branch/Update", _Branch);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -243,8 +272,8 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Branch }, Total = 1 });
+            return Ok(_Branch);
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _Branch }, Total = 1 });
         }
 
         [HttpDelete("BranchId")]

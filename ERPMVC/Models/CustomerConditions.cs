@@ -37,6 +37,9 @@ namespace ERPMVC.Models
         public string Description { get; set; }
 
         [Display(Name = "Condición logica")]
+        public Int64 LogicalConditionId { get; set; }
+
+        [Display(Name = "Condición logica")]
         public string LogicalCondition { get; set; }
         [Display(Name = "Valor a evaluar")]
         public string ValueToEvaluate { get; set; }
