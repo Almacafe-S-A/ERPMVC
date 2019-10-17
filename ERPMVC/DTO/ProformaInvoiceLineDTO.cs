@@ -9,5 +9,7 @@ namespace ERPMVC.DTO
     public class ProformaInvoiceLineDTO : ProformaInvoiceLine
     {
         public Int64 IdCD { get; set; }
+
+        public List<Int64> IdsCD { get; set; }
     }
 }
