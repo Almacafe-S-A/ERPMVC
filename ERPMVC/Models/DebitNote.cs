@@ -16,7 +16,11 @@ namespace ERPMVC.Models
         public string DebitNoteName { get; set; }
         [Display(Name = "Envío")]
         public int ShipmentId { get; set; }
-             
+
+
+        [Display(Name = "Fiscal")]
+        public bool Fiscal { get; set; }
+
 
         [Display(Name = "Punto de emisión")]
         public Int64 IdPuntoEmision { get; set; }
