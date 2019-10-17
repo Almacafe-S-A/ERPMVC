@@ -14,7 +14,11 @@ namespace ERPMVC.Models
         public int CreditNoteId { get; set; }       
         public string CreditNoteName { get; set; }
         [Display(Name = "Envío")]
-        public int ShipmentId { get; set; }       
+        public int ShipmentId { get; set; }
+
+
+        [Display(Name = "Fiscal")]
+        public bool Fiscal { get; set; }
 
         [Display(Name = "Punto de emisión")]
         public Int64 IdPuntoEmision { get; set; }
