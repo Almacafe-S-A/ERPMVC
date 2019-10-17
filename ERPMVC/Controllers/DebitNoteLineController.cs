@@ -76,11 +76,11 @@ namespace ERPMVC.Controllers
             {
 
                 List<DebitNoteLine> _GoodsReceivedLine = new List<DebitNoteLine>();
-                _GoodsReceivedLine = JsonConvert.DeserializeObject<List<DebitNoteLine>>(HttpContext.Session.GetString("listadoproductosCreditNote"));
+                _GoodsReceivedLine = JsonConvert.DeserializeObject<List<DebitNoteLine>>(HttpContext.Session.GetString("listadoproductosdebitnote"));
 
                 if (_GoodsReceivedLine == null) { _GoodsReceivedLine = new List<DebitNoteLine>(); }
                 _GoodsReceivedLine.Add(_DebitNoteLine);
-                HttpContext.Session.SetString("listadoproductosCreditNote", JsonConvert.SerializeObject(_GoodsReceivedLine).ToString());
+                HttpContext.Session.SetString("listadoproductosdebitnote", JsonConvert.SerializeObject(_GoodsReceivedLine).ToString());
 
             }
             catch (Exception ex)
