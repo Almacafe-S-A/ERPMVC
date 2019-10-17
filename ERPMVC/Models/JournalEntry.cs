@@ -30,13 +30,13 @@ namespace ERPMVC.Models
         public Int64 DocumentId { get; set; }
         [Display(Name = "Socio de negocio")]
         public int? PartyId { get; set; }
-        [Display(Name = "Tipos de Voucher")]
+        [Display(Name = "Tipos de Documento")]
         public Int32? VoucherType { get; set; }
         [Display(Name = "Nombre de Tipo de Voucher")]
         public string TypeJournalName { get; set; }
         [Display(Name = "Fecha de creación")]
         public DateTime Date { get; set; }
-        [Display(Name = "Fecha de Posteo")]
+        [Display(Name = "Fecha de Transacción")]
         public DateTime DatePosted { get; set; }
         [Display(Name = "Memo")]
         public string Memo { get; set; }
@@ -58,10 +58,10 @@ namespace ERPMVC.Models
         [Display(Name = "Total Crédito")]
         public double TotalCredit { get; set; }
 
-        [Display(Name = "Tipo de ajuste")]
+        [Display(Name = "Tipo de Asiento")]
         public Int32 TypeOfAdjustmentId { get; set; }
 
-        [Display(Name = "Tipo de ajuste")]
+        [Display(Name = "Tipo de Asiento")]
         public string TypeOfAdjustmentName { get; set; }
         [Display(Name = "Estado")]
         public Int64 EstadoId { get; set; }
