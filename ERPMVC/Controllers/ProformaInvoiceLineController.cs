@@ -71,6 +71,33 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<GoodsDeliveryAuthorizationLine>> SetLinesInSession([FromBody]ProformaInvoiceLine _ProformaInvoiceLine)
+        {
+
+            try
+            {
+
+                List<ProformaInvoiceLine> _GoodsReceivedLine = new List<ProformaInvoiceLine>();
+                _GoodsReceivedLine = JsonConvert.DeserializeObject<List<ProformaInvoiceLine>>(HttpContext.Session.GetString("listadoproductosproformainvoice"));
+
+                if (_GoodsReceivedLine == null) { _GoodsReceivedLine = new List<ProformaInvoiceLine>(); }
+                _GoodsReceivedLine.Add(_ProformaInvoiceLine);
+                //  GoodsDeliveryAuthorizationLine _listGoodsDeliveryAuthorizationLine = new GoodsDeliveryAuthorizationLine();
+                // string serialzado = JsonConvert.SerializeObject(_GoodsDeliveryAuthorizationLine).ToString();
+                HttpContext.Session.SetString("listadoproductosproformainvoice", JsonConvert.SerializeObject(_GoodsReceivedLine).ToString());
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return await Task.Run(() => Json(_ProformaInvoiceLine));
+        }
+
+
 
         [HttpGet("[action]")]
         public async Task<DataSourceResult> GetProformaInvoiceLineByProformaInvoiceId([DataSourceRequest]DataSourceRequest request, ProformaInvoiceLine _ProformaInvoiceLinep)
@@ -150,6 +177,7 @@ namespace ERPMVC.Controllers
                             obj.SubProductName = _ProformaInvoiceLinep.SubProductName;
                             obj.SubTotal = _ProformaInvoiceLinep.SubTotal;
                             obj.TaxAmount = _ProformaInvoiceLinep.TaxAmount;
+                            obj.TaxId = _ProformaInvoiceLinep.TaxId;
                             obj.TaxCode = _ProformaInvoiceLinep.TaxCode;
                             obj.TaxPercentage = _ProformaInvoiceLinep.TaxPercentage;
                             obj.UnitOfMeasureId = _ProformaInvoiceLinep.UnitOfMeasureId;

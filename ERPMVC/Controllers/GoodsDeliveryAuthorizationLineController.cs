@@ -163,10 +163,11 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+
                 throw ex;
             }
 
-            return Json(_GoodsDeliveryAuthorizationLine);
+            return await Task.Run(()=> Json(_GoodsDeliveryAuthorizationLine));
         }
 
 

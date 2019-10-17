@@ -108,7 +108,7 @@ namespace ERPMVC.Controllers
                 {
 
                     List<SalesOrderLine> _existelinea = new List<SalesOrderLine>();
-                    if (HttpContext.Session.GetString("listadoproductos") != "")
+                    if (HttpContext.Session.GetString("listadoproductos") != "" && HttpContext.Session.GetString("listadoproductos") != null)
                     {
                         _SalesOrders = JsonConvert.DeserializeObject<List<SalesOrderLine>>(HttpContext.Session.GetString("listadoproductos"));
                         _existelinea = _SalesOrders.Where(q => q.SalesOrderLineId == _SalesOrderLine.SalesOrderLineId).ToList();
@@ -135,6 +135,7 @@ namespace ERPMVC.Controllers
                             obj.Total = _SalesOrderLine.Total;
                             obj.UnitOfMeasureId = _SalesOrderLine.UnitOfMeasureId;
                             obj.UnitOfMeasureName = _SalesOrderLine.UnitOfMeasureName;
+                            obj.TaxId = _SalesOrderLine.TaxId;
                             obj.TaxCode = _SalesOrderLine.TaxCode;
                             obj.TaxPercentage = _SalesOrderLine.TaxPercentage;
                             obj.TaxAmount = _SalesOrderLine.TaxAmount;

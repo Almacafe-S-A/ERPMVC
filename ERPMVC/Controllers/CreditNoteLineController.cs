@@ -68,6 +68,31 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<GoodsDeliveryAuthorizationLine>> SetLinesInSession([FromBody]CreditNoteLine _CreditNoteLine)
+        {
+
+            try
+            {
+
+                List<CreditNoteLine> _GoodsReceivedLine = new List<CreditNoteLine>();
+                _GoodsReceivedLine = JsonConvert.DeserializeObject<List<CreditNoteLine>>(HttpContext.Session.GetString("listadoproductosCreditNote"));
+
+                if (_GoodsReceivedLine == null) { _GoodsReceivedLine = new List<CreditNoteLine>(); }
+                _GoodsReceivedLine.Add(_CreditNoteLine);              
+                HttpContext.Session.SetString("listadoproductosCreditNote", JsonConvert.SerializeObject(_GoodsReceivedLine).ToString());
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return await Task.Run(() => Json(_CreditNoteLine));
+        }
+
+
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
@@ -175,6 +200,7 @@ namespace ERPMVC.Controllers
                             obj.SubProductName = _CreditNoteLinep.SubProductName;
                             obj.SubTotal = _CreditNoteLinep.SubTotal;
                             obj.TaxAmount = _CreditNoteLinep.TaxAmount;
+                            obj.TaxId = _CreditNoteLinep.TaxId;
                             obj.TaxCode = _CreditNoteLinep.TaxCode;
                             obj.TaxPercentage = _CreditNoteLinep.TaxPercentage;
                             obj.UnitOfMeasureId = _CreditNoteLinep.UnitOfMeasureId;

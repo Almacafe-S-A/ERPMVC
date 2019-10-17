@@ -18,11 +18,11 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
-    public class InvoiceLineController : Controller
+    public class VendorInvoiceLineController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public InvoiceLineController(ILogger<InvoiceLineController> logger, IOptions<MyConfig> config)
+        public VendorInvoiceLineController(ILogger<VendorInvoiceLineController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
@@ -34,26 +34,26 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult> pvwInvoiceLine([FromBody]InvoiceLine _InvoiceLinep)
+        public async Task<ActionResult> pvwVendorInvoiceLine([FromBody]VendorInvoiceLine _InvoiceLinep)
         {
-            InvoiceLine _InvoiceLine = new InvoiceLine();
+            VendorInvoiceLine _InvoiceLine = new VendorInvoiceLine();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/InvoiceLine/GetInvoiceLineById/" + _InvoiceLinep.InvoiceLineId);
+                var result = await _client.GetAsync(baseadress + "api/VendorInvoiceLine/GetVendorInvoiceLineById/" + _InvoiceLinep.VendorInvoiceLineId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _InvoiceLine = JsonConvert.DeserializeObject<InvoiceLine>(valorrespuesta);
+                    _InvoiceLine = JsonConvert.DeserializeObject<VendorInvoiceLine>(valorrespuesta);
 
                 }
 
                 if (_InvoiceLine == null)
                 {
-                    _InvoiceLine = new InvoiceLine();
+                    _InvoiceLine = new VendorInvoiceLine();
                 }
             }
             catch (Exception ex)
@@ -64,48 +64,21 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView("~/Views/Invoice/pvwInvoiceDetailMant.cshtml",_InvoiceLine);
+            return PartialView(_InvoiceLine);
 
         }
-
-
-        [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<GoodsDeliveryAuthorizationLine>> SetLinesInSession([FromBody]InvoiceLine _InvoiceLine)
-        {
-
-            try
-            {
-
-                List<InvoiceLine> _InvoiceLinelist = new List<InvoiceLine>();
-                _InvoiceLinelist = JsonConvert.DeserializeObject<List<InvoiceLine>>(HttpContext.Session.GetString("listadoproductosinvoice"));
-
-                if (_InvoiceLinelist == null) { _InvoiceLinelist = new List<InvoiceLine>(); }
-                _InvoiceLinelist.Add(_InvoiceLine);
-              
-                HttpContext.Session.SetString("listadoproductosinvoice", JsonConvert.SerializeObject(_InvoiceLinelist).ToString());
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-            return await Task.Run(() => Json(_InvoiceLine));
-        }
-
 
 
         [HttpGet("[action]")]
-        public async Task<DataSourceResult> GetInvoiceLineByInvoiceId([DataSourceRequest]DataSourceRequest request, InvoiceLine _InvoiceLinep)
+        public async Task<DataSourceResult> GetVendorInvoiceLineByInvoiceId([DataSourceRequest]DataSourceRequest request, VendorInvoiceLine _InvoiceLinep)
         {
-            List<InvoiceLine> __InvoiceLineList = new List<InvoiceLine>();
+            List<VendorInvoiceLine> __InvoiceLineList = new List<VendorInvoiceLine>();
             try
             {
                 if (HttpContext.Session.Get("listadoproductosinvoice") == null
                    || HttpContext.Session.GetString("listadoproductosinvoice") == "")
                 {
-                    if (_InvoiceLinep.InvoiceId > 0)
+                    if (_InvoiceLinep.VendorInvoiceId > 0)
                     {
                         string serialzado = JsonConvert.SerializeObject(_InvoiceLinep).ToString();
                         HttpContext.Session.SetString("listadoproductosinvoice", serialzado);
@@ -116,7 +89,7 @@ namespace ERPMVC.Controllers
                     var result = HttpContext.Session.GetString("listadoproductosinvoice");
                     try
                     {
-                        __InvoiceLineList = JsonConvert.DeserializeObject<List<InvoiceLine>>(HttpContext.Session.GetString("listadoproductosinvoice"));
+                        __InvoiceLineList = JsonConvert.DeserializeObject<List<VendorInvoiceLine>>(HttpContext.Session.GetString("listadoproductosinvoice"));
                     }
                     catch (Exception ex)
                     {
@@ -126,33 +99,33 @@ namespace ERPMVC.Controllers
                 }
 
 
-                if (_InvoiceLinep.InvoiceId > 0)
+                if (_InvoiceLinep.VendorInvoiceId > 0)
                 {
 
                     string baseadress = config.Value.urlbase;
                     HttpClient _client = new HttpClient();
 
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/InvoiceLine/GetInvoiceLineByInvoiceId/" + _InvoiceLinep.InvoiceId);
+                    var result = await _client.GetAsync(baseadress + "api/VendorInvoiceLine/GetVendorInvoiceLineByInvoiceId/" + _InvoiceLinep.VendorInvoiceId);
                     string valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        __InvoiceLineList = JsonConvert.DeserializeObject<List<InvoiceLine>>(valorrespuesta);
+                        __InvoiceLineList = JsonConvert.DeserializeObject<List<VendorInvoiceLine>>(valorrespuesta);
                         HttpContext.Session.SetString("listadoproductosinvoice", JsonConvert.SerializeObject(__InvoiceLineList).ToString());
                     }
                 }
                 else
                 {
 
-                    List<InvoiceLine> _existelinea = new List<InvoiceLine>();
+                    List<VendorInvoiceLine> _existelinea = new List<VendorInvoiceLine>();
                     if (HttpContext.Session.GetString("listadoproductosinvoice") != "" && HttpContext.Session.GetString("listadoproductosinvoice") != null)
                     {
-                        __InvoiceLineList = JsonConvert.DeserializeObject<List<InvoiceLine>>(HttpContext.Session.GetString("listadoproductosinvoice"));
-                        _existelinea = __InvoiceLineList.Where(q => q.InvoiceLineId == _InvoiceLinep.InvoiceLineId).ToList();
+                        __InvoiceLineList = JsonConvert.DeserializeObject<List<VendorInvoiceLine>>(HttpContext.Session.GetString("listadoproductosinvoice"));
+                        _existelinea = __InvoiceLineList.Where(q => q.contadorid == _InvoiceLinep.contadorid).ToList();
                     }
 
-                    if (_InvoiceLinep.InvoiceLineId > 0 && _existelinea.Count == 0)
+                    if (_InvoiceLinep.contadorid > 0 && _existelinea.Count == 0)
                     {
                         __InvoiceLineList.Add(_InvoiceLinep);
                         HttpContext.Session.SetString("listadoproductosinvoice", JsonConvert.SerializeObject(__InvoiceLineList).ToString());
@@ -160,24 +133,21 @@ namespace ERPMVC.Controllers
                     else
                     {
 
-                        var obj = __InvoiceLineList.FirstOrDefault(x => x.InvoiceLineId == _InvoiceLinep.InvoiceLineId);
+                        var obj = __InvoiceLineList.FirstOrDefault(x => x.contadorid == _InvoiceLinep.contadorid);
                         if (obj != null)
                         {
+                            obj.contadorid = _InvoiceLinep.contadorid;
                             obj.Description = _InvoiceLinep.Description;
                             obj.Price = _InvoiceLinep.Price;
                             obj.Quantity = _InvoiceLinep.Quantity;
                             obj.Amount = _InvoiceLinep.Amount;
-                            obj.SubProductId = _InvoiceLinep.SubProductId;
-                            obj.SubProductName = _InvoiceLinep.SubProductName;
+                            obj.ProductId = _InvoiceLinep.ProductId;
                             obj.SubTotal = _InvoiceLinep.SubTotal;
                             obj.TaxAmount = _InvoiceLinep.TaxAmount;
-                            obj.TaxId = _InvoiceLinep.TaxId;
                             obj.TaxCode = _InvoiceLinep.TaxCode;
                             obj.TaxPercentage = _InvoiceLinep.TaxPercentage;
                             obj.UnitOfMeasureId = _InvoiceLinep.UnitOfMeasureId;
                             obj.UnitOfMeasureName = _InvoiceLinep.UnitOfMeasureName;
-                            obj.WareHouseId = _InvoiceLinep.WareHouseId;
-                            obj.CostCenterId = _InvoiceLinep.CostCenterId;
                             obj.DiscountAmount = _InvoiceLinep.DiscountAmount;
                             obj.DiscountPercentage = _InvoiceLinep.DiscountPercentage;
                             obj.Total = _InvoiceLinep.Total;
@@ -208,7 +178,7 @@ namespace ERPMVC.Controllers
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<InvoiceLine> _InvoiceLine = new List<InvoiceLine>();
+            List<VendorInvoiceLine> _InvoiceLine = new List<VendorInvoiceLine>();
             try
             {
 
@@ -220,7 +190,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _InvoiceLine = JsonConvert.DeserializeObject<List<InvoiceLine>>(valorrespuesta);
+                    _InvoiceLine = JsonConvert.DeserializeObject<List<VendorInvoiceLine>>(valorrespuesta);
 
                 }
 
@@ -238,16 +208,16 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<InvoiceLine>> SaveInvoiceLine([FromBody]InvoiceLine _InvoiceLine)
+        public async Task<ActionResult<VendorInvoiceLine>> SaveVendorInvoiceLine([FromBody]VendorInvoiceLine _InvoiceLine)
         {
 
             try
             {
-                InvoiceLine _listInvoiceLine = new InvoiceLine();
+                VendorInvoiceLine _listInvoiceLine = new VendorInvoiceLine();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/InvoiceLine/GetInvoiceLineById/" + _InvoiceLine.InvoiceLineId);
+                var result = await _client.GetAsync(baseadress + "api/VendorInvoiceLine/GetInvoiceLineById/" + _InvoiceLine.VendorInvoiceLineId);
                 string valorrespuesta = "";
                // _InvoiceLine.FechaModificacion = DateTime.Now;
                 //_InvoiceLine.UsuarioModificacion = HttpContext.Session.GetString("user");
@@ -255,10 +225,10 @@ namespace ERPMVC.Controllers
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listInvoiceLine = JsonConvert.DeserializeObject<InvoiceLine>(valorrespuesta);
+                    _listInvoiceLine = JsonConvert.DeserializeObject<VendorInvoiceLine>(valorrespuesta);
                 }
 
-                if (_listInvoiceLine.InvoiceLineId == 0)
+                if (_listInvoiceLine.VendorInvoiceLineId == 0)
                 {
                    // _InvoiceLine.FechaCreacion = DateTime.Now;
                   //  _InvoiceLine.UsuarioCreacion = HttpContext.Session.GetString("user");
@@ -266,7 +236,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    var updateresult = await Update(_InvoiceLine.InvoiceLineId, _InvoiceLine);
+                    var updateresult = await Update(_InvoiceLine.VendorInvoiceLineId, _InvoiceLine);
                 }
 
             }
@@ -282,7 +252,7 @@ namespace ERPMVC.Controllers
         // POST: InvoiceLine/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<InvoiceLine>> Insert(InvoiceLine _InvoiceLine)
+        public async Task<ActionResult<VendorInvoiceLine>> Insert(VendorInvoiceLine _InvoiceLine)
         {
             try
             {
@@ -292,12 +262,12 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                // _InvoiceLine.UsuarioCreacion = HttpContext.Session.GetString("user");
                // _InvoiceLine.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/InvoiceLine/Insert", _InvoiceLine);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/VendorInvoiceLine/Insert", _InvoiceLine);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _InvoiceLine = JsonConvert.DeserializeObject<InvoiceLine>(valorrespuesta);
+                    _InvoiceLine = JsonConvert.DeserializeObject<VendorInvoiceLine>(valorrespuesta);
                 }
 
             }
@@ -311,7 +281,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<InvoiceLine>> Update(Int64 id, InvoiceLine _InvoiceLine)
+        public async Task<ActionResult<VendorInvoiceLine>> Update(Int64 id, VendorInvoiceLine _InvoiceLine)
         {
             try
             {
@@ -319,12 +289,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PutAsJsonAsync(baseadress + "api/InvoiceLine/Update", _InvoiceLine);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/VendorInvoiceLine/Update", _InvoiceLine);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _InvoiceLine = JsonConvert.DeserializeObject<InvoiceLine>(valorrespuesta);
+                    _InvoiceLine = JsonConvert.DeserializeObject<VendorInvoiceLine>(valorrespuesta);
                 }
 
             }
@@ -338,7 +308,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<InvoiceLine>> Delete([FromBody]InvoiceLine _InvoiceLine)
+        public async Task<ActionResult<VendorInvoiceLine>> Delete([FromBody]VendorInvoiceLine _InvoiceLine)
         {
             try
             {
@@ -346,12 +316,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/InvoiceLine/Delete", _InvoiceLine);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/VendorInvoiceLine/Delete", _InvoiceLine);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _InvoiceLine = JsonConvert.DeserializeObject<InvoiceLine>(valorrespuesta);
+                    _InvoiceLine = JsonConvert.DeserializeObject<VendorInvoiceLine>(valorrespuesta);
                 }
 
             }

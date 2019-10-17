@@ -234,7 +234,21 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _CreditNote }, Total = 1 });
         }
 
+        [HttpGet]
+        public async Task<ActionResult> SFCreditNote(Int32 id)
+        {
+            try
+            {
+                CreditNoteDTO _creditnotedto = new CreditNoteDTO { CreditNoteId = id, };
+                return await Task.Run(() => View(_creditnotedto));
+            }
+            catch (Exception)
+            {
 
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+
+        }
 
 
 

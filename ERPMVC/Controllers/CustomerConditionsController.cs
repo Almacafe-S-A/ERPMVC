@@ -93,8 +93,8 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpGet("[controller]/[action]")]
-        public async Task<ActionResult> pvwCustomerConditions(Int64 Id = 0)
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> pvwCustomerConditions([FromBody]CustomerConditions CustomerConditions)
         {
             CustomerConditions _CustomerConditions = new CustomerConditions();
             try
@@ -102,7 +102,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CustomerConditions/GetCustomerConditionsById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/CustomerConditions/GetCustomerConditionsById/" + CustomerConditions.CustomerConditionId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -325,8 +325,8 @@ namespace ERPMVC.Controllers
             }
 
 
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerConditions }, Total = 1 });
+            return Ok(_CustomerConditions);
+           // return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerConditions }, Total = 1 });
         }
 
 
