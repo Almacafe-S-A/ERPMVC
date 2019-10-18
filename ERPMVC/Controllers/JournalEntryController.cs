@@ -335,6 +335,8 @@ namespace ERPMVC.Controllers
                 if (_JournalEntry == null)
                 {
                     _JournalEntry = new JournalEntryDTO();
+                    _JournalEntry.Date = DateTime.Now;
+                    _JournalEntry.DatePosted = DateTime.Now;
                 }
             }
             catch (Exception ex)
