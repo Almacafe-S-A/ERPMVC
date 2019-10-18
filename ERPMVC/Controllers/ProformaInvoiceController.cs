@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Syncfusion.XlsIO;
 
 namespace ERPMVC.Controllers
 {
@@ -298,9 +300,10 @@ namespace ERPMVC.Controllers
         // public async Task<ActionResult<ProformaInvoice>> SaveProformaInvoice([FromBody]ProformaInvoice _ProformaInvoice)
         public async Task<ActionResult<SalesOrder>> SaveProformaInvoice([FromBody]dynamic dto)
         {
-            ProformaInvoice _ProformaInvoice = JsonConvert.DeserializeObject<ProformaInvoice>(dto.ToString());
+            ProformaInvoiceDTO _ProformaInvoice = new ProformaInvoiceDTO();
             try
             {
+                _ProformaInvoice = JsonConvert.DeserializeObject<ProformaInvoiceDTO>(dto.ToString());
                 if (_ProformaInvoice != null)
                 {
                     ProformaInvoice _listProformaInvoice = new ProformaInvoice();
@@ -349,20 +352,78 @@ namespace ERPMVC.Controllers
             return Json(_ProformaInvoice);
         }
 
+
+
+        [HttpGet]      
+        public async Task<ActionResult> ExportCalculoFactura(Int64 id)
+        {
+            try
+            {
+                using (ExcelEngine excelEngine = new ExcelEngine())
+                {
+                    IApplication application = excelEngine.Excel;
+                    application.DefaultVersion = ExcelVersion.Excel2013;
+                    IWorkbook workbook = application.Workbooks.Create(1);
+                    IWorksheet worksheet = workbook.Worksheets[0];
+
+                    List<InvoiceCalculation> InvoiceCalculationL = new List<InvoiceCalculation>();
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/ProformaInvoice/GetInvoiceCalculation/" + id);
+                    string valorrespuesta = "";
+
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        InvoiceCalculationL = JsonConvert.DeserializeObject<List<InvoiceCalculation>>(valorrespuesta);
+                    }
+
+                    //GetCustomerAsObjects method returns list of customers
+                   // List<InvoiceCalculation> employees = GetEmployees();
+
+                    //Import data to worksheet
+                    worksheet.ImportData(InvoiceCalculationL, 2, 1, true);
+
+                    //Saving the workbook as stream
+                    FileStream file = new FileStream("Spreadsheet.xlsx", FileMode.Create, FileAccess.ReadWrite);
+                    workbook.SaveAs(file);
+                    //file.Dispose();
+
+                    string fileName = $"CalculoFactura_Proforma_{id}.xlsx";
+                    string fileType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                    file.Position = 0;
+                    return File(file, fileType, fileName);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return await Task.Run(() => BadRequest(""));
+            }
+
+
+
+        }
+
+
+
         // POST: ProformaInvoice/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<ProformaInvoice>> Insert(ProformaInvoice _ProformaInvoice)
+        public async Task<ActionResult<ProformaInvoice>> Insert(ProformaInvoiceDTO _ProformaInvoiceDTO)
         {
+            ProformaInvoice _ProformaInvoice = new ProformaInvoice();
             try
             {
                 // TODO: Add insert logic here
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _ProformaInvoice.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _ProformaInvoice.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/ProformaInvoice/Insert", _ProformaInvoice);
+                _ProformaInvoiceDTO.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _ProformaInvoiceDTO.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/ProformaInvoice/Insert", _ProformaInvoiceDTO);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
