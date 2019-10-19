@@ -35,6 +35,8 @@ namespace ERPMVC.Models
         public string ContactPersonCity { get; set; }
 
         [EmailAddress]
+        [RegularExpression(@"\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*", ErrorMessage = "Correo invalido")]
+        [DataType(DataType.EmailAddress)]
         [Display(Name = "Email del contacto")]
         public string ContactPersonEmail { get; set; }
         [Display(Name = "Id de estado")]

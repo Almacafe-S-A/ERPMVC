@@ -54,7 +54,7 @@ namespace ERPMVC.Controllers
 
                 if (_VendorInvoice == null)
                 {
-                    _VendorInvoice = new VendorInvoiceDTO { OrderDate = DateTime.Now, ReceivedDate = DateTime.Now, ExpirationDate = DateTime.Now.AddDays(30), editar = 1 };
+                    _VendorInvoice = new VendorInvoiceDTO { OrderDate = DateTime.Now, ReceivedDate = DateTime.Now, ExpirationDate = DateTime.Now.AddDays(30), BranchId = Convert.ToInt32(HttpContext.Session.GetString("BranchId")), editar = 1 };
                 }
                 else
                 {
@@ -147,7 +147,7 @@ namespace ERPMVC.Controllers
                     }
                     else
                     {
-                       // _VendorInvoice.NumeroDEIString = $"{resultado.Sucursal}-{resultado.Caja}-01-{resultado.NumeroDEI.ToString().PadLeft(8, '0')} ";
+                       // _VendorInvoice.NumeroDEIString = $"{resultado.Sucursal}-01-{resultado.NumeroDEI.ToString().PadLeft(8, '0')} ";
                     }
 
                 }
