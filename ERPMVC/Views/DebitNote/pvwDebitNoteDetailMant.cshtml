@@ -6,10 +6,10 @@
 
     completedorderlinemant = function (xhr) {
 
-        $('#myModalInvoiceLine').find(':input').not('#SalesOrderId :submit').val('0');      
-        $('#UnitOfMeasureId').data("kendoDropDownList").value('0');
-        $('#SubProductId').data("kendoDropDownList").value(0);
-        $('#TaxCode').data("kendoDropDownList").value(0);
+        $('#myModalDebitNoteLine').find(':input').not('#SalesOrderId :submit').val('0');      
+        // $('#UnitOfMeasureId').data("kendoDropDownList").value(0);
+        //$('#SubProductId').data("kendoDropDownList").value(0);
+        $('#TaxId').data("kendoDropDownList").value(0);
         $('#TaxAmount').data("kendoNumericTextBox").value(0);
         $('#TotalLine').data("kendoNumericTextBox").value(0);      
         $('#Description').val('');
@@ -21,14 +21,18 @@
 
     function closesaleorderline() {
         $("#myModalDebitNoteLine").modal('hide');
+        $('.modal').on('hidden.bs.modal', function () {
+            $(this).find('form')[0].reset();
+            $("label.error").remove(); 
+        });
 
     }
 
 
     function CalcularTotalDocumento() {
         var freight = $("#Freight").val()===""?0:$("#Freight").val();
-
-        var displayedData = $("#gridInvoiceDetail").data().kendoGrid.dataSource.view();
+        debugger;
+        var displayedData = $("#gridDebitNoteDetail").data().kendoGrid.dataSource.view();
         var total = 0, totaldescuento = 0, totalimpuesto = 0,totalimpuesto18=0, totalmonto = 0;
         var TotalExento = 0, TotalExonerado = 0, TotalGravado = 0,TotalGravado18=0;
 
@@ -74,62 +78,37 @@
         setearvalor('Tax18', totalimpuesto18);
         setearvalor('SubTotal', total - (totaldescuento + totalimpuesto + totalimpuesto18));
         setearvalor('Total', sumatotal);
-
-
-        if ($("#cbxBuscarCertificadosDeposito").val() !== '') {
-          //  console.log($("#Price").data("kendoNumericTextBox").value());
-            var dataObject = {
-                CertificadoDepositoId: $("#cbxBuscarCertificadosDeposito").val(),
-                SalesOrderId: ($("#cbxBuscarCotizaciones").val() === '' ? 0 : $("#cbxBuscarCotizaciones").val()),
-                OrderDate: $("#OrderDate").getKendoDateTimePicker().value().toJSON(),
-                SubTotal: $("#Price").data("kendoNumericTextBox").value(),
-                Discount: $("#Quantity").data("kendoNumericTextBox").value(),
-            };
-
-          //  console.log(dataObject);
-
-            $.ajax({
-                url: '@Url.Action("CalcularConCertificado","Invoice")',
-                method: 'POST',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: JSON.stringify(dataObject),
-                success: function (result) {
-                    console.log(result);
-                    setearvalor("Total", result.Total);
-
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
-                }
-            });
-        }
-
+        console.log("summaTotal", sumatotal);
+        
     }
 
     function AddConceptoCotizacion(e) {
        // e.preventDefault();
         var notification = $("#notification").data("kendoNotification");
-        if ($("#FacturaId").val() > 0) {
+        //if ($("#FacturaId").val() > 0) {
             try {
                 $("#btnActualizarCotizacionLinea").prop("disabled", true);
                 RefreshDebitNoteDetail();
-
+                CalcularTotalDocumento();
             } catch (e) {
                 $("#btnActualizarCotizacionLinea").prop("disabled", false);
             }
-        }
-        else {
-            notification.show({
-                title: "Validación",
-                message: "Seleccione el SubProducto!"
-            }, "error");
+        //}
+        //else {
+        //    notification.show({
+        //        title: "Validación",
+        //        message: "Seleccione el SubProducto!"
+        //    }, "error");
 
-            return;
-        }
-
+        //    return;
+        //}
         $('#myModalDebitNoteLine').modal('hide');
+        $('.modal').on('hidden.bs.modal', function () {
+            $(this).find('form')[0].reset();
+            $("label.error").remove();
+        });
+
+        return true;
     }
 
     function setearvalor(nombrenumerico,valor) {
@@ -325,7 +304,7 @@
                                                     <span asp-validation-for="AccountId" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                            <div class="col-md-4">
+                                            <div class="col-md-8">
                                                 <div class="form-group">
                                                     <label asp-for="Description" class="control-label" style="width:100%"></label>
                                                     <input type="text" id="DescriptionDetail" asp-for="Description" class="form-control" style="min-width:100%" />
@@ -360,8 +339,6 @@
                                                     <span asp-validation-for="Price" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Amount" class="control-label" style="width:100%"></label>
@@ -379,6 +356,9 @@
                                                     <span asp-validation-for="Amount" class="text-danger"></span>
                                                 </div>
                                             </div>
+                                        </div>
+                                        <div class="row">
+
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="DiscountPercentage" class="control-label" style="width:100%"></label>
@@ -408,13 +388,6 @@
                                                     <span asp-validation-for="DiscountAmount" class="text-danger"></span>
                                                 </div>
                                             </div>
-
-
-
-                                        </div>
-
-
-                                        <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="SubTotal" class="control-label" style="width:100%"></label>
@@ -430,10 +403,12 @@
                                                     <span asp-validation-for="SubTotal" class="text-danger"></span>
                                                 </div>
                                             </div>
+                                        </div>
+
+                                        <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="TaxCode" class="control-label" style="width:100%"></label>
-
                                                     <kendo-dropdownlist name="TaxId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         for="TaxId"
                                                                         option-label="Seleccione el Impuestos"
@@ -451,8 +426,7 @@
                                                     <span asp-validation-for="TaxCode" class="text-danger"></span>
                                                 </div>
                                             </div>
-
-                                            <div class="col-md-4">
+                                            <div class="col-md-2">
                                                 <div class="form-group">
                                                     <label asp-for="TaxPercentage" class="control-label" style="width:100%"></label>
                                                     <kendo-numerictextbox name="TaxPercentage"
@@ -470,16 +444,7 @@
                                                     <span asp-validation-for="TaxPercentage" class="text-danger"></span>
                                                 </div>
                                             </div>
-
-
-
-
-
-
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-4">
+                                            <div class="col-md-2">
                                                 <div class="form-group">
                                                     <label asp-for="TaxAmount" class="control-label" style="width:100%"></label>
                                                     <kendo-numerictextbox name="TaxAmount"
@@ -508,12 +473,15 @@
                                                 </div>
                                             </div>
                                         </div>
+                                        <div class="row">
+                                          
+                                        </div>
 
                                     </div>
                                     <div class="row">
                                         @if (Model.DebitNoteId == 0)
                                         {
-                                            <button id="btnActualizarCotizacionLinea" type="submit" class="form-control">Actualizar</button>
+                                            <button id="btnActualizarCotizacionLinea" type="submit" onclick="AddConceptoCotizacion();" class="form-control">Actualizar</button>
                                         }
                                     </div>
                                 </form>

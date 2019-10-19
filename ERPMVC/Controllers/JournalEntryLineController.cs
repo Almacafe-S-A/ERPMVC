@@ -62,7 +62,7 @@ namespace ERPMVC.Controllers
                 if (_JournalEntryLinep.JournalEntryId > 0)
                 {
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/JournalEntryLine/GetJournalEntry");
+                    var result = await _client.GetAsync(baseadress + "api/JournalEntryLine/GetJournalEntryLineByJournalId/"+ _JournalEntryLinep.JournalEntryId);
                     string valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
@@ -248,7 +248,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/JournalEntryLine/GetJournalEntryById/" + _sarpara.JournalEntryLineId);
+                var result = await _client.GetAsync(baseadress + "api/JournalEntryLine/GetJournalEntryLineById/" + _sarpara.JournalEntryLineId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {

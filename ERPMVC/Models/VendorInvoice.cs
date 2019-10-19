@@ -84,13 +84,7 @@ namespace ERPMVC.Models
 
         [Display(Name = "Proveedor")]
         public string VendorName { get; set; }
-
-        [Display(Name = "Producto")]
-        public Int64 ProductId { get; set; }
-
-        [Display(Name = "Nombre Producto")]
-        public string ProductName { get; set; }
-
+        
 
         [Display(Name = "Fecha factura")]
         public DateTime OrderDate { get; set; }

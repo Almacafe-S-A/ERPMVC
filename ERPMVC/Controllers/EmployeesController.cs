@@ -417,8 +417,8 @@ namespace ERPMVC.Controllers
         //--------------------------------------------------------------------------------------
         // POST: Employees/Insert
         [HttpPost]
-        //[ValidateAntiForgeryToken]
-        public async Task<ActionResult> Insert(Employees _EmployeesP)
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult<Employees>> Insert(Employees _EmployeesP)
         {
             Employees _Employees = _EmployeesP;
             try
@@ -431,6 +431,8 @@ namespace ERPMVC.Controllers
                 _Employees.FechaCreacion = DateTime.Now;
                 _Employees.FechaModificacion = DateTime.Now;
                 var result = await _client.PostAsJsonAsync(baseadress + "api/Employees/Insert", _Employees);
+                string jsonresult = "";
+                jsonresult = JsonConvert.SerializeObject(_Employees);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {

@@ -12,7 +12,7 @@
     }
 
 
-     function clearsession() {
+    function clearsession() {
          var dataObject = ["journalentryline"];
          $.ajax({
             url: '@Url.Action("ClearSession","Common")',
@@ -33,20 +33,47 @@
 
     function AddJournalEntry() {
         clearsession();
+        $('#ModalJournalEntry').find(':input').not(':submit').val('');      
+        $("#JournalEntryId").val('0');
+      
+        //$('#ModalJournalEntry').modal('show');
+        //document.getElementById("btnJournalEntry").disabled = false;
+        //$("#TypeOfAdjustmentId").data('kendoDropDownList').value(65);
+        ///
+        var dataObject = {
+                JournalEntryId:0,
+                editar: 1,
+            };
+            $.ajax({
+                url: '@Url.Action("pvwAddJournalEntry", "JournalEntry")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumJournalEntry").html('');
+                    $("#NumJournalEntry").html(result);
+                    //$("#btnCAI").hide();
+                    $('#ModalJournalEntry').modal('show');
+                    document.getElementById("btnJournalEntry").disabled = false;
+                    $("#TypeOfAdjustmentId").data('kendoDropDownList').value(65);
+                    //document.getElementById("btnJournalEntry").disabled = true;                  
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+        });
+
         var dataSource = $("#gridNumeracionJournalEntryLine").data("kendoGrid").dataSource;
         var raw = dataSource._data;
-        console.log(raw);
+        //console.log(raw);
         debugger;
         for (var i = dataSource._data.length - 1; i >= 0; i--) {
             item = raw[i];
             dataSource.remove(item);
         }
-        $('#ModalJournalEntry').find(':input').not(':submit').val('');
-        $('#ModalJournalEntry').modal('show');
-        $("#JournalEntryId").val('0');
-        document.getElementById("btnJournalEntry").disabled = false;
-        $("#TypeOfAdjustmentId").data('kendoDropDownList').value(65);
-       
+
       }
 
 
@@ -70,6 +97,7 @@
                     //$("#btnCAI").hide();
                     $('#ModalJournalEntry').modal('show');
                     document.getElementById("btnJournalEntry").disabled = true;
+                    document.getElementById("btnAgregarLinea").disabled = true;
                    
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -89,7 +117,7 @@
 
 </script>
 
-<h3 class="text-themecolor">Movimiento Financiero</h3>
+<h3 class="text-themecolor">Asiento Contable</h3>
 @(Html.Kendo().Grid<ERPMVC.Models.JournalEntry>
         ()
         .Name("gridNumeracionJournalEntry")
@@ -99,8 +127,8 @@
             {
 
 
-                command.Custom("Ver detalles").Text(" ").IconClass("far fa-list-alt").Click("DetallesJournalEntry");
-                //command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditJournalEntry");
+                //.Custom("Ver detalles").Text(" ").IconClass("far fa-list-alt").Click("DetallesJournalEntry");
+                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditJournalEntry");
 
                 //  command.Destroy();
             }).Width(100);
@@ -186,7 +214,7 @@
         .Events(events => events.Error("error_handler"))
         .Read(read => read.Action("GetJournalEntry", "JournalEntry"))
         .Create(create => create.Action("Insert", "JournalEntry"))
-        //.Update(update => update.Action("Update", "JournalEntry", new { JournalEntryId = "{0}" }).Type(HttpVerbs.Put))
+        .Update(update => update.Action("Update", "JournalEntry", new { JournalEntryId = "{0}" }).Type(HttpVerbs.Put))
         //.Destroy(destroy => destroy.Action("Delete", "TypeAccount", new { Num = "{1}" }).Type(HttpVerbs.Delete))
 
         )
