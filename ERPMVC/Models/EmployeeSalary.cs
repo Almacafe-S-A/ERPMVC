@@ -44,7 +44,8 @@ namespace ERPMVC.Models
         [Required]
         [Display(Name = "Fecha de Modificacion")]
         public DateTime ModifiedDate { get; set; }
-
+        [UIHint("Estados")]
+        public virtual Estados Estados { get; set; }
 
     }
 }
