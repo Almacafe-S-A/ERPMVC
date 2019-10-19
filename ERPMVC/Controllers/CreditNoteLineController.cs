@@ -33,7 +33,8 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwCreditNoteLine(Int64 Id = 0)
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwCreditNoteLine([FromBody]CreditNoteLine _CreditNoteLinep)
         {
             CreditNoteLine _CreditNoteLine = new CreditNoteLine();
             try
@@ -41,7 +42,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CreditNoteLine/GetCreditNoteLineById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/CreditNoteLine/GetCreditNoteLineById/" + _CreditNoteLinep.CreditNoteLineId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -63,7 +64,8 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_CreditNoteLine);
+            //return PartialView(_CreditNoteLine);
+            return PartialView("~/Views/CreditNote/pvwCreditNoteDetailMant.cshtml", _CreditNoteLine);
 
         }
 

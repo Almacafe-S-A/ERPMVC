@@ -6,7 +6,8 @@
 
 
     function GetInvoiceId() {
-       // console.log($("#DescriptionDetail").val());
+        // console.log($("#DescriptionDetail").val());
+        debugger
         var subproductname = '', unidaddemedida = '', accountname = '', taxname='';
         if ($("#UnitOfMeasureId") != null) {
             if ($("#UnitOfMeasureId").data("kendoDropDownList") != null) {
@@ -36,8 +37,6 @@
         if (Number($("#CreditNoteLineId").val()) === 0) {
             if (displayedData.length > 0) {
                 for (var i = 0; i < displayedData.length; i++) {
-                    //console.log('Linea:' + displayedData[i].InvoiceLineId);
-                    //console.log('Linea:' + id);
                     if (displayedData[i].CreditNoteLineId > id)
                         id = displayedData[i].CreditNoteLineId;
 
@@ -147,12 +146,12 @@
         var notification = $("#notification").data("kendoNotification");
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         //  debugger;
-        if (dataItem.InvoiceId > 0) {
+        if (dataItem.CreditNoteId > 0) {
              $("#btnActualizarCotizacionLinea").prop("disabled", true);
             var subproducto = 0;
-            var dataObject = { 'Id': dataItem.InvoiceLineId };
+            var dataObject = { 'CreditNoteLineId': dataItem.CreditNoteLineId };
             $.ajax({
-                url: '@Url.Action("pvwInvoiceLine", "InvoiceLine")',
+                url: '@Url.Action("pvwCreditNoteLine", "CreditNoteLine")',
                 method: 'POST',
                 datatype: "json",
                 contentType: 'application/json',
@@ -191,10 +190,10 @@
         }
         else {
 
-            var dataObject = { 'InvoiceId': 0, 'IdCD': ($("#cbxBuscarCertificadosDeposito").val() == '' ? 0 : $("#cbxBuscarCertificadosDeposito").val()) };
+            var dataObject = { 'CreditNoteId': 0 };
             //console.log(dataObject);
-           @*$.ajax({
-                url: '@Url.Action("pvwInvoiceLine", "InvoiceLine")',
+           $.ajax({
+                url: '@Url.Action("pvwCreditNoteLine", "CreditNoteLine")',
                 method: 'POST',
                 datatype: "json",
                 contentType: 'application/json',
@@ -220,29 +219,29 @@
                     }, "error");
 
                 }
-            });*@
+            });
 
 
             $("#btnActualizarCotizacionLinea").prop("disabled", false);
             $("#InvoiceLineId").val(dataItem.InvoiceLineId);
-            $("#IdCD").val($("#cbxBuscarCertificadosDeposito").val());
-            hcustom = $("#CustomerId").val();
+            //$("#IdCD").val($("#cbxBuscarCertificadosDeposito").val());
+            //hcustom = $("#CustomerId").val();
             //console.log(hcustom);
-            if(Number($("#IdCD").val()) === 0)
-            {
-                llenarsubproduct();
-            }
-            $("#SubProductId").data("kendoDropDownList").dataSource.read();
+            //if(Number($("#IdCD").val()) === 0)
+            //{
+            //    llenarsubproduct();
+            //}
             $("#SubProductId").data("kendoDropDownList").value(dataItem.SubProductId);
-            $("#UnitOfMeasureId").data("kendoDropDownList").value(dataItem.UnitOfMeasureId);
-          //  $("#UnitOfMeasureId").data("kendoDropDownList").value(dataItem.UnitOfMeasureId);
-            $("#TaxId").data("kendoDropDownList").value(dataItem.TaxId);
             $("#DescriptionDetail").val(dataItem.Description);
-
+            $("#UnitOfMeasureId").data("kendoDropDownList").value(dataItem.UnitOfMeasureId);
             $("#Quantity").data("kendoNumericTextBox").value(dataItem.Quantity);
             $("#Price").data("kendoNumericTextBox").value(dataItem.Price);
-            $("#Amount").data("kendoNumericTextBox").value(dataItem.Amount);
+            $("#AmountLine").data("kendoNumericTextBox").value(dataItem.Amount);
+            $("#DiscountPercentage").data("kendoNumericTextBox").value(dataItem.DiscountPercentage);
+            $("#DiscountAmount").data("kendoNumericTextBox").value(dataItem.DiscountPercentage);
             $("#SubTotalLine").data("kendoNumericTextBox").value(dataItem.SubTotal);
+            $("#TaxId").data("kendoDropDownList").value(dataItem.TaxId);
+            $("#TaxPercentage").data("kendoNumericTextBox").value(dataItem.TaxPercentage);
             $("#TaxAmount").data("kendoNumericTextBox").value(dataItem.TaxAmount);
             $("#TotalLine").data("kendoNumericTextBox").value(dataItem.Total);
         }
@@ -255,7 +254,7 @@
     }
 
 
-        function Delete(e) {
+        @*function Delete(e) {
 
         e.preventDefault();
         if (confirm('Esta seguro que desea eliminar la fila?')) {
@@ -292,7 +291,7 @@
             //Sync it with the grid
             //grid.dataSource.sync();
         }
-    }
+    }*@
 
 </script>
 
@@ -309,7 +308,8 @@
                                                       {
                                                           if (Model.editar == 1)
                                                           {
-                                                              command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+                                                              //command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+                                                              command.Destroy().Text("Eliminar");
                                                           }
                                                           command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCotizacionDetalle");
                                                           // command.Custom("Imprimir").Click("ImprimirCotizacion");
@@ -318,6 +318,7 @@
 
                                                       columns.Bound(p => p.CreditNoteLineId).Title("Id Linea").Width(150);
                                                       columns.Bound(p => p.CreditNoteId).Title("Id Maestro").Width(150);
+                                                      columns.Bound(p => p.AccountId).Title("Cuenta").Width(150);
                                                       columns.Bound(p => p.SubProductId).Title("IdProducto").Width(150);
                                                       columns.Bound(p => p.SubProductName).Title("Producto").Width(150);
                                                       columns.Bound(p => p.Description).Title("Descripcion").Width(150);
@@ -329,9 +330,9 @@
                                                       columns.Bound(p => p.DiscountPercentage).Format("{0:n2}").Title("Porcentaje Descuento").Width(150);
                                                       columns.Bound(p => p.DiscountAmount).Format("{0:n2}").Title("Descuentos").Width(150);
                                                       columns.Bound(p => p.SubTotal).Format("{0:n2}").Title("Sub Total").Width(150);
-                                                      columns.Bound(p => p.TaxCode).Format("{0:n2}").Title("Impuesto").Width(150);
+                                                      columns.Bound(p => p.TaxId).Format("{0:n2}").Title("Impuesto").Width(150);
+                                                      columns.Bound(p => p.TaxCode).Title("Tipo Impuesto").Width(150);
                                                       columns.Bound(p => p.TaxPercentage).Format("{0:n2}").Title("Porcentaje Impuesto").Width(150);
-                                                      //columns.Bound(p => p.TaxCode).Title("Tipo Impuesto").Width(150);
                                                       // columns.Bound(p => p.tax).Title("Tipo Impuesto").Width(150);
                                                       columns.Bound(p => p.TaxAmount).Format("{0:n2}").Title("Impuestos").Width(150);
 
@@ -386,6 +387,7 @@
                                                     .Sortable()
                                                     .AutoBind(true)
                                                     .Pageable()
+                                                    //.Events(e => e.DataBound("CalcularTotalDocumento"))
                                                     .Filterable()
                                                     .Scrollable()
                                                     // .ClientDetailTemplateId("template")
@@ -417,6 +419,7 @@
 
                                                     })
                                                     .Read(read => read.Action("GetCreditNoteLineByCreditNoteId", "CreditNoteLine").Data("GetInvoiceId"))
+                                                     .Destroy(destroy => destroy.Action("Delete", "CreditNoteLine").Type(HttpVerbs.Post))
                                               //.Create(create => create.Action("Insert", "SalesOrderLine"))
                                               //.Update(update => update.Action("Update", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
                                               //.Destroy(destroy => destroy.Action("Delete", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
