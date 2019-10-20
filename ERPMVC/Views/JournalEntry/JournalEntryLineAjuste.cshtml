@@ -43,23 +43,41 @@
                 $("#TotalCredit").val(Number($("#TotalCredit").val()) + Number(e.response.Data[i].Credit));
                 var idcostos = (e.response.Data[i].CostCenterId);
                 var idcuenta = (e.response.Data[i].AccountId);
+                var debito = (e.response.Data[i].Debit);
+                var credito = (e.response.Data[i].Credit);
             }
-            $('#CostCenter').on("change", function () {
-                var prueba = $("#CostCenter").val();
-                if (Number(prueba) == Number(idcostos)) {
-                    alert("No se puede ingresar el mismo centro de costos")
-                    $("#CostCenter").data('kendoDropDownList').value(0);
+           
+                    
+            $("#Credito").change(function () {
+                var cuenta = $("#Cuenta").val();
+                var costo = $("#CostCenter").val();
+                debugger;
+                if (Number(cuenta) == Number(idcuenta)) {
+                    if (Number(costo) == Number(idcostos)) {
+                        if (Number(credito) > 0) {
+                            alert("Ya se agrego un crédito para este centro de costos en está cuenta")
+                            $("#Credito").val("");
+                        }
+                    }                  
                 }
             });
-            $('#Cuenta').on("change", function () {
+
+            $("#Debito").change(function () { 
                 var cuenta = $("#Cuenta").val();
+                var costo = $("#CostCenter").val();
+                debugger;
                 if (Number(cuenta) == Number(idcuenta)) {
-                    alert("No se puede ingresar la misma cuenta")
-                    $("#Cuenta").data('kendoDropDownList').value(0);
+                    if (Number(costo) == Number(idcostos)) {
+                        if (Number(debito) > 0) {
+                            alert("Ya se agrego un débito para este centro de costos en está cuenta")
+                            $("#Debito").val("");
+                        }
+                    }                   
                 }
             });
         }
     }
+    
 
 
     function customFunction(input) {
@@ -223,7 +241,7 @@
 
 
 <script>
-    function AgregarLinea() {       
+    function AgregarLinea() {   
         var displayedData = $("#gridNumeracionJournalEntryLine").data().kendoGrid.dataSource.data();
         var id = -999999;
         debugger;
@@ -240,10 +258,6 @@
             else if (Number($("#Cuenta").val()) > 0) {
                 id = 1;
             }
-            else {
-                id = 1;
-            }
-
         }
         else {
             id = $("#JournalEntryLineId").val();
@@ -263,16 +277,46 @@
     }
 
     function RefrescarGridLinea() {
-        var grid = $("#gridNumeracionJournalEntryLine").getKendoGrid();
-        grid.dataSource.read();
-        grid.refresh();
-        $("#JournalEntryLineId").val(0);
-        $('#Debito').val('');
-        $('#Credito').val('');
-        $('#Descripcion').val('');
-        $("#CostCenter").data('kendoDropDownList').value(0);
-        $("#Cuenta").data('kendoDropDownList').value(0);
+        var des = $("#Descripcion").val();
+        var cuenta = $("#Cuenta").val();
+        var costo = $("#CostCenter").val();
+        if (des == "") {
+            $('#Descripcion').after(' <span id="Span2" class="text-danger">Campos requeridos</span>');
+            return false;
+        }
+        else if (cuenta == "") {
+            $('#Cuenta').after(' <span id="Span" class="text-danger">Campos requeridos</span>');
+            return false;
+        }
+        else if (costo == "") {
+            $('#CostCenter').after(' <span id="Span3" class="text-danger">Campos requeridos</span>');
+            return false;
+        }
+        else {
+            var grid = $("#gridNumeracionJournalEntryLine").getKendoGrid();
+            grid.dataSource.read();
+            grid.refresh();
+            $("#JournalEntryLineId").val(0);
+            $('#Debito').val('');
+            $('#Credito').val('');
+            $('#Descripcion').val('');
+            $("#CostCenter").data('kendoDropDownList').value(0);
+            $("#Cuenta").data('kendoDropDownList').value(0);
+        }
     }
+
+    //borrar mensajes en tiempo real
+    $("#Cuenta").on("change", function () {
+        $('#Span1').text('');
+    });
+
+    $("#Descripcion").keyup(function () {
+        $('#Span2').text('');
+    });
+    $("#CostCenter").on("change", function () {
+        $('#Span3').text('');
+    });
+
 
 </script>
 
@@ -391,7 +435,7 @@
                                                                                                 .Events(events => events.Error("error_handler"))
                                                                                                 .Read(read => read.Action("GetJournalEntryLine", "JournalEntryLine").Data("AgregarLinea"))
                                                                                                 .Create(create => create.Action("Insert", "JournalEntryLine"))
-                                                                                                 .Destroy(destroy => destroy.Action("Delete", "Warehouse").Type(HttpVerbs.Post))
+                                                                                                 .Destroy(destroy => destroy.Action("Delete", "JournalEntryLine").Type(HttpVerbs.Post))
                                                                                                 //.Update(update => update.Action("Update", "JournalEntryLine", new { JournalEntryLineId = "{0}" }).Type(HttpVerbs.Put))
                                                                                                 // .Destroy(destroy => destroy.Action("Delete", "JournalEntryLine", new { JournalEntryLineId = "{0}" }).Type(HttpVerbs.Delete))
 
