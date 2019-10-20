@@ -26,6 +26,18 @@ namespace ERPMVC.Models
         public string NoPoliza { get; set; }
         [Display(Name = "Tipo de Poliza")]
         public Int64 IdCertificated { get; set; }
+        [Display(Name = "Tasa deducible")]
+        [Column(TypeName = "decimal(18,4)")]
+        public decimal Ratedeductible { get; set; }
+        [Display(Name = "Tasa de Aseguradora")]
+        [Column(TypeName = "decimal(18,4)")]
+        public decimal RateInsurance { get; set; }
+        [Display(Name = "Tasa de Mercadería")]
+        [Column(TypeName = "decimal(18,4)")]
+        public decimal RateofProduct { get; set; }
+        [Display(Name = "Tasa de Mercadería")]
+        [Column(TypeName = "decimal(18,4)")]
+        public decimal QtyofMonths { get; set; }
 
 
 
@@ -33,28 +45,51 @@ namespace ERPMVC.Models
         [Column(TypeName = "decimal(18,4)")]
         public decimal TotalInsurances { get; set; }
 
+        [Display(Name = "Total Deducible")]
+        [Column(TypeName = "decimal(18,4)")]
+        public decimal Totaldeductible { get; set; }
 
-        [Display(Name = "Cliente")]
+        [Display(Name = "Total Mercaderia")]
+        [Column(TypeName = "decimal(18,4)")]
+        public decimal TotalofProduct { get; set; }
+        [Display(Name = "Total Insurance Mercaderia")]
+        [Column(TypeName = "decimal(18,4)")]
+        public decimal TotalInsurancesofProduct { get; set; }
+        [Display(Name = "Diferencia Asegurada")]
+        [Column(TypeName = "decimal(18,4)")]
+        public decimal DifferenceTotalofProductInsurance { get; set; }
+
+
+        [Display(Name = "Total Deducible Mercaderia")]
+        [Column(TypeName = "decimal(18,4)")]
+        public decimal TotaldeductibleofProduct { get; set; }
+        [UIHint("Insurances")]
+        public virtual Insurances Insurances { get; set; }
+
+
+        /*[Display(Name = "Cliente")]
         public Int64 CustomerId { get; set; }
 
         [Display(Name = "Total Insurance en letras")]
         public string TotalLetras { get; set; }
+        
         [Display(Name = "Id")]
         public int BranchId { get; set; }
 
         [Display(Name = "Grupo económico")]
         public Int64? GrupoEconomicoId { get; set; }
+        
         [Display(Name = "Direccion")]
         public string Address { get; set; }
 
-        [Display(Name = "Lugar de firma")]
+         [Display(Name = "Lugar de firma")]
         public string LugarFirma { get; set; }
-
+        
 
 
         [Display(Name = "Fecha de firma")]
         public DateTime FechaFirma { get; set; }
-
+        */
         [Required]
         [Display(Name = "Usuario que lo crea")]
         public string CreatedUser { get; set; }
