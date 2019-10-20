@@ -18,18 +18,18 @@ function GetIdEmployees() {
                                                                   .Columns(columns =>
                                                                   {
                                                                       columns.Command(command =>
-                                                                  {
-                                                                  //   command.Custom("Ver detalles").Click("Detalles");
-                                                                  command.Edit().Text("Editar").UpdateText("Actualizar").CancelText("Cancelar").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "GuardarLine" });
-                                                                      command.Destroy().Text("Eliminar");
-                                                                  }).Width(250);
+                                                                      {
+                                                                          //   command.Custom("Ver detalles").Click("Detalles");
+                                                                          command.Edit().Text("Editar").UpdateText("Actualizar").CancelText("Cancelar").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "" });
+                                                                          //command.Destroy().Text("Eliminar");
+                                                                      }).Width(150);
                                                                       columns.Bound(p => p.EmployeeSalaryId).Width(100).Visible(false);
-                                                                      columns.Bound(p => p.IdEmpleado).Title("Empleado").Width(150);
+                                                                      columns.Bound(p => p.IdEmpleado).Title("Empleado").Width(150).Visible(false);
                                                                       columns.Bound(p => p.QtySalary).Title("Salario").Width(150);
                                                                       columns.Bound(p => p.IdFrequency).Title("Código Frecuencia").Width(150);
-                                                                      columns.Bound(p => p.DayApplication).Title("Dia de Aplicacion").Format("{0:dd/MM/yyyy HH:mm}").Width(170);
-                                                                      columns.Bound(p => p.IdEstado).ClientTemplate("#=IdEstado ? 'Activo' : 'Inactivo' #").Width(150);
-                                                                      columns.Bound(p => p.CreatedDate).Title("Fecha creacion").Format("{0:dd/MM/yyyy HH:mm}").Width(150).Sortable(true);
+                                                                      columns.Bound(p => p.DayApplication).Title("Dia de Aplicacion").Format("{0:dd/MM/yyyy HH:mm}").Width(190);
+                                                                      columns.Bound(p => p.IdEstado).ClientTemplate("#if (IdEstado =='1') {#Activo#} else {#Inactivo#} #").Width(150);
+                                                                      columns.Bound(p => p.CreatedDate).Title("Fecha creacion").Format("{0:dd/MM/yyyy HH:mm}").Width(150).Sortable(false);
 
 
                                                                   })
@@ -66,12 +66,13 @@ function GetIdEmployees() {
                                                                                ))
                                                                   .ToolBar(tools =>
                                                                   {
-                                                                  //tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                                  //       .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddHoursWorked()" });
-                                                                  tools.Create().HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "" });
+                                                                      //tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                      //       .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddHoursWorked()" });
+                                                                      tools.Create().HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "" });
 
 
                                                                   })
+        
 
         .Editable(e => e.Mode(GridEditMode.InLine))
         .Sortable()
@@ -88,6 +89,7 @@ function GetIdEmployees() {
             dataSource
 
             .WebApi()
+            .Sort(sort => sort.Add("CreatedDate").Descending())
             .ServerOperation(true)
             .Model(model =>
             {
@@ -95,9 +97,9 @@ function GetIdEmployees() {
                 model.Field(p => p.EmployeeSalaryId).Editable(false);
                 model.Field(p => p.IdEmpleado).Editable(false);
                 model.Field(p => p.QtySalary).Editable(true);
-                model.Field(p => p.IdFrequency).Editable(true);
+                model.Field(p => p.IdFrequency).Editable(false);
                 model.Field(p => p.DayApplication).Editable(true);
-                model.Field(p => p.IdEstado).Editable(true);
+                model.Field(p => p.IdEstado).Editable(false).DefaultValue("1");
                 model.Field(p => p.CreatedDate).Editable(false);
             })
             .Events(events => events.Error("error_handler"))
@@ -106,16 +108,41 @@ function GetIdEmployees() {
             .Update(update => update.Action("PutEmployeeSalary", "EmployeeSalary", new { id = "{0}" }).Type(HttpVerbs.Put).Data("GetData"))
             .Destroy(destroy => destroy.Action("DeleteEmployeeSalary", "EmployeeSalary", new { id = "{0}" }).Type(HttpVerbs.Delete))
         )
+        .Events(e =>
+        {
+            e.Save("onSave");
+            e.Edit("onEdit");
+        })
 )
 <script>
     function GetData(data) {
         if (data != null) {
             data.DayApplication = data.DayApplication.toJSON();
+            data.CreatedDate = data.CreatedDate.toJSON();
             data.IdEmpleado = $("#IdEmpleado").val()
         }
     }
-    function GuardarLine() {
+
+    //$(document).on("click", "#grid tbody tr", function (e) {
+    //    var element = e.target || e.srcElement;
+    //    var data = $("#grid").data("kendoGrid").dataItem($(element).closest("tr"));
+    //});
+
+    function onSave(data) {
         console.log("GuardarLine");
+        var QtySalary = $("#QtySalary").val();
+        //e.preventDefault();
+        //var element = e.target || e.srcElement;
+        //var data = $("#gridEmployeeSalary").data("kendoGrid").dataItem($(element).closest("tr"));
+        //var data = this.dataItem($(e.currentTarget).closest("tr"));
+        if (data.model.EmployeeSalaryId == 0 || data.model.EmployeeSalaryId == null) {
+            console.log("Salario", QtySalary);
+            $("#Salario").val(QtySalary);
+        }
+        debugger;
         $("#myModalSalarioEmpleado").modal('hide');
+    }
+    function onEdit(e) {
+        //console.log("Editado");
     }
 </script>
