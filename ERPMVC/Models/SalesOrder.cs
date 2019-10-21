@@ -78,14 +78,14 @@ namespace ERPMVC.Models
         [Display(Name = "Observación/Comentario")]
         public string Remarks { get; set; }
 
-        [Display(Name = "Monto")]
+        [Display(Name = "Valor cotizado sin desc y sin imp")]
         public double Amount { get; set; }
         public double SubTotal { get; set; }
 
         [Display(Name = "Descuento")]
         public double Discount { get; set; }
 
-        [Display(Name = "Impuesto")]
+        [Display(Name = "Impuesto 15%")]
         public double Tax { get; set; }
 
         [Display(Name = "Impuesto 18%")]
