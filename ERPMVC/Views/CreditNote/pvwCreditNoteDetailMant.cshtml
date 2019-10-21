@@ -310,8 +310,8 @@
                                                                                                    ))
                                                                                                               .ToolBar(tools =>
                                                                                                               {
-                                                                                                                  tools.Custom().Text("Seleccionar Todos").IconClass("k-icon k-i-plus")
-                                                                                                                  .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddInvoiceDetalle();" });
+                                                                                                                  //tools.Custom().Text("Seleccionar Todos").IconClass("k-icon k-i-plus")
+                                                                                                                  //.HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddInvoiceDetalle();" });
                                                                                                               })
                                                                                                                .Editable(e => e.Mode(GridEditMode.PopUp))
                                                                                                                 .Sortable()
@@ -673,7 +673,8 @@
 
         for (i = 0; i < displayedData.length; i++) {
             var midataObject = {
-                CreditNoteLineId: displayedData[i].CreditNoteLineId, CreditNoteId: displayedData[i].CreditNoteId
+                CreditNoteLineId: i+1, CreditNoteId: displayedData[i].CreditNoteId
+                ,AccountId:0
                 , SubProductId: displayedData[i].SubProductId, SubProductName: displayedData[i].SubProductName
                 , Description: displayedData[i].Description, UnitOfMeasureId: displayedData[i].UnitOfMeasureId
                 , Quantity: displayedData[i].Quantity, Price: displayedData[i].Price
@@ -683,6 +684,22 @@
                 , TaxPercentage: displayedData[i].TaxPercentage
                 , TaxAmount: displayedData[i].TaxAmount, Total: displayedData[i].Total
             };
+            $.ajax({
+            url: '@Url.Action("SetLinesInSession", "CreditNoteLine")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(midataObject),
+            success: function (result) {
+                // console.log(data);
+                // data = result;
+
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
             datasource.insert(midataObject);
         };
         ////CalcularTotal()
@@ -692,12 +709,34 @@
 
     }
 
+    $("#SubProductId").change(function () {
+        var subproduct = $("#SubProductId").data("kendoDropDownList").text();
+        var displayedData = $("#gridCreditNoteDetail").data().kendoGrid.dataSource.view();
+
+        for (i = 0; i < displayedData.length; i++) {
+            if (displayedData[i].SubProductName == subproduct) {
+                alert("Este item ya fue agregado a la nota de crédito");
+                $("#SubProductId").data("kendoDropDownList").value('');
+                return;
+            }
+
+        };
+    });
     function SeleccionarInvoiceItem(e) {
         var notification = $("#notification").data("kendoNotification");
         e.preventDefault();
         debugger
         var notification = $("#notification").data("kendoNotification");
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var displayedData = $("#gridCreditNoteDetail").data().kendoGrid.dataSource.view();
+
+        for (i = 0; i < displayedData.length; i++) {
+            if (displayedData[i].Description == dataItem.Description) {
+                alert("Este item ya fue agregado a la nota de crédito");
+                return;
+            }
+            
+        };
         //$("#SubProductId").data("kendoDropDownList").dataSource.read();
         $("#SubProductId").data("kendoDropDownList").value(dataItem.SubProductId);
         $("#DescriptionDetail").val(dataItem.Description);
