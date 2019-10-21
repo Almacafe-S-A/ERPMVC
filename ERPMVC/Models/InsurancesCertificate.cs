@@ -105,6 +105,7 @@ namespace ERPMVC.Models
         [Required]
         [Display(Name = "Fecha de Modificacion")]
         public DateTime ModifiedDate { get; set; }
+        public List<InsurancesCertificateLine> _InsurancesCertificateLine { get; set; } = new List<InsurancesCertificateLine>();
 
 
     }
