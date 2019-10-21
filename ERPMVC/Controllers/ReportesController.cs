@@ -46,8 +46,13 @@ namespace ERPMVC.Controllers
             return await Task.Run(() => View());
 
         }
-        
 
+        public async Task<IActionResult> SFDetalleValorSeguros()
+        {
+
+            return await Task.Run(() => View());
+
+        }
 
 
 
