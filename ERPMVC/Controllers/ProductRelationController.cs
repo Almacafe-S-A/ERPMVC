@@ -41,7 +41,7 @@ namespace ERPMVC.Controllers
         [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> GetProductRelation([DataSourceRequest]DataSourceRequest request)
         {
-            List<ProductRelation> _cais = new List<ProductRelation>();
+            List<ProductRelation> _ProductRelation = new List<ProductRelation>();
             try
             {
 
@@ -53,8 +53,8 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _cais = JsonConvert.DeserializeObject<List<ProductRelation>>(valorrespuesta);
-
+                    _ProductRelation = JsonConvert.DeserializeObject<List<ProductRelation>>(valorrespuesta);
+                    _ProductRelation = _ProductRelation.OrderByDescending(q => q.RelationProductId).ToList();
                 }
 
 
@@ -66,7 +66,7 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _cais.ToDataSourceResult(request);
+            return _ProductRelation.ToDataSourceResult(request);
 
         }
 

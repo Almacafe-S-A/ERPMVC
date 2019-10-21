@@ -144,18 +144,28 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Bank/GetBankById/" + _Bank.BankId);
-                string valorrespuesta = "";
-                _Bank.FechaModificacion = DateTime.Now;
-                _Bank.UsuarioModificacion = HttpContext.Session.GetString("user");
-                if (result.IsSuccessStatusCode)
+
+                if (_Bank.BankId == 0)
                 {
+                    var result = await _client.GetAsync(baseadress + "api/Bank/GetBankByName/" + _Bank.BankName);
+                    //var result = await _client.GetAsync(baseadress + "api/Bank/GetBankById/" + _Bank.BankId);
+                    string valorrespuesta = "";
+                    _Bank.FechaModificacion = DateTime.Now;
+                    _Bank.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    if (result.IsSuccessStatusCode)
+                    {
 
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Bank = JsonConvert.DeserializeObject<Bank>(valorrespuesta);
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _Bank = JsonConvert.DeserializeObject<Bank>(valorrespuesta);
+                    }
+
+                    if (_Bank == null) { _Bank = new Models.Bank(); }
+
+                    if (_Bank.BankId > 0)
+                    {
+                        return await Task.Run(() => BadRequest($"Ya existe un banco registrado con ese nombre."));
+                    }
                 }
-
-                if (_Bank == null) { _Bank = new Models.Bank(); }
 
                 if (_BankS.BankId == 0)
                 {
@@ -165,6 +175,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
+                    var result = await _client.GetAsync(baseadress + "api/Bank/GetBankById/" + _Bank.BankId);
                     _BankS.UsuarioCreacion = _Bank.UsuarioCreacion;
                     _BankS.FechaCreacion = _Bank.FechaCreacion;
                     var updateresult = await Update(_Bank.BankId, _BankS);
