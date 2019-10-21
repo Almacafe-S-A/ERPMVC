@@ -196,6 +196,7 @@ namespace ERPMVC.Controllers
                         {
                             obj.Description = _CreditNoteLinep.Description;
                             obj.Price = _CreditNoteLinep.Price;
+                            obj.AccountId = _CreditNoteLinep.AccountId;
                             obj.Quantity = _CreditNoteLinep.Quantity;
                             obj.Amount = _CreditNoteLinep.Amount;
                             obj.SubProductId = _CreditNoteLinep.SubProductId;
