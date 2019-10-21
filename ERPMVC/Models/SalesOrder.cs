@@ -74,6 +74,8 @@ namespace ERPMVC.Models
         public string CustomerRefNumber { get; set; }
         [Display(Name = "Tipo de ventas")]
         public int SalesTypeId { get; set; }
+
+        [Display(Name = "Observación/Comentario")]
         public string Remarks { get; set; }
 
         [Display(Name = "Monto")]
