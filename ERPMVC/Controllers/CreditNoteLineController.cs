@@ -337,7 +337,7 @@ namespace ERPMVC.Controllers
             //return new ObjectResult(new DataSourceResult { Data = new[] { _CreditNoteLine }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
+        [HttpDelete("BranchId")]
         public async Task<ActionResult<CreditNoteLine>> Delete([FromBody]CreditNoteLine _CreditNoteLine)
         {
             try

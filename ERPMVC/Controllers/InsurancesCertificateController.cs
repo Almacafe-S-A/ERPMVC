@@ -45,16 +45,18 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-
-        public IActionResult Insurances()
+        [Authorize(Policy = "Admin")]
+        public async Task<IActionResult> InsurancesCertificate()
         {
+            ViewData["Insurances"] = await ObtenerInsurances();
+
             return View();
         }
 
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> pvwAddInsurancesCertificate([FromBody]InsurancesCertificateDTO _InsurancesCertificatep)
         {
-            InsurancesCertificate _InsurancesCertificate = new InsurancesCertificate();
+            InsurancesCertificateDTO _InsurancesCertificate = new InsurancesCertificateDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -65,13 +67,17 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _InsurancesCertificate = JsonConvert.DeserializeObject<InsurancesCertificate>(valorrespuesta);
+                    _InsurancesCertificate = JsonConvert.DeserializeObject<InsurancesCertificateDTO>(valorrespuesta);
 
                 }
 
                 if (_InsurancesCertificate == null)
                 {
-                    _InsurancesCertificate = new InsurancesCertificate();
+                    _InsurancesCertificate = new InsurancesCertificateDTO();
+                    _InsurancesCertificate.DateofInsurance = DateTime.Now;
+                    _InsurancesCertificate.BeginDateofInsurance = DateTime.Now;
+                    _InsurancesCertificate.EndDateofInsurance = DateTime.Now;
+
                 }
 
             }
@@ -157,7 +163,7 @@ namespace ERPMVC.Controllers
 
         public async Task<ActionResult<InsurancesCertificate>> SaveInsurancesCertificate([FromBody]InsurancesCertificateDTO _InsurancesCertificateP)
         {
-            InsurancesCertificate _InsurancesCertificate = _InsurancesCertificateP;
+           InsurancesCertificate _InsurancesCertificate = _InsurancesCertificateP;
             try
             {
                 InsurancesCertificate _listInsurancesCertificate = new InsurancesCertificate();
@@ -186,7 +192,7 @@ namespace ERPMVC.Controllers
                     // string baseadress = config.Value.urlbase;
                     HttpClient _client2 = new HttpClient();
                     _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var resultado = await _client.GetAsync(baseadress + "api/Accounting/GetInsurancesCertificateByBedinDate/" + _InsurancesCertificateP.BeginDateofInsurance);
+                    var resultado = await _client.GetAsync(baseadress + "api/Accounting/GetInsurancesCertificateByBeginDate/" + _InsurancesCertificateP.BeginDateofInsurance);
                     string valorrespuesta2 = "";
 
                     if (resultado.IsSuccessStatusCode)
@@ -219,7 +225,7 @@ namespace ERPMVC.Controllers
                     // string baseadress = config.Value.urlbase;
                     HttpClient _client2 = new HttpClient();
                     _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var resultado = await _client.GetAsync(baseadress + "api/Accounting/GetInsurancesCertificateByBedinDate/" + _InsurancesCertificateP.BeginDateofInsurance);
+                    var resultado = await _client.GetAsync(baseadress + "api/Accounting/GetInsurancesCertificateByBeginDate/" + _InsurancesCertificateP.BeginDateofInsurance);
                     string valorrespuesta2 = "";
 
                     if (resultado.IsSuccessStatusCode)
@@ -348,7 +354,33 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _InsurancesCertificateDTO }, Total = 1 });
         }
 
+        async Task<IEnumerable<Insurances>> ObtenerInsurances()
+        {
+            IEnumerable<Insurances> Insurances = null;
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
 
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Insurances/GetInsurances");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    Insurances = JsonConvert.DeserializeObject<IEnumerable<Insurances>>(valorrespuesta);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            ViewData["defaultinsurance"] = Insurances.FirstOrDefault();
+            return Insurances;
+
+        }
 
 
 

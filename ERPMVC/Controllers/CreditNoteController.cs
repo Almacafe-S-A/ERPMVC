@@ -235,7 +235,22 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> SFCreditNote(Int32 id)
+        public async Task<ActionResult> SFCreditNoteFiscal(Int32 id)
+        {
+            try
+            {
+                CreditNoteDTO _creditnotedto = new CreditNoteDTO { CreditNoteId = id, };
+                return await Task.Run(() => View(_creditnotedto));
+            }
+            catch (Exception)
+            {
+
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+
+        }
+        [HttpGet]
+        public async Task<ActionResult> SFCreditNoteInterna(Int32 id)
         {
             try
             {
