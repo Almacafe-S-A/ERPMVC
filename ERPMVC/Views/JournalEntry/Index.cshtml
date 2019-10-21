@@ -35,14 +35,7 @@
         clearsession();
         $('#ModalJournalEntry').find(':input').not(':submit').val('');      
         $("#JournalEntryId").val('0');
-        var dataSource = $("#gridNumeracionJournalEntryLine").data("kendoGrid").dataSource;
-        var raw = dataSource._data;
-        console.log(raw);
-        debugger;
-        for (var i = dataSource._data.length - 1; i >= 0; i--) {
-            item = raw[i];
-            dataSource.remove(item);
-        }
+      
         //$('#ModalJournalEntry').modal('show');
         //document.getElementById("btnJournalEntry").disabled = false;
         //$("#TypeOfAdjustmentId").data('kendoDropDownList').value(65);
@@ -71,7 +64,15 @@
                     alert(textStatus + ": " + XMLHttpRequest.responseText);
                 }
         });
-      
+
+        var dataSource = $("#gridNumeracionJournalEntryLine").data("kendoGrid").dataSource;
+        var raw = dataSource._data;
+        //console.log(raw);
+        debugger;
+        for (var i = dataSource._data.length - 1; i >= 0; i--) {
+            item = raw[i];
+            dataSource.remove(item);
+        }
 
       }
 
@@ -96,6 +97,32 @@
                     //$("#btnCAI").hide();
                     $('#ModalJournalEntry').modal('show');
                     document.getElementById("btnJournalEntry").disabled = true;
+                    document.getElementById("btnAgregarLinea").disabled = true;
+                    $("#IdPartyType").data("kendoDropDownList").value(dataItem.PartyTypeId);
+                    if (dataItem.PartyTypeId == 1) {
+                        $("#customer").show();
+                        $("#party").hide();
+                        $("#vendor").hide();
+                        $("#employe").hide();
+                    }
+                    else if (dataItem.PartyTypeId == 2) {
+                        $("#customer").hide();
+                        $("#party").hide();
+                        $("#vendor").hide();
+                        $("#employe").show();
+                    }
+                    else if (dataItem.PartyTypeId == 3) {
+                        $("#customer").hide();
+                        $("#party").hide();
+                        $("#vendor").show();
+                        $("#employe").hide();
+                    }
+                    else {
+                        $("#customer").hide();
+                        $("#party").show();
+                        $("#vendor").hide();
+                        $("#employe").hide();
+                    }
                    
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -115,7 +142,7 @@
 
 </script>
 
-<h3 class="text-themecolor">Movimiento Financiero</h3>
+<h3 class="text-themecolor">Asiento Contable</h3>
 @(Html.Kendo().Grid<ERPMVC.Models.JournalEntry>
         ()
         .Name("gridNumeracionJournalEntry")
@@ -125,8 +152,8 @@
             {
 
 
-                command.Custom("Ver detalles").Text(" ").IconClass("far fa-list-alt").Click("DetallesJournalEntry");
-                //command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditJournalEntry");
+                //.Custom("Ver detalles").Text(" ").IconClass("far fa-list-alt").Click("DetallesJournalEntry");
+                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditJournalEntry");
 
                 //  command.Destroy();
             }).Width(100);
@@ -138,6 +165,8 @@
             columns.Bound(p => p.CreatedDate).Title("Fecha de Creación").Format("{0:dd/MM/yyyy}").Width(250);
             //columns.Bound(p => p.VoucherType).Title("Tipo de Diario").Width(250);
             columns.Bound(p => p.PartyId).Title("Id de Partida").Width(250);
+            columns.Bound(p => p.PartyTypeId).Hidden().Title("").Width(250);
+
             //columns.Bound(p => p.Posted).Title("Posteado").Width(200);
         })
         .Filterable(f => f.Operators(o => o.ForString(s => s
@@ -212,7 +241,7 @@
         .Events(events => events.Error("error_handler"))
         .Read(read => read.Action("GetJournalEntry", "JournalEntry"))
         .Create(create => create.Action("Insert", "JournalEntry"))
-        //.Update(update => update.Action("Update", "JournalEntry", new { JournalEntryId = "{0}" }).Type(HttpVerbs.Put))
+        .Update(update => update.Action("Update", "JournalEntry", new { JournalEntryId = "{0}" }).Type(HttpVerbs.Put))
         //.Destroy(destroy => destroy.Action("Delete", "TypeAccount", new { Num = "{1}" }).Type(HttpVerbs.Delete))
 
         )

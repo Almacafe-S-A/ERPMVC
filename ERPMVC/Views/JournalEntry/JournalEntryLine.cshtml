@@ -28,8 +28,8 @@
         //console.log(hola)
 
         if (e.type === "update" || e.type === "create" || e.type=="read") {
-           // var grid = $('#gridNumeracionJournalEntryLine').data('kendoGrid');
-            // grid.dataSource.read();
+           //var grid = $('#gridNumeracionJournalEntryLine').data('kendoGrid');
+           // grid.dataSource.read();           
            // console.log(e);
             //console.log(e.response.Data);
             $("#TotalCredito").val(0);
@@ -41,7 +41,23 @@
                 $("#TotalDebito").val(Number($("#TotalDebito").val()) + Number(e.response.Data[i].Debit));
                 $("#TotalDebit").val(Number($("#TotalDebit").val()) + Number(e.response.Data[i].Debit));
                 $("#TotalCredit").val(Number($("#TotalCredit").val()) + Number(e.response.Data[i].Credit));
+                var idcostos = (e.response.Data[i].CostCenterId);
+                var idcuenta = (e.response.Data[i].AccountId);
             }
+            $('#CostCenter').on("change", function () {
+                var prueba = $("#CostCenter").val();
+                if (Number(prueba) == Number(idcostos)) {
+                    alert("No se puede ingresar el mismo centro de costos")
+                    $("#CostCenter").data('kendoDropDownList').value(0);
+                }                             
+            });
+            $('#Cuenta').on("change", function () {
+                var cuenta = $("#Cuenta").val();
+                if (Number(cuenta) == Number(idcuenta)) {
+                    alert("No se puede ingresar la misma cuenta")
+                    $("#Cuenta").data('kendoDropDownList').value(0);
+                }
+            });
         }
     }
 
@@ -70,7 +86,7 @@
         //$('#ModalJournalEntryLine').find(':input').not(':submit').val('');
         //$('#ModalJournalEntryLine').modal('show');
         $("#JournalEntryId").val('0');
-        console.log("Entre")
+       // console.log("Entre")
       }
 
 
@@ -118,7 +134,6 @@
                         <label id="Cuentalbl">Cuenta</label>
                         <kendo-dropdownlist name="Cuenta" filter="Kendo.Mvc.UI.FilterType.Contains"
                                             option-label="Seleccione la cuenta "
-                                            required
                                             datatextfield="AccountName"
                                             datavaluefield="AccountId"
                                             style="width: 100%;">
@@ -128,6 +143,7 @@
                                 </transport>
                             </datasource>
                         </kendo-dropdownlist>
+                        <span id="Span" class="text-danger"></span>
                     </div>
                 </div>
                 @*<div class="col-md-4">
@@ -139,7 +155,8 @@
                 <div class="col-md-4">
                     <div class="form-group">
                         <label id="Descripcionlbl" class=" control-label" style="width:100%">Descripción</label>
-                        <input id="Descripcion" type="text" class="form-control" style="min-width:100%" />
+                        <input id="Descripcion" type="text" class="form-control" style="min-width:100%"  required maxlength="100"/>
+                        <span id="Span2" class="text-danger"></span>
                     </div>
                 </div>
                 <div class="col-md-4">
@@ -147,7 +164,6 @@
                         <label id="CostCenterLbl">Centro de Costos</label>
                         <kendo-dropdownlist name="CostCenter" filter="Kendo.Mvc.UI.FilterType.Contains"
                                             option-label="Seleccione centro de costos"
-                                            required
                                             datatextfield="CostCenterName"
                                             datavaluefield="CostCenterId"
                                             style="width: 100%;">
@@ -157,6 +173,7 @@
                                 </transport>
                             </datasource>
                         </kendo-dropdownlist>
+                        <span id="Span3" class="text-danger"></span>
                     </div>
                 </div>
             </div>
@@ -164,7 +181,8 @@
                 <div class="col-md-4">
                     <div class="form-group">
                         <label id="Creditolbl" class=" control-label" style="width:100%">Crédito</label>
-                        <input id="Credito" type="number" class="form-control" style="min-width:100%" min="0" />                        
+                        <input id="Credito" type="number" class="form-control" style="min-width:100%" min="0" maxlength="30" />
+                        <span id="Span4" class="text-danger"></span>
                         <style>
                             input[type=number]::-webkit-outer-spin-button,
                             input[type=number]::-webkit-inner-spin-button {
@@ -181,7 +199,8 @@
                 <div class="col-md-4">
                     <div class="form-group">
                         <label id="Debitolbl" class=" control-label" style="width:100%">Débito</label>
-                        <input id="Debito" type="number" class="form-control" style="min-width:100%" min="0" />                      
+                        <input id="Debito" type="number" class="form-control" style="min-width:100%" min="0" maxlength="30" /> 
+                        <span id="Span5" class="text-danger"></span>
                     </div>
                 </div>
                
@@ -207,7 +226,7 @@
 
 
 <script>               
-    function AgregarLinea() {
+    function AgregarLinea() {        
         debugger;
         var displayedData = $("#gridNumeracionJournalEntryLine").data().kendoGrid.dataSource.data();
         var id = -999999;
@@ -222,7 +241,7 @@
                 }
                 id = id + 1;
             }
-            else {
+            else if (Number($("#Cuenta").val()) > 0) {              
                 id = 1;
             }
         }
@@ -240,21 +259,72 @@
             'Description': $("#Descripcion").val(),
             'CostCenterId': Number($("#CostCenter").val()),
             'CostCenterName': $("#CostCenter").data("kendoDropDownList").text(),   
-        }   
-       
+        } 
     }
 
     function RefrescarGridLinea() {
-        var grid = $("#gridNumeracionJournalEntryLine").getKendoGrid();
-        grid.dataSource.read();
-        grid.refresh();
-        $("#JournalEntryLineId").val(0);
-        $('#Debito').val('');
-        $('#Credito').val('');
-        $('#Descripcion').val('');
-        $("#CostCenter").data('kendoDropDownList').value(0);
-        $("#Cuenta").data('kendoDropDownList').value(0);
+        var des = $("#Descripcion").val();
+        var credito = $("#Credito").val();
+        var debito = $("#Debito").val();
+        var cuenta = $("#Cuenta").val();
+        var costo = $("#CostCenter").val();
+        if (des == "" ) {
+            $('#Descripcion').after(' <span id="Span2" class="text-danger">Campos requeridos</span>');                      
+            return false;
+        }
+        else if (cuenta == "") {
+            $('#Cuenta').after(' <span id="Span" class="text-danger">Campos requeridos</span>');
+            return false;
+        }
+        else if (costo == "") {
+            $('#CostCenter').after(' <span id="Span3" class="text-danger">Campos requeridos</span>');
+            return false;
+        }
+            else if (credito == "") {
+            $('#Credito').after(' <span id="Span4" class="text-danger">Campos requeridos</span>');  
+            return false;
+        }
+        else if (debito == "") {
+            $('#Debito').after(' <span id="Span5" class="text-danger">Campos requeridos</span>');
+            return false;
+        }
+        else {
+            //document.getElementById("Span").innerHTML = "";
+            $('#Descripcion').text('');
+            $('#Credito').text('');
+            $('#Debito').text('');
+            var grid = $("#gridNumeracionJournalEntryLine").getKendoGrid();
+            grid.dataSource.read();
+            grid.refresh();
+            $("#JournalEntryLineId").val(0);
+            $('#Debito').val('');
+            $('#Credito').val('');
+            $('#Descripcion').val('');
+            $("#CostCenter").data('kendoDropDownList').value(0);
+            $("#Cuenta").data('kendoDropDownList').value(0);
+        }           
     }
+
+    //borrar mensajes en tiempo real
+    $("#Cuenta").on("change", function () {
+        $('#Span1').text('');
+    });
+
+    $("#Descripcion").keyup(function () {
+        $('#Span2').text('');
+    });
+    $("#CostCenter").on("change", function (){
+        $('#Span3').text('');
+    });
+
+
+    $("#Credito").keyup(function () {
+        $('#Span4').text('');
+    });
+    $("#Debito").keyup(function () {
+        $('#Span5').text('');
+    });
+
 
 
 </script>

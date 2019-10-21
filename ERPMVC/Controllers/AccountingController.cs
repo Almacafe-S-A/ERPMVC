@@ -264,7 +264,7 @@ namespace ERPMVC.Controllers
         }
         async Task<IEnumerable<TypeAccount>> ObtenerTypeAccount()
         {
-            IEnumerable<TypeAccount> branches = null;
+            IEnumerable<TypeAccount> typesAccount = null;
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -276,7 +276,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    branches = JsonConvert.DeserializeObject<IEnumerable<TypeAccount>>(valorrespuesta);
+                    typesAccount = JsonConvert.DeserializeObject<IEnumerable<TypeAccount>>(valorrespuesta);
 
                 }
             }
@@ -285,8 +285,8 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-            ViewData["defaultAccount"] = branches.FirstOrDefault();
-            return branches;
+            ViewData["defaultAccount"] = typesAccount.FirstOrDefault();
+            return typesAccount;
 
         }
         /*
@@ -366,7 +366,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        
+        //[Authorize(Policy = "Admin")]
         public async Task<ActionResult> pvwTreeAccounting(Int64 TypeAccountId)
         {
             try
@@ -519,7 +519,7 @@ namespace ERPMVC.Controllers
         [HttpGet]
         public async Task<JsonResult> GetAccounting([DataSourceRequest]DataSourceRequest request)
         {
-            List<Accounting> _customers = new List<Accounting>();
+            List<Accounting> _accounting = new List<Accounting>();
 
             try
             {
@@ -531,8 +531,18 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _customers = JsonConvert.DeserializeObject<List<Accounting>>(valorrespuesta);
-
+                    _accounting = JsonConvert.DeserializeObject<List<Accounting>>(valorrespuesta);
+                    _accounting = (from c in _accounting
+                                   select new Accounting
+                                   {
+                                        AccountId = c.AccountId,
+                                        AccountName = c.AccountCode + "--" +c.AccountName,
+                                        AccountCode = c.AccountCode,
+                                        Description = c.Description,
+                                        Estado = c.Estado,
+                                        IdEstado = c.IdEstado,
+                                   }
+                                   ).ToList();
                 }
             }
             catch (Exception ex)
@@ -543,7 +553,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return Json(_customers.ToDataSourceResult(request));
+            return Json(_accounting.ToDataSourceResult(request));
 
         }
         [HttpGet]

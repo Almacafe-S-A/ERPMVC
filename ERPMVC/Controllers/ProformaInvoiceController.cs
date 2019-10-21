@@ -362,7 +362,7 @@ namespace ERPMVC.Controllers
                 using (ExcelEngine excelEngine = new ExcelEngine())
                 {
                     IApplication application = excelEngine.Excel;
-                    application.DefaultVersion = ExcelVersion.Excel2013;
+                    application.DefaultVersion = ExcelVersion.Excel2007;
                     IWorkbook workbook = application.Workbooks.Create(1);
                     IWorksheet worksheet = workbook.Worksheets[0];
 
@@ -381,6 +381,60 @@ namespace ERPMVC.Controllers
 
                     //GetCustomerAsObjects method returns list of customers
                    // List<InvoiceCalculation> employees = GetEmployees();
+
+                    //Import data to worksheet
+                    worksheet.ImportData(InvoiceCalculationL, 2, 1, true);
+
+                    //Saving the workbook as stream
+                    FileStream file = new FileStream("Spreadsheet.xlsx", FileMode.Create, FileAccess.ReadWrite);
+                    workbook.SaveAs(file);
+                    //file.Dispose();
+
+                    string fileName = $"CalculoFactura_Proforma_{id}.xlsx";
+                    string fileType = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+                    file.Position = 0;
+                    return File(file, fileType, fileName);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return await Task.Run(() => BadRequest(""));
+            }
+
+
+
+        }
+
+
+        [HttpGet]
+        public async Task<ActionResult> ExportCalculoFacturaByIdentificador(Guid id)
+        {
+            try
+            {
+                using (ExcelEngine excelEngine = new ExcelEngine())
+                {
+                    IApplication application = excelEngine.Excel;
+                    application.DefaultVersion = ExcelVersion.Excel2007;
+                    IWorkbook workbook = application.Workbooks.Create(1);
+                    IWorksheet worksheet = workbook.Worksheets[0];
+
+                    List<InvoiceCalculation> InvoiceCalculationL = new List<InvoiceCalculation>();
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/ProformaInvoice/GetInvoiceCalculationByIdentificador/" + id);
+                    string valorrespuesta = "";
+
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        InvoiceCalculationL = JsonConvert.DeserializeObject<List<InvoiceCalculation>>(valorrespuesta);
+                    }
+
+                    //GetCustomerAsObjects method returns list of customers
+                    // List<InvoiceCalculation> employees = GetEmployees();
 
                     //Import data to worksheet
                     worksheet.ImportData(InvoiceCalculationL, 2, 1, true);
