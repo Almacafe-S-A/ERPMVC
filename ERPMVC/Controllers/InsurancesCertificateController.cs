@@ -236,10 +236,13 @@ namespace ERPMVC.Controllers
                     }
                     if (_InsurancesCertificateDuplicated != null)
                     {
-                        string error = await result.Content.ReadAsStringAsync();
+                        if (_InsurancesCertificateDuplicated.InsurancesCertificateId != _InsurancesCertificateP.InsurancesCertificateId)
+                        {
+                            string error = await result.Content.ReadAsStringAsync();
+                            return await Task.Run(() => BadRequest($"La poliza ya esta ingresado..."));
+                        }
 
-                        return await Task.Run(() => BadRequest($"El codigo de cuenta ya esta ingresado..."));
-
+                        
                         /*    return this.Json(new DataSourceResult
                             {
                                 Errors = $"Ocurrio un error:{error} El codigo de cuenta ya esta ingresado."
