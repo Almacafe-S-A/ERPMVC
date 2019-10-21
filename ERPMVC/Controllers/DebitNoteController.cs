@@ -87,6 +87,9 @@ namespace ERPMVC.Controllers
                 if (_Invoice == null)
                 {
                     _Invoice = new DebitNoteDTO();
+                    _Invoice.OrderDate = DateTime.Now;
+                    _Invoice.DeliveryDate = DateTime.Now;
+                    _Invoice.ExpirationDate = DateTime.Now;
                 }
             }
             catch (Exception ex)
