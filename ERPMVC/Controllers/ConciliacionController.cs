@@ -62,6 +62,8 @@ namespace ERPMVC.Controllers
         public async Task<DataSourceResult> GetConciliacion([DataSourceRequest]DataSourceRequest request, Int64 CustomerId)
         {
             List<CustomerDocument> _CustomerDocument = new List<CustomerDocument>();
+
+
             try
             {
 
@@ -206,14 +208,36 @@ namespace ERPMVC.Controllers
 
         public async Task<ActionResult> Submit(List<IFormFile> files, ConciliacionDTO _Conciliaciontp)
         {
-            if (files != null)
-            {
-                await ProcesoConciliacion(files);
-            }
+            string FechaInicio = String.Format("{0}", Request.Form["fechainicio"]);
+            string FechaFinal = String.Format("{0}", Request.Form["fechafinal"]);
 
+
+            // Task<IActionResult> resultadoProcesoConciliacion  = new Task<IActionResult>;
+            //
+            //var resultadoProcesoConciliacion="";
             
 
+            if (files != null)
+            {
+
+                var resultadoProcesoConciliacion = await ProcesoConciliacion(files, FechaInicio, FechaFinal);
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/JournalEntry/GetJournalEntry/");
+
+
+                ViewBag.resultado = resultadoProcesoConciliacion;
+
+                ViewData["resultado"] = resultadoProcesoConciliacion;
+                //TempData['resultado'] = resultadoProcesoConciliacion;
+                return View("Result",resultadoProcesoConciliacion);
+            }
+
             return View("Result");
+
+
+
         }
 
         public ActionResult Result()
@@ -221,9 +245,15 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        private async Task<IActionResult> ProcesoConciliacion(List<IFormFile> files)
+        private async Task<IActionResult> ProcesoConciliacion(List<IFormFile> files,string FechaInicio,string FechaFinal)
         {
             List<string> fileInfo = new List<string>();
+            List<ConciliacionDTO> _JournalEntry = new List<ConciliacionDTO>();
+
+
+            double Debit;
+            double Credit;
+            double Saldo;
 
             foreach (var file in files)
             {
@@ -252,46 +282,113 @@ namespace ERPMVC.Controllers
                 application.DefaultVersion = ExcelVersion.Excel2016;
 
                 //A existing workbook is opened.              
-                FileStream sampleFile = new FileStream(filePath, FileMode.Open);
+                FileStream sampleFile = new FileStream(filePath, FileMode.Open,FileAccess.ReadWrite);
 
                 IWorkbook workbook = application.Workbooks.Open(sampleFile);
 
                 //Access first worksheet from the workbook.
                 IWorksheet worksheet = workbook.Worksheets[0];
 
+
+                //OBTENER LA DATA NECESARIA
+
+                //EL SIGUIENTE PROCEDIMIENTO RECORRE EL EXCEL POR MEDIO DE UN RANGO
+                IMigrantRange migrantRange = worksheet.MigrantRange;
+
+
+                int rowCount = worksheet.UsedRange.LastRow;
+                int colCount = worksheet.UsedRange.LastColumn;
+
+                //OBTENER LA DATA DE LA BASE DE DATOS A LA CUAL TENGO QUE COMPARAR
+
+
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/JournalEntry/GetJournalEntryByDate/" + "2019-08-01" + "2019-08-31");
+                string valorrespuesta = "";
+
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _JournalEntry = JsonConvert.DeserializeObject<List<ConciliacionDTO>>(valorrespuesta);
+
+                }
+
+
+                foreach (var item in _JournalEntry)
+                {
+                    //double verificaicon = item.TotalCredit;
+
+                    //string verificacion = item;
+                    Debit = item.Debit;
+                    Credit = item.Credit;
+                    //Console.WriteLine("Amount is {0} and type is {1}");
+                    Saldo = Convert.ToDouble(worksheet.Range["D8"].Number);
+
+                }
+
+
+               // Saldo = Convert.ToDouble(worksheet.Range["D"+(rowCount - 1).ToString()].Number);
+
+
+                
+
+                //for (int i = 1; i <= rowCount; i++)
+                //{
+                //    string rango = worksheet.Range["D" + i.ToString()].Number;
+
+
+
+                //}
+
+
+                //=================================================================
+
                 //Set Text in cell A3.
                 //worksheet.Range["A3"].Text;
 
-                string variable = worksheet.Range["A2"].Text;
+               // string variable = worksheet.Range["A"+"3"].Text;
 
                 //Defining the ContentType for excel file.
-                string ContentType = "Application/msexcel";
+               // string ContentType = "Application/msexcel";
 
                 //Define the file name.
-                string fileoutput = "Output.xlsx";
+                //string fileoutput = "Output.xlsx";
 
                 //Creating stream object.
-                MemoryStream newstream = new MemoryStream();
+                //MemoryStream newstream = new MemoryStream();
 
                 //Saving the workbook to stream in XLSX format
-                workbook.SaveAs(newstream);
+               // workbook.SaveAs(newstream);
 
-                newstream.Position = 0;
+                //newstream.Position = 0;
 
                 //Closing the workbook.
-                workbook.Close();
+               // workbook.Close();
 
                 //Dispose the Excel engine
-                excelEngine.Dispose();
+                //excelEngine.Dispose();
 
                 //Creates a FileContentResult object by using the file contents, content type, and file name.
-                return File(newstream, ContentType, fileoutput);
+                //return File(newstream, ContentType, fileoutput);
 
             }
 
 
 
-            return Ok(new {  });
+            //return Ok(new { 1, Credit });
+
+            //return new ObjectResult(new DataSourceResult { Data = new[] { Credit }, Total = 1 });
+
+            //return Json(new { foo = "bar", baz = "Blech" });
+
+            //double saldito=23.3;
+            //var resultado = new OkObjectResult(new { message = saldito, currentDate = DateTime.Now });
+            //return resultado;
+            return Ok(_JournalEntry);
+
 
         }
 
@@ -304,7 +401,7 @@ namespace ERPMVC.Controllers
         //    {
         //        if (formFile.Length > 0)
         //        {
-                    
+
 
         //            using (var stream = System.IO.File.Create(filePath))
         //            {
