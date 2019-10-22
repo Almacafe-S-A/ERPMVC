@@ -14,6 +14,10 @@ namespace ERPMVC.DTO
 
         public string token { get; set; }
 
+        public double Debit { get; set; }
+        public double Credit { get; set; }
+        public double Saldo { get; set; }
+
         public IEnumerable<IFormFile> files { get; set; }
     }
 }

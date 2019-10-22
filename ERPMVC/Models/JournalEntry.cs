@@ -64,7 +64,7 @@ namespace ERPMVC.Models
         [Display(Name = "Tipo de Asiento")]
         public string TypeOfAdjustmentName { get; set; }
         [Display(Name = "Estado")]
-        public Int64 EstadoId { get; set; }
+        public Int64? EstadoId { get; set; }
         [Display(Name = "Estado")]
         public string EstadoName { get; set; }
 
