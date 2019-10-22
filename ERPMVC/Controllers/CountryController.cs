@@ -139,12 +139,14 @@ namespace ERPMVC.Controllers
 
         [HttpPost]
         public async Task<ActionResult<Country>> SaveCountry([FromBody]CountryDTO _CountryP)
+       // public async Task<ActionResult<Country>> SaveCountry([FromBody]dynamic dto)
         {
-
+            //CountryDTO _CountryP = new CountryDTO();
             Country _Country = _CountryP;
             try
             {
-                // DTO_NumeracionSAR _liNumeracionSAR = new DTO_NumeracionSAR();
+               // _CountryP = JsonConvert.DeserializeObject<CountryDTO>(dto.ToString());
+            
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -159,12 +161,27 @@ namespace ERPMVC.Controllers
                 }
 
                 if (_Country == null) { _Country = new Models.Country(); }
-
+                if (_CountryP.SortName == null) { _CountryP.SortName = _CountryP.Name; }
                 if (_CountryP.Id == 0)
                 {
                     _Country.FechaCreacion = DateTime.Now;
                     _Country.Usuariocreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_CountryP);
+                    var insertresult = await Insert(_CountryP);                  
+
+                    try
+                    {
+                        var value = (insertresult.Result as ObjectResult).Value;
+                        Country resultado = ((Country)(value));
+                        if (resultado.Id <= 0)
+                        {
+                            return await Task.Run(() => BadRequest($"Ocurrio un error"));
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        throw ex;
+                    }
+                  
                 }
                 else
                 {
@@ -188,7 +205,7 @@ namespace ERPMVC.Controllers
         // POST: Country/Insert
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public async Task<ActionResult> Insert(Country _CountryP)
+        public async Task<ActionResult<Country>> Insert(Country _CountryP)
         {
             Country _Country = _CountryP;
             try
@@ -211,10 +228,11 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                return await Task.Run(()=> BadRequest($"Ocurrio un error{ex.Message}"));
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Country }, Total = 1 });
+            return Ok(_Country);
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _Country }, Total = 1 });
         }
 
         [HttpPut("{id}")]

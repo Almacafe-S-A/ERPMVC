@@ -189,6 +189,7 @@ namespace ERPMVC.Controllers
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> GetCertificadoDepositoByIdKardex([DataSourceRequest]DataSourceRequest request, [FromBody] CertificadoDepositoDTO _listado)
         {
+            ProformaInvoiceDTO _ProformaInvoiceDTO = new ProformaInvoiceDTO();
             CertificadoDeposito _CertificadoDeposito = new CertificadoDeposito();
             try
             {
@@ -214,23 +215,24 @@ namespace ERPMVC.Controllers
                     }
 
                     KardexDTO _kardexparam = new KardexDTO { Ids = _listado.CertificadosList , DocumentName = "CD" };
-                    List<KardexLine> _kardexsaldo = new List<KardexLine>();
+                  //  List<KardexLine> _kardexsaldo = new List<KardexLine>();
+                 
                     result = await _client.PostAsJsonAsync(baseadress + "api/Kardex/GetMovimientosCertificados", _kardexparam);
                     valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
-                       // _kardexsaldo = JsonConvert.DeserializeObject<List<KardexLine>>(valorrespuesta);
+                        _ProformaInvoiceDTO = JsonConvert.DeserializeObject<ProformaInvoiceDTO>(valorrespuesta);
                     }
 
                     // _CertificadoDeposito._CertificadoLine.Clear();
-                    foreach (var item in _CertificadoDeposito._CertificadoLine)
-                    {
-                        item.Quantity = (from c in _kardexsaldo
-                                         .Where(q => q.SubProducId == item.SubProductId)
-                                         select c.TotalCD
-                                         ).FirstOrDefault();
-                    }
+                    //foreach (var item in _CertificadoDeposito._CertificadoLine)
+                    //{
+                    //    item.Quantity = (from c in _kardexsaldo
+                    //                     .Where(q => q.SubProducId == item.SubProductId)
+                    //                     select c.TotalCD
+                    //                     ).FirstOrDefault();
+                    //}
                 }
 
 
@@ -241,7 +243,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_CertificadoDeposito);
+            return Json(_ProformaInvoiceDTO);
         }
 
 
@@ -496,6 +498,90 @@ namespace ERPMVC.Controllers
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _CertificadoDeposito }, Total = 1 });
         }
+
+
+        public async Task<ActionResult> Virtualization_ReadByCustomer([DataSourceRequest] DataSourceRequest request, Customer Customer)
+        {
+            var res = await GetCertificadosByCustomer(Customer);
+            return Json(res.ToDataSourceResult(request));
+        }
+
+        public async Task<ActionResult> Orders_ValueMapperByCustomer(Int64[] values)
+        {
+            var indices = new List<Int64>();
+
+            if (values != null && values.Any())
+            {
+                var index = 0;
+
+                foreach (var order in await GetCertificados(0))
+                {
+                    if (values.Contains(order.IdCD))
+                    {
+                        indices.Add(index);
+                    }
+
+                    index += 1;
+                }
+            }
+
+            return Json(indices);
+        }
+
+        private async Task<List<CertificadoDeposito>> GetCertificadosByCustomer(Customer Customer)
+        {
+            List<CertificadoDeposito> _CertificadoDeposito = new List<CertificadoDeposito>();
+
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoByCustomer/" + Customer.CustomerId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                     valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CertificadoDeposito = JsonConvert.DeserializeObject<List<CertificadoDeposito>>(valorrespuesta);
+                    _CertificadoDeposito = (from c in _CertificadoDeposito
+                                            .Where(q => q.CustomerId == Customer.CustomerId)
+                                            select new CertificadoDeposito
+                                            {
+                                                IdCD = c.IdCD,
+                                                CustomerName = "Id:" + c.IdCD + " || Número de certificado:" + c.NoCD + "  || Nombre:" + c.CustomerName + "|| Fecha:" + c.FechaCertificado + "|| Total:" + c.Total,
+                                                CustomerId = c.CustomerId,
+                                            }).ToList();
+
+                    //_client = new HttpClient();
+                   // _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    //var result = await _client.GetAsync(baseadress + "api/EndososCertificados/GetCertificadoDeposito");
+                    //valorrespuesta = "";
+                    //if (result.IsSuccessStatusCode)
+                    //{
+                    //    List<Int64> _endosos = 
+
+                    //}
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return _CertificadoDeposito;
+        }
+
+
+
+
+
+
+
+
+
+
 
 
         public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request,Int64 CustomerId)

@@ -6,10 +6,8 @@
 
     completedorderlinemant = function (xhr) {
 
-        $('#myModalSalesOrderLine').find(':input').not('#SalesOrderId :submit').val('0');
-        $('#TaxCode').val('0');
-        $('#TaxCode').data("kendoDropDownList").value('0');
-        $('#TaxCode').data("kendoDropDownList").value(0);
+        $('#myModalSalesOrderLine').find(':input').not('#SalesOrderId :submit').val('0');              
+        $('#TaxId').data("kendoDropDownList").value(0);
         $('#UnitOfMeasureId').data("kendoDropDownList").value('0');
         $('#SubProductId').data("kendoDropDownList").value(0);
         $('#TotalLine').data("kendoNumericTextBox").value(0);      
@@ -29,42 +27,49 @@
     function CalcularTotalDocumento() {
         var freight = $("#Freight").val()===""?0:$("#Freight").val();
 
-        var displayedData = $("#gridProformaInvoiceDetail").data().kendoGrid.dataSource.view();
+        var displayedData = $("#gridProformaInvoiceDetail").data().kendoGrid.dataSource.data();
         var total = 0, totaldescuento = 0, totalimpuesto = 0,totalimpuesto18=0, totalmonto = 0;
         var TotalExento = 0, TotalExonerado = 0, TotalGravado = 0,TotalGravado18=0;
 
-        $(displayedData).each(function (index, element) {
-            var t = JSON.parse(JSON.stringify(element));
+        debugger;
 
-            total = total + t["Total"];
-            totaldescuento = totaldescuento  + t["DiscountAmount"];
-            totalmonto = totalmonto + t["Amount"];
 
-            if (t["TaxCode"] == "1" ) {
-                TotalGravado = TotalGravado + (t["Total"] - t["TaxAmount"]);
-                totalimpuesto = totalimpuesto + t["TaxAmount"];
+       //$(displayedData).each(function (index, element) {
+        for (var i = 0; i < displayedData.length; i++) {
+          
+            //var t = JSON.parse(JSON.stringify(element));
+
+            total = total + displayedData[i].Total;
+            totaldescuento = totaldescuento + displayedData[i].DiscountAmount;
+            totalmonto = totalmonto + displayedData[i].Amount;
+
+            if (displayedData[i].TaxCode == "I.S.V" ) {
+                TotalGravado = TotalGravado + (displayedData[i].Total - displayedData[i].TaxAmount);
+                totalimpuesto = totalimpuesto + displayedData[i].TaxAmount;
             }
 
-            if (t["TaxCode"] == "3") {
-                TotalGravado18 = TotalGravado18 + (t["Total"] - t["TaxAmount"]);
-                totalimpuesto18 = totalimpuesto18 + t["TaxAmount"];
+            if (displayedData[i].TaxCode == "I.V.A") {
+                TotalGravado18 = TotalGravado18 + (displayedData[i].Total -TaxAmount);
+                totalimpuesto18 = totalimpuesto18 + displayedData[i].TaxAmount;
             }
 
-             if (t["TaxCode"] == "4") {
-                 TotalExento = TotalExento + t["Total"];
+            if (displayedData[i].TaxCode == "EXE") {
+                TotalExento = TotalExento + displayedData[i].Total;
             }
 
-            if (t["TaxCode"] == "5") {
-                TotalExonerado = TotalExonerado + t["Total"];
+            if (displayedData[i].TaxCode == "EXO") {
+                TotalExonerado = TotalExonerado + displayedData[i].Total;
             }
 
-        });
+        }
 
-        //console.log(TotalGravado); console.log(TotalGravado18); console.log(TotalExento);
-        //console.log(TotalExonerado); console.log(totalimpuesto18); console.log(totalimpuesto); console.log(Number(freight));
+        debugger;
+        console.log(Number(TotalGravado)); console.log(Number(TotalGravado18)); console.log(Number(TotalExento));
+        console.log(Number(TotalExonerado)); console.log(Number(totalimpuesto18)); console.log(Number(totalimpuesto));
+        console.log(Number(freight));
         var sumatotal = Number(TotalGravado) + Number(TotalGravado18) + Number(TotalExento) + Number(TotalExonerado) + Number(totalimpuesto18) + Number(totalimpuesto) + Number(freight);
-        setearvalor('Amount', total);
 
+        setearvalor('Amount', total);
         setearvalor('TotalExento', TotalExento);
         setearvalor('TotalExonerado', TotalExonerado);
         setearvalor('TotalGravado', TotalGravado);
@@ -77,7 +82,7 @@
         setearvalor('Total', sumatotal);
 
 
-        if ($("#cbxBuscarCertificadosDeposito").val() !== '') {
+        @*if ($("#cbxBuscarCertificadosDeposito").val() !== '') {
           //  console.log($("#Price").data("kendoNumericTextBox").value());
             var dataObject = {
                 CertificadoDepositoId: $("#cbxBuscarCertificadosDeposito").val(),
@@ -105,7 +110,7 @@
                     alert(textStatus + ": " + XMLHttpRequest.responseText);
                 }
             });
-        }
+        }*@
 
     }
 
@@ -144,8 +149,8 @@
 
     function GetPercentage()
     {
-        if ($("#TaxCode").val() != null) {
-            var dataObject = { TaxId: $("#TaxCode").val() };
+        if ($("#TaxId").val() != null) {
+            var dataObject = { TaxId: $("#TaxId").val() };
             $.ajax({
                 url: '@Url.Action("GetTaxById","Tax")',
                 method: 'GET',
@@ -339,8 +344,8 @@
                                                     <input type="hidden" id="IdCD" asp-for="IdCD" />
                                                    <script>
                                                        debugger;
-                                                      // console.log($("#IdCD").val());
-                                                       if (Number($("#IdCD").val()) === 0) {
+                                                       console.log(Number($("#cbxBuscarCertificadosDeposito").length));
+                                                       if (Number($("#cbxBuscarCertificadosDeposito").length) === 0) {
                                                            $("#productcliente").remove();
                                                        }
                                                        else {
@@ -534,7 +539,8 @@
                                                 <div class="form-group">
                                                     <label asp-for="TaxCode" class="control-label" style="width:100%"></label>
 
-                                                    <kendo-dropdownlist name="TaxCode" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                    <kendo-dropdownlist name="TaxId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        for="TaxId"
                                                                         option-label="Seleccione el Impuestos"
                                                                         datatextfield="TaxCode"
                                                                         datavaluefield="TaxId"

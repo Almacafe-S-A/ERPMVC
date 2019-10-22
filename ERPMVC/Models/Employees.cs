@@ -115,6 +115,8 @@ namespace ERPMVC.Models
         public string Usuariomodificacion { get; set; }
         public DateTime? FechaCreacion { get; set; }
         public DateTime? FechaModificacion { get; set; }
+        public List<EmployeeSalary> _EmployeeSalary { get; set; } = new List<EmployeeSalary>();
+        
 
     }
 }

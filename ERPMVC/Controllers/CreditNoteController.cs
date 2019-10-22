@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using ERPMVC.DTO;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -33,26 +34,27 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwCreditNote(Int64 Id = 0)
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwCreditNote([FromBody]CreditNote _CreditNotep)
         {
-            CreditNote _CreditNote = new CreditNote();
+            CreditNoteDTO _CreditNote = new CreditNoteDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CreditNote/GetCreditNoteById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/CreditNote/GetCreditNoteById/" + _CreditNotep.CreditNoteId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CreditNote = JsonConvert.DeserializeObject<CreditNote>(valorrespuesta);
+                    _CreditNote = JsonConvert.DeserializeObject<CreditNoteDTO>(valorrespuesta);
 
                 }
 
                 if (_CreditNote == null)
                 {
-                    _CreditNote = new CreditNote();
+                    _CreditNote = new CreditNoteDTO();
                 }
             }
             catch (Exception ex)
@@ -232,7 +234,36 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _CreditNote }, Total = 1 });
         }
 
+        [HttpGet]
+        public async Task<ActionResult> SFCreditNoteFiscal(Int32 id)
+        {
+            try
+            {
+                CreditNoteDTO _creditnotedto = new CreditNoteDTO { CreditNoteId = id, };
+                return await Task.Run(() => View(_creditnotedto));
+            }
+            catch (Exception)
+            {
 
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+
+        }
+        [HttpGet]
+        public async Task<ActionResult> SFCreditNoteInterna(Int32 id)
+        {
+            try
+            {
+                CreditNoteDTO _creditnotedto = new CreditNoteDTO { CreditNoteId = id, };
+                return await Task.Run(() => View(_creditnotedto));
+            }
+            catch (Exception)
+            {
+
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+
+        }
 
 
 

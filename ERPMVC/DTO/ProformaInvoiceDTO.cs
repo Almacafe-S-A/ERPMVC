@@ -8,7 +8,11 @@ namespace ERPMVC.DTO
 {
     public class ProformaInvoiceDTO : ProformaInvoice
     {
+        public Kardex Kardex { get; set; } = new Kardex();
+
         public int editar { get; set; } = 1;
+
+        public Guid Identificador { get; set; }
     }
 
 

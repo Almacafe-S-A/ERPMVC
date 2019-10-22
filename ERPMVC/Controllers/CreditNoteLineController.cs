@@ -33,7 +33,8 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwCreditNoteLine(Int64 Id = 0)
+        [HttpPost("[action]")]
+        public async Task<ActionResult> pvwCreditNoteLine([FromBody]CreditNoteLine _CreditNoteLinep)
         {
             CreditNoteLine _CreditNoteLine = new CreditNoteLine();
             try
@@ -41,7 +42,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CreditNoteLine/GetCreditNoteLineById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/CreditNoteLine/GetCreditNoteLineById/" + _CreditNoteLinep.CreditNoteLineId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -63,8 +64,34 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_CreditNoteLine);
+            //return PartialView(_CreditNoteLine);
+            return PartialView("~/Views/CreditNote/pvwCreditNoteDetailMant.cshtml", _CreditNoteLine);
 
+        }
+
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<GoodsDeliveryAuthorizationLine>> SetLinesInSession([FromBody]CreditNoteLine _CreditNoteLine)
+        {
+
+            try
+            {
+
+                List<CreditNoteLine> _GoodsReceivedLine = new List<CreditNoteLine>();
+                _GoodsReceivedLine = JsonConvert.DeserializeObject<List<CreditNoteLine>>(HttpContext.Session.GetString("listadoproductosCreditNote"));
+
+                if (_GoodsReceivedLine == null) { _GoodsReceivedLine = new List<CreditNoteLine>(); }
+                _GoodsReceivedLine.Add(_CreditNoteLine);              
+                HttpContext.Session.SetString("listadoproductosCreditNote", JsonConvert.SerializeObject(_GoodsReceivedLine).ToString());
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return await Task.Run(() => Json(_CreditNoteLine));
         }
 
 
@@ -97,6 +124,114 @@ namespace ERPMVC.Controllers
 
 
             return _CreditNoteLine.ToDataSourceResult(request);
+
+        }
+
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetCreditNoteLineByCreditNoteId([DataSourceRequest]DataSourceRequest request, CreditNoteLine _CreditNoteLinep)
+        {
+            List<CreditNoteLine> __CreditNoteLineList = new List<CreditNoteLine>();
+            try
+            {
+                if (HttpContext.Session.Get("listadoproductosCreditNote") == null
+                   || HttpContext.Session.GetString("listadoproductosCreditNote") == "")
+                {
+                    if (_CreditNoteLinep.CreditNoteId > 0)
+                    {
+                        string serialzado = JsonConvert.SerializeObject(_CreditNoteLinep).ToString();
+                        HttpContext.Session.SetString("listadoproductosCreditNote", serialzado);
+                    }
+                }
+                else
+                {
+                    var result = HttpContext.Session.GetString("listadoproductosCreditNote");
+                    try
+                    {
+                        __CreditNoteLineList = JsonConvert.DeserializeObject<List<CreditNoteLine>>(HttpContext.Session.GetString("listadoproductosCreditNote"));
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                    }
+
+                }
+
+
+                if (_CreditNoteLinep.CreditNoteId > 0)
+                {
+
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/CreditNoteLine/GetCreditNoteLineByCreditNoteId/" + _CreditNoteLinep.CreditNoteId);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        __CreditNoteLineList = JsonConvert.DeserializeObject<List<CreditNoteLine>>(valorrespuesta);
+                        HttpContext.Session.SetString("listadoproductosCreditNote", JsonConvert.SerializeObject(__CreditNoteLineList).ToString());
+                    }
+                }
+                else
+                {
+
+                    List<CreditNoteLine> _existelinea = new List<CreditNoteLine>();
+                    if (HttpContext.Session.GetString("listadoproductosCreditNote") != "" && HttpContext.Session.GetString("listadoproductosCreditNote") != null)
+                    {
+                        __CreditNoteLineList = JsonConvert.DeserializeObject<List<CreditNoteLine>>(HttpContext.Session.GetString("listadoproductosCreditNote"));
+                        _existelinea = __CreditNoteLineList.Where(q => q.CreditNoteLineId == _CreditNoteLinep.CreditNoteLineId).ToList();
+                    }
+
+                    if (_CreditNoteLinep.CreditNoteLineId > 0 && _existelinea.Count == 0)
+                    {
+                        __CreditNoteLineList.Add(_CreditNoteLinep);
+                        HttpContext.Session.SetString("listadoproductosCreditNote", JsonConvert.SerializeObject(__CreditNoteLineList).ToString());
+                    }
+                    else
+                    {
+
+                        var obj = __CreditNoteLineList.FirstOrDefault(x => x.CreditNoteLineId == _CreditNoteLinep.CreditNoteLineId);
+                        if (obj != null)
+                        {
+                            obj.Description = _CreditNoteLinep.Description;
+                            obj.Price = _CreditNoteLinep.Price;
+                            obj.AccountId = _CreditNoteLinep.AccountId;
+                            obj.Quantity = _CreditNoteLinep.Quantity;
+                            obj.Amount = _CreditNoteLinep.Amount;
+                            obj.SubProductId = _CreditNoteLinep.SubProductId;
+                            obj.SubProductName = _CreditNoteLinep.SubProductName;
+                            obj.SubTotal = _CreditNoteLinep.SubTotal;
+                            obj.TaxAmount = _CreditNoteLinep.TaxAmount;
+                            obj.TaxId = _CreditNoteLinep.TaxId;
+                            obj.TaxCode = _CreditNoteLinep.TaxCode;
+                            obj.TaxPercentage = _CreditNoteLinep.TaxPercentage;
+                            obj.UnitOfMeasureId = _CreditNoteLinep.UnitOfMeasureId;
+                            obj.UnitOfMeasureName = _CreditNoteLinep.UnitOfMeasureName;
+                            obj.WareHouseId = _CreditNoteLinep.WareHouseId;
+                            obj.CostCenterId = _CreditNoteLinep.CostCenterId;
+                            obj.DiscountAmount = _CreditNoteLinep.DiscountAmount;
+                            obj.DiscountPercentage = _CreditNoteLinep.DiscountPercentage;
+                            obj.Total = _CreditNoteLinep.Total;
+
+                        }
+
+                        HttpContext.Session.SetString("listadoproductosCreditNote", JsonConvert.SerializeObject(__CreditNoteLineList).ToString());
+
+                    }
+                }
+
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return __CreditNoteLineList.ToDataSourceResult(request);
 
         }
 
@@ -203,7 +338,7 @@ namespace ERPMVC.Controllers
             //return new ObjectResult(new DataSourceResult { Data = new[] { _CreditNoteLine }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
+        [HttpDelete("CreditNoteLineId")]
         public async Task<ActionResult<CreditNoteLine>> Delete([FromBody]CreditNoteLine _CreditNoteLine)
         {
             try

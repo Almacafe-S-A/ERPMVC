@@ -38,6 +38,13 @@ namespace ERPMVC.Models
         [Display(Name = "Centro de costos")]
         public Int64 CostCenterId { get; set; }
 
+
+        [Display(Name = "Cuenta Contable")]
+        public Int64 AccountId { get; set; }
+
+        [Display(Name = "Cuenta Contable")]
+        public string AccountName { get; set; }
+
         [Display(Name = "Descripción")]
         public string Description { get; set; }
           [Display(Name = "Cantidad")]
@@ -54,6 +61,10 @@ namespace ERPMVC.Models
         public double SubTotal { get; set; }
          [Display(Name = "% Impuesto")]
         public double TaxPercentage { get; set; }
+
+        [Display(Name = "Código Impuesto")]
+        public Int64 TaxId { get; set; }
+
         [Display(Name = "Código Impuesto")]
         public string TaxCode { get; set; }
 

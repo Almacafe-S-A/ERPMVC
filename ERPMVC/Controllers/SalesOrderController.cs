@@ -750,9 +750,73 @@ namespace ERPMVC.Controllers
         }
 
 
+        public async Task<ActionResult> Virtualization_ReadByCustomer([DataSourceRequest] DataSourceRequest request, Customer _customer)
+        {
+            var res = await GetSalesOrderByCustomer(_customer);
+            return Json(res.ToDataSourceResult(request));
+        }
+
+        public async Task<ActionResult> Orders_ValueMapperByCustomer(Int64[] values,Customer customer)
+        {
+            var indices = new List<Int64>();
+
+            if (values != null && values.Any())
+            {
+                var index = 0;
+
+                foreach (var order in await GetSalesOrderByCustomer(customer))
+                {
+                    if (values.Contains(order.SalesOrderId))
+                    {
+                        indices.Add(index);
+                    }
+
+                    index += 1;
+                }
+            }
+
+            return Json(indices);
+        }
+
+        private async Task<List<SalesOrder>> GetSalesOrderByCustomer(Customer _customer)
+        {
+            List<SalesOrder> _SalesOrder = new List<SalesOrder>();
+
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/SalesOrder/GetSalesOrderByCustomerId/"+ _customer.CustomerId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _SalesOrder = JsonConvert.DeserializeObject<List<SalesOrder>>(valorrespuesta);
+                    _SalesOrder = (from c in _SalesOrder
+                                   .Where(q=>q.CustomerId == _customer.CustomerId)
+                                   select new SalesOrder
+                                   {
+                                       RTN = c.RTN,
+                                       SalesOrderId = c.SalesOrderId,
+                                       SalesOrderName = "Id:" + c.SalesOrderId + "|| Nombre:" + c.SalesOrderName + "|| Fecha:" + c.OrderDate + "|| Total:" + c.Total,
+                                       OrderDate = c.OrderDate,
+                                   }).ToList();
+
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            return _SalesOrder;
+        }
 
 
-        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request)
+
+
+        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request )
         {
             var res = await GetSalesOrder();
             return Json(res.ToDataSourceResult(request));

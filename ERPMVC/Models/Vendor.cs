@@ -30,7 +30,7 @@ namespace ERPMVC.Models
         [ForeignKey("CountryId")]
         public Country Country { get; set; }
         [Display(Name = "Categoria Proveedor")]
-        public Int64? IdEstadoVendorConfi { get; set; }
+        public Int64 IdEstadoVendorConfi { get; set; }
         [Display(Name = "Categoria Proveedor")]
         public string EstadoVendorConfi { get; set; }
 

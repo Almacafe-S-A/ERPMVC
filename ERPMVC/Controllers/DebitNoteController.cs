@@ -87,6 +87,9 @@ namespace ERPMVC.Controllers
                 if (_Invoice == null)
                 {
                     _Invoice = new DebitNoteDTO();
+                    _Invoice.OrderDate = DateTime.Now;
+                    _Invoice.DeliveryDate = DateTime.Now;
+                    _Invoice.ExpirationDate = DateTime.Now;
                 }
             }
             catch (Exception ex)
@@ -263,7 +266,22 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _DebitNote }, Total = 1 });
         }
 
-        
+        [HttpGet]
+        public async Task<ActionResult> SFDebitNote(Int32 id)
+        {
+            try
+            {
+                DebitNoteDTO _debitdto = new DebitNoteDTO { DebitNoteId = id, };
+                return await Task.Run(() => View(_debitdto));
+            }
+            catch (Exception)
+            {
+
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+
+        }
+
 
     }
 }

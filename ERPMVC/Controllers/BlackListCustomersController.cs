@@ -59,7 +59,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _BlackListCustomers = JsonConvert.DeserializeObject<List<BlackListCustomers>>(valorrespuesta);
-
+                    _BlackListCustomers = _BlackListCustomers.OrderByDescending(q => q.BlackListId).ToList();
                 }
 
 
@@ -90,6 +90,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _BlackListCustomers = JsonConvert.DeserializeObject<List<BlackListCustomers>>(valorrespuesta);
+                    _BlackListCustomers = _BlackListCustomers.OrderByDescending(q => q.BlackListId).ToList();
                 }
 
             }

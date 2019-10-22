@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
-using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using ERPMVC.DTO;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -19,34 +19,42 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class CheckAccountController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public CheckAccountController(ILogger<EmployeesController> logger, IOptions<MyConfig> config)
+        public CheckAccountController(ILogger<CheckAccountController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
         }
-        public ActionResult Index()
+
+        public IActionResult Index()
         {
             return View();
         }
-        [HttpGet("[action]")]
-        public async Task<JsonResult> GetCheckAccount([DataSourceRequest]DataSourceRequest request)
+
+        public async Task<ActionResult> pvwAddCheckAccount([FromBody]CheckAccountDTO _sarpara)
         {
-            List<CheckAccount> _CheckAccount = new List<CheckAccount>();
+            CheckAccountDTO _CheckAccount = new CheckAccountDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CheckAccount/GetCheckAccount");
+                var result = await _client.GetAsync(baseadress + "api/CheckAccount/GetCheckAccountById/" + _sarpara.CheckAccountId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CheckAccount = JsonConvert.DeserializeObject<List<CheckAccount>>(valorrespuesta);
+                    _CheckAccount = JsonConvert.DeserializeObject<CheckAccountDTO>(valorrespuesta);
+
+                }
+
+                if (_CheckAccount == null)
+                {
+                    _CheckAccount = new CheckAccountDTO { FechaIngreso = DateTime.Now};
                 }
             }
             catch (Exception ex)
@@ -54,14 +62,21 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-            return Json(_CheckAccount.ToDataSourceResult(request));
+
+
+
+            return PartialView(_CheckAccount);
+
         }
-        [HttpGet]
-        public async Task<JsonResult> Get([DataSourceRequest]DataSourceRequest request)
+
+
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetCheckAccount([DataSourceRequest]DataSourceRequest request)
         {
             List<CheckAccount> _CheckAccount = new List<CheckAccount>();
             try
             {
+
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -71,99 +86,104 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CheckAccount = JsonConvert.DeserializeObject<List<CheckAccount>>(valorrespuesta);
+
                 }
+
+
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
+
+
+            return _CheckAccount.ToDataSourceResult(request);
+
+        }
+
+        [HttpGet("[controller]/[action]")]
+        public async Task<JsonResult> GetJson([DataSourceRequest]DataSourceRequest request)
+        {
+            List<CheckAccount> _CheckAccount = new List<CheckAccount>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CheckAccount/GetCheckAccount");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CheckAccount = JsonConvert.DeserializeObject<List<CheckAccount>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
             return Json(_CheckAccount.ToDataSourceResult(request));
+
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult> CheckAccount([FromBody]CheckAccount _CheckAccountP)
+        public async Task<ActionResult<CheckAccount>> SaveCheckAccount([FromBody]CheckAccountDTO _CheckAccountS)
         {
-            CheckAccount _CheckAccount = new CheckAccount();
+            CheckAccount _CheckAccount = _CheckAccountS;
             try
             {
+                CheckAccount _listCheckAccount = new CheckAccount();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "/api/CheckAccount/GetCheckAccountById/" + _CheckAccountP.CheckAccountId);
+                var result = await _client.GetAsync(baseadress + "api/CheckAccount/GetCheckAccountById/" + _CheckAccount.CheckAccountId);
                 string valorrespuesta = "";
+                _CheckAccount.FechaModificacion = DateTime.Now;
+                _CheckAccount.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
+
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CheckAccount = JsonConvert.DeserializeObject<CheckAccount>(valorrespuesta);
                 }
-                if (_CheckAccount == null)
+
+                if (_CheckAccount == null) { _CheckAccount = new Models.CheckAccount(); }
+
+                if (_CheckAccountS.CheckAccountId == 0)
                 {
-                    _CheckAccount = new CheckAccount();
+                    _CheckAccountS.FechaCreacion = DateTime.Now;
+                    _CheckAccountS.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_CheckAccountS);
                 }
+                else
+                {
+                    _CheckAccountS.UsuarioCreacion = _CheckAccount.UsuarioCreacion;
+                    _CheckAccountS.FechaCreacion = _CheckAccount.FechaCreacion;
+                    var updateresult = await Update(_CheckAccount.CheckAccountId, _CheckAccountS);
+                }
+
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-            return PartialView(_CheckAccount);
+
+            return Json(_CheckAccountS);
         }
 
-        public async Task<ActionResult<CheckAccount>> SaveCheckAccount([FromBody]CheckAccountDTO _CheckAccountP)
-        {
-
-            CheckAccount _CheckAccount = _CheckAccountP;
-            if (_CheckAccountP != null)
-            {
-                try
-                {
-                    CheckAccount _listCheckAccount = new CheckAccount();
-                    string baseadress = config.Value.urlbase;
-                    HttpClient _client = new HttpClient();
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/CheckAccount/GetCheckAccountById/" + _CheckAccount.CheckAccountId);
-                    string valorrespuesta = "";
-                    if (result.IsSuccessStatusCode)
-                    {
-
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _CheckAccount = JsonConvert.DeserializeObject<CheckAccountDTO>(valorrespuesta);
-                    }
-
-                    if (_CheckAccount == null) { _CheckAccount = new Models.CheckAccount(); }
-
-                    if (_CheckAccount.CheckAccountId == 0)
-                    {
-                        _CheckAccount.FechaCreacion = DateTime.Now;
-                        _CheckAccount.FechaModificacion = DateTime.Now;
-                        _CheckAccount.UsuarioCreacion = HttpContext.Session.GetString("user");
-                        _CheckAccount.UsuarioModificacion = HttpContext.Session.GetString("user");
-                        var insertresult = await Insert(_CheckAccount);
-                    }
-                    else
-                    {
-                        _CheckAccountP.UsuarioCreacion = _CheckAccount.UsuarioCreacion;
-                        _CheckAccountP.FechaCreacion = _CheckAccount.FechaCreacion;
-                        var updateresult = await Update(_CheckAccount.CheckAccountId, _CheckAccountP);
-                    }
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                    throw ex;
-                }
-            }
-            else
-            {
-                return BadRequest("No llego correctamente el modelo!");
-            }
-            return Json(_CheckAccount);
-        }
-
+        // POST: CheckAccount/Insert
         [HttpPost]
-        //[ValidateAntiForgeryToken]
-        public async Task<ActionResult> Insert(CheckAccount _CheckAccount)
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult<CheckAccount>> Insert(CheckAccount _CheckAccount)
         {
             try
             {
@@ -172,8 +192,8 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 _CheckAccount.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _CheckAccount.FechaCreacion = DateTime.Now;
                 _CheckAccount.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _CheckAccount.FechaModificacion = DateTime.Now;
                 var result = await _client.PostAsJsonAsync(baseadress + "api/CheckAccount/Insert", _CheckAccount);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -188,49 +208,18 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _CheckAccount }, Total = 1 });
+            return Ok(_CheckAccount);
+            // return new ObjectResult(new DataSourceResult { Data = new[] { _CheckAccount }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult> pvwAddCheckAccount([FromBody]CheckAccountDTO _CheckAccountE)
-        {
-            CheckAccountDTO _CheckAccount = new CheckAccountDTO();
-            try
-            {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CheckAccount/GetCheckAccountById/" + _CheckAccountE.CheckAccountId);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CheckAccount = JsonConvert.DeserializeObject<CheckAccountDTO>(valorrespuesta);
-                }
-                if (_CheckAccount == null)
-                {
-                    _CheckAccount = new CheckAccountDTO();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-            return PartialView(_CheckAccount);
-        }
-
-        [HttpPut("CheckAccountId")]
-        public async Task<IActionResult> Update(Int64 CheckAccountId, CheckAccount _CheckAccount)
+        [HttpPut("{id}")]
+        public async Task<ActionResult<CheckAccount>> Update(Int64 id, CheckAccount _CheckAccount)
         {
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _CheckAccount.UsuarioModificacion = HttpContext.Session.GetString("user");
-                _CheckAccount.FechaModificacion = DateTime.Now;
 
                 var result = await _client.PutAsJsonAsync(baseadress + "api/CheckAccount/Update", _CheckAccount);
                 string valorrespuesta = "";
@@ -250,7 +239,7 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _CheckAccount }, Total = 1 });
         }
 
-        [HttpDelete("CheckAccountId")]
+        [HttpPost]
         public async Task<ActionResult<CheckAccount>> Delete(Int64 CheckAccountId, CheckAccount _CheckAccount)
         {
             try
@@ -273,7 +262,15 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error: {ex.Message}");
             }
+
+
+
             return new ObjectResult(new DataSourceResult { Data = new[] { _CheckAccount }, Total = 1 });
         }
+
+
+
+
+
     }
 }

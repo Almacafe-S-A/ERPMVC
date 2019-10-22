@@ -64,9 +64,36 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_InvoiceLine);
+            return PartialView("~/Views/Invoice/pvwInvoiceDetailMant.cshtml",_InvoiceLine);
 
         }
+
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<GoodsDeliveryAuthorizationLine>> SetLinesInSession([FromBody]InvoiceLine _InvoiceLine)
+        {
+
+            try
+            {
+
+                List<InvoiceLine> _InvoiceLinelist = new List<InvoiceLine>();
+                _InvoiceLinelist = JsonConvert.DeserializeObject<List<InvoiceLine>>(HttpContext.Session.GetString("listadoproductosinvoice"));
+
+                if (_InvoiceLinelist == null) { _InvoiceLinelist = new List<InvoiceLine>(); }
+                _InvoiceLinelist.Add(_InvoiceLine);
+              
+                HttpContext.Session.SetString("listadoproductosinvoice", JsonConvert.SerializeObject(_InvoiceLinelist).ToString());
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return await Task.Run(() => Json(_InvoiceLine));
+        }
+
 
 
         [HttpGet("[action]")]
@@ -144,6 +171,7 @@ namespace ERPMVC.Controllers
                             obj.SubProductName = _InvoiceLinep.SubProductName;
                             obj.SubTotal = _InvoiceLinep.SubTotal;
                             obj.TaxAmount = _InvoiceLinep.TaxAmount;
+                            obj.TaxId = _InvoiceLinep.TaxId;
                             obj.TaxCode = _InvoiceLinep.TaxCode;
                             obj.TaxPercentage = _InvoiceLinep.TaxPercentage;
                             obj.UnitOfMeasureId = _InvoiceLinep.UnitOfMeasureId;
