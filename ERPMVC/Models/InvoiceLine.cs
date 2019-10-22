@@ -38,6 +38,13 @@ namespace ERPMVC.Models
         [Display(Name = "Centro de costos")]
         public Int64 CostCenterId { get; set; }
 
+
+        [Display(Name = "Cuenta Contable")]
+        public Int64 AccountId { get; set; }
+
+        [Display(Name = "Cuenta Contable")]
+        public string AccountName { get; set; }
+
         [Display(Name = "Descripción")]
         public string Description { get; set; }
           [Display(Name = "Cantidad")]
