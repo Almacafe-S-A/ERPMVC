@@ -139,12 +139,12 @@ namespace ERPMVC.Controllers
                     _Warehouse.FechaCreacion = DateTime.Now;
                     _Warehouse.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_Warehouse);
-                    var value = (insertresult.Result as ObjectResult).Value;
-                    Warehouse resultado = ((Warehouse)(value));
-                    if (resultado.BranchId <= 0)
-                    {
-                        return await Task.Run(() => BadRequest($"No se guardo la bodega."));
-                    }
+                    //var value = (insertresult.Result as ObjectResult).Value;
+                    //Warehouse resultado = ((Warehouse)(value));
+                    //if (resultado.BranchId <= 0)
+                    //{
+                    //    return await Task.Run(() => BadRequest($"No se guardo la bodega."));
+                    //}
                 }
                 else
                 {
