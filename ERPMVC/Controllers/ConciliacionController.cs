@@ -220,7 +220,7 @@ namespace ERPMVC.Controllers
             if (files != null)
             {
 
-                var resultadoProcesoConciliacion = await ProcesoConciliacion(files, FechaInicio, FechaFinal);
+                List<ConciliacionDTO> resultadoProcesoConciliacion = await ProcesoConciliacion(files, FechaInicio, FechaFinal);
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -245,7 +245,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        private async Task<IActionResult> ProcesoConciliacion(List<IFormFile> files,string FechaInicio,string FechaFinal)
+        private async Task<List<ConciliacionDTO>> ProcesoConciliacion(List<IFormFile> files,string FechaInicio,string FechaFinal)
         {
             List<string> fileInfo = new List<string>();
             List<ConciliacionDTO> _JournalEntry = new List<ConciliacionDTO>();
@@ -387,7 +387,7 @@ namespace ERPMVC.Controllers
             //double saldito=23.3;
             //var resultado = new OkObjectResult(new { message = saldito, currentDate = DateTime.Now });
             //return resultado;
-            return Ok(_JournalEntry);
+            return _JournalEntry;
 
 
         }
