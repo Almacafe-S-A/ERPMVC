@@ -1,0 +1,175 @@
+﻿@model ERPMVC.DTO.FixedAssetGroupDTO
+
+@{ Layout = null;
+	var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+   // {"required","Valor requerido" }
+};
+	var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<script>
+    function customFunction(input) {
+
+        if (input.attr('name') === "BranchId" && input.val() === "0") {
+            return false;
+        }
+    }
+
+     //$('#btnprueba').val("");
+</script>
+
+<div id="ModalFixedAssetGroup" class="modal fade" role="dialog">
+	<!-- Modal content -->
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">Grupo de Activos</h4>
+			</div>
+			<div class="modal-body">
+				<div class="row" id="validation">
+					<div class="col-lg-12">
+						<div class="card">
+							<div class="card-body">
+								<form id="frmFixedAssetGroup" kendo-validator="true"
+									  data-ajax="true"
+										data-ajax-method="post"
+										data-ajax-begin="SaveFixedAssetGroup"
+										class="validation-wizard wizard-circle">
+									<div class="form-body">
+										<h3 class="card-title">Grupo de Activos</h3>
+										<hr />
+										<div class="row">
+											<div class="col-md-4">
+												<div class="form-group">
+													<label asp-for="FixedAssetGroupId" class="control-label" style="min-width:100%"></label>
+													<input type="text" asp-for="FixedAssetGroupId" name="FixedAssetGroupId" class="form-control"
+														   disabled="disabled" style="width:100%" />
+													<span asp-validation-for="FixedAssetGroupId" class="text-danger"></span>
+												</div>
+											</div>
+
+											<div class="col-md-4">
+												<div class="form-group">
+													<label asp-for="FixedAssetGroupName" class="control-label" style="min-width:100%"></label>
+													<input type="text" asp-for="FixedAssetGroupName" name="FixedAssetGroupName" class="form-control"
+														   autocomplete="off" style="width:100%" />
+													<span asp-validation-for="FixedAssetGroupName" class="text-danger"></span>
+												</div>
+											</div>
+
+											<div class="col-md-4">
+												<div class="form-group">
+													<label asp-for="FixedAssetGroupDescription" class="control-label" style="min-width:100%"></label>
+													<input type="text" asp-for="FixedAssetGroupDescription" name="FixedAssetGroupDescription" class="form-control"
+														   autocomplete="off" style="width:100%" />
+													<span asp-validation-for="FixedAssetGroupDescription" class="text-danger"></span>
+												</div>
+											</div>
+										</div>
+
+										<div class="row">
+											<div class="col-md-4">
+												<div class="form-group">
+													<label asp-for="FixedGroupCode" class="control-label" style="min-width:100%"></label>
+													<input type="text" asp-for="FixedGroupCode" name="FixedAssetGroupDescription" class="form-control"
+														   autocomplete="off" style="width:100%" />
+													<span asp-validation-for="FixedGroupCode" class="text-danger"></span>
+												</div>
+											</div>
+											<div class="col-md-4">
+												<div class="form-group">
+													<label asp-for="IdEstado" class="control-label">Estado</label>
+													<kendo-dropdownlist name="IdEstado"
+																		for="@Model.IdEstado"
+																		filter="Kendo.Mvc.UI.FilterType.Contains"
+																		option-label="Seleccionar Estado"
+																		datatextfield="NombreEstado"
+																		datavaluefield="IdEstado"
+																		style="width: 100%;">
+														<datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+															<transport>
+																<read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+															</transport>
+														</datasource>
+													</kendo-dropdownlist>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="row">
+										<div class="col-md-12">
+											<button id="btnFixedAssetGroup" class="form-control btn-miboton" type="submit">Guardar</button>
+										</div>
+									</div>
+								</form>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<script>
+	function SaveFixedAssetGroup() {
+		var notification = $("#notification").data("kendoNotification");
+		$("#btnFixedAssetGroup").hide();
+		$("#btnFixedAssetGroup").prop("disabled", true);
+		var displayedData = $("#gridFixedAssetGroup").data().kendoGrid.dataSource.view();
+
+		var dataObject =
+		{
+			'FixedAssetGroupId': $("#FixedAssetGroupId").val() === "" ? "0" : $("#FixedAssetGroupId").val(),
+			'FixedAssetGroupName': $("#FixedAssetGroupName").val(),
+			'FixedAssetGroupDescription': $("#FixedAssetGroupDescription").val(),
+			'FixedGroupCode': $("#FixedGroupCode").val(),
+			'IdEstado': $("#IdEstado").val(),
+			'Estado': $("#IdEstado").data("kendoDropDownList").text(),
+		};
+
+		
+		var validator = $("#frmFixedAssetGroup").data("kendoValidator");
+		var status = $(".status");
+
+		if (validator.validate()) {
+			$.ajax({
+				url: '@Url.Action("SaveFixedAssetGroup", "FixedAssetGroup")',
+				method: 'POST',
+				dataType: 'json',
+				contentType: 'application/json',
+				async: false,
+				data: JSON.stringify(dataObject),
+				success: function (data) {
+					$.toast({
+						heading: 'Satisfactorio',
+						text: 'Datos guardados correctamente.',
+						position: 'top-right',
+						oaderBg: '#ff6849',
+						icon: 'success',
+						hideAfter: 30000,
+						stack: 6
+					});
+					RefrescarGrid();
+
+					$('#ModalFixedAssetGroup').modal('hide');
+				},
+				error: function (XMLHttpRequest, textStatus, errorThrown) {
+					notification.show({
+						title: "Validación",
+						message: textStatus + ": " + XMLHttpRequest.responseText
+					}, "error");
+				}
+			});
+		} else {
+			notification.show({
+				title: "Validación",
+				message: "Ingrese todos los datos en el formulario!"
+			}, "error");
+		}		
+
+		$("#btnFixedAssetGroup").show();
+		$("#btnFixedAssetGroup").prop("disabled", false);
+	}
+</script>
