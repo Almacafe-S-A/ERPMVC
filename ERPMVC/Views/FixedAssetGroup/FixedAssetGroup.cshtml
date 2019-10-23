@@ -1,0 +1,141 @@
+﻿@using Kendo.Mvc.UI
+@{
+	ViewData["Title"] = "FixedAssetGroup";
+}
+
+<script>
+	function onsave(e) {
+		//   console.log(new Date(e.model.FechaRecepcion).toISOString());
+		// e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+	}
+
+
+	function AddFixedAssetGroup() {
+		$('#ModalFixedAssetGroup').find(':input').not(':submit').val('');
+		$('#ModalFixedAssetGroup').modal('show');
+		$('#FixedAssetGroupId').val('0');
+	}
+
+	function EditFixedAssetGroup(e) {
+		e.preventDefault();
+		var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+		var dataObject = {
+			FixedAssetGroupId: dataItem.FixedAssetGroupId,
+			editar: 0
+		};
+
+		$.ajax({
+			url: '@Url.Action("pvwAddFixedAssetGroup", "FixedAssetGroup")',
+			method: 'POST',
+			datatype: "json",
+			contentType: 'application/json',
+			async: false,
+			data: JSON.stringify(dataObject),
+			success: function (result) {
+				$("#numFixedAssetGroup").html('');
+				$("#numFixedAssetGroup").html(result);
+				$("#ModalFixedAssetGroup").modal('show');
+			},
+			error: function (xhr, status, error) {
+				var errorMessage = xhr.status + ': ' + xhr.statusText
+				alert('Error - ' + errorMessage);
+			}
+		});
+	}
+
+	function RefrescarGrid() {
+		var grid = $("#gridFixedAssetGroup").getKendoGrid();
+		grid.dataSource.read();
+	}
+
+
+</script>
+
+
+<h3 class="text-themecolor">Grupos de Activos Fijos</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.FixedAssetGroup>
+		()
+		.Name("gridFixedAssetGroup")
+
+		.Columns(columns =>
+		{
+			columns.Command(command =>
+			{
+				command.Custom("Editar").Click("EditFixedAssetGroup");
+				command.Destroy().Text("Eliminar");
+			}).Width(160);
+			columns.Bound(p => p.FixedAssetGroupId).Width(100);
+			columns.Bound(p => p.FixedAssetGroupName).Width(100).Title("Grupo");
+			columns.Bound(p => p.FixedAssetGroupDescription).Width(100).Title("Descripción");
+			columns.Bound(p => p.FixedGroupCode).Width(100).Title("Código de Grupo");
+			columns.Bound(p => p.Estado).Width(100).Title("Estado");
+		})
+
+		.Filterable
+		(f => f.Operators(o => o.ForString(s => s
+												.Clear()
+												.Contains("Contiene")
+												.DoesNotContain("No contiene")
+												.EndsWith("Termina con")
+												.IsEqualTo("Es igual a")
+												.IsNull("Es nulo")
+												.StartsWith("Inicia con"))
+												.ForNumber(n => n
+												.Clear()
+												.IsEqualTo("Es igual a")
+												.IsGreaterThan("Es mayor que")
+												.IsNull("Es nulo")
+												.IsLessThanOrEqualTo("Es menor o igual que")
+												.IsGreaterThanOrEqualTo("Es mayor o iguak que"))
+												.ForDate(d => d
+																.Clear()
+																.IsEqualTo("Es igual a")
+																.IsGreaterThan("Es mayor que")
+																.IsLessThan("Es menor que")
+																.IsLessThanOrEqualTo("Es menor o igual que")
+																.IsGreaterThanOrEqualTo("Es mayor o igual que")
+																.IsNotEqualTo("No es igual que") )
+									)
+		)
+		.ToolBar(tools =>
+		{
+			tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+			.HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddFixedAssetGroup()" });
+			tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+			tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+		})
+		.Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+		.Sortable()
+		.Pageable()
+		.Filterable()
+		.Scrollable()
+		.Pdf(pdf => pdf.FileName("GrupoActivosFijosReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_" +
+		DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" +
+		DateTime.Now.Second + ".pdf")
+		.ProxyURL(Url.Action("Export", "Home")).AllPages())
+		.Excel(excel => excel.FileName("GrupoActivosFijosReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+		+ DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+		.ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+		.DataSource(ds => ds
+			.WebApi()
+			.ServerOperation(true)
+			.Model(m =>
+			{
+				m.Id(p => p.FixedAssetGroupId);
+				m.Field(p => p.FixedAssetGroupId).Editable(false);
+			})
+			.Events(e => e.Error("error_handler"))
+			.Read(r => r.Action("Get", "FixedAssetGroup"))
+			.Create(c => c.Action("Insert", "FixedAssetGroup").Type(HttpVerbs.Post))
+			.Update(u => u.Action("Update", "FixedAssetGroup").Type(HttpVerbs.Post))
+			.Destroy(destroy => destroy.Action("Delete", "FixedAssetGroup", new { FixedAssetGroupId = "{0}" }).Type(HttpVerbs.Delete))
+		)
+		.Events(e =>
+		{ e.Save("onsave");
+		})
+	)
+
+	<div id="numFixedAssetGroup">
+		@await Html.PartialAsync("pvwAddFixedAssetGroup", new ERPMVC.DTO.FixedAssetGroupDTO { FixedAssetGroupId = 0 })
+	</div>

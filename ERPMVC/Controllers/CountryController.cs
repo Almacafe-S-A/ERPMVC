@@ -166,11 +166,10 @@ namespace ERPMVC.Controllers
                 {
                     _Country.FechaCreacion = DateTime.Now;
                     _Country.Usuariocreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_CountryP);                  
-
+                    var insertresult = await Insert(_CountryP);
+                    var value = (insertresult.Result as ObjectResult).Value;
                     try
-                    {
-                        var value = (insertresult.Result as ObjectResult).Value;
+                    {                       
                         Country resultado = ((Country)(value));
                         if (resultado.Id <= 0)
                         {
@@ -179,7 +178,9 @@ namespace ERPMVC.Controllers
                     }
                     catch (Exception ex)
                     {
-                        throw ex;
+                        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                        _logger.LogError($"Ocurrio un error desde metodo que va al api: {value.ToString()}");
+                        return await Task.Run(() => BadRequest($"Ocurrio un error{value.ToString()}"));
                     }
                   
                 }
