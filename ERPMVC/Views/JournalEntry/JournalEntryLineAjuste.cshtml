@@ -41,39 +41,45 @@
                 $("#TotalDebito").val(Number($("#TotalDebito").val()) + Number(e.response.Data[i].Debit));
                 $("#TotalDebit").val(Number($("#TotalDebit").val()) + Number(e.response.Data[i].Debit));
                 $("#TotalCredit").val(Number($("#TotalCredit").val()) + Number(e.response.Data[i].Credit));
-                var idcostos = (e.response.Data[i].CostCenterId);
-                var idcuenta = (e.response.Data[i].AccountId);
-                var debito = (e.response.Data[i].Debit);
-                var credito = (e.response.Data[i].Credit);
+                //var idcostos = (e.response.Data[i].CostCenterId);
+                //var idcuenta = (e.response.Data[i].AccountId);
+                //var debito = (e.response.Data[i].Debit);
+                //var credito = (e.response.Data[i].Credit);
             }
-           
-                    
-            $("#Credito").change(function () {
+                               
+            $("#Credito").on("change", function () {
+                var displayedData = $("#gridNumeracionJournalEntryLine").data().kendoGrid.dataSource.view();
                 var cuenta = $("#Cuenta").val();
                 var costo = $("#CostCenter").val();
-                debugger;
-                if (Number(cuenta) == Number(idcuenta)) {
-                    if (Number(costo) == Number(idcostos)) {
-                        if (Number(credito) > 0) {
-                            alert("Ya se agrego un crédito para este centro de costos en está cuenta")
-                            $("#Credito").val("");
-                        }
-                    }                  
-                }
+                for (i = 0; i < displayedData.length; i++) {
+                    if (Number(displayedData[i].AccountId) == Number(cuenta)) {
+                        if (Number(displayedData[i].CostCenterId) == Number(costo)) {
+                            if (Number(displayedData[i].Credit) > 0) {
+                                alert("Ya se agrego un crédito para este centro de costos en está cuenta");
+                                $("#Credito").val("");
+                                return;                                     
+                            }  
+                        }  
+                    }
+                };
             });
 
-            $("#Debito").change(function () { 
+
+            $("#Debito").on("change", function () {
+                var displayedData = $("#gridNumeracionJournalEntryLine").data().kendoGrid.dataSource.view();
                 var cuenta = $("#Cuenta").val();
                 var costo = $("#CostCenter").val();
-                debugger;
-                if (Number(cuenta) == Number(idcuenta)) {
-                    if (Number(costo) == Number(idcostos)) {
-                        if (Number(debito) > 0) {
-                            alert("Ya se agrego un débito para este centro de costos en está cuenta")
-                            $("#Debito").val("");
+                for (i = 0; i < displayedData.length; i++) {
+                    if (Number(displayedData[i].AccountId) == Number(cuenta)) {
+                        if (Number(displayedData[i].CostCenterId) == Number(costo)) {
+                            if (Number(displayedData[i].Debit) > 0) {
+                                alert("Ya se agrego un débito para este centro de costos en está cuenta")
+                                $("#Debito").val("");
+                                return;
+                            }
                         }
-                    }                   
-                }
+                    }
+                };
             });
         }
     }
@@ -242,11 +248,27 @@
 
 <script>
     $("#Debito").change(function () {
-        this.value = parseFloat(this.value).toFixed(4);
+        var debito = $("#Debito").val();
+        var credito = $("#Credito").val();
+        this.value = parseFloat(this.value).toFixed(2);
+        if (Number(credito) && Number(debito) > 0) {
+            alert("No se puede ingresar débito y crédito al mismo tiempo.");
+            $("#Credito").val("");
+            $("#Debito").val("");
+        }
+
     });
     $("#Credito").change(function () {
-        this.value = parseFloat(this.value).toFixed(4);
+        var debito = $("#Debito").val();
+        var credito = $("#Credito").val();
+        this.value = parseFloat(this.value).toFixed(2);
+        if (Number(credito) && Number(debito) > 0) {
+            alert("No se puede ingresar débito y crédito al mismo tiempo.");
+            $("#Credito").val("");
+            $("#Debito").val("");
+        }
     });
+
     function AgregarLinea() {   
         var displayedData = $("#gridNumeracionJournalEntryLine").data().kendoGrid.dataSource.data();
         var id = -999999;
@@ -283,6 +305,8 @@
     }
 
     function RefrescarGridLinea() {
+        var debito = $("#Debito").val();
+        var credito = $("#Credito").val();    
         var des = $("#Descripcion").val();
         var cuenta = $("#Cuenta").val();
         var costo = $("#CostCenter").val();
@@ -297,6 +321,9 @@
         else if (costo == "") {
             $('#CostCenter').after(' <span id="Span3" class="text-danger">Campos requeridos</span>');
             return false;
+        }
+        else if (credito == 0 && debito == 0) {
+            alert("Debe de ingresar un débito o crédito.");
         }
         else {
             var grid = $("#gridNumeracionJournalEntryLine").getKendoGrid();
@@ -350,8 +377,8 @@
                                                                                                     columns.Bound(p => p.AccountId).Width(200);
                                                                                                     columns.Bound(p => p.AccountName).Width(200);
                                                                                                     //   columns.Bound(p => p.DrCr).Title("Tipo ").Width(250);
-                                                                                                    columns.Bound(p => p.Credit).Width(200);
-                                                                                                    columns.Bound(p => p.Debit).Width(200);
+                                                                                                    columns.Bound(p => p.Credit).Width(200).Format("{0:N2}");
+                                                                                                    columns.Bound(p => p.Debit).Width(200).Format("{0:N2}");
                                                                                                     columns.Bound(p => p.CostCenterId).Width(200);
                                                                                                     columns.Bound(p => p.CostCenterName).Width(200);
                                                                                                     //  columns.Bound(p => p.DebitME).Width(200);
@@ -479,13 +506,13 @@
     <div class="col-md-2">
         <div class="form-group">
             <label id="Totallbl" class=" control-label" style="width:100%">Total Crédito:</label>
-            <input id="TotalCredito" type="number" class="form-control" style="min-width:80%" />
+            <input id="TotalCredito" type="number" class="form-control" style="min-width:80%" readonly />
         </div>
     </div>
     <div class="col-md-2">
         <div class="form-group">
             <label id="Totallbl" class=" control-label" style="width:100%">Total Débito:</label>
-            <input id="TotalDebito" type="number" class="form-control" style="min-width:80%" />
+            <input id="TotalDebito" type="number" class="form-control" style="min-width:80%" readonly/>
         </div>
     </div>
 </div>
