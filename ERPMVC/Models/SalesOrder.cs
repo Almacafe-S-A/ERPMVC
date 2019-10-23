@@ -55,7 +55,7 @@ namespace ERPMVC.Models
         [Display(Name ="Cliente")]
         public string CustomerName { get; set; }
 
-        [Display(Name = "Fecha de orden")]
+        [Display(Name = "Fecha de cotización")]
         public DateTime OrderDate { get; set; }
 
         [Display(Name = "Fecha de entrega")]

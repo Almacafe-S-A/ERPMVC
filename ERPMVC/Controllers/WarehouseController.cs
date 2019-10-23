@@ -106,37 +106,64 @@ namespace ERPMVC.Controllers
 
         public async Task<ActionResult<Warehouse>> SaveWarehouse([FromBody]Warehouse _Warehouse)
         {
-
+            Warehouse _listWarehouse = _Warehouse;
             try
-            {
-                Warehouse _listWarehouse = new Warehouse();
+            {              
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouseById/" + _Warehouse.WarehouseId);
-                string valorrespuesta = "";
-                _Warehouse.FechaModificacion = DateTime.Now;
-                _Warehouse.UsuarioModificacion = HttpContext.Session.GetString("user");
-                if (result.IsSuccessStatusCode)
-                {
 
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listWarehouse = JsonConvert.DeserializeObject<Warehouse>(valorrespuesta);
-                }
-
-                if (_listWarehouse == null)
+                if (_listWarehouse.WarehouseId == 0)
                 {
-                    _listWarehouse = new Warehouse();
+                    var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouseByName/" + _Warehouse.WarehouseName);
+                    string valorrespuesta = "";
+                    _Warehouse.FechaModificacion = DateTime.Now;
+                    _Warehouse.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _listWarehouse = JsonConvert.DeserializeObject<Warehouse>(valorrespuesta);
+                        if (_listWarehouse == null)
+                        {
+                            _listWarehouse = new Warehouse();
+                        }
+                        if (_listWarehouse.WarehouseId > 0)
+                        {
+                            return await Task.Run(() => BadRequest($"Ya existe una bodega registrada con ese nombre."));
+                        }
+                    }
                 }
+               
                 if (_listWarehouse.WarehouseId == 0)
                 {
                     _Warehouse.FechaCreacion = DateTime.Now;
                     _Warehouse.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_Warehouse);
+                    //var value = (insertresult.Result as ObjectResult).Value;
+                    //Warehouse resultado = ((Warehouse)(value));
+                    //if (resultado.BranchId <= 0)
+                    //{
+                    //    return await Task.Run(() => BadRequest($"No se guardo la bodega."));
+                    //}
                 }
                 else
                 {
-                    var updateresult = await Update(_Warehouse.WarehouseId, _Warehouse);
+                    var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouseById/" + _Warehouse.WarehouseId);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _listWarehouse = JsonConvert.DeserializeObject<Warehouse>(valorrespuesta);
+                        if (_listWarehouse == null)
+                        {
+                            _listWarehouse = new Warehouse();
+                        }
+                    }
+                    _Warehouse.UsuarioCreacion = _Warehouse.UsuarioCreacion;
+                    _Warehouse.FechaCreacion = _Warehouse.FechaCreacion;
+                    _Warehouse.FechaModificacion = DateTime.Now;
+                    _Warehouse.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var updateresult = await Update(_Warehouse.WarehouseId, _Warehouse);                
                 }
 
             }
@@ -188,7 +215,8 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-
+                _Warehouse.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _Warehouse.FechaModificacion = DateTime.Now;
                 var result = await _client.PutAsJsonAsync(baseadress + "api/Warehouse/Update", _Warehouse);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -203,8 +231,8 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Warehouse }, Total = 1 });
+            return Ok(_Warehouse);
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _Warehouse }, Total = 1 });
         }
 
         [HttpPost("[action]")]
