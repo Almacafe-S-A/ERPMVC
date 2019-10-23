@@ -313,22 +313,21 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _JournalEntry = JsonConvert.DeserializeObject<List<ConciliacionDTO>>(valorrespuesta);
-
+                    _JournalEntry[0].Saldo = Convert.ToDouble(worksheet.Range["D8"].Number);
                 }
 
 
-                foreach (var item in _JournalEntry)
-                {
-                    //double verificaicon = item.TotalCredit;
+                //foreach (var item in _JournalEntry)
+                //{
+                //    //double verificaicon = item.TotalCredit;
 
-                    //string verificacion = item;
-                    Debit = item.Debit;
-                    Credit = item.Credit;
-                    //Console.WriteLine("Amount is {0} and type is {1}");
-                    Saldo = Convert.ToDouble(worksheet.Range["D8"].Number);
+                //    //string verificacion = item;
+                //    Debit = item.Debit;
+                //    Credit = item.Credit;
+                //    //Console.WriteLine("Amount is {0} and type is {1}");
+                //    Saldo = Convert.ToDouble(worksheet.Range["D8"].Number);
 
-                }
-
+                //}
 
                // Saldo = Convert.ToDouble(worksheet.Range["D"+(rowCount - 1).ToString()].Number);
 
