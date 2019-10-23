@@ -21,7 +21,8 @@ namespace ERPMVC.Models
         public string Correo { get; set; }
         [Required]
         [Display(Name = "Puesto")]
-        public long? Puesto { get; set; }
+        [ForeignKey("PuestoId")]
+        public Puesto Puesto { get; set; }
         [Required]
         [Display(Name = "Fecha de Nacimiento")]
         public DateTime? FechaNacimiento { get; set; }
