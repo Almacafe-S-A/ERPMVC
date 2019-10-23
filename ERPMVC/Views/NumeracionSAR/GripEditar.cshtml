@@ -15,6 +15,41 @@
         }
 
     }
+
+    function setvaluescai() {
+        var dataObject = {
+            'IdCAI': $("#IdCAI").val()
+        };
+
+        $.ajax({
+            url: '@Url.Action("GetCAIById", "CAI")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (data) {
+                console.log(data);
+                $("#FechaLimite").getKendoDateTimePicker().value(data.FechaLimiteEmision);                                                                       
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                //  $("#btngenerarfactura").show();
+                notification.show({
+                    title: "Validación",
+                    message: textStatus + ": " + XMLHttpRequest.responseText
+                }, "error");
+
+            }
+            });
+
+    }
+
+    function setCantidadOtorgada() {
+        var NoInicio = $("#NoInicio").val() == "" ? 0 : Number($("#NoInicio").val());
+        var NoFin = $("#NoFin").val() == "" ? 0 : Number($("#NoFin").val());
+        $("#CantidadOtorgada").val(NoFin - NoInicio);
+    }
 </script>
 
 
@@ -56,7 +91,7 @@
                                                                 .Filter(Kendo.Mvc.UI.FilterType.Contains)
                                                                 .HtmlAttributes(new { @style = "width:100%" })
                                                                 .OptionLabel("Seleccione un CAI")
-                                                                //.Events(e=>e.Select("rolf"))
+                                                                .Events(e=>e.Change("setvaluescai"))
                                                                 //.AutoBind(true)
                                                                 .Enable(true)
                                                                 .DataSource(Source => Source.Read(r => r.Action("GetBOX", "CAI")))
@@ -66,7 +101,7 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="NoInicio" class="control-label" style="width:100%">No. Inicio</label>
-                                                    <input type="text" asp-for="NoInicio" name="NoInicio" class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <input type="text" asp-for="NoInicio" onchange="setCantidadOtorgada();" name="NoInicio" class="form-control" autocomplete="off" style="min-width:100%" />
                                                     <span asp-validation-for="NoInicio" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -76,7 +111,7 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="NoFin" class="control-label" style="width:100%">No. Fin</label>
-                                                    <input type="text" asp-for="NoFin" name="NoFin" class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <input type="text" asp-for="NoFin" onchange="setCantidadOtorgada();" name="NoFin" class="form-control" autocomplete="off" style="min-width:100%" />
                                                     <span asp-validation-for="NoFin" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -85,6 +120,7 @@
                                                 <div class="form-group">
                                                     <label asp-for="FechaLimite" class="control-label" style="width:100%">Fecha Limite</label>
                                                     <kendo-datetimepicker name="FechaLimite"
+                                                                         format="dd/MM/yyyy"
                                                                           style="width: 100%;"
                                                                           data-val-required="La fecha es requerida"
                                                                           value="Model.FechaLimite"></kendo-datetimepicker>
