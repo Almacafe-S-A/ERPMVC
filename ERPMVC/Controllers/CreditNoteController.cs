@@ -55,6 +55,9 @@ namespace ERPMVC.Controllers
                 if (_CreditNote == null)
                 {
                     _CreditNote = new CreditNoteDTO();
+                    _CreditNote.OrderDate = DateTime.Now;
+                    _CreditNote.DeliveryDate = DateTime.Now;
+                    _CreditNote.ExpirationDate = DateTime.Now;
                 }
             }
             catch (Exception ex)
