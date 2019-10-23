@@ -87,7 +87,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _NumeracionSAR = JsonConvert.DeserializeObject<List<NumeracionSAR>>(valorrespuesta);
-
+                    _NumeracionSAR = _NumeracionSAR.OrderByDescending(q => q.IdNumeracion).ToList();
                 }
 
 
