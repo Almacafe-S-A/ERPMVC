@@ -131,7 +131,7 @@ namespace ERPMVC.Controllers
                     HttpClient _client = new HttpClient();
 
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/DebitNoteLine/GetDebitNoteLineByInvoiceId/" + _DebitNoteLinep.DebitNoteId);
+                    var result = await _client.GetAsync(baseadress + "api/DebitNoteLine/GetDebitNoteLineByDebitNoteId/" + _DebitNoteLinep.DebitNoteId);
                     string valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
