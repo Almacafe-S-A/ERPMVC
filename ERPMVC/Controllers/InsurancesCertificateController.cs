@@ -225,7 +225,7 @@ namespace ERPMVC.Controllers
                     // string baseadress = config.Value.urlbase;
                     HttpClient _client2 = new HttpClient();
                     _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var resultado = await _client.GetAsync(baseadress + "api/Accounting/GetInsurancesCertificateByBeginDate/" + _InsurancesCertificateP.BeginDateofInsurance);
+                    var resultado = await _client.GetAsync(baseadress + "api/Accounting/GetInsurancesCertificateByBeginDate/" + _InsurancesCertificateP);
                     string valorrespuesta2 = "";
 
                     if (resultado.IsSuccessStatusCode)
