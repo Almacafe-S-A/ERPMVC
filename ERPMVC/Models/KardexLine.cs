@@ -60,6 +60,9 @@ namespace ERPMVC.Models
         [Display(Name = "Unidad de medida")]
         public string UnitOfMeasureName { get; set; }
 
+        [Display(Name = "Saldo Anterior")]
+        public double SaldoAnterior { get; set; }
+
         [Display(Name = "Entrada")]
         public double QuantityEntry { get; set; }
 

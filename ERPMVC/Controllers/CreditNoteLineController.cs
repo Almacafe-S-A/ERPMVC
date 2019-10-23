@@ -196,6 +196,7 @@ namespace ERPMVC.Controllers
                         {
                             obj.Description = _CreditNoteLinep.Description;
                             obj.Price = _CreditNoteLinep.Price;
+                            obj.AccountId = _CreditNoteLinep.AccountId;
                             obj.Quantity = _CreditNoteLinep.Quantity;
                             obj.Amount = _CreditNoteLinep.Amount;
                             obj.SubProductId = _CreditNoteLinep.SubProductId;
@@ -337,7 +338,7 @@ namespace ERPMVC.Controllers
             //return new ObjectResult(new DataSourceResult { Data = new[] { _CreditNoteLine }, Total = 1 });
         }
 
-        [HttpDelete("BranchId")]
+        [HttpDelete("CreditNoteLineId")]
         public async Task<ActionResult<CreditNoteLine>> Delete([FromBody]CreditNoteLine _CreditNoteLine)
         {
             try

@@ -31,6 +31,12 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+
+        public ActionResult CierreContable()
+        {
+            return View();
+        }
+
         // GET: Purch
         public ActionResult Index()
         {

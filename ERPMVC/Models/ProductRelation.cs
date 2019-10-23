@@ -11,8 +11,10 @@ namespace ERPMVC.Models
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Int64 RelationProductId { get; set; }
+
+        [Display(Name = "Servicio")]
         public Int64 ProductId { get; set; }
-        [Display(Name = "Producto")]
+        [Display(Name = "Subservicio")]
         public Int64 SubProductId { get; set; }
 
         [Display(Name = "Estado")]

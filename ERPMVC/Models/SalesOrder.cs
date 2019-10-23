@@ -55,7 +55,7 @@ namespace ERPMVC.Models
         [Display(Name ="Cliente")]
         public string CustomerName { get; set; }
 
-        [Display(Name = "Fecha de orden")]
+        [Display(Name = "Fecha de cotización")]
         public DateTime OrderDate { get; set; }
 
         [Display(Name = "Fecha de entrega")]
@@ -74,16 +74,21 @@ namespace ERPMVC.Models
         public string CustomerRefNumber { get; set; }
         [Display(Name = "Tipo de ventas")]
         public int SalesTypeId { get; set; }
+
+        [Display(Name = "Observación/Comentario")]
         public string Remarks { get; set; }
 
-        [Display(Name = "Monto")]
+      
+        [Display(Name = "Valor cotizado sin desc y sin imp")]
         public double Amount { get; set; }
+
+        [Display(Name = "Sub Total")]
         public double SubTotal { get; set; }
 
         [Display(Name = "Descuento")]
         public double Discount { get; set; }
 
-        [Display(Name = "Impuesto")]
+        [Display(Name = "Impuesto 15%")]
         public double Tax { get; set; }
 
         [Display(Name = "Impuesto 18%")]
@@ -98,7 +103,7 @@ namespace ERPMVC.Models
         [Display(Name = "Total exonerado")]
         public double TotalExonerado { get; set; }
 
-        [Display(Name = "Total Gravado")]
+        [Display(Name = "Total Gravado 15%")]
         public double TotalGravado { get; set; }
 
         [Display(Name = "Total Gravado 18%")]

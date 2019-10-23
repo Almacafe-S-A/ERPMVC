@@ -22,7 +22,7 @@
     } 
 
     function AddCustomerCondition() {
-
+        var notification = $("#notification").data("kendoNotification");
         $("#CustomerId_CC").data("kendoDropDownList").dataSource.read();
 
         //seteardropdowns("ProductId_CC", $("#ProductId").val());
@@ -31,35 +31,42 @@
          //setearcombobox("ProductId_CC", $("#ProductId").val());       
          //$('#ConditionId_CC').val('0');
          //$('#ProductId').data("kendoDropDownList").value(0);
+        if ($("#IdEstado").val() == 8 || $("#IdEstado").val() == 0) {
+            var dataObject = {
+                Id: 0,
+                editar: 1
+            };
 
-          var dataObject = {
-            Id: 0,
-            editar: 1
-        };
+            $.ajax({
+                url: '@Url.Action("pvwCustomerConditions", "CustomerConditions")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#customerconditions").html('');
+                    $("#customerconditions").html(result);
 
-        $.ajax({
-            url: '@Url.Action("pvwCustomerConditions", "CustomerConditions")',
-            method: 'POST',
-            datatype: "json",
-            contentType: 'application/json',
-            async: false,
-            data: JSON.stringify(dataObject),
-            success: function (result) {
-                $("#customerconditions").html('');
-                $("#customerconditions").html(result);
+                    seteardropdowns("ProductId_CC", $("#ProductId").val());
+                    seteardropdowns("IdTipoDocumento", 12);
+                    seteardropdowns("CustomerId_CC", $("#CustomerId").val());
 
-                seteardropdowns("ProductId_CC", $("#ProductId").val());
-                seteardropdowns("IdTipoDocumento", 12);
-                seteardropdowns("CustomerId_CC", $("#CustomerId").val());
-
-                $('#myModalCustomerConditionsMant').modal('show');
-            },
-            error: function (XMLHttpRequest, textStatus, errorThrown) {
-                //alert(textStatus + ": " + XMLHttpRequest.responseText);
-                //console.log('RESULTADO', result);
-                console.log(textStatus + ": " + XMLHttpRequest.responseText)
-            }
-        });
+                    $('#myModalCustomerConditionsMant').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    //alert(textStatus + ": " + XMLHttpRequest.responseText);
+                    //console.log('RESULTADO', result);
+                    console.log(textStatus + ": " + XMLHttpRequest.responseText)
+                }
+            });
+        }
+        else {
+            notification.show({
+                title: "Validación",
+                message: "No puede agregar mas condiciones!"
+            }, "error");
+        }
 
         //$('#SubProductId').data("kendoDropDownList").value('0');      
         //$('#IdTipoDocumento').data("kendoDropDownList").value(0);
@@ -92,6 +99,10 @@
                 $("#customerconditions").html('');
                 $("#customerconditions").html(result);
 
+                if ($("#IdEstado").val() != 8 && $("#IdEstado").val() != 0) {
+                    $("#guardarcondicion").hide();
+                }
+
                 $('#myModalCustomerConditionsMant').modal('show');
             },
             error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -106,18 +117,19 @@
     function filterdatacc() {
         return {
             'DocumentId': $("#SalesOrderId").val(),
-            'IdTipoDocumento': 12
+            'IdTipoDocumento': 12, 
+            'SubProductId': $("#SubProductId").val() ,
         };
     }
 
 
     function dataBoundCustomerConditions(e) {
         $.each(this.dataSource.data(), function () {
-            console.log($("#IdEstado").val());
+           //console.log($("#IdEstado").val());
             if ($("#IdEstado").val() != 8 && $("#IdEstado").val() != 0) {
                 //  console.log(this.SalesOrderId);
                 $('[data-uid=' + this.uid + ']').find('.k-grid-delete').hide();
-
+               // $("#guardarcondicion").hide();
             }
             //if (Number(this.CustomerId) > 0) {
             //    $('[data-uid=' + this.uid + ']').find('.k-grid-CrearCliente').hide();
@@ -161,9 +173,9 @@
                                                     columns.Bound(p => p.CustomerConditionName).Width(140);
                                                     columns.Bound(p => p.Description).Width(140);
                                                     columns.Bound(p => p.LogicalCondition).Width(150);
-                                                    columns.Bound(p => p.ValueToEvaluate).Width(150);
-                                                    columns.Bound(p => p.ValueDecimal).Width(150);
-
+                                                    columns.Bound(p => p.ValueToEvaluate).Format("{0:n2}").Width(150);
+                                                    columns.Bound(p => p.ValueDecimal).Format("{0:n2}").Width(150);
+                                                    columns.Bound(p => p.SubProductId).Title("Sub servicio").Width(150);
                                                 })
                                                     .Filterable(f => f.Operators(o => o.ForString(s => s
                                               .Clear()
@@ -174,7 +186,6 @@
                                                      .IsNotEqualTo("No es igual a")
                                                      .IsNull("Es nulo")
                                                      .StartsWith("Inicia con")
-
 
                                                )
                                                .ForNumber(n => n
@@ -196,16 +207,16 @@
                                                .IsNotEqualTo("No es igual que")
                                                 )
                                              ))
-                                                              .ToolBar(tools =>
-                                                              {
-                                                                  //tools.Create();
-                                                                  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                                  .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerCondition();" });
-                                                                  tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                                                  tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                                .ToolBar(tools =>
+                                                {
+                                                    //tools.Create();
+                                                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                    .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerCondition();" });
+                                                    tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                    tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
 
 
-                                                              })
+                                                })
                                                 .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
                                                 .Sortable()
                                                 .Pageable()

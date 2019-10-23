@@ -35,7 +35,7 @@ namespace ERPMVC.Models
         [Display(Name = "Tasa de Mercadería")]
         [Column(TypeName = "decimal(18,4)")]
         public decimal RateofProduct { get; set; }
-        [Display(Name = "Tasa de Mercadería")]
+        [Display(Name = "Cantidad de Meses")]
         [Column(TypeName = "decimal(18,4)")]
         public decimal QtyofMonths { get; set; }
 
@@ -105,6 +105,7 @@ namespace ERPMVC.Models
         [Required]
         [Display(Name = "Fecha de Modificacion")]
         public DateTime ModifiedDate { get; set; }
+        public List<InsurancesCertificateLine> _InsurancesCertificateLine { get; set; } = new List<InsurancesCertificateLine>();
 
 
     }

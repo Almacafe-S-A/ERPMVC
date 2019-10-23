@@ -188,11 +188,20 @@ namespace ERPMVC.Controllers
 
                 if (_InsurancesCertificateP.InsurancesCertificateId == 0)
                 {
+                    /*
+                      string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                _InsurancesCertificateDTO.CreatedUser = HttpContext.Session.GetString("user");
+                _InsurancesCertificateDTO.ModifiedUser = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/InsurancesCertificate/Insert", _InsurancesCertificateDTO);
+                string valorrespuesta = "";
+               */
                     InsurancesCertificateDTO _InsurancesCertificateDuplicated = new InsurancesCertificateDTO();
-                    // string baseadress = config.Value.urlbase;
+                    baseadress = config.Value.urlbase;
                     HttpClient _client2 = new HttpClient();
                     _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var resultado = await _client.GetAsync(baseadress + "api/Accounting/GetInsurancesCertificateByBeginDate/" + _InsurancesCertificateP.BeginDateofInsurance);
+                    var resultado = await _client2.PostAsJsonAsync(baseadress + "api/Accounting/GetInsurancesCertificateByBeginDate" , _InsurancesCertificateP);
                     string valorrespuesta2 = "";
 
                     if (resultado.IsSuccessStatusCode)
@@ -225,7 +234,7 @@ namespace ERPMVC.Controllers
                     // string baseadress = config.Value.urlbase;
                     HttpClient _client2 = new HttpClient();
                     _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var resultado = await _client.GetAsync(baseadress + "api/Accounting/GetInsurancesCertificateByBeginDate/" + _InsurancesCertificateP.BeginDateofInsurance);
+                    var resultado = await _client2.PostAsJsonAsync(baseadress + "api/InsurancesCertificate/GetInsurancesCertificateByBeginDate", _InsurancesCertificateP);
                     string valorrespuesta2 = "";
 
                     if (resultado.IsSuccessStatusCode)
@@ -236,10 +245,13 @@ namespace ERPMVC.Controllers
                     }
                     if (_InsurancesCertificateDuplicated != null)
                     {
-                        string error = await result.Content.ReadAsStringAsync();
+                        if (_InsurancesCertificateDuplicated.InsurancesCertificateId != _InsurancesCertificateP.InsurancesCertificateId)
+                        {
+                            string error = await result.Content.ReadAsStringAsync();
+                            return await Task.Run(() => BadRequest($"La poliza ya esta ingresado..."));
+                        }
 
-                        return await Task.Run(() => BadRequest($"El codigo de cuenta ya esta ingresado..."));
-
+                        
                         /*    return this.Json(new DataSourceResult
                             {
                                 Errors = $"Ocurrio un error:{error} El codigo de cuenta ya esta ingresado."

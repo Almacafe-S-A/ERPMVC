@@ -394,9 +394,9 @@ namespace ERPMVC.Controllers
                                     .From(_config.Value.emailsender)
                                      .To("freddy.chinchilla@bi-dss.com")
                                      .To("freddys18@yahoo.com")
-                                    // .To("cumplimiento@almacafehn.com")                                    
-                                     .To("informatica@almacafehn.com")                                 
-                                     .To("gerencia@almacafehn.com")
+                                     .To("cumplimiento@almacafehn.com")
+                                     .CC("gerencia@almacafehn.com")
+                                     //.To("informatica@almacafehn.com")                                
                                      //.To("mperez@almacafehn.com")
                                      //  .To("jr@almacafehn.com")
                                      .Subject($"La cotización {resultado.SalesOrderId} fue {_SalesOrder.Estado} " +
