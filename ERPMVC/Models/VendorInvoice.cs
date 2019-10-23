@@ -63,11 +63,14 @@ namespace ERPMVC.Models
         [Display(Name = "RTN")]
         public string RTN { get; set; }
 
+        [DataType(DataType.PhoneNumber)]
         [Display(Name = "Telefono")]
         public string Tefono { get; set; }
 
         [Display(Name = "Correo")]
         [EmailAddress]
+        [RegularExpression(@"\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*", ErrorMessage = "Correo invalido")]
+        [DataType(DataType.EmailAddress)]
         public string Correo { get; set; }
 
         [Display(Name = "Direccion")]
