@@ -479,7 +479,7 @@ namespace ERPMVC.Controllers
 
 
 
-        [HttpPost]
+        [HttpDelete]
         public async Task<ActionResult<Employees>> Delete(Int64 Id, Employees _EmployeesP)
         {
             Employees _Employees = _EmployeesP;

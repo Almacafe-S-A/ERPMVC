@@ -69,7 +69,7 @@ namespace ERPMVC.Models
         public long? IdCurrency { get; set; }
         [Required]
         [Display(Name = "Código de Usuario")]
-        public Guid ApplicationUserId { get; set; }    
+        public string ApplicationUserId { get; set; }    
         [Display(Name = "Foto")]
         public string Foto { get; set; }
         [Required]
