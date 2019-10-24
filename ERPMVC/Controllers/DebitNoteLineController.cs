@@ -150,7 +150,7 @@ namespace ERPMVC.Controllers
                         _existelinea = __DebitNoteLineList.Where(q => q.ProductId == _DebitNoteLinep.ProductId).ToList();
                     }
 
-                    if (_DebitNoteLinep.ProductId > 0 && _existelinea.Count == 0)
+                    if (_DebitNoteLinep.ProductId > 0 && _existelinea.Count >= 0)
                     {
                         __DebitNoteLineList.Add(_DebitNoteLinep);
                         HttpContext.Session.SetString("listadoproductosdebitnote", JsonConvert.SerializeObject(__DebitNoteLineList).ToString());
