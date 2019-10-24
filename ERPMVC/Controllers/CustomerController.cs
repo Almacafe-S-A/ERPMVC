@@ -274,7 +274,7 @@ namespace ERPMVC.Controllers
                     _customer.Email = _so.Correo;
                     //_customer. = _so.SalesOrderName;
 
-
+                    string json = JsonConvert.SerializeObject(_customer);
                     var resultsalesorder = await Post(_customer);
                     var value = (resultsalesorder.Result as ObjectResult).Value;
                     _customer = ((Customer)(value));

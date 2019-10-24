@@ -1,0 +1,121 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "Concept";
+}
+
+
+<script>
+
+    function onsave(e) {
+     //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+       // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+    function AddConcept() {
+        $('#ModalConcept').find(':input').not(':submit').val('');
+        $('#ModalConcept').modal('show');
+        $("#ConceptId").val('0');
+    }
+
+
+</script>
+
+<h3 class="text-themecolor">Conceptos</h3>
+@(Html.Kendo().Grid<ERPMVC.Models.Concept>
+                            ()
+                            .Name("gridConcept")
+                            .Columns(columns =>
+                            {
+                                columns.Command(command =>
+                                {
+                                    //command.Custom("Ver detalles");
+                                    command.Custom("Editar");
+                                    command.Destroy().Text("Eliminar");
+                                }).Width(250);
+
+                                columns.Bound(p => p.ConceptId).Width(100);
+                                columns.Bound(p => p.ConceptName).Width(200);
+                                columns.Bound(p => p.TypeId).Width(150);
+                                columns.Bound(p => p.TypeName).Width(150);
+                                columns.Bound(p => p.Calculation).Width(150);
+                            })
+                                .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                       .Clear()
+                                                       .Contains("Contiene")
+                                                       .DoesNotContain("No contiene")
+                                                       .EndsWith("Termina con")
+                                                       .IsEqualTo("Es igual a")
+                                                       .IsNotEqualTo("No es igual a")
+                                                       .IsNull("Es nulo")
+                                                       .StartsWith("Inicia con")
+                                                 )
+                                                 .ForNumber(n => n
+                                                   .Clear()
+                                                   .IsEqualTo("Es igual a")
+                                                   .IsGreaterThan("Es mayor que")
+                                                   .IsLessThan("Es menor que")
+                                                   .IsNull("Es nulo")
+                                                   .IsLessThanOrEqualTo("Es menor o igual que")
+                                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                 )
+                                                 .ForDate(d => d
+                                                 .Clear()
+                                                 .IsEqualTo("Es igual que")
+                                                 .IsGreaterThan("Es mayor que")
+                                                 .IsLessThan("Es menor que")
+                                                 .IsLessThanOrEqualTo("Es menor o igual que")
+                                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                 .IsNotEqualTo("No es igual que")
+                                                  )
+                                               ))
+                            .ToolBar(tools =>
+                            {
+                                // tools.Create();
+                                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus") .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddConcept()" });
+                                tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                                tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+                            })
+                            .Editable(e => e.Mode(GridEditMode.PopUp))
+                            .Sortable()
+                            .Pageable()
+                            .Filterable()
+                            .Scrollable()
+                            //.Pdf(pdf => pdf.FileName("BankReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                            //+ DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                            //.ProxyURL(Url.Action("Export", "Home")).AllPages())
+                            //    .Excel(excel => excel.FileName("BankReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                            //+ DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                            //.ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                            .DataSource(dataSource =>
+                                dataSource
+                                .WebApi()
+
+                                .ServerOperation(true)
+                                .Model(model =>
+                                {
+                                    model.Id(p => p.ConceptId);
+                                    model.Field(p => p.ConceptName).Editable(false);
+                                    model.Field(p => p.TypeName).Editable(true);
+                                    model.Field(p => p.TypeId).Editable(false);
+                                    model.Field(p => p.Calculation).Editable(false);
+
+                                })
+                                .Events(events => events.Error("error_handler"))
+                                //.Read(read => read.Action("GetConcept", "Concept"))
+                                .Create(create => create.Action("Insert", "Bank"))
+                                .Update(update => update.Action("Update", "Bank").Type(HttpVerbs.Put))
+                                .Destroy(destroy => destroy.Action("Delete", "Bank").Type(HttpVerbs.Post))
+
+                            )
+                            .Events(e =>
+                            {
+                                e.Save("onsave");
+
+                            })
+)
+
+<div id="NumConcept">
+    @await Html.PartialAsync("pvwAddConcept", new ERPMVC.DTO.ConceptDTO{ ConceptId = 0 })
+</div>
