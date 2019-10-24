@@ -201,7 +201,7 @@ namespace ERPMVC.Controllers
                     baseadress = config.Value.urlbase;
                     HttpClient _client2 = new HttpClient();
                     _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var resultado = await _client2.PostAsJsonAsync(baseadress + "api/Accounting/GetInsurancesCertificateByBeginDate" , _InsurancesCertificateP);
+                    var resultado = await _client2.PostAsJsonAsync(baseadress + "api/InsurancesCertificate/GetInsurancesCertificateByFecha", _InsurancesCertificateP);
                     string valorrespuesta2 = "";
 
                     if (resultado.IsSuccessStatusCode)
@@ -233,8 +233,11 @@ namespace ERPMVC.Controllers
                     InsurancesCertificateDTO _InsurancesCertificateDuplicated = new InsurancesCertificateDTO();
                     // string baseadress = config.Value.urlbase;
                     HttpClient _client2 = new HttpClient();
+                    _InsurancesCertificateP.CreatedUser = _InsurancesCertificate.CreatedUser;
+                    _InsurancesCertificateP.CreatedDate = _InsurancesCertificate.CreatedDate;
+
                     _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var resultado = await _client2.PostAsJsonAsync(baseadress + "api/InsurancesCertificate/GetInsurancesCertificateByBeginDate", _InsurancesCertificateP);
+                    var resultado = await _client2.PostAsJsonAsync(baseadress + "api/InsurancesCertificate/GetInsurancesCertificateByFecha", _InsurancesCertificateP);
                     string valorrespuesta2 = "";
 
                     if (resultado.IsSuccessStatusCode)
