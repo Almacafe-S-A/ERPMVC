@@ -523,7 +523,7 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _ProformaInvoice }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult<ProformaInvoice>> Delete([FromBody]ProformaInvoice _ProformaInvoice)
         {
@@ -552,6 +552,25 @@ namespace ERPMVC.Controllers
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _ProformaInvoice }, Total = 1 });
         }
+
+        [HttpGet]
+        public async Task<ActionResult> SFProformaInvoice(Int32 id)
+        {
+            try
+            {
+                ProformaInvoiceDTO _invoicedto = new ProformaInvoiceDTO { ProformaId = id, };
+                return await Task.Run(() => View(_invoicedto));
+            }
+            catch (Exception)
+            {
+
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+
+        }
+
+
+
 
 
 
