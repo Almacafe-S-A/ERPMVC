@@ -33,7 +33,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwDebitNoteLine(Int64 Id = 0)
+        public async Task<ActionResult> pvwDebitNoteLine([FromBody] DebitNoteLine _DebitNoteLinep)
         {
             DebitNoteLine _DebitNoteLine = new DebitNoteLine();
             try
@@ -41,7 +41,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/DebitNoteLine/GetDebitNoteLineById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/DebitNoteLine/GetDebitNoteLineById/" + _DebitNoteLinep.DebitNoteLineId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -61,9 +61,9 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
+            return PartialView("~/Views/DebitNote/pvwDebitNoteDetailMant.cshtml", _DebitNoteLine);
 
-
-            return PartialView(_DebitNoteLine);
+            //return PartialView(_DebitNoteLine);
 
         }
 
