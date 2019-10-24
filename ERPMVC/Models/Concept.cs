@@ -7,19 +7,27 @@ using System.Threading.Tasks;
 
 namespace ERPMVC.Models
 {
-    public class Payroll
+    public class Concept
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Display(Name = "Planilla")]
-        public long IdPlanilla { get; set; }
-        [Display(Name = "Nombre de planilla")]
-        public string NombrePlanilla { get; set; }
-        [Display(Name = "Descripción de planilla")]
-        public string DescripcionPlanilla { get; set; }
-        [Display(Name = "Estado")]
-        public Int64 IdEstado { get; set; }
-        [Display(Name = "Estado")]
-        public string Estado { get; set; }
+        [Display(Name = "Id ")]
+        public Int64 ConceptId { get; set; }
+
+        [Display(Name = "Concepto")]
+        public string ConceptName { get; set; }
+
+        [Display(Name = "Id Tipo de Concepto")]
+        public Int64 TypeId { get; set; }
+
+        [Display(Name = "Tipo de Concepto")]
+        public string TypeName { get; set; }
+
+        [Display(Name = "Valor del concepto")]
+        public double Value { get; set; }
+
+        [Display(Name = "Cálculo del concepto")]
+        public string Calculation { get; set; }
+
         [Display(Name = "Usuario de creación")]
         public string UsuarioCreacion { get; set; }
 
@@ -29,8 +37,7 @@ namespace ERPMVC.Models
         [Display(Name = "Fecha de creación")]
         public DateTime? FechaCreacion { get; set; }
 
-        [Display(Name = "Fecha de creación")]
+        [Display(Name = "Fecha de modificación")]
         public DateTime? FechaModificacion { get; set; }
-
     }
 }

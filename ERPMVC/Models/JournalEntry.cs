@@ -23,7 +23,7 @@ namespace ERPMVC.Models
         [Display(Name = "Tipo de Socio de negocios")]
         public int PartyTypeId { get; set; }
 
-        [Display(Name = "Tipo de Socio de negocios")]
+        [Display(Name = "Tipo Beneficiario")]
         public string PartyTypeName { get; set; }
 
         [Display(Name = "Id Documento")]
@@ -38,7 +38,7 @@ namespace ERPMVC.Models
         public DateTime Date { get; set; }
         [Display(Name = "Fecha de Transacción")]
         public DateTime DatePosted { get; set; }
-        [Display(Name = "Memo")]
+        [Display(Name = "Sinopsis")]
         public string Memo { get; set; }
         [Display(Name = "Número de referencia")]
         public string ReferenceNo { get; set; }
