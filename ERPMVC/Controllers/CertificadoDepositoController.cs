@@ -361,6 +361,23 @@ namespace ERPMVC.Controllers
                 // _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDepositoDTO>(dto.ToString());
                 if (_CertificadoDeposito != null)
                 {
+                    foreach (var item in _CertificadoDeposito._CertificadoLine)
+                    {
+                        if(item.Price==0)
+                        {
+                            return await Task.Run(() => BadRequest("Ingrese un precio valido!"));
+                        }
+                        else if (item.Quantity == 0)
+                        {
+                            return await Task.Run(() => BadRequest("Ingrese un precio valido!"));
+                        }
+                        else if (item.Price * item.Quantity != item.Amount)
+                        {
+                            return await Task.Run(() => BadRequest("El calculo de precio por cantidad no coincide!"));
+                        }
+                    }
+
+
                     CertificadoDeposito _listCertificadoDeposito = new CertificadoDeposito();
                     string baseadress = config.Value.urlbase;
                     HttpClient _client = new HttpClient();
