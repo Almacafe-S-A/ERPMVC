@@ -87,7 +87,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CertificadoDeposito = JsonConvert.DeserializeObject<CAI>(valorrespuesta);
-
+                   
                 }
 
                 if (_CertificadoDeposito == null)
@@ -123,7 +123,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _cais = JsonConvert.DeserializeObject<List<CAI>>(valorrespuesta);
-
+                    _cais = _cais.OrderByDescending(q => q.IdCAI).ToList();
                 }
 
 

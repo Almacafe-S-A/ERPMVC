@@ -41,7 +41,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwInsurancesCertificateLineDetailMant(int InsurancesCertificateLineId = 0)
+        public async Task<ActionResult> pvwInsurancesCertificateDetailMant(int InsurancesCertificateLineId = 0)
         {
             InsurancesCertificateLine _InsurancesCertificateLine = new InsurancesCertificateLine();
             try

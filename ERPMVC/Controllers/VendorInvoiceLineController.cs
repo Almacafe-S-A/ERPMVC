@@ -307,7 +307,7 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _InvoiceLine }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
+        [HttpDelete("VendorInvoiceLineId")]
         public async Task<ActionResult<VendorInvoiceLine>> Delete([FromBody]VendorInvoiceLine _InvoiceLine)
         {
             try

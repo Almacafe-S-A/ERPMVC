@@ -52,6 +52,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _clientes = JsonConvert.DeserializeObject<List<TiposDocumento>>(valorrespuesta);
+                    _clientes = _clientes.OrderByDescending(q => q.IdTipoDocumento).ToList();
                 }
 
             }
@@ -81,7 +82,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _clientes = JsonConvert.DeserializeObject<List<TiposDocumento>>(valorrespuesta);
-
+                    _clientes = _clientes.OrderByDescending(q => q.IdTipoDocumento).ToList();
                 }
 
 
