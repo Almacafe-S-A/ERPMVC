@@ -131,7 +131,7 @@ namespace ERPMVC.Controllers
                     _VendorDocument = JsonConvert.DeserializeObject<VendorDocument>(valorrespuesta);
 
                 }
-
+                
                 ViewBag.pathcontrato = _VendorDocument.Path;
             }
             catch (Exception ex)
