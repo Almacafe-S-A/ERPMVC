@@ -232,5 +232,35 @@ namespace ERPMVC.Controllers
             return await Task.Run(() => Json(_customers));
         }
 
+
+
+        [HttpDelete]
+        public async Task<ActionResult<ContactPerson>> Delete(Int64 Id, ContactPerson _ContactP)
+        {
+            ContactPerson _Contact = _ContactP;
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/ContactPerson/Delete", _Contact);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Contact = JsonConvert.DeserializeObject<ContactPerson>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+
+            return new ObjectResult(new DataSourceResult { Data = new[] { _Contact }, Total = 1 });
+        }
+
+
     }
 }

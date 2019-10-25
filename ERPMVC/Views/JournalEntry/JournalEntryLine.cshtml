@@ -24,7 +24,7 @@
     function OnRequestEnd_TopLinePriceGrid(e) {
         console.log(e.type);
 
-        if (e.type === "update" || e.type === "create" || e.type=="read") {
+        if (e.type === "update" || e.type === "create" || e.type == "read" ) {
            //var grid = $('#gridNumeracionJournalEntryLine').data('kendoGrid');
            // grid.dataSource.read();           
            // console.log(e);
@@ -34,6 +34,7 @@
             $("#TotalDebit").val(0);
             $("#TotalCredit").val(0);
             for (var i = 0; i < e.response.Data.length; i++) {
+                
                 $("#TotalCredito").val(Number( $("#TotalCredito").val())+Number(e.response.Data[i].Credit));
                 $("#TotalDebito").val(Number($("#TotalDebito").val()) + Number(e.response.Data[i].Debit));
                 $("#TotalDebit").val(Number($("#TotalDebit").val()) + Number(e.response.Data[i].Debit));
@@ -42,29 +43,40 @@
         }
     }
 
-    //$('#Cuenta').on("change", function () {
-    //    var displayedData = $("#gridNumeracionJournalEntryLine").data().kendoGrid.dataSource.view();
-    //    var cuenta = $("#Cuenta").val();
-    //    for (i = 0; i < displayedData.length; i++) {
-    //        if (Number(displayedData[i].AccountId) == Number(cuenta)) {   
-    //            return;   
-    //            alert("Esta cuenta ya fue agregada al detalle.");
-    //            $("#Cuenta").data("kendoDropDownList").value('');                         
-    //        }
-    //    };
-    //});
+    $("#Credito").on("change", function () {
+        var displayedData = $("#gridNumeracionJournalEntryLine").data().kendoGrid.dataSource.view();
+        var cuenta = $("#Cuenta").val();
+        var costo = $("#CostCenter").val();
+        for (i = 0; i < displayedData.length; i++) {
+            if (Number(displayedData[i].AccountId) == Number(cuenta)) {
+                if (Number(displayedData[i].CostCenterId) == Number(costo)) {
+                    if (Number(displayedData[i].Credit) > 0 || Number(displayedData[i].Debit) > 0) {
+                        alert("Ya se agrego un crédito para este centro de costos y está cuenta");
+                        $("#Credito").val("");
+                        return;
+                    }
+                }
+            }
+        };
+    });
 
-    //$('#CostCenter').on("change", function () {
-    //    var prueba = $("#CostCenter").val();
-    //    var displayedData = $("#gridNumeracionJournalEntryLine").data().kendoGrid.dataSource.view();
-    //    for (i = 0; i < displayedData.length; i++) {
-    //        if (Number(displayedData[i].CostCenterId) == Number(prueba)) {
-    //            return;
-    //            alert("Esta centro de Costos ya fue agregado al detalle.");
-    //            $("#CostCenter").data("kendoDropDownList").value('');              
-    //        }
-    //    };
-    //});
+
+    $("#Debito").on("change", function () {
+        var displayedData = $("#gridNumeracionJournalEntryLine").data().kendoGrid.dataSource.view();
+        var cuenta = $("#Cuenta").val();
+        var costo = $("#CostCenter").val();
+        for (i = 0; i < displayedData.length; i++) {
+            if (Number(displayedData[i].AccountId) == Number(cuenta)) {
+                if (Number(displayedData[i].CostCenterId) == Number(costo)) {
+                    if (Number(displayedData[i].Credit) > 0 || Number(displayedData[i].Debit) > 0) {
+                        alert("Ya se agrego un débito para este centro de costos y está cuenta")
+                        $("#Debito").val("");
+                        return;
+                    }
+                }
+            }
+        };
+    });
 
     function customFunction(input) {
 
@@ -213,7 +225,11 @@
                         <label id="JournalEntryLinelbl" class=" control-label" style="width:100%" hidden>Id Journal Entry Line</label>
                         <input id="JournalEntryLineId" type="text" class="form-control" style="min-width:100%" value="0" hidden />
                         <label class=" control-label" style="width:100%"></label>
-                        <button type="button" id="btnAgregarLinea" class="form-control btn-miboton" onclick="RefrescarGridLinea();">Agregar Linea</button>
+                        @if (Model.JournalEntryId == 0)
+                        {
+                            <button type="button" id="btnAgregarLinea" class="form-control btn-miboton" onclick="RefrescarGridLinea();">Agregar Linea</button>
+                        }
+
                     </div>
                 </div>
             </div>
@@ -229,66 +245,28 @@
 </div>
 
 
-<script>  
+<script>    
+    $("#Debito").change(function () {
+        var debito = $("#Debito").val();
+        var credito = $("#Credito").val();
+        this.value = parseFloat(this.value).toFixed(2);
+        if (Number(credito) && Number(debito) > 0) {
+            alert("No se puede ingresar débito y crédito al mismo tiempo.");
+            $("#Credito").val("");
+            $("#Debito").val("");
+        }
 
-    $("#Credito").on("change", function () {
-        var displayedData = $("#gridNumeracionJournalEntryLine").data().kendoGrid.dataSource.view();
-        var cuenta = $("#Cuenta").val();
-        var costo = $("#CostCenter").val();
-        for (i = 0; i < displayedData.length; i++) {
-            if (Number(displayedData[i].AccountId) == Number(cuenta)) {
-                if (Number(displayedData[i].CostCenterId) == Number(costo)) {
-                    if (Number(displayedData[i].Credit) > 0) {
-                        alert("Ya se agrego un crédito para este centro de costos en está cuenta");
-                        $("#Credito").val("");
-                        return;
-                    }
-                }
-            }
-        };
     });
-
-    $("#Debito").on("change", function () {
-        var displayedData = $("#gridNumeracionJournalEntryLine").data().kendoGrid.dataSource.view();
-        var cuenta = $("#Cuenta").val();
-        var costo = $("#CostCenter").val();
-        for (i = 0; i < displayedData.length; i++) {
-            if (Number(displayedData[i].AccountId) == Number(cuenta)) {
-                if (Number(displayedData[i].CostCenterId) == Number(costo)) {
-                    if (Number(displayedData[i].Debit) > 0) {
-                        alert("Ya se agrego un débito para este centro de costos en está cuenta")
-                        $("#Debito").val("");
-                        return;
-                    }
-                }
-            }
-        };
+    $("#Credito").change(function () {
+        var debito = $("#Debito").val();
+        var credito = $("#Credito").val();
+        this.value = parseFloat(this.value).toFixed(2);
+        if (Number(credito) && Number(debito) > 0) {
+            alert("No se puede ingresar débito y crédito al mismo tiempo.");
+            $("#Credito").val("");
+            $("#Debito").val("");
+        }
     });
-
-    //$("#Debito").change(function () {
-    //    var debito = $("#Debito").val();
-    //    var credito = $("#Credito").val();
-    //    this.value = parseFloat(this.value).toFixed(2);
-    //    if (Number(credito) && Number(debito) > 0) {
-    //        alert("No se puede ingresar débito y crédito al mismo tiempo.");
-    //        $("#Credito").val("");
-    //        $("#Debito").val("");          
-    //    }
-    //    else if (Number(credito) && Number(debito) == 0) {
-    //        alert("Debe de ingresar un débito o crédito.");
-    //    }
-        
-    //});
-    //$("#Credito").change(function () {
-    //    var debito = $("#Debito").val();
-    //    var credito = $("#Credito").val();
-    //    this.value = parseFloat(this.value).toFixed(2);
-    //    if (Number(credito) && Number(debito) > 0) {
-    //        alert("No se puede ingresar débito y crédito al mismo tiempo.");
-    //        $("#Credito").val("");
-    //        $("#Debito").val("");
-    //    }        
-    //});
     function AgregarLinea() {        
         debugger;
         var displayedData = $("#gridNumeracionJournalEntryLine").data().kendoGrid.dataSource.data();
@@ -331,11 +309,11 @@
         var des = $("#Descripcion").val();
         var cuenta = $("#Cuenta").val();
         var costo = $("#CostCenter").val();
-        if (des == "" ) {
-            $('#Descripcion').after(' <span id="Span2" class="text-danger">Campos requeridos</span>');                      
-            return false;
-        }
-        else if (cuenta == "") {
+        //if (des == "" ) {
+        //    $('#Descripcion').after(' <span id="Span2" class="text-danger">Campos requeridos</span>');                      
+        //    return false;
+        //}
+        if (cuenta == "") {
             $('#Cuenta').after(' <span id="Span" class="text-danger">Campos requeridos</span>');
             return false;
         }
@@ -367,9 +345,9 @@
         $('#Span1').text('');
     });
 
-    $("#Descripcion").keyup(function () {
-        $('#Span2').text('');
-    });
+    //$("#Descripcion").keyup(function () {
+    //    $('#Span2').text('');
+    //});
     $("#CostCenter").on("change", function (){
         $('#Span3').text('');
     });
@@ -392,27 +370,33 @@
                                                                                                 .Name("gridNumeracionJournalEntryLine")
                                                                                                 .Columns(columns =>
                                                                                                 {
-                                                                                                    columns.Command(command =>
+                                                                                                    if (Model.JournalEntryId == 0)
                                                                                                     {
-                                                                                                        //command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditJournalEntryLine");
-                                                                                                        //command.Edit().Text("Editar").UpdateText("Registrar").CancelText("Cancelar");
-                                                                                                        command.Destroy().Text("Eliminar");
-                                                                                                        //command.Destroy().Text(" ").IconClass("fa fa-trash");
-                                                                                                        //  command.Destroy();
-                                                                                                    }).Width(100);
-                                                                                                    columns.Bound(p => p.JournalEntryLineId).Title("Id Line").Width(80);
+                                                                                                        columns.Command(command =>
+                                                                                                        {
+                                                                                                            //command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditJournalEntryLine");
+                                                                                                            command.Edit().Text("Editar").UpdateText("Update").CancelText("Cancelar");
+
+                                                                                                            command.Destroy().Text("Eliminar");
+
+
+                                                                                                            //command.Destroy().Text(" ").IconClass("fa fa-trash");
+                                                                                                            //  command.Destroy();
+                                                                                                        }).Width(100);
+                                                                                                    }
+                                                                                                    columns.Bound(p => p.JournalEntryLineId).Title("Id Line").Width(100);
                                                                                                     //columns.Bound(p => p.JournalEntryLineId).Width(150);
                                                                                                     //columns.Bound(p => p.JournalEntryId).Width(150).HtmlAttributes(new { JournalEntryId = "id" });
                                                                                                     //columns.Bound(p => p.JournalEntryId).Width(150);
                                                                                                     //columns.Bound(p => p.CreatedDate).Format("{0:dd/MM/yyyy}").Width(250);
                                                                                                     //columns.Bound(p => p.Num).Title("Número").Width(200); ;
-                                                                                                    columns.Bound(p => p.Description).Width(200);
-                                                                                                    columns.Bound(p => p.AccountId).Width(200);
+                                                                                                    columns.Bound(p => p.Description).Title("Descripción").Width(200);
+                                                                                                    columns.Bound(p => p.AccountId).Hidden().Width(200);
                                                                                                     columns.Bound(p => p.AccountName).Width(200);
                                                                                                     //   columns.Bound(p => p.DrCr).Title("Tipo ").Width(250);
-                                                                                                    columns.Bound(p => p.Credit).Width(200).Format("{0:N2}");
                                                                                                     columns.Bound(p => p.Debit).Width(200).Format("{0:N2}");
-                                                                                                    columns.Bound(p => p.CostCenterId).Width(200);
+                                                                                                    columns.Bound(p => p.Credit).Width(200).Format("{0:N2}");                                                                                 
+                                                                                                    columns.Bound(p => p.CostCenterId).Hidden().Width(200);
                                                                                                     columns.Bound(p => p.CostCenterName).Width(200);
                                                                                                     //  columns.Bound(p => p.DebitME).Width(200);
                                                                                                     // columns.Bound(p => p.CreditME).Width(200);
@@ -484,8 +468,8 @@
                                                                                                     model.Field(p => p.AccountId).Editable(true);
                                                                                                     model.Field(p => p.AccountName).Editable(true);
                                                                                                     // model.Field(p => p.DrCr).Editable(true);
-                                                                                                    model.Field(p => p.Debit).Editable(true);
                                                                                                     model.Field(p => p.Credit).Editable(true);
+                                                                                                    model.Field(p => p.Debit).Editable(true);                                                                                                   
                                                                                                     model.Field(P => P.CostCenterId).Editable(false);
                                                                                                     model.Field(p => p.CostCenterName).Editable(true);
                                                                                                     //model.Field(p => p.DebitME).Editable(true);
@@ -501,7 +485,7 @@
                                                                                                 .Events(events => events.Error("error_handler"))
                                                                                                 .Read(read => read.Action("GetJournalEntryLine", "JournalEntryLine").Data("AgregarLinea"))
                                                                                                 .Create(create => create.Action("Insert", "JournalEntryLine"))
-                                                                                                 .Destroy(destroy => destroy.Action("Delete", "JournalEntryLine").Type(HttpVerbs.Post))
+                                                                                                 .Destroy(destroy => destroy.Action("Delete", "JournalEntryLine", new { JournalEntryLineId = "{0}" }).Type(HttpVerbs.Post))
                                                                                                 //.Update(update => update.Action("Update", "JournalEntryLine", new { JournalEntryLineId = "{0}" }).Type(HttpVerbs.Put))
                                                                                                 // .Destroy(destroy => destroy.Action("Delete", "JournalEntryLine", new { JournalEntryLineId = "{0}" }).Type(HttpVerbs.Delete))
 

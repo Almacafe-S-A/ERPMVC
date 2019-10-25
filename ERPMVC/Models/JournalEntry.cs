@@ -20,15 +20,15 @@ namespace ERPMVC.Models
 
         [Display(Name = "Id Libro Mayor")]
         public int? GeneralLedgerHeaderId { get; set; }
-        [Display(Name = "Tipo de Socio de negocios")]
+        [Display(Name = "Tipo Beneficiario")]
         public int PartyTypeId { get; set; }
 
-        [Display(Name = "Tipo de Socio de negocios")]
+        [Display(Name = "Tipo Beneficiario")]
         public string PartyTypeName { get; set; }
 
         [Display(Name = "Id Documento")]
         public Int64 DocumentId { get; set; }
-        [Display(Name = "Socio de negocio")]
+        [Display(Name = "Beneficiario")]
         public int? PartyId { get; set; }
         [Display(Name = "Tipos de Documento")]
         public Int32? VoucherType { get; set; }
@@ -38,7 +38,7 @@ namespace ERPMVC.Models
         public DateTime Date { get; set; }
         [Display(Name = "Fecha de Transacción")]
         public DateTime DatePosted { get; set; }
-        [Display(Name = "Memo")]
+        [Display(Name = "Sinopsis")]
         public string Memo { get; set; }
         [Display(Name = "Número de referencia")]
         public string ReferenceNo { get; set; }
