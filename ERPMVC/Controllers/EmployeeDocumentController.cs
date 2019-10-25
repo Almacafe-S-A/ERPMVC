@@ -149,7 +149,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet("[action]")]
-        public async Task<DataSourceResult> GeDocumentByEmployeeId([DataSourceRequest]DataSourceRequest request, Int64 EmployeeId)
+        public async Task<DataSourceResult> GetDocumentByEmployeeId([DataSourceRequest]DataSourceRequest request, Int64 EmployeeId)
         {
             List<EmployeeDocument> _EmployeeDocument = new List<EmployeeDocument>();
             try
@@ -158,7 +158,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/EmployeeDocument/GeDocumentByEmployeeId/" + EmployeeId);
+                var result = await _client.GetAsync(baseadress + "api/EmployeeDocument/GetDocumentByEmployeeId/" + EmployeeId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -228,6 +228,9 @@ namespace ERPMVC.Controllers
                         }
                         else
                         {
+                            _EmployeeDocument.DocumentName = file.FileName;
+                            _EmployeeDocument.FechaCreacion = _listEmployeeDocument.FechaCreacion;
+                            _EmployeeDocument.UsuarioCreacion = _listEmployeeDocument.UsuarioCreacion;
                             var updateresult = await Update(_EmployeeDocument.EmployeeDocumentId, _EmployeeDocument);
                         }
 
