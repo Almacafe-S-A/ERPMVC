@@ -7,7 +7,7 @@
 
     function GetInvoiceId() {
        // console.log($("#DescriptionDetail").val());
-        var subproductname = '', unidaddemedida = '';
+        var subproductname = '', unidaddemedida = '', cuentaline = '';
         if ($("#UnitOfMeasureId") != null) {
             if ($("#UnitOfMeasureId").data("kendoDropDownList") != null) {
                 unidaddemedida = $("#UnitOfMeasureId").data("kendoDropDownList").text();
@@ -19,17 +19,22 @@
                 subproductname = $("#ProductId").data("kendoDropDownList").text();
             }
         }
+        if ($("#AccountId") != null) {
+            if ($("#AccountId").data("kendoDropDownList") != null) {
+                cuentaline = $("#AccountId").data("kendoDropDownList").text();
+            }
+        }
 
         var displayedData = $("#gridInvoiceDetail").data().kendoGrid.dataSource.view();
         var id = -999999;
         debugger;
-        if (Number($("#contadorid").val()) === 0) {
+        if (Number($("#VendorInvoiceLineId").val()) === 0) {
             if (displayedData.length > 0) {
                 for (var i = 0; i < displayedData.length; i++) {
                     //console.log('Linea:' + displayedData[i].InvoiceLineId);
                     //console.log('Linea:' + id);
-                    if (displayedData[i].contadorid > id)
-                        id = displayedData[i].contadorid;
+                    if (displayedData[i].VendorInvoiceLineId > id)
+                        id = displayedData[i].VendorInvoiceLineId;
 
                 }
 
@@ -40,13 +45,12 @@
             }
         }
         else {
-            id = $("#contadorid").val();
+            id = $("#VendorInvoiceLineId").val();
         }
 
 
         return {
-                contadorid: id,
-                VendorInvoiceLineId: $("#VendorInvoiceLineId").val(),
+                VendorInvoiceLineId: id,
                 VendorInvoiceId: @Model.VendorInvoiceId,
                 /*ProductId: $("#ProductId").val(),*/
                 ProductId: $("#ProductId").val(),
@@ -65,8 +69,8 @@
                 TaxAmount: $("#TaxAmount").val(),
                 Total: $("#TotalLine").val(),
                 AccountId: $("#cuentaline").val(),
-            }
         }
+    }
 
     function RefreshInvoiceDetail() {
         var grid = $("#gridInvoiceDetail").getKendoGrid();
@@ -76,50 +80,29 @@
 
     function AddCotizacionDetalle() {
         var notification = $("#notification").data("kendoNotification");
-      //  console.log($("#ProductId").val());
-       // if ($("#ProductId").val() !== '' && $("#ProductId").val() !== '0'  ) {
+
 
             //llenarsubproduct();
             $("#frmSalesOrderLine :input").not('#SalesOrderId').prop("disabled", false);
-            $('#TaxCode').val(0);
+        $('#TaxCode').data("kendoDropDownList").value(0);
+        $('#DescriptionDetail').val('');
+        $('#ProductId').data("kendoDropDownList").value(0);
+        $("#Quantity").data("kendoNumericTextBox").value(0);
+        $("#Price").data("kendoNumericTextBox").value(0);
+        $("#Amount").data("kendoNumericTextBox").value(0);
+        $("#SubTotalLine").data("kendoNumericTextBox").value(0);
+        $("#TaxAmount").data("kendoNumericTextBox").value(0);
+        $("#AmountLine").data("kendoNumericTextBox").value(0);
+        $("#TotalLine").data("kendoNumericTextBox").value(0);
+        $("#cuentaline").data("kendoDropDownList").value('');
+        $("#UnitOfMeasureId").data("kendoDropDownList").value('');
+        $("#TaxPercentage").data("kendoNumericTextBox").value(0);
             $('#myModalInvoiceLine').modal('show');
-        //} else {
-        //    var notification = $("#notification").data("kendoNotification");
-        //    notification.show({
-        //        title: "Validación",
-        //        message: "Debe seleccionar un producto!"
-        //    }, "error");
-
-        //}
+       
        
     }
 
-    @*function llenarsubproduct() {
-        var combobox = $('#SubProductId').getKendoDropDownList();
-        if (combobox != null) {
-            var dataObject = { 'ProductId': $("#ProductId").val() };
-            $.ajax({
-                url: '@Url.Action("GetSubProductByProductId", "ProductRelation")',
-                method: 'GET',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: dataObject,
-                success: function (data) {
-                    combobox.setDataSource(data);
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-
-                    //  $("#btngenerarfactura").show();
-                    notification.show({
-                        title: "Validación",
-                        message: textStatus + ": " + XMLHttpRequest.responseText
-                    }, "error");
-
-                }
-            });
-        }
-    }*@
+   
 
     var hcustom = 0;
     function EditCotizacionDetalle(e) {
@@ -128,12 +111,13 @@
         var notification = $("#notification").data("kendoNotification");
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         //  debugger;
-        if (dataItem.InvoiceId > 0) {
+        console.log(dataItem);
+        if (dataItem.VendorInvoiceId != 0) {
              $("#btnActualizarCotizacionLinea").prop("disabled", true);
             var subproducto = 0;
-            var dataObject = { 'Id': dataItem.InvoiceLineId };
+            var dataObject = { 'VendorInvoiceLineId': dataItem.VendorInvoiceLineId };
             $.ajax({
-                url: '@Url.Action("pvwInvoiceLine", "VendorInvoiceLine")',
+                url: '@Url.Action("pvwVendorInvoiceLine", "VendorInvoiceLine")',
                 method: 'POST',
                 datatype: "json",
                 contentType: 'application/json',
@@ -142,6 +126,7 @@
                 success: function (data) {
                     $("#SalesOrderLineMant").html('');
                     $("#SalesOrderLineMant").html(data);
+                    GetPercentage();
                     var txt = $(data);
 
                     //var combobox = $('#SubProductId').getKendoDropDownList();
@@ -172,51 +157,17 @@
         }
         else {
 
-            var dataObject = { 'VendorInvoiceId': 0, 'IdCD': ($("#cbxBuscarCertificadosDeposito").val() == '' ? 0 : $("#cbxBuscarCertificadosDeposito").val()) };
-            //console.log(dataObject);
-           @*$.ajax({
-                url: '@Url.Action("pvwInvoiceLine", "InvoiceLine")',
-                method: 'POST',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: JSON.stringify(dataObject),
-                success: function (data) {
-                    $("#SalesOrderLineMant").html('');
-                    $("#SalesOrderLineMant").html(data);
-                    var txt = $(data);
-
-                    //var combobox = $('#SubProductId').getKendoDropDownList();
-                    //if (combobox != null) {
-                    //    var found = $("#SubProductId", txt);
-                    //    subproducto = $(found).val();
-                    //}
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-
-                    //  $("#btngenerarfactura").show();
-                    notification.show({
-                        title: "Validación",
-                        message: textStatus + ": " + XMLHttpRequest.responseText
-                    }, "error");
-
-                }
-            });*@
+          
 
 
             $("#btnActualizarCotizacionLinea").prop("disabled", false);
             $("#VendorInvoiceLineId").val(dataItem.VendorInvoiceLineId);
-            $("#IdCD").val($("#cbxBuscarCertificadosDeposito").val());
-            hcustom = $("#CustomerId").val();
-            //console.log(hcustom);
-            if(Number($("#IdCD").val()) === 0)
-            {
-                //llenarsubproduct();
-            }
+           
+            //llenarsubproduct();
             $("#ProductId").data("kendoDropDownList").dataSource.read();
             $("#ProductId").data("kendoDropDownList").value(dataItem.ProductId);
             $("#UnitOfMeasureId").data("kendoDropDownList").value(dataItem.UnitOfMeasureId);
-            $("#AccountId").data("kendoDropDownList").value(dataItem.AccountId);
+            $("#cuentaline").data("kendoDropDownList").value(dataItem.AccountId);
             $("#TaxCode").data("kendoDropDownList").value(dataItem.TaxCode);
             $("#DescriptionDetail").val(dataItem.Description);
 
@@ -288,17 +239,16 @@
                                                           {
                                                               columns.Command(command =>
                                                               {
-                                                                  if (Model.editar == 1)
+                                                                  if (Model.VendorInvoiceId == 0)
                                                                   {
                                                                       command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
                                                                   }
-                                                                  command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCotizacionDetalle");
+                                                                  command.Custom("Detalles").Text(" ").IconClass("fa fa-edit").Click("EditCotizacionDetalle");
                                                                   // command.Custom("Imprimir").Click("ImprimirCotizacion");
                                                                   //  command.Edit(); command.Destroy();
                                                               }).Width(150);
 
-                                                              columns.Bound(p => p.contadorid).Title("Id Linea").Width(150);
-                                                              columns.Bound(p => p.VendorInvoiceLineId).Title("Id Linea").Width(150).Visible(false);
+                                                              columns.Bound(p => p.VendorInvoiceLineId).Title("Id Linea").Width(150).Visible(true);
                                                               columns.Bound(p => p.VendorInvoiceId).Title("Factura Id").Width(150);
                                                               columns.Bound(p => p.ProductId).Title("IdProducto").Visible(false);
                                                               columns.Bound(p => p.ItemName).Title("Producto").Width(150);
@@ -350,7 +300,7 @@
                                                ))
                                                           .ToolBar(tools =>
                                                           {
-                                                              if (Model.editar == 1)
+                                                              if (Model.VendorInvoiceId == 0)
                                                               {
                                                                   tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
                                                                   .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacionDetalle();" });
