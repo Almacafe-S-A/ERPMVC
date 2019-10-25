@@ -92,6 +92,39 @@ namespace ERPMVC.Controllers
             return PartialView(_InsurancesCertificate);
 
         }
+        public async Task<ActionResult> pvwInsurancesCertificateDetailMant([FromBody]InsurancesCertificateLineDTO _InsurancesCertificateLineDTOp)
+        {
+            InsurancesCertificateLineDTO _InsurancesCertificateLine = new InsurancesCertificateLineDTO();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/InsurancesCertificateLine/GetInsurancesCertificateLineById/" + _InsurancesCertificateLineDTOp.InsurancesCertificateLineId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _InsurancesCertificateLine = JsonConvert.DeserializeObject<InsurancesCertificateLineDTO>(valorrespuesta);
+
+                }
+
+                if (_InsurancesCertificateLine == null)
+                {
+                    _InsurancesCertificateLine = new InsurancesCertificateLineDTO();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+           // InsurancesCertificateLineDTO _InsurancesCertificateLineDTOP( _InsurancesCertificateLine);
+            return PartialView(_InsurancesCertificateLine);
+
+        }
 
 
         [HttpGet]

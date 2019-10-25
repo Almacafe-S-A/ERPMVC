@@ -39,6 +39,10 @@ namespace ERP.Contexts
 
 
 
+        public DbSet<ERPMVC.Models.Formula> Formula { get; set; }
+
+
+
        
         
     }

@@ -20,7 +20,7 @@ namespace ERPMVC.Models
 
         [Display(Name = "Id Libro Mayor")]
         public int? GeneralLedgerHeaderId { get; set; }
-        [Display(Name = "Tipo de Socio de negocios")]
+        [Display(Name = "Tipo Beneficiario")]
         public int PartyTypeId { get; set; }
 
         [Display(Name = "Tipo Beneficiario")]
@@ -28,7 +28,7 @@ namespace ERPMVC.Models
 
         [Display(Name = "Id Documento")]
         public Int64 DocumentId { get; set; }
-        [Display(Name = "Socio de negocio")]
+        [Display(Name = "Beneficiario")]
         public int? PartyId { get; set; }
         [Display(Name = "Tipos de Documento")]
         public Int32? VoucherType { get; set; }
