@@ -344,7 +344,7 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _ProformaInvoiceLine }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<ProformaInvoiceLine>> Delete([FromBody]ProformaInvoiceLine _ProformaInvoiceLine)
         {
             try

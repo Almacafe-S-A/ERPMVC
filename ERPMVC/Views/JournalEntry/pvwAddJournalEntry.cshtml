@@ -72,12 +72,11 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">                                                 
                                                     <label asp-for="DatePosted" style="width:100%"></label>
-                                                    <kendo-datetimepicker name="DatePosted" style="width: 100%;"
-                                                                          format="dd/MM/yyyy hh:mm:ss"
-                                                                          time-format="hh:mm:ss"
+                                                    <kendo-datepicker name="DatePosted" style="width: 100%;"
+                                                                          format="dd/MM/yyyy"                                                                         
                                                                           data-val-required="La fecha es requerida"
                                                                           id="DatePosted"                                                                          
-                                                                         value="Model.DatePosted"></kendo-datetimepicker>
+                                                                         value="Model.DatePosted"></kendo-datepicker>
                                                     <span asp-validation-for="DatePosted" id="IdDatePosted" class="text-danger k-invalid-msg" data-for="DatePosted"></span>
                                                 </div>
                                             </div>
@@ -173,7 +172,7 @@
                                                                     for="PartyId"
                                                                     id="IdParty"
                                                                     enable: false,
-                                                                    option-label="Seleccionar socio de negocio"
+                                                                    option-label="Seleccionar beneficiario"
                                                                     filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                     style="width: 100%;">
                                                 </kendo-dropdownlist>
@@ -241,14 +240,14 @@
                                     </div>
 
                                     <div class="row">
-                                        <div class="col-md-4">
+                                        <div class="col-md-4" hidden>
                                             <div class="form-group">
                                                 <label asp-for="TotalDebit" style="width:100%"></label>
                                                 <input type="text" asp-for="TotalDebit" name="TotalDebit" autocomplete="off" class="form-control" style="min-width:100%" readonly />
                                                 <span asp-validation-for="TotalDebit" class="text-danger k-invalid-msg" data-for="TotalDebit"></span>
                                             </div>
                                         </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-4" hidden>
                                             <div class="form-group">
                                                 <label asp-for="TotalCredit" style="width:100%"></label>
                                                 <input type="text" asp-for="TotalCredit" name="TotalCredit" autocomplete="off" class="form-control" style="min-width:100%" readonly />
@@ -285,9 +284,9 @@
 <script>
     $("#DatePosted").change(function () {
         var FechaLimiteEmision = $("#Date").getKendoDateTimePicker().value().toJSON();
-        var FechaRecepcion = $("#DatePosted").getKendoDateTimePicker().value().toJSON();
+        var FechaRecepcion = $("#DatePosted").getKendoDatePicker().value().toJSON();
         if (Date.parse(FechaRecepcion) >= Date.parse(FechaLimiteEmision)) {
-            document.getElementById("IdDatePosted").innerHTML = "Fecha de Transacción no puede ser mayor que la fecha de hoy."
+            alert("Fecha de Transacción no puede ser mayor que la fecha de hoy.")
             $("#DatePosted").val('');
         } else {
             document.getElementById("IdDatePosted").innerHTML = ""
@@ -302,7 +301,7 @@
         $("#IdPartyType").kendoDropDownList({
             dataTextField: "text",
             dataValueField: "value",
-            optionLabel: "Seleccione tipo socio de negocio",
+            optionLabel: "Seleccione tipo de  beneficiario",
             dataSource: [
                 { text: "Cliente", value: 1 },
                 { text: "Empleado", value: 2 },
@@ -312,7 +311,7 @@
             suggest: true,
         });
         $("#IdParty").kendoDropDownList({
-            optionLabel: "Seleccione socio de negocio",
+            optionLabel: "Seleccione beneficiario",
             enable: false
         });
 
@@ -355,16 +354,18 @@
         var grid = $("#gridNumeracionJournalEntry").getKendoGrid();
         grid.dataSource.read();
     }
-    function SaveJournalEntry(e) {      
+    function SaveJournalEntry(e) {       
         var Debito = $("#TotalDebit").val();
         var Credito = $("#TotalCredit").val();
         if (Number(Credito) != Number(Debito)) {
                 alert("La partida contable no esta cuadrada");
-                //document.getElementById("TotalCredit").innerHTML = "Crédito no puede ser menor a Débito."
                 return
-            } else {
-                document.getElementById("TotalCredit").innerHTML = ""
+            } 
+        else if (Number(Credito) == 0 && Number(Debito)==0) {
+            alert("No se puede  guardar la partida contable sin  las líneas contables");
+            return
         };
+
         debugger;
             var notification = $("#notification").data("kendoNotification");
            // e.preventDefault();
@@ -372,9 +373,6 @@
         $("#btnJournalEntry").prop("disabled", true);
 
         var displayedData = $("#gridNumeracionJournalEntryLine").data().kendoGrid.dataSource.data();
-        //var referencia = $("#ReferenceNo").val();
-        //var posted = $("#Posted").val();
-        //var id = $("#PartyId").val()
         for (var i = 0; i < displayedData.length; i++) {
             displayedData[i].JournalEntryLineId = 0;
         }
@@ -382,14 +380,14 @@
 
         var dataObject = {
             'JournalEntryId': $("#JournalEntryId").val() === "" ? 0 : $("#JournalEntryId").val(),
-            'GeneralLedgerHeaderId': 0,//$("#GeneralLedgerHeaderId").val(),
+            'GeneralLedgerHeaderId': 0,
             'PartyId': $("#PartyId").val(),
             'VoucherType': $("#VoucherType").val(),
             'TypeJournalName': $("#VoucherType").data("kendoDropDownList").text(),
             'Date': $("#Date").getKendoDateTimePicker().value().toJSON(),
-            'DatePosted': $("#DatePosted").getKendoDateTimePicker().value().toJSON(),
+            'DatePosted': $("#DatePosted").getKendoDatePicker().value().toJSON(),
             'Memo': $("#Memo").val(),
-            'ReferenceNo': 0,//$("#ReferenceNo").val(), 
+            'ReferenceNo': 0,
             //'IdTypeofPayment': $("#IdTypeofPayment").val(),
             'TotalCredit': $("#TotalCredit").val(), 
             'TotalDebit': $("#TotalDebit").val(), 
@@ -409,7 +407,7 @@
            console.log(displayedData);
            console.log(JSON.stringify(dataObject));
             //var form = $("#frmNumeracion");
-           // form.validate();
+            //form.validate();
 
         var validator = $("#frmJournalEntry").data("kendoValidator");
                  var status = $(".status");

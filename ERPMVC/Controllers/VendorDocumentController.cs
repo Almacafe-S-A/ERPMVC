@@ -131,7 +131,7 @@ namespace ERPMVC.Controllers
                     _VendorDocument = JsonConvert.DeserializeObject<VendorDocument>(valorrespuesta);
 
                 }
-
+                
                 ViewBag.pathcontrato = _VendorDocument.Path;
             }
             catch (Exception ex)
@@ -315,33 +315,31 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _VendorDocumentDTO }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult<VendorDocument>> Delete([FromBody]VendorDocument _VendorDocument)
+        [HttpDelete]
+        public async Task<ActionResult<VendorDocument>> Delete(Int64 Id, VendorDocument _ContactP)
         {
+            VendorDocument _Contact = _ContactP;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/VendorDocument/Delete", _VendorDocument);
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/VendorDocument/Delete", _Contact);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _VendorDocument = JsonConvert.DeserializeObject<VendorDocument>(valorrespuesta);
+                    _Contact = JsonConvert.DeserializeObject<VendorDocument>(valorrespuesta);
                 }
 
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error: {ex.Message}");
+                return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _VendorDocument }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _Contact }, Total = 1 });
         }
 
 

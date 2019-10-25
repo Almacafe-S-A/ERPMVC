@@ -41,40 +41,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwInsurancesCertificateDetailMant(int InsurancesCertificateLineId = 0)
-        {
-            InsurancesCertificateLine _InsurancesCertificateLine = new InsurancesCertificateLine();
-            try
-            {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/InsurancesCertificateLine/GetInsurancesCertificateLineById/" + InsurancesCertificateLineId);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _InsurancesCertificateLine = JsonConvert.DeserializeObject<InsurancesCertificateLine>(valorrespuesta);
-
-                }
-
-                if (_InsurancesCertificateLine == null)
-                {
-                    _InsurancesCertificateLine = new InsurancesCertificateLine();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-
-
-            return PartialView("~/Views/InsurancesCertificate/pvwInsurancesCertificateDetailMant.cshtml", _InsurancesCertificateLine);
-
-        }
-
+        
 
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
