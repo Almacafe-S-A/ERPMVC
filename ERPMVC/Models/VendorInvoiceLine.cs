@@ -57,6 +57,5 @@ namespace ERPMVC.Models
 
         [ForeignKey("AccountId")]
         public Accounting Account { get; set; }
-        public int contadorid { get; set; }
     }
 }
