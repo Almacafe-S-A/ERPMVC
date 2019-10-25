@@ -26,18 +26,18 @@
 
 
     function CalcularTotalDocumento() {
+        var freight = $("#Freight").val() === "" ? 0 : $("#Freight").val();
         debugger;
-        var freight = $("#Freight").val()===""?0:$("#Freight").val();
-
         var displayedData = $("#gridInvoiceDetail").data().kendoGrid.dataSource.view();
-        var total = 0, totaldescuento = 0, totalimpuesto = 0,totalimpuesto18=0, totalmonto = 0;
-        var TotalExento = 0, TotalExonerado = 0, TotalGravado = 0,TotalGravado18=0;
+        var subtotal = 0, total = 0, totaldescuento = 0, totalimpuesto = 0, totalimpuesto18 = 0, totalmonto = 0;
+        var TotalExento = 0, TotalExonerado = 0, TotalGravado = 0, TotalGravado18 = 0;
 
         $(displayedData).each(function (index, element) {
             var t = JSON.parse(JSON.stringify(element));
 
             total = total + t["Total"];
-            totaldescuento = totaldescuento  + t["DiscountAmount"];
+            subtotal = subtotal + t["SubTotal"];
+            totaldescuento = totaldescuento + t["DiscountAmount"];
             totalmonto = totalmonto + t["Amount"];
 
             if (t["TaxCode"] == "1" ) {
@@ -73,39 +73,11 @@
         setearvalor('Discount', totaldescuento);
         setearvalor('Tax', totalimpuesto);
         setearvalor('Tax18', totalimpuesto18);
-        setearvalor('SubTotal', total - (totaldescuento + totalimpuesto + totalimpuesto18));
-        setearvalor('Total', sumatotal);
+        setearvalor('SubTotal', subtotal);
+        setearvalor('Total', sumatotal);  
         console.log(total, sumatotal);
 
-        if ($("#cbxBuscarCertificadosDeposito").val() !== '') {
-          //  console.log($("#Price").data("kendoNumericTextBox").value());
-            var dataObject = {
-                CertificadoDepositoId: $("#cbxBuscarCertificadosDeposito").val(),
-                SalesOrderId: ($("#cbxBuscarCotizaciones").val() === '' ? 0 : $("#cbxBuscarCotizaciones").val()),
-                OrderDate: $("#OrderDate").getKendoDateTimePicker().value().toJSON(),
-                SubTotal: $("#Price").data("kendoNumericTextBox").value(),
-                Discount: $("#Quantity").data("kendoNumericTextBox").value(),
-            };
-
-          //  console.log(dataObject);
-
-            $.ajax({
-                url: '@Url.Action("CalcularConCertificado","Invoice")',
-                method: 'POST',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: JSON.stringify(dataObject),
-                success: function (result) {
-                    console.log(result);
-                    setearvalor("Total", result.Total);
-
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
-                }
-            });
-        }
+       
 
     }
 
