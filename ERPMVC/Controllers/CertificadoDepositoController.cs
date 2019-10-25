@@ -215,8 +215,9 @@ namespace ERPMVC.Controllers
                     }
 
                     KardexDTO _kardexparam = new KardexDTO { Ids = _listado.CertificadosList , DocumentName = "CD" };
-                  //  List<KardexLine> _kardexsaldo = new List<KardexLine>();
-                 
+                    //  List<KardexLine> _kardexsaldo = new List<KardexLine>();
+                    _kardexparam.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    _kardexparam.UsuarioModificacion = HttpContext.Session.GetString("user");
                     result = await _client.PostAsJsonAsync(baseadress + "api/Kardex/GetMovimientosCertificados", _kardexparam);
                     valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
