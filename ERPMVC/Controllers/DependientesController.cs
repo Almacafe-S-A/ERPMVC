@@ -70,6 +70,39 @@ namespace ERPMVC.Controllers
             return Json(_Dependientes.ToDataSourceResult(request));
 
         }
+
+        //--------------------------------------------------------------------------------------
+        [HttpGet("[action]")]
+        public async Task<JsonResult> GetDependientesByEmployeeId([DataSourceRequest]DataSourceRequest request,Dependientes _EmployeeP)
+        {
+            List<Dependientes> _Dependientes = new List<Dependientes>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Dependientes/GetDependientesByEmployeeId/" + _EmployeeP.IdEmpleado);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Dependientes = JsonConvert.DeserializeObject<List<Dependientes>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return Json(_Dependientes.ToDataSourceResult(request));
+
+        }
         //--------------------------------------------------------------------------------------
         [HttpGet]
         public async Task<JsonResult> GetBOX([DataSourceRequest]DataSourceRequest request)
