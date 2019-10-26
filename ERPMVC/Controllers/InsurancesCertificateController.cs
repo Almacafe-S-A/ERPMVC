@@ -92,6 +92,7 @@ namespace ERPMVC.Controllers
             return PartialView(_InsurancesCertificate);
 
         }
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> pvwInsurancesCertificateDetailMant([FromBody]InsurancesCertificateLineDTO _InsurancesCertificateLineDTOp)
         {
             InsurancesCertificateLineDTO _InsurancesCertificateLine = new InsurancesCertificateLineDTO();
@@ -112,6 +113,8 @@ namespace ERPMVC.Controllers
                 if (_InsurancesCertificateLine == null)
                 {
                     _InsurancesCertificateLine = new InsurancesCertificateLineDTO();
+                    _InsurancesCertificateLine.FechaFirma = DateTime.Now;
+                    _InsurancesCertificateLine.InsurancesCertificateId = _InsurancesCertificateLineDTOp.InsurancesCertificateId;
                 }
             }
             catch (Exception ex)
