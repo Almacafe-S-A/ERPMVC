@@ -41,6 +41,8 @@ namespace ERPMVC.Models
         public decimal TotaldeductibleofProduct { get; set; }
         [Display(Name = "Cliente")]
         public Int64 CustomerId { get; set; }
+        [Display(Name = "Secuencia de Certificados")]
+        public Int64 CounterInsurancesCertificate { get; set; }
 
         [Display(Name = "Total Insurance en letras")]
         public string TotalLetras { get; set; }

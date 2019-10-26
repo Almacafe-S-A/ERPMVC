@@ -147,15 +147,51 @@
 
                                             <div class="col-md-4">
                                                 <div class="form-group">
+                                                    <script>
+                                                        function SetCustomerName(e) {
+                                                           // console.log(e);
+                                                            if ($("#CustomerId").val() > 0) {
+                                                                $("#SalesOrderName").prop('disabled', true);
+                                                                $("#SalesOrderName").val($("#CustomerId").data("kendoDropDownList").text());
+                                                                var dataObject = { CustomerId: $("#CustomerId").val()};
+                                                                  $.ajax({
+                                                                     url: '@Url.Action("GetCustomerById", "Customer")',
+                                                                     method: 'GET',
+                                                                     datatype: "json",
+                                                                     contentType: 'application/json',
+                                                                     async: false,
+                                                                     data: dataObject,
+                                                                      success: function (result) {
+                                                                          //console.log(result);
+                                                                          // setearvalor("TaxPercentage", result.TaxPercentage);
+                                                                          $("#CreditNoteName").val(result.CustomerName);
+                                                                          $("#Direccion").val(result.Address);
+                                                                          $("#RTN").val(result.RTN);
+                                                                          $("#Correo").val(result.Email);
+                                                                          $("#Tefono").val(result.Phone);
+                                                                          $("#CustomerRefNumber").val(result.CustomerRefNumber);
+
+                                                                     },
+                                                                      error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                                                             alert(textStatus + ": " + XMLHttpRequest.responseText);
+                                                                       }
+                                                                  });
+                                                            }
+                                                            else {
+                                                                $("#SalesOrderName").prop('disabled', false);
+                                                            }
+                                                        }
+                                                    </script>
                                                     <label asp-for="CustomerId" class="control-label"></label>
 
-                                                    <kendo-dropdownlist name="CustomerId" for="CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                    <kendo-dropdownlist name="CustomerId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         option-label="Seleccione el cliente"
                                                                         datatextfield="CustomerName"
                                                                         datavaluefield="CustomerId"
-                                                                        value="@Model.CustomerId"
+                                                                        class="form-control-line"
+                                                                        onchange="SetCustomerName();"
                                                                         style="width: 100%;">
-                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="99999999">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
                                                             <transport>
                                                                 <read url="@Url.Action("GetCustomer", "Common")" />
                                                             </transport>
@@ -207,25 +243,31 @@
                                                 </div>
                                             </div>
 
+                                             <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="CustomerRefNumber" class="control-label" style="width:100%"></label>
+                                                    <input asp-for="CustomerRefNumber" class="form-control" onKeyPress="return soloNumeros(event)" maxlength="20" style="min-width: 100%" />
+                                                    <span asp-validation-for="CustomerRefNumber" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
                                         </div>
 
                                         <div class="row">
 
                                             <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label asp-for="CustomerRefNumber" class="control-label" style="width:100%"></label>
-                                                    <input asp-for="CustomerRefNumber" class="form-control" onKeyPress="return soloNumeros(event)" maxlength="20" style="min-width: 100%"  />
-                                                    <span asp-validation-for="CustomerRefNumber" class="text-danger"></span>
-                                                </div>
-                                            </div>
-
-                                            <div class="col-md-4">
+                                                <script>
+                                                    function GetPuntoEmision() {
+                                                        $("#IdPuntoEmision").data("kendoDropDownList").dataSource.read();
+                                                    }
+                                                </script>
                                                 <div class="form-group">
                                                     <label asp-for="BranchId" class="control-label"></label>
                                                     <kendo-dropdownlist name="BranchId" for="BranchId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         option-label="Seleccione la sucursal"
                                                                         datatextfield="BranchName"
                                                                         datavaluefield="BranchId"
+                                                                        onchange="GetPuntoEmision();"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
                                                             <transport>
@@ -237,17 +279,24 @@
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
-
+                                                <script>
+                                                    function GetBranchId() {
+                                                        return {
+                                                            'BranchId': $("#BranchId").data("kendoDropDownList").value()
+                                                        }
+                                                    }
+                                                </script>
                                                 <div class="form-group">
                                                     <label asp-for="IdPuntoEmision" class="control-label"></label>
                                                     <kendo-dropdownlist name="IdPuntoEmision" for="IdPuntoEmision" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         option-label="Seleccione el punto de emisión"
+                                                                        auto-bind="false"
                                                                         datatextfield="PuntoEmisionCod"
                                                                         datavaluefield="IdPuntoEmision"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
                                                             <transport>
-                                                                <read url="@Url.Action("Get", "PuntoEmision")" />
+                                                                <read url="@Url.Action("GetPuntoEmisionByBranchId", "PuntoEmision")" data="GetBranchId" />
                                                             </transport>
                                                         </datasource>
                                                     </kendo-dropdownlist>
@@ -297,11 +346,11 @@
 
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label asp-for="ProductId" class="control-label" style="width:100%">Producto</label>
+                                                    <label asp-for="ProductId" class="control-label" style="width:100%"></label>
 
                                                     <kendo-dropdownlist name="ProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         for="ProductId"
-                                                                        option-label="Seleccione el  producto"
+                                                                        option-label="Seleccione el Servicio"
                                                                         datatextfield="ProductName"
                                                                         datavaluefield="ProductId"
                                                                         required
@@ -360,7 +409,7 @@
 
                                         </div>
 
-                                        <div class="row">
+                                        @*<div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="NoOCExenta" class="control-label"></label>
@@ -379,7 +428,7 @@
                                                     <input type="text" asp-for="NoSAG" class="form-control" style="min-width: 100%" onKeyPress="return soloNumeros(event)" maxlength="20"/>
                                                 </div>
                                             </div>
-                                        </div>
+                                        </div>*@
 
                                         <div class="row">
 
@@ -844,7 +893,7 @@
                                 var midataObject = {
                                     CreditNoteLineId: 0, CreditNoteId: 0, AccountId: result.InvoiceLine[i].AccountId, AccountName: result.InvoiceLine[i].AccountName
                                     , SubProductId: result.InvoiceLine[i].SubProductId, SubProductName: result.InvoiceLine[i].SubProductName
-                                    , Description: result.InvoiceLine[i].Description, UnitOfMeasureId: result.InvoiceLine[i].UnitOfMeasureId
+                                    , Description: result.InvoiceLine[i].Description
                                     , Quantity: result.InvoiceLine[i].Quantity, Price: result.InvoiceLine[i].Price
                                     , Amount: result.InvoiceLine[i].Amount, DiscountPercentage: result.InvoiceLine[i].DiscountPercentage
                                     , DiscountAmount: result.InvoiceLine[i].DiscountAmount, SubTotal: result.InvoiceLine[i].SubTotal
