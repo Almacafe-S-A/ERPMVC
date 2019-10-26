@@ -69,7 +69,7 @@ namespace ERPMVC.Models
         public double TaxPercentage { get; set; }
 
 
-        [Display(Name = "Código Impuesto")]
+        [Display(Name = "Impuesto")]
         public Int64 TaxId { get; set; }
 
         [Display(Name = "Código Impuesto")]
