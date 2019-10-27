@@ -37,6 +37,41 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        //rellenar punto de emision dependiendo sucursal
+        [HttpGet]
+        public async Task<JsonResult> GetPuntoEmisionByBrachId([DataSourceRequest]DataSourceRequest request, Int64 BranchId)
+        {
+            List<PuntoEmision> _PuntoEmision = new List<PuntoEmision>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/PuntoEmision/GetPuntoEmision");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _PuntoEmision = JsonConvert.DeserializeObject<List<PuntoEmision>>(valorrespuesta);
+                    _PuntoEmision = _PuntoEmision.Where(q => q.BranchId == BranchId).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+
+            return Json(_PuntoEmision.ToDataSourceResult(request));
+
+
+
+        }
+
+
         // GET: PuntoEmision
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
