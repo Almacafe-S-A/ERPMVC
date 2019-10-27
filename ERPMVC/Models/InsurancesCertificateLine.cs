@@ -85,9 +85,11 @@ namespace ERPMVC.Models
         [Display(Name = "Fecha de Modificacion")]
         public DateTime ModifiedDate { get; set; }
 
+        [Display(Name = "Fecha de Inicio")]
+        public DateTime BeginDateCertificate { get; set; }
 
-
-
+        [Display(Name = "Fecha de Finalizacion")]
+        public DateTime EndDateCertificate { get; set; }
 
 
     }
