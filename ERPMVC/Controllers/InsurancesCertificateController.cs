@@ -113,8 +113,6 @@ namespace ERPMVC.Controllers
                 if (_InsurancesCertificateLine == null)
                 {
                     _InsurancesCertificateLine = new InsurancesCertificateLineDTO();
-                    _InsurancesCertificateLine.BeginDateCertificate = DateTime.Now;
-                    _InsurancesCertificateLine.EndDateCertificate = DateTime.Now;
                     _InsurancesCertificateLine.InsurancesCertificateId = _InsurancesCertificateLineDTOp.InsurancesCertificateId;
                 }
             }
@@ -486,6 +484,44 @@ namespace ERPMVC.Controllers
             }
 
         }
+        [HttpGet]
+        public async Task<ActionResult<InsurancesCertificate>> BuscarCertificadoDeposito([FromBody]InsurancesCertificateLineDTO _InsurancesCertificateLine)
+        {
+            InsurancesCertificateLine _InsurancesCertificate = _InsurancesCertificateLine;
+            try
+            {
+                List<CertificadoDeposito> _listCertificateDeposito = new List<CertificadoDeposito>();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "/api/CertificadoDeposito/GetSumCertificadoDepositoByCustomer" + _InsurancesCertificateLine.CustomerId);
 
+                string valorrespuesta = "";
+               
+                if (result.IsSuccessStatusCode)
+                {
+
+
+
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _listCertificateDeposito = JsonConvert.DeserializeObject<List<CertificadoDeposito>>(valorrespuesta);
+                }
+                //Acumulador de Valor de certificado
+                //
+                //Obtener el numero de certificado ssiguiente
+                //
+                //Coomo obtener el Grupo econmico
+                
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return new ObjectResult(new DataSourceResult { Data = new[] { _InsurancesCertificateLine }, Total = 1 });
+
+        }
     }
 }
