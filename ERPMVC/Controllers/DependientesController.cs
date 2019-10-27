@@ -146,7 +146,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Dependientes/GetDependientesById/" + _Dependientesp.IdDependientes);
+                var result = await _client.GetAsync(baseadress + "api/Dependientes/GetDependientes/" + _Dependientesp.IdDependientes);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
