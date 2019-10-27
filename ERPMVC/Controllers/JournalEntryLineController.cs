@@ -125,10 +125,32 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpDelete("JournalEntryLineId")]
+        public async Task<ActionResult<JournalEntryLine>> Delete([FromBody]JournalEntryLine _JournalEntryLine)
+        {
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/JournalEntryLine/Delete", _JournalEntryLine);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _JournalEntryLine = JsonConvert.DeserializeObject<JournalEntryLine>(valorrespuesta);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error: {ex.Message}");
+            }
+            return new ObjectResult(new DataSourceResult { Data = new[] { _JournalEntryLine }, Total = 1 });
+        }
 
 
 
-        
         [HttpPost]
         public async Task<ActionResult> Insert(JournalEntryLine _JournalEntryLine)
         {
