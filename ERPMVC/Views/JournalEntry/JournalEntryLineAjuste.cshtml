@@ -253,37 +253,82 @@
     });
 
     function AgregarLinea() {   
-        var displayedData = $("#gridNumeracionJournalEntryLine").data().kendoGrid.dataSource.data();
-        var id = -999999;
-        debugger;
-        var prueba = $("#JournalEntryLineId").val();
-        console.log(prueba)
-        if ($("#JournalEntryLineId").val() == 0) {
-            if (displayedData.length > 0) {
-                for (var i = 0; i < displayedData.length; i++) {
-                    if (displayedData[i].JournalEntryLineId > id)
-                        id = displayedData[i].JournalEntryLineId;
+        if (Number($("#Cuenta").val()) > 0) {
+            var displayedData = $("#gridNumeracionJournalEntryLine").data().kendoGrid.dataSource.data();
+            var id = -999999;
+            debugger;
+            var prueba = $("#JournalEntryLineId").val();
+            console.log(prueba)
+            if ($("#JournalEntryLineId").val() == 0) {
+                if (displayedData.length > 0) {
+                    for (var i = 0; i < displayedData.length; i++) {
+                        if (displayedData[i].JournalEntryLineId > id)
+                            id = displayedData[i].JournalEntryLineId;
+                    }
+                    id = id + 1;
                 }
-                id = id + 1;
+                else if (Number($("#Cuenta").val()) > 0) {
+                    id = 1;
+                }
             }
-            else if (Number($("#Cuenta").val()) > 0) {
-                id = 1;
+            else {
+                id = $("#JournalEntryLineId").val();
+            }
+            return {
+                'JournalEntryLineId': id,
+                'JournalEntryId': @Model.JournalEntryId,
+                'Debit': Number($("#Debito").val()),
+                'Credit': Number($("#Credito").val()),
+                'AccountId': Number($("#Cuenta").val()),
+                'AccountName': $("#Cuenta").data("kendoDropDownList").text(),
+                'Description': $("#Descripcion").val(),
+                'CostCenterId': Number($("#CostCenter").val()),
+                'CostCenterName': $("#CostCenter").data("kendoDropDownList").text(),
             }
         }
         else {
-            id = $("#JournalEntryLineId").val();
+            return;
         }
-        return {
-            'JournalEntryLineId': id,
-            'JournalEntryId': @Model.JournalEntryId,
-            'Debit': Number($("#Debito").val()),
-            'Credit': Number($("#Credito").val()),
-            'AccountId': Number($("#Cuenta").val()),
-            'AccountName': $("#Cuenta").data("kendoDropDownList").text(),
-            'Description': $("#Descripcion").val(),
-            'CostCenterId': Number($("#CostCenter").val()),
-            'CostCenterName': $("#CostCenter").data("kendoDropDownList").text(),          
-        }       
+    }
+
+    
+    function EliminarJournalEntry(e) {
+    
+        e.preventDefault();
+       
+        var notification = $("#notification").data("kendoNotification");
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        console.log(dataItem);
+        var grid = $("#gridNumeracionJournalEntryLine").data("kendoGrid");
+        var datasource = grid.dataSource;
+        datasource.remove(dataItem);
+        
+          $.ajax({
+                url: '@Url.Action("Delete", "JournalEntryLine")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataItem),
+                success: function (data) {
+
+                 },
+                 error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                  //  $("#btngenerarfactura").show();
+                  notification.show({
+                      title: "Validación",
+                      message: textStatus + ": " + XMLHttpRequest.responseText
+                  }, "error");
+
+              }
+          });
+
+
+        datasource.read();
+       // var grid = $("#gridGoodsReceived").getKendoGrid();
+        //grid.dataSource.read();
     }
 
     function RefrescarGridLinea() {
@@ -331,112 +376,112 @@
 @*<h3 class="text-themecolor">Lineas de Diarios</h3>*@
 @(Html.Kendo().Grid<ERPMVC.Models.JournalEntryLine>
                                                                                                 ()
-                                                                                                .Name("gridNumeracionJournalEntryLine")
-                                                                                                .Columns(columns =>
-                                                                                                {
-                                                                                                    if (Model.JournalEntryId == 0)
-                                                                                                    {
-                                                                                                        columns.Command(command =>
-                                                                                                        {
-                                                                                                            //command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditJournalEntryLine");
-                                                                                                            //command.Edit().Text("Editar").UpdateText("Registrar").CancelText("Cancelar");
-                                                                                                            command.Destroy().Text("Eliminar");
-                                                                                                            //command.Destroy().Text(" ").IconClass("fa fa-trash");
-                                                                                                            //  command.Destroy();
-                                                                                                        }).Width(100);
-                                                                                                    }
-                                                                                                    columns.Bound(p => p.JournalEntryLineId).Title("Id Line").Width(100);
-                                                                                                    columns.Bound(p => p.Description).Title("Descripción").Width(200);
-                                                                                                    columns.Bound(p => p.AccountId).Hidden().Width(200);
-                                                                                                    columns.Bound(p => p.AccountName).Width(200);
-                                                                                                    columns.Bound(p => p.CostCenterId).Hidden().Width(200);
-                                                                                                    columns.Bound(p => p.CostCenterName).Width(200);
-                                                                                                    columns.Bound(p => p.Debit).Width(200).Format("{0:N2}");
-                                                                                                    columns.Bound(p => p.Credit).Width(200).Format("{0:N2}");
+          .Name("gridNumeracionJournalEntryLine")
+          .Columns(columns =>
+          {
+              if (Model.JournalEntryId == 0)
+              {
+                  columns.Command(command =>
+                  {
+                      command.Custom("Eliminar").IconClass("fa fa-trash-alt").Click("EliminarJournalEntry").Text(" ");
+                      //command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditJournalEntryLine");
+                      //command.Edit().Text("Editar").UpdateText("Registrar").CancelText("Cancelar");
+                      // command.Destroy().Text("Eliminar");
 
-                                                                                                })
-                                                                                                .Filterable(f => f.Operators(o => o.ForString(s => s
-                                                                                                .Clear()
-                                                                                                .Contains("Contiene")
-                                                                                                .DoesNotContain("No contiene")
-                                                                                                .EndsWith("Termina con")
-                                                                                                .IsEqualTo("Es igual a")
-                                                                                                .IsNotEqualTo("No es igual a")
-                                                                                                .IsNull("Es nulo")
-                                                                                                .StartsWith("Inicia con")
+                  }).Width(100);
+              }
+              columns.Bound(p => p.JournalEntryLineId).Title("Id Line").Width(100);
+              columns.Bound(p => p.Description).Title("Descripción").Width(200);
+              columns.Bound(p => p.AccountId).Hidden().Width(200);
+              columns.Bound(p => p.AccountName).Width(200);
+              columns.Bound(p => p.CostCenterId).Hidden().Width(200);
+              columns.Bound(p => p.CostCenterName).Width(200);
+              columns.Bound(p => p.Debit).Width(200).Format("{0:N2}");
+              columns.Bound(p => p.Credit).Width(200).Format("{0:N2}");
 
-
-                                                                                                )
-                                                                                                .ForNumber(n => n
-                                                                                                .Clear()
-                                                                                                .IsEqualTo("Es igual a")
-                                                                                                .IsGreaterThan("Es mayor que")
-                                                                                                .IsLessThan("Es menor que")
-                                                                                                .IsNull("Es nulo")
-                                                                                                .IsLessThanOrEqualTo("Es menor o igual que")
-                                                                                                .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                                                                )
-                                                                                                .ForDate(d => d
-                                                                                                .Clear()
-                                                                                                .IsEqualTo("Es igual que")
-                                                                                                .IsGreaterThan("Es mayor que")
-                                                                                                .IsLessThan("Es menor que")
-                                                                                                .IsLessThanOrEqualTo("Es menor o igual que")
-                                                                                                .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                                                                .IsNotEqualTo("No es igual que")
-                                                                                                )
-                                                                                                ))
-                                                                                                .ToolBar(tools =>
-                                                                                                {
-                                                                                                    // tools.Create();
-                                                                                                    // tools.Create().Text("Agregar");
-                                                                                                    //tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus");
-                                                                                                    //.HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddJournalEntryLine()" });
-                                                                                                    tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                                                                                    tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-                                                                                                })
-                                                                                                .Editable(e => e.Mode(GridEditMode.InLine))
-                                                                                                .Sortable()
-                                                                                                .Pageable()
-                                                                                                .Filterable()
-                                                                                                .Scrollable()
-                                                                                                .Pdf(pdf => pdf.FileName("JournalEntryLineReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                                                                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                                                                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                                                                                .Excel(excel => excel.FileName("JournalEntryLineReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                                                                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                                                                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                                                                                .DataSource(dataSource => dataSource
-                                                                                                .WebApi()
-                                                                                                .Events(q => q.RequestEnd("OnRequestEnd_TopLinePriceGrid"))
-                                                                                                .ServerOperation(true)
-                                                                                                .Model(model =>
-                                                                                                {
-                                                                                                    model.Id(p => p.JournalEntryLineId);
-                                                                                                    model.Field(p => p.JournalEntryLineId).Editable(false);
-                                                                                                    model.Field(p => p.Description).Editable(true);
-                                                                                                    model.Field(p => p.AccountId).Editable(false);
-                                                                                                    model.Field(p => p.AccountName).Editable(false);
-                                                                                                    model.Field(P => P.CostCenterId).Editable(false);
-                                                                                                    model.Field(p => p.CostCenterName).Editable(false);
-                                                                                                    model.Field(p => p.Credit).Editable(true);
-                                                                                                    model.Field(p => p.Debit).Editable(true);                                                                                   
-                                                                                                })
-                                                                                                .Events(events => events.Error("error_handler"))
-                                                                                                .Read(read => read.Action("GetJournalEntryLine", "JournalEntryLine").Data("AgregarLinea"))
-                                                                                                .Create(create => create.Action("Insert", "JournalEntryLine"))
-                                                                                                 .Destroy(destroy => destroy.Action("Delete", "JournalEntryLine", new { JournalEntryLineId = "{0}" }).Type(HttpVerbs.Post))
-                                                                                                //.Update(update => update.Action("Update", "JournalEntryLine", new { JournalEntryLineId = "{0}" }).Type(HttpVerbs.Put))
-                                                                                                // .Destroy(destroy => destroy.Action("Delete", "JournalEntryLine", new { JournalEntryLineId = "{0}" }).Type(HttpVerbs.Delete))
-
-                                                                                                )
-                                                                                                .Events(e =>
-                                                                                                {
-                                                                                                    e.Save("onsave");
-                                                                                                    e.DataBound("onBound");
+          })
+          .Filterable(f => f.Operators(o => o.ForString(s => s
+          .Clear()
+          .Contains("Contiene")
+          .DoesNotContain("No contiene")
+          .EndsWith("Termina con")
+          .IsEqualTo("Es igual a")
+          .IsNotEqualTo("No es igual a")
+          .IsNull("Es nulo")
+          .StartsWith("Inicia con")
 
 
-                                                                                                })
+          )
+          .ForNumber(n => n
+          .Clear()
+          .IsEqualTo("Es igual a")
+          .IsGreaterThan("Es mayor que")
+          .IsLessThan("Es menor que")
+          .IsNull("Es nulo")
+          .IsLessThanOrEqualTo("Es menor o igual que")
+          .IsGreaterThanOrEqualTo("Es mayor o igual que")
+          )
+          .ForDate(d => d
+          .Clear()
+          .IsEqualTo("Es igual que")
+          .IsGreaterThan("Es mayor que")
+          .IsLessThan("Es menor que")
+          .IsLessThanOrEqualTo("Es menor o igual que")
+          .IsGreaterThanOrEqualTo("Es mayor o igual que")
+          .IsNotEqualTo("No es igual que")
+          )
+          ))
+          .ToolBar(tools =>
+          {
+              // tools.Create();
+              // tools.Create().Text("Agregar");
+              //tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus");
+              //.HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddJournalEntryLine()" });
+              tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+              tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+          })
+          .Editable(e => e.Mode(GridEditMode.InLine))
+          .Sortable()
+          .Pageable()
+          .Filterable()
+          .Scrollable()
+          .Pdf(pdf => pdf.FileName("JournalEntryLineReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+          + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+          .ProxyURL(Url.Action("Export", "Home")).AllPages())
+          .Excel(excel => excel.FileName("JournalEntryLineReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+          + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+          .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+          .DataSource(dataSource => dataSource
+          .WebApi()
+          .Events(q => q.RequestEnd("OnRequestEnd_TopLinePriceGrid"))
+          .ServerOperation(true)
+          .Model(model =>
+          {
+              model.Id(p => p.JournalEntryLineId);
+              model.Field(p => p.JournalEntryLineId).Editable(false);
+              model.Field(p => p.Description).Editable(true);
+              model.Field(p => p.AccountId).Editable(false);
+              model.Field(p => p.AccountName).Editable(false);
+              model.Field(P => P.CostCenterId).Editable(false);
+              model.Field(p => p.CostCenterName).Editable(false);
+              model.Field(p => p.Credit).Editable(true);
+              model.Field(p => p.Debit).Editable(true);
+          })
+          .Events(events => events.Error("error_handler"))
+          .Read(read => read.Action("GetJournalEntryLine", "JournalEntryLine").Data("AgregarLinea"))
+          .Create(create => create.Action("Insert", "JournalEntryLine"))
+           .Destroy(destroy => destroy.Action("Delete", "JournalEntryLine", new { JournalEntryLineId = "{0}" }).Type(HttpVerbs.Post))
+          //.Update(update => update.Action("Update", "JournalEntryLine", new { JournalEntryLineId = "{0}" }).Type(HttpVerbs.Put))
+          // .Destroy(destroy => destroy.Action("Delete", "JournalEntryLine", new { JournalEntryLineId = "{0}" }).Type(HttpVerbs.Delete))
+
+          )
+          .Events(e =>
+          {
+              e.Save("onsave");
+              e.DataBound("onBound");
+
+
+          })
 )
 
 

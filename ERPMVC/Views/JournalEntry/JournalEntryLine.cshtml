@@ -269,45 +269,54 @@
             $("#Debito").val("");
         }
     });
-    function AgregarLinea() {        
-        debugger;
-        var displayedData = $("#gridNumeracionJournalEntryLine").data().kendoGrid.dataSource.data();
-        var id = -999999;
-        debugger;
-        var prueba = $("#JournalEntryLineId").val();
-        console.log(prueba)
-        if ($("#JournalEntryLineId").val() == 0) {
-            if (displayedData.length > 0) {
-                for (var i = 0; i < displayedData.length; i++) {
-                    if (displayedData[i].JournalEntryLineId > id)
-                        id = displayedData[i].JournalEntryLineId;
+
+
+    function AgregarLinea() {     
+        if (Number($("#Cuenta").val()) > 0) {
+            debugger;
+            var displayedData = $("#gridNumeracionJournalEntryLine").data().kendoGrid.dataSource.data();
+            var id = -999999;
+            debugger;
+            var prueba = $("#JournalEntryLineId").val();
+            console.log(prueba)
+            if ($("#JournalEntryLineId").val() == 0) {
+                if (displayedData.length > 0) {
+                    for (var i = 0; i < displayedData.length; i++) {
+                        if (displayedData[i].JournalEntryLineId > id)
+                            id = displayedData[i].JournalEntryLineId;
+                    }
+                    id = id + 1;
                 }
-                id = id + 1;
+                else if (Number($("#Cuenta").val()) > 0) {
+                    id = 1;
+                }
             }
-            else if (Number($("#Cuenta").val()) > 0) {              
-                id = 1;
+            else {
+                id = $("#JournalEntryLineId").val();
+            }
+
+            return {
+                'JournalEntryLineId': id,
+                'JournalEntryId': @Model.JournalEntryId,
+                'Debit': Number($("#Debito").val()),
+                'Credit': Number($("#Credito").val()),
+                'AccountId': Number($("#Cuenta").val()),
+                'AccountName': $("#Cuenta").data("kendoDropDownList").text(),
+                // 'Num': $("#Num").val(),
+                'Description': $("#Descripcion").val(),
+                'CostCenterId': Number($("#CostCenter").val()),
+                'CostCenterName': $("#CostCenter").data("kendoDropDownList").text(),
             }
         }
         else {
-            id = $("#JournalEntryLineId").val();   
+            return;
         }
-        return {
-            'JournalEntryLineId': id,
-            'JournalEntryId': @Model.JournalEntryId,
-            'Debit': Number($("#Debito").val()),
-            'Credit': Number($("#Credito").val()),
-            'AccountId': Number($("#Cuenta").val()),
-            'AccountName': $("#Cuenta").data("kendoDropDownList").text(),
-           // 'Num': $("#Num").val(),
-            'Description': $("#Descripcion").val(),
-            'CostCenterId': Number($("#CostCenter").val()),
-            'CostCenterName': $("#CostCenter").data("kendoDropDownList").text(),   
-        } 
     }
 
     function EliminarJournalEntry(e) {
     
         e.preventDefault();
+       
         var notification = $("#notification").data("kendoNotification");
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
 
@@ -315,10 +324,30 @@
         var grid = $("#gridNumeracionJournalEntryLine").data("kendoGrid");
         var datasource = grid.dataSource;
         datasource.remove(dataItem);
+        
+          $.ajax({
+                url: '@Url.Action("Delete", "JournalEntryLine")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataItem),
+                success: function (data) {
+
+                 },
+                 error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                  //  $("#btngenerarfactura").show();
+                  notification.show({
+                      title: "Validación",
+                      message: textStatus + ": " + XMLHttpRequest.responseText
+                  }, "error");
+
+              }
+          });
 
 
-
-      //  datasource.read();
+        datasource.read();
        // var grid = $("#gridGoodsReceived").getKendoGrid();
         //grid.dataSource.read();
     }

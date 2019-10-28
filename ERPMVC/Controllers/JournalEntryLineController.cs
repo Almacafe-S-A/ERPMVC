@@ -125,9 +125,10 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpDelete("JournalEntryLineId")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<JournalEntryLine>> Delete([FromBody]JournalEntryLine _JournalEntryLine)
         {
+            List<JournalEntryLine> _journalentryLIST = new List<JournalEntryLine>();
             try
             {
                 //string baseadress = config.Value.urlbase;
@@ -141,18 +142,13 @@ namespace ERPMVC.Controllers
                 //    _JournalEntryLine = JsonConvert.DeserializeObject<JournalEntryLine>(valorrespuesta);
                 //}
 
-                List<JournalEntryLine> _journalentryLIST =
+                _journalentryLIST =
                 JsonConvert.DeserializeObject<List<JournalEntryLine>>(HttpContext.Session.GetString("journalentryline"));
 
                 if (_journalentryLIST != null)
                 {
                     _journalentryLIST = _journalentryLIST
-                          .Where(q => q.JournalEntryLineId != _JournalEntryLine.JournalEntryLineId)
-                           .Where(q => q.Credit != _JournalEntryLine.Credit)
-                           .Where(q => q.Debit != _JournalEntryLine.Debit)
-                           .Where(q => q.AccountId != _JournalEntryLine.AccountId)
-                           .Where(q => q.CostCenterId != _JournalEntryLine.CostCenterId)
-                        //   .Where(q => q.SubProductId != _salesorder.SubProductId)
+                          .Where(q => q.JournalEntryLineId != _JournalEntryLine.JournalEntryLineId)                         
                           .ToList();
 
                     HttpContext.Session.SetString("journalentryline", JsonConvert.SerializeObject(_journalentryLIST));
@@ -164,7 +160,7 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error: {ex.Message}");
             }
 
-            return await Task.Run(() => Ok(_JournalEntryLine));
+            return await Task.Run(() => Ok(_journalentryLIST));
           //  return new ObjectResult(new DataSourceResult { Data = new[] { _JournalEntryLine }, Total = 1 });
         }
 
