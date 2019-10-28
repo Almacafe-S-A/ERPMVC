@@ -34,8 +34,8 @@ namespace ERPMVC.Models
         [Display(Name = "Tipo de Factura")]
         public int CreditNoteTypeId { get; set; }
 
-        [Display(Name = "Cotización Asociada")]
-        public Int64 SalesOrderId { get; set; }     
+        [Display(Name = "Factura Asociada")]
+        public Int64 InvoiceId { get; set; }
 
         [Display(Name = "Certificado depósito")]
         public Int64 CertificadoDepositoId { get; set; }

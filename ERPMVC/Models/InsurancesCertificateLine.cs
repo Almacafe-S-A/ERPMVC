@@ -10,24 +10,24 @@ namespace ERPMVC.Models
     public class InsurancesCertificateLine
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Display(Name = "Id de Seguro Certificado Line")]
+        [Display(Name = "Id de Seguro Certificado")]
         public Int64 InsurancesCertificateLineId { get; set; }
 
-        [Display(Name = "Id de Seguro Certificado")]
+        [Display(Name = "Id de Poliza")]
         public int InsurancesCertificateId { get; set; }
 
-        [Display(Name = "Total Insurance")]
+        [Display(Name = "Valor Asegurado Bodega")]
         [Column(TypeName = "decimal(18,4)")]
         public decimal TotalInsurancesLine { get; set; }
 
-        [Display(Name = "Total Deducible")]
+        [Display(Name = "Deducible Bodega")]
         [Column(TypeName = "decimal(18,4)")]
         public decimal TotaldeductibleLine { get; set; }
 
-        [Display(Name = "Total Mercaderia")]
+        [Display(Name = "Valor Fisico")]
         [Column(TypeName = "decimal(18,4)")]
         public decimal TotalofProductLine { get; set; }
-        [Display(Name = "Total Insurance Mercaderia")]
+        [Display(Name = "Valor Asegurado Mercaderia")]
         [Column(TypeName = "decimal(18,4)")]
 
         public decimal TotalInsurancesofProductLine { get; set; }
@@ -36,7 +36,7 @@ namespace ERPMVC.Models
         public decimal DifferenceTotalofProductInsuranceLine { get; set; }
 
 
-        [Display(Name = "Total Deducible Mercaderia")]
+        [Display(Name = "Deducible Mercaderia")]
         [Column(TypeName = "decimal(18,4)")]
         public decimal TotaldeductibleofProduct { get; set; }
         [Display(Name = "Cliente")]
