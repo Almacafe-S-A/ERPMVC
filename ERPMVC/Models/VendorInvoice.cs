@@ -16,7 +16,7 @@ namespace ERPMVC.Models
         [Display(Name = "Envio")]
         public int ShipmentId { get; set; }
         [Display(Name = "Orden de Compra")]
-        public int PurchaseOrderId { get; set; }
+        public int? PurchaseOrderId { get; set; }
         [Display(Name = "Fecha de Factura")]
         public DateTime VendorInvoiceDate { get; set; }
         [Display(Name = "Fecha de vencimiento")]
