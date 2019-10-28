@@ -65,7 +65,6 @@ namespace ERPMVC.Controllers
         }
 
 
-
         [HttpGet("[action]")]
         public async Task<DataSourceResult> GetConcept([DataSourceRequest]DataSourceRequest request)
         {
@@ -91,6 +90,102 @@ namespace ERPMVC.Controllers
             return _Concept.ToDataSourceResult(request);
         }
 
+        public async Task<ActionResult<Concept>> SaveConcept([FromBody]ConceptDTO _ConceptP)
+        {
+            Concept _Concept = _ConceptP;
+            try
+            {
+                Concept _listAccount = new Concept();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Concept/GetConceptById/" + _Concept.ConceptId);
+                string valorrespuesta = "";
+                _Concept.FechaModificacion = DateTime.Now;
+                _Concept.UsuarioModificacion = HttpContext.Session.GetString("user");
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Concept = JsonConvert.DeserializeObject<Concept>(valorrespuesta);
+                }
+
+                if (_Concept == null) { _Concept = new Models.Concept(); }
+
+                if (_ConceptP.ConceptId == 0)
+                {
+                    _Concept.FechaCreacion = DateTime.Now;
+                    _Concept.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_ConceptP);
+                }
+                else
+                {
+                    _ConceptP.UsuarioCreacion = _Concept.UsuarioCreacion;
+                    _ConceptP.FechaCreacion = _Concept.FechaCreacion;
+                    var updateresult = await Update(_Concept.ConceptId, _ConceptP);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(_ConceptP);
+        }
+
+
+        // POST: Concept/Insert
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult<Concept>> Insert(Concept _Concept)
+        {
+            try
+            {
+                // TODO: Add insert logic here
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                _Concept.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _Concept.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _Concept.FechaModificacion = DateTime.Now;
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Concept/Insert", _Concept);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Concept = JsonConvert.DeserializeObject<Concept>(valorrespuesta);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+            return Ok(_Concept);
+        }
+
+        [HttpPut("{id}")]
+        public async Task<ActionResult<Concept>> Update(Int64 id, Concept _Concept)
+        {
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PutAsJsonAsync(baseadress + "api/Concept/Update", _Concept);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Concept = JsonConvert.DeserializeObject<Concept>(valorrespuesta);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+            return new ObjectResult(new DataSourceResult { Data = new[] { _Concept }, Total = 1 });
+        }
 
     }
 }

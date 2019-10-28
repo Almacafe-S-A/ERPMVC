@@ -228,7 +228,7 @@
                                                                                                columns.Bound(p => p.CounterInsurancesCertificate).Title("Contador").Width(300);
                                                                                                columns.Bound(p => p.CustomerId).Title("Cliente").Width(300);
 
-                                                                                               columns.Bound(p => p.TotalInsurancesofProductLine).Format("{0:n2}").Title("Valor Asegurado").Width(150);
+                                                                                               columns.Bound(p => p.TotalofProductLine).Format("{0:n2}").Title("Valor Asegurado").Width(150);
                                                                                                columns.Bound(p => p.GrupoEconomicoId).Title("Grupo economico");
 
                                                                                                            })
@@ -296,7 +296,7 @@
                                                                                                                  //events.upda("EditHandler");
 
                                                                                                              })
-                                                                                             .Read(read => read.Action("GetInsurancesCertificateLine", "InsurancesCertificateLine").Data("GetInsurancesCertificateId"))
+                                                                                             .Read(read => read.Action("BuscarCertificadoDeposito", "InsurancesCertificate").Data("GetCertificadoSeguros"))
 
 )
                                 )
@@ -318,6 +318,20 @@
 </div>
 
 <script>
+
+    function GetCertificadoSeguros() {
+
+        return {
+            
+                'BranchId': 0,
+                'WarehouseId': 0,
+                'CustomerId': 0,
+                'CreatedDate': 0,
+                'ModifiedDate': 0,
+
+        }
+    }
+
     function ImprimirCertificado(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
@@ -350,31 +364,33 @@
                     if (validator.validate()) {
 
                             $.ajax({
-                                url: '@Url.Action("BuscarCertificadoDeposito", "InsurancesCertificateLine")',
-                                method: 'POST',
+                                url: '@Url.Action("BuscarCertificadoDeposito", "InsurancesCertificate")',
+                                method: 'GET',
                                 datatype: "json",
                                 contentType: 'application/json',
                                 async: false,
                                 data: JSON.stringify(dataObject),
                                 success: function (data) {
+                                    var grid = $("#gridCertificado").getKendoGrid();
+                                    var datasource = grid.dataSource;
+                                    var raw = datasource._data;
+                                    for (i = datasource._data.length - 1; i >= 0; i--) {
+                                        var item = raw[i];
+                                        datasource.remove(item);
+                                    }
 
-                                    //notification.show({
-                                    //    message: "Guardado correctamente!"
-                                    //}, "upload-success");
-                                    $.toast({
-                                        heading: 'Satisfactorio',
-                                        text: '<br/><br/> Datos guardados correctamente.',
-                                        position: 'top-right',
-                                        loaderBg: '#ff6849',
-                                        icon: 'success',
-                                        hideAfter: 30000,
-                                        stack: 6
-                                    });
+                                    for (var i = 0; i < data.Data.length; i++) {
+                                        datasource.insert(data.Data[i]);
+                                    }
 
-                                    RefrescarGrid();
-                                    //myModalCertificate
-                                  //  $('#ModalInsurancesCertificateLine').modal('hide');
-                                    $('#myModalCertificate').modal('hide');
+                                    var gridCertificadoDeposito = $("#gridCertificado").data().kendoGrid.dataSource.data();
+                                    console.log('Listado Certificado: ' + gridCertificadoDeposito.length);
+                                    if (gridCertificadoDeposito.length > 0) {
+                                        $("#myModalCertificate").modal('show');
+                                    }
+                                    else {
+                                        $("#myModalCertificate").modal('hide');
+                                    }
 
                                 },
                                 error: function (XMLHttpRequest, textStatus, errorThrown) {
