@@ -130,15 +130,32 @@ namespace ERPMVC.Controllers
         {
             try
             {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/JournalEntryLine/Delete", _JournalEntryLine);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
+                //string baseadress = config.Value.urlbase;
+                //HttpClient _client = new HttpClient();
+                //_client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                //var result = await _client.PostAsJsonAsync(baseadress + "api/JournalEntryLine/Delete", _JournalEntryLine);
+                //string valorrespuesta = "";
+                //if (result.IsSuccessStatusCode)
+                //{
+                //    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                //    _JournalEntryLine = JsonConvert.DeserializeObject<JournalEntryLine>(valorrespuesta);
+                //}
+
+                List<JournalEntryLine> _journalentryLIST =
+                JsonConvert.DeserializeObject<List<JournalEntryLine>>(HttpContext.Session.GetString("journalentryline"));
+
+                if (_journalentryLIST != null)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _JournalEntryLine = JsonConvert.DeserializeObject<JournalEntryLine>(valorrespuesta);
+                    _journalentryLIST = _journalentryLIST
+                          .Where(q => q.JournalEntryLineId != _JournalEntryLine.JournalEntryLineId)
+                           .Where(q => q.Credit != _JournalEntryLine.Credit)
+                           .Where(q => q.Debit != _JournalEntryLine.Debit)
+                           .Where(q => q.AccountId != _JournalEntryLine.AccountId)
+                           .Where(q => q.CostCenterId != _JournalEntryLine.CostCenterId)
+                        //   .Where(q => q.SubProductId != _salesorder.SubProductId)
+                          .ToList();
+
+                    HttpContext.Session.SetString("journalentryline", JsonConvert.SerializeObject(_journalentryLIST));
                 }
             }
             catch (Exception ex)
@@ -146,7 +163,9 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error: {ex.Message}");
             }
-            return new ObjectResult(new DataSourceResult { Data = new[] { _JournalEntryLine }, Total = 1 });
+
+            return await Task.Run(() => Ok(_JournalEntryLine));
+          //  return new ObjectResult(new DataSourceResult { Data = new[] { _JournalEntryLine }, Total = 1 });
         }
 
 
