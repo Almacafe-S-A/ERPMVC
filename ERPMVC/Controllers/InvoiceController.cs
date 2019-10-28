@@ -318,7 +318,11 @@ namespace ERPMVC.Controllers
            
         }
 
+        public async Task<IActionResult> SFLibroVentas()
+        {
+            return await Task.Run(() => View());
 
+        }
 
 
 

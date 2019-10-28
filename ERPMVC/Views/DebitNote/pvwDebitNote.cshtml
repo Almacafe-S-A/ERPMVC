@@ -77,8 +77,8 @@
                                                 <div class="form-group">
                                                     <label asp-for="Fiscal" class="control-label" style="width: 100%;">¿Nota de Debito Interna?</label>
                                                     @(Html.Kendo().SwitchFor(m => m.Fiscal)
-                                                                                         .Name("Fiscal")
-                                                                    .Events(ev => ev.Change("onChange"))
+                                                                                                                         .Name("Fiscal")
+                                                                                                    .Events(ev => ev.Change("onChange"))
                                                     )
                                                 </div>
                                             </div>
@@ -86,11 +86,13 @@
                                             {
                                                 <div class="col-sm-4 col-md-4" id="Divbusqueda">
                                                     <div class="form-group">
-                                                        <label for="FacturaName" class="control-label" style="width:100%">Id Factura</label>
-                                                        <span class="input-group-btn">
-                                                            <input type="text" class="form-control" id="FacturaId" onchange="BuscarFactura();" />
-                                                            <button class="btn btn-info" onclick="BuscarFactura();" type="button"> <span class="glyphicon glyphicon-search"></span> Buscar</button>
-                                                        </span>
+                                                        <label for="FacturaName" class="control-label" style="width:100%">Numero Factura</label>
+                                                        <div class="input-group">
+                                                            <input type="text" class="form-control" id="FacturaId" onKeyPress="return soloNumeros(event)" onchange="BuscarFactura();" />
+                                                            <span class="input-group-btn">
+                                                                <button class="btn btn-info" onclick="BuscarFactura();" type="button"> <span class="glyphicon glyphicon-search"></span> Buscar</button>
+                                                            </span>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             }
@@ -110,14 +112,53 @@
                                                     <span asp-validation-for="DebitNoteId" class="text-danger"></span>
                                                 </div>
                                             </div>
+                                        </div>
+
+                                        <div class="row">
                                             <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
+                                                    <script>
+                                                        function SetCustomerName(e) {
+                                                           // console.log(e);
+                                                            if ($("#CustomerId").val() > 0) {
+                                                                $("#SalesOrderName").prop('disabled', true);
+                                                                $("#SalesOrderName").val($("#CustomerId").data("kendoDropDownList").text());
+                                                                var dataObject = { CustomerId: $("#CustomerId").val()};
+                                                                  $.ajax({
+                                                                     url: '@Url.Action("GetCustomerById", "Customer")',
+                                                                     method: 'GET',
+                                                                     datatype: "json",
+                                                                     contentType: 'application/json',
+                                                                     async: false,
+                                                                     data: dataObject,
+                                                                      success: function (result) {
+                                                                          //console.log(result);
+                                                                          // setearvalor("TaxPercentage", result.TaxPercentage);
+                                                                          $("#DebitNoteName").val(result.CustomerName);
+                                                                          $("#Direccion").val(result.Address);
+                                                                          $("#RTN").val(result.RTN);
+                                                                          $("#Correo").val(result.Email);
+                                                                          $("#Tefono").val(result.Phone);
+                                                                          $("#CustomerRefNumber").val(result.CustomerRefNumber);
+
+                                                                     },
+                                                                      error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                                                             alert(textStatus + ": " + XMLHttpRequest.responseText);
+                                                                       }
+                                                                  });
+                                                            }
+                                                            else {
+                                                                $("#SalesOrderName").prop('disabled', false);
+                                                            }
+                                                        }
+                                                    </script>
                                                     <label asp-for="CustomerId" class="control-label">Cliente</label>
                                                     <kendo-dropdownlist name="CustomerId" for="CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         option-label="Seleccione Cliente"
                                                                         datatextfield="CustomerName"
                                                                         required
                                                                         datavaluefield="CustomerId"
+                                                                        onchange="SetCustomerName();"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
                                                             <transport>
@@ -129,24 +170,12 @@
                                                 </div>
                                             </div>
                                             @*<div class="col-md-4" hidden>
-            <div class="form-group">
-                <label for="CustomerName" class="control-label" style="width:100%">Nombre Cliente</label>
-                <input type="text" required class="form-control required" id="CustomerName" style="min-width: 100%" onchange="BuscarFactura();" readonly />
-                <input type="text" required class="form-control required" id="CustomerId" style="min-width: 100%" hidden readonly />
-            </div>
-        </div>*@
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label asp-for="DeliveryDate" class="control-label" style="width: 100%;">Fecha Entrega</label>
-                                                    <kendo-datetimepicker name="DeliveryDate"
-                                                                          style="width: 100%;"
-                                                                          format="dd/MM/yyyy hh:mm:ss"
-                                                                          time-format="hh:mm:ss"
-                                                                          value="Model.DeliveryDate"></kendo-datetimepicker>
-                                                    <span asp-validation-for="DeliveryDate" class="text-danger"></span>
-                                                </div>
-                                            </div>
-
+                <div class="form-group">
+                    <label for="CustomerName" class="control-label" style="width:100%">Nombre Cliente</label>
+                    <input type="text" required class="form-control required" id="CustomerName" style="min-width: 100%" onchange="BuscarFactura();" readonly />
+                    <input type="text" required class="form-control required" id="CustomerId" style="min-width: 100%" hidden readonly />
+                </div>
+            </div>*@
                                             <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="DebitNoteName" class="control-label" style="width:100%">Nombre Nota Debito</label>
@@ -162,8 +191,8 @@
                                                     <label asp-for="Correo" class="control-label" style="width:100%"></label>
                                                     @*<input type="email" asp-for="Correo" data-val-regex="Correo invalido" class="form-control required " style="min-width: 100%" />*@
                                                     @*<input type="text" asp-for="Correo" class="form-control" style="min-width: 100%" />*@
-                                                    <input type="email" asp-for="Correo" id="Correo" name="Correo" placeholder="myname@example.com" maxlength="150" data-email-msg="Formato del Correo no valido" data-val-required="El correo es requerido" class="form-control" autocomplete="off" style="min-width:100%" />
-                                                    <span asp-validation-for="Correo" class="text-danger"></span>
+                                                    <input type="email" asp-for="Correo" id="Correo" name="Correo" placeholder="myname@example.com" maxlength="150" data-email-msg="Formato del Correo no valido" class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    @*<span asp-validation-for="Correo" class="text-danger"></span>*@
                                                 </div>
                                             </div>
                                         </div>
@@ -183,6 +212,10 @@
                                                     <span asp-validation-for="Tefono" class="text-danger"></span>
                                                 </div>
                                             </div>
+
+                                        </div>
+
+                                        <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="CustomerRefNumber" class="control-label" style="width:100%"></label>
@@ -190,16 +223,19 @@
                                                     <span asp-validation-for="CustomerRefNumber" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-4" >
+                                            <div class="col-md-4">
+                                                <script>
+                                                    function refreshPuntoEmision() {
+                                                        $("#IdPuntoEmision").data("kendoDropDownList").dataSource.read();
+                                                    }
+                                                </script>
                                                 <div class="form-group">
                                                     <label asp-for="BranchId" class="control-label"></label>
                                                     <kendo-dropdownlist name="BranchId" for="BranchId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         option-label="Seleccione la sucursal"
                                                                         datatextfield="BranchName"
                                                                         datavaluefield="BranchId"
+                                                                        onchange="refreshPuntoEmision();"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
                                                             <transport>
@@ -211,17 +247,16 @@
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
-                                                @*<script>
-                function GetBranchId() {
-                    return {
-                        'BranchId': $("#BranchId").data("kendoDropDownList").value()
-                    }
-                }
-            </script>*@
+                                                <script>
+                                                    function GetBranchId() {
+                                                        return {'BranchId': $("#BranchId").data("kendoDropDownList").value()
+                                                        }
+                                                    }
+                                                </script>
                                                 <div class="form-group">
                                                     <label asp-for="IdPuntoEmision" class="control-label"></label>
-                                                    <kendo-dropdownlist name="IdPuntoEmision" 
-                                                                        for="IdPuntoEmision" 
+                                                    <kendo-dropdownlist name="IdPuntoEmision"
+                                                                        for="IdPuntoEmision"
                                                                         filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         option-label="Seleccione el punto de emisión"
                                                                         datatextfield="PuntoEmisionCod"
@@ -229,7 +264,7 @@
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
                                                             <transport>
-                                                                <read url="@Url.Action("Get", "PuntoEmision")" />
+                                                                <read url="@Url.Action("GetPuntoEmisionByBrachId", "PuntoEmision")"  data="GetBranchId"/>
                                                             </transport>
                                                         </datasource>
                                                     </kendo-dropdownlist>
@@ -254,8 +289,6 @@
                                                     <span asp-validation-for="CurrencyId" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                        </div>
-                                        <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="SalesTypeId" class="control-label" style="width:100%"></label>
@@ -277,11 +310,11 @@
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label asp-for="ProductId" class="control-label" style="width:100%">Productos</label>
+                                                    <label asp-for="ProductId" class="control-label" style="width:100%">Servicios</label>
 
                                                     <kendo-dropdownlist name="ProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         for="ProductId"
-                                                                        option-label="Seleccione el  producto"
+                                                                        option-label="Seleccione el Servicio"
                                                                         datatextfield="ProductName"
                                                                         datavaluefield="ProductId"
                                                                         required
@@ -295,6 +328,8 @@
                                                     <span asp-validation-for="ProductId" class="text-danger"></span>
                                                 </div>
                                             </div>
+                                        </div>
+                                        <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="OrderDate" class="control-label" style="width: 100%;">Fecha Orden</label>
@@ -306,9 +341,19 @@
                                                     <span asp-validation-for="OrderDate" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                        </div>
 
-                                        <div class="row">                                          
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="DeliveryDate" class="control-label" style="width: 100%;">Fecha Entrega</label>
+                                                    <kendo-datetimepicker name="DeliveryDate"
+                                                                          style="width: 100%;"
+                                                                          format="dd/MM/yyyy hh:mm:ss"
+                                                                          time-format="hh:mm:ss"
+                                                                          value="Model.DeliveryDate"></kendo-datetimepicker>
+                                                    <span asp-validation-for="DeliveryDate" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="ExpirationDate" class="control-label" style="width: 100%;"></label>
@@ -321,38 +366,44 @@
                                                     <span asp-validation-for="ExpirationDate" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label asp-for="NoOCExenta" class="control-label"></label>
-                                                    <input type="text" asp-for="NoOCExenta" id="NoOCExenta" onkeypress="return SoloNumeros(event)" maxlength="20" class="form-control" style="min-width: 100%" />
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label asp-for="NoSAG" class="control-label"></label>
-                                                    <input type="text" asp-for="NoSAG" id="NoSAG" onkeypress="return SoloNumeros(event)" maxlength="20" class="form-control" style="min-width: 100%" />
-                                                </div>
-                                            </div>
                                         </div>
-
+                                        
                                         <div class="row">
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label asp-for="NoConstanciadeRegistro" class="control-label"></label>
-                                                    <input type="text" asp-for="NoConstanciadeRegistro" id="NoConstanciadeRegistro" onkeypress="return SoloNumeros(event)" maxlength="20" class="form-control" style="min-width: 100%" />
+                                            @if (Model.DebitNoteId == 0)
+                                            {
+                                                <div class="col-sm-4 col-md-4" id="Divbusqueda1">
+                                                    <div class="form-group">
+                                                        <label asp-for="NoOCExenta" class="control-label"></label>
+                                                        <input type="text" asp-for="NoOCExenta" id="NoOCExenta" onkeypress="return SoloNumeros(event)" maxlength="20" class="form-control" style="min-width: 100%" />
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-4 col-md-4" id="Divbusqueda2">
+                                                    <div class="form-group">
+                                                        <label asp-for="NoConstanciadeRegistro" class="control-label"></label>
+                                                        <input type="text" asp-for="NoConstanciadeRegistro" id="NoConstanciadeRegistro" onkeypress="return SoloNumeros(event)" maxlength="20" class="form-control" style="min-width: 100%" />
+                                                    </div>
+                                                </div>
+                                                <div class="col-sm-4 col-md-4" id="Divbusqueda3">
+                                                    <div class="form-group">
+                                                        <label asp-for="NoSAG" class="control-label"></label>
+                                                        <input type="text" asp-for="NoSAG" id="NoSAG" onkeypress="return SoloNumeros(event)" maxlength="20" class="form-control" style="min-width: 100%" />
+                                                    </div>
+                                                </div>
+                                            }
+                                            </div>
+                                        
+                                            <div class="row">
+                                                <div class=" col-sm-12 col-md-12">
+                                                    <div class="form-group">
+                                                        <label asp-for="Direccion" class="control-label" style="width:100%"></label>
+                                                        <textarea asp-for="Direccion" required class="form-control required " style="min-width: 100% !important;"></textarea>
+                                                        <span asp-validation-for="Direccion" class="text-danger"></span>
+                                                    </div>
                                                 </div>
                                             </div>
-                                            <div class=" col-sm-8 col-md-8">
-                                                <div class="form-group">
-                                                    <label asp-for="Direccion" class="control-label" style="width:100%"></label>
-                                                    <textarea asp-for="Direccion" required class="form-control required " style="min-width: 100% !important;"></textarea>
-                                                    <span asp-validation-for="Direccion" class="text-danger"></span>
-                                                </div>
-                                            </div>
-                                        </div>
 
-                                            
-</form>
+
+                                    </form>
                                 </div>
 
                                 <div class="card">
@@ -391,7 +442,7 @@
                                                                                               min="0" disabled class="control-label right bold"
                                                                                               max="999999999"
                                                                                               value="Model.Amount"></kendo-numerictextbox>
-                                                                        <span asp-validation-for="Amount" class="text-danger"></span>
+                                                                        @*<span asp-validation-for="Amount" class="text-danger"></span>*@
                                                                     </dd>
 
 
@@ -406,7 +457,7 @@
                                                                                               max="999999999"
                                                                                               disabled class=" control-label right bold"
                                                                                               value="Model.Discount"></kendo-numerictextbox>
-                                                                        <span asp-validation-for="Discount" class="text-danger"></span>
+                                                                        @*<span asp-validation-for="Discount" class="text-danger"></span>*@
                                                                     </dd>
 
                                                                     <dt>
@@ -437,7 +488,7 @@
                                                                                               max="999999999"
                                                                                               step="1"
                                                                                               value="Model.Tax"></kendo-numerictextbox>
-                                                                        <span asp-validation-for="Tax" class="text-danger"></span>
+                                                                        @*<span asp-validation-for="Tax" class="text-danger"></span>*@
                                                                     </dd>
 
 
@@ -657,77 +708,88 @@
         console.log(e.checked);//true of false
         if (e.checked) {
             document.getElementById('Divbusqueda').style.display = 'none';
+            document.getElementById('Divbusqueda1').style.display = 'none';
+            document.getElementById('Divbusqueda2').style.display = 'none';
+            document.getElementById('Divbusqueda3').style.display = 'none';
             //document.getElementById('InvoiceDetail').style.display = 'none';
             //$('#IdFactura').val('');
         }
         else {
             document.getElementById('Divbusqueda').style.display = 'inline';
+            document.getElementById('Divbusqueda1').style.display = 'inline';
+            document.getElementById('Divbusqueda2').style.display = 'inline';
+            document.getElementById('Divbusqueda3').style.display = 'inline';
             //document.getElementById('InvoiceDetail').style.display = 'inline';
         }
     }
 
     function BuscarFactura(e) {
-        if ($("#FacturaId").val() == null || $("#FacturaId").val() == "") {
-            $("#FacturaId").val(0)
+        if ($("#FacturaId").val() == null || $("#FacturaId").val() == "" || $("#FacturaId").val() == '0') {
+            alert('Ingrese un Id de Factura.')
         }
-        var dataObject = {
-            
-            InvoiceId: $("#FacturaId").val(),
-            editar: 0
-        };
-        console.log("Id", dataObject);
-                    $.ajax({
-                        url: '@Url.Action("GetInvoiceById", "Invoice")',
-                        method: 'POST',
-                        datatype: "json",
-                        contentType: 'application/json',
-                        async: false,
-                        data: JSON.stringify(dataObject),
-                        success: function (result) {
-                            console.log(result);
-                            $("#Direccion").val(result.Direccion);
-                            $("#DebitNoteName").val(result.CustomerName);
-                            $("#RTN").val(result.RTN);
-                            $("#Correo").val(result.Correo);
-                            $("#Tefono").val(result.Tefono);
-                            $("#CustomerId").data("kendoDropDownList").value(result.CustomerId);
-                            $("#CustomerRefNumber").val(result.CustomerRefNumber);
-                            $("#ExpirationDate").kendoDateTimePicker({ value: new Date(result.ExpirationDate), dateInput: true })
-                            $("#DeliveryDate").kendoDateTimePicker({ value: new Date(result.DeliveryDate), dateInput: true })
-                            $("#OrderDate").kendoDateTimePicker({ value: new Date(result.OrderDate), dateInput: true })
-                            $("#NoOCExenta").val(result.NoOCExenta);
-                            $("#NoSAG").val(result.NoSAG);
-                            //-------------
-                            //$("#Amount").data("kendoNumericTextBox").value(result.Amount);
-                            //$("#Discount").data("kendoNumericTextBox").value(result.Discount);
-                            //$("#SubTotal").data("kendoNumericTextBox").value(result.SubTotal);
-                            //$("#Tax").data("kendoNumericTextBox").value(result.Tax);
-                            //$("#Tax18").data("kendoNumericTextBox").value(result.Tax18);
-                            //$("#Freight").data("kendoNumericTextBox").value(result.Freight);
-                            //$("#Remarks").val(result.Remarks);
-                            //$("#TotalGravado").data("kendoNumericTextBox").value(result.TotalGravado);
-                            //$("#TotalExonerado").data("kendoNumericTextBox").value(result.TotalExonerado);
-                            //$("#TotalGravado18").data("kendoNumericTextBox").value(result.TotalGravado18);
-                            //$("#TotalExento").data("kendoNumericTextBox").value(result.TotalExento);
-                            //$("#Total").data("kendoNumericTextBox").value(result.Total);
-                            //--------------
-                            $("#NoConstanciadeRegistro").val(result.NoConstanciadeRegistro);
-                            $("#SalesTypeId").data("kendoDropDownList").select(result.SalesTypeId);
-                            $("#ProductId").data("kendoDropDownList").select(result.ProductId);
-                            $("#BranchId").data("kendoDropDownList").select(result.BranchId);
-                            $("#CurrencyId").data("kendoDropDownList").select(result.CurrencyId);
-                            $("#IdPuntoEmision").data("kendoDropDownList").select(result.IdPuntoEmision);
-                            console.log("result", result);
-                            //---------------
+        else {
+            var dataObject = {
 
-                            //var grid = $("#gridDebitNoteDetail").data("kendoGrid");
-                            //var datasource = grid.dataSource;
-                            //var raw = datasource._data;
-                            //for (i = datasource._data.length - 1; i >= 0; i--) {
-                            //    item = raw[i];
-                            //    datasource.remove(item);
-                            //}
-                            //debugger;
+                InvoiceId: $("#FacturaId").val(),
+                editar: 0
+            };
+            console.log("Id", dataObject);
+            $.ajax({
+                url: '@Url.Action("GetInvoiceById", "Invoice")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    if (result.InvoiceId == 0) {
+                        alert("El numero de Factura que ingreso no existe.")
+                    }
+                    else {
+                        console.log(result);
+                        $("#Direccion").val(result.Direccion);
+                        $("#DebitNoteName").val(result.CustomerName);
+                        $("#RTN").val(result.RTN);
+                        $("#Correo").val(result.Correo);
+                        $("#Tefono").val(result.Tefono);
+                        $("#CustomerId").data("kendoDropDownList").value(result.CustomerId);
+                        $("#CustomerRefNumber").val(result.CustomerRefNumber);
+                        $("#ExpirationDate").kendoDateTimePicker({ value: new Date(result.ExpirationDate), dateInput: true })
+                        $("#DeliveryDate").kendoDateTimePicker({ value: new Date(result.DeliveryDate), dateInput: true })
+                        $("#OrderDate").kendoDateTimePicker({ value: new Date(result.OrderDate), dateInput: true })
+                        $("#NoOCExenta").val(result.NoOCExenta);
+                        $("#NoSAG").val(result.NoSAG);
+                        //-------------
+                        //$("#Amount").data("kendoNumericTextBox").value(result.Amount);
+                        //$("#Discount").data("kendoNumericTextBox").value(result.Discount);
+                        //$("#SubTotal").data("kendoNumericTextBox").value(result.SubTotal);
+                        //$("#Tax").data("kendoNumericTextBox").value(result.Tax);
+                        //$("#Tax18").data("kendoNumericTextBox").value(result.Tax18);
+                        //$("#Freight").data("kendoNumericTextBox").value(result.Freight);
+                        //$("#Remarks").val(result.Remarks);
+                        //$("#TotalGravado").data("kendoNumericTextBox").value(result.TotalGravado);
+                        //$("#TotalExonerado").data("kendoNumericTextBox").value(result.TotalExonerado);
+                        //$("#TotalGravado18").data("kendoNumericTextBox").value(result.TotalGravado18);
+                        //$("#TotalExento").data("kendoNumericTextBox").value(result.TotalExento);
+                        //$("#Total").data("kendoNumericTextBox").value(result.Total);
+                        //--------------
+                        $("#NoConstanciadeRegistro").val(result.NoConstanciadeRegistro);
+                        $("#SalesTypeId").data("kendoDropDownList").select(result.SalesTypeId);
+                        $("#ProductId").data("kendoDropDownList").select(result.ProductId);
+                        $("#BranchId").data("kendoDropDownList").select(result.BranchId);
+                        $("#CurrencyId").data("kendoDropDownList").select(result.CurrencyId);
+                        $("#IdPuntoEmision").data("kendoDropDownList").select(result.IdPuntoEmision);
+                        console.log("result", result);
+                        //---------------
+
+                        //var grid = $("#gridDebitNoteDetail").data("kendoGrid");
+                        //var datasource = grid.dataSource;
+                        //var raw = datasource._data;
+                        //for (i = datasource._data.length - 1; i >= 0; i--) {
+                        //    item = raw[i];
+                        //    datasource.remove(item);
+                        //}
+                        //debugger;
                             @*for (i = 0; i < result.InvoiceLine.length; i++) {
 
                                 var midataObject = {
@@ -766,12 +828,13 @@
                                 datasource.insert(midataObject);
                             }*@
 
-
-                        },
-                        error: function (XMLHttpRequest, textStatus, errorThrown) {
-                                alert(textStatus + ": " + XMLHttpRequest.responseText);
-                        }
-        });
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+        }
     }
     
      function GetProductIdS() {

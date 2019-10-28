@@ -134,8 +134,8 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpGet("[action]")]
-        public async Task<DataSourceResult> GetSalesOrderLine([DataSourceRequest]DataSourceRequest request, CertificadoLine _CertificadoLine)
+        [HttpGet("[controller]/[action]")]
+        public async Task<DataSourceResult> GetCertificadoLine([DataSourceRequest]DataSourceRequest request, CertificadoLine _CertificadoLine)
         {
             List<CertificadoLine> _CertificadoLinelist = new List<CertificadoLine>();
 
@@ -178,7 +178,7 @@ namespace ERPMVC.Controllers
                 {
 
                     List<CertificadoLine> _existelinea = new List<CertificadoLine>();
-                    if (HttpContext.Session.GetString("listadoproductoscertificadodeposito") != "")
+                    if (HttpContext.Session.GetString("listadoproductoscertificadodeposito") != "" && HttpContext.Session.GetString("listadoproductoscertificadodeposito") !=null)
                     {
                         _CertificadoLinelist = JsonConvert.DeserializeObject<List<CertificadoLine>>(HttpContext.Session.GetString("listadoproductoscertificadodeposito"));
                         _existelinea = _CertificadoLinelist.Where(q => q.CertificadoLineId == _CertificadoLine.CertificadoLineId).ToList();
@@ -334,13 +334,14 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _CertificadoLine }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<CertificadoLine>> Delete([FromBody]CertificadoLine _CertificadoLine)
         {
+            List<CertificadoLine> _salesorderLIST = new List<CertificadoLine>();
             try
             {
 
-                List<CertificadoLine> _salesorderLIST =
+                 _salesorderLIST =
                 JsonConvert.DeserializeObject<List<CertificadoLine>>(HttpContext.Session.GetString("listadoproductoscertificadodeposito"));
 
                 if (_salesorderLIST != null)
@@ -378,8 +379,8 @@ namespace ERPMVC.Controllers
             }
 
 
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _CertificadoLine }, Total = 1 });
+            return await Task.Run(() => Ok(_salesorderLIST));
+           // return new ObjectResult(new DataSourceResult { Data = new[] { _CertificadoLine }, Total = 1 });
         }
 
 

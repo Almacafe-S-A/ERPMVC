@@ -103,7 +103,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CertificadoDeposito = JsonConvert.DeserializeObject<List<CertificadoDeposito>>(valorrespuesta);
-
+                    _CertificadoDeposito = _CertificadoDeposito.OrderByDescending(q => q.IdCD).ToList();
                 }
 
 
@@ -353,13 +353,13 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]CertificadoDepositoDTO _CertificadoDeposito)
-        //  public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]dynamic dto)
+       // public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]CertificadoDepositoDTO _CertificadoDeposito)
+         public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]dynamic dto)
         {
-            // CertificadoDepositoDTO _CertificadoDeposito = new CertificadoDepositoDTO(); 
+             CertificadoDepositoDTO _CertificadoDeposito = new CertificadoDepositoDTO(); 
             try
             {
-                // _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDepositoDTO>(dto.ToString());
+                 _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDepositoDTO>(dto.ToString());
                 if (_CertificadoDeposito != null)
                 {
                     foreach (var item in _CertificadoDeposito._CertificadoLine)
@@ -685,6 +685,8 @@ namespace ERPMVC.Controllers
 
             return View(_CertificadoDepositoDTO);
         }
+
+
 
 
     }

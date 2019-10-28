@@ -76,7 +76,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> GetInsurancesCertificateLineById([DataSourceRequest]DataSourceRequest request, Int64 Id)
+        public async Task<ActionResult> GetInsurancesCertificateLineById([DataSourceRequest]DataSourceRequest request, Int64 InsurancesCertificateId)
         {
             List<InsurancesCertificateLine> _InsurancesCertificateLine = new List<InsurancesCertificateLine>();
             try
@@ -85,7 +85,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/InsurancesCertificateLine/GetInsurancesCertificateLineById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/InsurancesCertificateLine/GetSumInsurancesCertificateLine/" + InsurancesCertificateId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
