@@ -188,7 +188,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/InvoiceLine/GetInvoiceLine");
+                var result = await _client.GetAsync(baseadress + "api/VendorInvoiceLine/GetVendorInvoiceLine");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
