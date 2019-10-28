@@ -520,7 +520,8 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _ProformaInvoice }, Total = 1 });
+            return Ok(_ProformaInvoice);
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _ProformaInvoice }, Total = 1 });
         }
 
         [HttpPost("[controller]/[action]")]
@@ -549,8 +550,8 @@ namespace ERPMVC.Controllers
             }
 
 
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _ProformaInvoice }, Total = 1 });
+            return Ok(_ProformaInvoice);
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _ProformaInvoice }, Total = 1 });
         }
 
         [HttpGet]
