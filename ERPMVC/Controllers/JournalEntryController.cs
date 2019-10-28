@@ -200,7 +200,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _JournalEntry = JsonConvert.DeserializeObject<List<JournalEntry>>(valorrespuesta);
-
+                    _JournalEntry = _JournalEntry.OrderByDescending(q => q.JournalEntryId).ToList();
                 }
 
 
@@ -465,7 +465,7 @@ namespace ERPMVC.Controllers
         [HttpGet("[action]")]
         public async Task<ActionResult> GetJournalEntryById(Int64 JournalEntryId)
         {
-            JournalEntry _customers = new JournalEntry();
+            JournalEntry _journalentry = new JournalEntry();
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -476,8 +476,8 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _customers = JsonConvert.DeserializeObject<JournalEntry>(valorrespuesta);
-
+                    _journalentry = JsonConvert.DeserializeObject<JournalEntry>(valorrespuesta);
+                    
                 }
             }
             catch (Exception ex)
@@ -488,7 +488,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return await Task.Run(() => Json(_customers));
+            return await Task.Run(() => Json(_journalentry));
         }
 
 
