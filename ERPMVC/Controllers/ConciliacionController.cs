@@ -44,6 +44,11 @@ namespace ERPMVC.Controllers
 
         }
 
+        class objeto
+        {
+            public ConciliacionDTO[] arreglo { get; set; }
+            
+        }
 
         //public ConciliacionController(ILogger<HomeController> logger, IOptions<MyConfig> config)
         //{
@@ -408,8 +413,8 @@ namespace ERPMVC.Controllers
         {
 
            // Conciliacion _Conciliacion = new Conciliacion(); 
-            //JsonConvert.DeserializeObject<ConciliacionDTO>(dto.ToString());
-            List<ConciliacionDTO> _Conciliacion = new List<ConciliacionDTO>();
+            
+            
 
             ////String[] tempArray;
             //var customer = _customer;
@@ -421,8 +426,9 @@ namespace ERPMVC.Controllers
             try
             {
                 //_Conciliacion = JsonConvert.DeserializeObject<ConciliacionDTO>(dto.ToString());
+                objeto _Conciliacion = JsonConvert.DeserializeObject<objeto>(dto.ToString());
+                
 
-                _Conciliacion = JsonConvert.DeserializeObject<List<ConciliacionDTO>>(dto.ToString());
             }
             catch (Exception ex)
             {
@@ -430,7 +436,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
             
-            return Json(_Conciliacion);
+            return Json(null);
         }
 
         [HttpPost]
