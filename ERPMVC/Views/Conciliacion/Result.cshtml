@@ -39,16 +39,17 @@
                         <h1 class="my-0 font-weight-normal" style="color:white">Conciliación</h1>
                     </div>
                     <br />
-                    <div class="row">
+
+                    @*<div class="row">
                         <div class="col-md-12">
                             <div class="form-group text-center">
-                                <h3>CUENTA: FICENSA CTA. EN LPS. 1-03-20052-3 Cheque</h3>
+                                <h3>CUENTA: <b>@Model.Last().AccountName</b></h3>
                             </div>
                             <hr />
                         </div>
-                    </div>
+                    </div>*@
 
-                    <div class="row">
+                    @*<div class="row">
                         <div class="col-md-12 ">
                             <div class="form-group">
                                 <h5>SALDO SEGÚN ESTADO DE CUENTA DEL BANCO: <b>@Model.Last().Saldo</b></h5>
@@ -60,7 +61,7 @@
                                 <h5>SALDO SEGÚN NUESTROS LIBROS : <b>@Model.Last().Credit</b></h5>
                             </div>
                         </div>
-                    </div>
+                    </div>*@
 
                     <div class="row">
                         @*<div class="col-md-4 ">
@@ -116,7 +117,7 @@
                     <span aria-hidden="true">&times;</span>
                 </button>
             </div>
-            <form class="form" method="POST">
+            <form method="post" id="cuentasForm" data-ajax="false" action='@Url.Action("Confirmacion")' enctype="multipart/form-data">
                 <div class="modal-body">
                     <div class="row">
                         <div class="col-lg-12">
@@ -134,14 +135,14 @@
                                 <tfoot>
                                     <tr>
                                         <td width="60%">
-                                            <input class="form-control" type="text" id="descripcion" name="descripcion">
+                                            <input class="form-control" type="text" id="descripcion" name="description">
 
                                         </td>
                                         <td>
-                                            <input class="form-control" type="number" id="debito" name="debito">
+                                            <input class="form-control" type="number" id="debito" name="debit">
                                         </td>
                                         <td>
-                                            <input class="form-control" type="number" id="credito" name="credito">
+                                            <input class="form-control" type="number" id="credito" name="credit">
                                         </td>
                                         <td>
                                             <button type="button" class="btn btn-info" id="agregarProducto"><i class="fa fa-plus"></i></button>
@@ -168,20 +169,111 @@
         var debito = $("#debito").val();
         var credito = $("#credito").val();
 
+        console.log(descripcion);
+        console.log(debito);
+        console.log(credito);
+
+        if (descripcion == '') {
+
+            if (debito == '' || credito == '') {
+                confirm('LLene las casillas correctamente');
+            }
+
+        }
+        else if (descripcion != '') {
+            if (debito == '' && credito != '') {
+                console.log('lleno correctamente1');
+                $("#idMdlProductoIngresar").find("tbody").append('<tr>' +
+                    '<td>' +
+                    '<input type="text" disabled  class="form-control" name="descripcion" value="' + descripcion + '">' +
+                    '</td>' +
+                    '<td><input type="text" class="form-control" name="debito" value="' + debito + '"></td>' +
+                    '<td><input type="text" class="form-control" name="credito" value="' + credito + '"></td>' +
+                    '<td><button type="button" class="btn btn-warning eliminar"><i class="fa fa-trash"></i></button></td>' +
+                    '</tr>'
+                )
+            }
+            else if (debito != '' && credito == '') {
+                console.log('lleno correctamenteo2');
+                $("#idMdlProductoIngresar").find("tbody").append('<tr>' +
+                    '<td>' +
+                    '<input type="text" disabled  class="form-control" name="descripcion" value="' + descripcion + '">' +
+                    '</td>' +
+                    '<td><input type="text" class="form-control" name="debito" value="' + debito + '"></td>' +
+                    '<td><input type="text" class="form-control" name="credito" value="' + credito + '"></td>' +
+                    '<td><button type="button" class="btn btn-warning eliminar"><i class="fa fa-trash"></i></button></td>' +
+                    '</tr>'
+                )
+
+            }
+
+            else {
+                confirm('Solo llenar una en débito o crédito');
+            }
+        }
+        else {
+            console.log('error');
+            
+        }
+
+       
+
+            
 
 
-        $("#idMdlProductoIngresar").find("tbody").append('<tr>' +
-            '<td>' +
-            '<input type="text" disabled  class="form-control" name="descripcion[]" value="' + descripcion + '">' +
-            '</td>' +
-            '<td><input type="text" class="form-control" name="debito[]" value="' + debito + '"></td>' +
-            '<td><input type="text" class="form-control" name="credito[]" value="' + credito + '"></td>' +
-            '<td><button type="button" class="btn btn-warning eliminar"><i class="fa fa-trash"></i></button></td>' +
-            '</tr>'
-        )
+
+        
+
+        $("#cuentasForm").submit(function (e) {
+            e.preventDefault();
+
+            console.log('');
+
+            var arreglo = [];
+            var elementos = document.getElementsByName("descripcion");
+
+            for (var i = 0; i < elementos.length; i++) {
+                for (var j = 0; j < 1; j++) {
+
+                    arreglo.push({
+                        "cuenta": elementos[i].parentElement.parentElement.childNodes[0].children[0].value,
+                        "debito": elementos[i].parentElement.parentElement.childNodes[1].children[0].value,
+                        "credito": elementos[i].parentElement.parentElement.childNodes[2].children[0].value
+                    });
+                }
+            }
+            console.log("----------------VERIFICAR--------------")
+            console.log(arreglo);  
+
+
+            $.ajax({
 
 
 
+
+                url: '@Url.Action("Confirmacion", "Conciliacion")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify({ arreglo: arreglo }),
+               // data: JSON.stringify(arreglo),
+                success: function (data) {
+
+                    console.log('VERIFICANDO LA ONDA')
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    //notification.show({
+                    //    title: "Validación",
+                    //    message: textStatus + ": " + XMLHttpRequest.responseText
+                    //}, "error");
+                    console.log("error", XMLHttpRequest.responseText)
+
+                }
+            });
+
+        });
 
 
         /*

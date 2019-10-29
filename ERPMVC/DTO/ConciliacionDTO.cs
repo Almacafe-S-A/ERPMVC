@@ -17,6 +17,7 @@ namespace ERPMVC.DTO
         public double Debit { get; set; }
         public double Credit { get; set; }
         public double Saldo { get; set; }
+        public string AccountName { get; set; }
 
         public IEnumerable<IFormFile> files { get; set; }
     }
