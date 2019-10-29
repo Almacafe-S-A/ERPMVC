@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -9,11 +10,16 @@ using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Syncfusion.ReportWriter;
+using Syncfusion.Report;
+using Syncfusion.Pdf;
+using Syncfusion.DocIORenderer;
 
 namespace ERPMVC.Controllers
 {
@@ -24,8 +30,13 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public CertificadoDepositoController(ILogger<CertificadoDepositoController> logger, IOptions<MyConfig> config)
+        private IHostingEnvironment _hostingEnvironment;
+        public CertificadoDepositoController(
+            IHostingEnvironment hostingEnvironment,
+            ILogger<CertificadoDepositoController> logger,
+            IOptions<MyConfig> config)
         {
+            _hostingEnvironment = hostingEnvironment;
             this.config = config;
             this._logger = logger;
         }
@@ -64,8 +75,7 @@ namespace ERPMVC.Controllers
                         FechaVencimientoDeposito = DateTime.Now.AddDays(30),
                         FechaFirma = DateTime.Now,
                         FechaInicioComputo = DateTime.Now,
-                        FechaPagoBanco = DateTime.Now
-                        ,
+                        FechaPagoBanco = DateTime.Now,                        
                         BranchId = Convert.ToInt64(HttpContext.Session.GetString("BranchId"))
                     };
                 }
@@ -678,13 +688,42 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet]
-        public ActionResult SFCertificadoDeposito(Int64 id)
+        public async Task<ActionResult> SFCertificadoDeposito(Int64 id)
         {
-
             CertificadoDepositoDTO _CertificadoDepositoDTO = new CertificadoDepositoDTO { IdCD = id, };
+            try
+            {
+              
+                string basePath = _hostingEnvironment.WebRootPath;
+                FileStream inputStream = new FileStream(basePath + "/ReportsTemplate/CertificadoDeDeposito.rdl", FileMode.Open, FileAccess.Read);
+                ReportWriter reportWriter = new ReportWriter(inputStream);
+                List<ReportParameter> parameters = new List<ReportParameter>();
+                parameters.Add(new ReportParameter() { Name = "IdCD", Labels = new List<string>() { _CertificadoDepositoDTO.IdCD.ToString() }, Values = new List<string>() { _CertificadoDepositoDTO.IdCD.ToString() } });
+                reportWriter.SetParameters(parameters);
+                var format = Syncfusion.ReportWriter.WriterFormat.PDF;
+                string completepath = basePath + $"/CertificadosDeposito/CertificadoDeDeposito{id}.pdf";
+                MemoryStream ms = new MemoryStream();
 
-            return View(_CertificadoDepositoDTO);
+                reportWriter.Save(ms, format);
+                ms.Position = 0;
+
+                using (FileStream file = new FileStream(completepath, FileMode.Create, System.IO.FileAccess.Write))
+                    ms.WriteTo(file);
+
+                ViewBag.pathcontrato = completepath;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            
+           
+            return await Task.Run(()=> View(_CertificadoDepositoDTO));
         }
+
+
+  
 
 
 
