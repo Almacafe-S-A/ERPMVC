@@ -495,7 +495,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 ////api/CertificadoDeposito/GetCertificadoDepositoByCustomer/{CustomerId}
-                var result = await _client.GetAsync(baseadress + "/api/CertificadoDeposito/GetSumCertificadoDepositoByCustomer/" + _InsurancesCertificateLine.CustomerId);
+                var result = await _client.PostAsJsonAsync(baseadress + "/api/CertificadoDeposito/PostCertificadoDepositoByCustomer" , _InsurancesCertificateLine.CustomerId);
 
                 string valorrespuesta = "";
                
