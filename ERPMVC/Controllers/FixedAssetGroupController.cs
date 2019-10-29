@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -18,41 +19,43 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class FixedAssetGroupController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
+
         public FixedAssetGroupController(ILogger<FixedAssetGroupController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
         }
 
-        public IActionResult Index()
+        public ActionResult FixedAssetGroup()
         {
             return View();
         }
 
-        public async Task<ActionResult> pvwFixedAssetGroup(Int64 Id = 0)
+        public async Task<ActionResult> pvwAddFixedAssetGroup([FromBody]FixedAssetGroupDTO _sarpara)
         {
-            FixedAssetGroup _FixedAssetGroup = new FixedAssetGroup();
+            FixedAssetGroupDTO _Grupo = new FixedAssetGroupDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/FixedAssetGroup/GetFixedAssetGroupById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/FixedAssetGroup/GetFixedAssetGroupById/" + _sarpara.FixedAssetGroupId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _FixedAssetGroup = JsonConvert.DeserializeObject<FixedAssetGroup>(valorrespuesta);
+                    _Grupo = JsonConvert.DeserializeObject<FixedAssetGroupDTO>(valorrespuesta);
 
                 }
 
-                if (_FixedAssetGroup == null)
+                if (_Grupo == null)
                 {
-                    _FixedAssetGroup = new FixedAssetGroup();
+                    _Grupo = new FixedAssetGroupDTO();
                 }
             }
             catch (Exception ex)
@@ -61,10 +64,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-
-
-            return PartialView(_FixedAssetGroup);
-
+            return PartialView(_Grupo);
         }
 
 
@@ -203,21 +203,22 @@ namespace ERPMVC.Controllers
             return Ok(_FixedAssetGroup);
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult<FixedAssetGroup>> Delete([FromBody]FixedAssetGroup _FixedAssetGroup)
+        [HttpDelete("FixedAssetGroupId")]
+        public async Task<ActionResult<FixedAssetGroup>> Delete(Int64 Id, FixedAssetGroup _FixedAssetGroupP)
         {
+            FixedAssetGroup _Grupo = _FixedAssetGroupP;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/FixedAssetGroup/Delete", _FixedAssetGroup);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/FixedAssetGroup/Delete", _Grupo);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _FixedAssetGroup = JsonConvert.DeserializeObject<FixedAssetGroup>(valorrespuesta);
+                    _Grupo = JsonConvert.DeserializeObject<FixedAssetGroup>(valorrespuesta);
                 }
 
             }
@@ -227,14 +228,7 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error: {ex.Message}");
             }
 
-            return Ok(_FixedAssetGroup);
-
-            //return new ObjectResult(new DataSourceResult { Data = new[] { _FixedAssetGroup }, Total = 1 });
-        }
-
-
-
-
-
+            return new ObjectResult(new DataSourceResult { Data = new[] { _Grupo }, Total = 1 });
+        }        
     }
 }

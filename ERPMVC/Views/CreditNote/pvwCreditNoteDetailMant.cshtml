@@ -7,7 +7,7 @@
     completedorderlinemant = function (xhr) {
 
         $('#myModalInvoiceLine').find(':input').not('#SalesOrderId :submit').val('0');
-        $('#UnitOfMeasureId').data("kendoDropDownList").value(0);
+        //$('#UnitOfMeasureId').data("kendoDropDownList").value(0);
         $('#SubProductId').data("kendoDropDownList").value(0);
         $('#TaxId').data("kendoDropDownList").value(0);
         $('#TaxAmount').data("kendoNumericTextBox").value(0);
@@ -29,13 +29,14 @@
         var freight = $("#Freight").val() === "" ? 0 : $("#Freight").val();
         debugger;
         var displayedData = $("#gridCreditNoteDetail").data().kendoGrid.dataSource.view();
-        var total = 0, totaldescuento = 0, totalimpuesto = 0,totalimpuesto18=0, totalmonto = 0;
+        var subtotal = 0,total = 0, totaldescuento = 0, totalimpuesto = 0,totalimpuesto18=0, totalmonto = 0;
         var TotalExento = 0, TotalExonerado = 0, TotalGravado = 0,TotalGravado18=0;
 
         $(displayedData).each(function (index, element) {
             var t = JSON.parse(JSON.stringify(element));
 
             total = total + t["Total"];
+            subtotal = subtotal + t["SubTotal"];
             totaldescuento = totaldescuento  + t["DiscountAmount"];
             totalmonto = totalmonto + t["Amount"];
 
@@ -61,6 +62,7 @@
 
         //console.log(TotalGravado); console.log(TotalGravado18); console.log(TotalExento);
         //console.log(TotalExonerado); console.log(totalimpuesto18); console.log(totalimpuesto); console.log(Number(freight));
+        //console.log(total, TotalExento, TotalExonerado, TotalGravado);
         var sumatotal = Number(TotalGravado) + Number(TotalGravado18) + Number(TotalExento) + Number(TotalExonerado) + Number(totalimpuesto18)+  Number(totalimpuesto) + Number(freight);
 
         setearvalor('Amount', totalmonto);
@@ -72,9 +74,8 @@
         setearvalor('Discount', totaldescuento);
         setearvalor('Tax', totalimpuesto);
         setearvalor('Tax18', totalimpuesto18);
-        setearvalor('SubTotal', total - (totaldescuento + totalimpuesto + totalimpuesto18));
-        setearvalor('Total', sumatotal);
-        console.log(total, TotalExento, TotalExonerado, TotalGravado);
+        setearvalor('SubTotal', subtotal);
+        setearvalor('Total', sumatotal);    
 
     }
 
@@ -94,7 +95,7 @@
         else {
             notification.show({
                 title: "Validación",
-                message: "Seleccione el SubProducto!"
+                message: "Seleccione el Servicio!"
             }, "error");
 
             return;
@@ -257,12 +258,14 @@
 
                                                                                                                   }).Width(150);
 
-                                                                                                                  columns.Bound(p => p.CreditNoteLineId).Title("Id Linea").Width(150).Filterable(true);
-                                                                                                                  columns.Bound(p => p.CreditNoteId).Title("Id Maestro").Width(150);
+                                                                                                                  columns.Bound(p => p.CreditNoteLineId).Title("Id Linea").Width(150).Visible(false);
+                                                                                                                  columns.Bound(p => p.CreditNoteId).Title("Id Maestro").Width(150).Visible(false);
+                                                                                                                  columns.Bound(p => p.AccountId).Title("Id Cuenta").Width(150);
+                                                                                                                  columns.Bound(p => p.AccountName).Title("Cuenta").Width(150);
                                                                                                                   columns.Bound(p => p.SubProductId).Title("IdProducto").Width(150);
                                                                                                                   columns.Bound(p => p.SubProductName).Title("Producto").Width(150);
                                                                                                                   columns.Bound(p => p.Description).Title("Descripcion").Width(150);
-                                                                                                                  columns.Bound(p => p.UnitOfMeasureId).Title("Unidad de medida").Width(150);
+                                                                                                                  //columns.Bound(p => p.UnitOfMeasureId).Title("Unidad de medida").Width(150);
                                                                                                                   columns.Bound(p => p.Quantity).Format("{0:n2}").Title("Cantidad").Width(150);
                                                                                                                   columns.Bound(p => p.Price).Format("{0:n2}").Title("Precio").Format("{0:n2}").Width(150);
                                                                                                                   columns.Bound(p => p.Amount).Format("{0:n2}").Title("Monto").Width(150);
@@ -357,7 +360,7 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="CreditNoteLineId" class="control-label" style="width:100%"></label>
-                                                    <input type="number" asp-for="CreditNoteLineId" class="form-control" style="min-width:100%" disabled />
+                                                    <input type="number" asp-for="CreditNoteLineId" class="form-control" style="min-width:100%" disabled readonly />
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
@@ -376,7 +379,7 @@
                                                     <kendo-dropdownlist name="AccountId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         for="AccountId"
                                                                         option-label="Seleccione Cuenta"
-                                                                        datatextfield="Description"
+                                                                        datatextfield="AccountName"
                                                                         datavaluefield="AccountId"
                                                                         style="width: 100%;" required>
 
@@ -393,7 +396,28 @@
                                             <div class="col-md-4">
 
                                                 <div class="form-group">
+                                                    <script>
+                                                        function setsubproductname(e) {
+                                                            // console.log(e);
+                                                            var dataItem = e.dataItem;
+                                                            if (dataItem != null)
+                                                                $("#subproductname").val(dataItem.ProductName);
+                                                        }
 
+                                                        //  var hcustom = 0;
+                                                        //function GetProductTypeIdS() {
+                                                        //    //debugger;
+                                                        //    // console.log($("#hcustomerid").val());
+                                                        //    hcustom = $("#CustomerId").val();
+                                                        //    return {
+                                                        //        'CustomerId': hcustom
+                                                        //        // 'CustomerId': $("#CustomerId").val(),
+                                                        //        // 'ProductTypeId': 2
+
+                                                        //    }
+                                                        //}
+                                                    </script>
+                                                    <input type="hidden" id="subproductname" />
                                                     <div id="productrelacion">
                                                         <label asp-for="SubProductId" class="control-label" style="width:100%"></label>
                                                         <kendo-dropdownlist name="SubProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
@@ -401,6 +425,7 @@
                                                                             for="SubProductId"
                                                                             datatextfield="ProductName"
                                                                             datavaluefield="SubproductId"
+                                                                            on-select="setsubproductname"
                                                                             required
                                                                             style="width: 100%;">
                                                             <datasource type="DataSourceTagHelperType.WebApi">
@@ -429,13 +454,13 @@
                                         </div>
 
                                         <div class="row">
-                                            <div class="col-md-4">
+                                            @*<div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="UnitOfMeasureId" class="control-label" style="width:100%"></label>
                                                     <kendo-dropdownlist name="UnitOfMeasureId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         option-label="Seleccione la unidad de medida"
                                                                         for="UnitOfMeasureId"
-                                                                        datatextfield="UnitOfMeasureName"
+                                                                        dzzAatatextfield="UnitOfMeasureName"
                                                                         datavaluefield="UnitOfMeasureId"
                                                                         auto-bind="true"
                                                                         required
@@ -449,7 +474,7 @@
                                                     </kendo-dropdownlist>
                                                     <span asp-validation-for="UnitOfMeasureId" class="text-danger"></span>
                                                 </div>
-                                            </div>
+                                            </div>*@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Quantity" class="control-label" style="width:100%"></label>
@@ -527,10 +552,12 @@
                                                     <label asp-for="DiscountAmount" class="control-label" style="width:100%"></label>
                                                     <kendo-numerictextbox name="DiscountAmount"
                                                                           format="n2"
+                                                                          spinners="false"
                                                                           min="0"
                                                                           max="999999999"
                                                                           step="1"
                                                                           readonly
+                                                                          disabled
                                                                           style="width:100%"
                                                                           value="Model.DiscountAmount"></kendo-numerictextbox>
                                                     <span asp-validation-for="DiscountAmount" class="text-danger"></span>
@@ -549,7 +576,7 @@
                                                     <kendo-numerictextbox name="SubTotal"
                                                                           id="SubTotalLine"
                                                                           format="n2"
-                                                                          min="0"
+                                                                          
                                                                           step="1"
                                                                           required
                                                                           disabled
@@ -586,6 +613,7 @@
                                                     <kendo-numerictextbox name="TaxPercentage"
                                                                           format="#.## '%'"
                                                                           min="0"
+                                                                          spinners="false"
                                                                           decimals="2"
                                                                           required
                                                                           disabled
@@ -614,6 +642,7 @@
                                                                           format="n2"
                                                                           min="0"
                                                                           step="1"
+                                                                          spinners="false"
                                                                           disabled
                                                                           style="width:100%"
                                                                           value="Model.TaxAmount"></kendo-numerictextbox>
@@ -625,6 +654,7 @@
                                                     <label asp-for="Total" class="control-label" style="width:100%"></label>
                                                     <kendo-numerictextbox name="Total"
                                                                           format="n2"
+                                                                          spinners="false"
                                                                           min="0"
                                                                           disabled
                                                                           required
@@ -642,7 +672,7 @@
                                     @if (Model.CreditNoteId == 0)
                                     {
                                     <div class="row">
-                                        <button id="btnActualizarCotizacionLinea" type="submit" class="form-control">Actualizar</button>
+                                        <button id="btnActualizarCotizacionLinea" type="submit" class="form-control btn-miboton ">Actualizar</button>
                                     </div>
                                      }
                                         
@@ -674,9 +704,9 @@
         for (i = 0; i < displayedData.length; i++) {
             var midataObject = {
                 CreditNoteLineId: i + 1, CreditNoteId: displayedData[i].CreditNoteId
-                , AccountId: displayedData[i].AccountId
+                , AccountId: displayedData[i].AccountId, AccountName: displayedData[i].AccountName
                 , SubProductId: displayedData[i].SubProductId, SubProductName: displayedData[i].SubProductName
-                , Description: displayedData[i].Description, UnitOfMeasureId: displayedData[i].UnitOfMeasureId
+                , Description: displayedData[i].Description
                 , Quantity: displayedData[i].Quantity, Price: displayedData[i].Price
                 , Amount: displayedData[i].Amount, DiscountPercentage: displayedData[i].DiscountPercentage
                 , DiscountAmount: displayedData[i].DiscountAmount, SubTotal: displayedData[i].SubTotal
@@ -741,7 +771,7 @@
         $("#SubProductId").data("kendoDropDownList").value(dataItem.SubProductId);
         $("#AccountId").data("kendoDropDownList").value(dataItem.AccountId);
         $("#DescriptionDetail").val(dataItem.Description);
-        $("#UnitOfMeasureId").data("kendoDropDownList").value(dataItem.UnitOfMeasureId);
+        //$("#UnitOfMeasureId").data("kendoDropDownList").value(dataItem.UnitOfMeasureId);
         $("#Quantity").data("kendoNumericTextBox").value(dataItem.Quantity);
         $("#Price").data("kendoNumericTextBox").value(dataItem.Price);
         $("#AmountLine").data("kendoNumericTextBox").value(dataItem.Amount);

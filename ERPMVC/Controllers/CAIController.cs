@@ -69,6 +69,43 @@ namespace ERPMVC.Controllers
              return Json(_cais.ToDataSourceResult(request));
 
         }
+
+
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> GetCAIById([DataSourceRequest]DataSourceRequest request, [FromBody] CAI _CAI)
+        {
+            CAI _CertificadoDeposito = new CAI();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CAI/GetCAIById/" + _CAI.IdCAI);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CertificadoDeposito = JsonConvert.DeserializeObject<CAI>(valorrespuesta);
+                   
+                }
+
+                if (_CertificadoDeposito == null)
+                {
+                    _CertificadoDeposito = new CAI();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_CertificadoDeposito);
+        }
+
+
+
         //--------------------------------------------------------------------------------------
         [HttpGet]
         public async Task<JsonResult> GetBOX([DataSourceRequest]DataSourceRequest request)
@@ -86,7 +123,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _cais = JsonConvert.DeserializeObject<List<CAI>>(valorrespuesta);
-
+                    _cais = _cais.OrderByDescending(q => q.IdCAI).ToList();
                 }
 
 
@@ -167,6 +204,23 @@ namespace ERPMVC.Controllers
                     _CAI.FechaCreacion = DateTime.Now;
                     _CAI.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_CAIS);
+                    var value = (insertresult.Result as ObjectResult).Value;
+                    CAI resultado = new CAI();
+
+                    try
+                    {
+                       resultado = ((CAI)(value));
+                    }
+                    catch (Exception ex)
+                    {
+                        return await Task.Run(() => BadRequest($"No se guardo el formulario, favor revisar: {value.ToString()}"));
+                    }
+                 
+                    if (resultado.IdCAI <= 0)
+                    {
+                        return await Task.Run(() => BadRequest("No se guardo el formulario, favor revisar"));
+                    }
+
                 }
                 else
                 {
@@ -190,7 +244,7 @@ namespace ERPMVC.Controllers
         // POST: CAI/Insert
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public async Task<ActionResult> Insert(CAI _CAIp)
+        public async Task<ActionResult<CAI>> Insert(CAI _CAIp)
         {
             CAI _CAI = _CAIp;
             try
@@ -216,7 +270,8 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _CAI }, Total = 1 });
+            return Ok(_CAI);
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _CAI }, Total = 1 });
         }
                      
         [HttpPost]

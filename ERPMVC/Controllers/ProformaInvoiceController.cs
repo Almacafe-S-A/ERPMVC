@@ -127,6 +127,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ProformaInvoice = JsonConvert.DeserializeObject<List<ProformaInvoice>>(valorrespuesta);
+                    _ProformaInvoice = _ProformaInvoice.OrderByDescending(q => q.ProformaId).ToList();
                 }
                 //else if(result.StatusCode== 401)
                 //{
@@ -139,6 +140,42 @@ namespace ERPMVC.Controllers
 
 
             return _ProformaInvoice.ToDataSourceResult(request);
+        }
+
+
+        [HttpPost]
+        public async Task<ActionResult> GetProformaInvoiceById([FromBody]ProformaInvoice _ProformaInvoicep)
+        //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
+        {
+            ProformaInvoice _ProformaInvoice = new ProformaInvoice();
+            try
+            {
+
+                //GoodsDelivered _GoodsDeliveredp = JsonConvert.DeserializeObject<GoodsDelivered>(dto);
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/ProformaInvoice/GetProformaInvoiceLineById", _ProformaInvoicep);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _ProformaInvoice = JsonConvert.DeserializeObject<ProformaInvoice>(valorrespuesta);
+
+                }
+
+                if (_ProformaInvoice == null)
+                {
+                    _ProformaInvoice = new ProformaInvoice();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_ProformaInvoice);
         }
 
 
@@ -520,10 +557,11 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _ProformaInvoice }, Total = 1 });
+            return Ok(_ProformaInvoice);
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _ProformaInvoice }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult<ProformaInvoice>> Delete([FromBody]ProformaInvoice _ProformaInvoice)
         {
@@ -549,9 +587,28 @@ namespace ERPMVC.Controllers
             }
 
 
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _ProformaInvoice }, Total = 1 });
+            return Ok(_ProformaInvoice);
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _ProformaInvoice }, Total = 1 });
         }
+
+        [HttpGet]
+        public async Task<ActionResult> SFProformaInvoice(Int32 id)
+        {
+            try
+            {
+                ProformaInvoiceDTO _invoicedto = new ProformaInvoiceDTO { ProformaId = id, };
+                return await Task.Run(() => View(_invoicedto));
+            }
+            catch (Exception)
+            {
+
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+
+        }
+
+
+
 
 
 

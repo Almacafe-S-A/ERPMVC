@@ -11,11 +11,14 @@ namespace ERPMVC.Models
     {
         [Display(Name = "Id")]
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int CreditNoteId { get; set; }       
+        public int CreditNoteId { get; set; }
+        [Display(Name = "Nombre Nota Crédito")]
         public string CreditNoteName { get; set; }
         [Display(Name = "Envío")]
         public int ShipmentId { get; set; }
 
+        [Display(Name = "Numero de Factura")]
+        public int NumeroDEI { get; set; }
 
         [Display(Name = "Fiscal")]
         public bool Fiscal { get; set; }
@@ -23,18 +26,18 @@ namespace ERPMVC.Models
         [Display(Name = "Punto de emisión")]
         public Int64 IdPuntoEmision { get; set; }
        
-        [Display(Name = "Fecha de nota de crédito")]
+        [Display(Name = "Fecha de Nota de Crédito")]
         public DateTime CreditNoteDate { get; set; }
-        [Display(Name = "Fecha de vencimiento")]
+        [Display(Name = "Fecha de Vencimiento Nota Crédito")]
         public DateTime CreditNoteDueDate { get; set; }
 
-        [Display(Name = "Fecha de vencimiento")]
+        [Display(Name = "Fecha de Vencimiento")]
         public DateTime ExpirationDate { get; set; }
         [Display(Name = "Tipo de Factura")]
         public int CreditNoteTypeId { get; set; }
 
-        [Display(Name = "Cotización Asociada")]
-        public Int64 SalesOrderId { get; set; }     
+        [Display(Name = "Factura Asociada")]
+        public Int64 InvoiceId { get; set; }
 
         [Display(Name = "Certificado depósito")]
         public Int64 CertificadoDepositoId { get; set; }
@@ -78,6 +81,9 @@ namespace ERPMVC.Models
         [Display(Name = "Telefono")]
         public string Tefono { get; set; }
 
+        [EmailAddress]
+        [RegularExpression(@"\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*", ErrorMessage = "Correo invalido")]
+        [DataType(DataType.EmailAddress)]
         [Display(Name = "Correo")]
         public string Correo { get; set; }
 
@@ -90,19 +96,20 @@ namespace ERPMVC.Models
         [Display(Name = "Nombre Sucursal")]
         public string BranchName { get; set; }
 
-        [Display(Name = "Customer")]
+        [Display(Name = "Cliente")]
         public int CustomerId { get; set; }
 
         [Display(Name = "Nombre Cliente")]
         public string CustomerName { get; set; }
 
-        [Display(Name = "Id")]
+        [Display(Name = "Producto")]
         public Int64 ProductId { get; set; }
 
         [Display(Name = "Nombre Producto")]
         public string ProductName { get; set; }
-
+        [Display(Name = "Fecha de Pedido")]
         public DateTime OrderDate { get; set; }
+        [Display(Name = "Fecha de Entrega")]
         public DateTime DeliveryDate { get; set; }
 
         [Display(Name = "Moneda")]

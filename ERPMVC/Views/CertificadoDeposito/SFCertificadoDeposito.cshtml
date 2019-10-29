@@ -1,45 +1,107 @@
 ﻿@model ERPMVC.DTO.CertificadoDepositoDTO
+@*
+    @using Syncfusion.JavaScript
 
-@using Syncfusion.JavaScript
+        <div style=" align-items:center; height:825px;width: 100%;">
+                <ej-report-viewer id="reportviewer1" rendering-begin="renderingBegin" report-print="onPrintReport"  processing-mode="Remote" ajax-before-load="ajaxBeforeLoad" report-service-url="/ReportViewer"  report-loaded="onReportLoaded" report-path="/ReportsTemplate/CertificadoDeDeposito.rdl" />
+            </div>
 
-<div style=" align-items:center; height:825px;width: 100%;">
-    <ej-report-viewer id="reportviewer1" rendering-begin="renderingBegin" report-print="onPrintReport"  processing-mode="Remote" ajax-before-load="ajaxBeforeLoad" report-service-url="/ReportViewer"  report-loaded="onReportLoaded" report-path="/ReportsTemplate/CertificadoDeDeposito.rdl" />
+
+            <script type="text/javascript">
+
+                function ajaxBeforeLoad(event) {
+                    var parameters = [{
+                        name: 'IdCD',
+                        labels: ['@Model.IdCD'],
+                        values: [@Model.IdCD],
+                        nullable: false
+                    }
+                    ];
+                    event.data = parameters;
+                };
+
+                function onReportLoaded(sender) {
+                    var reportObj = $('#reportviewer1').data("ejReportViewer");
+                    reportObj.model.parameters = [{
+                        name: 'IdCD',
+                        labels: ['@Model.IdCD'],
+                        values: ['@Model.IdCD'],
+                        nullable: false
+                    }
+                    ];
+                }
+
+                function onPrintReport(args) {
+                    args.isStyleLoad = false;
+                    var data = $("#reportviewer1").data('ejReportViewer');
+                    if (data._browserInfo.name != "msie") {
+                        args.printWind.printDelay = 2000 * data._pageModel.TotalPages;
+                    }
+                }
+
+            </script>
+
+
+            <ej-script-manager></ej-script-manager>*@
+
+@{
+    ViewBag.Title = "PDF viewer";
+}
+
+
+<script src="~/scripts/ej2.min.js"></script>
+
+@using Syncfusion.EJ2
+<div class="control-section">
+    <ejs-pdfviewer id="pdfviewer" serviceUrl="/api/PdfViewer" documentPath="@ViewBag.pathcontrato"></ejs-pdfviewer>
 </div>
-
-
-<script type="text/javascript">
-
-    function ajaxBeforeLoad(event) {
-        var parameters = [{
-            name: 'IdCD',
-            labels: ['@Model.IdCD'],
-            values: [@Model.IdCD],
-            nullable: false
-        }
-        ];
-        event.data = parameters;
-    }; 
-
-    function onReportLoaded(sender) {
-        var reportObj = $('#reportviewer1').data("ejReportViewer");
-        reportObj.model.parameters = [{
-            name: 'IdCD',
-            labels: ['@Model.IdCD'],
-            values: ['@Model.IdCD'],
-            nullable: false
-        }
-        ];
+<style>
+    #pdfviewer {
+        height: 700px;
+        width: 100%;
     }
+</style>
 
-    function onPrintReport(args) {
-        args.isStyleLoad = false;
-        var data = $("#reportviewer1").data('ejReportViewer');
-        if (data._browserInfo.name != "msie") {
-            args.printWind.printDelay = 2000 * data._pageModel.TotalPages;
-        }
-    }
+
+@*@using Syncfusion.JavaScript
+    @using Syncfusion.MVC.EJ
+
+    <input type="button" id="btnViewReportPDF" value="Open Report in PDF viewer" onclick="loadPdf(@Model.IdCD);" />
+    @(Html.EJ().ScriptManager())*@
+<script>
+
+    //$(document).ready(function () {
+    //    $("btnViewReportPDF").click();
+    //});
+
+    @*function loadPdf(idcd) {
+        var jsonData = new Object();
+        jsonData["IdCD"] = idcd;
+        var jsonResult = JSON.stringify(jsonData);
+        $.ajax({
+            url: '@Url.Action("SFPDFCertificadoDeposito","CertificadoDeposito")',
+            type: 'POST',
+            dataType: 'json',
+            crossDomain: true,
+            traditional: true,
+            contentType: 'application/json; charset=utf-8',
+            data: jsonResult,
+            success: function (data) {
+                var _filename = data["data"];
+                var ws = window.open("", '_blank', "width=800,height=600,location=no,menubar=no,status=no,titilebar=no,resizable=no")
+                //Adding script and CSS files
+                ws.document.write('<!DOCTYPE html><html><head><title>PdfViewer</title><link href = "https://cdn.syncfusion.com/16.3.0.29/js/web/flat-azure/ej.web.all.min.css" rel = "stylesheet"><script src="https://cdn.syncfusion.com/js/assets/external/jquery-3.1.1.min.js"><\/script><script src="https://cdn.syncfusion.com/16.3.0.29/js/web/ej.web.all.min.js"><\/script><\/head><body>');
+                //div to render PDF Viewer
+                ws.document.write('<div style="width:100%;min-height:570px"><div id="container"><\/div><\/div>')
+                //Initializes the PDF Viewer
+                ws.document.write("<script>$(function(){ $('#container').ejPdfViewer({ serviceUrl: '../../api/PdfViewer', documentPath: '" + _filename + "', })})<\/script>")
+                ws.document.write('<\/body><\/html>');
+                ws.document.close();
+            },
+            error: function (msg, textStatus, errorThrown) {
+                alert('Exception' + msg.responseText);
+            }
+        });
+    }*@
 
 </script>
-
-
-<ej-script-manager></ej-script-manager>

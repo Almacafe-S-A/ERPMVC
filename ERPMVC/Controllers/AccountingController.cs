@@ -29,10 +29,18 @@ namespace ERPMVC.Controllers
             this.config = config;
             this._logger = logger;
         }
-        public async Task<IActionResult> SFAuxiliarMovimientos()
-        {
-            return await Task.Run(() => View());
+        //public async Task<IActionResult> SFAuxiliarMovimientos()
+        //{
+        //    return await Task.Run(() => View());
 
+        //}
+        [HttpGet]
+        public ActionResult SFAuxiliarMovimientos(Int32 id)
+        {
+
+            AccountingDTO _accountingdto = new AccountingDTO { AccountId = id, }; //token = HttpContext.Session.GetString("token") };
+
+            return View(_accountingdto);
         }
         public async Task<IActionResult> SFAuxiliarMovimientosPorDia()
         {

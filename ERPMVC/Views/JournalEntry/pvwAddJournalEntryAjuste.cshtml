@@ -71,12 +71,12 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="DatePosted" style="width:100%"></label>
-                                                    <kendo-datetimepicker name="DatePosted" style="width: 100%;"
-                                                                          format="dd/MM/yyyy hh:mm:ss"
-                                                                          time-format="hh:mm:ss"
-                                                                          data-val-required="La fecha es requerida"
-                                                                          value="Model.DatePosted"></kendo-datetimepicker>
-                                                    <span asp-validation-for="DatePosted" class="text-danger k-invalid-msg" data-for="DatePosted"></span>
+                                                    <kendo-datepicker name="DatePosted" style="width: 100%;"
+                                                                      format="dd/MM/yyyy"
+                                                                      data-val-required="La fecha es requerida"
+                                                                      id="DatePosted"
+                                                                      value="Model.DatePosted"></kendo-datepicker>
+                                                    <span asp-validation-for="DatePosted" id="IdDatePosted" class="text-danger k-invalid-msg" data-for="DatePosted"></span>
                                                 </div>
                                             </div>
                                         </div>
@@ -253,8 +253,14 @@
                                     </div>
 
                                     <div class="row">
-
                                         <div class="col-md-4">
+                                            <div class="form-group">
+                                                <label asp-for="Memo" style="width:100%"></label>
+                                                <textarea asp-for="Memo" name="Memo" required class="form-control required " style="min-width: 100% !important;" maxlength="150"></textarea>
+                                                <span asp-validation-for="Memo" class="text-danger k-invalid-msg" data-for="Memo"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-4" hidden>
                                             <div class="form-group">
                                                 <label asp-for="TotalDebit" style="width:100%"></label>
                                                 <input type="text" asp-for="TotalDebit" name="TotalDebit" autocomplete="off" class="form-control" style="min-width:100%" readonly />
@@ -262,19 +268,10 @@
                                             </div>
                                         </div>
                                         <div class="col-md-4">
-                                            <div class="form-group">
+                                            <div class="form-group" hidden>
                                                 <label asp-for="TotalCredit" style="width:100%"></label>
                                                 <input type="text" asp-for="TotalCredit" name="TotalCredit" autocomplete="off" class="form-control" style="min-width:100%" readonly />
                                                 <span asp-validation-for="TotalCredit" class="text-danger k-invalid-msg" data-for="TotalCredit"></span>
-                                            </div>
-                                        </div>
-                                       
-
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label asp-for="Memo" style="width:100%"></label>
-                                                <textarea asp-for="Memo" name="Memo" required class="form-control required " style="min-width: 100% !important;" maxlength="150"></textarea>
-                                                <span asp-validation-for="Memo" class="text-danger k-invalid-msg" data-for="Memo"></span>
                                             </div>
                                         </div>
                                         <input id="PartyId" type="text" class="form-control" style="min-width:100%" hidden />
@@ -289,8 +286,10 @@
 
                             <div class="row">
                                 <div class="col-md-12">
-                                        <button id="btnJournalEntry" class="form-control btn-miboton"  onclick="SaveJournalEntry(this);" type="button"> Guardar </button>                                   
-
+                                    @if (Model.JournalEntryId == 0)
+                                    {
+                                        <button id="btnJournalEntry" class="form-control btn-miboton" onclick="SaveJournalEntry(this);" type="button"> Guardar </button>
+                                    }
                                 </div>
                             </div>
                         </div>
@@ -305,14 +304,13 @@
 <script>
     $("#DatePosted").change(function () {
         var FechaLimiteEmision = $("#Date").getKendoDateTimePicker().value().toJSON();
-        var FechaRecepcion = $("#DatePosted").getKendoDateTimePicker().value().toJSON();
+        var FechaRecepcion = $("#DatePosted").getKendoDatePicker().value().toJSON();
         if (Date.parse(FechaRecepcion) >= Date.parse(FechaLimiteEmision)) {
-            document.getElementById("IdDatePosted").innerHTML = "Fecha de Transacción no puede ser mayor que la fecha de hoy."
+            alert("Fecha de Transacción no puede ser mayor que la fecha de hoy.")
             $("#DatePosted").val('');
-        } else {
-            document.getElementById("IdDatePosted").innerHTML = ""
         }
     });
+
     $(document).ready(function () {
         $("#customer").hide();
         $("#party").show();
@@ -379,13 +377,14 @@
         var Credito = $("#TotalCredit").val();
         if (Number(Credito) != Number(Debito)) {
             alert("La partida contable no esta cuadrada");
-            //document.getElementById("TotalCredit").innerHTML = "Crédito no puede ser menor a Débito."
             return
-        } else {
-            document.getElementById("TotalCredit").innerHTML = ""
+        } 
+        else if (Number(Credito) == 0 && Number(Debito) == 0) {
+            alert("No se puede  guardar la partida contable sin  las líneas contables");
+            return
         };
-        debugger;
-            var notification = $("#notification").data("kendoNotification");
+
+        var notification = $("#notification").data("kendoNotification");
            // e.preventDefault();
         $("#btnJournalEntry").hide();
         $("#btnJournalEntry").prop("disabled", true);
@@ -395,18 +394,16 @@
         }
         var dataObject = {
             'JournalEntryId': $("#JournalEntryId").val() === "" ? 0 : $("#JournalEntryId").val(),
-            'GeneralLedgerHeaderId':0, //$("#GeneralLedgerHeaderId").val(),
+            'GeneralLedgerHeaderId':0, 
             'PartyId': $("#PartyId").val(),
             'VoucherType': $("#VoucherType").val(),
             'TypeJournalName': $("#VoucherType").data("kendoDropDownList").text(),
             'Date': $("#Date").getKendoDateTimePicker().value().toJSON(),
-            'DatePosted': $("#DatePosted").getKendoDateTimePicker().value().toJSON(),
+            'DatePosted': $("#DatePosted").getKendoDatePicker().value().toJSON(),
             'Memo': $("#Memo").val(),
-            'ReferenceNo': 0,//$("#ReferenceNo").val(), 
-            //'IdTypeofPayment': $("#IdTypeofPayment").val(),
+            'ReferenceNo': 0,            
             'TotalCredit': $("#TotalCredit").val(), 
             'TotalDebit': $("#TotalDebit").val(), 
-            //'IdPaymentCode': $("#IdPaymentCode").val(),
             'TypeOfAdjustmentId': $("#TypeOfAdjustmentId").val(),
             'TypeOfAdjustmentName': $("#TypeOfAdjustmentId").data("kendoDropDownList").text(),
             'PartyTypeId': $("#IdPartyType").val(),
@@ -414,6 +411,8 @@
             'PartyId': $("#PartyId").val(),
             'EstadoName': $("#EstadoId").data("kendoDropDownList").text(),
             'EstadoId': $("#EstadoId").val(),
+             //'IdPaymentCode': $("#IdPaymentCode").val(),
+            //'IdTypeofPayment': $("#IdTypeofPayment").val(),
             //'CreatedDate': $("#CreatedDate").val(),
             //'ModifiedDate': $("#ModifiedDate").val(),
             //'CreatedUser': $("#CreatedUser").val(),

@@ -102,7 +102,6 @@ namespace ERPMVC.Controllers
             */
 
 
-        //COMIENZA APROVACIÓN
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<JournalEntryDTO>> Aprobar([FromBody]JournalEntryDTO _JournalEntry)
         {
@@ -141,11 +140,49 @@ namespace ERPMVC.Controllers
             {
                 return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
             }
-
             return await Task.Run(() => Ok(_so));
         }
 
-        //TERMINA
+
+        
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<JournalEntryDTO>> Rechazar([FromBody]JournalEntryDTO _JournalEntry)
+        {
+            JournalEntryDTO _so = new JournalEntryDTO();
+            if (_JournalEntry != null)
+            {
+                try
+                {
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/JournalEntry/GetJournalEntryById/" + _JournalEntry.JournalEntryId);
+                    string jsonresult = "";
+                    jsonresult = JsonConvert.SerializeObject(_JournalEntry);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _so = JsonConvert.DeserializeObject<JournalEntryDTO>(valorrespuesta);
+                        _so.EstadoId = 7;
+                        _so.EstadoName = "Rechazado";
+                        var resultsalesorder = await Update(_so.JournalEntryId, _so);
+                       var value = (resultsalesorder.Result as ObjectResult).Value;
+                        JournalEntry resultado = ((JournalEntry)(value));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                    throw ex;
+                }
+            }
+            else
+            {
+                return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+            }
+            return await Task.Run(() => Ok(_so));
+        }
 
         [HttpGet("[action]")]
         public async Task<JsonResult> GetJournalEntry([DataSourceRequest]DataSourceRequest request)
@@ -163,7 +200,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _JournalEntry = JsonConvert.DeserializeObject<List<JournalEntry>>(valorrespuesta);
-
+                    _JournalEntry = _JournalEntry.OrderByDescending(q => q.JournalEntryId).ToList();
                 }
 
 
@@ -428,7 +465,7 @@ namespace ERPMVC.Controllers
         [HttpGet("[action]")]
         public async Task<ActionResult> GetJournalEntryById(Int64 JournalEntryId)
         {
-            JournalEntry _customers = new JournalEntry();
+            JournalEntry _journalentry = new JournalEntry();
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -439,8 +476,8 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _customers = JsonConvert.DeserializeObject<JournalEntry>(valorrespuesta);
-
+                    _journalentry = JsonConvert.DeserializeObject<JournalEntry>(valorrespuesta);
+                    
                 }
             }
             catch (Exception ex)
@@ -451,7 +488,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return await Task.Run(() => Json(_customers));
+            return await Task.Run(() => Json(_journalentry));
         }
 
 
