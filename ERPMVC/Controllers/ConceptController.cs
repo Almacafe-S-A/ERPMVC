@@ -146,6 +146,7 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 _Concept.UsuarioCreacion = HttpContext.Session.GetString("user");
                 _Concept.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _Concept.FechaCreacion = DateTime.Now;
                 _Concept.FechaModificacion = DateTime.Now;
                 var result = await _client.PostAsJsonAsync(baseadress + "api/Concept/Insert", _Concept);
                 string valorrespuesta = "";
@@ -183,6 +184,32 @@ namespace ERPMVC.Controllers
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+            return new ObjectResult(new DataSourceResult { Data = new[] { _Concept }, Total = 1 });
+        }
+
+
+
+        [HttpPost]
+        public async Task<ActionResult<Concept>> Delete(Int64 ConceptId, Concept _Concept)
+        {
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Concept/Delete", _Concept);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Concept = JsonConvert.DeserializeObject<Concept>(valorrespuesta);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error: {ex.Message}");
             }
             return new ObjectResult(new DataSourceResult { Data = new[] { _Concept }, Total = 1 });
         }

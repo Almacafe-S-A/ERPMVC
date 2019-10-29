@@ -79,10 +79,10 @@ namespace ERPMVC.Controllers
                     string valorrespuesta = "";
                     //PRUEBA
                     decimal valor = Convert.ToDecimal(_ExchangeRate.ExchangeRateValue);
-                    decimal temp = decimal.Round(valor, 2, MidpointRounding.AwayFromZero);
+                    decimal temp = decimal.Round(valor, 4, MidpointRounding.AwayFromZero);
                     temp = decimal.Parse(temp.ToString("N4"));
-                    string a = String.Format("{0:F4}", temp);                  
-                    temp = decimal.Parse(a); // Show 3 Decimel Points
+                    //string a = String.Format("{0:F2}", temp);                  
+                    //temp = decimal.Parse(a); 
                     decimal variable1 = Convert.ToDecimal(temp, System.Globalization.CultureInfo.InvariantCulture);
                     _ExchangeRate.ExchangeRateValue = Convert.ToDecimal(variable1);
                     _ExchangeRate.ModifiedDate = DateTime.Now;
@@ -99,7 +99,7 @@ namespace ERPMVC.Controllers
 
                         if (_ExchangeRate.ExchangeRateId > 0)
                         {
-                            return await Task.Run(() => BadRequest($"Ya existe una tasa registrada para esa fecha."));
+                            return await Task.Run(() => BadRequest($"Ya existe una tasa registrada el día de hoy para esta moneda."));
                         }
                     }
                    
