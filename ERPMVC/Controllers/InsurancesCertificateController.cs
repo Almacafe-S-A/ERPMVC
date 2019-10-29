@@ -484,8 +484,8 @@ namespace ERPMVC.Controllers
             }
 
         }
-        [HttpGet]
-        public async Task<ActionResult<InsurancesCertificate>> BuscarCertificadoDeposito([FromBody]InsurancesCertificateLineDTO _InsurancesCertificateLine)
+        [HttpPost("[action]")]
+        public async Task<ActionResult<InsurancesCertificateLine>>BuscarCertificadoDeposito([FromBody]InsurancesCertificateLineDTO _InsurancesCertificateLine)
         {
             InsurancesCertificateLine _InsurancesCertificate = _InsurancesCertificateLine;
             try
@@ -494,7 +494,8 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "/api/CertificadoDeposito/GetCertificadoDepositoByCustomer" + _InsurancesCertificateLine.CustomerId);
+                ////api/CertificadoDeposito/GetCertificadoDepositoByCustomer/{CustomerId}
+                var result = await _client.GetAsync(baseadress + "/api/CertificadoDeposito/GetSumCertificadoDepositoByCustomer/" + _InsurancesCertificateLine.CustomerId);
 
                 string valorrespuesta = "";
                
@@ -506,12 +507,12 @@ namespace ERPMVC.Controllers
                   
                 }
                 //Acumulador de Valor de certificado
-                //CertificadoDeposito _CertificadoP = new CertificadoDeposito();
-                //foreach (var item in _CertificadoP.Total)
-                //{
-                //    item.CreatedUser = HttpContext.Session.GetString("user");
-                //    item.ModifiedUser = HttpContext.Session.GetString("user");
-                //}
+               // var _CertificadoP = new List<CertificadoDeposito>();
+                double acumulador = 0;
+                foreach (var item in _listCertificateDeposito) {
+                    acumulador += item.Total; 
+
+                }
 
 
                 //
