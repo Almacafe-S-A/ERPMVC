@@ -12,5 +12,10 @@ namespace ERPMVC.Controllers
         {
             return View();
         }
+
+        public IActionResult InsuranceEndorsement()
+        {
+            return View();
+        }
     }
 }
