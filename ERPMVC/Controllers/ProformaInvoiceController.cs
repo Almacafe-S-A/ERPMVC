@@ -143,6 +143,42 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpPost]
+        public async Task<ActionResult> GetProformaInvoiceById([FromBody]ProformaInvoice _ProformaInvoicep)
+        //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
+        {
+            ProformaInvoice _ProformaInvoice = new ProformaInvoice();
+            try
+            {
+
+                //GoodsDelivered _GoodsDeliveredp = JsonConvert.DeserializeObject<GoodsDelivered>(dto);
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/ProformaInvoice/GetProformaInvoiceLineById", _ProformaInvoicep);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _ProformaInvoice = JsonConvert.DeserializeObject<ProformaInvoice>(valorrespuesta);
+
+                }
+
+                if (_ProformaInvoice == null)
+                {
+                    _ProformaInvoice = new ProformaInvoice();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_ProformaInvoice);
+        }
+
+
         [HttpGet("[action]")]
         public async Task<DataSourceResult> GetProformaInvoiceByCustomer([DataSourceRequest]DataSourceRequest request, Int64 CustomerId)
         {

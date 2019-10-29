@@ -59,6 +59,15 @@ namespace ERPMVC.Controllers
                     _CreditNote.DeliveryDate = DateTime.Now;
                     _CreditNote.ExpirationDate = DateTime.Now;
                 }
+
+                if (_CreditNote == null)
+                {
+                    _CreditNote = new CreditNoteDTO { OrderDate = DateTime.Now, DeliveryDate = DateTime.Now, ExpirationDate = DateTime.Now.AddDays(30), editar = 1 };
+                }
+                else
+                {
+                    _CreditNote.NumeroDEIString = $"{_CreditNote.Sucursal}-{_CreditNote.Caja}-05-{_CreditNote.NúmeroDEI.ToString().PadLeft(8, '0')} ";
+                }
             }
             catch (Exception ex)
             {
