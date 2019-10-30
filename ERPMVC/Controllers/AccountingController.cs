@@ -658,6 +658,8 @@ namespace ERPMVC.Controllers
                     _AccountingP.FechaCreacion = DateTime.Now;
                     _AccountingP.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_AccountingP);
+                    var value = (insertresult.Result as ObjectResult).Value;
+                    _AccountingP = ((AccountingDTO)(value));
                 }
                 else
                 {
@@ -690,20 +692,24 @@ namespace ERPMVC.Controllers
                     _AccountingP.UsuarioCreacion = _Account.UsuarioCreacion;
                     _AccountingP.FechaCreacion = _Account.FechaCreacion;
                     var updateresult = await Update(_Account.AccountId, _AccountingP);
+                    var value = (updateresult.Result as ObjectResult).Value;
+                    _AccountingP = ((AccountingDTO)(value));
                 }
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
+                return await Task.Run(() => BadRequest($"Ocurrio un error{ex.ToString()}"));
+                // throw ex;
             }
-            
-            return new ObjectResult(new DataSourceResult { Data = new[] { _AccountingP }, Total = 1 });
-           
+
+          
+            return Ok(_AccountingP);
+            // return new ObjectResult(new DataSourceResult { Data = new[] { _AccountingP }, Total = 1 });
             //return Json(_Accounting);
         }
-        
+
         [HttpPost("[action]")]
         public async Task<ActionResult> pvwAddAccountingFather([FromBody]AccountingFatherDTO _sarpara)
         {
@@ -820,7 +826,7 @@ namespace ERPMVC.Controllers
         // POST: Account/Insert
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public async Task<ActionResult> Insert(Accounting _Account)
+        public async Task<ActionResult<Accounting>> Insert(Accounting _Account)
         {
             try
             {
@@ -838,20 +844,29 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Account = JsonConvert.DeserializeObject<Accounting>(valorrespuesta);
+                }      
+                else
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    throw new Exception($"Occurio un error:{valorrespuesta}");
                 }
+            
+               
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un Error{ex.Message}");
+                throw ex;
+                // return BadRequest($"Ocurrio un Error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Account }, Total = 1 });
+            return Ok(_Account);
+           // return new ObjectResult(new DataSourceResult { Data = new[] { _Account }, Total = 1 });
         }
       
         [HttpPut("AccountId")]
-        public async Task<IActionResult> Update(Int64 AccountId, Accounting _Account)
+        public async Task<ActionResult<Accounting>> Update(Int64 AccountId, Accounting _Account)
         {
             try
             {
@@ -865,15 +880,22 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Account = JsonConvert.DeserializeObject<Accounting>(valorrespuesta);
                 }
+                else
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    throw new Exception($"Occurio un error:{valorrespuesta}");
+                }
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un Error{ex.Message}");
+                throw ex;
+                // return BadRequest($"Ocurrio un Error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Account }, Total = 1 });
+            return Ok(_Account);
+           // return new ObjectResult(new DataSourceResult { Data = new[] { _Account }, Total = 1 });
         }
        
     }
