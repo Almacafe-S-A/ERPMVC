@@ -749,7 +749,7 @@ namespace ERPMVC.Controllers
                     if (_AccountParentId == null) { }
                     else
                     {
-                        _Account.TypeAccountIdPadre = _AccountParentId.TypeAccountId;
+                        _Account.TypeAccountIdPadre = _AccountParentId.TypeAccountId !=null?_AccountParentId.TypeAccountId.Value:0;
                     }
                     _Account = new AccountingFatherDTO();
                    
