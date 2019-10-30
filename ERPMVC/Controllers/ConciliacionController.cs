@@ -432,7 +432,7 @@ namespace ERPMVC.Controllers
 
                 //objeto _Conciliacion = JsonConvert.DeserializeObject<objeto>(dto.ToString());
 
-                var insertresult = await Insert(_Conciliacion);
+               // var insertresult = await Insert(_Conciliacion);
             }
             catch (Exception ex)
             {
