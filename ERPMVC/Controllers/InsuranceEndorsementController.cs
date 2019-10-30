@@ -39,7 +39,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> pvwInsuranceEndorsement([FromBody]InsuranceEndorsement _InsuranceEndorsementp)
+        public async Task<ActionResult> pvwAddInsuranceEndorsement([FromBody]InsuranceEndorsement _InsuranceEndorsementp)
         {
             InsuranceEndorsement _InsuranceEndorsement = new InsuranceEndorsement();
             try
