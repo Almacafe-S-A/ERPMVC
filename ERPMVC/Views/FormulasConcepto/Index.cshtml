@@ -1,0 +1,207 @@
+﻿@model IEnumerable<ERPMVC.Models.FormulasConcepto>
+
+@{
+    ViewData["Title"] = "FormulasConcepto";
+}
+
+<script>
+
+    //function onsave(e) {
+    //    //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+    //    // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    //}
+
+    //function caidata(data) {
+    //    data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+    //    data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    //}
+
+
+    function AddFormulasConcepto() {
+
+        var dataObject = {
+            IdformulaConcepto: 0,
+            editar: 1
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwFormulasConcepto", "FormulasConcepto")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#numFormulasConcepto").html('');
+                $("#numFormulasConcepto").html(result);
+
+                $('#ModalFormulasConcepto').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                //alert(textStatus + ": " + XMLHttpRequest.responseText);
+                //console.log('RESULTADO', result);
+                console.log(textStatus + ": " + XMLHttpRequest.responseText)
+            }
+        });
+
+    }
+
+
+         function EditFormulasConcepto(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+             var dataObject = {
+                 IdformulaConcepto: dataItem.IdformulaConcepto,
+                editar : 0
+             };
+            // console.log(dataItem);
+           //  console.log(dataObject);
+
+
+            $.ajax({
+                url: '@Url.Action("pvwFormulasConcepto", "FormulasConcepto")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#numFormulasConcepto").html('');
+                    $("#numFormulasConcepto").html(result);
+
+
+                    //$("#btnCity").hide();
+                    console.log('RESULTADO',result);
+                    $('#ModalFormulasConcepto').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    //alert(textStatus + ": " + XMLHttpRequest.responseText);
+                    //console.log('RESULTADO', result);
+                    console.log(textStatus + ": " + XMLHttpRequest.responseText)
+                }
+            });
+         }
+
+    function RefreshGridFormulasConcepto() {
+
+        var grid = $("#gridFormulasConcepto").getKendoGrid();
+            grid.dataSource.read();
+
+    }
+
+
+</script>
+
+<h3 class="text-themecolor">FormulasConceptos</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.FormulasConcepto>
+                              ()
+
+                                .Name("gridFormulasConcepto")
+
+                                .Columns(columns =>
+                                {
+                                    columns.Command(command =>
+                                    {
+                                        //command.Custom("Ver detalles").Click("Detalles");
+                                        command.Custom("Editar").Click("EditFormulasConcepto");
+                                        command.Destroy().Text("Eliminar");
+                                    }).Width(250);
+                                    columns.Bound(p => p.IdformulaConcepto).Width(100);
+                                    columns.Bound(p => p.Idformula).Width(200);
+                                    columns.Bound(p => p.IdConcepto).Width(170);
+                                    columns.Bound(p => p.NombreConcepto).Width(170);
+                                    columns.Bound(p => p.EstructuraConcepto).Width(170);
+                                    //columns.Bound(p => p.IdEstado).Width(170);
+
+                                    //columns.Bound(p => p.UsuarioCreacion).Width(170);
+                                    //columns.Bound(p => p.UsuarioModificacion).Width(190);
+
+
+                                })
+                                    .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                               .Clear()
+                                                               .Contains("Contiene")
+                                                               .DoesNotContain("No contiene")
+                                                               .EndsWith("Termina con")
+                                                               .IsEqualTo("Es igual a")
+                                                               .IsNotEqualTo("No es igual a")
+                                                               .IsNull("Es nulo")
+                                                               .StartsWith("Inicia con")
+
+
+                                                         )
+                                                         .ForNumber(n => n
+                                                           .Clear()
+                                                           .IsEqualTo("Es igual a")
+                                                           .IsGreaterThan("Es mayor que")
+                                                           .IsLessThan("Es menor que")
+                                                           .IsNull("Es nulo")
+                                                           .IsLessThanOrEqualTo("Es menor o igual que")
+                                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                         )
+                                                         .ForDate(d => d
+                                                         .Clear()
+                                                         .IsEqualTo("Es igual que")
+                                                         .IsGreaterThan("Es mayor que")
+                                                         .IsLessThan("Es menor que")
+                                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                         .IsNotEqualTo("No es igual que")
+                                                          )
+                                                       ))
+
+                                .ToolBar(tools =>
+                                {
+
+                                    //tools.Create();
+                                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                                  .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddFormulasConcepto()" });
+                                    tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                    tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                                })
+                                .Editable(e => e.Mode(GridEditMode.PopUp))
+                                .Sortable()
+                                .Pageable()
+                                .Filterable()
+                                .Scrollable()
+                                .Pdf(pdf => pdf.FileName("FormulasConceptoReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                .Excel(excel => excel.FileName("FormulasConceptoReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                .DataSource(dataSource =>
+                                dataSource
+                                .WebApi()
+
+                                .ServerOperation(true)
+                                .Model(model =>
+                                {
+                                    model.Id(p => p.IdformulaConcepto);
+                                    model.Field(p => p.IdformulaConcepto).Editable(false);
+
+
+                                })
+                                .Events(events => events.Error("error_handler"))
+                                .Read(read => read.Action("Get", "FormulasConcepto"))
+                                .Create(create => create.Action("Insert", "FormulasConcepto").Type(HttpVerbs.Post))
+                                .Update(update => update.Action("Update", "FormulasConcepto").Type(HttpVerbs.Post))
+                                .Destroy(destroy => destroy.Action("Delete", "FormulasConcepto").Type(HttpVerbs.Post))
+
+
+                                )
+//.Events(e =>
+//{
+//    e.Save("onsave");
+
+//})
+)
+
+<div id="numFormulasConcepto">
+    @await Html.PartialAsync("pvwFormulasConcepto", new ERPMVC.DTO.FormulasConceptoDTO { IdformulaConcepto = 0 })
+</div>
+
