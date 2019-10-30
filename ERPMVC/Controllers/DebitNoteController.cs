@@ -68,28 +68,29 @@ namespace ERPMVC.Controllers
 
         //}
         [HttpPost]
-        public async Task<ActionResult> pvwDebitNote([FromBody]DebitNote _Invoicep)
+        public async Task<ActionResult> pvwDebitNote([FromBody]DebitNote _DebitNotep)
         {
-            DebitNoteDTO _Invoice = new DebitNoteDTO();
+            DebitNoteDTO _DebitNote = new DebitNoteDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/DebitNote/GetDebitNoteById/" + _Invoicep.DebitNoteId);
+                var result = await _client.GetAsync(baseadress + "api/DebitNote/GetDebitNoteById/" + _DebitNotep.DebitNoteId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Invoice = JsonConvert.DeserializeObject<DebitNoteDTO>(valorrespuesta);
+                    _DebitNote = JsonConvert.DeserializeObject<DebitNoteDTO>(valorrespuesta);
 
                 }
-                if (_Invoice == null)
+                if (_DebitNote == null)
                 {
-                    _Invoice = new DebitNoteDTO();
-                    _Invoice.OrderDate = DateTime.Now;
-                    _Invoice.DeliveryDate = DateTime.Now;
-                    _Invoice.ExpirationDate = DateTime.Now;
+                    _DebitNote = new DebitNoteDTO { OrderDate = DateTime.Now, DeliveryDate = DateTime.Now, ExpirationDate = DateTime.Now.AddDays(30), editar = 1, BranchId = Convert.ToInt32(HttpContext.Session.GetString("BranchId")) };
+                }
+                else
+                {
+                    _DebitNote.NumeroDEIString = $"{_DebitNote.Sucursal}-{_DebitNote.Caja}-05-{_DebitNote.NúmeroDEI.ToString().PadLeft(8, '0')} ";
                 }
             }
             catch (Exception ex)
@@ -98,7 +99,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
             
-            return PartialView(_Invoice);
+            return PartialView(_DebitNote);
 
         }
         
