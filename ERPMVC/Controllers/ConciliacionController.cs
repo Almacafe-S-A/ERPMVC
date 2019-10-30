@@ -412,9 +412,10 @@ namespace ERPMVC.Controllers
 
         {
 
-           // Conciliacion _Conciliacion = new Conciliacion(); 
-            
-            
+           //ConciliacionDTO _Conciliacion = new ConciliacionDTO();
+           List<ConciliacionDTO> _Conciliacion = new List<ConciliacionDTO>();
+
+
 
             ////String[] tempArray;
             //var customer = _customer;
@@ -426,9 +427,12 @@ namespace ERPMVC.Controllers
             try
             {
                 //_Conciliacion = JsonConvert.DeserializeObject<ConciliacionDTO>(dto.ToString());
-                objeto _Conciliacion = JsonConvert.DeserializeObject<objeto>(dto.ToString());
-                
 
+                _Conciliacion = JsonConvert.DeserializeObject<List<ConciliacionDTO>>(dto.ToString());
+
+                //objeto _Conciliacion = JsonConvert.DeserializeObject<objeto>(dto.ToString());
+
+                var insertresult = await Insert(_Conciliacion);
             }
             catch (Exception ex)
             {
@@ -469,6 +473,7 @@ namespace ERPMVC.Controllers
             return Ok(_custo);
             // return new ObjectResult(new DataSourceResult { Data = new[] { _Conciliacion }, Total = 1 });
         }
+
 
 
         [HttpPut("{id}")]
