@@ -826,8 +826,9 @@ namespace ERPMVC.Controllers
         // POST: Account/Insert
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public async Task<ActionResult<Accounting>> Insert(Accounting _Account)
+        public async Task<ActionResult<AccountingDTO>> Insert(Accounting _Account)
         {
+            AccountingDTO _accdto = new AccountingDTO();
             try
             {
                 // TODO: Add insert logic here
@@ -843,7 +844,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Account = JsonConvert.DeserializeObject<Accounting>(valorrespuesta);
+                    _accdto = JsonConvert.DeserializeObject<AccountingDTO>(valorrespuesta);
                 }      
                 else
                 {
@@ -861,13 +862,14 @@ namespace ERPMVC.Controllers
                 // return BadRequest($"Ocurrio un Error{ex.Message}");
             }
 
-            return Ok(_Account);
+            return Ok(_accdto);
            // return new ObjectResult(new DataSourceResult { Data = new[] { _Account }, Total = 1 });
         }
       
         [HttpPut("AccountId")]
         public async Task<ActionResult<Accounting>> Update(Int64 AccountId, Accounting _Account)
         {
+            AccountingDTO _accdto = new AccountingDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -878,7 +880,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Account = JsonConvert.DeserializeObject<Accounting>(valorrespuesta);
+                    _accdto = JsonConvert.DeserializeObject<AccountingDTO>(valorrespuesta);
                 }
                 else
                 {
@@ -894,7 +896,7 @@ namespace ERPMVC.Controllers
                 // return BadRequest($"Ocurrio un Error{ex.Message}");
             }
 
-            return Ok(_Account);
+            return Ok(_accdto);
            // return new ObjectResult(new DataSourceResult { Data = new[] { _Account }, Total = 1 });
         }
        

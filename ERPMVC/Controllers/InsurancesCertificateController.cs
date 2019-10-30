@@ -104,6 +104,8 @@ namespace ERPMVC.Controllers
                 if (_InsurancesCertificateLine == null)
                 {
                     _InsurancesCertificateLine = new InsurancesCertificateLineDTO();
+                    _InsurancesCertificateLine.ModifiedDate = DateTime.Now.AddMonths(1);
+                    _InsurancesCertificateLine.CreatedDate = DateTime.Now;
                     _InsurancesCertificateLine.InsurancesCertificateId = _InsurancesCertificateLineDTOp.InsurancesCertificateId;
                 }
             }
