@@ -402,27 +402,25 @@ namespace ERPMVC.Controllers
         }
 
 
-        public async Task<JsonResult> AccountingRes([DataSourceRequest]DataSourceRequest request, TypeAccount TypeAccount, bool Estado)
+        public async Task<JsonResult> AccountingRes([DataSourceRequest]DataSourceRequest request,AccountingFilter TypeAccount)
         {
             List<AccountingDTO> _accounting = new List<AccountingDTO>();
-            if (Estado == false)
-            {
+            //if (Estado == false)
+            //{
 
                 try
                 {
-
 
                     string baseadress = config.Value.urlbase;
                     HttpClient _client = new HttpClient();
                     _client.Timeout = TimeSpan.FromMinutes(15);
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountingType/" + TypeAccount.TypeAccountId);//GetAccountingActive
+                    var result = await _client.PostAsJsonAsync(baseadress + "api/Accounting/GetAccountingType/", TypeAccount);//GetAccountingActive
                     string valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _accounting = JsonConvert.DeserializeObject<List<AccountingDTO>>(valorrespuesta);
-
                     }
 
                     if (_accounting == null)
@@ -436,41 +434,7 @@ namespace ERPMVC.Controllers
                     _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                     throw ex;
                 }
-            }
-            else
-            {
-                try
-                {
-
-
-                    string baseadress = config.Value.urlbase;
-                    HttpClient _client = new HttpClient();
-                    _client.Timeout = TimeSpan.FromMinutes(15);
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountingActive/" + TypeAccount.TypeAccountId);//GetAccountingActive
-                    string valorrespuesta = "";
-                    if (result.IsSuccessStatusCode)
-                    {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _accounting = JsonConvert.DeserializeObject<List<AccountingDTO>>(valorrespuesta);
-
-                    }
-
-                    if (_accounting == null)
-                    {
-                        _accounting = new List<AccountingDTO>();
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                    throw ex;
-                }
-
-            }
-
-            // return Json(_accounting, JsonRequestBehavior.AllowGet);
+          
             return Json(_accounting.ToTreeDataSourceResult(request));
 
         }
@@ -710,7 +674,7 @@ namespace ERPMVC.Controllers
                         _AccountDuplicated = JsonConvert.DeserializeObject<AccountingDTO>(valorrespuesta2);
 
                     }
-                    if (_AccountDuplicated != null)
+                    if (_AccountDuplicated != null && _AccountingP.AccountId!= _AccountDuplicated.AccountId)
                     {
                         string error = await result.Content.ReadAsStringAsync();
 

@@ -18,28 +18,19 @@ using Newtonsoft.Json;
 
 namespace ERPMVC.Controllers
 {
-   /* public class InsurancesCertificateController : Controller
-    {
-        public IActionResult Index()
-        {
-            return View();
-        }
-    }*/
     [Authorize]
     [CustomAuthorization]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class InsurancesCertificateController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        private IHostingEnvironment _hostingEnvironment;
-        public InsurancesCertificateController(IHostingEnvironment hostingEnvironment
-            , ILogger<InsurancesCertificateController> logger, IOptions<MyConfig> config)
+        public InsurancesCertificateController( ILogger<InsurancesCertificateController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
-            _hostingEnvironment = hostingEnvironment;
-
         }
+
         public IActionResult Index()
         {
             return View();
@@ -484,6 +475,38 @@ namespace ERPMVC.Controllers
             }
 
         }
+        [HttpGet("[controller]/[action]")]
+        public async Task<JsonResult> GetCertificadoDepositoByCustomer( Int64 CustomerId)
+        {
+            List<CertificadoDeposito> _CertificadoDeposito = new List<CertificadoDeposito>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoByCustomer/" + CustomerId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CertificadoDeposito = JsonConvert.DeserializeObject<List<CertificadoDeposito>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return Json(_CertificadoDeposito);
+            //_CertificadoDeposito.ToDataSourceResult(request);
+
+        }
         [HttpPost("[action]")]
         public async Task<ActionResult<InsurancesCertificateLine>>BuscarCertificadoDeposito([FromBody]InsurancesCertificateLineDTO _InsurancesCertificateLine)
         {
@@ -491,48 +514,37 @@ namespace ERPMVC.Controllers
             try
             {
                 List<CertificadoDeposito> _listCertificateDeposito = new List<CertificadoDeposito>();
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                ////api/CertificadoDeposito/GetCertificadoDepositoByCustomer/{CustomerId}
-                var result = await _client.GetAsync(baseadress + "/api/CertificadoDeposito/GetSumCertificadoDepositoByCustomer/" + _InsurancesCertificateLine.CustomerId);
-
-                string valorrespuesta = "";
-               
-                if (result.IsSuccessStatusCode)
-                {
-                    
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listCertificateDeposito = JsonConvert.DeserializeObject<List<CertificadoDeposito>>(valorrespuesta);
-                  
-                }
+                //CertificadoDepositoController _CertificadoDepositoP= new CertificadoDepositoController();
+               var CertificateDepositoP = await GetCertificadoDepositoByCustomer( _InsurancesCertificate.CustomerId);
+                _listCertificateDeposito = ((List<CertificadoDeposito>)CertificateDepositoP.Value);
                 //Acumulador de Valor de certificado
-               // var _CertificadoP = new List<CertificadoDeposito>();
+                // var _CertificadoP = new List<CertificadoDeposito>();
                 double acumulador = 0;
-                foreach (var item in _listCertificateDeposito) {
+                foreach (CertificadoDeposito item in _listCertificateDeposito) {
                     acumulador += item.Total; 
 
                 }
+                _InsurancesCertificate.TotalofProductLine = Convert.ToDecimal(acumulador);
 
 
-                //
-                List<InsurancesCertificateLine> _listInsurancesCertificateLine = new List<InsurancesCertificateLine>();
-                string _baseadress = config.Value.urlbase;
-                HttpClient client = new HttpClient();
-                client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var resultado = await client.GetAsync(baseadress + "/api/InsurancesCertificateLine/GetInsurancesCertificateLineByCounter");
+                InsurancesCertificateLine InsurancesCertificateLineCounter = new InsurancesCertificateLine();
+                 string baseadress = config.Value.urlbase;
+                 HttpClient client = new HttpClient();
+                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                 var resultado = await client.GetAsync(baseadress + "/api/InsurancesCertificateLine/GetInsurancesCertificateLineByCounter");
 
-                string valorrespuestas = "";
+                 string valorrespuestas = "";
 
-                if (resultado.IsSuccessStatusCode)
-                {
-                    valorrespuestas = await (result.Content.ReadAsStringAsync());
-                    _listInsurancesCertificateLine = JsonConvert.DeserializeObject<List<InsurancesCertificateLine>>(valorrespuestas);
-                }
+                 if (resultado.IsSuccessStatusCode)
+                 {
+                     valorrespuestas = await (resultado.Content.ReadAsStringAsync());
+                    InsurancesCertificateLineCounter = JsonConvert.DeserializeObject<InsurancesCertificateLine>(valorrespuestas);
+                 }
+                _InsurancesCertificate.CounterInsurancesCertificate = InsurancesCertificateLineCounter.CounterInsurancesCertificate + 1;
                 //Obtener el numero de certificado ssiguiente
                 //
                 //Coomo obtener el Grupo econmico
-
+                _InsurancesCertificate.CustomerId = _InsurancesCertificateLine.CustomerId;
 
             }
             catch (Exception ex)
@@ -544,5 +556,6 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _InsurancesCertificateLine }, Total = 1 });
 
         }
+
     }
 }

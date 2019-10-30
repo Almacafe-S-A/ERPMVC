@@ -10,6 +10,8 @@ namespace ERPMVC.DTO
     {
         public List<TypeAccount> _TypeAccount { get; set; }
 
+        public bool? estadocuenta { get; set; }
+
         public int editar { get; set; } = 1;
 
         public string token { get; set; }
