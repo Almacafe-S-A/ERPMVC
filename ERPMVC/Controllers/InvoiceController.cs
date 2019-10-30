@@ -154,43 +154,66 @@ namespace ERPMVC.Controllers
 
             try
             {
-                Invoice _listInvoice = new Invoice();
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Invoice/GetInvoiceById/" + _Invoice.InvoiceId);
-                string valorrespuesta = "";
-                _Invoice.FechaModificacion = DateTime.Now;
-                _Invoice.UsuarioModificacion = HttpContext.Session.GetString("user");
-                if (result.IsSuccessStatusCode)
+                if (_Invoice != null)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listInvoice = JsonConvert.DeserializeObject<Invoice>(valorrespuesta);
-                }
+                    Invoice _listInvoice = new Invoice();
+                    string baseadress = config.Value.urlbase;
 
-                if (_listInvoice == null) { _listInvoice = new Invoice(); }
-
-                if (_listInvoice.InvoiceId == 0)
-                {
-                    _Invoice.FechaCreacion = DateTime.Now;
-                    _Invoice.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_Invoice);
-                    var value = (insertresult.Result as ObjectResult).Value;
-                    
-                    InvoiceDTO resultado = ((InvoiceDTO)(value));
-                    if (resultado.InvoiceId <= 0)
+                    foreach (var item in _Invoice.InvoiceLine)
                     {
-                        return await Task.Run(() => BadRequest("No se genero la factura!"));
+                        if (item.UnitOfMeasureId == 0)
+                        {
+                            return await Task.Run(() => BadRequest($"Ingrese una unidad de medida valido!"));
+                        }
+
+                        if (item.Total == 0)
+                        {
+                            return await Task.Run(() => BadRequest($"El documento no se ha calculado correctamente!"));
+                        }
+
+                        if (item.TaxCode == "")
+                        {
+                            return await Task.Run(() => BadRequest($"Debe llevar un código de impuesto!, el producto :{item.SubProductName}"));
+                        }
+
+                    }
+
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/Invoice/GetInvoiceById/" + _Invoice.InvoiceId);
+                    string valorrespuesta = "";
+                    _Invoice.FechaModificacion = DateTime.Now;
+                    _Invoice.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _listInvoice = JsonConvert.DeserializeObject<Invoice>(valorrespuesta);
+                    }
+
+                    if (_listInvoice == null) { _listInvoice = new Invoice(); }
+
+                    if (_listInvoice.InvoiceId == 0)
+                    {
+                        _Invoice.FechaCreacion = DateTime.Now;
+                        _Invoice.UsuarioCreacion = HttpContext.Session.GetString("user");
+                        var insertresult = await Insert(_Invoice);
+                        var value = (insertresult.Result as ObjectResult).Value;
+
+                        InvoiceDTO resultado = ((InvoiceDTO)(value));
+                        if (resultado.InvoiceId <= 0)
+                        {
+                            return await Task.Run(() => BadRequest("No se genero la factura!"));
+                        }
+                        else
+                        {
+                            _Invoice.NumeroDEIString = $"{resultado.Sucursal}-{resultado.Caja}-01-{resultado.NumeroDEI.ToString().PadLeft(8, '0')} ";
+                        }
+
                     }
                     else
                     {
-                        _Invoice.NumeroDEIString = $"{resultado.Sucursal}-{resultado.Caja}-01-{resultado.NumeroDEI.ToString().PadLeft(8, '0')} ";
+                        var updateresult = await Update(_Invoice.InvoiceId, _Invoice);
                     }
-
-                }
-                else
-                {
-                    var updateresult = await Update(_Invoice.InvoiceId, _Invoice);
                 }
 
             }

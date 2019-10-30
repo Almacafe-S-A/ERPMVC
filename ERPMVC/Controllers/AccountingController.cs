@@ -402,27 +402,25 @@ namespace ERPMVC.Controllers
         }
 
 
-        public async Task<JsonResult> AccountingRes([DataSourceRequest]DataSourceRequest request, TypeAccount TypeAccount, bool Estado)
+        public async Task<JsonResult> AccountingRes([DataSourceRequest]DataSourceRequest request,AccountingFilter TypeAccount)
         {
             List<AccountingDTO> _accounting = new List<AccountingDTO>();
-            if (Estado == false)
-            {
+            //if (Estado == false)
+            //{
 
                 try
                 {
-
 
                     string baseadress = config.Value.urlbase;
                     HttpClient _client = new HttpClient();
                     _client.Timeout = TimeSpan.FromMinutes(15);
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountingType/" + TypeAccount.TypeAccountId);//GetAccountingActive
+                    var result = await _client.PostAsJsonAsync(baseadress + "api/Accounting/GetAccountingType/", TypeAccount);//GetAccountingActive
                     string valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _accounting = JsonConvert.DeserializeObject<List<AccountingDTO>>(valorrespuesta);
-
                     }
 
                     if (_accounting == null)
@@ -436,41 +434,7 @@ namespace ERPMVC.Controllers
                     _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                     throw ex;
                 }
-            }
-            else
-            {
-                try
-                {
-
-
-                    string baseadress = config.Value.urlbase;
-                    HttpClient _client = new HttpClient();
-                    _client.Timeout = TimeSpan.FromMinutes(15);
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountingActive/" + TypeAccount.TypeAccountId);//GetAccountingActive
-                    string valorrespuesta = "";
-                    if (result.IsSuccessStatusCode)
-                    {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _accounting = JsonConvert.DeserializeObject<List<AccountingDTO>>(valorrespuesta);
-
-                    }
-
-                    if (_accounting == null)
-                    {
-                        _accounting = new List<AccountingDTO>();
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                    throw ex;
-                }
-
-            }
-
-            // return Json(_accounting, JsonRequestBehavior.AllowGet);
+          
             return Json(_accounting.ToTreeDataSourceResult(request));
 
         }
@@ -694,6 +658,8 @@ namespace ERPMVC.Controllers
                     _AccountingP.FechaCreacion = DateTime.Now;
                     _AccountingP.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_AccountingP);
+                    var value = (insertresult.Result as ObjectResult).Value;
+                    _AccountingP = ((AccountingDTO)(value));
                 }
                 else
                 {
@@ -710,7 +676,7 @@ namespace ERPMVC.Controllers
                         _AccountDuplicated = JsonConvert.DeserializeObject<AccountingDTO>(valorrespuesta2);
 
                     }
-                    if (_AccountDuplicated != null)
+                    if (_AccountDuplicated != null && _AccountingP.AccountId!= _AccountDuplicated.AccountId)
                     {
                         string error = await result.Content.ReadAsStringAsync();
 
@@ -726,20 +692,24 @@ namespace ERPMVC.Controllers
                     _AccountingP.UsuarioCreacion = _Account.UsuarioCreacion;
                     _AccountingP.FechaCreacion = _Account.FechaCreacion;
                     var updateresult = await Update(_Account.AccountId, _AccountingP);
+                    var value = (updateresult.Result as ObjectResult).Value;
+                    _AccountingP = ((AccountingDTO)(value));
                 }
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
+                return await Task.Run(() => BadRequest($"Ocurrio un error{ex.ToString()}"));
+                // throw ex;
             }
-            
-            return new ObjectResult(new DataSourceResult { Data = new[] { _AccountingP }, Total = 1 });
-           
+
+          
+            return Ok(_AccountingP);
+            // return new ObjectResult(new DataSourceResult { Data = new[] { _AccountingP }, Total = 1 });
             //return Json(_Accounting);
         }
-        
+
         [HttpPost("[action]")]
         public async Task<ActionResult> pvwAddAccountingFather([FromBody]AccountingFatherDTO _sarpara)
         {
@@ -856,8 +826,9 @@ namespace ERPMVC.Controllers
         // POST: Account/Insert
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public async Task<ActionResult> Insert(Accounting _Account)
+        public async Task<ActionResult<AccountingDTO>> Insert(Accounting _Account)
         {
+            AccountingDTO _accdto = new AccountingDTO();
             try
             {
                 // TODO: Add insert logic here
@@ -873,22 +844,32 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Account = JsonConvert.DeserializeObject<Accounting>(valorrespuesta);
+                    _accdto = JsonConvert.DeserializeObject<AccountingDTO>(valorrespuesta);
+                }      
+                else
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    throw new Exception($"Occurio un error:{valorrespuesta}");
                 }
+            
+               
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un Error{ex.Message}");
+                throw ex;
+                // return BadRequest($"Ocurrio un Error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Account }, Total = 1 });
+            return Ok(_accdto);
+           // return new ObjectResult(new DataSourceResult { Data = new[] { _Account }, Total = 1 });
         }
       
         [HttpPut("AccountId")]
-        public async Task<IActionResult> Update(Int64 AccountId, Accounting _Account)
+        public async Task<ActionResult<Accounting>> Update(Int64 AccountId, Accounting _Account)
         {
+            AccountingDTO _accdto = new AccountingDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -899,17 +880,24 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Account = JsonConvert.DeserializeObject<Accounting>(valorrespuesta);
+                    _accdto = JsonConvert.DeserializeObject<AccountingDTO>(valorrespuesta);
+                }
+                else
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    throw new Exception($"Occurio un error:{valorrespuesta}");
                 }
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un Error{ex.Message}");
+                throw ex;
+                // return BadRequest($"Ocurrio un Error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Account }, Total = 1 });
+            return Ok(_accdto);
+           // return new ObjectResult(new DataSourceResult { Data = new[] { _Account }, Total = 1 });
         }
        
     }
