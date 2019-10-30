@@ -343,6 +343,26 @@ namespace ERPMVC.Controllers
                 _ProformaInvoice = JsonConvert.DeserializeObject<ProformaInvoiceDTO>(dto.ToString());
                 if (_ProformaInvoice != null)
                 {
+
+                    foreach (var item in _ProformaInvoice.ProformaInvoiceLine)
+                    {
+                        if (item.UnitOfMeasureId == 0)
+                        {
+                            return await Task.Run(() => BadRequest("Ingrese una unidad de medida valido!"));
+                        }
+
+                        if(item.Total==0)
+                        {
+                            return await Task.Run(() => BadRequest("El documento no se ha calculado correctamente!"));
+                        }
+
+                        if(item.TaxCode=="")
+                        {
+                            return await Task.Run(() => BadRequest($"Debe llevar un código de impuesto!, el producto :{item.SubProductName}"));
+                        }
+
+                    } 
+
                     ProformaInvoice _listProformaInvoice = new ProformaInvoice();
                     string baseadress = config.Value.urlbase;
                     HttpClient _client = new HttpClient();
