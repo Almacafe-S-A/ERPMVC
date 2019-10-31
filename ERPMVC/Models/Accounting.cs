@@ -32,7 +32,7 @@ namespace ERPMVC.Models
         [Display(Name = "Contracuenta:")]
         public bool IsContraAccount { get; set; }
         [Display(Name = "Tipo de Cuenta")]
-        public Int64 TypeAccountId { get; set; }
+        public Int64? TypeAccountId { get; set; }
         [Display(Name = "Bloqueo para Diarios:")]
         public bool? BlockedInJournal { get; set; }
         [Required]
