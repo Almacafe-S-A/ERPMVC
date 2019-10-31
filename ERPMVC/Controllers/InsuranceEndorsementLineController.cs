@@ -42,7 +42,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/InsuranceEndorsementLine/GetInsuranceEndorsementLineById/" + _InvoiceLinep.Id);
+                var result = await _client.GetAsync(baseadress + "api/InsuranceEndorsementLine/GetInsuranceEndorsementLineById/" + _InvoiceLinep.InsuranceEndorsementLineId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -77,8 +77,8 @@ namespace ERPMVC.Controllers
             List<InsuranceEndorsementLine> __InvoiceLineList = new List<InsuranceEndorsementLine>();
             try
             {
-                if (HttpContext.Session.Get("listadoproductosInsuranceEndorsement") == null
-                   || HttpContext.Session.GetString("listadoproductosInsuranceEndorsement") == "")
+                if (HttpContext.Session.Get("listadoproductosVendorInvoice") == null
+                   || HttpContext.Session.GetString("listadoproductosVendorInvoice") == "")
                 {
                     if (_InvoiceLinep.InsuranceEndorsementId > 0)
                     {
@@ -124,10 +124,10 @@ namespace ERPMVC.Controllers
                     if (HttpContext.Session.GetString("listadoproductosInsuranceEndorsement") != "" && HttpContext.Session.GetString("listadoproductosInsuranceEndorsement") != null)
                     {
                         __InvoiceLineList = JsonConvert.DeserializeObject<List<InsuranceEndorsementLine>>(HttpContext.Session.GetString("listadoproductosInsuranceEndorsement"));
-                        _existelinea = __InvoiceLineList.Where(q => q.Id == _InvoiceLinep.Id).ToList();
+                        _existelinea = __InvoiceLineList.Where(q => q.InsuranceEndorsementLineId == _InvoiceLinep.InsuranceEndorsementLineId).ToList();
                     }
 
-                    if (_InvoiceLinep.Id > 0 && _existelinea.Count == 0)
+                    if (_InvoiceLinep.InsuranceEndorsementLineId > 0 && _existelinea.Count == 0)
                     {
                         __InvoiceLineList.Add(_InvoiceLinep);
                         HttpContext.Session.SetString("listadoproductosInsuranceEndorsement", JsonConvert.SerializeObject(__InvoiceLineList).ToString());
@@ -135,16 +135,15 @@ namespace ERPMVC.Controllers
                     else
                     {
 
-                        var obj = __InvoiceLineList.FirstOrDefault(x => x.Id == _InvoiceLinep.Id);
+                        var obj = __InvoiceLineList.FirstOrDefault(x => x.InsuranceEndorsementLineId == _InvoiceLinep.InsuranceEndorsementLineId);
                         if (obj != null)
                         {
-                            obj.WarehouseName = _InvoiceLinep.WarehouseName;
-                            obj.WareHouseId = _InvoiceLinep.WareHouseId;
-                            obj.CertificateBalance = _InvoiceLinep.CertificateBalance;
-                            obj.AssuredDiference = _InvoiceLinep.AssuredDiference;
-                            obj.AmountDl = _InvoiceLinep.AmountDl;
                             obj.AmountLp = _InvoiceLinep.AmountLp;
-                            obj.InsuranceEndorsementId = _InvoiceLinep.InsuranceEndorsementId;
+                            obj.AmountDl = _InvoiceLinep.AmountDl;
+                            obj.AssuredDiference = _InvoiceLinep.AssuredDiference;
+                            obj.CertificateBalance = _InvoiceLinep.CertificateBalance;
+                            obj.WareHouseId = _InvoiceLinep.WareHouseId;
+                            obj.WarehouseName = _InvoiceLinep.WarehouseName;
 
 
                         }
@@ -165,6 +164,7 @@ namespace ERPMVC.Controllers
 
 
             return __InvoiceLineList.ToDataSourceResult(request);
+
 
         }
 
@@ -212,7 +212,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/InsuranceEndorsementLine/GetInvoiceLineById/" + _InvoiceLine.Id);
+                var result = await _client.GetAsync(baseadress + "api/InsuranceEndorsementLine/GetInvoiceLineById/" + _InvoiceLine.InsuranceEndorsementLineId);
                 string valorrespuesta = "";
                 // _InvoiceLine.FechaModificacion = DateTime.Now;
                 //_InvoiceLine.UsuarioModificacion = HttpContext.Session.GetString("user");
@@ -223,7 +223,7 @@ namespace ERPMVC.Controllers
                     _listInvoiceLine = JsonConvert.DeserializeObject<InsuranceEndorsementLine>(valorrespuesta);
                 }
 
-                if (_listInvoiceLine.Id == 0)
+                if (_listInvoiceLine.InsuranceEndorsementLineId == 0)
                 {
                     // _InvoiceLine.FechaCreacion = DateTime.Now;
                     //  _InvoiceLine.UsuarioCreacion = HttpContext.Session.GetString("user");
@@ -231,7 +231,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    var updateresult = await Update(_InvoiceLine.Id, _InvoiceLine);
+                    var updateresult = await Update(_InvoiceLine.InsuranceEndorsementLineId, _InvoiceLine);
                 }
 
             }
@@ -302,7 +302,7 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _InvoiceLine }, Total = 1 });
         }
 
-        [HttpDelete("InsuranceEndorsementLineId")]
+        [HttpDelete("_InvoiceLine")]
         public async Task<ActionResult<InsuranceEndorsementLine>> Delete([FromBody]InsuranceEndorsementLine _InvoiceLine)
         {
             try
