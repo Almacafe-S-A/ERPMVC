@@ -47,7 +47,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/InsuranceEndorsement/GetInsuranceEndorsementById/" + _InsuranceEndorsementp.Id);
+                var result = await _client.GetAsync(baseadress + "api/InsuranceEndorsement/GetInsuranceEndorsementById/" + _InsuranceEndorsementp.InsuranceEndorsementId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -93,7 +93,7 @@ namespace ERPMVC.Controllers
                     string baseadress = config.Value.urlbase;
                     HttpClient _client = new HttpClient();
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/InsuranceEndorsement/GetInsuranceEndorsementById/" + _InsuranceEndorsement.Id);
+                    var result = await _client.GetAsync(baseadress + "api/InsuranceEndorsement/GetInsuranceEndorsementById/" + _InsuranceEndorsement.InsuranceEndorsementId);
                     string jsonresult = "";
                     jsonresult = JsonConvert.SerializeObject(_InsuranceEndorsement);
                     string valorrespuesta = "";
@@ -103,7 +103,7 @@ namespace ERPMVC.Controllers
                         _so = JsonConvert.DeserializeObject<InsuranceEndorsement>(valorrespuesta);
                         _so.DateGenerated = DateTime.Now;
 
-                        var resultsalesorder = await Update(_so.Id, _so);
+                        var resultsalesorder = await Update(_so.InsuranceEndorsementId, _so);
 
                         var value = (resultsalesorder.Result as ObjectResult).Value;
                         InsuranceEndorsement resultado = ((InsuranceEndorsement)(value));
@@ -141,7 +141,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _InsuranceEndorsement = JsonConvert.DeserializeObject<List<InsuranceEndorsement>>(valorrespuesta);
-                    _InsuranceEndorsement = _InsuranceEndorsement.OrderByDescending(q => q.Id).ToList();
+                    _InsuranceEndorsement = _InsuranceEndorsement.OrderByDescending(q => q.InsuranceEndorsementId).ToList();
                 }
 
 
@@ -167,7 +167,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/InsuranceEndorsement/GetInsuranceEndorsementById/" + _InsuranceEndorsement.Id);
+                var result = await _client.GetAsync(baseadress + "api/InsuranceEndorsement/GetInsuranceEndorsementById/" + _InsuranceEndorsement.InsuranceEndorsementId);
                 string valorrespuesta = "";
                 _InsuranceEndorsement.FechaModificacion = DateTime.Now;
                 _InsuranceEndorsement.UsuarioModificacion = HttpContext.Session.GetString("user");
@@ -179,7 +179,7 @@ namespace ERPMVC.Controllers
 
                 if (_listInsuranceEndorsement == null) { _listInsuranceEndorsement = new InsuranceEndorsement(); }
 
-                if (_listInsuranceEndorsement.Id == 0)
+                if (_listInsuranceEndorsement.InsuranceEndorsementId == 0)
                 {
                     _InsuranceEndorsement.FechaCreacion = DateTime.Now;
                     _InsuranceEndorsement.UsuarioCreacion = HttpContext.Session.GetString("user");
@@ -187,7 +187,7 @@ namespace ERPMVC.Controllers
                     var value = (insertresult.Result as ObjectResult).Value;
 
                     InsuranceEndorsement resultado = ((InsuranceEndorsement)(value));
-                    if (resultado.Id <= 0)
+                    if (resultado.InsuranceEndorsementId <= 0)
                     {
                         return await Task.Run(() => BadRequest("No se genero la factura!"));
                     }
@@ -199,7 +199,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    var updateresult = await Update(_InsuranceEndorsement.Id, _InsuranceEndorsement);
+                    var updateresult = await Update(_InsuranceEndorsement.InsuranceEndorsementId, _InsuranceEndorsement);
                 }
 
             }
@@ -316,7 +316,7 @@ namespace ERPMVC.Controllers
         {
             try
             {
-                InsuranceEndorsement _InsuranceEndorsement = new InsuranceEndorsement { Id = id, };
+                InsuranceEndorsement _InsuranceEndorsement = new InsuranceEndorsement { InsuranceEndorsementId = id, };
                 return await Task.Run(() => View(_InsuranceEndorsement));
             }
             catch (Exception)

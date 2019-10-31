@@ -418,8 +418,8 @@ namespace ERPMVC.Controllers
                     var insertresult = await Insert(_JournalEntryP);
                   
                     var value = (insertresult.Result as ObjectResult).Value;
-                    JournalEntry resultado = ((JournalEntry)(value));
-                    if (resultado.JournalEntryId <= 0)
+                    _JournalEntry  = ((JournalEntry)(value));
+                    if (_JournalEntry.JournalEntryId <= 0)
 
                     {
                         return BadRequest("No se guardo el formulario!");
@@ -440,7 +440,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_JournalEntryP);
+            return Json(_JournalEntry);
         }
 
 
