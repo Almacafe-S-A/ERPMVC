@@ -7,33 +7,17 @@
 
     function GetInvoiceId() {
        // console.log($("#DescriptionDetail").val());
-        var subproductname = '', unidaddemedida = '', cuenta = '', taxname = '';
-        if ($("#UnitOfMeasureId") != null) {
-            if ($("#UnitOfMeasureId").data("kendoDropDownList") != null) {
-                unidaddemedida = $("#UnitOfMeasureId").data("kendoDropDownList").text();
-            }
-        }
-
-        if ($("#ProductId") != null) {
-            if ($("#ProductId").data("kendoDropDownList") != null) {
-                subproductname = $("#ProductId").data("kendoDropDownList").text();
-            }
-        }
-        if ($("#TaxCode") != null) {
-            if ($("#TaxCode").data("kendoDropDownList") != null) {
-                taxname = $("#TaxCode").data("kendoDropDownList").text();
-            }
-        }
-        if ($("#AccountId") != null) {
-            if ($("#AccountId").data("kendoDropDownList") != null) {
-                cuenta = $("#AccountId").data("kendoDropDownList").text();
+        debugger;
+        var warehouse = '';
+        if ($("input[attribute='WareHouseIdLine']" ) != null) {
+            if ($("input[attribute='WareHouseIdLine']" ).data("kendoDropDownList") != null) {
+                warehouse = $("input[attribute='WareHouseIdLine']" ).data("kendoDropDownList").text();
             }
         }
 
         var displayedData = $("#gridInvoiceDetail").data().kendoGrid.dataSource.view();
         var id = -999999;
-        debugger;
-        if (Number($("#InsuranceendorsementLineId").val()) === 0) {
+        if (Number($("#InsuranceEndorsementLineId").val()) === 0) {
             if (displayedData.length > 0) {
                 for (var i = 0; i < displayedData.length; i++) {
                     //console.log('Linea:' + displayedData[i].InvoiceLineId);
@@ -44,37 +28,25 @@
                 }
 
                 id = id + 1;
-            }
-            else if ($("#ProductId").val() > 0) {
-                id =  1;
+            } else {
+                id = 1;
             }
         }
-        else {
-            id = $("#InsuranceendorsementLineId").val();
+        else if ($("#AmountLp").val() > 0) {
+            id = $("#InsuranceEndorsementLineId").val();
         }
 
 
         return {
-                InsuranceendorsementLineId: id,
-                InsuranceendorsementId: @Model.Id,
-                /*ProductId: $("#ProductId").val(),*/
-                ProductId: $("#ProductId").val(),
-                ItemName: subproductname,
-                UnitOfMeasureId: $("#UnitOfMeasureId").val(),
-                UnitOfMeasureName: unidaddemedida,
-                Description: $("#DescriptionDetail").val(),
-                Quantity: $("#Quantity").val(),
-                Price: $("#Price").val(),
-                Amount: $("#AmountLine").val(),
-                DiscountPercentage: $("#DiscountPercentage").val(),
-                DiscountAmount: $("#DiscountAmount").val(),
-                SubTotal: $("#SubTotalLine").val(),
-                TaxPercentage: $("#TaxPercentage").val(),
-                TaxCode: $("#TaxCode").val(),
-                TaxAmount: $("#TaxAmount").val(),
-                Total: $("#TotalLine").val(),
-                AccountId: $("#cuentaline").val(),
-        }
+                InsuranceEndorsementLineId: id,
+                InsuranceEndorsementId: @Model.InsuranceEndorsementId,
+                AmountLp: $("#AmountLp").val(),
+                AmountDl: $("#AmountDl").val(),
+            WarehouseId: $("#WareHouseIdLine").val(),
+                WarehouseName: warehouse,
+            AssuredDiference: $("#AssuredDiference").val(),
+            CertificateBalance: $("#CertificateBalance").val()
+            }
     }
 
     function RefreshInvoiceDetail() {
@@ -88,21 +60,14 @@
 
         debugger;
             //llenarsubproduct();
-        $("#frmSalesOrderLine :input").not('#SalesOrderId').prop("disabled", false);
+        $("#frmSalesOrderLine :input").not('#SalesOrderId').prop("disabled", false);                
+        $("#AmountLp").val(0),
+        $("#AmountDl").val(0),
+        $("#WarehouseId").val(0),
+        $("#AssuredDiference").val(0),
+        $("#CertificateBalance").val(0)
 
-        //$("#Quantity").data("kendoNumericTextBox").value(0);
-        //$("#Price").data("kendoNumericTextBox").value(0);
-        //$("#Amount").data("kendoNumericTextBox").value(0);
-        //$("#SubTotalLine").data("kendoNumericTextBox").value(0);
-        //$("#TaxAmount").data("kendoNumericTextBox").value(0);
-        //$("#AmountLine").data("kendoNumericTextBox").value(0);
-        //$("#TotalLine").data("kendoNumericTextBox").value(0);
-        //$("#cuentaline").data("kendoDropDownList").value('');
-        //$("#UnitOfMeasureId").data("kendoDropDownList").value('');
-        //$("#TaxPercentage").data("kendoNumericTextBox").value(0);
         $('#myModalInvoiceLine').modal('show');
-
-
     }
 
 
@@ -129,7 +94,7 @@
                 success: function (data) {
                     $("#SalesOrderLineMant").html('');
                     $("#SalesOrderLineMant").html(data);
-                    GetPercentage();
+                    //GetPercentage();
                     var txt = $(data);
 
                     //var combobox = $('#SubProductId').getKendoDropDownList();
@@ -198,7 +163,7 @@
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
 
             $.ajax({
-                url: '@Url.Action("Delete", "InsuranceendorsementLine")',
+                url: '@Url.Action("Delete", "InsuranceEndorsementLine")',
                 method: 'POST',
                 datatype: "json",
                 contentType: 'application/json',
@@ -210,6 +175,10 @@
                     //var txt = $(data);
                     //var found = $("#SubProductId", txt);
                     //subproducto = $(found).val();
+                    //notification.show({
+                    //    title: "Notificacion",
+                    //    message: "Registro Eliminado"
+                    //}, "success");
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
 
@@ -243,7 +212,7 @@
                                                                   {
                                                                       columns.Command(command =>
                                                                       {
-                                                                          if (Model.Id == 0)
+                                                                          if (Model.InsuranceEndorsementId == 0)
                                                                           {
                                                                               command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
                                                                           }
@@ -252,12 +221,12 @@
                                                                   //  command.Edit(); command.Destroy();
                                                               }).Width(150);
 
-                                                                      columns.Bound(p => p.Id).Title("Linea").Width(150).Visible(true).Visible(false);
+                                                                      columns.Bound(p => p.InsuranceEndorsementId).Title("Linea").Width(150).Visible(true).Visible(false);
                                                                       columns.Bound(p => p.InsuranceEndorsementId).Title("Seguro Id").Width(150).Visible(false);
                                                                       columns.Bound(p => p.WareHouseId).Title("BodegaId").Visible(false);
                                                                       columns.Bound(p => p.WarehouseName).Title("Bodega").Width(150);
                                                                       columns.Bound(p => p.AmountDl).Format("{0:n2}").Title("Monto Lps").Format("{0:n2}").Width(150);
-                                                                      columns.Bound(p => p.AmountLp).Format("{0:n2}").Title("Monto $").Visible(false);
+                                                                      columns.Bound(p => p.AmountLp).Format("{0:n2}").Title("Monto $").Width(150);
                                                                       columns.Bound(p => p.CertificateBalance).Format("{0:n2}").Title("Saldo Certificado").Width(150);
                                                                       columns.Bound(p => p.AssuredDiference).Format("{0:n2}").Title("Diferencia Asegurada").Width(150);
                                                                       
@@ -296,7 +265,7 @@
                                                        ))
                                                                   .ToolBar(tools =>
                                                                   {
-                                                                      if (Model.Id == 0)
+                                                                      if (Model.InsuranceEndorsementId == 0)
                                                                       {
                                                                           tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
                                                                           .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacionDetalle();" });
@@ -331,7 +300,7 @@
                                                                     .Model(model =>
                                                                     {
                                                                         model.Id(p => p.InsuranceEndorsementId);
-                                                                        model.Field(p => p.Id).Editable(false);
+                                                                        model.Field(p => p.InsuranceEndorsementId).Editable(false);
 
                                                                     })
                                                                     .Events(events =>
@@ -340,7 +309,7 @@
                                                                 //events.upda("EditHandler");
 
                                                             })
-                                                                    .Read(read => read.Action("GetInsuranceEndorsementLineByInvoiceId", "InsuranceEndorsement").Data("GetInvoiceId"))
+                                                                    .Read(read => read.Action("GetInsuranceEndorsementLineByInvoiceId", "InsuranceEndorsementLine").Data("GetInvoiceId"))
                                                               //.Create(create => create.Action("Insert", "InsuranceendorsementLine"))
                                                               //.Update(update => update.Action("Update", "InsuranceendorsementLine", new { SalesOrderLineId = "{0}" }))
                                                               //.Destroy(destroy => destroy.Action("Delete", "InsuranceendorsementLine", new { InsuranceendorsementLineId = "{0}" }))
