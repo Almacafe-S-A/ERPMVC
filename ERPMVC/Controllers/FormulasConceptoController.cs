@@ -20,11 +20,11 @@ namespace ERPMVC.Controllers
     [Authorize]
     [CustomAuthorization]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
-    public class FormulaController : Controller
+    public class FormulasConceptoController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public FormulaController(ILogger<FormulaController> logger, IOptions<MyConfig> config)
+        public FormulasConceptoController(ILogger<FormulasConceptoController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
@@ -38,19 +38,19 @@ namespace ERPMVC.Controllers
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<Formula> _Formula = new List<Formula>();
+            List<FormulasConcepto> _FormulasConcepto = new List<FormulasConcepto>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Formula/GetFormula");
+                var result = await _client.GetAsync(baseadress + "api/FormulasConcepto/GetFormulasConcepto");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Formula = JsonConvert.DeserializeObject<List<Formula>>(valorrespuesta);
+                    _FormulasConcepto = JsonConvert.DeserializeObject<List<FormulasConcepto>>(valorrespuesta);
 
                 }
 
@@ -63,29 +63,29 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _Formula.ToDataSourceResult(request);
+            return _FormulasConcepto.ToDataSourceResult(request);
 
         }
-        public async Task<ActionResult> pvwFormula([FromBody]FormulaDTO _sarpara)
+        public async Task<ActionResult> pvwFormulasConcepto([FromBody]FormulasConceptoDTO _sarpara)
         {
-            FormulaDTO _Formula = new FormulaDTO();
+            FormulasConceptoDTO _FormulasConcepto = new FormulasConceptoDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Formula/GetFormulaById/" + _sarpara.IdFormula);
+                var result = await _client.GetAsync(baseadress + "api/FormulasConcepto/GetFormulasConceptoById/" + _sarpara.IdformulaConcepto);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Formula = JsonConvert.DeserializeObject<FormulaDTO>(valorrespuesta);
+                    _FormulasConcepto = JsonConvert.DeserializeObject<FormulasConceptoDTO>(valorrespuesta);
 
                 }
 
-                if (_Formula == null)
+                if (_FormulasConcepto == null)
                 {
-                    _Formula = new FormulaDTO();
+                    _FormulasConcepto = new FormulasConceptoDTO();
                 }
             }
             catch (Exception ex)
@@ -96,44 +96,44 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_Formula);
+            return PartialView(_FormulasConcepto);
 
         }
 
 
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<Formula>> SaveFormula([FromBody]Formula _Formula)
+        public async Task<ActionResult<FormulasConcepto>> SaveFormulasConcepto([FromBody]FormulasConcepto _FormulasConcepto)
         {
 
             try
             {
-                Formula _listFormula = new Formula();
+                FormulasConcepto _listFormulasConcepto = new FormulasConcepto();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Formula/GetFormulaById/" + _Formula.IdFormula);
+                var result = await _client.GetAsync(baseadress + "api/FormulasConcepto/GetFormulasConceptoById/" + _FormulasConcepto.IdformulaConcepto);
                 string valorrespuesta = "";
-                _Formula.FechaModificacion = DateTime.Now;
-                _Formula.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _FormulasConcepto.FechaModificacion = DateTime.Now;
+                _FormulasConcepto.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listFormula = JsonConvert.DeserializeObject<Formula>(valorrespuesta);
+                    _listFormulasConcepto = JsonConvert.DeserializeObject<FormulasConcepto>(valorrespuesta);
                 }
 
-                if (_listFormula == null) { _listFormula = new Formula(); }
+                if (_listFormulasConcepto == null) { _listFormulasConcepto = new FormulasConcepto(); }
 
-                if (_listFormula.IdFormula == 0)
+                if (_listFormulasConcepto.IdformulaConcepto == 0)
                 {
-                    _Formula.FechaCreacion = DateTime.Now;
-                    _Formula.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_Formula);
+                    _FormulasConcepto.FechaCreacion = DateTime.Now;
+                    _FormulasConcepto.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_FormulasConcepto);
                 }
                 else
                 {
-                    var updateresult = await Update(_Formula.IdFormula, _Formula);
+                    var updateresult = await Update(_FormulasConcepto.IdformulaConcepto, _FormulasConcepto);
                 }
 
             }
@@ -143,12 +143,12 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_Formula);
+            return Json(_FormulasConcepto);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<Formula>> Insert(Formula _Formula)
+        public async Task<ActionResult<FormulasConcepto>> Insert(FormulasConcepto _FormulasConcepto)
         {
             try
             {
@@ -156,14 +156,14 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _Formula.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _Formula.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Formula/Insert", _Formula);
+                _FormulasConcepto.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _FormulasConcepto.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/FormulasConcepto/Insert", _FormulasConcepto);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Formula = JsonConvert.DeserializeObject<Formula>(valorrespuesta);
+                    _FormulasConcepto = JsonConvert.DeserializeObject<FormulasConcepto>(valorrespuesta);
                 }
 
             }
@@ -172,12 +172,12 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return await Task.Run(() => BadRequest($"Ocurrio un error{ex.Message}"));
             }
-            return Ok(_Formula);
-            // return new ObjectResult(new DataSourceResult { Data = new[] { _Formula }, Total = 1 });
+            return Ok(_FormulasConcepto);
+            // return new ObjectResult(new DataSourceResult { Data = new[] { _FormulasConcepto }, Total = 1 });
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<Formula>> Update(Int64 id, Formula _Formula)
+        public async Task<ActionResult<FormulasConcepto>> Update(Int64 id, FormulasConcepto _FormulasConcepto)
         {
             try
             {
@@ -185,12 +185,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PutAsJsonAsync(baseadress + "api/Formula/Update", _Formula);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/FormulasConcepto/Update", _FormulasConcepto);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Formula = JsonConvert.DeserializeObject<Formula>(valorrespuesta);
+                    _FormulasConcepto = JsonConvert.DeserializeObject<FormulasConcepto>(valorrespuesta);
                 }
 
             }
@@ -200,25 +200,25 @@ namespace ERPMVC.Controllers
                 return await Task.Run(() => BadRequest($"Ocurrio un error{ex.Message}"));
             }
 
-            return Ok(_Formula);
-            // return new ObjectResult(new DataSourceResult { Data = new[] { _Formula }, Total = 1 });
+            return Ok(_FormulasConcepto);
+            // return new ObjectResult(new DataSourceResult { Data = new[] { _FormulasConcepto }, Total = 1 });
         }
 
 
         [HttpPost]
-        public async Task<ActionResult<Formula>> Delete(Int64 IdFormula, Formula _Formula)
+        public async Task<ActionResult<FormulasConcepto>> Delete(Int64 IdFormulasConcepto, FormulasConcepto _FormulasConcepto)
         {
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Formula/Delete", _Formula);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/FormulasConcepto/Delete", _FormulasConcepto);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Formula = JsonConvert.DeserializeObject<Formula>(valorrespuesta);
+                    _FormulasConcepto = JsonConvert.DeserializeObject<FormulasConcepto>(valorrespuesta);
                 }
             }
             catch (Exception ex)
@@ -226,7 +226,7 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error: {ex.Message}");
             }
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Formula }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _FormulasConcepto }, Total = 1 });
         }
 
     }

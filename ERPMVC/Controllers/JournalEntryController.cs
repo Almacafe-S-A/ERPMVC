@@ -52,6 +52,37 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+
+        [HttpGet]
+        public async Task<ActionResult> SFAsientoContable(Int64 id)
+        {
+            try
+            {
+                JournalEntryDTO _journalentrydto = new JournalEntryDTO { JournalEntryId = id, };
+                return await Task.Run(() => View(_journalentrydto));
+            }
+            catch (Exception)
+            {
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> SFAjusteContable(Int64 id)
+        {
+            try
+            {
+                JournalEntryDTO _journalentrydto = new JournalEntryDTO { JournalEntryId = id, };
+                return await Task.Run(() => View(_journalentrydto));
+            }
+            catch (Exception)
+            {
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+        }
+
+
+
         /*public ActionResult Proveedores()
         {
             return View();
@@ -210,7 +241,57 @@ namespace ERPMVC.Controllers
 
         }
 
-        
+
+        [HttpGet("[action]")]
+        public async Task<JsonResult> GetJournalEntryAsientos([DataSourceRequest]DataSourceRequest request)
+        {
+            List<JournalEntry> _JournalEntry = new List<JournalEntry>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/JournalEntry/GetJournalEntryAsientos");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _JournalEntry = JsonConvert.DeserializeObject<List<JournalEntry>>(valorrespuesta);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(_JournalEntry.ToDataSourceResult(request));
+        }
+
+
+        [HttpGet("[action]")]
+        public async Task<JsonResult> GetJournalEntryAjustes([DataSourceRequest]DataSourceRequest request)
+        {
+            List<JournalEntry> _JournalEntry = new List<JournalEntry>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/JournalEntry/GetJournalEntryAjustes");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _JournalEntry = JsonConvert.DeserializeObject<List<JournalEntry>>(valorrespuesta);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(_JournalEntry.ToDataSourceResult(request));
+        }
 
 
 
@@ -243,12 +324,18 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _JournalEntry = JsonConvert.DeserializeObject<JournalEntry>(valorrespuesta);
                 }
+                else
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    throw new Exception($"Ocurrio un error{valorrespuesta}");
+                }
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                throw ex;
+               // return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
             return Ok(_JournalEntry);
@@ -273,11 +360,17 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _JournalEntryLine = JsonConvert.DeserializeObject<JournalEntryDTO>(valorrespuesta);
                 }
+                else
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    throw new Exception($"Ocurrio un error:{valorrespuesta}");
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                throw ex;
+               // return BadRequest($"Ocurrio un error{ex.Message}");
             }
             // return new ObjectResult(new DataSourceResult { Data = new[] { _JournalEntry }, Total = 1 });
             return Ok(_JournalEntryLine);
