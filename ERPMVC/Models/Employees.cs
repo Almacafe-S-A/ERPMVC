@@ -31,7 +31,7 @@ namespace ERPMVC.Models
         public DateTime? FechaIngreso { get; set; }
         [Required]
         [Display(Name = "Salario")]
-        public decimal? Salario { get; set; }
+        public double? Salario { get; set; }
         [Required]
         [Display(Name = "Estado")]
         public string Estado { get; set; }

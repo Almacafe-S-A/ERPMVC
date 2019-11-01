@@ -59,7 +59,7 @@
                                             <div class="col-md-4" hidden>
                                                 <div class="form-group">
                                                     <label asp-for="InsurancesCertificateLineId" class="control-label" style="width:100%"></label>
-                                                    <input type="number" asp-for="InsurancesCertificateLineId" readonly="readonly" style="min-width:100%" class="form-control" disabled />
+                                                    <input type="number" asp-for="InsurancesCertificateLineId"  readonly="readonly" style="min-width:100%" class="form-control" disabled />
 
                                                 </div>
                                             </div>
@@ -218,17 +218,21 @@
                                                                                                columns.Command(command =>
                                                                                                {
 
-                                                                                                   command.Custom("Guardar").Text(" ").IconClass("fa fa-edit").Click("");
+                                                                                                   command.Custom("Guardar").Text(" ").IconClass("fa fa-edit").Click("SaveInsurancesCertificateLineCertificate");
 
                                                                                                    command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCertificado");
 
                                                                                                }).Width(200);
 
 
+                                                                                               columns.Bound(p => p.InsurancesCertificateLineId).Title("Id Linea").Width(100).Visible(true);
+                                                                                               columns.Bound(p => p.InsurancesCertificateId).Title("Id Certificado").Width(200).Visible(false);
                                                                                                columns.Bound(p => p.CounterInsurancesCertificate).Title("Contador").Width(200);
                                                                                                columns.Bound(p => p.CustomerName).Title("Cliente").Width(300);
                                                                                                columns.Bound(p => p.TotalofProductLine).Format("{0:n2}").Title("Valor Asegurado").Width(200);
-                                                                                               columns.Bound(p => p.GrupoEconomicoId).Title("Grupo economico");
+                                                                                               columns.Bound(p => p.GrupoEconomicoId).Title("Grupo economico").Width(200);
+                                                                                               columns.Bound(p => p.BranchId).Title("Id Sucursal").Visible(false);
+                                                                                               columns.Bound(p => p.WarehouseId).Title("Id Bodega").Visible(false);
 
                                                                                            })
                                                                                                .Filterable(f => f.Operators(o => o.ForString(s => s
@@ -285,6 +289,7 @@
                                                                                              .Model(model =>
                                                                                              {
                                                                                                  model.Id(p => p.InsurancesCertificateLineId);
+                                                                                                 model.Field(p => p.InsurancesCertificateLineId).Editable(false);
                                                                                                  model.Field(p => p.InsurancesCertificateId).Editable(false);
                                                                                                  //  model.Field(p => p.IdCD).Editable(false);
 
@@ -319,11 +324,16 @@
 <script>
      
     function GetCertificadoSeguros() {
-
+        debugger;
         return {
             InsurancesCertificateId: $("#InsurancesCertificateId").val(),
             InsurancesCertificateLineId: $("#InsurancesCertificateLineId").val(),
             CustomerId: $("#CustomerId").val(),
+            BranchId: $("#BranchId").val(),
+            WarehouseId: $("#WarehouseId").val(),
+
+
+
            
                 //'BranchId': 0,
                 //'WarehouseId': 0,
@@ -345,15 +355,19 @@
     function BuscarCertificadoDeposito(e) {
                     var notification = $("#notification").data("kendoNotification");
                    // e.preventDefault();
+
                 debugger;
         var dataObject = {
-                        'InsurancesCertificateId': $("#InsurancesCertificateId").val(),
                         'InsurancesCertificateLineId': $("#InsurancesCertificateLineId").val(),
-                        //'BranchId': $("#BranchId").val(),
-                        //'WarehouseId': $("#WarehouseId").val(),
+                        'InsurancesCertificateId': $("#InsurancesCertificateId").val(),
+                        'BranchId': $("#sucursal").val(),
+                        'WarehouseId': $("#bodega").val(),
+                        'WarehouseName': $("#bodega").data("kendoDropDownList").text(),
                         'CustomerId': $("#CustomerId").val(),
                         'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
                         //'CounterInsurancesCertificate': $("#CounterInsurancesCertificate").val(),
+                        //'TotalofProductLine': $("#TotalofProductLine").val(),
+                        //'GrupoEconomicoId': $("#GrupoEconomicoId").val(),
                         //'CreatedDate': $("#CreatedDate").getKendoDateTimePicker().value().toJSON(),
                         //'ModifiedDate': $("#ModifiedDate").getKendoDateTimePicker().value().toJSON(),
                     
@@ -382,6 +396,8 @@
                                     }
 
                                     for (var i = 0; i < data.Data.length; i++) {
+                                    
+                                       
                                         datasource.insert(data.Data[i]);
                                     }
 
@@ -419,6 +435,89 @@
     }
 
 
+      function SaveInsurancesCertificateLineCertificate(e) {
 
+                    var notification = $("#notification").data("kendoNotification");
+                   // e.preventDefault();
+          var grid = $("#gridCertificado").data("kendoGrid");
+          var dataItem = grid.dataItem("tbody tr:eq(0)")
+          console.log('DisplayedData', dataItem.CounterInsurancesCertificate);
+          console.log('DisplayedData', dataItem.TotalofProductLine);
+
+                debugger;
+          var dataObject = {
+              'InsurancesCertificateId': $("#InsurancesCertificateId").val(),
+              'BranchId': dataItem.BranchId,
+              'WarehouseId': dataItem.WarehouseId,
+              'WarehouseName': dataItem.WarehouseName,
+              'CustomerId': dataItem.CustomerId, 
+              'CounterInsurancesCertificate': dataItem.CounterInsurancesCertificate,
+              'TotalofProductLine': dataItem.TotalofProductLine,
+              'GrupoEconomicoId': dataItem.GrupoEconomicoId,
+
+          };
+
+          console.log('Maestro', dataObject);
+
+          
+          var validator = $("#frmCertificadoDepositoSeguro").data("kendoValidator");
+          var status = $(".status");
+                    if (validator.validate()) {
+
+                            $.ajax({
+                                url: '@Url.Action("SaveInsurancesCertificateLine", "InsurancesCertificateLine")',
+                                method: 'POST',
+                                datatype: "json",
+                                contentType: 'application/json',
+                                async: false,
+                                data: JSON.stringify(dataObject),
+                                success: function (data) {
+
+                                    //notification.show({
+                                    //    message: "Guardado correctamente!"
+                                    //}, "upload-success");
+                                    $.toast({
+                                        heading: 'Satisfactorio',
+                                        text: '<br/><br/> Datos guardados correctamente.',
+                                        position: 'top-right',
+                                        loaderBg: '#ff6849',
+                                        icon: 'success',
+                                        hideAfter: 30000,
+                                        stack: 6
+                                    });
+
+                                    RefrescarGrid();
+
+                                //    $('#ModalInsurancesCertificate').modal('hide');
+
+
+                                },
+                                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                                    notification.show({
+                                        title: "Validación",
+                                        message: textStatus + ": " + XMLHttpRequest.responseText
+                                    }, "error");
+
+                                }
+                            });
+
+                    }
+          
+                    else {
+                        $("#btnInsurancesCertificate").show();
+                        $("#btnInsurancesCertificate").prop("disabled", false);
+                            status.text("Oops! Hay datos invalidos en el formulario.")
+                                .removeClass("valid")
+                                .addClass("invalid");
+                        }
+
+
+
+
+       // }
+       // $("#btnInsurancesCertificate").show();
+       // $("#btnInsurancesCertificate").prop("disabled", false);
+      }
   
  </script>
