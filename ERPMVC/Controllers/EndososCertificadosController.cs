@@ -259,12 +259,18 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _EndososCertificados = JsonConvert.DeserializeObject<EndososCertificados>(valorrespuesta);
                 }
+                else
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    throw new Exception($"Ocurrio un error: {valorrespuesta}");
+                }
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                throw ex;
+                //return BadRequest($"Ocurrio un error{ex.Message}");
             }
             return Ok(_EndososCertificados);
             // return new ObjectResult(new DataSourceResult { Data = new[] { _EndososCertificados }, Total = 1 });
@@ -286,6 +292,11 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _EndososCertificados = JsonConvert.DeserializeObject<EndososCertificados>(valorrespuesta);
                 }
+                else
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    throw new Exception($"Ocurrio un error: {valorrespuesta}");
+                }
 
             }
             catch (Exception ex)
@@ -294,7 +305,8 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _EndososCertificados }, Total = 1 });
+            return Ok(_EndososCertificados);
+           // return new ObjectResult(new DataSourceResult { Data = new[] { _EndososCertificados }, Total = 1 });
         }
 
         [HttpPost("[action]")]

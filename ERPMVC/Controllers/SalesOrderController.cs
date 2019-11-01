@@ -646,8 +646,8 @@ namespace ERPMVC.Controllers
                     }
                     else
                     {
-                        string request = await result.Content.ReadAsStringAsync();
-                        return BadRequest(request);
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        throw new Exception($"Ocurrio un error: {valorrespuesta}");
                     }
 
 
@@ -661,7 +661,8 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                throw ex;
+                // return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
             return Ok(_SalesOrder);
