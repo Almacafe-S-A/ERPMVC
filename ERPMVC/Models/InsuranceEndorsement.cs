@@ -10,17 +10,17 @@ namespace ERPMVC.Models
     public class InsuranceEndorsement
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
+        public int InsuranceEndorsementId { get; set; }
 
         public Int64 CustomerId { get; set; }
 
         public string Customername { get; set; }
 
-        public int WarehouseID { get; set; }
+        public int WarehouseId { get; set; }
 
         public string WarehouseName { get; set; }
 
-        public int WharehouseTypeId { get; set; }
+        public int WarehouseTypeId { get; set; }
 
         public string WarehouseTypeName { get; set; }
 
@@ -36,9 +36,9 @@ namespace ERPMVC.Models
 
         public double TotalAmountDl { get; set; }
 
-        public double CertificateBalalnce { get; set; }
+        public double TotalCertificateBalalnce { get; set; }
 
-        public double AssuredDifernce { get; set; }
+        public double TotalAssuredDifernce { get; set; }
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
