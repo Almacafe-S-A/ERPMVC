@@ -17,12 +17,15 @@ namespace ERPMVC.Models
         [Display(Name = "Hora de Entrada")]
         [DataType(DataType.DateTime)]
         [DisplayFormat(DataFormatString = "{0:¨dd/MM/yyyy HH:mm:ss}")]
+        [Required(ErrorMessage = "La Hora de Entrada es Requerida")]
         public DateTime? Horaentrada { get; set; }
         [Display(Name = "Hora de Salida")]
         [DataType(DataType.DateTime)]
         [DisplayFormat(DataFormatString ="{0:¨dd/MM/yyyy HH:mm:ss}")]
+        [Required(ErrorMessage = "La Hora de Salida es Requerida")]
         public DateTime? Horasalida { get; set; }
         [Display(Name = "Multiplica Horas Por:")]
+        [Required(ErrorMessage = "Multiplicar Horas es Requerido")]
         public decimal? Multiplicahoras { get; set; }
         public string UsuarioCreacion { get; set; } 
         public string UsuarioModificacion { get; set; }
