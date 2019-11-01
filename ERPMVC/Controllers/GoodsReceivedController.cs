@@ -418,12 +418,18 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _GoodsReceived = JsonConvert.DeserializeObject<GoodsReceivedDTO>(valorrespuesta);
                 }
+                else
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    throw new Exception($"Ocurrio un error: {valorrespuesta}");
+                }
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                throw ex;
+                //return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
             return Ok(_GoodsReceived);
