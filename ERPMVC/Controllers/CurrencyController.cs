@@ -185,7 +185,7 @@ namespace ERPMVC.Controllers
 
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public async Task<ActionResult> Insert(Currency _Currencyp)
+        public async Task<ActionResult<Currency>> Insert(Currency _Currencyp)
         {
             Currency _Currency = _Currencyp;
             try
@@ -204,20 +204,27 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Currency = JsonConvert.DeserializeObject<Currency>(valorrespuesta);
                 }
+                else
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    throw new Exception($"Ocurrio un error: {valorrespuesta}");
+                }
 
             }
             catch (Exception ex)
             {
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                throw ex;
+               // return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Currency }, Total = 1 });
+            return Ok(_Currency);
+           // return new ObjectResult(new DataSourceResult { Data = new[] { _Currency }, Total = 1 });
         }
 
 
 
         [HttpPost]
-        public async Task<IActionResult> Update(Int64 CurrencyId, Currency _Currencyp)
+        public async Task<ActionResult<Currency>> Update(Int64 CurrencyId, Currency _Currencyp)
         {
             Currency _Currency = _Currencyp;
             try
@@ -234,14 +241,19 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Currency = JsonConvert.DeserializeObject<Currency>(valorrespuesta);
                 }
-
+                else
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    throw new Exception($"Ocurrio un error: {valorrespuesta}");
+                }
             }
             catch (Exception ex)
             {
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                throw ex;
+               // return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Currency }, Total = 1 });
+            return Ok(_Currency);
         }
 
 
@@ -262,14 +274,19 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Currency = JsonConvert.DeserializeObject<Currency>(valorrespuesta);
                 }
-
+                else
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    throw new Exception($"Ocurrio un error: {valorrespuesta}");
+                }
             }
             catch (Exception ex)
             {
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Currency }, Total = 1 });
+            return Ok(_Currency);
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _Currency }, Total = 1 });
         }
 
 
