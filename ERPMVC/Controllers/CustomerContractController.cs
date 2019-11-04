@@ -343,8 +343,7 @@ namespace ERPMVC.Controllers
                 //  document.Save(stream, FormatType.Rtf);
                 //  PdfDocument pdfDocument = render.ConvertToPDF(document);
                 PdfDocument pdfDocument = new PdfDocument();
-                await Task.Run( () =>  {  pdfDocument = render.ConvertToPDF(document); });
-                
+                await Task.Run( () =>  {  pdfDocument = render.ConvertToPDF(document); });                
        
 
                 //using (FileStream file = new FileStream(basePath + "/ContratosTemplate/file.docx", FileMode.Create, System.IO.FileAccess.Write))

@@ -20,6 +20,7 @@ using Syncfusion.ReportWriter;
 using Syncfusion.Report;
 using Syncfusion.Pdf;
 using Syncfusion.DocIORenderer;
+using Syncfusion.Pdf.Parsing;
 
 namespace ERPMVC.Controllers
 {
@@ -707,8 +708,31 @@ namespace ERPMVC.Controllers
                 reportWriter.Save(ms, format);
                 ms.Position = 0;
 
+                PdfLoadedDocument loadedDocument = new PdfLoadedDocument(ms, true);
+                PdfDocument document = new PdfDocument();
+                int startIndex = 0;
+                int endIndex = loadedDocument.Pages.Count - 1;            
+                document.ImportPageRange(loadedDocument, startIndex, endIndex);
+
+                FileStream inputStreamBack = new FileStream(basePath + "/ReportsTemplate/CertificadoDepositoBack.rdl", FileMode.Open, FileAccess.Read);
+                ReportWriter reportWriterbac = new ReportWriter(inputStreamBack);
+                //   List<ReportParameter> parametersbac = new List<ReportParameter>();
+                //  parametersbac.Add(new ReportParameter() { Name = "IdCD", Labels = new List<string>() { _CertificadoDepositoDTO.IdCD.ToString() }, Values = new List<string>() { _CertificadoDepositoDTO.IdCD.ToString() } });
+                reportWriterbac.SetParameters(parameters);
+                MemoryStream msback = new MemoryStream();
+                reportWriterbac.Save(msback, format);
+                msback.Position = 0;
+
+                PdfLoadedDocument loadedDocumentback = new PdfLoadedDocument(msback, true);
+                 startIndex = 0;
+                 endIndex = loadedDocumentback.Pages.Count - 1;
+                document.ImportPageRange(loadedDocumentback, startIndex, endIndex);
+
+                MemoryStream stream = new MemoryStream();              
+                document.Save(stream);
+
                 using (FileStream file = new FileStream(completepath, FileMode.Create, System.IO.FileAccess.Write))
-                    ms.WriteTo(file);
+                    stream.WriteTo(file);
 
                 ViewBag.pathcontrato = completepath;
             }
