@@ -169,12 +169,18 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CreditNote = JsonConvert.DeserializeObject<CreditNote>(valorrespuesta);
                 }
+                else
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    throw new Exception($"Ocurrio un error: {valorrespuesta}");
+                }
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                  return await Task.Run(()=>BadRequest($"Ocurrio un error{ex.Message}"));
+                throw ex;
+                //  return await Task.Run(()=>BadRequest($"Ocurrio un error{ex.Message}"));
             }
             return Ok(_CreditNote);
             // return new ObjectResult(new DataSourceResult { Data = new[] { _CreditNote }, Total = 1 });

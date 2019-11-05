@@ -179,7 +179,12 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _role = JsonConvert.DeserializeObject<ApplicationRole>(valorrespuesta);
-                }      
+                }
+                else
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    throw new Exception($"Ocurrio un error: {valorrespuesta}");
+                }
 
             }
             catch (Exception ex)
@@ -188,7 +193,8 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _role }, Total = 1 });
+            return Ok(_role);
+           // return new ObjectResult(new DataSourceResult { Data = new[] { _role }, Total = 1 });
         }
 
         [HttpPut("[action]")]
@@ -211,6 +217,11 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _rol = JsonConvert.DeserializeObject<ApplicationRole>(valorrespuesta);
                 }
+                else
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    throw new Exception($"Ocurrio un error: {valorrespuesta}");
+                }
 
             }
             catch (Exception ex)
@@ -219,7 +230,8 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _rol }, Total = 1 });
+            return Ok(_rol);
+           // return new ObjectResult(new DataSourceResult { Data = new[] { _rol }, Total = 1 });
 
         }
 

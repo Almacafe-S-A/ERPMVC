@@ -277,7 +277,7 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _ControlPalletsLine }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<ControlPalletsLine>> Delete([FromBody]ControlPalletsLine _ControlPalletsLine)
         {
             try
@@ -318,12 +318,12 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error: {ex.Message}");
+                return await Task.Run(() => BadRequest($"Ocurrio un error: {ex.Message}"));
             }
 
 
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _ControlPalletsLine }, Total = 1 });
+            return await Task.Run(() => Ok(_ControlPalletsLine));
+           // return new ObjectResult(new DataSourceResult { Data = new[] { _ControlPalletsLine }, Total = 1 });
         }
 
 

@@ -345,11 +345,14 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<ControlPallets>> SaveControlPallets([FromBody]ControlPalletsDTO _ControlPalletsDTO)
+        public async Task<ActionResult<ControlPallets>> SaveControlPallets([FromBody]dynamic dto)
+       // public async Task<ActionResult<ControlPallets>> SaveControlPallets([FromBody]ControlPalletsDTO _ControlPalletsDTO)
         {
-
+            ControlPalletsDTO _ControlPalletsDTO = new ControlPalletsDTO();
             try
             {
+             
+                _ControlPalletsDTO = JsonConvert.DeserializeObject<ControlPalletsDTO>(dto.ToString());
                 if (_ControlPalletsDTO != null)
                 {
                     ControlPallets _listControlPallets = new ControlPallets();
@@ -425,12 +428,18 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ControlPallets = JsonConvert.DeserializeObject<ControlPalletsDTO>(valorrespuesta);
                 }
+                else
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    throw new Exception($"Ocurrio un error: {valorrespuesta}");
+                }
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                throw ex;
+                //return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
             return Ok(_ControlPallets);

@@ -10,6 +10,23 @@
 
 <script>
 
+     function clearsession() {
+         var dataObject = ["listadocertificado"];
+        $.ajax({
+            url: '@Url.Action("ClearSession","Common")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                //  $('#myModalSalesOrder').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
     function customFunction(input) {
 
         if (input.attr('name') === "InsurancesCertificateLineId" && input.val() === "0") {
@@ -176,14 +193,14 @@
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label asp-for="ModifiedDate" class=" control-label" style="width:100%">Fecha de vencimiento</label>
-                                                <kendo-datetimepicker name="ModifiedDate"
+                                                <label asp-for="FechaFirma" class=" control-label" style="width:100%">Fecha de vencimiento</label>
+                                                <kendo-datetimepicker name="FechaFirma" id="FechaFinal"
                                                                       style="width: 100%;"
                                                                       format="dd/MM/yyyy hh:mm:ss"
                                                                       time-format="hh:mm:ss"
                                                                       data-val-required="La fecha es requerida"
-                                                                      value="Model.ModifiedDate" />
-                                                <span asp-validation-for="ModifiedDate" class="text-danger"></span>
+                                                                      value="Model.FechaFirma" />
+                                                <span asp-validation-for="FechaFirma" class="text-danger"></span>
                                             </div>
 
                                         </div>
@@ -233,6 +250,7 @@
                                                                                                columns.Bound(p => p.GrupoEconomicoId).Title("Grupo economico").Width(200);
                                                                                                columns.Bound(p => p.BranchId).Title("Id Sucursal").Visible(false);
                                                                                                columns.Bound(p => p.WarehouseId).Title("Id Bodega").Visible(false);
+                                                                                               columns.Bound(p => p.FechaFirma).Title("Fecha Firma").Visible(false);
 
                                                                                            })
                                                                                                .Filterable(f => f.Operators(o => o.ForString(s => s
@@ -326,24 +344,28 @@
     function GetCertificadoSeguros() {
         debugger;
         return {
-            InsurancesCertificateId: $("#InsurancesCertificateId").val(),
-            InsurancesCertificateLineId: $("#InsurancesCertificateLineId").val(),
-            CustomerId: $("#CustomerId").val(),
-            BranchId: $("#BranchId").val(),
-            WarehouseId: $("#WarehouseId").val(),
+            InsurancesCertificateId: "",
+            InsurancesCertificateLineId: "",
+            CustomerId: "",
+            BranchId: "",
+            WarehouseId: "",
+            CounterInsurancesCertificate: "",
 
-
-
-           
-                //'BranchId': 0,
-                //'WarehouseId': 0,
-                //'CustomerId': 0,
-                //'CreatedDate': 0,
-                //'ModifiedDate': 0,
 
         }
     }
 
+    function RefrescarGridCertificado() {
+        debugger;
+        //var grid = $("#gridCertificado").data("kendoGrid").dataSource.data([]);
+        var grid = $("#gridCertificado").data("kendoGrid");
+        var dataSource = grid.dataSource;
+        dataSource.data([]);//clear out old data
+        dataSource.data();//add new data
+        grid.setDataSource();//set the new data as the grids new datasource
+        dataSource.sync();
+      
+    }
     function ImprimirCertificado(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
@@ -365,6 +387,7 @@
                         'WarehouseName': $("#bodega").data("kendoDropDownList").text(),
                         'CustomerId': $("#CustomerId").val(),
                         'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
+                        'FechaFirma': $("#FechaFinal").getKendoDateTimePicker().value().toJSON(),
                         //'CounterInsurancesCertificate': $("#CounterInsurancesCertificate").val(),
                         //'TotalofProductLine': $("#TotalofProductLine").val(),
                         //'GrupoEconomicoId': $("#GrupoEconomicoId").val(),
@@ -402,7 +425,7 @@
                                     }
 
                                     var gridCertificadoDeposito = $("#gridCertificado").data().kendoGrid.dataSource.data();
-                                    console.log('Listado Certificado: ' + gridCertificadoDeposito.length);
+                                    //console.log('Listado Certificado: ' + gridCertificadoDeposito.length);
                                     if (gridCertificadoDeposito.length > 0) {
                                         //$("#myModalCertificate").modal('show');
                                     }
@@ -441,8 +464,7 @@
                    // e.preventDefault();
           var grid = $("#gridCertificado").data("kendoGrid");
           var dataItem = grid.dataItem("tbody tr:eq(0)")
-          console.log('DisplayedData', dataItem.CounterInsurancesCertificate);
-          console.log('DisplayedData', dataItem.TotalofProductLine);
+         
 
                 debugger;
           var dataObject = {
@@ -454,10 +476,10 @@
               'CounterInsurancesCertificate': dataItem.CounterInsurancesCertificate,
               'TotalofProductLine': dataItem.TotalofProductLine,
               'GrupoEconomicoId': dataItem.GrupoEconomicoId,
-
+              'FechaFirma': dataItem.FechaFirma,
           };
 
-          console.log('Maestro', dataObject);
+          
 
           
           var validator = $("#frmCertificadoDepositoSeguro").data("kendoValidator");
@@ -472,10 +494,7 @@
                                 async: false,
                                 data: JSON.stringify(dataObject),
                                 success: function (data) {
-
-                                    //notification.show({
-                                    //    message: "Guardado correctamente!"
-                                    //}, "upload-success");
+                                    
                                     $.toast({
                                         heading: 'Satisfactorio',
                                         text: '<br/><br/> Datos guardados correctamente.',
@@ -486,9 +505,8 @@
                                         stack: 6
                                     });
 
-                                    RefrescarGrid();
-
-                                //    $('#ModalInsurancesCertificate').modal('hide');
+                                    RefrescarGridCertificado();
+                                    clearsession();
 
 
                                 },
