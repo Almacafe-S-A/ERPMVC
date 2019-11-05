@@ -16,12 +16,13 @@ namespace ERPMVC.Models
         public long IdEmpleado { get; set; }
         [ForeignKey("IdEmpleado")]
 
-        [Required]
+        [Required(ErrorMessage = "El Salario es Requerido")]
         [Display(Name = "Salario")]
         public decimal? QtySalary { get; set; }
         [Display(Name = "Id de Frecuencia")]
         public Int64 IdFrequency { get; set; }
         [Display(Name = "Dia de Aplicacición")]
+        [Required(ErrorMessage = "El dia de Aplicación es Requerido")]
         public DateTime DayApplication { get; set; }
 
         [Display(Name = "Id de estado")]

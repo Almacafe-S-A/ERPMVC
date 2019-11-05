@@ -7,58 +7,11 @@
 
 
 
-<h1><h3 class="text-themecolor">Seguros con Endoso</h3></h1>
+<h3 class="text-themecolor">Seguros con Endoso</h3>
 
 <script>
-    function ActualizarRecibido(e) {
-        var notification = $("#notification").data("kendoNotification");
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        if (dataItem.ReceivedDate != Date.now) {
-            if (confirm('La fecha se actualizara')) {
-                e.preventDefault();
-
-                var dataObject = {
-                    InsuranceEndorsementId: dataItem.InsuranceEndorsementId,
-                    editar: 0
-                };
-
-                $.ajax({
-                    url: '@Url.Action("Recibido","InsuranceEndorsement")',
-                    method: 'POST',
-                    datatype: "json",
-                    contentType: 'application/json',
-                    async: false,
-                    data: JSON.stringify(dataObject),
-                    success: function (result) {
-                        $.toast({
-                            heading: 'Satisfactorio',
-                            text: '<br/><br/>Se actualizo correctamente.',
-                            position: 'top-right',
-                            loaderBg: '#ff6849',
-                            icon: 'success',
-                            hideAfter: 7000,
-                            stack: 6
-                        });
-                        RefrescarGrid();
-                    },
-                    error: function (XMLHttpRequest, textStatus, errorThrown) {
-                        notification.show({
-                            title: "Validación",
-                            message: textStatus + ": " + XMLHttpRequest.responseText
-                        }, "error");
-                        alert(textStatus + ": " + XMLHttpRequest.responseText);
-                    }
-                });
-            }
-        }
-        else {
-            notification.show({
-                title: "Validación",
-                message: "<br/><br/>No se actualizo"
-            }, "error");
-        }
-    }
-
+   
+                                                     
     function dataBound(e) {
         $.each(this.dataSource.data(), function () {
             //console.log(Date.parse(this.OrderDate), Date.parse(this.ReceivedDate));
@@ -86,23 +39,20 @@
     }
 
     function RefrescarGrid() {
-        var grid = $("#gridInvoices").getKendoGrid();
+        var grid = $("#gridInsurances").getKendoGrid();
         grid.dataSource.read();
     }
 
-    function AddCotizacion() {
-       // $('#myModalSalesOrder').find(':input').not(':submit').val('');
-         //$('#myModalSalesOrder').modal('show');
-
+    function AddEndoso() {
+        debugger;
         ClearSession();
-
-         var dataObject = {
+        var dataObject = {
              InsuranceEndorsementId: 0,
             editar : 1
         };
-
+        debugger;
         $.ajax({
-            url: '@Url.Action("pvwInsuranceEndorsement","InsuranceEndorsement")',
+            url: '@Url.Action("pvwAddInsuranceEndorsement", "InsuranceEndorsement")',
             method: 'POST',
             datatype: "json",
             contentType: 'application/json',
@@ -118,16 +68,18 @@
                  $('#myModalSalesOrder').modal('show');
             },
              error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                    //alert(textStatus + ": " + XMLHttpRequest.responseText);
+                 alert("Error");
+
               }
         });
 
 
     }
 
-    function EditCotizacion(e) {
+    function EditEndoso(e) {
         e.preventDefault();
-
+        debugger;
         ClearSession();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         var dataObject = {
@@ -168,44 +120,7 @@
 
     }
 
-    function ImprimirLibroCompras() {
-        var url = '@Url.Action("SFLibroCompras", "InsuranceEndorsement")';
-        var win = window.open(url, '_blank');
-        win.focus();
-    }
-
-    function GenerarFactura(e) {
-        if (confirm('Esta seguro de generar una factura?')) {
-            e.preventDefault();
-            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-            var dataObject = {
-                InsuranceEndorsementId: dataItem.InsuranceEndorsementId,
-                editar: 0
-            };
-
-            $.ajax({
-                url: '@Url.Action("GenerarFactura", "InsuranceEndorsement")',
-                method: 'POST',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: JSON.stringify(dataObject),
-                success: function (result) {
-
-                    $("#divInsuranceEndorsement").html('');
-                    $("#divInsuranceEndorsement").html(result);
-
-                    //  RefreshInsuranceEndorsementDetail();
-                    $("#btnSaveInsuranceEndorsement").hide();
-                    $('#myModalSalesOrder').modal('show');
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
-                }
-            });
-        }
-    }
-
+    
 
 
     function closecondition() {
@@ -217,17 +132,17 @@
 
 
 @(Html.Kendo().Grid<ERPMVC.Models.InsuranceEndorsement>()
-                                          .Name("gridInvoices")
+                                          .Name("gridInsurances")
                                           .Columns(columns =>
                                           {
                                               columns.Command(command =>
                                               {
-                                                  command.Custom("Detalles").Text(" ").IconClass("fa fa-edit").Click("EditCotizacion");
+                                                  command.Custom("Detalles").Text(" ").IconClass("fa fa-edit").Click("EditEndoso");
                                                   command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
 
                                               }).Width(250);
 
-                                              columns.Bound(p => p.Id).Title("Id").Width(150);
+                                              columns.Bound(p => p.InsuranceEndorsementId).Title("Id").Width(150);
 
                                               columns.Bound(p => p.DateGenerated).Format("{0:dd/MM/yyyy}").Title("Fecha").Width(170);
                                               columns.Bound(p => p.Customername).Title("Cliente").Width(170);
@@ -270,7 +185,7 @@
                                           {
                                               // tools.Create();
                                               tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                                     .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
+                                                                     .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddEndoso();" });
                                               //tools.Custom().Text("Reporte").IconClass("")
                                               //           .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ImprimirLibroCompras();" });
 
@@ -301,7 +216,7 @@
                                             .ServerOperation(true)
                                             .Model(model =>
                                             {
-                                                model.Id(p => p.Id);
+                                                model.Id(p => p.InsuranceEndorsementId);
                                                 model.Field(p => p.Customername).Editable(true);
                                                 model.Field(p => p.InsurancePolicyId).Editable(true);
 
@@ -321,20 +236,20 @@
 )
 
 <div id="divInsuranceEndorsement">
-    @await Html.PartialAsync("pvwAddInsuranceEndorsement", new ERPMVC.Models.InsuranceEndorsement { Id = 0, DateGenerated = DateTime.Now })
+    @await Html.PartialAsync("pvwAddInsuranceEndorsement", new ERPMVC.Models.InsuranceEndorsement { InsuranceEndorsementId = 0, DateGenerated = DateTime.Now })
 </div>
 
 <script>
 
     function setToolbarTooltip(btn_cl, btn_tooltip) {
-        $("#gridInvoices").kendoTooltip({
+        $("#gridInsurances").kendoTooltip({
             filter: btn_cl,
             content: btn_tooltip
         });
     }
 
     function setRowButtonTooltip(btn_cl, btn_tooltip) {
-        $("#gridInvoices").kendoTooltip({
+        $("#gridInsurances").kendoTooltip({
             filter: btn_cl,
             content: btn_tooltip
         });

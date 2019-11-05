@@ -1,0 +1,207 @@
+﻿@model IEnumerable<ERPMVC.Models.FormulasAplicadas>
+
+@{
+    ViewData["Title"] = "Formulas Aplicadas";
+}
+
+<script>
+
+    //function onsave(e) {
+    //    //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+    //    // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    //}
+
+    //function caidata(data) {
+    //    data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+    //    data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    //}
+
+
+    function AddFormulasAplicadas() {
+
+        var dataObject = {
+            IdFormulaAplicada: 0,
+            editar: 1
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwFormulasAplicadas", "FormulasAplicadas")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#numFormulasAplicadas").html('');
+                $("#numFormulasAplicadas").html(result);
+
+                $('#ModalFormulasAplicadas').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                //alert(textStatus + ": " + XMLHttpRequest.responseText);
+                //console.log('RESULTADO', result);
+                console.log(textStatus + ": " + XMLHttpRequest.responseText)
+            }
+        });
+
+    }
+
+
+         function EditFormulasAplicadas(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+             var dataObject = {
+                 IdFormulaAplicada: dataItem.IdFormulaAplicada,
+                editar : 0
+             };
+            // console.log(dataItem);
+           //  console.log(dataObject);
+
+
+            $.ajax({
+                url: '@Url.Action("pvwFormulasAplicadas", "FormulasAplicadas")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#numFormulasAplicadas").html('');
+                    $("#numFormulasAplicadas").html(result);
+
+
+                    //$("#btnCity").hide();
+                    console.log('RESULTADO',result);
+                    $('#ModalFormulasAplicadas').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    //alert(textStatus + ": " + XMLHttpRequest.responseText);
+                    //console.log('RESULTADO', result);
+                    console.log(textStatus + ": " + XMLHttpRequest.responseText)
+                }
+            });
+         }
+
+    function RefreshGrIdFormulaAplicada() {
+
+        var grid = $("#grIdFormulaAplicada").getKendoGrid();
+            grid.dataSource.read();
+
+    }
+
+
+</script>
+
+<h3 class="text-themecolor">Fórmulas Aplicadas</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.FormulasAplicadas>
+                              ()
+
+                                .Name("grIdFormulaAplicada")
+
+                                .Columns(columns =>
+                                {
+                                    columns.Command(command =>
+                                    {
+                                        //command.Custom("Ver detalles").Click("Detalles");
+                                        command.Custom("Editar").Click("EditFormulasAplicadas");
+                                        command.Destroy().Text("Eliminar");
+                                    }).Width(250);
+                                    columns.Bound(p => p.IdFormulaAplicada).Title("Id").Width(100);
+                                    columns.Bound(p => p.NombreFormula).Width(200);
+                                    columns.Bound(p => p.Estado).Width(200);
+                                    columns.Bound(p => p.FormulaEmpleada).Title("Fórmula Empleada").Width(250);
+                                    columns.Bound(p => p.MultiplicarPor).Title("Multiplicar").Width(170);
+                                    columns.Bound(p => p.IdCalculo).Width(170);
+
+                                    //columns.Bound(p => p.UsuarioCreacion).Width(170);
+                                    //columns.Bound(p => p.UsuarioModificacion).Width(190);
+
+
+                                })
+                                    .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                               .Clear()
+                                                               .Contains("Contiene")
+                                                               .DoesNotContain("No contiene")
+                                                               .EndsWith("Termina con")
+                                                               .IsEqualTo("Es igual a")
+                                                               .IsNotEqualTo("No es igual a")
+                                                               .IsNull("Es nulo")
+                                                               .StartsWith("Inicia con")
+
+
+                                                         )
+                                                         .ForNumber(n => n
+                                                           .Clear()
+                                                           .IsEqualTo("Es igual a")
+                                                           .IsGreaterThan("Es mayor que")
+                                                           .IsLessThan("Es menor que")
+                                                           .IsNull("Es nulo")
+                                                           .IsLessThanOrEqualTo("Es menor o igual que")
+                                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                         )
+                                                         .ForDate(d => d
+                                                         .Clear()
+                                                         .IsEqualTo("Es igual que")
+                                                         .IsGreaterThan("Es mayor que")
+                                                         .IsLessThan("Es menor que")
+                                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                         .IsNotEqualTo("No es igual que")
+                                                          )
+                                                       ))
+
+                                .ToolBar(tools =>
+                                {
+
+                                    //tools.Create();
+                                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                                  .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddFormulasAplicadas()" });
+                                    tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                    tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                                })
+                                .Editable(e => e.Mode(GridEditMode.PopUp))
+                                .Sortable()
+                                .Pageable()
+                                .Filterable()
+                                .Scrollable()
+                                .Pdf(pdf => pdf.FileName("FormulasAplicadasReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                .Excel(excel => excel.FileName("FormulasAplicadasReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                .DataSource(dataSource =>
+                                dataSource
+                                .WebApi()
+
+                                .ServerOperation(true)
+                                .Model(model =>
+                                {
+                                    model.Id(p => p.IdFormulaAplicada);
+                                    model.Field(p => p.IdFormulaAplicada).Editable(false);
+
+
+                                })
+                                .Events(events => events.Error("error_handler"))
+                                .Read(read => read.Action("Get", "FormulasAplicadas"))
+                                .Create(create => create.Action("Insert", "FormulasAplicadas").Type(HttpVerbs.Post))
+                                .Update(update => update.Action("Update", "FormulasAplicadas").Type(HttpVerbs.Post))
+                                .Destroy(destroy => destroy.Action("Delete", "FormulasAplicadas").Type(HttpVerbs.Post))
+
+
+                                )
+                                //.Events(e =>
+                                //{
+                                //    e.Save("onsave");
+
+                                //})
+)
+
+<div id="numFormulasAplicadas">
+    @await Html.PartialAsync("pvwFormulasAplicadas", new ERPMVC.DTO.FormulasAplicadasDTO { IdFormulaAplicada = 0 })
+</div>
+

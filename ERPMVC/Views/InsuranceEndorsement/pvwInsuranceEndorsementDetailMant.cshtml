@@ -1,5 +1,10 @@
 ﻿@model ERPMVC.Models.InsuranceEndorsementLine
-
+@{
+    var messages1 = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+                                                                                    {"required","Valor requerido" }
+                                                                                 };
+    var rules1 = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
 
 
 <script>
@@ -7,15 +12,14 @@
     completedorderlinemant = function (xhr) {
         debugger
         $('#myModalInvoiceLine').find(':input').not('#SalesOrderId :submit').val('0');
-        $('#UnitOfMeasureId').data("kendoDropDownList").value('0');
-        $('#ProductId').data("kendoDropDownList").value(0);
-        $('#TaxCode').data("kendoDropDownList").value(0);
-        $('#TaxAmount').data("kendoNumericTextBox").value(0);
-        $('#TotalLine').data("kendoNumericTextBox").value(0);
-        $('#Description').val('');
+        $('#WarehouseIdLine').data("kendoDropDownList").value('0');
+        $('#AmountLp').val(0);
+        $('#AmountDl').val(0);
+        $('#CertificateBalance').val(0);
+        $('AssuredDiferenceLine').val(0);
         CalcularTotalDocumento();
         $("#btnActualizarCotizacionLinea").prop("disabled", false);
-       closesaleorderline();
+        closesaleorderline();
     };
 
 
@@ -26,55 +30,25 @@
 
 
     function CalcularTotalDocumento() {
-        var freight = $("#Freight").val() === "" ? 0 : $("#Freight").val();
+
         debugger;
         var displayedData = $("#gridInvoiceDetail").data().kendoGrid.dataSource.view();
-        var subtotal = 0, total = 0, totaldescuento = 0, totalimpuesto = 0, totalimpuesto18 = 0, totalmonto = 0;
-        var TotalExento = 0, TotalExonerado = 0, TotalGravado = 0, TotalGravado18 = 0;
-
+        // var subtotal = 0, total = 0, totaldescuento = 0, totalimpuesto = 0, totalimpuesto18 = 0, totalmonto = 0;
+        var montodolar = 0, montolp = 0, totalsaldocert = 0, totaldiferencia = 0;
         $(displayedData).each(function (index, element) {
             var t = JSON.parse(JSON.stringify(element));
-
-            total = total + t["Total"];
-            subtotal = subtotal + t["SubTotal"];
-            totaldescuento = totaldescuento + t["DiscountAmount"];
-            totalmonto = totalmonto + t["Amount"];
-
-            if (t["TaxCode"] == "1" ) {
-                TotalGravado = TotalGravado + (t["Total"] - t["TaxAmount"]);
-                totalimpuesto = totalimpuesto + t["TaxAmount"];
-            }
-
-            if (t["TaxCode"] == "3") {
-                TotalGravado18 = TotalGravado18 + (t["Total"] - t["TaxAmount"]);
-                totalimpuesto18 = totalimpuesto18 + t["TaxAmount"];
-            }
-
-             if (t["TaxCode"] == "4") {
-                 TotalExento = TotalExento + t["Total"];
-            }
-
-            if (t["TaxCode"] == "5") {
-                TotalExonerado = TotalExonerado + t["Total"];
-            }
+            montodolar += + t["AmountDl"];
+            montolp += t["AmountLp"];
+            totalsaldocert += t["CertificateBalance"];
+            totaldiferencia += t["AssuredDiference"];
 
         });
-
-        //console.log(TotalGravado); console.log(TotalGravado18); console.log(TotalExento);
-        //console.log(TotalExonerado); console.log(totalimpuesto18); console.log(totalimpuesto); console.log(Number(freight));
-        var sumatotal = Number(TotalGravado) + Number(TotalGravado18) + Number(TotalExento) + Number(TotalExonerado) + Number(totalimpuesto18)+  Number(totalimpuesto) + Number(freight);
-
-        setearvalor('Amount', totalmonto);
-        setearvalor('TotalExento', TotalExento);
-        setearvalor('TotalExonerado', TotalExonerado);
-        setearvalor('TotalGravado', TotalGravado);
-        setearvalor('TotalGravado18', TotalGravado18);
-
-        setearvalor('Discount', totaldescuento);
-        setearvalor('Tax', totalimpuesto);
-        setearvalor('Tax18', totalimpuesto18);
-        setearvalor('SubTotal', subtotal);
-        setearvalor('Total', sumatotal);
+        //var sumatotal = Number(TotalGravado) + Number(TotalGravado18) + Number(TotalExento) + Number(TotalExonerado) + Number(totalimpuesto18)+  Number(totalimpuesto) + Number(freight);
+        debugger;
+        setearvalor('TotalAmountDl', montodolar);
+        setearvalor('TotalAmountLp', montolp);
+        setearvalor('TotalCertificateBalalnce', totalsaldocert);
+        setearvalor('TotalAssuredDifernce', totaldiferencia);
 
     }
 
@@ -85,128 +59,44 @@
         grid.refresh();
     }
     function AddConceptoCotizacion(e) {
-       // e.preventDefault();
+        // e.preventDefault();
         var notification = $("#notification").data("kendoNotification");
-        if ($("#ProductId").val() > 0) {
-            try {
-                $("#btnActualizarCotizacionLinea").prop("disabled", false);
-                RefreshInvoiceDetail();
+        $("#btnActualizarCotizacionLinea").prop("disabled", false);
+        try {
+            RefreshInvoiceDetail();
 
-            } catch (e) {
-                $("#btnActualizarCotizacionLinea").prop("disabled", true);
-            }
+        } catch (e) {
+            $("#btnActualizarCotizacionLinea").prop("disabled", true);
         }
-        else {
-            notification.show({
-                title: "Validación",
-                message: "Seleccione el Producto!"
-            }, "error");
-
-            return;
-        }
-
-
     }
 
-    function setearvalor(nombrenumerico,valor) {
+    function setearvalor(nombrenumerico, valor) {
         var numeric = $("#" + nombrenumerico).data("kendoNumericTextBox");
         numeric.value(valor);
         numeric.trigger('change');
         numeric = null;
     }
-
-
-
-    function GetPercentage()
-    {
-        if ($("#TaxCode").val() != null) {
-            var dataObject = { TaxId: $("#TaxCode").val() };
-            $.ajax({
-                url: '@Url.Action("GetTaxById","Tax")',
-                method: 'GET',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: dataObject,
-                success: function (result) {
-                    setearvalor("TaxPercentage", result.TaxPercentage);
-                    CalcularTotal();
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
-                }
-            });
-        }
-
-    }
-
     function CalcularTotal() {
         //debugger;
-        var quantity = $("#Quantity").val();
-        var price = $("#Price").val();
-        var amount = quantity * price;
-        setearvalor("AmountLine", amount);
-        var DiscountAmount = amount * ($("#DiscountPercentage").val() / 100);
-        setearvalor("DiscountAmount", DiscountAmount);
-        var subtotal = amount - DiscountAmount;
-        var taxamount = subtotal * ($("#TaxPercentage").val() / 100) ;
-        setearvalor("TaxAmount", taxamount);
-        setearvalor("SubTotalLine", subtotal);
-        var Total = Number(subtotal) + Number(taxamount);
-        setearvalor("TotalLine", Total);
+        //var quantity = $("#Quantity").val();
+        //var price = $("#Price").val();
+        //var amount = quantity * price;
+        //setearvalor("AmountLine", amount);
+        //var DiscountAmount = amount * ($("#DiscountPercentage").val() / 100);
+        //setearvalor("DiscountAmount", DiscountAmount);
+        //var subtotal = amount - DiscountAmount;
+        //var taxamount = subtotal * ($("#TaxPercentage").val() / 100) ;
+        //setearvalor("TaxAmount", taxamount);
+        //setearvalor("SubTotalLine", subtotal);
+        //var Total = Number(subtotal) + Number(taxamount);
+        //setearvalor("TotalLine", Total);
     }
 
     function cargarloader() {
-       $("#btnActualizarCotizacionLinea").prop("disabled", true);
-    }
-
-    function agregarcondicionpopup() {
-        var dataObject = { 'ConditionId': 0 };
-
-           $.ajax({
-            url: '@Url.Action("pvwConditions","Conditions")',
-            method: 'GET',
-            datatype: "json",
-            contentType: 'application/json',
-            async: false,
-            data: dataObject,
-               success: function (result) {
-                   //console.log(result);
-                   //debugger;
-                   $("#ConditionView").html('');
-                   $("#ConditionView").html(result);
-
-            },
-             error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
-              }
-         });
-
-        $('#myModalConditions').modal('show');
-
-    }
-
-    function AgregarCustomerCondition() {
-        var notification = $("#notification").data("kendoNotification");
-
-
-        if ($("#SalesOrderId").val() > 0) {
-            $('#myModalCustomerConditions').modal('show');
-        }
-        else {
-            notification.show({
-                title: "Validación",
-                message: "Para agregar una condición debe generar el documento!"
-            }, "info");
-        }
+        $("#btnActualizarCotizacionLinea").prop("disabled", true);
     }
 
 </script>
-
-
-
-
-@*@await Html.PartialAsync("~/Views/CustomerConditions/Index.cshtml")*@
 
 <span id="spinner" style="display:none;"><i class="fas fa-spinner fa-spin"></i></span>
 <div id="loading"></div>
@@ -218,19 +108,9 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" onclick="closesaleorderline();">&times;</button>
-                <h4 class="modal-title">Detalle de Factura</h4>
+                <h4 class="modal-title">Detalle</h4>
             </div>
             <div class="modal-body">
-
-                @{
-                    var messages1 = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
-                                                                                            {"required","Valor requerido" }
-                                                                                         };
-                    var rules1 = new Dictionary<string, string>() { { "custom", "customFunction" } };
-                }
-
-
-
                 <div class="row" id="validation">
                     <div class="col-lg-12">
                         <div class="card">
@@ -246,71 +126,80 @@
                                       method="post" class="validation-wizard wizard-circle">
                                     <div class="form-body">
                                         <hr>
-
-
-                                        <div class="row">
-                                            <div class="col-md-12">
+                                        <div class="row" hidden>
+                                            <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label asp-for="Id" class="control-label" style="width:100%"></label>
-                                                    <input type="number" asp-for="Id" class="form-control" style="min-width:100%" readonly disabled />
+                                                    <label asp-for="InsuranceEndorsementLineId" class="control-label" style="width:100%"></label>
+                                                    <input type="number" asp-for="InsuranceEndorsementLineId" class="form-control" style="min-width:100%" readonly disabled />
                                                 </div>
                                             </div>
-                                        </div>
-
-                                        <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="InsuranceEndorsementId" class="control-label" style="min-width:100%"></label>
                                                     <input type="number" asp-for="InsuranceEndorsementId" style="min-width:100%" class="form-control" readonly disabled />
                                                 </div>
                                             </div>
-
-
+                                        </div>
+                                        <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    @*<script>
-                                                            function setsubproductname(e) {
-                                                                // console.log(e);
-                                                                var dataItem = e.dataItem;
-                                                                if (dataItem != null)
-                                                                    $("#subproductname").val(dataItem.ProductName);
-                                                            }
-                                                        </script>
-                                                        <input type="hidden" id="subproductname" />*@
-
-                                                    <div class="form-group">
-                                                        <label asp-for="WareHouseId" class="control-label" style="width:100%">Servicio</label>
-                                                        <kendo-dropdownlist name="v" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                            for="WareHouseId"
-                                                                            option-label="Seleccione la Bodega"
-                                                                            datatextfield="WareHouseName"
-                                                                            datavaluefield="WareHouseId"
-                                                                            required
-                                                                            style="width: 100%;">
-                                                            <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
-                                                                <transport>
-                                                                    <read url="@Url.Action("GetProduct", "Common")" />
-                                                                </transport>
-                                                            </datasource>
-                                                        </kendo-dropdownlist>
-                                                        <span asp-validation-for="WareHouseId" class="text-danger"></span>
-                                                    </div>
+                                                    <label asp-for="WareHouseId" class="control-label" style="width:100%">Bodega</label>
+                                                    <kendo-dropdownlist name="WareHouseIdLine" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        for="WareHouseId"
+                                                                        id="WarehouseIdLine"
+                                                                        option-label="Seleccione la Bodega"
+                                                                        datatextfield="WarehouseName"
+                                                                        required
+                                                                        datavaluefield="WarehouseId"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetWarehouse", "Warehouse")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="WareHouseId" class="text-danger"></span>
                                                 </div>
                                             </div>
-
-
-                                            
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="AmountLp" class="control-label" style="width:100%">Monto Lps</label>
+                                                    <kendo-numerictextbox name="AmountLp"
+                                                                          format="c2"
+                                                                          min="0"
+                                                                          decimals="2"
+                                                                          spinners="false"
+                                                                          max="1000000000"
+                                                                          onchange="CalcularTotal();"
+                                                                          style="width:100%"
+                                                                          value="Model.AmountLp" />
+                                                    <span asp-validation-for="AmountLp" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="AmountDl" class="control-label" style="width:100%">Monto $</label>
+                                                    <kendo-numerictextbox name="AmountDl"
+                                                                          format="'$.' #.## "
+                                                                          min="0"
+                                                                          max="1000000000"
+                                                                          spinners="false"
+                                                                          onchange="CalcularTotal();"
+                                                                          style="width:100%"
+                                                                          value="Model.AmountDl" />
+                                                    <span asp-validation-for="AmountDl" class="text-danger"></span>
+                                                </div>
+                                            </div>
                                         </div>
 
                                         <div class="row">
-                                            
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label asp-for="CertificateBalance" class="control-label" style="width:100%"></label>
-                                                    <kendo-numerictextbox name="CertificateBalance"
-                                                                          format="n2"
+                                                    <label asp-for="CertificateBalance" class="control-label" style="width:100%">Saldo Certificado</label>
+                                                    <kendo-numerictextbox name="CertificateBalanceLine"
+                                                                          format="c2"
                                                                           min="0"
-                                                                          step="1"
+                                                                          spinners="false"
                                                                           required
                                                                           maxlength="9"
                                                                           onchange="CalcularTotal();"
@@ -319,15 +208,13 @@
                                                     <span asp-validation-for="CertificateBalance" class="text-danger"></span>
                                                 </div>
                                             </div>
-
-
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label asp-for="AssuredDiference" class="control-label" style="width:100%"></label>
-                                                    <kendo-numerictextbox name="AssuredDiference"
-                                                                          format="n2"
+                                                    <label asp-for="AssuredDiference" class="control-label" style="width:100%">Diferencia Asegurada</label>
+                                                    <kendo-numerictextbox name="AssuredDiferenceLine"
+                                                                          format="c2"
                                                                           min="0"
-                                                                          step="1"
+                                                                          spinners="false"
                                                                           required
                                                                           maxlength="20"
                                                                           onchange="CalcularTotal();"
@@ -336,51 +223,6 @@
                                                     <span asp-validation-for="AssuredDiference" class="text-danger"></span>
                                                 </div>
                                             </div>
-
-
-
-                                        </div>
-
-
-                                        <div class="row">
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label asp-for="AmountLp" class="control-label" style="width:100%"></label>
-                                                    @*<input type="number" asp-for="Amount" readonly value="@Model.Amount" class="form-control" />*@
-                                                    <kendo-numerictextbox name="AmountLp"
-                                                                          format="n2"
-                                                                          id="AmountLp"
-                                                                          spinners="false"
-                                                                          min="0"
-                                                                          required
-                                                                          disabled
-                                                                          step="1"
-                                                                          style="width:100%"
-                                                                          value="Model.AmountLp" />
-
-                                                    <span asp-validation-for="AmountLp" class="text-danger"></span>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label asp-for="AmountDl" class="control-label" style="width:100%"></label>
-                                                    <kendo-numerictextbox name="DiscountPercentage"
-                                                                          format="#.## '%'"
-                                                                          min="0"
-                                                                          decimals="2"
-                                                                          max="100"
-                                                                          maxlength="3"
-                                                                          onchange="CalcularTotal();"
-                                                                          style="width:100%"
-                                                                          value="Model.AmountDl" />
-                                                    <span asp-validation-for="AmountDl" class="text-danger"></span>
-                                                </div>
-                                            </div>
-
-
-
-
-
                                         </div>
 
                                     </div>

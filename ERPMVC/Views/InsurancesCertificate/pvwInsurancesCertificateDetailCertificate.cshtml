@@ -3,13 +3,30 @@
 
 @{ Layout = null;
     var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
-// {"required","Valor requerido" }
+        { "required","Valor requerido" }
 };
     var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
 }
 
 <script>
 
+     function clearsession() {
+         var dataObject = ["listadocertificado"];
+        $.ajax({
+            url: '@Url.Action("ClearSession","Common")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                //  $('#myModalSalesOrder').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
     function customFunction(input) {
 
         if (input.attr('name') === "InsurancesCertificateLineId" && input.val() === "0") {
@@ -47,7 +64,7 @@
                     <div class="col-lg-12">
                         <div class="card">
                             <div class="card-body">
-                                <form id="frmCertificadoDepositoSeguro" kendo-validator="true"
+                                <form id="frmCertificadoDepositoSeguro" kendo-validator="true" kendo-messages="messages"
                                       data-ajax="true"
                                       data-ajax-method="post"
                                       data-ajax-begin="BuscarCertificadoDeposito"
@@ -59,7 +76,7 @@
                                             <div class="col-md-4" hidden>
                                                 <div class="form-group">
                                                     <label asp-for="InsurancesCertificateLineId" class="control-label" style="width:100%"></label>
-                                                    <input type="number" asp-for="InsurancesCertificateLineId" readonly="readonly" style="min-width:100%" class="form-control" disabled />
+                                                    <input type="number" asp-for="InsurancesCertificateLineId"  readonly="readonly" style="min-width:100%" class="form-control" disabled />
 
                                                 </div>
                                             </div>
@@ -139,23 +156,22 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="CustomerId" class="control-label"></label>
-                                                    <kendo-dropdownlist name="CustomerId" for="CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
+
+                                                    <kendo-dropdownlist name="CustomerId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         option-label="Seleccione el cliente"
-                                                                        value="@Model.CustomerId"
                                                                         datatextfield="CustomerName"
                                                                         datavaluefield="CustomerId"
-                                                                        required
-                                                                        auto-bind="true"
+                                                                        class="form-control-line"
                                                                         style="width: 100%;">
-                                                        <datasource type="DataSourceTagHelperType.WebApi" server-filtering="true">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
                                                             <transport>
                                                                 <read url="@Url.Action("GetCustomer", "Common")" />
                                                             </transport>
                                                         </datasource>
                                                     </kendo-dropdownlist>
-                                                    <span asp-validation-for="CustomerId" class="text-danger"></span>
                                                 </div>
                                             </div>
+
 
                                         </div>
                                     </div>
@@ -177,14 +193,14 @@
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-group">
-                                                <label asp-for="ModifiedDate" class=" control-label" style="width:100%">Fecha de finalización</label>
-                                                <kendo-datetimepicker name="ModifiedDate"
+                                                <label asp-for="FechaFirma" class=" control-label" style="width:100%">Fecha de vencimiento</label>
+                                                <kendo-datetimepicker name="FechaFirma" id="FechaFinal"
                                                                       style="width: 100%;"
                                                                       format="dd/MM/yyyy hh:mm:ss"
                                                                       time-format="hh:mm:ss"
                                                                       data-val-required="La fecha es requerida"
-                                                                      value="Model.ModifiedDate" />
-                                                <span asp-validation-for="ModifiedDate" class="text-danger"></span>
+                                                                      value="Model.FechaFirma" />
+                                                <span asp-validation-for="FechaFirma" class="text-danger"></span>
                                             </div>
 
                                         </div>
@@ -219,19 +235,24 @@
                                                                                                columns.Command(command =>
                                                                                                {
 
+                                                                                                   command.Custom("Guardar").Text(" ").IconClass("fa fa-edit").Click("SaveInsurancesCertificateLineCertificate");
 
-                                                                                                  // command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCertificado");
+                                                                                                   command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCertificado");
 
-                                                                                               }).Width(100);
+                                                                                               }).Width(200);
 
-                                                                                              
-                                                                                               columns.Bound(p => p.CounterInsurancesCertificate).Title("Contador").Width(300);
-                                                                                               columns.Bound(p => p.CustomerId).Title("Cliente").Width(300);
 
-                                                                                               columns.Bound(p => p.TotalofProductLine).Format("{0:n2}").Title("Valor Asegurado").Width(150);
-                                                                                               columns.Bound(p => p.GrupoEconomicoId).Title("Grupo economico");
+                                                                                               columns.Bound(p => p.InsurancesCertificateLineId).Title("Id Linea").Width(100).Visible(true);
+                                                                                               columns.Bound(p => p.InsurancesCertificateId).Title("Id Certificado").Width(200).Visible(false);
+                                                                                               columns.Bound(p => p.CounterInsurancesCertificate).Title("Contador").Width(200);
+                                                                                               columns.Bound(p => p.CustomerName).Title("Cliente").Width(300);
+                                                                                               columns.Bound(p => p.TotalofProductLine).Format("{0:n2}").Title("Valor Asegurado").Width(200);
+                                                                                               columns.Bound(p => p.GrupoEconomicoId).Title("Grupo economico").Width(200);
+                                                                                               columns.Bound(p => p.BranchId).Title("Id Sucursal").Visible(false);
+                                                                                               columns.Bound(p => p.WarehouseId).Title("Id Bodega").Visible(false);
+                                                                                               columns.Bound(p => p.FechaFirma).Title("Fecha Firma").Visible(false);
 
-                                                                                                           })
+                                                                                           })
                                                                                                .Filterable(f => f.Operators(o => o.ForString(s => s
                                                                                         .Clear()
                                                                                         .Contains("Contiene")
@@ -286,16 +307,17 @@
                                                                                              .Model(model =>
                                                                                              {
                                                                                                  model.Id(p => p.InsurancesCertificateLineId);
+                                                                                                 model.Field(p => p.InsurancesCertificateLineId).Editable(false);
                                                                                                  model.Field(p => p.InsurancesCertificateId).Editable(false);
-                                                                                                                 //  model.Field(p => p.IdCD).Editable(false);
+                                                                                                 //  model.Field(p => p.IdCD).Editable(false);
 
-                                                                                                             })
+                                                                                             })
                                                                                              .Events(events =>
                                                                                              {
                                                                                                  events.Error("error_handler");
-                                                                                                                 //events.upda("EditHandler");
+                                                                                                 //events.upda("EditHandler");
 
-                                                                                                             })
+                                                                                             })
                                                                                              .Read(read => read.Action("GetInsurancesCertificateLineById", "InsurancesCertificateLine").Data("GetCertificadoSeguros"))
 
 )
@@ -318,23 +340,32 @@
 </div>
 
 <script>
-
+     
     function GetCertificadoSeguros() {
-
+        debugger;
         return {
-            InsurancesCertificateId: $("#InsurancesCertificateId").val(),
-            InsurancesCertificateLineId: $("#InsurancesCertificateLineId").val(),
-            CustomerId: $("#CustomerId").val(),
-           
-                //'BranchId': 0,
-                //'WarehouseId': 0,
-                //'CustomerId': 0,
-                //'CreatedDate': 0,
-                //'ModifiedDate': 0,
+            InsurancesCertificateId: "",
+            InsurancesCertificateLineId: "",
+            CustomerId: "",
+            BranchId: "",
+            WarehouseId: "",
+            CounterInsurancesCertificate: "",
+
 
         }
     }
 
+    function RefrescarGridCertificado() {
+        debugger;
+        //var grid = $("#gridCertificado").data("kendoGrid").dataSource.data([]);
+        var grid = $("#gridCertificado").data("kendoGrid");
+        var dataSource = grid.dataSource;
+        dataSource.data([]);//clear out old data
+        dataSource.data();//add new data
+        grid.setDataSource();//set the new data as the grids new datasource
+        dataSource.sync();
+      
+    }
     function ImprimirCertificado(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
@@ -346,14 +377,20 @@
     function BuscarCertificadoDeposito(e) {
                     var notification = $("#notification").data("kendoNotification");
                    // e.preventDefault();
+
                 debugger;
         var dataObject = {
-                        'InsurancesCertificateId': $("#InsurancesCertificateId").val(),
                         'InsurancesCertificateLineId': $("#InsurancesCertificateLineId").val(),
-                        //'BranchId': $("#BranchId").val(),
-                        //'WarehouseId': $("#WarehouseId").val(),
+                        'InsurancesCertificateId': $("#InsurancesCertificateId").val(),
+                        'BranchId': $("#sucursal").val(),
+                        'WarehouseId': $("#bodega").val(),
+                        'WarehouseName': $("#bodega").data("kendoDropDownList").text(),
                         'CustomerId': $("#CustomerId").val(),
+                        'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
+                        'FechaFirma': $("#FechaFinal").getKendoDateTimePicker().value().toJSON(),
                         //'CounterInsurancesCertificate': $("#CounterInsurancesCertificate").val(),
+                        //'TotalofProductLine': $("#TotalofProductLine").val(),
+                        //'GrupoEconomicoId': $("#GrupoEconomicoId").val(),
                         //'CreatedDate': $("#CreatedDate").getKendoDateTimePicker().value().toJSON(),
                         //'ModifiedDate': $("#ModifiedDate").getKendoDateTimePicker().value().toJSON(),
                     
@@ -382,16 +419,18 @@
                                     }
 
                                     for (var i = 0; i < data.Data.length; i++) {
+                                    
+                                       
                                         datasource.insert(data.Data[i]);
                                     }
 
                                     var gridCertificadoDeposito = $("#gridCertificado").data().kendoGrid.dataSource.data();
-                                    console.log('Listado Certificado: ' + gridCertificadoDeposito.length);
+                                    //console.log('Listado Certificado: ' + gridCertificadoDeposito.length);
                                     if (gridCertificadoDeposito.length > 0) {
-                                        $("#myModalCertificate").modal('show');
+                                        //$("#myModalCertificate").modal('show');
                                     }
                                     else {
-                                        $("#myModalCertificate").modal('hide');
+                                        //$("#myModalCertificate").modal('hide');
                                     }
 
                                 },
@@ -415,11 +454,88 @@
                         }
 
 
+        
+    }
+
+
+      function SaveInsurancesCertificateLineCertificate(e) {
+
+                    var notification = $("#notification").data("kendoNotification");
+                   // e.preventDefault();
+          var grid = $("#gridCertificado").data("kendoGrid");
+          var dataItem = grid.dataItem("tbody tr:eq(0)")
+         
+
+                debugger;
+          var dataObject = {
+              'InsurancesCertificateId': $("#InsurancesCertificateId").val(),
+              'BranchId': dataItem.BranchId,
+              'WarehouseId': dataItem.WarehouseId,
+              'WarehouseName': dataItem.WarehouseName,
+              'CustomerId': dataItem.CustomerId, 
+              'CounterInsurancesCertificate': dataItem.CounterInsurancesCertificate,
+              'TotalofProductLine': dataItem.TotalofProductLine,
+              'GrupoEconomicoId': dataItem.GrupoEconomicoId,
+              'FechaFirma': dataItem.FechaFirma,
+          };
+
+          
+
+          
+          var validator = $("#frmCertificadoDepositoSeguro").data("kendoValidator");
+          var status = $(".status");
+                    if (validator.validate()) {
+
+                            $.ajax({
+                                url: '@Url.Action("SaveInsurancesCertificateLine", "InsurancesCertificateLine")',
+                                method: 'POST',
+                                datatype: "json",
+                                contentType: 'application/json',
+                                async: false,
+                                data: JSON.stringify(dataObject),
+                                success: function (data) {
+                                    
+                                    $.toast({
+                                        heading: 'Satisfactorio',
+                                        text: '<br/><br/> Datos guardados correctamente.',
+                                        position: 'top-right',
+                                        loaderBg: '#ff6849',
+                                        icon: 'success',
+                                        hideAfter: 30000,
+                                        stack: 6
+                                    });
+
+                                    RefrescarGridCertificado();
+                                    clearsession();
+
+
+                                },
+                                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                                    notification.show({
+                                        title: "Validación",
+                                        message: textStatus + ": " + XMLHttpRequest.responseText
+                                    }, "error");
+
+                                }
+                            });
+
+                    }
+          
+                    else {
+                        $("#btnInsurancesCertificate").show();
+                        $("#btnInsurancesCertificate").prop("disabled", false);
+                            status.text("Oops! Hay datos invalidos en el formulario.")
+                                .removeClass("valid")
+                                .addClass("invalid");
+                        }
+
+
 
 
        // }
        // $("#btnInsurancesCertificate").show();
        // $("#btnInsurancesCertificate").prop("disabled", false);
-    }
-
-                                                    </script>
+      }
+  
+ </script>

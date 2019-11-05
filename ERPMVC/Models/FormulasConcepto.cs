@@ -10,14 +10,19 @@ namespace ERPMVC.Models
     public class FormulasConcepto
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-         public long IdformulaConcepto { get; set; } // bigint
-         public long? Idformula { get; set; } // bigint
-         public long? IdConcepto { get; set; } // bigint
-         public string NombreConcepto { get; set; } // text
+        [Display(Name = "Id Fórmula Concepto")]
+        public long IdformulaConcepto { get; set; } // bigint
+        [Display(Name = "Fórmula")]
+        public long? IdFormula { get; set; } // bigint
+        [Display(Name = "Concepto")]
+        public long? IdConcepto { get; set; } // bigint
+        [Display(Name = "Nombre Concepto")]
+        public string NombreConcepto { get; set; } // text
          public DateTime? FechaCreacion { get; set; } // timestamp (6) without time zone
          public DateTime? FechaModificacion { get; set; } // timestamp (6) without time zone
          public string UsuarioCreacion { get; set; } // text
          public string UsuarioModificacion { get; set; } // text
-         public string EstructuraConcepto { get; set; } // text
+        [Display(Name = "Estructura Concepto")]
+        public string EstructuraConcepto { get; set; } // text
     }
 }

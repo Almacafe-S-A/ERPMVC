@@ -10,7 +10,7 @@ namespace ERPMVC.Models
     public class InsuranceEndorsementLine
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
+        public int InsuranceEndorsementLineId { get; set; }
 
         public int InsuranceEndorsementId { get; set; }
 

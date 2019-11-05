@@ -1,0 +1,197 @@
+﻿@model ERPMVC.DTO.FormulasConceptoDTO
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+            {"required","Valor requerido" }
+        };
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<script>
+
+        function customFunction(input) {
+
+            if (input.attr('name') === "IdFormulasConcepto" && input.val() === "0") {
+                return false;
+            }
+
+        }
+    //function TipoFormulasConcepto() {
+    //    return { Id: 24 };
+    //} 
+        //$('#btnprueba').val("");
+</script>
+
+
+
+<div id="ModalFormulasConcepto" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Fórmulas Concepto</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmFormulasConcepto" kendo-validator="true" kendo-messages="messages"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveFormulasConcepto"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <h3 class="card-title">Fórmulas Concepto</h3>
+                                        <hr>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="IdformulaConcepto" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="IdformulaConcepto" name="IdFormulasConcepto" class="form-control" disabled="disabled" style="min-width:100%" />
+                                                    <span asp-validation-for="IdformulaConcepto" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="IdFormula" class="control-label"></label>
+                                                    <kendo-dropdownlist name="IdFormula"
+                                                                        for="IdFormula"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar Formula"
+                                                                        datatextfield="NombreFormula"
+                                                                        datavaluefield="IdFormula"
+                                                                        required
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("Get", "Formula")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="IdConcepto" class="  control-label" style="width:100%"></label>
+                                                    <kendo-dropdownlist name="IdConcepto"
+                                                                        for="IdConcepto"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione el Concepto"
+                                                                        datatextfield="ConceptName"
+                                                                        datavaluefield="ConceptId"
+                                                                        required
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetConcept", "Concept")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="IdConcepto" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+
+                                                <div class="form-group">
+                                                    <label asp-for="EstructuraConcepto"  class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="EstructuraConcepto" name="EstructuraConcepto" required class="form-control" autocomplete="off" style="min-width:100%"  maxlength="60"/>
+                                                    <span asp-validation-for="EstructuraConcepto" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button id="btnFormulasConcepto" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function SaveFormulasConcepto(e) {
+
+            var notification = $("#notification").data("kendoNotification");
+           // e.preventDefault();
+            $("#btnFormulasConcepto").hide();
+            $("#btnFormulasConcepto").prop("disabled", true);
+
+            //var displayedData = $("#gridFormulasConcepto").data().kendoGrid.dataSource.view();
+
+        var dataObject = {
+            'IdformulaConcepto': $("#IdformulaConcepto").val() === "" ? "0" : $("#IdformulaConcepto").val(),
+            'IdFormula': $("#IdFormula").val(),
+            'IdConcepto': $("#IdConcepto").val(),
+            'NombreConcepto': $("#IdConcepto").data("kendoDropDownList").text(),
+            'EstructuraConcepto': $("#EstructuraConcepto").val(),
+        };
+ 
+
+        var validator = $("#frmFormulasConcepto").data("kendoValidator");
+                 var status = $(".status");
+
+                if (validator.validate()) {
+
+                    $.ajax({
+                        url: '@Url.Action("SaveFormulasConcepto", "FormulasConcepto")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+
+                            //notification.show({
+                            //    message: "Guardado correctamente!"
+                            //}, "upload-success");
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: '<br/><br/>Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 3000,
+                                stack: 6
+                            });
+
+                            RefreshGridFormulasConcepto();
+
+                            $('#ModalFormulasConcepto').modal('hide');
+
+
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                            notification.show({
+                                title: "Validación",
+                                message: textStatus + ": " + XMLHttpRequest.responseText
+                            }, "error");
+
+                        }
+                    });
+
+                }
+                else {
+                    status.text("Oops! There is invalid data in the form.")
+                        .removeClass("valid")
+                        .addClass("invalid");
+                }
+
+
+            $("#btnFormulasConcepto").show();
+            $("#btnFormulasConcepto").prop("disabled", false);
+    }
+</script>
