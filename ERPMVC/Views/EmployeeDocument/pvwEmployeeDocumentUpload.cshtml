@@ -3,7 +3,10 @@
 <script>
     function SaveEmployeeDocument(e) {
 
-
+        var setFechaVencimiento = '01/01/0001';
+        if ($("#FechaVencimiento").getKendoDateTimePicker().value() != null || $("#FechaVencimiento").getKendoDateTimePicker().value() != undefined || $("#FechaVencimiento").val() != "") {
+            setFechaVencimiento = $("#FechaVencimiento").getKendoDateTimePicker().value().toJSON();
+        }
         //var formdata = new FormData($('#CustomerDocument').get(0));
         console.log("Subiendo imagen");
         var dataObject = {
@@ -12,7 +15,7 @@
             'DocumentTypeId': $("#DocumentTypeId").val(),
             'DocumentTypeName': $("#DocumentTypeId").data("kendoDropDownList").text(),
             'DocumentName': $("#DocumentName").val(),
-            'FechaVencimiento': $("#FechaVencimiento").val(),
+            'FechaVencimiento': setFechaVencimiento,
 
             // 'Path': $("#Path").val(),
             //'FechaCreacion': $("#FechaCreacion").val(),
@@ -53,6 +56,12 @@
 
         RefreshGridEmployeeDocument()
         $("#myModalEmployeeDocumentUpload").modal('hide');
+    }
+    function SuccessUpload() {
+        console.log("Upload Completo!");
+        RefreshGridEmployeeDocument();
+        $('#myModalEmployeeDocumentUpload').modal('hide');
+
     }
     function RefreshGridEmployeeDocument() {
         var grid = $("#gridEmployeeDocument").getKendoGrid();
@@ -125,8 +134,14 @@
                                             <span asp-validation-for="DocumentTypeId" class="text-danger"></span>
                                         </div>
                                         <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label asp-for="FechaVencimiento" class="control-label" style="width:100%">Fecha vencimiento</label>
+                                                <kendo-datetimepicker name="FechaVencimiento" style="min-width: 100%;"
+                                                                      format="dd/MM/yyyy"></kendo-datetimepicker>
+                                                <span asp-validation-for="FechaVencimiento"></span>
+                                            </div>
                                             @*<label asp-for="DocumentName" class="control-label" style="width:100%"></label>
-                                                <input type="text" class="form-control" style="min-width:100%" asp-for="DocumentName" />*@
+                                              <input type="text" class="form-control" style="min-width:100%" asp-for="DocumentName" />*@
                                         </div>
                                         <div class="col-md-3">
                                         </div>
@@ -137,8 +152,8 @@
 
                                     <div class="demo-section k-content">
 
-                                        <kendo-upload drop-zone="drop-zone1" name="files" on-upload="SaveEmployeeDocument">
-                                            <async save-url="@Url.Action("SaveEmployeeDocument","EmployeeDocument")" />
+                                        <kendo-upload drop-zone="drop-zone1" name="files" on-upload="SaveEmployeeDocument" on-success="SuccessUpload">
+                                            <async save-url="@Url.Action("SaveEmployeeDocument","EmployeeDocument")"/>
                                             <validation allowed-extensions='@new string[] { ".pdf",".jpg",".jpeg",".png",".txt" }' max-file-size="10485760" />
                                         </kendo-upload>
 
