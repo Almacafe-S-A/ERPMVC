@@ -190,7 +190,7 @@ namespace ERPMVC.Controllers
         // POST: CAI/Insert
         [HttpPost]
         //[ValidateAntiForgeryToken]
-        public async Task<ActionResult<Departamento>> Insert(Departamento _DepartamentoS)
+        public async Task<ActionResult> Insert(Departamento _DepartamentoS)
         {
             Departamento _Departamento = _DepartamentoS;
             try
@@ -209,21 +209,14 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Departamento = JsonConvert.DeserializeObject<Departamento>(valorrespuesta);
                 }
-                else
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    throw new Exception($"Ocurrio un error: {valorrespuesta}");
-                }
 
             }
             catch (Exception ex)
             {
-                throw ex;
-               // return BadRequest($"Ocurrio un error{ex.Message}");
+                return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return Ok(_Departamento);
-            //return new ObjectResult(new DataSourceResult { Data = new[] { _Departamento }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _Departamento }, Total = 1 });
         }
 
         [HttpPut("{id}")]
@@ -244,23 +237,14 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Departamento = JsonConvert.DeserializeObject<Departamento>(valorrespuesta);
                 }
-                else
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    throw new Exception($"Ocurrio un error: {valorrespuesta}");
-                }
-
-
 
             }
             catch (Exception ex)
             {
-                throw ex;
-               // return BadRequest($"Ocurrio un error{ex.Message}");
+                return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return Ok(_Departamento);
-          //  return new ObjectResult(new DataSourceResult { Data = new[] { _Departamento }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _Departamento }, Total = 1 });
         }
 
         [HttpPost]
@@ -280,11 +264,6 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Departamento = JsonConvert.DeserializeObject<Departamento>(valorrespuesta);
                 }
-                else
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    throw new Exception($"Ocurrio un error: {valorrespuesta}");
-                }
 
             }
             catch (Exception ex)
@@ -292,9 +271,7 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return Ok(_Departamento);
-                
-           // return new ObjectResult(new DataSourceResult { Data = new[] { _Departamento }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _Departamento }, Total = 1 });
         }
 
 

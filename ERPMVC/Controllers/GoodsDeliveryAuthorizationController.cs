@@ -353,18 +353,12 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _GoodsDeliveryAuthorization = JsonConvert.DeserializeObject<GoodsDeliveryAuthorizationDTO>(valorrespuesta);
                 }
-                else
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    throw new Exception($"Ocurrio un error: {valorrespuesta}");
-                }
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-                //  return BadRequest($"Ocurrio un error{ex.Message}");
+                return BadRequest($"Ocurrio un error{ex.Message}");
             }
             return Ok(_GoodsDeliveryAuthorization);
             // return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsDeliveryAuthorization }, Total = 1 });
@@ -386,18 +380,12 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _GoodsDeliveryAuthorization = JsonConvert.DeserializeObject<GoodsDeliveryAuthorization>(valorrespuesta);
                 }
-                else
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    throw new Exception($"Ocurrio un error: {valorrespuesta}");
-                }
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-                // return BadRequest($"Ocurrio un error{ex.Message}");
+                return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _GoodsDeliveryAuthorization }, Total = 1 });

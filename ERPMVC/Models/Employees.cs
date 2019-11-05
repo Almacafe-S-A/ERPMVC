@@ -111,7 +111,13 @@ namespace ERPMVC.Models
         [Display(Name = "Telefono")]
         public string TelefonoContacto { get; set; }
         public int IdBranch { get; set; }
-
+        public string RTN { get; set; }
+        [Display(Name = "Tipo Plantilla")]
+        public long? IdTipoPlanilla { get; set; }
+        [ForeignKey("IdTipoPlanilla")]
+        public TipoPlanillas TipoPlanilla { get; set; }
+        [Display(Name = "Profesión")]
+        public string Profesion { get; set; }
         public string Usuariocreacion { get; set; }
         public string Usuariomodificacion { get; set; }
         public DateTime? FechaCreacion { get; set; }

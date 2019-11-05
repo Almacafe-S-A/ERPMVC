@@ -451,16 +451,11 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _SubProduct = JsonConvert.DeserializeObject<SubProduct>(valorrespuesta);
                 }
-                else
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    throw new Exception($"Ocurrio un error{valorrespuesta}");
-                }
 
             }
             catch (Exception ex)
             {
-                throw ex;
+                return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _SubProduct }, Total = 1 });
