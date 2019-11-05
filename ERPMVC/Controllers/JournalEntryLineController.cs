@@ -68,6 +68,7 @@ namespace ERPMVC.Controllers
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _JournalEntryLine = JsonConvert.DeserializeObject<List<JournalEntryLine>>(valorrespuesta);
+                        HttpContext.Session.SetString("journalentryline", JsonConvert.SerializeObject(_JournalEntryLine).ToString());
 
                     }
                 }
