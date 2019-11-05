@@ -634,6 +634,69 @@ namespace ERPMVC.Controllers
         }
 
 
+        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request)
+        {
+            var res = await GetProforma();
+            return Json(res.ToDataSourceResult(request));
+        }
+
+        public async Task<ActionResult> Orders_ValueMapper(Int64[] values)
+        {
+            var indices = new List<Int64>();
+
+            if (values != null && values.Any())
+            {
+                var index = 0;
+
+                foreach (var order in await GetProforma())
+                {
+                    if (values.Contains(order.ProformaId))
+                    {
+                        indices.Add(index);
+                    }
+
+                    index += 1;
+                }
+            }
+
+            return Json(indices);
+        }
+
+        private async Task<List<ProformaInvoice>> GetProforma()
+        {
+            List<ProformaInvoice> _CertificadoDeposito = new List<ProformaInvoice>();
+
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/ProformaInvoice/GetProformaInvoice/");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CertificadoDeposito = JsonConvert.DeserializeObject<List<ProformaInvoice>>(valorrespuesta);
+                    _CertificadoDeposito = (from c in _CertificadoDeposito                                            
+                                            select new ProformaInvoice
+                                            {
+                                                ProformaId = c.ProformaId,
+                                                CustomerName = "Id:" + c.ProformaId +  "  || Nombre:" + c.CustomerName + "|| Fecha:" + c.OrderDate + "|| Total:" + c.Total,
+                                                CustomerId = c.CustomerId,
+                                            }).ToList();              
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return _CertificadoDeposito;
+        }
+
+
 
 
 
