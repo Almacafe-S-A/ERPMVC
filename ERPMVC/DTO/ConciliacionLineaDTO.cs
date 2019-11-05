@@ -6,7 +6,7 @@ using System.Linq;
 using System.Threading.Tasks;
 namespace ERPMVC.DTO
 {
-    public class ConciliacionDTO : Conciliacion
+    public class ConciliacionLineaDTO : ConciliacionLinea
     {
         public List<Conciliacion> _Conciliacion { get; set; }
 
