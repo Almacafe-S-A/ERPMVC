@@ -30,7 +30,7 @@ namespace ERPMVC.Models
         public string UnitOfMeasureName { get; set; }
 
 
-        [Display(Name = "Descripción del Servicio")]
+        [Display(Name = "Descripción")]
         public string Description { get; set; }
           [Display(Name = "Cantidad")]
         public double Quantity { get; set; }

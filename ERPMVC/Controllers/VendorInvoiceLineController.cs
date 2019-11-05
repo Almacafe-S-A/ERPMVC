@@ -142,6 +142,7 @@ namespace ERPMVC.Controllers
                             obj.Price = _InvoiceLinep.Price;
                             obj.Quantity = _InvoiceLinep.Quantity;
                             obj.Amount = _InvoiceLinep.Amount;
+                            obj.ProductId = _InvoiceLinep.ProductId;
                             obj.SubTotal = _InvoiceLinep.SubTotal;
                             obj.TaxAmount = _InvoiceLinep.TaxAmount;
                             obj.TaxCode = _InvoiceLinep.TaxCode;

@@ -187,11 +187,6 @@ namespace ERPMVC.Controllers
                             _HoursWorkedDetail = JsonConvert.DeserializeObject<List<HoursWorkedDetail>>(valorrespuesta);
                             HttpContext.Session.SetString("listadoHoursWorkedDetail", JsonConvert.SerializeObject(_HoursWorkedDetail).ToString());
                         }
-                        else
-                        {
-                            valorrespuesta = await (result.Content.ReadAsStringAsync());
-                            throw new Exception($"Ocurrio un error: {valorrespuesta}");
-                        }
                     }
                     else
                     {
