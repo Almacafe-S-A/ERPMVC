@@ -73,10 +73,10 @@
                                         <h3 class="card-title">Asegurar Certificado</h3>
                                         <hr>
                                         <div class="row">
-                                            <div class="col-md-4" hidden>
+                                            <div class="col-md-4" >
                                                 <div class="form-group">
                                                     <label asp-for="InsurancesCertificateLineId" class="control-label" style="width:100%"></label>
-                                                    <input type="number" asp-for="InsurancesCertificateLineId"  readonly="readonly" style="min-width:100%" class="form-control" disabled />
+                                                    <input type="text" asp-for="InsurancesCertificateLineId" name="InsurancesCertificateLineId"  readonly="readonly" style="min-width:100%" class="form-control" disabled />
 
                                                 </div>
                                             </div>
@@ -366,14 +366,31 @@
         dataSource.sync();
       
     }
-    function ImprimirCertificado(e) {
+
+    @*function ImprimirCertificado(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
 
-        window.location.href = '@Url.Action("SFCertificate", "InsurancesCertificate")/' + dataItem.InsurancesCertificateId;
+        window.location.href = '@Url.Action("SFCertificate", "InsurancesCertificate")/' + dataItem.InsurancesCertificateLineId;
 
 
-    };
+    };*@
+
+    function ImprimirCertificado(e, id) {
+       // debugger;
+        var dataItem;
+        if (e != null) {
+            e.preventDefault();
+            dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        }
+        else {
+            dataItem = { InsurancesCertificateLineId: $("#InsurancesCertificateLineId").val() };
+        }
+        var url = '@Url.Action("SFCertificate", "InsurancesCertificate")/' + dataItem.InsurancesCertificateLineId;
+           var win = window.open(url, '_blank');
+           win.focus();
+    }
+
     function BuscarCertificadoDeposito(e) {
                     var notification = $("#notification").data("kendoNotification");
                    // e.preventDefault();
@@ -493,7 +510,9 @@
                                 contentType: 'application/json',
                                 async: false,
                                 data: JSON.stringify(dataObject),
-                                success: function (data) {
+                                success: function (data) { 
+                                    $("#InsurancesCertificateLineId").val(data.InsurancesCertificateLineId);
+                                    ImprimirCertificado(null, data.InsurancesCertificateLineId);
                                     
                                     $.toast({
                                         heading: 'Satisfactorio',

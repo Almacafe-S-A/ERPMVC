@@ -467,7 +467,7 @@ namespace ERPMVC.Controllers
         {
             try
             {
-                InsurancesCertificateDTO _InsurancesCertificatedto = new InsurancesCertificateDTO { InsurancesCertificateId = id, };
+                InsurancesCertificateLineDTO _InsurancesCertificatedto = new InsurancesCertificateLineDTO { InsurancesCertificateLineId = id, };
                 return await Task.Run(() => View(_InsurancesCertificatedto));
             }
             catch (Exception)
@@ -533,7 +533,7 @@ namespace ERPMVC.Controllers
                  string baseadress = config.Value.urlbase;
                  HttpClient client = new HttpClient();
                  client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                 var resultado = await client.GetAsync(baseadress + "/api/InsurancesCertificateLine/GetInsurancesCertificateLineByCounter");
+                 var resultado = await client.GetAsync(baseadress + "api/InsurancesCertificateLine/GetInsurancesCertificateLineByCounter");
 
                  string valorrespuestas = "";
 
