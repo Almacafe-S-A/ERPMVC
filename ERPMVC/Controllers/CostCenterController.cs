@@ -266,7 +266,7 @@ namespace ERPMVC.Controllers
             // return new ObjectResult(new DataSourceResult { Data = new[] { _CostCenter }, Total = 1 });
         }
 
-        [HttpPut("{CostCenterId}")]
+        [HttpPut("{CenterCostId}")]
         public async Task<IActionResult> Update(Int64 CostCenterId, CostCenter _CostCenter)
         {
             try

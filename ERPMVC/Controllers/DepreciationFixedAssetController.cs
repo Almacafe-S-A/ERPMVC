@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -28,31 +29,31 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-        public IActionResult Index()
+        public ActionResult DepreciationFixedAsset()
         {
             return View();
         }
 
-        public async Task<ActionResult> pvwDepreciationFixedAsset(Int64 Id = 0)
+        public async Task<ActionResult> pvwDepreciationFixedAsset([FromBody]DepreciationFixedAssetDTO _data)
         {
-            DepreciationFixedAsset _DepreciationFixedAsset = new DepreciationFixedAsset();
+            DepreciationFixedAssetDTO _DepreciationFixedAsset = new DepreciationFixedAssetDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/DepreciationFixedAsset/GetDepreciationFixedAssetById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/DepreciationFixedAsset/GetDepreciationFixedAssetById/" + _DepreciationFixedAsset.FixedAssetId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _DepreciationFixedAsset = JsonConvert.DeserializeObject<DepreciationFixedAsset>(valorrespuesta);
+                    _DepreciationFixedAsset = JsonConvert.DeserializeObject<DepreciationFixedAssetDTO>(valorrespuesta);
 
                 }
 
                 if (_DepreciationFixedAsset == null)
                 {
-                    _DepreciationFixedAsset = new DepreciationFixedAsset();
+                    _DepreciationFixedAsset = new DepreciationFixedAssetDTO();
                 }
             }
             catch (Exception ex)
@@ -60,8 +61,6 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
-
 
             return PartialView(_DepreciationFixedAsset);
 
@@ -79,6 +78,37 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/DepreciationFixedAsset/GetDepreciationFixedAsset");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _DepreciationFixedAsset = JsonConvert.DeserializeObject<List<DepreciationFixedAsset>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _DepreciationFixedAsset.ToDataSourceResult(request);
+
+        }
+
+        [HttpGet]
+        public async Task<DataSourceResult> GetByFixedAssetId([DataSourceRequest]DataSourceRequest request, DepreciationFixedAsset _DepreciationFixedAssetId)
+        {
+            List<DepreciationFixedAsset> _DepreciationFixedAsset = new List<DepreciationFixedAsset>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/DepreciationFixedAsset/GetDepreciationFixedAssetByFixedAssetId/" + _DepreciationFixedAssetId.FixedAssetId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -232,7 +262,32 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpPost("[action]")]
+        public async Task<ActionResult<DepreciationFixedAsset>> DeleteAll([FromBody] DepreciationFixedAsset _DepreciationFixedAsset)
+        {
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
+                var result = await _client.PostAsJsonAsync(baseadress + "api/DepreciationFixedAsset/DeleteAll", _DepreciationFixedAsset);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _DepreciationFixedAsset = JsonConvert.DeserializeObject<DepreciationFixedAsset>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error: {ex.Message}");
+            }
+
+            return new ObjectResult(new DataSourceResult { Data = new[] { _DepreciationFixedAsset }, Total = 1 });
+        }
 
 
     }
