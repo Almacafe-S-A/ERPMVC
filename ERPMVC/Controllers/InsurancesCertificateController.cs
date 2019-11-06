@@ -18,28 +18,19 @@ using Newtonsoft.Json;
 
 namespace ERPMVC.Controllers
 {
-   /* public class InsurancesCertificateController : Controller
-    {
-        public IActionResult Index()
-        {
-            return View();
-        }
-    }*/
     [Authorize]
     [CustomAuthorization]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class InsurancesCertificateController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        private IHostingEnvironment _hostingEnvironment;
-        public InsurancesCertificateController(IHostingEnvironment hostingEnvironment
-            , ILogger<InsurancesCertificateController> logger, IOptions<MyConfig> config)
+        public InsurancesCertificateController( ILogger<InsurancesCertificateController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
-            _hostingEnvironment = hostingEnvironment;
-
         }
+
         public IActionResult Index()
         {
             return View();
@@ -90,6 +81,80 @@ namespace ERPMVC.Controllers
 
             //
             return PartialView(_InsurancesCertificate);
+
+        }
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> pvwInsurancesCertificateDetailCertificate([FromBody]InsurancesCertificateLineDTO _InsurancesCertificateLineDTOp)
+        {
+            InsurancesCertificateLineDTO _InsurancesCertificateLine = new InsurancesCertificateLineDTO();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/InsurancesCertificateLine/GetInsurancesCertificateLineById/" + _InsurancesCertificateLineDTOp.InsurancesCertificateLineId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _InsurancesCertificateLine = JsonConvert.DeserializeObject<InsurancesCertificateLineDTO>(valorrespuesta);
+
+                }
+
+                if (_InsurancesCertificateLine == null)
+                {
+                    _InsurancesCertificateLine = new InsurancesCertificateLineDTO();
+                    _InsurancesCertificateLine.FechaFirma = DateTime.Now.AddMonths(1);
+                    _InsurancesCertificateLine.CreatedDate = DateTime.Now;
+                    _InsurancesCertificateLine.InsurancesCertificateId = _InsurancesCertificateLineDTOp.InsurancesCertificateId;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            // InsurancesCertificateLineDTO _InsurancesCertificateLineDTOP( _InsurancesCertificateLine);
+            return PartialView(_InsurancesCertificateLine);
+
+        }
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> pvwInsurancesCertificateDetailMant([FromBody]InsurancesCertificateLineDTO _InsurancesCertificateLineDTOp)
+        {
+            InsurancesCertificateLineDTO _InsurancesCertificateLine = new InsurancesCertificateLineDTO();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/InsurancesCertificateLine/GetInsurancesCertificateLineById/" + _InsurancesCertificateLineDTOp.InsurancesCertificateLineId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _InsurancesCertificateLine = JsonConvert.DeserializeObject<InsurancesCertificateLineDTO>(valorrespuesta);
+
+                }
+
+                if (_InsurancesCertificateLine == null)
+                {
+                    _InsurancesCertificateLine = new InsurancesCertificateLineDTO();
+                    _InsurancesCertificateLine.FechaFirma = DateTime.Now;
+                    _InsurancesCertificateLine.InsurancesCertificateId = _InsurancesCertificateLineDTOp.InsurancesCertificateId;
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+           // InsurancesCertificateLineDTO _InsurancesCertificateLineDTOP( _InsurancesCertificateLine);
+            return PartialView(_InsurancesCertificateLine);
 
         }
 
@@ -201,7 +266,7 @@ namespace ERPMVC.Controllers
                     baseadress = config.Value.urlbase;
                     HttpClient _client2 = new HttpClient();
                     _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var resultado = await _client2.PostAsJsonAsync(baseadress + "api/Accounting/GetInsurancesCertificateByBeginDate" , _InsurancesCertificateP);
+                    var resultado = await _client2.PostAsJsonAsync(baseadress + "api/InsurancesCertificate/GetInsurancesCertificateByFecha", _InsurancesCertificateP);
                     string valorrespuesta2 = "";
 
                     if (resultado.IsSuccessStatusCode)
@@ -233,8 +298,11 @@ namespace ERPMVC.Controllers
                     InsurancesCertificateDTO _InsurancesCertificateDuplicated = new InsurancesCertificateDTO();
                     // string baseadress = config.Value.urlbase;
                     HttpClient _client2 = new HttpClient();
+                    _InsurancesCertificateP.CreatedUser = _InsurancesCertificate.CreatedUser;
+                    _InsurancesCertificateP.CreatedDate = _InsurancesCertificate.CreatedDate;
+
                     _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var resultado = await _client2.PostAsJsonAsync(baseadress + "api/InsurancesCertificate/GetInsurancesCertificateByBeginDate", _InsurancesCertificateP);
+                    var resultado = await _client2.PostAsJsonAsync(baseadress + "api/InsurancesCertificate/GetInsurancesCertificateByFecha", _InsurancesCertificateP);
                     string valorrespuesta2 = "";
 
                     if (resultado.IsSuccessStatusCode)
@@ -394,7 +462,102 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpGet]
+        public async Task<ActionResult> SFCertificate(Int32 id)
+        {
+            try
+            {
+                InsurancesCertificateLineDTO _InsurancesCertificatedto = new InsurancesCertificateLineDTO { InsurancesCertificateLineId = id, };
+                return await Task.Run(() => View(_InsurancesCertificatedto));
+            }
+            catch (Exception)
+            {
 
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+
+        }
+        [HttpGet("[controller]/[action]")]
+        public async Task<JsonResult> GetCertificadoDepositoByCustomer( Int64 CustomerId)
+        {
+            List<CertificadoDeposito> _CertificadoDeposito = new List<CertificadoDeposito>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoByCustomer/" + CustomerId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CertificadoDeposito = JsonConvert.DeserializeObject<List<CertificadoDeposito>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return Json(_CertificadoDeposito);
+            //_CertificadoDeposito.ToDataSourceResult(request);
+
+        }
+        [HttpPost("[action]")]
+        public async Task<ActionResult<InsurancesCertificateLine>>BuscarCertificadoDeposito([FromBody]InsurancesCertificateLineDTO _InsurancesCertificateLine)
+        {
+            InsurancesCertificateLine _InsurancesCertificate = _InsurancesCertificateLine;
+            try
+            {
+                List<CertificadoDeposito> _listCertificateDeposito = new List<CertificadoDeposito>();
+                //CertificadoDepositoController _CertificadoDepositoP= new CertificadoDepositoController();
+               var CertificateDepositoP = await GetCertificadoDepositoByCustomer( _InsurancesCertificate.CustomerId);
+                _listCertificateDeposito = ((List<CertificadoDeposito>)CertificateDepositoP.Value);
+                //Acumulador de Valor de certificado
+                // var _CertificadoP = new List<CertificadoDeposito>();
+                double acumulador = 0;
+                foreach (CertificadoDeposito item in _listCertificateDeposito) {
+                    acumulador += item.Total; 
+
+                }
+                _InsurancesCertificate.TotalofProductLine = Convert.ToDecimal(acumulador);
+
+
+                InsurancesCertificateLine InsurancesCertificateLineCounter = new InsurancesCertificateLine();
+                 string baseadress = config.Value.urlbase;
+                 HttpClient client = new HttpClient();
+                 client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                 var resultado = await client.GetAsync(baseadress + "api/InsurancesCertificateLine/GetInsurancesCertificateLineByCounter");
+
+                 string valorrespuestas = "";
+
+                 if (resultado.IsSuccessStatusCode)
+                 {
+                     valorrespuestas = await (resultado.Content.ReadAsStringAsync());
+                    InsurancesCertificateLineCounter = JsonConvert.DeserializeObject<InsurancesCertificateLine>(valorrespuestas);
+                 }
+                _InsurancesCertificate.CounterInsurancesCertificate = InsurancesCertificateLineCounter.CounterInsurancesCertificate + 1;
+                //Obtener el numero de certificado ssiguiente
+                //
+                //Coomo obtener el Grupo econmico
+                _InsurancesCertificate.CustomerId = _InsurancesCertificateLine.CustomerId;
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return new ObjectResult(new DataSourceResult { Data = new[] { _InsurancesCertificateLine }, Total = 1 });
+
+        }
 
     }
 }

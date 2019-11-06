@@ -77,7 +77,49 @@ namespace ERPMVC.Controllers
 
 
 
-    
+        //COMIENZA APROVACIÓN
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<VendorInvoiceDTO>> Recibido([FromBody]VendorInvoiceDTO _VendorInvoice)
+        {
+            VendorInvoiceDTO _so = new VendorInvoiceDTO();
+            if (_VendorInvoice != null)
+            {
+                try
+                {
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/VendorInvoice/GetVendorInvoiceById/" + _VendorInvoice.VendorInvoiceId);
+                    string jsonresult = "";
+                    jsonresult = JsonConvert.SerializeObject(_VendorInvoice);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _so = JsonConvert.DeserializeObject<VendorInvoiceDTO>(valorrespuesta);
+                        _so.ReceivedDate = DateTime.Now;
+
+                        var resultsalesorder = await Update(_so.VendorInvoiceId, _so);
+
+                        var value = (resultsalesorder.Result as ObjectResult).Value;
+                        VendorInvoice resultado = ((VendorInvoice)(value));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                    throw ex;
+                }
+            }
+            else
+            {
+                return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+            }
+
+            return await Task.Run(() => Ok(_so));
+        }
+
+        //TERMINA
 
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
@@ -282,7 +324,11 @@ namespace ERPMVC.Controllers
         }
 
 
+        public async Task<IActionResult> SFLibroCompras()
+        {
+            return await Task.Run(() => View());
 
+        }
 
 
     }

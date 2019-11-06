@@ -480,15 +480,15 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult<Employees>> Delete(Int64 Id, Employees _EmployeesP)
+        public async Task<ActionResult<Employees>> Delete(Employees _Employeesp)
         {
-            Employees _Employees = _EmployeesP;
+            Employees _Employees = _Employeesp;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
                 var result = await _client.PostAsJsonAsync(baseadress + "api/Employees/Delete", _Employees);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -500,8 +500,11 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error: {ex.Message}");
             }
+
+
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _Employees }, Total = 1 });
         }

@@ -24,9 +24,11 @@ namespace EJ2CoreSampleBrowser.Controllers.PdfViewer
         {
             return View();
         }
+
+
         [AcceptVerbs("Post")]
         [HttpPost]
-        [Route("api/[controller]/Load")]
+        [Route("api/[controller]/Load")] 
         public IActionResult Load([FromBody] Dictionary<string, string> jsonObject)
         {
             PdfRenderer pdfviewer = new PdfRenderer();

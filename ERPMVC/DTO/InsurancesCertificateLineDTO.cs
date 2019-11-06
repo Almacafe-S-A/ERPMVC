@@ -13,6 +13,10 @@ namespace ERPMVC.DTO
         public int editar { get; set; } = 1;
 
         public string token { get; set; }
+        public string CustomerName { get; set; }
+        public string BranchName { get; set; }
+
+
 
     }
 }

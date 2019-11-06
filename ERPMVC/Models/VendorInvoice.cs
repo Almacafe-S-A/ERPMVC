@@ -16,7 +16,7 @@ namespace ERPMVC.Models
         [Display(Name = "Envio")]
         public int ShipmentId { get; set; }
         [Display(Name = "Orden de Compra")]
-        public int PurchaseOrderId { get; set; }
+        public int? PurchaseOrderId { get; set; }
         [Display(Name = "Fecha de Factura")]
         public DateTime VendorInvoiceDate { get; set; }
         [Display(Name = "Fecha de vencimiento")]
@@ -63,11 +63,14 @@ namespace ERPMVC.Models
         [Display(Name = "RTN")]
         public string RTN { get; set; }
 
+        [DataType(DataType.PhoneNumber)]
         [Display(Name = "Telefono")]
         public string Tefono { get; set; }
 
         [Display(Name = "Correo")]
         [EmailAddress]
+        [RegularExpression(@"\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*", ErrorMessage = "Correo invalido")]
+        [DataType(DataType.EmailAddress)]
         public string Correo { get; set; }
 
         [Display(Name = "Direccion")]

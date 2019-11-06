@@ -1,0 +1,416 @@
+﻿@model ERPMVC.Models.InsuranceEndorsement
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+                        {"required","Valor requerido" }
+                    };
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+<script>
+
+    function customFunction(input) {
+
+        if (input.attr('name') === "BranchId" && input.val() === "0") {
+            return false;
+        }   
+        return true;
+    }
+</script>
+
+<div id="myModalSalesOrder" class="modal fade" style="min-width:100%" role="dialog">
+    <div class="modal-dialog modal-lg" role="document">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Seguros Endosados </h4>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="singuardar" value="0" />
+                <div class="container-fluid">
+                    <div class="row">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-body">
+
+                                    <form id="frmSalesOrder" kendo-validator="true" kendo-messages="messages" kendo-rules="rules"
+                                          data-ajax="true"
+                                          data-ajax-method="post"
+                                          method="post" class="validation-wizard wizard-circle">
+                                        @*<div class="form-body">*@
+
+
+
+                                        <div class="row">
+                                            <div class="col-sm-4 col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="InsuranceEndorsementId" class="control-label">Id</label>
+                                                    @*<label for="recipient-name" class="control-label">Recipient:</label>*@
+                                                    <kendo-numerictextbox name="VendorInvoiceId"
+                                                                          format="n"
+                                                                          min="0"
+                                                                          enable="false"
+                                                                          disabled
+                                                                          max="99999999"
+                                                                          step="1"
+                                                                          style="width: 100%;"
+                                                                          value="Model.InsuranceEndorsementId" />
+                                                    <span asp-validation-for="InsuranceEndorsementId" class="text-danger"></span>
+                                                </div>
+
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="InsurancePolicyId" class="control-label">Poliza</label>
+                                                    <kendo-dropdownlist name="BranchId" for="InsurancePolicyId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione la Poliza"
+                                                                        datatextfield="NoPoliza"
+                                                                        required
+                                                                        datavaluefield="NoPoliza"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
+                                                            <transport>
+                                                                <read url="@Url.Action("Get", "InsurancesCertificate")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="InsurancePolicyId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="DateGenerated" class="control-label" style="width: 100%;">Fecha</label>
+                                                    <kendo-datetimepicker name="OrderDate"
+                                                                          style="width: 100%;"
+                                                                          format="dd/MM/yyyy hh:mm:ss"
+                                                                          time-format="hh:mm:ss"
+                                                                          data-val-required="La fecha es requerida"
+                                                                          value="Model.DateGenerated" />
+                                                    <span asp-validation-for="DateGenerated" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+
+
+
+                                        </div>
+
+
+
+
+
+                                        <div class="row">
+                                            <div class="col-sm-4 col-md-4">
+                                                <div class="form-group">
+
+                                                    <label asp-for="CustomerId" class="control-label">Cliente</label>
+                                                    <kendo-dropdownlist name="VendorId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione el Cliente"
+                                                                        datatextfield="CustomerName"
+                                                                        required
+                                                                        datavaluefield="CustomerId"
+                                                                        class="form-control-line"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
+                                                            <transport>
+                                                                <read url="@Url.Action("Get", "Customer")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-4 col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="WarehouseId" class="control-label">Bodega</label>
+                                                    <kendo-dropdownlist name="VendorId" for="@Model.WarehouseId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione la Bodega"
+                                                                        datatextfield="WarehouseName"
+                                                                        required
+                                                                        datavaluefield="WarehouseId"
+                                                                        class="form-control-line"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetWarehouse", "Warehouse")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-sm-4 col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="ProductdId" class="control-label">Producto</label>
+                                                    <kendo-dropdownlist name="ProductdId" for="@Model.ProductdId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione el Producto"
+                                                                        datatextfield="ProductName"
+                                                                        required
+                                                                        datavaluefield="ProductId"
+                                                                        class="form-control-line"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
+                                                            <transport>
+                                                                <read url="@Url.Action("Get", "Product")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+
+
+
+
+
+                                        </div>
+
+
+
+
+
+
+                                    </form>
+                                </div>
+
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div id="salesorderdetail">
+                                            @await Html.PartialAsync("pvwInsuranceEndorsementDetail", Model)
+                                        </div>
+
+                                        <div id="SalesOrderLineMant">
+                                            @await Html.PartialAsync("pvwInsuranceEndorsementDetailMant", new ERPMVC.Models.InsuranceEndorsementLine { InsuranceEndorsementLineId = 0, InsuranceEndorsementId = Model.InsuranceEndorsementId })
+                                        </div>
+
+
+
+                                        <div class="clearfix">&nbsp;</div>
+                                        <div class="clearfix">&nbsp;</div>
+
+                                        <form id="TotalesDocumento" kendo-validator="true" kendo-messages="messages" kendo-rules="rules">
+                                            <div class="box" id="TotalesDocumento">
+                                                <div class="box-body">
+                                                    <div class="content-container-fluid">
+                                                        <div class="row">
+                                                            <div class="col-lg-8">
+
+                                                            </div>
+                                                            <div class="col-lg-4">
+                                                                <dl class="dl-horizontal">
+                                                                    <dt>
+                                                                        <label asp-for="TotalAmountDl" class="control-label">Monto Dolares</label>
+                                                                    </dt>
+                                                                    <dd>
+                                                                        <kendo-numerictextbox name="TotalAmountDl"
+                                                                                              format="n2"
+                                                                                              spinners="false"
+                                                                                              style="width: 100%;text-align:right;padding-right: 3px;"
+                                                                                              min="0" disabled class="control-label right bold"
+                                                                                              max="999999999"
+                                                                                              value="Model.TotalAmountDl" />
+                                                                        <span asp-validation-for="TotalAmountDl" class="text-danger"></span>
+                                                                    </dd>
+
+
+                                                                    <dt>
+                                                                        <label asp-for="TotalAmountLp" class="control-label">Monto Lps</label>
+                                                                    </dt>
+                                                                    <dd>
+                                                                        <kendo-numerictextbox name="TotalAmountLp"
+                                                                                              format="n2" spinners="false"
+                                                                                              min="0"
+                                                                                              style="width: 100%;text-align:right;padding-right: 3px;"
+                                                                                              max="999999999"
+                                                                                              disabled class=" control-label right bold"
+                                                                                              value="Model.TotalAmountLp" />
+                                                                        <span asp-validation-for="TotalAmountLp" class="text-danger"></span>
+                                                                    </dd>
+
+                                                                    <dt>
+                                                                        <label asp-for="TotalCertificateBalalnce" class="control-label">Saldo Certificado</label>
+                                                                    </dt>
+                                                                    <dd>
+                                                                        <kendo-numerictextbox name="TotalCertificateBalalnce"
+                                                                                              format="n2" spinners="false"
+                                                                                              min="0"
+                                                                                              required
+                                                                                              disabled class="control-label right bold"
+                                                                                              style="width: 100%;text-align:right;"
+                                                                                              max="999999999"
+                                                                                              step="1"
+                                                                                              value="Model.TotalCertificateBalalnce" />
+                                                                        <span asp-validation-for="TotalCertificateBalalnce" class="text-danger"></span>
+                                                                    </dd>
+
+                                                                    <dt>
+                                                                        <label asp-for="TotalAssuredDifernce" class="control-label">Diferencia Seguro</label>
+                                                                    </dt>
+                                                                    <dd>
+                                                                        <kendo-numerictextbox name="TotalAssuredDifernce"
+                                                                                              format="n2" spinners="false"
+                                                                                              min="0"
+                                                                                              disabled class="control-label right bold"
+                                                                                              style="width: 100%;text-align:right;padding-right: 3px"
+                                                                                              max="999999999"
+                                                                                              step="1"
+                                                                                              value="Model.TotalAssuredDifernce" />
+                                                                        <span asp-validation-for="TotalAssuredDifernce" class="text-danger"></span>
+                                                                    </dd>
+                                                                </dl>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </form>
+
+                                        <div class="row">
+                                    @*@if (Convert.ToBoolean(Model.editar))
+                                    {*@
+                                        <button id="btnSaveVendorInvoice" type="submit" class="form-control btn-miboton " onclick="SaveCotizacion(this);">Guardar</button>
+                                    @*}*@
+                                </div>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function soloNumeros(e) {
+        var key = window.Event ? e.which : e.keyCode
+        return ((key >= 48 && key <= 57) || (key == 8))
+    }
+    function GetProductIdS() {
+        return { 'ProductId': $("#ProductId").val() }
+    }
+
+
+    function RefreshCotizaciones() {
+        var grid = $("#gridInvoices").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+    function SaveCotizacion(e) {
+
+        var notification = $("#notification").data("kendoNotification");
+        // e.preventDefault();
+        $("#btnSaveVendorInvoice").hide();
+        $("#btnSaveVendorInvoice").prop("disabled", true);
+
+        var validadetalle = true;
+        var displayedData = $("#gridInvoiceDetail").data().kendoGrid.dataSource.view();
+        for (var i = 0; i < displayedData.length; i++) {
+            displayedData[i].InsuranceEndorsementLineId = 0;            
+                //notification.show({
+                //    title: "Validación",
+                //    message: "No Ingreso el codigo de impuesto"
+                //}, "error");
+        }
+
+        if (validadetalle) {
+            var dataObject = {
+                'InsuranceEndorsementId': $("#InsuranceEndorsementId").val() === "" ? "0" : $("#InsuranceEndorsementId").val(),                
+                'WarehouseId': $("#WarehouseId").val(),
+                'WarehouseName': $("#WarehouseId").data("kendoDropDownList").text(),
+                'CustomerId': $("#CustomerId").val(),
+                'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
+                'ProductdId': $("#ProductdId").val(),
+                'ProductName': $("#ProductdId").data("kendoDropDownList").text(),
+                'InsurancePolicyId': $("#InsurancePolicyId").val(),
+                'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
+                'DateGenerated': $("#DateGenerated").getKendoDateTimePicker().value().toJSON(),                
+                'TotalAmountLp': $("#TotalAmountLp").val(),
+                'TotalAmountDl': $("#TotalAmountDl").val(),
+                'CertificateBalalnce': $("#CertificateBalalnce").val(),
+                'AssuredDifernce': $("#AssuredDifernce").val(),                
+                'InsuranceEndorsementLine': displayedData,
+
+            };
+            console.log('AQUI', dataObject);
+            var validator = $("#frmSalesOrder").data("kendoValidator");
+            var validator2 = $("#TotalesDocumento").data("kendoValidator");
+            var status = $(".status");
+
+            if (displayedData.length > 0) {
+                if (validator.validate() && validator2.validate()) {
+
+                    $.ajax({
+                        url: '@Url.Action("SaveInsuranceEndorsement", "InsuranceEndorsement")',
+                        method: 'POST',
+                        datatype: "json",
+                        //  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+                            $("#InsuranceEndorsementId").data("kendoNumericTextBox").value(data.VendorInvoiceId);
+                            $("#InsuranceEndorsement").val(data.NumeroDEIString);
+
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: '<br/><br/>Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 7000,
+                                stack: 6
+                            });
+                            //notification.show({
+                            //    message: "Guardado correctamente!"
+                            //}, "upload-success");
+
+                            RefreshCotizaciones();
+                            //  $('#myModalSalesOrder').modal('hide');
+
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                            $("#btnSaveVendorInvoice").show();
+                            $("#btnSaveVendorInvoice").prop("disabled", false);
+                            notification.show({
+                                title: "Validación",
+                                message: textStatus + ": " + XMLHttpRequest.responseText
+                            }, "error");
+
+                        }
+                    });
+
+                }
+                else {
+                    notification.show({
+                        title: "Validación",
+                        message: "Datos incorrectos en el formulario!"
+                    }, "error");
+
+                    $("#btnSaveVendorInvoice").show();
+                    $("#btnSaveVendorInvoice").prop("disabled", false);
+                }
+            }
+            else {
+                notification.show({
+                    title: "Validación",
+                    message: "Error!"
+                }, "error");
+
+                $("#btnSaveVendorInvoice").show();
+                $("#btnSaveVendorInvoice").prop("disabled", false);
+
+            }
+        }
+
+    }
+
+
+
+
+
+</script>

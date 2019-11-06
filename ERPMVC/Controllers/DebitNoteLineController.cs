@@ -33,7 +33,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwDebitNoteLine(Int64 Id = 0)
+        public async Task<ActionResult> pvwDebitNoteLine([FromBody] DebitNoteLine _DebitNoteLinep)
         {
             DebitNoteLine _DebitNoteLine = new DebitNoteLine();
             try
@@ -41,7 +41,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/DebitNoteLine/GetDebitNoteLineById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/DebitNoteLine/GetDebitNoteLineById/" + _DebitNoteLinep.DebitNoteLineId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -61,9 +61,9 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
+            return PartialView("~/Views/DebitNote/pvwDebitNoteDetailMant.cshtml", _DebitNoteLine);
 
-
-            return PartialView(_DebitNoteLine);
+            //return PartialView(_DebitNoteLine);
 
         }
 
@@ -131,7 +131,7 @@ namespace ERPMVC.Controllers
                     HttpClient _client = new HttpClient();
 
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/DebitNoteLine/GetDebitNoteLineByInvoiceId/" + _DebitNoteLinep.DebitNoteId);
+                    var result = await _client.GetAsync(baseadress + "api/DebitNoteLine/GetDebitNoteLineByDebitNoteId/" + _DebitNoteLinep.DebitNoteId);
                     string valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
@@ -147,10 +147,10 @@ namespace ERPMVC.Controllers
                     if (HttpContext.Session.GetString("listadoproductosdebitnote") != "" && HttpContext.Session.GetString("listadoproductosdebitnote") != null)
                     {
                         __DebitNoteLineList = JsonConvert.DeserializeObject<List<DebitNoteLine>>(HttpContext.Session.GetString("listadoproductosdebitnote"));
-                        _existelinea = __DebitNoteLineList.Where(q => q.ProductId == _DebitNoteLinep.ProductId).ToList();
+                        _existelinea = __DebitNoteLineList.Where(q => q.DebitNoteLineId == _DebitNoteLinep.DebitNoteLineId).ToList();
                     }
 
-                    if (_DebitNoteLinep.ProductId > 0 && _existelinea.Count == 0)
+                    if (_DebitNoteLinep.DebitNoteLineId > 0 && _existelinea.Count == 0)
                     {
                         __DebitNoteLineList.Add(_DebitNoteLinep);
                         HttpContext.Session.SetString("listadoproductosdebitnote", JsonConvert.SerializeObject(__DebitNoteLineList).ToString());
@@ -158,7 +158,7 @@ namespace ERPMVC.Controllers
                     else
                     {
 
-                        var obj = __DebitNoteLineList.FirstOrDefault(x => x.ProductId == _DebitNoteLinep.ProductId);
+                        var obj = __DebitNoteLineList.FirstOrDefault(x => x.DebitNoteLineId == _DebitNoteLinep.DebitNoteLineId);
                         if (obj != null)
                         {
                             obj.Description = _DebitNoteLinep.Description;
@@ -337,22 +337,39 @@ namespace ERPMVC.Controllers
             //return new ObjectResult(new DataSourceResult { Data = new[] { _DebitNoteLine }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
+        //[HttpDelete("DebitNoteLineId")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<DebitNoteLine>> Delete([FromBody]DebitNoteLine _DebitNoteLine)
         {
-            try
-            {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+            List<DebitNoteLine> _debitnoteLIST = new List<DebitNoteLine>();
+            try {
+                _debitnoteLIST=JsonConvert.DeserializeObject<List<DebitNoteLine>>(HttpContext.Session.GetString("listadoproductosdebitnote"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/DebitNoteLine/Delete", _DebitNoteLine);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
+                if (_debitnoteLIST != null)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _DebitNoteLine = JsonConvert.DeserializeObject<DebitNoteLine>(valorrespuesta);
+                    _debitnoteLIST = _debitnoteLIST
+                          .Where(q => q.DebitNoteLineId != _DebitNoteLine.DebitNoteLineId)
+                           .Where(q => q.Quantity != _DebitNoteLine.Quantity)
+                           .Where(q => q.Amount != _DebitNoteLine.Amount)
+                           .Where(q => q.Total != _DebitNoteLine.Total)
+                           .Where(q => q.Price != _DebitNoteLine.Price)
+                            .Where(q => q.AccountName != _DebitNoteLine.AccountName)
+                        .Where(q => q.Description != _DebitNoteLine.Description)
+                          .ToList();
+
+                    HttpContext.Session.SetString("listadoproductosdebitnote", JsonConvert.SerializeObject(_debitnoteLIST));
                 }
+                //string baseadress = config.Value.urlbase;
+                //    HttpClient _client = new HttpClient();
+                //    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                //    var result = await _client.PostAsJsonAsync(baseadress + "api/DebitNoteLine/Delete", _DebitNoteLine);
+                //    string valorrespuesta = "";
+                //    if (result.IsSuccessStatusCode)
+                //    {
+                //        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                //        _DebitNoteLine = JsonConvert.DeserializeObject<DebitNoteLine>(valorrespuesta);
+                //    }
 
             }
             catch (Exception ex)
@@ -362,8 +379,8 @@ namespace ERPMVC.Controllers
             }
 
 
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _DebitNoteLine }, Total = 1 });
+            return await Task.Run(() => Ok(_DebitNoteLine));
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _DebitNoteLine }, Total = 1 });
         }
 
 

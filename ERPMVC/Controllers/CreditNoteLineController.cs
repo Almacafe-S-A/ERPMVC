@@ -197,6 +197,7 @@ namespace ERPMVC.Controllers
                             obj.Description = _CreditNoteLinep.Description;
                             obj.Price = _CreditNoteLinep.Price;
                             obj.AccountId = _CreditNoteLinep.AccountId;
+                            obj.AccountName= _CreditNoteLinep.AccountName;
                             obj.Quantity = _CreditNoteLinep.Quantity;
                             obj.Amount = _CreditNoteLinep.Amount;
                             obj.SubProductId = _CreditNoteLinep.SubProductId;
@@ -206,8 +207,8 @@ namespace ERPMVC.Controllers
                             obj.TaxId = _CreditNoteLinep.TaxId;
                             obj.TaxCode = _CreditNoteLinep.TaxCode;
                             obj.TaxPercentage = _CreditNoteLinep.TaxPercentage;
-                            obj.UnitOfMeasureId = _CreditNoteLinep.UnitOfMeasureId;
-                            obj.UnitOfMeasureName = _CreditNoteLinep.UnitOfMeasureName;
+                            //obj.UnitOfMeasureId = _CreditNoteLinep.UnitOfMeasureId;
+                            //obj.UnitOfMeasureName = _CreditNoteLinep.UnitOfMeasureName;
                             obj.WareHouseId = _CreditNoteLinep.WareHouseId;
                             obj.CostCenterId = _CreditNoteLinep.CostCenterId;
                             obj.DiscountAmount = _CreditNoteLinep.DiscountAmount;

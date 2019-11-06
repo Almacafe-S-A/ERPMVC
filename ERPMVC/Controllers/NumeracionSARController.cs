@@ -55,7 +55,7 @@ namespace ERPMVC.Controllers
 
                 if (_NumeracionSAR == null)
                 {
-                    _NumeracionSAR = new DTO_NumeracionSAR();
+                    _NumeracionSAR = new DTO_NumeracionSAR { FechaLimite = DateTime.Now };
                 }
             }
             catch (Exception ex)
@@ -87,7 +87,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _NumeracionSAR = JsonConvert.DeserializeObject<List<NumeracionSAR>>(valorrespuesta);
-
+                    _NumeracionSAR = _NumeracionSAR.OrderByDescending(q => q.IdNumeracion).ToList();
                 }
 
 

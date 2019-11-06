@@ -1,0 +1,206 @@
+﻿@model ERPMVC.DTO.FormulaDTO
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+           {"required","Valor requerido" }
+        };
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<script>
+
+        function customFunction(input) {
+
+            if (input.attr('name') === "IdFormula" && input.val() === "0") {
+                return false;
+            }
+
+        }
+    function TipoFormula() {
+        return { Id: 24 };
+    } 
+        //$('#btnprueba').val("");
+</script>
+
+
+
+<div id="ModalFormula" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Fórmula</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmFormula" kendo-validator="true" kendo-messages="messages"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveFormula"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <h3 class="card-title">Fórmula</h3>
+                                        <hr>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="IdFormula" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="IdFormula" name="IdFormula" class="form-control" disabled="disabled" style="min-width:100%" />
+                                                    <span asp-validation-for="IdFormula" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+
+                                                <div class="form-group">
+                                                    <label asp-for="NombreFormula" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="NombreFormula" name="NombreFormula" class="form-control" autocomplete="off" style="min-width:100%" required maxlength="60" />
+                                                    <span asp-validation-for="NombreFormula" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="CalculoFormula" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="CalculoFormula" name="TipoFormula" class="form-control" autocomplete="off" style="min-width:100%" required  maxlength="60"/>
+                                                    <span asp-validation-for="CalculoFormula" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="IdEstado" class="control-label"></label>
+                                                    <kendo-dropdownlist name="IdEstado"
+                                                                        for="@Model.IdEstado"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar Estado"
+                                                                        datatextfield="NombreEstado"
+                                                                        datavaluefield="IdEstado"
+                                                                        required
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="IdTipoFormula" class="  control-label" style="width:100%"></label>
+                                                    <kendo-dropdownlist name="IdTipoFormula"
+                                                                        for="IdTipoFormula"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione el Tipo Fórmula"
+                                                                        datatextfield="Nombre"
+                                                                        datavaluefield="Id"
+                                                                        required
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetElementoByIdConfiguracion", "ElementoConfiguracion")" data="TipoFormula" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="IdTipoFormula" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button id="btnFormula" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function SaveFormula(e) {
+
+            var notification = $("#notification").data("kendoNotification");
+           // e.preventDefault();
+            $("#btnFormula").hide();
+            $("#btnFormula").prop("disabled", true);
+
+            var displayedData = $("#gridFormula").data().kendoGrid.dataSource.view();
+
+        var dataObject = {
+            'IdFormula': $("#IdFormula").val() === "" ? "0" : $("#IdFormula").val(),
+            'NombreFormula': $("#NombreFormula").val(),
+            'CalculoFormula': $("#CalculoFormula").val(),
+            'IdEstado': $("#IdEstado").val(),
+            'NombreEstado': $("#IdEstado").data("kendoDropDownList").text(),
+            'IdTipoFormula': $("#IdTipoFormula").val(),
+            'NombreTipoFormula': $("#IdTipoFormula").data("kendoDropDownList").text(),
+        };
+ 
+
+        var validator = $("#frmFormula").data("kendoValidator");
+                 var status = $(".status");
+
+                if (validator.validate()) {
+
+                    $.ajax({
+                        url: '@Url.Action("SaveFormula", "Formula")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+
+                            //notification.show({
+                            //    message: "Guardado correctamente!"
+                            //}, "upload-success");
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: '<br/><br/>Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 3000,
+                                stack: 6
+                            });
+
+                            RefreshGridFormula();
+
+                            $('#ModalFormula').modal('hide');
+
+
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                            notification.show({
+                                title: "Validación",
+                                message: textStatus + ": " + XMLHttpRequest.responseText
+                            }, "error");
+
+                        }
+                    });
+
+                }
+                else {
+                    status.text("Oops! There is invalid data in the form.")
+                        .removeClass("valid")
+                        .addClass("invalid");
+                }
+
+
+            $("#btnFormula").show();
+            $("#btnFormula").prop("disabled", false);
+    }
+</script>

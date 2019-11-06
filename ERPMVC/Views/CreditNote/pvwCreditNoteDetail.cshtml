@@ -9,11 +9,11 @@
         // console.log($("#DescriptionDetail").val());
         debugger
         var subproductname = '', unidaddemedida = '', accountname = '', taxname='';
-        if ($("#UnitOfMeasureId") != null) {
-            if ($("#UnitOfMeasureId").data("kendoDropDownList") != null) {
-                unidaddemedida = $("#UnitOfMeasureId").data("kendoDropDownList").text();
-            }
-        }
+        //if ($("#UnitOfMeasureId") != null) {
+        //    if ($("#UnitOfMeasureId").data("kendoDropDownList") != null) {
+        //        unidaddemedida = $("#UnitOfMeasureId").data("kendoDropDownList").text();
+        //    }
+        //}
         if ($("#AccountId") != null) {
             if ($("#AccountId").data("kendoDropDownList") != null) {
                 accountname = $("#AccountId").data("kendoDropDownList").text();
@@ -61,8 +61,8 @@
                 AccountId: $("#AccountId").val(),
                 AccountName: accountname,
                 SubProductName: subproductname,
-                UnitOfMeasureId: $("#UnitOfMeasureId").val(),
-                UnitOfMeasureName: unidaddemedida,
+                //UnitOfMeasureId: $("#UnitOfMeasureId").val(),
+                //UnitOfMeasureName: unidaddemedida,
                 Description: $("#DescriptionDetail").val(),
                 Quantity: $("#Quantity").val(),
                 Price: $("#Price").val(),
@@ -87,8 +87,11 @@
     function AddCotizacionDetalle() {
         var notification = $("#notification").data("kendoNotification");
       //  console.log($("#ProductId").val());
-        if ($("#ProductId").val() !== '' && $("#ProductId").val() !== '0'  ) {
-
+        if ($("#ProductId").val() !== '' && $("#ProductId").val() !== '0') {
+            var validator = $("#frmSalesOrderLine").data("kendoValidator");
+            validator.hideMessages();
+            //$(".k-icon k-i-warning").empty();
+            //document.getElementsByClassName("k-icon k-i-warning").innerHTML = "";
             llenarsubproduct();
             $("#frmSalesOrderLine :input").not('#SalesOrderId').prop("disabled", false);
             $('#TaxId').data("kendoDropDownList").value(0);
@@ -102,7 +105,7 @@
             $("#AmountLine").data("kendoNumericTextBox").value(0);
             $("#TotalLine").data("kendoNumericTextBox").value(0);
             $("#AccountId").data("kendoDropDownList").value('');
-            $("#UnitOfMeasureId").data("kendoDropDownList").value('');
+            //$("#UnitOfMeasureId").data("kendoDropDownList").value('');
             $("#TaxPercentage").data("kendoNumericTextBox").value(0);
             $('#myModalInvoiceLine').modal('show');
         } else {
@@ -165,6 +168,10 @@
                     $("#SalesOrderLineMant").html('');
                     $("#SalesOrderLineMant").html(data);
                     GetPercentage();
+                    console.log(data)
+                    //$("#SubProductId").data("kendoDropDownList").value(data.SubProductId);
+
+
                     var txt = $(data);
 
                     var combobox = $('#SubProductId').getKendoDropDownList();
@@ -240,7 +247,7 @@
             $("#AccountId").data("kendoDropDownList").value(dataItem.AccountId);
             $("#SubProductId").data("kendoDropDownList").value(dataItem.SubProductId);
             $("#DescriptionDetail").val(dataItem.Description);
-            $("#UnitOfMeasureId").data("kendoDropDownList").value(dataItem.UnitOfMeasureId);
+            //$("#UnitOfMeasureId").data("kendoDropDownList").value(dataItem.UnitOfMeasureId);
             $("#Quantity").data("kendoNumericTextBox").value(dataItem.Quantity);
             $("#Price").data("kendoNumericTextBox").value(dataItem.Price);
             $("#AmountLine").data("kendoNumericTextBox").value(dataItem.Amount);
@@ -281,6 +288,7 @@
                     //var txt = $(data);
                     //var found = $("#SubProductId", txt);
                     //subproducto = $(found).val();
+                    //CalcularTotalDocumento();
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
 
@@ -295,6 +303,8 @@
 
             var grid = $("#gridCreditNoteDetail").data("kendoGrid");
             grid.dataSource.remove(dataItem);
+            CalcularTotalDocumento();
+            //RefreshInvoiceDetail();
             //Sync it with the grid
             //grid.dataSource.sync();
         }
@@ -313,7 +323,7 @@
                                                   {
                                                       columns.Command(command =>
                                                       {
-                                                          if (Model.editar == 1)
+                                                          if (Model.CreditNoteId == 0)
                                                           {
                                                               command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
                                                               //command.Destroy().Text("Eliminar");
@@ -324,13 +334,13 @@
                                                       }).Width(150);
 
                                                       columns.Bound(p => p.CreditNoteLineId).Title("Id Linea").Width(150);
-                                                      columns.Bound(p => p.CreditNoteId).Title("Id Maestro").Width(150);
-                                                      columns.Bound(p => p.AccountId).Title("Cuenta").Width(150);
-                                                      columns.Bound(p => p.AccountName).Title("NombreCuenta").Width(150);
-                                                      columns.Bound(p => p.SubProductId).Title("IdProducto").Width(150);
+                                                      //columns.Bound(p => p.CreditNoteId).Title("Id Maestro").Width(150);
+                                                      columns.Bound(p => p.AccountId).Title("Cuenta").Width(150).Visible(false);
+                                                      columns.Bound(p => p.AccountName).Title("Nombre Cuenta").Width(150);
+                                                      columns.Bound(p => p.SubProductId).Title("IdProducto").Width(150).Visible(false);
                                                       columns.Bound(p => p.SubProductName).Title("Producto").Width(150);
                                                       columns.Bound(p => p.Description).Title("Descripcion").Width(150);
-                                                      columns.Bound(p => p.UnitOfMeasureId).Title("Unidad de medida").Width(150);
+                                                      //columns.Bound(p => p.UnitOfMeasureId).Title("Unidad de medida").Width(150);
                                                       columns.Bound(p => p.Quantity).Format("{0:n2}").Title("Cantidad").Width(150);
                                                       columns.Bound(p => p.Price).Format("{0:n2}").Title("Precio").Format("{0:n2}").Width(150);
                                                       columns.Bound(p => p.Amount).Format("{0:n2}").Title("Monto").Width(150);
@@ -380,7 +390,7 @@
                                        ))
                                                   .ToolBar(tools =>
                                                   {
-                                                      if (Model.editar == 1)
+                                                      if (Model.CreditNoteId == 0)
                                                       {
                                                           tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
                                                           .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacionDetalle();" });

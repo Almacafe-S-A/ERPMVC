@@ -21,7 +21,8 @@ namespace ERPMVC.Models
         public string Correo { get; set; }
         [Required]
         [Display(Name = "Puesto")]
-        public long? Puesto { get; set; }
+        [ForeignKey("PuestoId")]
+        public Puesto Puesto { get; set; }
         [Required]
         [Display(Name = "Fecha de Nacimiento")]
         public DateTime? FechaNacimiento { get; set; }
@@ -30,7 +31,7 @@ namespace ERPMVC.Models
         public DateTime? FechaIngreso { get; set; }
         [Required]
         [Display(Name = "Salario")]
-        public decimal? Salario { get; set; }
+        public double? Salario { get; set; }
         [Required]
         [Display(Name = "Estado")]
         public string Estado { get; set; }
@@ -68,7 +69,7 @@ namespace ERPMVC.Models
         public long? IdCurrency { get; set; }
         [Required]
         [Display(Name = "Código de Usuario")]
-        public Guid ApplicationUserId { get; set; }    
+        public string ApplicationUserId { get; set; }    
         [Display(Name = "Foto")]
         public string Foto { get; set; }
         [Required]
@@ -110,7 +111,13 @@ namespace ERPMVC.Models
         [Display(Name = "Telefono")]
         public string TelefonoContacto { get; set; }
         public int IdBranch { get; set; }
-
+        public string RTN { get; set; }
+        [Display(Name = "Tipo Plantilla")]
+        public long? IdTipoPlanilla { get; set; }
+        [ForeignKey("IdTipoPlanilla")]
+        public TipoPlanillas TipoPlanilla { get; set; }
+        [Display(Name = "Profesión")]
+        public string Profesion { get; set; }
         public string Usuariocreacion { get; set; }
         public string Usuariomodificacion { get; set; }
         public DateTime? FechaCreacion { get; set; }

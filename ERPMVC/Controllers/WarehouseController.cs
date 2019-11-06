@@ -101,8 +101,39 @@ namespace ERPMVC.Controllers
 
         }
 
-        
-      
+
+        [HttpGet]
+        public async Task<DataSourceResult> GetWarehouse([DataSourceRequest]DataSourceRequest request, Warehouse _BranchId)
+        {
+            List<Warehouse> _Warehouse = new List<Warehouse>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouse");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Warehouse = JsonConvert.DeserializeObject<List<Warehouse>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _Warehouse.ToDataSourceResult(request);
+
+        }
+
+
 
         public async Task<ActionResult<Warehouse>> SaveWarehouse([FromBody]Warehouse _Warehouse)
         {

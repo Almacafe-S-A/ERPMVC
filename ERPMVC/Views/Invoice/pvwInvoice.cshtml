@@ -138,7 +138,7 @@
 
                                                                          $("#Name").val(data.Motorista);
 
-                                                                         if ($("#cbxBuscarCertificadosDeposito").val() === '' || $("#cbxBuscarCertificadosDeposito").val() === null) {
+                                                                         if ($("#cbxBuscarFacturaProforma").val() === '' || $("#cbxBuscarFacturaProforma").val() === null) {
                                                                              var grid = $("#gridInvoiceDetail").data("kendoGrid");
                                                                              var datasource = grid.dataSource;
                                                                              var raw = datasource._data;
@@ -182,6 +182,12 @@
                                                                                  datasource.insert(midataObject);
                                                                              }
                                                                          }
+                                                                         else {
+                                                                             notification.show({
+                                                                                 title: "Validación",
+                                                                                 message: "Debe quitar la seleccion de la factura proforma!"
+                                                                             }, "error");
+                                                                         }
 
                                                                        //  $("#singuardar").val(1);
 
@@ -217,7 +223,7 @@
 
                                 </script>
                                 <input type="hidden" id="singuardar" value="0" />
-                                <label for="cbxBuscar" class="control-label" style="width:100%">Asociar cotización con proforma</label>
+                                <label for="cbxBuscar" class="control-label" style="width:100%">Asociar cotización con Factura Fiscal</label>
                                 @(Html.Kendo().DropDownList()
                                                     .Name("cbxBuscarCotizaciones")
                                                     .Filter(Kendo.Mvc.UI.FilterType.Contains)
@@ -257,32 +263,31 @@
 
 
                                 <script>
-                                       function valueMapperCertificado(options) {
+                                    function valueMapperProforma(options) {
                                            $.ajax({
-                                               url: "@Url.Action("Orders_ValueMapper", "CertificadoDeposito")",
-                                               data: convertValues(options.value),
+                                               url: "@Url.Action("Orders_ValueMapper", "ProformaInvoice")",
+                                               data: convertValuesProforma(options.value),
                                                success: function (data) {
                                                    options.success(data);
                                                }
                                            });
                                        }
 
-                                       function convertValuesCertificado(value) {
+                                       function convertValuesProforma(value) {
                                            var data = {};
                                            value = $.isArray(value) ? value : [value];
-
                                            for (var idx = 0; idx < value.length; idx++) {
-                                               data["values[" + idx + "]"] = value[idx];
-                                           }
+                                               data["values[" + idx + "]"] = value[idx];                                           }
 
                                            return data;
                                     }
 
-                                       function changesetearvaluesCertificado() {
-                                           var dataObject = { 'Idcd': $("#cbxBuscarCertificadosDeposito").val() };
+                                       function changesetearvaluesProforma() {
+                                           var dataObject = { 'ProformaId': $("#cbxBuscarFacturaProforma").val() };
+                                         //  console.log(dataObject);
 
                                               $.ajax({
-                                                    url: '@Url.Action("GetCertificadoDepositoByIdKardex", "CertificadoDeposito")',
+                                                    url: '@Url.Action("GetProformaInvoiceById", "ProformaInvoice")',
                                                     method: 'POST',
                                                     datatype: "json",
                                                     contentType: 'application/json',
@@ -293,15 +298,11 @@
 
                                                         $("#BranchId").data("kendoDropDownList").value(data.BranchId);
                                                         $("#CustomerId").data("kendoDropDownList").value(data.CustomerId);
-                                                        $("#ProformaName").val(data.CustomerName);
-                                                        $("#ProductId").data("kendoDropDownList").value(data.ServicioId);
+                                                        $("#InvoiceName").val(data.ProformaName);
+                                                        $("#ProductId").data("kendoDropDownList").value(data.ProductId);
                                                         $("#CurrencyId").data("kendoDropDownList").value(data.CustomerId);
                                                         $("#SalesTypeId").data("kendoDropDownList").value(data.CustomerId);
-                                                        $("#BranchId").data("kendoDropDownList").value(data.BranchId);
-
-                                                      //  $("#OrderDate").val(data.OrderDate);
-                                                      //  $("#DeliveryDate").val(data.DeliveryDate);
-                                                       // $("#ExpirationDate").val(data.ExpirationDate);
+                                                        $("#BranchId").data("kendoDropDownList").value(data.BranchId);                                                   
                                                         $("#CustomerRefNumber").val(data.CustomerRefNumber);
                                                         $("#Remarks").val(data.Remarks);
                                                         $("#Amount").val(data.Amount);
@@ -310,7 +311,6 @@
                                                         $("#RTN").val(data.RTN);
                                                         $("#Tefono").val(data.Tefono);
                                                         $("#ProformaName").val(data.SalesOrderName);
-
                                                         $("#SubTotal").data("kendoNumericTextBox").value(data.SubTotal);
                                                         $("#Discount").data("kendoNumericTextBox").value(data.Discount);
                                                         $("#Tax").data("kendoNumericTextBox").value(data.Tax);
@@ -319,7 +319,6 @@
                                                         $("#TotalExonerado").data("kendoNumericTextBox").value(data.Freight);
                                                         $("#TotalGravado").data("kendoNumericTextBox").value(data.TotalGravado);
                                                         $("#Total").data("kendoNumericTextBox").value(data.Total);
-
                                                         $("#Name").val(data.Motorista);
 
                                                         var grid = $("#gridInvoiceDetail").data("kendoGrid");
@@ -336,16 +335,24 @@
 
                                                         //for (j = 0; j < data.dataSource.length; j++) {
 
-                                                        for (i = 0; i < data._CertificadoLine.length; i++) {
+                                                        for (i = 0; i < data.ProformaInvoiceLine.length; i++) {
                                                             var midataObject = {
-                                                                ProformaLineId: i + 1, InvoiceId: 0
-                                                                , UnitOfMeasureName: data._CertificadoLine[i].UnitMeasurName, UnitOfMeasureId: data._CertificadoLine[i].UnitMeasureId
-                                                                , SubProductId: data._CertificadoLine[i].SubProductId, SubProductName: data._CertificadoLine[i].SubProductName
-                                                                , SubTotal: data._CertificadoLine[i].SubTotal, Price: data._CertificadoLine[i].Price
-                                                                , DiscountAmount: data._CertificadoLine[i].DiscountAmount, TaxCode: data._CertificadoLine[i].TaxCode
-                                                                , TaxAmount: data._CertificadoLine[i].TaxAmount, Total: data._CertificadoLine[i].Total
-                                                                , Quantity: data._CertificadoLine[i].Quantity, WareHouseId: data._CertificadoLine[i].WarehouseId
-                                                                , ControlPalletsId: $("#cbxBuscarCotizaciones").val()
+                                                                  InvoiceLineId: i + 1
+                                                                , InvoiceId: 0
+                                                                , UnitOfMeasureName: data.ProformaInvoiceLine[i].UnitOfMeasureName, UnitOfMeasureId: data.ProformaInvoiceLine[i].UnitOfMeasureId
+                                                                , SubProductId: data.ProformaInvoiceLine[i].SubProductId
+                                                                , SubProductName: data.ProformaInvoiceLine[i].SubProductName
+                                                                , SubTotal: data.ProformaInvoiceLine[i].SubTotal
+                                                                , Price: data.ProformaInvoiceLine[i].Price
+                                                                , DiscountAmount: data.ProformaInvoiceLine[i].DiscountAmount
+                                                                , TaxCode: data.ProformaInvoiceLine[i].TaxCode
+                                                                , Amount: data.ProformaInvoiceLine[i].Amount
+                                                                , TaxPercentage: data.ProformaInvoiceLine[i].TaxPercentage
+                                                                , TaxAmount: data.ProformaInvoiceLine[i].TaxAmount
+                                                                , Total: data.ProformaInvoiceLine[i].Total
+                                                                , Quantity: data.ProformaInvoiceLine[i].Quantity
+                                                                , WareHouseId: data.ProformaInvoiceLine[i].WarehouseId
+                                                                
                                                             };
 
                                                                 $.ajax({
@@ -371,10 +378,7 @@
 
                                                         }
 
-                                                        CalcularTotalDocumento();
-                                                        //}
-
-                                                      // $("#singuardar").val(1);
+                                                        CalcularTotalDocumento();                                                  
 
 
                                                     },
@@ -395,18 +399,18 @@
 
 
                                 <input type="hidden" id="singuardar" value="0" />
-                                <label for="cbxBuscar" class="control-label" style="width:100%">Asociar certificado de depósito con proforma</label>
+                                <label for="cbxBuscar" class="control-label" style="width:100%">Asociar Proforma con Factura Fiscal</label>
                                 @(Html.Kendo().DropDownList()
-                                                              .Name("cbxBuscarCertificadosDeposito")
+                                                              .Name("cbxBuscarFacturaProforma")
                                                               .Filter(Kendo.Mvc.UI.FilterType.Contains)
-                                                              .OptionLabel("Buscar Certificado")
+                                                              .OptionLabel("Buscar factura proforma")
                                                               .DataTextField("CustomerName")
-                                                              .DataValueField("IdCD")
+                                                              .DataValueField("ProformaId")
                                                               .HtmlAttributes(new { style = "width:100%" })
                                                               .Height(290)
                                                               .Events(e =>
                                                               {
-                                                                  e.Change("changesetearvaluesCertificado");
+                                                                  e.Change("changesetearvaluesProforma");
                                                               })
                                                               .AutoBind(true)
 
@@ -415,10 +419,10 @@
                                                                   source.Ajax()
                                                                   .PageSize(80)
 
-                                                                  .Read("Virtualization_Read", "CertificadoDeposito");
+                                                                  .Read("Virtualization_Read", "ProformaInvoice");
                                                                   source.ServerFiltering(true);
                                                               })
-                                                              .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapperCertificado"))
+                                                              .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapperProforma"))
                                 )
 
 
@@ -426,133 +430,7 @@
                         </div>
                     </div>
 
-                    <div class="row">
-                        <div class="col-sm-12 col-md-12">
-                            <script>
-
-                                   function valueMappercustomerarea(options) {
-                                      $.ajax({
-                                          url: "@Url.Action("Orders_ValueMapper", "CustomerArea")",
-                                          data: convertValuescustomerarea(options.value),
-                                          success: function (data) {
-                                              options.success(data);
-                                          }
-                                      });
-                                  }
-
-                                function convertValuescustomerarea(value) {
-                                    var data = {};
-                                    value = $.isArray(value) ? value : [value];
-
-                                    for (var idx = 0; idx < value.length; idx++) {
-                                        data["values[" + idx + "]"] = value[idx];
-                                    }
-
-                                    return data;
-                                }
-
-                                function changeAreaUtilizada() {
-
-
-                                    var notification = $("#notification").data("kendoNotification");
-
-                                    if ($("#cbxBuscarCotizaciones").val() !== "" && $("#cbxBuscarCotizaciones").val() !== null) {
-                                        var dataObject = {
-                                            CustomerAreaId: $("#cbxBuscarCustomerArea").val()
-                                        };
-
-                                        $.ajax({
-                                            url: '@Url.Action("GetCustomerAreaById", "CustomerArea")',
-                                            method: 'POST',
-                                            datatype: "json",
-                                            contentType: 'application/json',
-                                            async: false,
-                                            data: JSON.stringify(dataObject),
-                                            success: function (data) {
-                                                // console.log(data);
-                                                var grid = $("#gridInvoiceDetail").data("kendoGrid");
-                                                var datasource = grid.dataSource;
-
-                                                var dataItem = datasource.get(0);
-                                                dataItem.set("SubProductId", 1);
-                                                dataItem.set("SubProductName", "Almacenaje");
-                                                dataItem.set("Quantity", data.UsedArea);
-                                                dataItem.set("SubTotal", dataItem.Quantity * dataItem.Price);
-
-                                                dataItem.set("TaxAmount", dataItem.SubTotal * 0.15);
-                                                dataItem.set("Total", dataItem.SubTotal * 1.15);
-
-
-
-                                                CalcularTotalDocumento();
-                                                // dataItem.set("color", "purple");
-
-                                                // for (i = 0; i < data.SalesOrderLines.length; i++) {
-                                                //datasource.insert({
-                                                //    SubProductId: 1,
-                                                //    SubProductName: "Almacenaje",
-                                                //    Quantity: data.UsedArea
-                                                //});
-                                                //   }
-
-
-                                            },
-                                            error: function (XMLHttpRequest, textStatus, errorThrown) {
-
-                                                notification.show({
-                                                    title: "Validación",
-                                                    message: textStatus + ": " + XMLHttpRequest.responseText
-                                                }, "error");
-
-                                            }
-                                        });
-                                    }
-                                    else {
-                                        $.toast({
-                                            heading: 'Validación',
-                                            text: 'Seleccione la cotización!.',
-                                            position: 'top-right',
-                                            loaderBg: '#ff6849',
-                                            icon: 'alert',
-                                            hideAfter: 3000,
-                                            stack: 6
-                                        });
-                                    }
-
-
-                                }
-                            </script>
-                            <label for="cbxBuscar" class="control-label" style="width:100%">Agregar area utilizada</label>
-                            @(Html.Kendo().DropDownList()
-                                                .Name("cbxBuscarCustomerArea")
-                                                .Filter(Kendo.Mvc.UI.FilterType.Contains)
-                                                .OptionLabel("Buscar Area utilizada")
-                                                .DataTextField("CustomerName")
-                                                .DataValueField("CustomerAreaId")
-                                                .HtmlAttributes(new { style = "width:100%" })
-                                                .Height(290)
-                                                .Events(e =>
-                                                {
-                                                    e.Change("changeAreaUtilizada");
-                                                                //e.Filtering("applyFilterCustomer");
-                                                            })
-                                                .AutoBind(true)
-
-                                                .DataSource(source =>
-                                                {
-                                                    source.Ajax()
-                                                    .PageSize(80)
-
-                                                    .Read("Virtualization_Read", "CustomerArea");
-                                                    source.ServerFiltering(true);
-                                                })
-                                                .Virtual(v => v.ItemHeight(26).ValueMapper("valueMappercustomerarea"))
-                            )
-
-                        </div>
-                    </div>
-
-
+               
 
                 </div>
 
@@ -1290,8 +1168,9 @@
                 'TotalExonerado': $("#TotalExonerado").val(),
                 'TotalGravado': $("#TotalGravado").val(),
                 'SalesOrderId': ($("#cbxBuscarCotizaciones").val() === '' ? 0 : $("#cbxBuscarCotizaciones").val()),
-                'CertificadoDepositoId': $("#cbxBuscarCertificadosDeposito").val() === '' ? 0 : $("#cbxBuscarCertificadosDeposito").val(),
+                'CertificadoDepositoId': $("#cbxBuscarFacturaProforma").val() === '' ? 0 : $("#cbxBuscarFacturaProforma").val(),
                 'CustomerAreaId': $("#cbxBuscarCustomerArea").val() === '' ? 0 : $("#cbxBuscarCustomerArea").val(),
+                'ProformaInvoiceId': $("#cbxBuscarFacturaProforma").val() === '' ? 0 : $("#cbxBuscarFacturaProforma").val(),
                 'InvoiceLine': displayedData,
 
             };
@@ -1366,6 +1245,10 @@
                 $("#btnSaveInvoice").prop("disabled", false);
 
             }
+        }
+        else {
+            $("#btnSaveInvoice").show();
+            $("#btnSaveInvoice").prop("disabled", false);
         }
        
     }

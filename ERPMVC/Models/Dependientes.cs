@@ -19,10 +19,10 @@ namespace ERPMVC.Models
         public string Parentezco { get; set; }
 
         [Display(Name = "Teléfono")]
-        public string Telefono { get; set; }
+        public string TelefonoDependientes { get; set; }
 
         [Display(Name = "Dirección")]
-        public string Direccion { get; set; }
+        public string DireccionDependientes { get; set; }
 
         [Display(Name = "Empleado")]
         public long? IdEmpleado { get; set; }

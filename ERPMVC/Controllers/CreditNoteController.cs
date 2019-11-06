@@ -51,13 +51,13 @@ namespace ERPMVC.Controllers
                     _CreditNote = JsonConvert.DeserializeObject<CreditNoteDTO>(valorrespuesta);
 
                 }
-
                 if (_CreditNote == null)
                 {
-                    _CreditNote = new CreditNoteDTO();
-                    _CreditNote.OrderDate = DateTime.Now;
-                    _CreditNote.DeliveryDate = DateTime.Now;
-                    _CreditNote.ExpirationDate = DateTime.Now;
+                    _CreditNote = new CreditNoteDTO { OrderDate = DateTime.Now, DeliveryDate = DateTime.Now, ExpirationDate = DateTime.Now.AddDays(30), editar = 1, BranchId = Convert.ToInt32(HttpContext.Session.GetString("BranchId")) };
+                }
+                else
+                {
+                    _CreditNote.NumeroDEIString = $"{_CreditNote.Sucursal}-{_CreditNote.Caja}-05-{_CreditNote.NúmeroDEI.ToString().PadLeft(8, '0')} ";
                 }
             }
             catch (Exception ex)

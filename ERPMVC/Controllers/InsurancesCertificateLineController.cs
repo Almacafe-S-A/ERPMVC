@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -41,40 +42,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwInsurancesCertificateLineDetailMant(int InsurancesCertificateLineId = 0)
-        {
-            InsurancesCertificateLine _InsurancesCertificateLine = new InsurancesCertificateLine();
-            try
-            {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/InsurancesCertificateLine/GetInsurancesCertificateLineById/" + InsurancesCertificateLineId);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _InsurancesCertificateLine = JsonConvert.DeserializeObject<InsurancesCertificateLine>(valorrespuesta);
-
-                }
-
-                if (_InsurancesCertificateLine == null)
-                {
-                    _InsurancesCertificateLine = new InsurancesCertificateLine();
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-
-
-            return PartialView("~/Views/InsurancesCertificate/pvwInsurancesCertificateDetailMant.cshtml", _InsurancesCertificateLine);
-
-        }
-
+        
 
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
@@ -109,7 +77,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult> GetInsurancesCertificateLineById([DataSourceRequest]DataSourceRequest request, Int64 Id)
+        public async Task<ActionResult> GetInsurancesCertificateLineById([DataSourceRequest]DataSourceRequest request, Int64 InsurancesCertificateId)
         {
             List<InsurancesCertificateLine> _InsurancesCertificateLine = new List<InsurancesCertificateLine>();
             try
@@ -118,7 +86,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/InsurancesCertificateLine/GetInsurancesCertificateLineById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/InsurancesCertificateLine/GetSumInsurancesCertificateLine/" + InsurancesCertificateId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -250,8 +218,8 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/InsurancesCertificateLine/GetInsurancesCertificateLineById/" + _InsurancesCertificateLine.InsurancesCertificateLineId);
                 string valorrespuesta = "";
-                // _CertificadoLine.FechaModificacion = DateTime.Now;
-                //_CertificadoLine.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _InsurancesCertificateLine.ModifiedDate = DateTime.Now;
+                _InsurancesCertificateLine.ModifiedUser = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
 
@@ -261,8 +229,8 @@ namespace ERPMVC.Controllers
 
                 if (_InsurancesCertificateLine.InsurancesCertificateLineId == 0)
                 {
-                    // _CertificadoLine.FechaCreacion = DateTime.Now;
-                    //_CertificadoLine.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    _InsurancesCertificateLine.CreatedDate = DateTime.Now;
+                    _InsurancesCertificateLine.CreatedUser = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_InsurancesCertificateLine);
                 }
                 else
@@ -283,10 +251,10 @@ namespace ERPMVC.Controllers
 
 
 
-        // POST: CertificadoLine/Insert
+        // POST: InsurancesCertificateLine/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<InsurancesCertificateLine>> Insert(InsurancesCertificateLine _InsurancesCertificateLine)
+        public async Task<ActionResult<InsurancesCertificateLine>> Insert(InsurancesCertificateLine _InsurancesCertificateLineP)
         {
             try
             {
@@ -294,14 +262,14 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                // _CertificadoLine.UsuarioCreacion = HttpContext.Session.GetString("user");
-                //_CertificadoLine.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/CertificadoLine/Insert", _InsurancesCertificateLine);
+                 _InsurancesCertificateLineP.CreatedUser = HttpContext.Session.GetString("user");
+                _InsurancesCertificateLineP.ModifiedUser = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/InsurancesCertificateLine/Insert", _InsurancesCertificateLineP);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _InsurancesCertificateLine = JsonConvert.DeserializeObject<InsurancesCertificateLine>(valorrespuesta);
+                    _InsurancesCertificateLineP = JsonConvert.DeserializeObject<InsurancesCertificateLine>(valorrespuesta);
                 }
 
             }
@@ -310,7 +278,7 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-            return Ok(_InsurancesCertificateLine);
+            return Ok(_InsurancesCertificateLineP);
             // return new ObjectResult(new DataSourceResult { Data = new[] { _CertificadoLine }, Total = 1 });
         }
 
@@ -389,7 +357,35 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _InsurancesCertificateLine }, Total = 1 });
         }
 
+        public async Task<ActionResult> SFInsurancesCertificateLineDocument(Int64 id)
+        {
 
+            try
+            {
+                InsurancesCertificateLine _InsurancesCertificateLine = new InsurancesCertificateLine();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/InsurancesCertificateLine/GetInsurancesCertificateLineById/" + id);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _InsurancesCertificateLine = JsonConvert.DeserializeObject<InsurancesCertificateLine>(valorrespuesta);
+
+                }
+
+                //ViewBag.pathcontrato = _InsurancesCertificateLine.Path;
+            }
+            catch (Exception ex)
+            {
+
+                throw ex;
+            }
+
+
+            return View();
+        }
 
 
 

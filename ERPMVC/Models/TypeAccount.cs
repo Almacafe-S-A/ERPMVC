@@ -31,4 +31,13 @@ namespace ERPMVC.Models
         public DateTime ModifiedDate { get; set; }
 
     }
+
+
+ 
+
+
+
+
+
+
 }

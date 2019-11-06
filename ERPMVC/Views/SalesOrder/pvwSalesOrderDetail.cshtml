@@ -6,54 +6,53 @@
 
 
     function GetSalesOrderId() {
-        var subproductname = '', unidaddemedida = '' , taxname = '';
-        if ($("#UnitOfMeasureId") != null) {
-            if ($("#UnitOfMeasureId").data("kendoDropDownList") != null) {
-                unidaddemedida = $("#UnitOfMeasureId").data("kendoDropDownList").text();
+        if ($("#SubProductId").val() > 0 || @Model.SalesOrderId>0) {
+            var subproductname = '', unidaddemedida = '', taxname = '';
+            if ($("#UnitOfMeasureId") != null) {
+                if ($("#UnitOfMeasureId").data("kendoDropDownList") != null) {
+                    unidaddemedida = $("#UnitOfMeasureId").data("kendoDropDownList").text();
+                }
             }
-        }
-        if ($("#SubProductId") != null) {
-            if ($("#SubProductId").data("kendoDropDownList") != null) {
-                subproductname = $("#SubProductId").data("kendoDropDownList").text();
+            if ($("#SubProductId") != null) {
+                if ($("#SubProductId").data("kendoDropDownList") != null) {
+                    subproductname = $("#SubProductId").data("kendoDropDownList").text();
+                }
             }
-        }
 
-        if ($("#TaxId") != null) {
-            if ($("#TaxId").data("kendoDropDownList") != null) {
-                taxname = $("#TaxId").data("kendoDropDownList").text();
+            if ($("#TaxId") != null) {
+                if ($("#TaxId").data("kendoDropDownList") != null) {
+                    taxname = $("#TaxId").data("kendoDropDownList").text();
+                }
             }
-        }
 
 
-        
+            var displayedData = $("#gridCotizacionesDetail").data().kendoGrid.dataSource.data();
+            var id = -999999;
+            debugger;
+            if (Number($("#SalesOrderLineId").val()) === 0) {
+                if (displayedData.length > 0) {
+                    for (var i = 0; i < displayedData.length; i++) {
+                        if (displayedData[i].SalesOrderLineId > id)
+                            id = displayedData[i].SalesOrderLineId;
 
-        var displayedData = $("#gridCotizacionesDetail").data().kendoGrid.dataSource.data();
-        var id = -999999;
-         debugger;
-        if (Number($("#SalesOrderLineId").val()) === 0) {
-            if (displayedData.length > 0) {
-                for (var i = 0; i < displayedData.length; i++) {
-                    if (displayedData[i].SalesOrderLineId > id)
-                        id = displayedData[i].SalesOrderLineId;
+                    }
 
+                    id = id + 1;
+                }
+                else if ($("#Quantity").val() > 0) {
+                    id = 1;
                 }
 
-                id = id + 1;
             }
-            else if ($("#Quantity").val()>0) {
-                id = 1;
+            else {
+                id = $("#SalesOrderLineId").val();
             }
 
-        }
-        else {
-            id = $("#SalesOrderLineId").val();
-        }
 
-
-        return {
+            return {
                 SalesOrderLineId: id,
                 SalesOrderId: @Model.SalesOrderId,
-                UnitOfMeasureId : $("#UnitOfMeasureId").val(),
+                UnitOfMeasureId: $("#UnitOfMeasureId").val(),
                 UnitOfMeasureName: unidaddemedida,
                 SubProductId: $("#SubProductId").val(),
                 SubProductName: subproductname,
@@ -71,6 +70,10 @@
                 Total: $("#TotalLine").val(),
             }
         }
+        else {
+            return;
+        }
+    }
 
     function RefreshCotizacionesDetail() {
         var grid = $("#gridCotizacionesDetail").getKendoGrid();
@@ -242,6 +245,8 @@
 
             var grid = $("#gridCotizacionesDetail").data("kendoGrid");
             grid.dataSource.remove(dataItem);
+
+            CalcularTotalDocumento();
             //Sync it with the grid
             //grid.dataSource.sync();
         }

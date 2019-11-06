@@ -99,8 +99,6 @@
                     $("#NumJournalEntry").html(result);
                     //$("#btnCAI").hide();
                     $('#ModalJournalEntry').modal('show');
-                    document.getElementById("btnJournalEntry").disabled = true;
-                    document.getElementById("btnAgregarLinea").disabled = true;
                     $("#IdPartyType").data("kendoDropDownList").value(dataItem.PartyTypeId);
                     if (dataItem.PartyTypeId == 1) {
                         $("#customer").show();
@@ -184,6 +182,55 @@
         }
     }
 
+    function RechazarAjuste(e) {
+        var notification = $("#notification").data("kendoNotification");
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (dataItem.IdEstado != 7) {
+        if (confirm('Esta seguro de rechazado este ajuste?')) {
+            e.preventDefault();       
+            var dataObject = {
+                JournalEntryId: dataItem.JournalEntryId,
+                editar: 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("Rechazar","JournalEntry")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: '<br/><br/>El ajuste se a rechazado correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 7000,
+                        stack: 6
+                    });
+                    RefrescarGrid();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+            }
+        }
+        else {
+            notification.show({
+                title: "Validación",
+                message: "<br/><br/>El ajuste contable no ha sido rechazado"
+            }, "error");
+        }
+    }
+
+
 
     function DetallesJournalEntry(e) {
         e.preventDefault();
@@ -196,10 +243,9 @@
 
     function dataBound(e) {
         $.each(this.dataSource.data(), function () {
-            // console.log(this);
-            if (Number(this.EstadoId) != 5 && Number(this.EstadoId) != 8) {
-                //  console.log(this.SalesOrderId);
+            if (Number(this.EstadoId) != 5) {
                 $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Rechazar').hide();
             }
         })
     }
@@ -208,6 +254,20 @@
     function RefrescarGrid() {
         var grid = $("#gridNumeracionJournalEntry").getKendoGrid();
         grid.dataSource.read();
+    }
+
+     function Imprimir(e, id) {
+        var dataItem;
+        if (e != null) {
+            e.preventDefault();
+            dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        }
+        else {
+            dataItem = { JournalEntryId: $("#JournalEntryId").val() };
+        }
+        var url = '@Url.Action("SFAjusteContable", "JournalEntry")/' + dataItem.JournalEntryId;
+           var win = window.open(url, '_blank');
+           win.focus();
     }
 
 </script>
@@ -230,24 +290,24 @@
                                     {
                                         columns.Command(command =>
                                         {
-                                            command.Custom("Ver detalles").Text(" ").IconClass("far fa-list-alt").Click("DetallesJournalEntry");
+                                            //command.Custom("Ver detalles").Text(" ").IconClass("far fa-list-alt").Click("DetallesJournalEntry");
                                             command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditJournalEntry");
+                                            command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("Imprimir");
                                             /// command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("AprobarAjuste");
                                             if (Gerente)
                                             {
                                                 command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("AprobarAjuste");
+                                                command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("RechazarAjuste");
                                             }
                                             //  command.Destroy();
-                                        }).Width(100);
+                                        }).Width(200);
 
-                                        columns.Bound(p => p.JournalEntryId).Title("Id").Width(200);
-                                        //columns.Bound(p => p.IdPaymentCode).Title("Código").Width(150);
-                                        //columns.Bound(p => p.IdTypeofPayment).Title("Tipo de Pago").Width(200);
-                                        columns.Bound(p => p.VoucherType).Title("Id Tipo de Pago").Width(150);
-                                        columns.Bound(p => p.TypeJournalName).Title("Tipo de Diario").Width(250);
-                                        columns.Bound(p => p.CreatedDate).Title("Fecha de Creación").Format("{0:dd/MM/yyyy}").Width(250);
-                                        columns.Bound(p => p.PartyId).Title("Id de Partida").Width(250);
-                                        //columns.Bound(p => p.Posted).Title("Posteado").Width(200);
+                                        columns.Bound(p => p.JournalEntryId).Title("Id Asiento Contable").Width(150);
+                                        columns.Bound(p => p.DatePosted).Title("Fecha de  Transacción").Format("{0:dd/MM/yyyy}").Width(250);
+                                        columns.Bound(p => p.PartyId).Title("Beneficiario").Width(150);
+                                        columns.Bound(p => p.TotalDebit).Width(200).Format("{0:N2}");
+                                        columns.Bound(p => p.TotalCredit).Width(200).Format("{0:N2}");
+                                        columns.Bound(p => p.Memo).Title("Sinopsis").Width(350);
                                         columns.Bound(p => p.EstadoName).Title("Estado").Width(170);
                                         columns.Bound(p => p.EstadoId).Hidden().Title("Estado").Width(170);
                                         columns.Bound(p => p.PartyTypeId).Hidden().Title("").Width(170);
@@ -316,17 +376,18 @@
                                     .Model(model =>
                                     {
                                         model.Id(p => p.JournalEntryId);
-                                        //model.Field(p => p.IdPaymentCode).Editable(true);
-                                        model.Field(p => p.VoucherType).Editable(true);
-                                        model.Field(p => p.TypeJournalName).Editable(true);
+                                        model.Field(p => p.DatePosted).Editable(true);
                                         model.Field(p => p.PartyId).Editable(true);
-                                        //model.Field(p => p.Posted).Editable(true);
+                                        model.Field(p => p.TotalDebit).Editable(true);
+                                        model.Field(p => p.TotalCredit).Editable(true);
+                                        model.Field(p => p.Memo).Editable(true);
                                         model.Field(p => p.EstadoName).Editable(true);
+                                        model.Field(p => p.EstadoId).Editable(true);
                                         model.Field(p => p.EstadoId).Editable(true);
 
                                     })
                                     .Events(events => events.Error("error_handler"))
-                                    .Read(read => read.Action("GetJournalEntry", "JournalEntry"))
+                                    .Read(read => read.Action("GetJournalEntryAjustes", "JournalEntry"))
                                     .Create(create => create.Action("Insert", "JournalEntry"))
                                     .Update(update => update.Action("Update", "JournalEntry", new { id = "{0}" }))
                                     //.Destroy(destroy => destroy.Action("Delete", "TypeAccount", new { Num = "{1}" }).Type(HttpVerbs.Delete))
@@ -360,4 +421,5 @@
             });
         }
         setRowButtonTooltip(".k-grid-Aprobar", "Aprobar Ajuste");
+        setRowButtonTooltip(".k-grid-Rechazar", "Rechazar Ajuste");
     </script>

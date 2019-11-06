@@ -51,9 +51,10 @@
 
 <script>
     $(document).ready(function () {
-        $("#Tefono").kendoMaskedTextBox({
-            mask: "(999) 0000-0000"
-        });
+        //$("#IdFacturaFiscal").kendoMaskedTextBox({
+        //    mask: "000-000-00-00000000"
+        //});
+        document.getElementById('FacturaInterna').style.display = 'none';
         //$("#TelefonoContacto").kendoMaskedTextBox({
         //    mask: "(999) 0000-0000"
         //});
@@ -70,13 +71,34 @@
     function onChange(e) {
         console.log(e.checked);//true of false
         if (e.checked) {
-            document.getElementById('Divbusqueda').style.display = 'none';
+            document.getElementById('FacturaFiscal').style.display = 'none';
+            document.getElementById('FacturaInterna').style.display = 'inline';
             document.getElementById('InvoiceDetail').style.display = 'none';
-            //$('#IdFactura').val('');
+            //document.getElementById('Factura').innerHTML = 'Id Factura';
+            $('#IdFacturaFiscal').val('');
+            $("#frmSalesOrder")[0].reset();
+            $("#OrderDate").kendoDateTimePicker({ value: new Date(), dateInput: true });
+            $("#DeliveryDate").kendoDateTimePicker({ value: new Date(), dateInput: true });
+            $("#ExpirationDate").kendoDateTimePicker({ value: new Date(), dateInput: true });
+            //$('input').val('');
+            //$("#IdFactura").kendoMaskedTextBox({
+            //    mask: ""
+            //});
         }
         else {
-            document.getElementById('Divbusqueda').style.display = 'inline';
+            document.getElementById('FacturaFiscal').style.display = 'inline';
+            document.getElementById('FacturaInterna').style.display = 'none';
             document.getElementById('InvoiceDetail').style.display = 'inline';
+            //document.getElementById('Factura').innerHTML = 'Número Factura';
+            $('#IdFacturaInterna').val('');
+            $("#frmSalesOrder")[0].reset();
+            $("#OrderDate").kendoDateTimePicker({ value: new Date(), dateInput: true });
+            $("#DeliveryDate").kendoDateTimePicker({ value: new Date(), dateInput: true });
+            $("#ExpirationDate").kendoDateTimePicker({ value: new Date(), dateInput: true });
+            //$('input,select option').val('');
+            //$("#IdFactura").kendoMaskedTextBox({
+            //mask: "000-000-00-00000000"
+            //});
         }
     }
 
@@ -103,25 +125,89 @@
                                           data-ajax="true"
                                           data-ajax-method="post"
                                           method="post" class="validation-wizard wizard-circle">
-
                                         <div class="row">
 
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Fiscal" class="control-label" style="width: 100%;">¿Nota de Crédito Interna?</label>
                                                     @(Html.Kendo().SwitchFor(m => m.Fiscal)
-                                                                            .Name("Fiscal")
-                                                    .Events(ev => ev.Change("onChange"))
+                                                                                                            .Name("Fiscal")
+                                                                                    .Events(ev => ev.Change("onChange"))
                                                     )
                                                 </div>
                                             </div>
+
+                                            <div class="col-md-4">
+                                                <script>
+                                                    function GetPuntoEmision() {
+                                                        $("#IdPuntoEmision").data("kendoDropDownList").dataSource.read();
+                                                    }
+                                                </script>
+                                                <div class="form-group">
+                                                    <label asp-for="BranchId" class="control-label"></label>
+                                                    <kendo-dropdownlist name="BranchId" for="BranchId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione la sucursal"
+                                                                        datatextfield="BranchName"
+                                                                        datavaluefield="BranchId"
+                                                                        onchange="GetPuntoEmision();"
+                                                                        style="width: 100%;"
+                                                                        auto-bind="true">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
+                                                            <transport>
+                                                                <read url="@Url.Action("Get", "Branch")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="BranchId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <script>
+                                                    function GetBranchId() {
+                                                        return {
+                                                            'BranchId': $("#BranchId").data("kendoDropDownList").value()
+                                                        }
+                                                    }
+                                                </script>
+                                                <div class="form-group">
+                                                    <label asp-for="IdPuntoEmision" class="control-label"></label>
+                                                    <kendo-dropdownlist name="IdPuntoEmision" for="IdPuntoEmision" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione el punto de emisión"
+                                                                        auto-bind="false"
+                                                                        datatextfield="PuntoEmisionCod"
+                                                                        datavaluefield="IdPuntoEmision"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetPuntoEmisionByBranchId", "PuntoEmision")" data="GetBranchId" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="IdPuntoEmision" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+
                                             @if (Model.CreditNoteId == 0)
                                             {
-                                                <div class="col-md-4" id="Divbusqueda">
+                                                <div class="col-md-4" id="FacturaFiscal">
                                                     <div class="form-group">
-                                                        <label class="control-label" style="width:100%">Id Factura</label>
+                                                        <label class="control-label" style="width:100%">Número de Factura</label>
                                                         <div class="input-group">
-                                                            <input type="text" class="form-control" id="IdFactura" />
+                                                            <input type="text" class="form-control" id="IdFacturaFiscal" style="min-width:70%" maxlength="19" placeholder="000-000-00-00000000"/>
+                                                            <span class="input-group-btn">
+                                                                <button class="btn btn-info" onclick="BuscarFactura()" type="button"> <span class="glyphicon glyphicon-search"></span> Buscar</button>
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </div>
+
+                                                <div class="col-md-4" id="FacturaInterna">
+                                                    <div class="form-group">
+                                                        <label class="control-label" style="width:100%">Id de Factura</label>
+                                                        <div class="input-group">
+                                                            <input type="text" class="form-control" id="IdFacturaInterna" onKeyPress="return soloNumeros(event)" style="min-width:70%"/>
                                                             <span class="input-group-btn">
                                                                 <button class="btn btn-info" onclick="BuscarFactura()" type="button"> <span class="glyphicon glyphicon-search"></span> Buscar</button>
                                                             </span>
@@ -133,29 +219,72 @@
                                             <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="CreditNoteId" class="control-label"></label>
-                                                    <input type="text" asp-for="CreditNoteId" class="form-control" style="min-width: 100%" disabled/>
+                                                    <input type="text" asp-for="CreditNoteId" class="form-control" style="min-width: 100%" disabled />
                                                     <span asp-validation-for="CreditNoteId" class="text-danger"></span>
                                                 </div>
 
                                             </div>
 
+                                            @if (!Model.Fiscal && Model.CreditNoteId != 0)
+                                            {
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label asp-for="NumeroDEIString" class="control-label"></label>
+                                                        <input type="text" asp-for="NumeroDEIString" disabled class="form-control" style="min-width: 100%" />
+                                                    </div>
+                                                </div>
+                                            }
 
-                                        </div>
 
-                                        <div class="row">
 
 
                                             <div class="col-md-4">
                                                 <div class="form-group">
+                                                    <script>
+                                                        function SetCustomerName(e) {
+                                                           // console.log(e);
+                                                            if ($("#CustomerId").val() > 0) {
+                                                                $("#SalesOrderName").prop('disabled', true);
+                                                                $("#SalesOrderName").val($("#CustomerId").data("kendoDropDownList").text());
+                                                                var dataObject = { CustomerId: $("#CustomerId").val()};
+                                                                  $.ajax({
+                                                                     url: '@Url.Action("GetCustomerById", "Customer")',
+                                                                     method: 'GET',
+                                                                     datatype: "json",
+                                                                     contentType: 'application/json',
+                                                                     async: false,
+                                                                     data: dataObject,
+                                                                      success: function (result) {
+                                                                          //console.log(result);
+                                                                          // setearvalor("TaxPercentage", result.TaxPercentage);
+                                                                          $("#CreditNoteName").val(result.CustomerName);
+                                                                          $("#Direccion").val(result.Address);
+                                                                          $("#RTN").val(result.RTN);
+                                                                          $("#Correo").val(result.Email);
+                                                                          $("#Tefono").val(result.Phone);
+                                                                          $("#CustomerRefNumber").val(result.CustomerRefNumber);
+
+                                                                     },
+                                                                      error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                                                             alert(textStatus + ": " + XMLHttpRequest.responseText);
+                                                                       }
+                                                                  });
+                                                            }
+                                                            else {
+                                                                $("#SalesOrderName").prop('disabled', false);
+                                                            }
+                                                        }
+                                                    </script>
                                                     <label asp-for="CustomerId" class="control-label"></label>
 
-                                                    <kendo-dropdownlist name="CustomerId" for="CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                    <kendo-dropdownlist name="CustomerId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         option-label="Seleccione el cliente"
                                                                         datatextfield="CustomerName"
                                                                         datavaluefield="CustomerId"
-                                                                        value="@Model.CustomerId"
+                                                                        class="form-control-line"
+                                                                        onchange="SetCustomerName();"
                                                                         style="width: 100%;">
-                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="99999999">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
                                                             <transport>
                                                                 <read url="@Url.Action("GetCustomer", "Common")" />
                                                             </transport>
@@ -181,20 +310,16 @@
                                             <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Correo" class="control-label" style="width:100%"></label>
-                                                    <input type="email" asp-for="Correo" class="form-control" style="min-width: 100%" maxlength="80"/>
+                                                    <input type="email" asp-for="Correo" class="form-control" placeholder="nombre@ejemplo.com" style="min-width: 100%" maxlength="80" />
                                                     <span asp-validation-for="Correo" class="text-danger"></span>
                                                 </div>
                                             </div>
 
-                                        </div>
-
-
-                                        <div class="row">
 
                                             <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="RTN" class="control-label" style="width:100%"></label>
-                                                    <input type="text" asp-for="RTN" required class="form-control required " onKeyPress="return soloNumeros(event)" style="min-width: 100%" maxlength="20"/>
+                                                    <input type="text" asp-for="RTN" required class="form-control required " onKeyPress="return soloNumeros(event)" style="min-width: 100%" maxlength="20" />
                                                     <span asp-validation-for="RTN" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -202,59 +327,22 @@
                                             <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Tefono" class="control-label" style="width:100%"></label>
-                                                    <input type="text" asp-for="Tefono" class="form-control required " style="min-width: 100%" />
+                                                    <input type="text" asp-for="Tefono" class="form-control required " style="min-width: 100%" onKeyPress="return soloNumeros(event)" />
                                                     <span asp-validation-for="Tefono" class="text-danger"></span>
                                                 </div>
                                             </div>
 
-                                        </div>
-
-                                        <div class="row">
-
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="CustomerRefNumber" class="control-label" style="width:100%"></label>
-                                                    <input asp-for="CustomerRefNumber" class="form-control" onKeyPress="return soloNumeros(event)" maxlength="20" style="min-width: 100%"  />
+                                                    <input asp-for="CustomerRefNumber" class="form-control" onKeyPress="return soloNumeros(event)" maxlength="20" style="min-width: 100%" />
                                                     <span asp-validation-for="CustomerRefNumber" class="text-danger"></span>
                                                 </div>
                                             </div>
 
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label asp-for="BranchId" class="control-label"></label>
-                                                    <kendo-dropdownlist name="BranchId" for="BranchId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        option-label="Seleccione la sucursal"
-                                                                        datatextfield="BranchName"
-                                                                        datavaluefield="BranchId"
-                                                                        style="width: 100%;">
-                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
-                                                            <transport>
-                                                                <read url="@Url.Action("Get", "Branch")" />
-                                                            </transport>
-                                                        </datasource>
-                                                    </kendo-dropdownlist>
-                                                    <span asp-validation-for="BranchId" class="text-danger"></span>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4">
-
-                                                <div class="form-group">
-                                                    <label asp-for="IdPuntoEmision" class="control-label"></label>
-                                                    <kendo-dropdownlist name="IdPuntoEmision" for="IdPuntoEmision" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        option-label="Seleccione el punto de emisión"
-                                                                        datatextfield="PuntoEmisionCod"
-                                                                        datavaluefield="IdPuntoEmision"
-                                                                        style="width: 100%;">
-                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
-                                                            <transport>
-                                                                <read url="@Url.Action("Get", "PuntoEmision")" />
-                                                            </transport>
-                                                        </datasource>
-                                                    </kendo-dropdownlist>
-                                                    <span asp-validation-for="IdPuntoEmision" class="text-danger"></span>
-                                                </div>
-                                            </div>
                                         </div>
+
+
 
                                         <div class="row">
                                             <div class="col-md-4">
@@ -297,11 +385,11 @@
 
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label asp-for="ProductId" class="control-label" style="width:100%">Producto</label>
+                                                    <label asp-for="ProductId" class="control-label" style="width:100%"></label>
 
                                                     <kendo-dropdownlist name="ProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         for="ProductId"
-                                                                        option-label="Seleccione el  producto"
+                                                                        option-label="Seleccione el Producto"
                                                                         datatextfield="ProductName"
                                                                         datavaluefield="ProductId"
                                                                         required
@@ -360,26 +448,26 @@
 
                                         </div>
 
-                                        <div class="row">
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label asp-for="NoOCExenta" class="control-label"></label>
-                                                    <input type="text" asp-for="NoOCExenta" class="form-control" style="min-width: 100%" onKeyPress="return soloNumeros(event)" maxlength="20" />
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label asp-for="NoConstanciadeRegistro" class="control-label"></label>
-                                                    <input type="text" asp-for="NoConstanciadeRegistro" class="form-control" style="min-width: 100%" onKeyPress="return soloNumeros(event)" maxlength="20"/>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label asp-for="NoSAG" class="control-label"></label>
-                                                    <input type="text" asp-for="NoSAG" class="form-control" style="min-width: 100%" onKeyPress="return soloNumeros(event)" maxlength="20"/>
-                                                </div>
-                                            </div>
-                                        </div>
+                                        @*<div class="row">
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label asp-for="NoOCExenta" class="control-label"></label>
+                    <input type="text" asp-for="NoOCExenta" class="form-control" style="min-width: 100%" onKeyPress="return soloNumeros(event)" maxlength="20" />
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label asp-for="NoConstanciadeRegistro" class="control-label"></label>
+                    <input type="text" asp-for="NoConstanciadeRegistro" class="form-control" style="min-width: 100%" onKeyPress="return soloNumeros(event)" maxlength="20"/>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="form-group">
+                    <label asp-for="NoSAG" class="control-label"></label>
+                    <input type="text" asp-for="NoSAG" class="form-control" style="min-width: 100%" onKeyPress="return soloNumeros(event)" maxlength="20"/>
+                </div>
+            </div>
+        </div>*@
 
                                         <div class="row">
 
@@ -658,25 +746,33 @@
         grid.dataSource.read();
     }
 
+
     function SaveCotizacion(e) {
 
         var notification = $("#notification").data("kendoNotification");
         // e.preventDefault();
-        $("#btnSaveCreditNote").hide();
-        $("#btnSaveCreditNote").prop("disabled", true);
+        //$("#btnSaveCreditNote").hide();
+        //$("#btnSaveCreditNote").prop("disabled", true);
 
         var validadetalle = true;
         var displayedData = $("#gridCreditNoteDetail").data().kendoGrid.dataSource.view();
         for (var i = 0; i < displayedData.length; i++) {
             displayedData[i].CreditNoteLineId = 0;
-            if (displayedData[i].TaxCode === '' || displayedData[i].TaxCode === null
-                || displayedData[i].Total === 0) {
+            if (displayedData[i].TaxCode === '' || displayedData[i].TaxCode === null || displayedData[i].Total === 0) {
                 notification.show({
                     title: "Validación",
                     message: "No Ingreso el codigo de impuesto"
                 }, "error");
 
                 validadetalle = false;
+            }
+            if (displayedData[i].AccountName === '' || displayedData[i].AccountName === null || displayedData[i].AccountId === 0) {
+                notification.show({
+                    title: "Validación",
+                    message: "Debe seleccionar una Cuenta para " + displayedData[i].SubProductName + "."
+                }, "error");
+                validadetalle = false;
+                return
             }
         }
 
@@ -708,6 +804,7 @@
                 'Amount': $("#Amount").val(),
                 'SubTotal': $("#SubTotal").val(),
                 'Discount': $("#Discount").val(),
+                'InvoiceId': $("#IdFactura").val(),
                 'Tax': $("#Tax").val(),
                 'Freight': $("#Freight").val(),
                 'Total': $("#Total").val(),
@@ -742,9 +839,18 @@
                         data: JSON.stringify(dataObject),
                         success: function (data) {
 
-                            notification.show({
-                                message: "Guardado correctamente!"
-                            }, "upload-success");
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: '<br/><br/>Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+                            //notification.show({
+                            //    message: "Guardado correctamente!"
+                            //}, "upload-success");
 
                             RefreshCotizaciones();
                             $('#myModalSalesOrder').modal('hide');
@@ -769,8 +875,8 @@
                         message: "Datos incorrectos en el formulario!"
                     }, "error");
 
-                    $("#btnSaveCreditNote").show();
-                    $("#btnSaveCreditNote").prop("disabled", false);
+                    //$("#btnSaveCreditNote").show();
+                    //$("#btnSaveCreditNote").prop("disabled", false);
                 }
             }
             else {
@@ -779,8 +885,8 @@
                     message: "Debe agregar los productos!"
                 }, "error");
 
-                $("#btnSaveCreditNote").show();
-                $("#btnSaveCreditNote").prop("disabled", false);
+                //$("#btnSaveCreditNote").show();
+                //$("#btnSaveCreditNote").prop("disabled", false);
 
             }
         }
@@ -789,11 +895,33 @@
 
     //Buscar Factura
     function BuscarFactura(e) {
+        var FactFiscal = $("#IdFacturaFiscal").val();
+        var FactInterna = $("#IdFacturaInterna").val();
 
-        var dataObject = {
-            InvoiceId: $("#IdFactura").val(),
-            editar: 0
-        };
+            debugger
+        if (!$("#Fiscal").is(':checked')) {
+            if (FactFiscal == '0' || FactFiscal == '') {
+                    alert('Ingrese un número de Factura.')
+                    return
+            }
+            if (FactFiscal.length < 19) {
+                alert('Ingrese el formato correcto para Número de Factura.')
+                return
+            }
+            var str = FactFiscal;
+                var res = str.split("-");
+                //document.getElementById("demo").innerHTML = res;
+                console.log(res)
+                var correlativo = parseInt(res[3], 10);
+                console.log(correlativo)
+                var dataObject = {
+                    //InvoiceId: $("#IdFactura").val(),
+                    Sucursal: res[0],
+                    Caja: res[1],
+                    NumeroDEI: correlativo,
+                    editar: 0
+                };
+
                 $.ajax({
                     url: '@Url.Action("GetInvoiceById", "Invoice")',
                     method: 'POST',
@@ -802,51 +930,58 @@
                     async: false,
                     data: JSON.stringify(dataObject),
                     success: function (result) {
-                        //$("#CustomerId").data("kendoDropDownList").select(2);
-                        $("#CustomerId").data("kendoDropDownList").value(result.CustomerId);
-                        $("#CreditNoteName").val(result.CustomerName);
-                        $("#Correo").val(result.Correo);
-                        $("#RTN").val(result.RTN);
-                        $("#Tefono").val(result.Tefono);
-                        $("#CustomerRefNumber").val(result.CustomerRefNumber);
-                        $("#BranchId").data("kendoDropDownList").value(result.BranchId);
-                        $("#IdPuntoEmision").data("kendoDropDownList").value(result.IdPuntoEmision);
-                        $("#CurrencyId").data("kendoDropDownList").value(result.CurrencyId);
-                        $("#SalesTypeId").data("kendoDropDownList").value(result.SalesTypeId);
-                        $("#ProductId").data("kendoDropDownList").value(result.ProductId);
-                        $("#OrderDate").kendoDateTimePicker({ value: new Date(result.OrderDate), dateInput: true });
-                        $("#DeliveryDate").kendoDateTimePicker({ value: new Date(result.DeliveryDate), dateInput: true });
-                        $("#ExpirationDate").kendoDateTimePicker({ value: new Date(result.ExpirationDate), dateInput: true });
-                        $("#NoOCExenta").val(result.NoOCExenta);
-                        $("#NoConstanciadeRegistro").val(result.NoConstanciadeRegistro);
-                        $("#NoSAG").val(result.NoSAG);
-                        $("#Direccion").val(result.Direccion);
+                        if (result.InvoiceId == 0) {
+                            alert("El número de Factura que ingreso no existe.")
+                        }
+                        else {
+                            //$("#CustomerId").data("kendoDropDownList").select(2);
+                            $("#CustomerId").data("kendoDropDownList").value(result.CustomerId);
+                            $("#CreditNoteName").val(result.CustomerName);
+                            $("#Correo").val(result.Correo);
+                            $("#RTN").val(result.RTN);
+                            $("#Tefono").val(result.Tefono);
+                            $("#CustomerRefNumber").val(result.CustomerRefNumber);
+                            $("#BranchId").data("kendoDropDownList").value(result.BranchId);
+                            $("#IdPuntoEmision").data("kendoDropDownList").value(result.IdPuntoEmision);
+                            $("#CurrencyId").data("kendoDropDownList").value(result.CurrencyId);                           
+                            $("#SalesTypeId").data("kendoDropDownList").value(result.SalesTypeId);
+                            $("#ProductId").data("kendoDropDownList").value(result.ProductId);
+                            $("#OrderDate").kendoDateTimePicker({ value: new Date(result.OrderDate), dateInput: true });
+                            $("#DeliveryDate").kendoDateTimePicker({ value: new Date(result.DeliveryDate), dateInput: true });
+                            $("#ExpirationDate").kendoDateTimePicker({ value: new Date(result.ExpirationDate), dateInput: true });
+                            $("#NoOCExenta").val(result.NoOCExenta);
+                            $("#NoConstanciadeRegistro").val(result.NoConstanciadeRegistro);
+                            $("#NoSAG").val(result.NoSAG);
+                            $("#Direccion").val(result.Direccion);
 
-                        debugger
-                        var grid = $("#gridInvoiceDetail").data("kendoGrid");
-                        var datasource = grid.dataSource;
-                        var raw = datasource._data;
-                        for (i = datasource._data.length - 1; i >= 0; i--) {
+
+                            var grid = $("#gridInvoiceDetail").data("kendoGrid");
+                            var datasource = grid.dataSource;
+                            var raw = datasource._data;
+                            for (i = datasource._data.length - 1; i >= 0; i--) {
                                 item = raw[i];
                                 datasource.remove(item);
                             }
 
-                        for (i = 0; i < result.InvoiceLine.length; i++) {
-                            var midataObject = {
-                                CreditNoteLineId: 0, CreditNoteId: 0, AccountId: result.InvoiceLine[i].AccountId, AccountName: result.InvoiceLine[i].AccountName
-                                , SubProductId: result.InvoiceLine[i].SubProductId, SubProductName: result.InvoiceLine[i].SubProductName
-                                , Description: result.InvoiceLine[i].Description, UnitOfMeasureId: result.InvoiceLine[i].UnitOfMeasureId
-                                , Quantity: result.InvoiceLine[i].Quantity, Price: result.InvoiceLine[i].Price
-                                , Amount: result.InvoiceLine[i].Amount, DiscountPercentage: result.InvoiceLine[i].DiscountPercentage
-                                , DiscountAmount: result.InvoiceLine[i].DiscountAmount, SubTotal: result.InvoiceLine[i].SubTotal
-                                , TaxId: result.InvoiceLine[i].TaxId, TaxCode: result.InvoiceLine[i].TaxCode
-                                , TaxPercentage: result.InvoiceLine[i].TaxPercentage
-                                , TaxAmount: result.InvoiceLine[i].TaxAmount, Total: result.InvoiceLine[i].Total
-                            };
+                            for (i = 0; i < result.InvoiceLine.length; i++) {
+                                var midataObject = {
+                                    CreditNoteLineId: 0, CreditNoteId: 0, AccountId: result.InvoiceLine[i].AccountId, AccountName: result.InvoiceLine[i].AccountName
+                                    , SubProductId: result.InvoiceLine[i].SubProductId, SubProductName: result.InvoiceLine[i].SubProductName
+                                    , Description: result.InvoiceLine[i].Description
+                                    , Quantity: result.InvoiceLine[i].Quantity, Price: result.InvoiceLine[i].Price
+                                    , Amount: result.InvoiceLine[i].Amount, DiscountPercentage: result.InvoiceLine[i].DiscountPercentage
+                                    , DiscountAmount: result.InvoiceLine[i].DiscountAmount, SubTotal: result.InvoiceLine[i].SubTotal
+                                    , TaxId: result.InvoiceLine[i].TaxId, TaxCode: result.InvoiceLine[i].TaxCode
+                                    , TaxPercentage: result.InvoiceLine[i].TaxPercentage
+                                    , TaxAmount: result.InvoiceLine[i].TaxAmount, Total: result.InvoiceLine[i].Total
+                                };
 
-                            document.getElementById('InvoiceDetail').style.display = 'inline';
-                            datasource.insert(midataObject);
+                                document.getElementById('InvoiceDetail').style.display = 'inline';
+                                datasource.insert(midataObject);
+                            }
+
                         }
+                       
 
 
                     },
@@ -855,6 +990,99 @@
                     }
                 });
 
-    }
+                              
+            }
+        else {
+            if (FactInterna == '0' || FactInterna == '') {
+                    alert('Ingrese un Id de Factura.')
+                    return
+                }
+            var dataObject = {
+                ProformaId: FactInterna,
+                    editar: 0
+                };
+
+
+                $.ajax({
+                    url: '@Url.Action("GetProformaInvoiceById", "ProformaInvoice")',
+                    method: 'POST',
+                    datatype: "json",
+                    contentType: 'application/json',
+                    async: false,
+                    data: JSON.stringify(dataObject),
+                    success: function (result) {
+                        if (result.ProformaId == 0) {
+                            alert("El Id de Factura que ingreso no existe.")
+                        }
+                        else {
+                            //$("#CustomerId").data("kendoDropDownList").select(2);
+                            $("#CustomerId").data("kendoDropDownList").value(result.CustomerId);
+                            $("#CreditNoteName").val(result.CustomerName);
+                            $("#Correo").val(result.Correo);
+                            $("#RTN").val(result.RTN);
+                            $("#Tefono").val(result.Tefono);
+                            $("#CustomerRefNumber").val(result.CustomerRefNumber);
+                            $("#BranchId").data("kendoDropDownList").value(result.BranchId);
+                            $("#IdPuntoEmision").data("kendoDropDownList").value(result.IdPuntoEmision);
+                            $("#CurrencyId").data("kendoDropDownList").value(result.CurrencyId);
+                            $("#SalesTypeId").data("kendoDropDownList").value(result.SalesTypeId);
+                            $("#ProductId").data("kendoDropDownList").value(result.ProductId);
+                            $("#OrderDate").kendoDateTimePicker({ value: new Date(result.OrderDate), dateInput: true });
+                            $("#DeliveryDate").kendoDateTimePicker({ value: new Date(result.DeliveryDate), dateInput: true });
+                            $("#ExpirationDate").kendoDateTimePicker({ value: new Date(result.ExpirationDate), dateInput: true });
+                            $("#NoOCExenta").val(result.NoOCExenta);
+                            $("#NoConstanciadeRegistro").val(result.NoConstanciadeRegistro);
+                            $("#NoSAG").val(result.NoSAG);
+                            $("#Direccion").val(result.Direccion);
+
+
+                            var grid = $("#gridInvoiceDetail").data("kendoGrid");
+                            var datasource = grid.dataSource;
+                            var raw = datasource._data;
+                            for (i = datasource._data.length - 1; i >= 0; i--) {
+                                item = raw[i];
+                                datasource.remove(item);
+                            }
+
+                            for (i = 0; i < result.ProformaInvoiceLine.length; i++) {
+                                var midataObject = {
+                                    CreditNoteLineId: 0, CreditNoteId: 0
+                                    //,AccountId: result.ProformaInvoiceLine[i].AccountId, AccountName: result.ProformaInvoiceLine[i].AccountName
+                                    , SubProductId: result.ProformaInvoiceLine[i].SubProductId, SubProductName: result.ProformaInvoiceLine[i].SubProductName
+                                    , Description: result.ProformaInvoiceLine[i].Description
+                                    , Quantity: result.ProformaInvoiceLine[i].Quantity, Price: result.ProformaInvoiceLine[i].Price
+                                    , Amount: result.ProformaInvoiceLine[i].Amount, DiscountPercentage: result.ProformaInvoiceLine[i].DiscountPercentage
+                                    , DiscountAmount: result.ProformaInvoiceLine[i].DiscountAmount, SubTotal: result.ProformaInvoiceLine[i].SubTotal
+                                    , TaxId: result.ProformaInvoiceLine[i].TaxId, TaxCode: result.ProformaInvoiceLine[i].TaxCode
+                                    , TaxPercentage: result.ProformaInvoiceLine[i].TaxPercentage
+                                    , TaxAmount: result.ProformaInvoiceLine[i].TaxAmount, Total: result.ProformaInvoiceLine[i].Total
+                                };
+
+                                document.getElementById('InvoiceDetail').style.display = 'inline';
+                                datasource.insert(midataObject);
+                            }
+
+                        }
+                       
+
+
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            alert(textStatus + ": " + XMLHttpRequest.responseText);
+                    }
+                });
+
+
+            }
+
+
+
+            
+                
+
+
+        }
+       
 
 </script>
+

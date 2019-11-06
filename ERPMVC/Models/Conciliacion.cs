@@ -49,5 +49,7 @@ namespace ERPMVC.Models
         [Display(Name = "UsuarioModificacion")]
         public string UsuarioModificacion { get; set; }
 
+        public List<ConciliacionLinea> ConciliacionLinea { get; set; }
+
     }
 }

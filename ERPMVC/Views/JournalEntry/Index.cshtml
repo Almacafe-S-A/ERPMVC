@@ -56,8 +56,9 @@
                     $("#NumJournalEntry").html(result);
                     //$("#btnCAI").hide();
                     $('#ModalJournalEntry').modal('show');
-                    document.getElementById("btnJournalEntry").disabled = false;
+                   // document.getElementById("btnJournalEntry").disabled = false;
                     $("#TypeOfAdjustmentId").data('kendoDropDownList').value(65);
+                    $("#EstadoId").data('kendoDropDownList').value(5);
                     //document.getElementById("btnJournalEntry").disabled = true;                  
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -79,10 +80,11 @@
 
     function EditJournalEntry(e) {
         e.preventDefault();
+        clearsession();
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
             var dataObject = {
                 JournalEntryId: dataItem.JournalEntryId,
-                editar: 1,
+                editar: 0,
             };
             $.ajax({
                 url: '@Url.Action("pvwAddJournalEntry", "JournalEntry")',
@@ -96,8 +98,8 @@
                     $("#NumJournalEntry").html(result);
                     //$("#btnCAI").hide();
                     $('#ModalJournalEntry').modal('show');
-                    document.getElementById("btnJournalEntry").disabled = true;
-                    document.getElementById("btnAgregarLinea").disabled = true;
+                   // document.getElementById("btnJournalEntry").disabled = true;
+                    //document.getElementById("btnAgregarLinea").disabled = true;
                     $("#IdPartyType").data("kendoDropDownList").value(dataItem.PartyTypeId);
                     if (dataItem.PartyTypeId == 1) {
                         $("#customer").show();
@@ -132,6 +134,103 @@
       
     }
     
+    function AprobarAsiento(e) {
+        var notification = $("#notification").data("kendoNotification");
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (dataItem.IdEstado != 6) {
+        if (confirm('Esta seguro de aprobar este asiento contable?')) {
+            e.preventDefault();       
+            var dataObject = {
+                JournalEntryId: dataItem.JournalEntryId,
+                editar: 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("Aprobar","JournalEntry")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: '<br/><br/>El asiento contable se a generado correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 7000,
+                        stack: 6
+                    });
+                    RefrescarGrid();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+            }
+        }
+        else {
+            notification.show({
+                title: "Validación",
+                message: "<br/><br/>El asiento contable no ha sido aprobado"
+            }, "error");
+        }
+    }
+
+
+    function RechazarAsiento(e) {
+        var notification = $("#notification").data("kendoNotification");
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (dataItem.IdEstado != 7) {
+        if (confirm('Esta seguro de rechazado este asiento contable?')) {
+            e.preventDefault();       
+            var dataObject = {
+                JournalEntryId: dataItem.JournalEntryId,
+                editar: 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("Rechazar","JournalEntry")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: '<br/><br/>El asiento contable se a rechazado correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 7000,
+                        stack: 6
+                    });
+                    RefrescarGrid();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+            }
+        }
+        else {
+            notification.show({
+                title: "Validación",
+                message: "<br/><br/>El asiento contable no ha sido rechazado"
+            }, "error");
+        }
+    }
+
 
     function DetallesJournalEntry(e) {
         e.preventDefault();
@@ -140,119 +239,177 @@
         //update => update.Action("Update", "Purch", new { TypeAccountId = "{0}" }).Type(HttpVerbs.Put)
     }
 
+
+    function dataBound(e) {
+        $.each(this.dataSource.data(), function () {
+            if (Number(this.EstadoId) != 5 ) {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Rechazar').hide();
+            }
+        })
+    }
+
+    function Imprimir(e, id) {
+       // debugger;
+        var dataItem;
+        if (e != null) {
+            e.preventDefault();
+            dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        }
+        else {
+            dataItem = { JournalEntryId: $("#JournalEntryId").val() };
+        }
+        var url = '@Url.Action("SFAsientoContable", "JournalEntry")/' + dataItem.JournalEntryId;
+           var win = window.open(url, '_blank');
+           win.focus();
+    }
 </script>
 
 <h3 class="text-themecolor">Asiento Contable</h3>
-@(Html.Kendo().Grid<ERPMVC.Models.JournalEntry>
-        ()
-        .Name("gridNumeracionJournalEntry")
-        .Columns(columns =>
+<div id="example">
+    @{
+        bool Gerente = false;
+        if (await HasPolicyAsync(Politicas.GG))
         {
-            columns.Command(command =>
-            {
+            Gerente = true;
+        }
+
+    }
+    @(Html.Kendo().Grid<ERPMVC.Models.JournalEntry>
+                                        ()
+                                        .Name("gridNumeracionJournalEntry")
+                                        .Columns(columns =>
+                                        {
+                                            columns.Command(command =>
+                                            {
+                                                //.Custom("Ver detalles").Text(" ").IconClass("far fa-list-alt").Click("DetallesJournalEntry");
+                                                //command.Custom("Ver detalles").Text(" ").IconClass("fa fa-edit").Click("EditJournalEntry");
+                                                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditJournalEntry");
+                                                command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("Imprimir");
+                                                if (Gerente)
+                                                {
+                                                    command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("AprobarAsiento");
+                                                    command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("RechazarAsiento");
+
+                                                }
+
+                                                //  command.Destroy();
+                                            }).Width(200);
+
+                                            columns.Bound(p => p.JournalEntryId).Title("Id Asiento Contable").Width(150);
+                                            columns.Bound(p => p.DatePosted).Title("Fecha de  Transacción").Format("{0:dd/MM/yyyy}").Width(250);
+                                            columns.Bound(p => p.PartyId).Title("Beneficiario").Width(150);
+                                            columns.Bound(p => p.TotalDebit).Width(200).Format("{0:N2}");
+                                            columns.Bound(p => p.TotalCredit).Width(200).Format("{0:N2}");
+                                            columns.Bound(p => p.Memo).Title("Sinopsis").Width(350);
+                                            columns.Bound(p => p.EstadoName).Title("Estado").Width(170);
+                                            columns.Bound(p => p.EstadoId).Hidden().Title("Estado").Width(170);
+                                            columns.Bound(p => p.PartyTypeId).Hidden().Title("").Width(170);
+                                        })
+                                        .Filterable(f => f.Operators(o => o.ForString(s => s
+                                        .Clear()
+                                        .Contains("Contiene")
+                                        .DoesNotContain("No contiene")
+                                        .EndsWith("Termina con")
+                                        .IsEqualTo("Es igual a")
+                                        .IsNotEqualTo("No es igual a")
+                                        .IsNull("Es nulo")
+                                        .StartsWith("Inicia con")
 
 
-                //.Custom("Ver detalles").Text(" ").IconClass("far fa-list-alt").Click("DetallesJournalEntry");
-                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditJournalEntry");
+                                        )
+                                        .ForNumber(n => n
+                                        .Clear()
+                                        .IsEqualTo("Es igual a")
+                                        .IsGreaterThan("Es mayor que")
+                                        .IsLessThan("Es menor que")
+                                        .IsNull("Es nulo")
+                                        .IsLessThanOrEqualTo("Es menor o igual que")
+                                        .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                        )
+                                        .ForDate(d => d
+                                        .Clear()
+                                        .IsEqualTo("Es igual que")
+                                        .IsGreaterThan("Es mayor que")
+                                        .IsLessThan("Es menor que")
+                                        .IsLessThanOrEqualTo("Es menor o igual que")
+                                        .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                        .IsNotEqualTo("No es igual que")
+                                        )
+                                        ))
+                                        .ToolBar(tools =>
+                                        {
+                                            // tools.Create();
+                                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddJournalEntry()" });
+                                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
 
-                //  command.Destroy();
-            }).Width(100);
+                                        })
+                                        .Editable(e => e.Mode(GridEditMode.PopUp))
+                                        .Sortable()
+                                        .AutoBind(true)
+                                        .Pageable()
+                                        .Filterable()
+                                        .Scrollable()
+                                        .Pdf(pdf => pdf.FileName("JournalEntryReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                        .Excel(excel => excel.FileName("JournalEntryReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                        .Events(e => e.DataBound("dataBound"))
+                                        .DataSource(dataSource =>
+                                        dataSource
+                                        .WebApi()
 
-            columns.Bound(p => p.JournalEntryId).Title("Id").Width(150);
-            //columns.Bound(p => p.IdPaymentCode).Title("Código").Width(150);
-            columns.Bound(p => p.VoucherType).Title("Id Tipo de Pago").Width(150);
-            columns.Bound(p => p.TypeJournalName).Title("Tipo de Diario").Width(200);
-            columns.Bound(p => p.CreatedDate).Title("Fecha de Creación").Format("{0:dd/MM/yyyy}").Width(250);
-            //columns.Bound(p => p.VoucherType).Title("Tipo de Diario").Width(250);
-            columns.Bound(p => p.PartyId).Title("Id de Partida").Width(250);
-            columns.Bound(p => p.PartyTypeId).Hidden().Title("").Width(250);
+                                        .ServerOperation(true)
+                                        .Model(model =>
+                                        {
+                                            model.Id(p => p.JournalEntryId);
+                                            model.Field(p => p.DatePosted).Editable(true);
+                                            model.Field(p => p.PartyId).Editable(true);
+                                            model.Field(p => p.TotalDebit).Editable(true);
+                                            model.Field(p => p.TotalCredit).Editable(true);
+                                            model.Field(p => p.Memo).Editable(true);
+                                            model.Field(p => p.EstadoName).Editable(true);
+                                            model.Field(p => p.EstadoId).Editable(true);
 
-            //columns.Bound(p => p.Posted).Title("Posteado").Width(200);
-        })
-        .Filterable(f => f.Operators(o => o.ForString(s => s
-        .Clear()
-        .Contains("Contiene")
-        .DoesNotContain("No contiene")
-        .EndsWith("Termina con")
-        .IsEqualTo("Es igual a")
-        .IsNotEqualTo("No es igual a")
-        .IsNull("Es nulo")
-        .StartsWith("Inicia con")
+                                        })
+                                        .Events(events => events.Error("error_handler"))
+                                        .Read(read => read.Action("GetJournalEntryAsientos", "JournalEntry"))
+                                        .Create(create => create.Action("Insert", "JournalEntry"))
+                                         .Update(update => update.Action("Update", "JournalEntry", new { id = "{0}" }))
+                                        //.Update(update => update.Action("Update", "JournalEntry", new { JournalEntryId = "{0}" }).Type(HttpVerbs.Put))
+                                        //.Destroy(destroy => destroy.Action("Delete", "TypeAccount", new { Num = "{1}" }).Type(HttpVerbs.Delete))
 
+                                        )
+                                        .Events(e =>
+                                        {
+                                            e.Save("onsave");
 
-        )
-        .ForNumber(n => n
-        .Clear()
-        .IsEqualTo("Es igual a")
-        .IsGreaterThan("Es mayor que")
-        .IsLessThan("Es menor que")
-        .IsNull("Es nulo")
-        .IsLessThanOrEqualTo("Es menor o igual que")
-        .IsGreaterThanOrEqualTo("Es mayor o igual que")
-        )
-        .ForDate(d => d
-        .Clear()
-        .IsEqualTo("Es igual que")
-        .IsGreaterThan("Es mayor que")
-        .IsLessThan("Es menor que")
-        .IsLessThanOrEqualTo("Es menor o igual que")
-        .IsGreaterThanOrEqualTo("Es mayor o igual que")
-        .IsNotEqualTo("No es igual que")
-        )
-        ))
-        .ToolBar(tools =>
-        {
-            // tools.Create();
-            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddJournalEntry()" });
-            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-
-        })
-        .Editable(e => e.Mode(GridEditMode.PopUp))
-        .Sortable()
-        .Pageable()
-        .Filterable()
-        .Scrollable()
-        .Pdf(pdf => pdf.FileName("JournalEntryReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-        .ProxyURL(Url.Action("Export", "Home")).AllPages())
-        .Excel(excel => excel.FileName("JournalEntryReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-        .DataSource(dataSource =>
-        dataSource
-        .WebApi()
-
-        .ServerOperation(true)
-        .Model(model =>
-        {
-            model.Id(p => p.JournalEntryId);           
-            //model.Field(p => p.IdPaymentCode).Editable(true);
-            //model.Field(p => p.IdTypeofPayment).Editable(true);
-            model.Field(p => p.VoucherType).Editable(true);
-            model.Field(p => p.TypeJournalName).Editable(true);
-            model.Field(p => p.PartyId).Editable(true);
-            //model.Field(p => p.Posted).Editable(true);
-
-        })
-        .Events(events => events.Error("error_handler"))
-        .Read(read => read.Action("GetJournalEntry", "JournalEntry"))
-        .Create(create => create.Action("Insert", "JournalEntry"))
-        .Update(update => update.Action("Update", "JournalEntry", new { JournalEntryId = "{0}" }).Type(HttpVerbs.Put))
-        //.Destroy(destroy => destroy.Action("Delete", "TypeAccount", new { Num = "{1}" }).Type(HttpVerbs.Delete))
-
-        )
-        .Events(e =>
-        {
-            e.Save("onsave");
-
-        })
-)
-
-
-<div id="NumJournalEntry">
-    @await Html.PartialAsync("pvwAddJournalEntry", new ERPMVC.DTO.JournalEntryDTO { JournalEntryId = 0 , Date= DateTime.Now, DatePosted=DateTime.Now})
+                                        })
+    )
 </div>
+
+    <div id="NumJournalEntry">
+        @await Html.PartialAsync("pvwAddJournalEntry", new ERPMVC.DTO.JournalEntryDTO { JournalEntryId = 0, Date = DateTime.Now, DatePosted = DateTime.Now })
+    </div>
+    <script>
+
+        function setToolbarTooltip(btn_cl, btn_tooltip) {
+            $("#gridNumeracionJournalEntry").kendoTooltip({
+                filter: btn_cl,
+                content: btn_tooltip
+            });
+        }
+
+        function setRowButtonTooltip(btn_cl, btn_tooltip) {
+            $("#gridNumeracionJournalEntry").kendoTooltip({
+                filter: btn_cl,
+                content: btn_tooltip
+            });
+        }
+        setRowButtonTooltip(".k-grid-Aprobar", "Aprobar Asiento");
+        setRowButtonTooltip(".k-grid-Rechazar", "Rechazar Asiento");
+    </script>
