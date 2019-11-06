@@ -22,7 +22,6 @@ namespace ERPMVC.Models
         [Display(Name = "Fecha del activo")]
         public DateTime AssetDate { get; set; }
 
-
         [Display(Name = "Grupo del activo fijo")]
         public Int64 FixedAssetGroupId { get; set; }
 
@@ -35,19 +34,17 @@ namespace ERPMVC.Models
         [Display(Name = "Sucursal")]
         public string BranchName { get; set; }
 
-
         [Display(Name = "Estado")]
         public Int64 IdEstado { get; set; }
 
         [Display(Name = "Estado")]
         public string Estado { get; set; }
 
+        [Display(Name = "Bodega")]
+        public Int64 WarehouseId { get; set; }
 
         [Display(Name = "Bodega")]
-        public Int64 WareHouseId { get; set; }
-
-        [Display(Name = "Bodega")]
-        public string WareHouseName { get; set; }
+        public string WarehouseName { get; set; }
 
         [Display(Name = "Centro de costos")]
         public Int64 CenterCostId { get; set; }
@@ -55,10 +52,8 @@ namespace ERPMVC.Models
         [Display(Name = "Centro de costos")]
         public string CenterCostName { get; set; }
 
-
         [Display(Name = "Vida útil")]
         public double FixedActiveLife { get; set; }
-
 
         [Display(Name = "Monto")]
         public double Amount { get; set; }
@@ -74,7 +69,6 @@ namespace ERPMVC.Models
 
         [Display(Name = "Total Depreciado")]
         public double TotalDepreciated { get; set; }
-
 
         [Display(Name = "Fecha de creación")]
         public DateTime FechaCreacion { get; set; }
