@@ -90,7 +90,14 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    _DebitNote.NumeroDEIString = $"{_DebitNote.Sucursal}-{_DebitNote.Caja}-05-{_DebitNote.NúmeroDEI.ToString().PadLeft(8, '0')} ";
+                    Branch _branch = new Branch();
+                    string valorrespuestaBranch = "";
+                    var resultBranch = await _client.GetAsync(baseadress + "api/Branch/GetBranchById/" + _DebitNote.BranchId);
+                    valorrespuestaBranch = await (resultBranch.Content.ReadAsStringAsync());
+                    _branch = JsonConvert.DeserializeObject<Branch>(valorrespuestaBranch);
+
+                    _DebitNote.NumeroDEIString = $"{_branch.BranchCode}-{_DebitNote.Caja}-05-{_DebitNote.NúmeroDEI.ToString().PadLeft(8, '0')} ";
+                    //var resultado = new BranchController().FileUploadMsgView(_DebitNote.BranchId);
                 }
             }
             catch (Exception ex)

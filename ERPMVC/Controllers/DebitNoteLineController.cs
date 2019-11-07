@@ -337,22 +337,39 @@ namespace ERPMVC.Controllers
             //return new ObjectResult(new DataSourceResult { Data = new[] { _DebitNoteLine }, Total = 1 });
         }
 
-        [HttpDelete("DebitNoteLineId")]
+        //[HttpDelete("DebitNoteLineId")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<DebitNoteLine>> Delete([FromBody]DebitNoteLine _DebitNoteLine)
         {
-            try
-            {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+            List<DebitNoteLine> _debitnoteLIST = new List<DebitNoteLine>();
+            try {
+                _debitnoteLIST=JsonConvert.DeserializeObject<List<DebitNoteLine>>(HttpContext.Session.GetString("listadoproductosdebitnote"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/DebitNoteLine/Delete", _DebitNoteLine);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
+                if (_debitnoteLIST != null)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _DebitNoteLine = JsonConvert.DeserializeObject<DebitNoteLine>(valorrespuesta);
+                    _debitnoteLIST = _debitnoteLIST
+                          .Where(q => q.DebitNoteLineId != _DebitNoteLine.DebitNoteLineId)
+                           .Where(q => q.Quantity != _DebitNoteLine.Quantity)
+                           .Where(q => q.Amount != _DebitNoteLine.Amount)
+                           .Where(q => q.Total != _DebitNoteLine.Total)
+                           .Where(q => q.Price != _DebitNoteLine.Price)
+                            .Where(q => q.AccountName != _DebitNoteLine.AccountName)
+                        .Where(q => q.Description != _DebitNoteLine.Description)
+                          .ToList();
+
+                    HttpContext.Session.SetString("listadoproductosdebitnote", JsonConvert.SerializeObject(_debitnoteLIST));
                 }
+                //string baseadress = config.Value.urlbase;
+                //    HttpClient _client = new HttpClient();
+                //    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                //    var result = await _client.PostAsJsonAsync(baseadress + "api/DebitNoteLine/Delete", _DebitNoteLine);
+                //    string valorrespuesta = "";
+                //    if (result.IsSuccessStatusCode)
+                //    {
+                //        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                //        _DebitNoteLine = JsonConvert.DeserializeObject<DebitNoteLine>(valorrespuesta);
+                //    }
 
             }
             catch (Exception ex)
@@ -362,8 +379,8 @@ namespace ERPMVC.Controllers
             }
 
 
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _DebitNoteLine }, Total = 1 });
+            return await Task.Run(() => Ok(_DebitNoteLine));
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _DebitNoteLine }, Total = 1 });
         }
 
 

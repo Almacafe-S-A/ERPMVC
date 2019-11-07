@@ -14,6 +14,10 @@ namespace ERPMVC.Models
         public string InvoiceName { get; set; }
         [Display(Name = "Envio")]
         public int ShipmentId { get; set; }
+
+        [Display(Name = "Cotizacion")]
+        public int OrderId { get; set; }
+
         [Display(Name = "Fecha de Factura")]
         public DateTime InvoiceDate { get; set; }
         [Display(Name = "Fecha de vencimiento")]
@@ -26,7 +30,10 @@ namespace ERPMVC.Models
         public int InvoiceTypeId { get; set; }
 
         [Display(Name = "Cotización Asociada")]
-        public Int64 OrderId { get; set; }
+        public Int64 SalesOrderId { get; set; }
+
+        [Display(Name = "Proforma Asociada")]
+        public Int64 ProformaInvoiceId { get; set; }        
 
         [Display(Name = "Punto de emisión")]
         public Int64 IdPuntoEmision { get; set; }
