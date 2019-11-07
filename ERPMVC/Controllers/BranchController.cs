@@ -126,7 +126,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _customers = JsonConvert.DeserializeObject<List<Branch>>(valorrespuesta);
-
+                    _customers = _customers.OrderByDescending(q => q.BranchId).ToList();
                 }
             }
             catch (Exception ex)
