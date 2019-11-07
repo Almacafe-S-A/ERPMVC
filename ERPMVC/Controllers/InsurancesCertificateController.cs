@@ -228,23 +228,19 @@ namespace ERPMVC.Controllers
 
         public async Task<ActionResult<InsurancesCertificate>> SaveInsurancesCertificate([FromBody]InsurancesCertificateDTO _InsurancesCertificateP)
         {
-           InsurancesCertificate _InsurancesCertificate = _InsurancesCertificateP;
+            InsurancesCertificate _InsurancesCertificate = _InsurancesCertificateP;
             try
             {
-                InsurancesCertificate _listInsurancesCertificate = new InsurancesCertificate();
+                //InsurancesCertificate _listInsurancesCertificate = new InsurancesCertificate();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/InsurancesCertificate/GetInsurancesCertificateById/" + _InsurancesCertificateP.InsurancesCertificateId);
-
                 string valorrespuesta = "";
                 _InsurancesCertificate.ModifiedDate = DateTime.Now;
                 _InsurancesCertificate.ModifiedUser = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
-
-
-
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _InsurancesCertificate = JsonConvert.DeserializeObject<InsurancesCertificate>(valorrespuesta);
                 }
@@ -289,9 +285,16 @@ namespace ERPMVC.Controllers
                          });*/
                     }
 
-                    _InsurancesCertificateP.CreatedDate = DateTime.Now;
-                    _InsurancesCertificateP.CreatedUser = HttpContext.Session.GetString("user");
+                    _InsurancesCertificate.CreatedDate = DateTime.Now;
+                    _InsurancesCertificate.CreatedUser = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_InsurancesCertificateP);
+                    var value = (insertresult.Result as ObjectResult).Value;
+                    _InsurancesCertificate = ((InsurancesCertificate)(value));
+                    if (_InsurancesCertificate.InsurancesCertificateId <= 0)
+
+                    {
+                        return BadRequest("No se guardo el formulario!");
+                    }
                 }
                 else
                 {
@@ -319,7 +322,7 @@ namespace ERPMVC.Controllers
                             return await Task.Run(() => BadRequest($"La poliza ya esta ingresado..."));
                         }
 
-                        
+
                         /*    return this.Json(new DataSourceResult
                             {
                                 Errors = $"Ocurrio un error:{error} El codigo de cuenta ya esta ingresado."
@@ -339,8 +342,9 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _InsurancesCertificateP }, Total = 1 });
-
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _InsurancesCertificateP }, Total = 1 });
+            return Json(_InsurancesCertificate);
+ 
         }
 
 
