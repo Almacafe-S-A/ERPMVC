@@ -326,6 +326,11 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Branch = JsonConvert.DeserializeObject<Branch>(valorrespuesta);
                 }
+                else
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    throw new Exception($"Ocurrio un error:{valorrespuesta}");
+                }
 
             }
             catch (Exception ex)
@@ -354,6 +359,11 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Branch = JsonConvert.DeserializeObject<Branch>(valorrespuesta);
+                }
+                else
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    throw new Exception($"Ocurrio un error:{valorrespuesta}");
                 }
 
             }
