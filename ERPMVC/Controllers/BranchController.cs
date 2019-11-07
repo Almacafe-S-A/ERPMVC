@@ -34,12 +34,47 @@ namespace ERPMVC.Controllers
 
 
         // GET: Branch
-        public ActionResult Brach()
+        public async Task<ActionResult> Brach()
         {
-            return View();
+            return await Task.Run(() => View());
         }
 
-        [HttpGet("[action]")]
+        public async Task<ActionResult> BranchCustomer()
+        {
+            return await Task.Run(()=> PartialView());
+        }
+
+        [HttpGet("[controller]/[action]")]
+        public async Task<DataSourceResult> GetBranchByCustomer([DataSourceRequest]DataSourceRequest request, Int64 CustomerId)
+        {
+            List<Branch> _Branch = new List<Branch>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Branch/GetBranchByCustomer/" + CustomerId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Branch = JsonConvert.DeserializeObject<List<Branch>>(valorrespuesta);
+                }
+                //else if(result.StatusCode== 401)
+                //{
+                //}
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+            }
+
+
+            return _Branch.ToDataSourceResult(request);
+        }
+
+        [HttpGet("[controller]/[action]")]
         public async Task<JsonResult> GetBranch([DataSourceRequest]DataSourceRequest request)
         {
             List<Branch> _customers = new List<Branch>();
@@ -116,11 +151,11 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-               
+                var result = await _client.GetAsync(baseadress + "api/Branch/GetBranchByName/" + _Branch.BranchName);
+                string valorrespuesta = "";
                 if (_Branch.BranchId == 0)
                 {
-                    var result = await _client.GetAsync(baseadress + "api/Branch/GetBranchByName/" + _Branch.BranchName);
-                    string valorrespuesta = "";
+                    
                     _Branch.FechaModificacion = DateTime.Now;
                     _Branch.UsuarioModificacion = HttpContext.Session.GetString("user");
                     if (result.IsSuccessStatusCode)
@@ -137,7 +172,30 @@ namespace ERPMVC.Controllers
                         }
                     }                 
                 }
-                  
+
+
+                 result = await _client.GetAsync(baseadress + "api/Branch/GetBranchById/" + _Branch.BranchId);
+                 valorrespuesta = "";
+
+                Branch _bc = new Branch();
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _bc = JsonConvert.DeserializeObject<Branch>(valorrespuesta);
+                    if (_bc == null)
+                    {
+                        _bc = new Branch { CustomerId = 0 };
+                    }
+                    if(_bc.CustomerId==0 || _bc.CustomerId ==null)
+                    {
+
+                    }
+                    else if(_bc.CustomerId!=_BranchP.CustomerId)
+                    {
+                        return await Task.Run(() => BadRequest($"Ya tiene asignado un cliente dicha sucursal, no se puede reasignar."));
+                    }
+                }
+
 
                 if (_BranchP.BranchId == 0)
                 {
@@ -156,8 +214,8 @@ namespace ERPMVC.Controllers
                 else
                 {
 
-                    var result = await _client.GetAsync(baseadress + "api/Branch/GetBranchById/" + _Branch.BranchId);
-                    string valorrespuesta = "";
+                    result = await _client.GetAsync(baseadress + "api/Branch/GetBranchById/" + _Branch.BranchId);
+                    valorrespuesta = "";
 
                     if (result.IsSuccessStatusCode)
                     {
@@ -185,7 +243,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> pvwAddBranch([FromBody]BranchDTO _sarpara)
         {
             BranchDTO _Branch = new BranchDTO();
@@ -204,6 +262,38 @@ namespace ERPMVC.Controllers
                 if (_Branch == null)
                 {
                     _Branch = new BranchDTO();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return PartialView(_Branch);
+        }
+
+
+        
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> pvwAddBranchCustomer([FromBody]BranchDTO _branchpara)
+        {
+            BranchDTO _Branch = new BranchDTO();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Branch/GetBranchById/" + _branchpara.BranchId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Branch = JsonConvert.DeserializeObject<BranchDTO>(valorrespuesta);
+                }
+
+                if (_Branch == null)
+                {
+                    _Branch = new BranchDTO { CustomerId = _branchpara.CustomerId };
                 }
             }
             catch (Exception ex)

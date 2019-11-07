@@ -29,6 +29,12 @@ namespace ERPMVC.Models
         [Display(Name = "Dirección")]
         public string Address { get; set; }
 
+        [Display(Name = "Cliente")]
+        public Int64? CustomerId { get; set; }
+
+        [Display(Name = "Cliente")]
+        public string CustomerName { get; set; }
+
         [Display(Name = "Ciudad")]
         public int CityId { get; set; }
 
