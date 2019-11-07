@@ -133,6 +133,9 @@ namespace ERPMVC.Controllers
                     }
                     else
                     {
+                        Convert.ToDecimal(_EmployeeSalaryP.QtySalary);
+                        
+                           
                         if (_EmployeeSalaryP.QtySalary > 0)
                         {
                             _EmployeeSalaryP.CreatedUser = HttpContext.Session.GetString("user");
