@@ -77,8 +77,8 @@ namespace ERPMVC.Controllers
             List<InsuranceEndorsementLine> __InvoiceLineList = new List<InsuranceEndorsementLine>();
             try
             {
-                if (HttpContext.Session.Get("listadoproductosVendorInvoice") == null
-                   || HttpContext.Session.GetString("listadoproductosVendorInvoice") == "")
+                if (HttpContext.Session.Get("listadoproductosInsuranceEndorsement") == null
+                   || HttpContext.Session.GetString("listadoproductosInsuranceEndorsement") == "")
                 {
                     if (_InvoiceLinep.InsuranceEndorsementId > 0)
                     {
