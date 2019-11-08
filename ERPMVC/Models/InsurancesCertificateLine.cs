@@ -47,9 +47,9 @@ namespace ERPMVC.Models
         [Display(Name = "Total Insurance en letras")]
         public string TotalLetras { get; set; }
 
-        [Display(Name = "Id de Sucursal")]
+        [Display(Name = "Sucursal")]
         public int BranchId { get; set; }
-        [Display(Name = "Id de Almacén")]
+        [Display(Name = "Almacén")]
         public int WarehouseId { get; set; }
 
         [Required]
