@@ -67,7 +67,7 @@ namespace ERPMVC.Controllers
                     _InsurancesCertificate = new InsurancesCertificateDTO();
                     _InsurancesCertificate.DateofInsurance = DateTime.Now;
                     _InsurancesCertificate.BeginDateofInsurance = DateTime.Now;
-                    _InsurancesCertificate.EndDateofInsurance = DateTime.Now;
+                    _InsurancesCertificate.EndDateofInsurance = DateTime.Now.AddMonths(1);
 
                 }
 
