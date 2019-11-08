@@ -6,11 +6,9 @@ using System.Threading.Tasks;
 
 namespace ERPMVC.DTO
 {
-    public class BranchDTO : Branch
+    public class SeveridadRiesgoDTO : SeveridadRiesgo
     {
-        public List<Branch> _Brach { get; set; }
-
-        public Int64 ServicioId { get; set; }
+        public List<SeveridadRiesgo> _SeveridadRiesgo { get; set; }
 
         public int editar { get; set; } = 1;
 

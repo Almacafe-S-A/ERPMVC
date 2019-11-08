@@ -75,22 +75,32 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet("[controller]/[action]")]
-        public async Task<JsonResult> GetBranch([DataSourceRequest]DataSourceRequest request)
+        public async Task<JsonResult> GetBranch([DataSourceRequest]DataSourceRequest request,BranchDTO _Branchp)
         {
-            List<Branch> _customers = new List<Branch>();
+            List<Branch> _branchs = new List<Branch>();
 
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Branch/GetBranch");
+                string apidir = "api/Branch/GetBranch";              
+                var result = await _client.GetAsync(baseadress + apidir);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _customers = JsonConvert.DeserializeObject<List<Branch>>(valorrespuesta);
+                    _branchs = JsonConvert.DeserializeObject<List<Branch>>(valorrespuesta);
+             
 
+                    if(_Branchp.ServicioId==2 && _Branchp.CustomerId>0)
+                    {
+                        _branchs = _branchs.Where(q => q.CustomerId == _Branchp.CustomerId).ToList();
+                    }
+                    else
+                    {
+                        _branchs = _branchs.Where(q => q.CustomerId == null).ToList();
+                    }
                 }
             }
             catch (Exception ex)
@@ -101,7 +111,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return Json(_customers.ToDataSourceResult(request));
+            return Json(_branchs.ToDataSourceResult(request));
 
         }
 
