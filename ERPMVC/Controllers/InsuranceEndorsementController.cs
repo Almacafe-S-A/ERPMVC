@@ -49,6 +49,7 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/InsuranceEndorsement/GetInsuranceEndorsementById/" + _InsuranceEndorsementp.InsuranceEndorsementId);
                 string valorrespuesta = "";
+                _InsuranceEndorsement.DateGenerated = DateTime.Now;
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
@@ -59,6 +60,7 @@ namespace ERPMVC.Controllers
                 if (_InsuranceEndorsement == null)
                 {
                     _InsuranceEndorsement = new InsuranceEndorsement ();
+                    _InsuranceEndorsement.DateGenerated = DateTime.Now;
                 }
                 else
                 {

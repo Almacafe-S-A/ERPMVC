@@ -9,11 +9,17 @@ namespace ERPMVC.Models
     public class GrupoConfiguracion
     {
         [Key]
-        public long IdConfiguracion { get; set; } 
-        public string Nombreconfiguracion { get; set; }      
-        public string Tipoconfiguracion { get; set; } 
-        public long? IdConfiguracionorigen { get; set; } 
-        public long? IdConfiguraciondestino { get; set; } 
+        [Display(Name = "Id Configuración")]
+        public long IdConfiguracion { get; set; }
+        [Display(Name = "Nombre Configuración")]
+        public string Nombreconfiguracion { get; set; }
+        [Display(Name = "Tipo Configuración")]
+        public string Tipoconfiguracion { get; set; }
+        [Display(Name = "Configuración Origen")]
+        public long? IdConfiguracionorigen { get; set; }
+        [Display(Name = "Configuración Destino")]
+        public long? IdConfiguraciondestino { get; set; }
+        [Display(Name = "Zona")]
         public long IdZona { get; set; }
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
