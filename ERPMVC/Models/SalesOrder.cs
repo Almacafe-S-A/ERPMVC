@@ -22,6 +22,12 @@ namespace ERPMVC.Models
         [Display(Name = "Nombre de contrato")]
         public string NameContract { get; set; }
 
+        [Display(Name = "Tipo de Facturación")]
+        public Int64 TypeInvoiceId { get; set; }
+
+        [Display(Name = "Tipo de Facturación")]
+        public string TypeInvoiceName { get; set; }
+
         [Display(Name = "RTN")]
         public string RTN { get; set; }
 
