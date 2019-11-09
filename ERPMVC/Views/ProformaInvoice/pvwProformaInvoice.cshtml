@@ -289,31 +289,30 @@
                                 <input type="hidden" id="singuardar" value="0" />
                                 <label for="cbxBuscar" class="control-label" style="width:100%">Asociar cotización con proforma</label>
                                 @(Html.Kendo().DropDownList()
-                                                                                    .Name("cbxBuscarCotizaciones")
-                                                                                    .Filter(Kendo.Mvc.UI.FilterType.Contains)
-                                                                                    .OptionLabel("Buscar Cotización")
+                                  .Name("cbxBuscarCotizaciones")
+                                  .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                                  .OptionLabel("Buscar Cotización")
+                                  .DataTextField("SalesOrderName")
+                                  .DataValueField("SalesOrderId")
+                                  .HtmlAttributes(new { style = "width:100%" })
+                                  .Height(290)
+                                  .Events(e =>
+                                  {
+                                     e.Change("changesetearvalues");
+                                     //e.Filtering("applyFilterCustomer");
+                                  })
+                                  .AutoBind(false)
 
-                                                                                    .DataTextField("SalesOrderName")
-                                                                                    .DataValueField("SalesOrderId")
-                                                                                    .HtmlAttributes(new { style = "width:100%" })
-                                                                                    .Height(290)
-                                                                                    .Events(e =>
-                                                                                    {
-                                                                                        e.Change("changesetearvalues");
-                                                                                                        //e.Filtering("applyFilterCustomer");
-                                                                                                    })
-                                                                                    .AutoBind(false)
+                                  .DataSource(source =>
+                                  {
+                                      source.Ajax()
+                                      .PageSize(80)
+                                       .Read(read => read.Action("Virtualization_ReadByCustomer", "SalesOrder")
+                                           .Data("ClienteId"));
 
-                                                                                    .DataSource(source =>
-                                                                                    {
-                                                                                        source.Ajax()
-                                                                                        .PageSize(80)
-                                                                                         .Read(read => read.Action("Virtualization_ReadByCustomer", "SalesOrder")
-                                                                                             .Data("ClienteId"));
-
-                                                                                        source.ServerFiltering(true);
-                                                                                    })
-                                                                                    .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapper"))
+                                      source.ServerFiltering(true);
+                                  })
+                                  .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapper"))
                                 )
 
 
@@ -498,11 +497,33 @@
                                                 }
                                             }
 
+                                    function SelectAllClick() {
+                                        var multiSelect = $("#cbxBuscarCertificadosDeposito").data("kendoMultiSelect");
+
+                                        //multiSelect.wrapper.find(".k-multiselect-wrap").removeClass("floatWrap").addClass("k-floatwrap");
+                                        //var all = $.map(multiSelect.dataSource.data(), function (dataItem) {
+                                        //    return dataItem.IdCD;
+                                        //});
+                                        //console.log(all);
+                                        //multiSelect.value(all);
+
+
+                                        var selectedValues = "";
+                                        var strComma = "";
+                                        for (var i = 0; i < multiSelect.dataSource.data().length; i++) {
+                                            var item = multiSelect.dataSource.data()[i];
+                                            console.log(item);
+                                            selectedValues += strComma + item.IdCD;
+                                            strComma = ",";
+                                        }
+                                        multiSelect.value(selectedValues.split(","));
+                                    }
 
                                 </script>
 
                                 <input type="hidden" id="IdentificadorCalculo" value="0" />
                                 <input type="hidden" id="CustomerIdhidden" value="0" />
+                                <button id="btnSeleccionarCertificadoDeposito" class="form-control" onclick="SelectAllClick();">Seleccionar todos</button>
                                 <label for="cbxBuscar" class="control-label" style="width:100%">Asociar certificado(s) de depósito con proforma</label>
                                 @(Html.Kendo().MultiSelect()
                                                          .Name("cbxBuscarCertificadosDeposito")
@@ -510,12 +531,13 @@
                                                          .Placeholder("Seleccionar Certificado(s)")
                                                          .DataTextField("CustomerName")
                                                          .DataValueField("IdCD")
+                                                         
                                                          .HtmlAttributes(new { style = "width:100%" })
                                                          .Height(290)
                                                          .Events(e =>
                                                          {
                                                                              //e.Change("changesetearvaluesCertificado");
-                                                                         })
+                                                         })
                                                          .AutoBind(false)
                                                          .DataSource(source =>
                                                          {
