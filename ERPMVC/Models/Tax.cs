@@ -18,10 +18,8 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Display(Name = "Id")]
         public Int64 TaxId { get; set; }
-        [Required]
         [Display(Name = "Tipo de Impuesto")]
         public string TaxCode { get; set; }
-        [Required]
         [Display(Name = "Descripción")]
         public string Description { get; set; }
         [Display(Name = "Estado")]

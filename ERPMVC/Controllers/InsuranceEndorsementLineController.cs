@@ -77,8 +77,8 @@ namespace ERPMVC.Controllers
             List<InsuranceEndorsementLine> __InvoiceLineList = new List<InsuranceEndorsementLine>();
             try
             {
-                if (HttpContext.Session.Get("listadoproductosVendorInvoice") == null
-                   || HttpContext.Session.GetString("listadoproductosVendorInvoice") == "")
+                if (HttpContext.Session.Get("listadoproductosInsuranceEndorsement") == null
+                   || HttpContext.Session.GetString("listadoproductosInsuranceEndorsement") == "")
                 {
                     if (_InvoiceLinep.InsuranceEndorsementId > 0)
                     {
@@ -108,7 +108,7 @@ namespace ERPMVC.Controllers
                     HttpClient _client = new HttpClient();
 
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/InsuranceEndorsementLine/GetInsuranceEndorsementLineByInvoiceId/" + _InvoiceLinep.InsuranceEndorsementId);
+                    var result = await _client.GetAsync(baseadress + "api/InsuranceEndorsementLine/GetInsuranceEndorsementLineByInsuranceEndorsementId/" + _InvoiceLinep.InsuranceEndorsementId);
                     string valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
@@ -164,7 +164,6 @@ namespace ERPMVC.Controllers
 
 
             return __InvoiceLineList.ToDataSourceResult(request);
-
 
         }
 

@@ -107,10 +107,10 @@ namespace ERPMVC.Models
         /// <summary>
         /// Totales de Detalle de Linea
         /// </summary>
-        [Display(Name = "Suma Cantidad")]
+        [Display(Name = "Total Cantidad")]
         public double Quantitysum { get; set; }
 
-        [Display(Name = "Total")]
+        [Display(Name = "Total Valor")]
         public double Total { get; set; }
 
         /// <summary>

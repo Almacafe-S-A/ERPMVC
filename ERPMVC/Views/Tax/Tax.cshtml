@@ -18,24 +18,53 @@
     }
 
      function AddTax() {
-         var validator = $("#frmTax").data("kendoValidator");
-         validator.hideMessages();
-         $('#ModalTax').find(':input').not(':submit').val('');
-         $('#ModalTax').modal('show');
-         $("#TaxId").val('0');
-    }
+         
+         var dataObject = {
+                 TaxId: 0,
+                 editar: 1
+            };
 
+            $.ajax({
+                url: '@Url.Action("pvwAddTax", "Tax")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    //console.log('success', result)
+
+                    $("#numTax").html('');
+                    $("#numTax").html(result);
+                    var validator = $("#frmTax").data("kendoValidator");
+                    validator.hideMessages();
+                    $('#ModalTax').find(':input').not(':submit').val('');
+                    $("#IdEstado").data("kendoDropDownList").value(0);
+                    $("#TaxId").val('0');
+
+                    $("#TaxCode").prop("disabled", false);
+                    $("#Description").prop("disabled", false);
+                    $("#TaxPercentage").prop("disabled", false);
+
+                    //$("#btnCAI").hide();
+                    $('#ModalTax').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+    }
 
          function EditTax(e) {
              e.preventDefault();
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
              var dataObject = {
                  TaxId: dataItem.TaxId,
-                editar : 0
+                 editar : 1
             };
 
             $.ajax({
-                url: '@Url.Action("pvwEditTax", "Tax")',
+                url: '@Url.Action("pvwAddTax", "Tax")',
                 method: 'POST',
                 datatype: "json",
                 contentType: 'application/json',
@@ -47,9 +76,11 @@
                     $("#numTax").html('');
                     $("#numTax").html(result);
 
+                    $("#TaxCode").prop("disabled", true);
+                    $("#Description").prop("disabled", true);
+                    $("#TaxPercentage").prop("disabled", false);
 
-                    //$("#btnCAI").hide();
-                    $('#ModalEditTax').modal('show');
+                    $('#ModalTax').modal('show');
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     alert(textStatus + ": " + XMLHttpRequest.responseText);
@@ -136,8 +167,13 @@
 
                     })
 )
-
 <div id="numTax">
-    @await Html.PartialAsync("pvwAddTax", new ERPMVC.DTO.TaxDTO { TaxId = 0 })
+    @await Html.PartialAsync("pvwAddTax", new ERPMVC.DTO.TaxDTO { TaxId = 0, editar = 1 })
+    @*<div id="numEditTax">
+        @await Html.PartialAsync("pvwEditTax", new ERPMVC.DTO.TaxDTO { TaxId = 0 })
+    </div>*@
 </div>
+
+
+
 

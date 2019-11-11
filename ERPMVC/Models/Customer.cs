@@ -58,12 +58,17 @@ namespace ERPMVC.Models
         [Display(Name = "Codigo Zip")]
         public string ZipCode { get; set; }
 
-        [Display(Name = "Teléfono")]
+        [Display(Name = "Teléfonos")]
         public string Phone { get; set; }
 
         [Required]
         [Display(Name = "Identidad del contacto")]
         public string Identidad { get; set; }
+
+        [EmailAddress]
+        [RegularExpression(@"\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*", ErrorMessage = "Correo invalido")]
+        [DataType(DataType.EmailAddress)]
+        [Display(Name = "Correo")]
         public string Email { get; set; }
         [Display(Name = "Persona de Contacto ")]
         public string ContactPerson { get; set; }

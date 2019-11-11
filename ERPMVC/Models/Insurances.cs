@@ -12,6 +12,7 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Display(Name = "Id")]
         public int InsurancesId { get; set; }
+        [Required]
         [Display(Name = "Nombre Aseguradora")]
         public string InsurancesName { get; set; }
 

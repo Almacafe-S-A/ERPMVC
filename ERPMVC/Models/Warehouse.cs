@@ -48,6 +48,20 @@ namespace ERPMVC.Models
         [Display(Name = "Fecha de vencimiento póliza")]
         public DateTime FechaVencimientoPoliza { get; set; }
 
+        [Display(Name = "Cliente")]
+        public Int64? CustomerId { get; set; }
+
+        [Display(Name = "Cliente")]
+        public string CustomerName { get; set; }
+
+
+        [Display(Name = "Fecha libertad de gravamen")]
+        //Cada 6 meses -> 1 mes antes
+        public DateTime? FechaLibertadGravamen { get; set; }
+
+        [Display(Name = "Fecha habilitación")]
+        //Cada dos años -> 3 meses antes, 21 meses transcurridos
+        public DateTime? FechaHabilitacion { get; set; }
 
         [Required]
         [Display(Name = "Usuario de creación")]
