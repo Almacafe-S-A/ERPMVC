@@ -134,51 +134,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        //public async Task<ActionResult<GrupoConfiguracion>> SaveGrupoConfiguracion([FromBody]GrupoConfiguracion _GrupoConfiguracion)
-        //[HttpPost("[action]")]
-        //public async Task<ActionResult<GrupoConfiguracion>> SaveProduct([FromBody]GrupoConfiguracionDTO _GrupoConfiguracionS)
-        //{
-
-        //    try
-        //    {
-        //        GrupoConfiguracion _listGrupoConfiguracion = new GrupoConfiguracion();
-        //        string baseadress = config.Value.urlbase;
-        //        HttpClient _client = new HttpClient();
-        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-        //        var result = await _client.GetAsync(baseadress + "api/GrupoConfiguracion/GetGrupoConfiguracionById/" + _GrupoConfiguracionS.Id);
-        //        string valorrespuesta = "";
-        //        _GrupoConfiguracion.FechaModificacion = DateTime.Now;
-        //        _GrupoConfiguracion.UsuarioModificacion = HttpContext.Session.GetString("user");
-        //        if (result.IsSuccessStatusCode)
-        //        {
-
-        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
-        //            _listGrupoConfiguracion = JsonConvert.DeserializeObject<List<GrupoConfiguracion>>(valorrespuesta);
-
-
-        //        }
-
-        //        if (_listGrupoConfiguracion.Id == 0)
-        //        {
-        //            _GrupoConfiguracion.FechaCreacion = DateTime.Now;
-        //            _GrupoConfiguracion.UsuarioCreacion = HttpContext.Session.GetString("user");
-        //            var insertresult = await Insert(_GrupoConfiguracion);
-        //        }
-        //        else
-        //        {
-        //            var updateresult = await Update(_GrupoConfiguracion.Id, _GrupoConfiguracion);
-        //        }
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-        //        throw ex;
-        //    }
-
-        //    return Json(_GrupoConfiguracion);
-        //}
-
+        
         [HttpPost("[action]")]
         public async Task<ActionResult<GrupoConfiguracion>> SaveGrupoConfiguracion([FromBody]GrupoConfiguracionDTO _GrupoConfiguracionS)
         {
@@ -190,20 +146,20 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/GrupoConfiguracion/GetGrupoConfiguracionById/" + _GrupoConfiguracion.IdConfiguracion);
-                string valorrespuesta = "";
-                _GrupoConfiguracion.FechaModificacion = DateTime.Now;
-                _GrupoConfiguracion.UsuarioModificacion = HttpContext.Session.GetString("user");
+                if(_GrupoConfiguracion.IdConfiguracion == 0)
+                { 
+                    var result = await _client.GetAsync(baseadress + "api/GrupoConfiguracion/GetGrupoConfiguracionById/" + _GrupoConfiguracion.IdConfiguracion);
+                    string valorrespuesta = "";
+                    _GrupoConfiguracion.FechaModificacion = DateTime.Now;
+                    _GrupoConfiguracion.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _GrupoConfiguracion = JsonConvert.DeserializeObject<GrupoConfiguracionDTO>(valorrespuesta);
+                    }
 
-                if (result.IsSuccessStatusCode)
-                {
-
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _GrupoConfiguracion = JsonConvert.DeserializeObject<GrupoConfiguracionDTO>(valorrespuesta);
+                    if (_GrupoConfiguracion == null) { _GrupoConfiguracion = new Models.GrupoConfiguracion(); }
                 }
-
-                if (_GrupoConfiguracion == null) { _GrupoConfiguracion = new Models.GrupoConfiguracion(); }
-
                 if (_GrupoConfiguracionS.IdConfiguracion == 0)
                 {
                     _GrupoConfiguracionS.FechaCreacion = DateTime.Now;
@@ -224,7 +180,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_GrupoConfiguracion);
+            return Json(_GrupoConfiguracionS);
         }
 
         // POST: GrupoConfiguracion/Insert
@@ -252,10 +208,10 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                return BadRequest($"Ocurrio un error: {ex.Message}");
             }
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _GrupoConfiguracion }, Total = 1 });
+            return Ok(_GrupoConfiguracion);
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _GrupoConfiguracion }, Total = 1 });
         }
 
         [HttpPut("{id}")]

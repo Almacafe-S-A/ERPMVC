@@ -57,21 +57,21 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="LimiteCalidadInferior" class=" control-label" style="min-width:100%"></label>
-                                                    <input type="text" asp-for="LimiteCalidadInferior" name="LimiteCalidadInferior" class="form-control" autocomplete="off" style="width:100%" />
+                                                    <input type="number" min="0" asp-for="LimiteCalidadInferior" name="LimiteCalidadInferior" class="form-control" autocomplete="off" style="width:100%" />
                                                     <span asp-validation-for="LimiteCalidadInferior" class="text-danger"></span>
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="LimeteCalidadSuperir" class=" control-label" style="min-width:100%"></label>
-                                                    <input type="text" asp-for="LimeteCalidadSuperir" name="LimeteCalidadSuperir" class="form-control" autocomplete="off" style="width:100%" />
+                                                    <input type="number" asp-for="LimeteCalidadSuperir" name="LimeteCalidadSuperir" class="form-control" autocomplete="off" style="width:100%" />
                                                     <span asp-validation-for="LimeteCalidadSuperir" class="text-danger"></span>
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="RangoInferiorSeveridad" class=" control-label" style="min-width:100%"></label>
-                                                    <input type="number" min="1" asp-for="RangoInferiorSeveridad" onchange="SetNivelRiesgo();" name="RangoInferiorSeveridad" class="form-control" autocomplete="off" style="width:100%" />
+                                                    <input type="number" asp-for="RangoInferiorSeveridad" name="RangoInferiorSeveridad" class="form-control" autocomplete="off" style="width:100%" />
                                                     <span asp-validation-for="RangoInferiorSeveridad" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -80,7 +80,7 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="RangoSuperiorSeveridad" class=" control-label" style="min-width:100%"></label>
-                                                    <input type="number" asp-for="RangoSuperiorSeveridad" onchange="SetNivelRiesgo();" name="RangoSuperiorSeveridad" class="form-control" autocomplete="off" style="width:100%" />
+                                                    <input type="number" asp-for="RangoSuperiorSeveridad" name="RangoSuperiorSeveridad" class="form-control" autocomplete="off" style="width:100%" />
                                                     <span asp-validation-for="RangoSuperiorSeveridad" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -97,7 +97,7 @@
                                                                         filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         option-label="Seleccione"
                                                                         datatextfield="Nombre"
-                                                                        datavaluefield="Id"
+                                                                        datavaluefield="Nombre"
                                                                         disabled
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
@@ -127,8 +127,12 @@
 
 <script>
     $(document).ready(function () {
-        
+        if (@Model.IdSeveridad == 0) {
+            console.log(@Model.LimeteCalidadSuperir);
+            $("#LimeteCalidadSuperir").prop("disabled", true);
+        }
     });
+
     function customFunction(input) {
         if (input.attr('name') === "IdSeveridad" && input.val() === "0") {
             return false;
@@ -218,17 +222,50 @@
     }
 
     function SetNivelRiesgo() {
-        if ($("#RangoInferiorSeveridad").val() >= 1 && $("#RangoSuperiorSeveridad").val() <= 1.49) {
+        var displayedData = $("#gridSeveridadRiesgo").data().kendoGrid.dataSource.view();
+        if (displayedData.length == 0) {
             $("#Nivel").data("kendoDropDownList").text('Bajo');
         }
-        else if ($("#RangoInferiorSeveridad").val() >= 1.50 && $("#RangoSuperiorSeveridad").val() <= 2.49) {
+        else if (displayedData.length == 1) {
             $("#Nivel").data("kendoDropDownList").text('Medio');
         }
-        else if ($("#RangoInferiorSeveridad").val() >= 2.50 && $("#RangoSuperiorSeveridad").val() <= 3.49) {
+        else if (displayedData.length == 2) {
             $("#Nivel").data("kendoDropDownList").text('Alto');
         }
-        else if ($("#RangoInferiorSeveridad").val() >= 3.50 && $("#RangoSuperiorSeveridad").val() <= 4) {
+        else if (displayedData.length == 3) {
             $("#Nivel").data("kendoDropDownList").text('Muy Alto');
         }
     }
+
+    $("#LimiteCalidadInferior").keyup(function (e) {
+        if ($("#LimiteCalidadInferior").val() == 0) {
+            $("#LimeteCalidadSuperir").prop("disabled", true);
+        }
+        else {
+            $("#LimeteCalidadSuperir").prop("disabled", false);
+            var LimeteCalidadSuperirActual = Number($("#LimiteCalidadInferior").val());
+            $("#LimeteCalidadSuperir").attr({
+                "min": Number(LimeteCalidadSuperirActual) + 1
+            });
+            if (LimeteCalidadSuperirActual >= $("#LimeteCalidadSuperir").val()) {
+                $("#LimeteCalidadSuperir").val("")
+            }
+        }
+    });
+
+    $("#LimiteCalidadInferior").change(function (e) {
+        if ($("#LimiteCalidadInferior").val() == 0) {
+            $("#LimeteCalidadSuperir").prop("disabled", true);
+        }
+        else {
+            $("#LimeteCalidadSuperir").prop("disabled", false);
+            var LimeteCalidadSuperirActual = $("#LimiteCalidadInferior").val();
+            $("#LimeteCalidadSuperir").attr({
+                "min": Number(LimeteCalidadSuperirActual) + 1
+            });
+            if (LimeteCalidadSuperirActual >= $("#LimeteCalidadSuperir").val()) {
+                $("#LimeteCalidadSuperir").val("")
+            }
+        }
+    });
 </script>

@@ -254,8 +254,8 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpDelete("Id")]
-        public async Task<ActionResult<Policy>> Delete(Int64 Id, Policy _Policy)
+        [HttpPost]
+        public async Task<ActionResult<Policy>> Delete(Guid Id, Policy _Policy)
         {
            
             try
@@ -275,7 +275,7 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                return BadRequest($"Ocurrio un error: {ex.Message}");
             }
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _Policy }, Total = 1 });

@@ -42,6 +42,10 @@ namespace ERP.Contexts
 
 
 
+        public DbSet<ERPMVC.Models.Alert> Alert { get; set; }
+
+
+
        
         
     }

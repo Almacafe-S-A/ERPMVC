@@ -159,6 +159,13 @@ namespace ERPMVC.Controllers
                     Invoice _listInvoice = new Invoice();
                     string baseadress = config.Value.urlbase;
 
+
+                    if (_Invoice.Total <= 0 || _Invoice.SubTotal <= 0)
+                    {
+                        return await Task.Run(() => BadRequest($"No se esta calculando correctamente los totales!"));
+                    }
+
+
                     foreach (var item in _Invoice.InvoiceLine)
                     {
                         if (item.UnitOfMeasureId == 0)
@@ -208,6 +215,8 @@ namespace ERPMVC.Controllers
                         {
                             _Invoice.NumeroDEIString = $"{resultado.Sucursal}-{resultado.Caja}-01-{resultado.NumeroDEI.ToString().PadLeft(8, '0')} ";
                         }
+
+                        _Invoice.InvoiceId = resultado.InvoiceId;
 
                     }
                     else
