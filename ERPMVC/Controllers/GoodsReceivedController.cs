@@ -195,14 +195,14 @@ namespace ERPMVC.Controllers
         /// <returns></returns>
 
 
-        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request)
+        public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request,GoodsReceived _gr)
         {
-            //var res = await GetGoodsReceived(CustomerId);
-            var res = await GetGoodsReceived();
+           
+            var res = await GetGoodsReceived(_gr);
             return Json(res.ToDataSourceResult(request));
         }
 
-        public async Task<ActionResult> Orders_ValueMapper(Int64[] values)
+        public async Task<ActionResult> Orders_ValueMapper(Int64[] values, GoodsReceived _gr)
         {
             var indices = new List<Int64>();
 
@@ -210,7 +210,7 @@ namespace ERPMVC.Controllers
             {
                 var index = 0;
 
-                foreach (var order in await GetGoodsReceived())
+                foreach (var order in await GetGoodsReceived(_gr))
                 {
                     if (values.Contains(order.GoodsReceivedId))
                     {
@@ -225,9 +225,9 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet("[controller]/[action]")]
-        private async Task<List<GoodsReceived>> GetGoodsReceived()
+        private async Task<List<GoodsReceived>> GetGoodsReceived( GoodsReceived _gr)
         {
-            List<GoodsReceived> _ControlPallets = new List<GoodsReceived>();
+            List<GoodsReceived> _GoodsReceiveds = new List<GoodsReceived>();
 
             try
             {
@@ -239,13 +239,14 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ControlPallets = JsonConvert.DeserializeObject<List<GoodsReceived>>(valorrespuesta);
-                    _ControlPallets = (from c in _ControlPallets
-                                           // .Where(q => q.CustomerId == CustomerId)
+                    _GoodsReceiveds = JsonConvert.DeserializeObject<List<GoodsReceived>>(valorrespuesta);
+                    _GoodsReceiveds = (from c in _GoodsReceiveds
+                                       .Where(q => q.CustomerId == _gr.CustomerId)
+                                        .Where(q => q.ProductId == _gr.ProductId)
                                        select new GoodsReceived
                                        {
                                            GoodsReceivedId = c.GoodsReceivedId,
-                                           ProductName = " No. Documento:" + c.GoodsReceivedId + " || Cliente:" + c.CustomerName+ " || Nombre:" + c.ProductName +" || Fecha: " + c.DocumentDate ,
+                                           ProductName = " No. Documento:" + c.GoodsReceivedId + " || Cliente:" + c.CustomerName+ " || Tipo de servicio:" + c.ProductName +" || Fecha: " + c.DocumentDate ,
                                            //DocumentDate = c.DocumentDate,
                                            CustomerId = c.CustomerId,
                                        }
@@ -258,7 +259,7 @@ namespace ERPMVC.Controllers
             }
 
             // return Json(_CustomerConditions.ToDataSourceResult(request));
-            return _ControlPallets;
+            return _GoodsReceiveds;
         }
 
         [HttpPost("[controller]/[action]")]

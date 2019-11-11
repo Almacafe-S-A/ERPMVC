@@ -34,13 +34,19 @@ $(".validation-wizard").steps({
         previous: '<i class="fa fa-chevron-left"></i> Anterior'
     }
     , onStepChanging: function (event, currentIndex, newIndex) {
-         console.log('Current Index:' + currentIndex + " New Index:" + newIndex);
+        // console.log('Current Index:' + currentIndex + " New Index:" + newIndex);
         //return currentIndex > newIndex || !(3 === newIndex && Number($("#age-2").val()) < 18) && (currentIndex < newIndex && (form.find(".body:eq(" + newIndex + ") label.error").remove(), form.find(".body:eq(" + newIndex + ") .error").removeClass("error")), form.validate().settings.ignore = ":disabled,:hidden", form.valid())
         //return (currentIndex < newIndex && (form.find(".body:eq(" + newIndex + ") label.error").remove(), form.find(".body:eq(" + newIndex + ") .error").removeClass("error")), form.validate().settings.ignore = ":disabled,:hidden", form.valid());
         if (0 === currentIndex && $("#CustomerIdAsociarRecibo").val() === '') {
             //form.valid();
             $("#alertamsj").css('display', 'block');
             $("#alertamsj").text('Campos requerido!');
+            return false;
+        }
+        else if (0 === currentIndex && $("#ServicioFilter").val() === '') {
+            //form.valid();
+            $("#alertamsj").css('display', 'block');
+            $("#alertamsj").text('El servicio es un campo requerido!');
             return false;
         }
         else if (1 === currentIndex && $("#ddlRecibosAsociados").children('option').length === 0 && (currentIndex < newIndex) )
