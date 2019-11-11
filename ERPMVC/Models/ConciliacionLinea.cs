@@ -80,16 +80,33 @@ namespace ERPMVC.Models
 
         public double Debit { get; set; }
         [Required]
-        [Display(Name = "Monto")]
+        [Display(Name = "Balance")]
         public Double Monto { get; set; }
 
 
         [Required]
-        [Display(Name = "ReferenciaBancaria")]
+        [Display(Name = "Referencia Bancaria")]
         public string ReferenciaBancaria { get; set; }
 
-        [ForeignKey("IdMoneda")]
-        public Currency Moneda { get; set; }
+        [ForeignKey("CurrencyId")]
+        public int CurrencyId { get; set; }
+
+        [Display(Name = "Fecha Transaccion")]
+        public DateTime TransDate { get; set; }
+        [Display(Name = "Referencia Transacción")]
+        public string ReferenceTrans { get; set; }
+        [Display(Name = "Id de Journal")]
+        public Int64 JournalEntryId { get; set; }
+        [Display(Name = "Id de Journal Linea")]
+        public Int64 JournalEntryLineId { get; set; }
+        [Display(Name = "Tipos de Voucher/Documento")]
+        public Int64 VoucherTypeId { get; set; }
+        [Display(Name = "Conciliado")]
+        public bool Reconciled { get; set; }
+        [Display(Name = "Numero de cheque")]
+        public Int64 CheknumberId { get; set; }
+
+
 
         [Required]
         [Display(Name = "MonedaName")]
