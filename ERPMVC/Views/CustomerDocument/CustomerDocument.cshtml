@@ -36,10 +36,18 @@
             async: false,
             data: JSON.stringify(dataObject),
             success: function (result) {
-                //$("#CustomerDocument").html('');
-                //$("#CustomerDocument").html(result);
-                //RefreshCotizacionesDetail();
-                // $("#btnSaveCotizacion").show();
+                $("#CustomerDocument").html('');
+                $("#CustomerDocument").html(result);
+                $("#files").kendoUpload({
+                    localization: {
+                        select: "Seleccionar Archivos",
+                        cancel: "Cancelar",
+                        dropFilesHere: "Soltar Archivo aquí",
+                        invalidFileExtension: "Extensión de Archivo Invalido",
+                        retry: "Reintentar",
+                    },
+                    });
+                //$("#files").data("kendoUpload").disable();
                 $('#myModalCustomerDocumentUpload').modal('show');
             },
              error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -72,7 +80,23 @@
             success: function (result) {
                 $("#CustomerDocument").html('');
                 $("#CustomerDocument").html(result);
-
+                $("#DocumentTypeId").data("kendoDropDownList").value(dataItem.DocumentTypeId);
+                //$('#InsurancesName').val(dataItem.InsurancesName);
+                var fileName = dataItem.DocumentName;
+                var fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1);
+                var files = [
+                    { name: fileName, extension: "." + fileExtension },
+                ];
+                $("#files").kendoUpload({
+                        localization: {
+                            select: "Seleccionar Archivos",
+                            cancel: "Cancelar",
+                            dropFilesHere: "Soltar Archivo aquí",
+                            invalidFileExtension: "Extensión de Archivo Invalido",
+                            retry: "Reintentar",
+                        },
+                    files: files,
+                });
                 $("#DocumentTypeId").data("kendoDropDownList").trigger('change');             
                 $('#myModalCustomerDocumentUpload').modal('show');
             },
@@ -132,17 +156,21 @@
 
    function ImprimirDocumento(e) {
         e.preventDefault();
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));       
+       var dataItem = this.dataItem($(e.currentTarget).closest("tr"));  
+
+       var ext = dataItem.DocumentName.substr(dataItem.DocumentName.lastIndexOf('.') + 1);
+       console.log(ext);
+       if (ext != 'pdf') {
+           alert("Solo se pueden imprimir documentos de tipo PDF");
+           return;
+       }
        var url = '@Url.Action("SFCustomerDocument", "CustomerDocument")/' + dataItem.CustomerDocumentId;
            var win = window.open(url, '_blank');
            win.focus();
     }
 
     function RefreshCustomerDocument() {
-       
         $("#gridCustomerDocument").getKendoGrid().dataSource.read();
-
-
     }
 
 </script>

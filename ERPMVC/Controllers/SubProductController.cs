@@ -261,6 +261,8 @@ namespace ERPMVC.Controllers
                 }
 
                 _SubProduct.TituloVentana = _sarpara.TituloVentana;
+                _SubProduct.TipoProducto = _sarpara.TipoProducto;
+                _SubProduct.ProductTypeId = _sarpara.ProductTypeId;
                 _SubProduct.IsEnable = _sarpara.IsEnable;
             }
             catch (Exception ex)
@@ -339,25 +341,23 @@ namespace ERPMVC.Controllers
             return Json(_SubProducts);
         }
 
-        [HttpPost("[controller]/[action]")]
-        // public async Task<ActionResult<SubProduct>> SaveSubProduct([FromBody]dynamic dto)
+        [HttpPost("[action]")]
+        //[HttpPost("[controller]/[action]")]
         public async Task<ActionResult<SubProduct>> SaveSubProduct([FromBody]SubProductDTO _SubProductS)
         {
 
 
             //   SubProduct _SubProductS = new SubProduct(); //JsonConvert.DeserializeObject<SubProductDTO>(dto.ToString());
             SubProduct _SubProduct = _SubProductS;
-            if (_SubProductS != null)
-            //if (_SubProduct != null)
-            {
-
-                try
+            try
                 {
                     // _SubProductS = JsonConvert.DeserializeObject<SubProductDTO>(dto.ToString());
                     SubProduct _listProduct = new SubProduct();
                     string baseadress = config.Value.urlbase;
                     HttpClient _client = new HttpClient();
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                if (_SubProduct.SubproductId == 0)
+                {
                     var result = await _client.GetAsync(baseadress + "api/SubProduct/GetSubProductById/" + _SubProduct.SubproductId);
                     string valorrespuesta = "";
                     _SubProduct.FechaModificacion = DateTime.Now;
@@ -370,7 +370,7 @@ namespace ERPMVC.Controllers
                     }
 
                     if (_SubProduct == null) { _SubProduct = new Models.SubProduct(); }
-
+                }
                     if (_SubProduct.SubproductId == 0)
                     {
                         _SubProductS.FechaCreacion = DateTime.Now;
@@ -380,9 +380,9 @@ namespace ERPMVC.Controllers
                     }
                     else
                     {
-                        // _SubProductS.UsuarioCreacion = _SubProduct.UsuarioCreacion;
-                        // _SubProductS.FechaCreacion = _SubProduct.FechaCreacion;
-                        var updateresult = await Update(_SubProduct.SubproductId, _SubProductS);
+                    _SubProductS.UsuarioCreacion = _SubProduct.UsuarioCreacion;
+                    _SubProductS.FechaCreacion = _SubProduct.FechaCreacion;
+                    var updateresult = await Update(_SubProduct.SubproductId, _SubProductS);
                     }
 
                 }
@@ -391,29 +391,23 @@ namespace ERPMVC.Controllers
                     _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                     throw ex;
                 }
-            }
-            else
-            {
-                return BadRequest("No llego correctamente el modelo!");
-            }
 
-            return Json(_SubProduct);
+            return Json(_SubProductS);
         }
 
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<SubProduct>> Insert(SubProduct _SubProductp)
+        public async Task<ActionResult<SubProduct>> Insert(SubProduct _SubProduct)
         {
-            SubProduct _SubProduct = _SubProductp;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _SubProductp.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _SubProductp.UsuarioModificacion = HttpContext.Session.GetString("user");
-                _SubProductp.FechaCreacion = DateTime.Now;
-                _SubProductp.FechaModificacion = DateTime.Now;
+                _SubProduct.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _SubProduct.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _SubProduct.FechaCreacion = DateTime.Now;
+                _SubProduct.FechaModificacion = DateTime.Now;
                 _SubProduct.ProductName = _SubProduct.ProductName.ToUpper();
                 var result = await _client.PostAsJsonAsync(baseadress + "api/SubProduct/Insert", _SubProduct);
                 string valorrespuesta = "";
@@ -426,10 +420,10 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                return BadRequest($"Ocurrio un error: {ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _SubProduct }, Total = 1 });
+            return Ok(_SubProduct);
         }
 
 

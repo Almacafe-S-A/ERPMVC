@@ -233,7 +233,7 @@ namespace ERPMVC.Controllers
             return Json(_Citys);
         }
 
-        [HttpPost("[controller]/[action]")]
+        [HttpPost]
         //public async Task<ActionResult<City>> SaveCity([FromBody]dynamic dto)
         public async Task<ActionResult<City>> SaveCity([FromBody]CityDTO _CityS)
         {
@@ -241,37 +241,47 @@ namespace ERPMVC.Controllers
             City _City = _CityS;
             //   City _City = new City();
             //  City _CityS = new City(); //JsonConvert.DeserializeObject<CityDTO>(dto.ToString());
-            if (_CityS != null)
-            //if (_City != null)
-            {
+            //if (_CityS != null)
+            ////if (_City != null)
+            //{
 
                 try
                 {
                     //_City = JsonConvert.DeserializeObject<CityDTO>(dto.ToString());
-                    City _listProduct = new City();
+                    //City _listProduct = new City();
                     string baseadress = config.Value.urlbase;
                     HttpClient _client = new HttpClient();
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    if (_City.Id == 0)
+                    { 
                     var result = await _client.GetAsync(baseadress + "api/City/GetCityById/" + _City.Id);
                     string valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
-
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _City = JsonConvert.DeserializeObject<CityDTO>(valorrespuesta);
                     }
 
                     if (_City == null) { _City = new Models.City(); }
-
-                    if (_City.Id == 0)
+                    }
+                    if (_CityS.Id == 0)
                     {
                         var insertresult = await Insert(_CityS);
-                        var value = (insertresult.Result as ObjectResult).Value;
-                        _City = ((City)(value));
-                        if (_City.Id <= 0)
-                        {
-                            return await Task.Run(() => BadRequest("Ocurrio un error!"));
-                        }
+                    //    var value = (insertresult.Result as ObjectResult).Value;
+                    //try
+                    //{
+                    //    City resultado = ((City)(value));
+                    //    if (resultado.Id <= 0)
+                    //    {
+                    //        return await Task.Run(() => BadRequest("Ocurrio un error!"));
+                    //    }
+                    //}
+                    //catch (Exception ex)
+                    //{
+                    //    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                    //    _logger.LogError($"Ocurrio un error desde metodo que va al api: {value.ToString()}");
+                    //    return await Task.Run(() => BadRequest($"Ocurrio un error: {value.ToString()}"));
+                    //}
                     }
                     else
                     {
@@ -284,11 +294,11 @@ namespace ERPMVC.Controllers
                     _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                     throw ex;
                 }
-            }
-            else
-            {
-                return BadRequest("No llego correctamente el modelo!");
-            }
+            //}
+            //else
+            //{
+            //    return BadRequest("No llego correctamente el modelo!");
+            //}
 
             return Json(_City);
         }

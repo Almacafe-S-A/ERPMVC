@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 
 namespace ERPMVC.Models
 {
-    
     public class City
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -15,12 +14,10 @@ namespace ERPMVC.Models
         public long Id { get; set; }
         [Display(Name = "Ciudad")]
         public string Name { get; set; }
-
         [Display(Name = "País")]
         public long? CountryId { get; set; }
 
         [Display(Name = "Departamento")]
         public long? StateId { get; set; }
-
     }
 }
