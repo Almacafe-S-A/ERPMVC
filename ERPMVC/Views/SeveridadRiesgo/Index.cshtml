@@ -10,11 +10,11 @@
                               .Name("gridSeveridadRiesgo")
                               .Columns(columns =>
                               {
-                                  //columns.Command(command =>
-                                  //{
-                                  //    command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText("Actualizar").CancelText("Cancelar");
-                                  //    command.Destroy().Text("Eliminar");
-                                  //}).Title("Acciones").Width(100);
+                                  columns.Command(command =>
+                                  {
+                                      command.Custom("Editar").IconClass("fa fa-edit").Click("EditSeveridadRiesgo");
+                                      //command.Destroy().Text("Eliminar");
+                                  }).Title("Acciones").Width(100);
                                   columns.Bound(p => p.IdSeveridad).Width(100);
                                   columns.Bound(p => p.Impacto).Width(100);
                                   columns.Bound(p => p.Probabilidad).Width(120);
@@ -112,26 +112,55 @@
         $("#Nivel").data("kendoDropDownList").value(0);
         debugger;
         var id = 0;
-        var LimiteCalidadInferior, LimeteCalidadSuperir, RangoInferiorSeveridad, RangoSuperiorSeveridad
+        var LimiteCalidadInferior = 0, LimeteCalidadSuperir = 0, RangoInferiorSeveridad = 0, RangoSuperiorSeveridad = 0
         var displayedData = $("#gridSeveridadRiesgo").data().kendoGrid.dataSource.view();
         if (displayedData.length > 0) {
             console.log("displayedData: ", displayedData);
             for (var i = 0; i < displayedData.length; i++) {
                 if (displayedData[i].IdSeveridad > id) {
                     id = displayedData[i].IdSeveridad;
-                }
-                else {
-                    LimiteCalidadInferior = displayedData.LimiteCalidadInferior;
-                    LimeteCalidadSuperir = displayedData.LimeteCalidadSuperir;
-                    RangoInferiorSeveridad = displayedData.RangoInferiorSeveridad;
-                    RangoSuperiorSeveridad = displayedData.RangoSuperiorSeveridad;
+                    LimiteCalidadInferior = displayedData[i].LimiteCalidadInferior;
+                    LimeteCalidadSuperir = displayedData[i].LimeteCalidadSuperir;
+                    RangoInferiorSeveridad = displayedData[i].RangoInferiorSeveridad;
+                    RangoSuperiorSeveridad = displayedData[i].RangoSuperiorSeveridad;
                 }
             }
             id = id + 1;
         }
+        console.log("LimiteCalidadInferior", LimiteCalidadInferior);
+        console.log("LimeteCalidadSuperir", LimeteCalidadSuperir);
+        console.log("RangoInferiorSeveridad", RangoInferiorSeveridad);
+        console.log("RangoSuperiorSeveridad", RangoSuperiorSeveridad);
+
+        $("#LimiteCalidadInferior").attr({
+            "max": LimeteCalidadSuperir + 1,
+            "min": LimeteCalidadSuperir + 1
+        });
+
+        $("#LimiteCalidadInferior").val(LimeteCalidadSuperir + 1);
+        var LimiteCalidadSuperirActual = $("#LimiteCalidadInferior").val();
+
+        $("#LimeteCalidadSuperir").attr({
+            "min": Number(LimiteCalidadSuperirActual) + 1
+        });
+
+        $("#RangoInferiorSeveridad").attr({
+            "max": RangoSuperiorSeveridad + 0.01,
+            "min": RangoSuperiorSeveridad + 0.01
+        });
+
+        $("#RangoInferiorSeveridad").val(RangoSuperiorSeveridad + 0.01);
+        var RangoSuperiorSeveridadActual = $("#RangoInferiorSeveridad").val();
+
+        $("#RangoSuperiorSeveridad").attr({
+            "min": Number(RangoSuperiorSeveridadActual) + 0.01
+        });
+
+        SetNivelRiesgo();
     }
 
     function EditSeveridadRiesgo(e) {
+        debugger;
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         var dataObject = {
             IdSeveridad: dataItem.IdSeveridad,
@@ -148,7 +177,11 @@
             success: function (result) {
                 $("#numSeveridadRiesgo").html('');
                 $("#numSeveridadRiesgo").html(result);
+                
                 $('#ModalSeveridadRiesgo').modal('show');
+                $('#RangoInferiorSeveridad').val(dataItem.RangoInferiorSeveridad);
+                $('#RangoSuperiorSeveridad').val(dataItem.RangoSuperiorSeveridad);
+                //$('#Nivel').data("KendoDropDownList").text(dataItem.Nivel);
             },
             error: function (XMLHttpRequest, textStatus, errorThrown) {
                 alert(textStatus + ": " + XMLHttpRequest.responseText);
