@@ -133,6 +133,9 @@ namespace ERPMVC.Controllers
                     }
                     else
                     {
+                        Convert.ToDecimal(_EmployeeSalaryP.QtySalary);
+                        
+                           
                         if (_EmployeeSalaryP.QtySalary > 0)
                         {
                             _EmployeeSalaryP.CreatedUser = HttpContext.Session.GetString("user");
@@ -190,21 +193,32 @@ namespace ERPMVC.Controllers
         [HttpPut("PutEmployeeSalary")]
         public async Task<IActionResult> PutEmployeeSalary(Int64 Id, EmployeeSalary _EmployeeSalary)
         {
+            List<EmployeeSalary> _EmployeeSalaryP = new List<EmployeeSalary>();
+
             try
             {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _EmployeeSalary.ModifiedDate = DateTime.Now;
-                _EmployeeSalary.ModifiedUser = HttpContext.Session.GetString("user");
-                var result = await _client.PutAsJsonAsync(baseadress + "api/EmployeeSalary/Update", _EmployeeSalary);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
+                if (_EmployeeSalary.IdEmpleado == 0)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _EmployeeSalary = JsonConvert.DeserializeObject<EmployeeSalary>(valorrespuesta);
-                }
 
+                    _EmployeeSalaryP.Add(_EmployeeSalary);
+                    HttpContext.Session.SetString("listadoEmployeeSalary", JsonConvert.SerializeObject(_EmployeeSalaryP).ToString());
+                    HttpContext.Session.SetString("listadoEmployeeSalary", "");
+                }
+                else
+                {
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    _EmployeeSalary.ModifiedDate = DateTime.Now;
+                    _EmployeeSalary.ModifiedUser = HttpContext.Session.GetString("user");
+                    var result = await _client.PutAsJsonAsync(baseadress + "api/EmployeeSalary/Update", _EmployeeSalary);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _EmployeeSalary = JsonConvert.DeserializeObject<EmployeeSalary>(valorrespuesta);
+                    }
+                }
             }
             catch (Exception ex)
             {

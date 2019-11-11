@@ -1,10 +1,10 @@
-﻿@model ERPMVC.Models.Customer
-@{
-    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
-                                       { "required","Valor requerido" }};
+﻿@using Kendo.Mvc.UI
+@*{
+        var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+                                   { "required","Valor requerido" }};
 
-    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
-}
+        var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+    }*@
 
 
 
@@ -19,159 +19,84 @@
     }
 
 
-    function GetCustomerId() {
-        return { CustomerId: $("#CustomerId").val() }
+    function GetConciliacionId() {
+        return { ConciliacionId: $("#ConciliacionId").val() }
     }
 
-    function BackIndex() {
-        window.location.href = '@Url.Action("Index","Customer")'
-    }
+
 </script>
 
 <script>
 
-      function clearsession() {
-            var dataObject = ["listadoproductos"];
-         $.ajax({
-            url: '@Url.Action("ClearSession","Common")',
-            method: 'POST',
-            datatype: "json",
-            contentType: 'application/json',
-            async: false,
-            data: JSON.stringify(dataObject),
-            success: function (result) {
-                  //  $('#myModalCustomerDocument').modal('show');
-            },
-             error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
-              }
-          });
-      }
+    function AddConciliacion() {
 
-        function AddCustomerArea() {
+           //  clearsession();
+             var dataObject = {
+                 ConciliacionId: 0,
+                editar : 1
+            };
 
-       //  clearsession();
-         var dataObject = {
-             CustomerAreaId: 0,
-            editar : 1
-        };
-
-        $.ajax({
-            url: '@Url.Action("pvwCustomerDocumentUpload", "CustomerDocument")',
-            method: 'POST',
-            datatype: "json",
-            contentType: 'application/json',
-            async: false,
-            data: JSON.stringify(dataObject),
-            success: function (result) {
-                //$("#CustomerDocument").html('');
-                //$("#CustomerDocument").html(result);
-                //RefreshCotizacionesDetail();
-                // $("#btnSaveCotizacion").show();
-                $('#myModalCustomerDocumentUpload').modal('show');
-            },
-             error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
-              }
-        });
+            $.ajax({
+                url: '@Url.Action("pvwAddConciliacion", "Conciliacion")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#ModalConciliacion").html('');
+                    $("#ModalConciliacion").html(result);
+                    //RefreshCotizacionesDetail();
+                    // $("#btnSaveCotizacion").show();
+                    $('#myModalConciliacionUpload').modal('show');
+                },
+                 error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        alert(textStatus + ": " + XMLHttpRequest.responseText);
+                  }
+            });
 
 
-    }
+        }
 
 
-    function EditCustomerDocument(e) {
-        e.preventDefault();
+    function EditConciliacion(e) {
+            e.preventDefault();
 
-       // clearsession();
+           // clearsession();
 
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        var dataObject = {
-            CustomerDocumentId: dataItem.CustomerDocumentId,
-            editar : 0
-        };
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                ConciliacionId: dataItem.ConciliacionId,
+                editar : 0
+            };
 
-        $.ajax({
-            url: '@Url.Action("pvwCustomerDocumentUpload", "CustomerDocument")',
-            method: 'POST',
-            datatype: "json",
-            contentType: 'application/json',
-            async: false,
-            data: JSON.stringify(dataObject),
-            success: function (result) {
-                $("#CustomerDocument").html('');
-                $("#CustomerDocument").html(result);
+            $.ajax({
+                url: '@Url.Action("pvwAddConciliacion", "Conciliacion")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#ModalConciliacion").html('');
+                    $("#ModalConciliacion").html(result);
 
-                $("#DocumentTypeId").data("kendoDropDownList").trigger('change');
-                $('#myModalCustomerDocumentUpload').modal('show');
-            },
-             error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
-              }
-        });
-    }
-
-
-    function Descargar(e) {
-        e.preventDefault();
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        @*var dataObject = { 'tpath' : "test" };
-         $.ajax({
-            url: '@Url.Action("Download", "Download")',
-            method: 'GET',
-            datatype: "json",
-            contentType: 'application/json',
-            async: false,
-            data: (dataObject),
-             success: function (result) {
-
-                //  saveAs(result, "save");
-                //$("#CustomerDocument").html('');
-                //$("#CustomerDocument").html(result);
-                //$('#myModalCustomerDocumentUpload').modal('show');
-            },
-             error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
-              }
-        });*@
-
-       // console.log(dataItem.Path);
-         var dataObject = {
-             'tpath': dataItem.Path//"C:\\Users\\tomaturnos\\Desktop\\Old\\Projects\\BI\\ERP\\ERPMVC\\ERPMVC\\wwwroot\\ContratosTemplate\\Proceso.pdf"
-          };
-
-          var ajax = new XMLHttpRequest();
-         ajax.open("Post", '@Url.Action("Download", "Download")' , true);
-          ajax.responseType = "blob";
-          ajax.setRequestHeader("Content-Type", "application/json");
-                            ajax.onreadystatechange = function () {
-                                if (this.readyState == 4) {
-                                    //debugger;
-                                    var blob = new Blob([this.response], { type: "application/vnd.ms-excel;charset=charset=utf-8" });
-                                   // var blob = new  Blob([this.response], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=charset=utf-8" });
-                                    var fileName = dataItem.DocumentName;
-                                    saveAs(blob, fileName);
-                                    //application/octet-stream
-                                }
-        };
-        ajax.send(JSON.stringify(dataObject));
+                    //$("#DocumentTypeId").data("kendoDropDownList").trigger('change');
+                    $('#myModalConciliacionUpload').modal('show');
+                },
+                 error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        alert(textStatus + ": " + XMLHttpRequest.responseText);
+                  }
+            });
+        }
 
 
-    }
+    function RefreshConciliacion() {
 
-   function ImprimirDocumento(e) {
-        e.preventDefault();
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-       var url = '@Url.Action("SFCustomerDocument", "CustomerDocument")/' + dataItem.CustomerDocumentId;
-           var win = window.open(url, '_blank');
-           win.focus();
-    }
-
-    function RefreshCustomerDocument() {
-
-        $("#gridCustomerDocument").getKendoGrid().dataSource.read();
+        $("#gridConciliaciones").getKendoGrid().dataSource.read();
 
 
-    }
+        }
 
 </script>
 
@@ -182,111 +107,103 @@
 
 
 
-<div class="container-fluid">
-    <div class="row">
-        <div class="col-12">
-            <div class="card">
-                <div class="card-body">
+<h3 class="text-themecolor">Conciliación Bancaria</h3>
 
-                    @(Html.Kendo().Grid<ERPMVC.Models.Conciliacion>()
-                               .Name("gridCustomerDocument")
-                               .Columns(columns =>
-                               {
-                                   columns.Command(command =>
-                                   {
-                                       command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCustomerDocument");
-                                       command.Custom("Descargar").Text(" ").IconClass("fa fa-download").Click("Descargar");
-                                       command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirDocumento");
-                                          // command.Custom("Ver detalles").Click("Detalles");
-                                          // command.Edit(); command.Destroy();
-                                      }).Width(170);
-                                   columns.Bound(p => p.ConciliacionId).Width(100);
-                                  
-                                   columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy}").Width(100);
+@(Html.Kendo().Grid<ERPMVC.Models.Conciliacion>()
+                                               .Name("gridConciliaciones")
+                                               .Columns(columns =>
+                                               {
+                                                   columns.Command(command =>
+                                                   {
+                                                       command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditConciliacion");
+                                           // command.Custom("Descargar").Text(" ").IconClass("fa fa-download").Click("Descargar");
+                                           // command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirDocumento");
+                                           // command.Custom("Ver detalles").Click("Detalles");
+                                           // command.Edit(); command.Destroy();
+                                       }).Width(170);
+                                                   columns.Bound(p => p.ConciliacionId).Width(100).Visible(false);
 
-                               })
-                                   .Filterable(f => f.Operators(o => o.ForString(s => s
-                                                        .Clear()
-                                                        .Contains("Contiene")
-                                                        .DoesNotContain("No contiene")
-                                                        .EndsWith("Termina con")
-                                                        .IsEqualTo("Es igual a")
-                                                        .IsNotEqualTo("No es igual a")
-                                                        .IsNull("Es nulo")
-                                                        .StartsWith("Inicia con")
+                                                   columns.Bound(p => p.FechaConciliacion).Format("{0:dd/MM/yyyy}").Width(100);
+                                                   columns.Bound(p => p.BankName).Width(200);
+                                                   columns.Bound(p => p.SaldoConciliado).Width(200);
+
+                                               })
+                                                   .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                                        .Clear()
+                                                                        .Contains("Contiene")
+                                                                        .DoesNotContain("No contiene")
+                                                                        .EndsWith("Termina con")
+                                                                        .IsEqualTo("Es igual a")
+                                                                        .IsNotEqualTo("No es igual a")
+                                                                        .IsNull("Es nulo")
+                                                                        .StartsWith("Inicia con")
 
 
-                                                  )
-                                                  .ForNumber(n => n
-                                                    .Clear()
-                                                    .IsEqualTo("Es igual a")
-                                                    .IsGreaterThan("Es mayor que")
-                                                    .IsLessThan("Es menor que")
-                                                    .IsNull("Es nulo")
-                                                    .IsLessThanOrEqualTo("Es menor o igual que")
-                                                    .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                  )
-                                                  .ForDate(d => d
-                                                  .Clear()
-                                                  .IsEqualTo("Es igual que")
-                                                  .IsGreaterThan("Es mayor que")
-                                                  .IsLessThan("Es menor que")
-                                                  .IsLessThanOrEqualTo("Es menor o igual que")
-                                                  .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                  .IsNotEqualTo("No es igual que")
-                                                   )
-                                                ))
-                               .ToolBar(tools =>
-                               {
-                                      //tools.Create();
-                                      tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                 .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerArea();" });
+                                                                  )
+                                                                  .ForNumber(n => n
+                                                                    .Clear()
+                                                                    .IsEqualTo("Es igual a")
+                                                                    .IsGreaterThan("Es mayor que")
+                                                                    .IsLessThan("Es menor que")
+                                                                    .IsNull("Es nulo")
+                                                                    .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                    .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                  )
+                                                                  .ForDate(d => d
+                                                                  .Clear()
+                                                                  .IsEqualTo("Es igual que")
+                                                                  .IsGreaterThan("Es mayor que")
+                                                                  .IsLessThan("Es menor que")
+                                                                  .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                  .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                  .IsNotEqualTo("No es igual que")
+                                                                   )
+                                                                ))
+                                               .ToolBar(tools =>
+                                               {
+                                       //tools.Create();
+                                       tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                              .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddConciliacion();" });
 
-                                   tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                   tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                                   tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                   tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
 
 
-                               })
-                               .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
-                               .Sortable()
-                               .Pageable()
-                               .Filterable()
-                               .Scrollable()
-                               .Pdf(pdf => pdf.FileName("CustomerDocumentReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                  .Excel(excel => excel.FileName("CustomerDocumentReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                               .DataSource(dataSource =>
-                                   dataSource
-                                     .WebApi()
-                                     .ServerOperation(true)
-                                     .Model(model =>
-                                     {
-                                         model.Id(p => p.ConciliacionId);
-                                         model.Field(p => p.ConciliacionId).Editable(false);
+                                               })
+                                               .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                                               .Sortable()
+                                               .Pageable()
+                                               .Filterable()
+                                               .Scrollable()
+                                               .Pdf(pdf => pdf.FileName("ConciliacionReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                                  .Excel(excel => excel.FileName("ConciliacionReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                               .DataSource(dataSource =>
+                                                   dataSource
+                                                     .WebApi()
+                                                     .ServerOperation(true)
+                                                     .Model(model =>
+                                                     {
+                                                         model.Id(p => p.ConciliacionId);
+                                                         model.Field(p => p.ConciliacionId).Editable(false);
+                                                     })
+                                                     .Events(events => events.Error("error_handler"))
+                                                     .Read(read => read.Action("GetConciliacion", "Conciliacion"))
+                                                    // .Create(create => create.Action("Insert", "Conciliacion"))
+                                                    // .Update(update => update.Action("Update", "Conciliacion", new { id = "{0}" }))
+                                                     //.Destroy(destroy => destroy.Action("Delete", "Conciliacion", new { id = "{0}" }))
+                                               )
+                                                 .Events(e =>
+                                                 {
+                                         //e.Save("onsave");
                                      })
-                                     .Events(events => events.Error("error_handler"))
-                                     .Read(read => read.Action("GeDocumentByCustomerId", "CustomerDocument"))
-                                     .Create(create => create.Action("Insert", "CustomerDocument"))
-                                     .Update(update => update.Action("Update", "CustomerDocument", new { id = "{0}" }))
-                                     .Destroy(destroy => destroy.Action("Delete", "CustomerDocument", new { id = "{0}" }))
-                               )
-                                 .Events(e =>
-                                 {
-                                        //e.Save("onsave");
-                                    })
-                    )
-
-                    
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+)
 
 
-<div id="CustomerDocument">
-    @await Html.PartialAsync("pvwAddConciliacion", new ERPMVC.Models.Conciliacion { ConciliacionId = 0 })
-</div>
+
+<div id="ModalConciliacion">
+    @await Html.PartialAsync("pvwAddConciliacion", new ERPMVC.DTO.ConciliacionDTO { ConciliacionId = 0 })
+</div> 

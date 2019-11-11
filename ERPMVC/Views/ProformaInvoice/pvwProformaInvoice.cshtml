@@ -2,8 +2,8 @@
 
 @{ Layout = null;
     var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
-                                        {"required","Valor requerido" }
-                                    };
+                                {"required","Valor requerido" }
+                            };
     var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
 }
 
@@ -50,13 +50,13 @@
     function Exportar(ProformaId) {
         var url = '@Url.Action("ExportCalculoFactura", "ProformaInvoice")/' + ProformaId;
         var win = window.open(url, '_blank');
-        win.focus();       
+        win.focus();
     }
 
     function ExportarIdentificador() {
         var url = '@Url.Action("ExportCalculoFacturaByIdentificador", "ProformaInvoice")/' + $("#IdentificadorCalculo").val();
         var win = window.open(url, '_blank');
-        win.focus();       
+        win.focus();
     }
 
 
@@ -99,14 +99,14 @@
                             {
                                 <button class="btnmitoolbar" onclick="Exportar('@Model.ProformaId')"><i class="fa fa-file-export"></i>Exportar Calculo</button>
                             }
-                          
+
                         </div>
                         <div class="col-md-2">
                             <button class="btnmitoolbar" onclick="ImprimirProformaIn('@Model.ProformaId')"><i class="fa fa-print"></i></button>
                         </div>
 
-                        </div>
                     </div>
+                </div>
 
                 <div class="container-fluid">
 
@@ -289,34 +289,33 @@
                                 <input type="hidden" id="singuardar" value="0" />
                                 <label for="cbxBuscar" class="control-label" style="width:100%">Asociar cotización con proforma</label>
                                 @(Html.Kendo().DropDownList()
-                                                                            .Name("cbxBuscarCotizaciones")
-                                                                            .Filter(Kendo.Mvc.UI.FilterType.Contains)
-                                                                            .OptionLabel("Buscar Cotización")
+                                  .Name("cbxBuscarCotizaciones")
+                                  .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                                  .OptionLabel("Buscar Cotización")
+                                  .DataTextField("SalesOrderName")
+                                  .DataValueField("SalesOrderId")
+                                  .HtmlAttributes(new { style = "width:100%" })
+                                  .Height(290)
+                                  .Events(e =>
+                                  {
+                                     e.Change("changesetearvalues");
+                                     //e.Filtering("applyFilterCustomer");
+                                  })
+                                  .AutoBind(false)
 
-                                                                            .DataTextField("SalesOrderName")
-                                                                            .DataValueField("SalesOrderId")
-                                                                            .HtmlAttributes(new { style = "width:100%" })
-                                                                            .Height(290)
-                                                                            .Events(e =>
-                                                                            {
-                                                                                e.Change("changesetearvalues");
-                                                                                                //e.Filtering("applyFilterCustomer");
-                                                                                            })
-                                                                            .AutoBind(false)
+                                  .DataSource(source =>
+                                  {
+                                      source.Ajax()
+                                      .PageSize(80)
+                                       .Read(read => read.Action("Virtualization_ReadByCustomer", "SalesOrder")
+                                           .Data("ClienteId"));
 
-                                                                            .DataSource(source =>
-                                                                            {
-                                                                                source.Ajax()
-                                                                                .PageSize(80)
-                                                                                 .Read(read => read.Action("Virtualization_ReadByCustomer", "SalesOrder")
-                                                                                     .Data("ClienteId"));
-
-                                                                                source.ServerFiltering(true);
-                                                                            })
-                                                                            .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapper"))
+                                      source.ServerFiltering(true);
+                                  })
+                                  .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapper"))
                                 )
 
-                                
+
                             </div>
                         </div>
                     </div>
@@ -331,7 +330,7 @@
                                     function valueMapperCertificado(options) {
                                         $.ajax({
                                             url: "@Url.Action("Orders_ValueMapperByCustomer", "CertificadoDeposito")",
-                                            data: convertValues(options.value),
+                                            data: convertValuesCertificado(options.value),
                                             success: function (data) {
                                                 options.success(data);
                                             }
@@ -377,9 +376,9 @@
                                                                 //$("#OrderDate").val(data.OrderDate);
                                                                 //$("#DeliveryDate").val(data.DeliveryDate);
                                                                 //$("#ExpirationDate").val(data.ExpirationDate);
-                                                                //$("#ProductId").data("kendoDropDownList").value(data.ServicioId); 
+                                                                //$("#ProductId").data("kendoDropDownList").value(data.ServicioId);
                                                                 $("#CustomerId").data("kendoDropDownList").value(data.CustomerId);
-                                                                $("#ProformaName").val(data.CustomerName);                                                                                                                            
+                                                                $("#ProformaName").val(data.CustomerName);
                                                                 $("#ProductId").data("kendoDropDownList").value(data.ProductId);
                                                                 $("#CurrencyId").data("kendoDropDownList").value(data.CustomerId);
                                                                 $("#SalesTypeId").data("kendoDropDownList").value(data.SalesTypeId);
@@ -437,7 +436,7 @@
                                                                         , Total: data.ProformaInvoiceLine[i].Total
                                                                         , Quantity: data.ProformaInvoiceLine[i].Quantity
                                                                         , WareHouseId: data.ProformaInvoiceLine[i].WarehouseId
-                                                                        , ControlPalletsId: $("#cbxBuscarCotizaciones").val()
+                                                                        //, ControlPalletsId: $("#cbxBuscarCotizaciones").val()
                                                                     };
 
                                                                     $.ajax({
@@ -467,7 +466,7 @@
 
                                                             },
                                                             error: function (XMLHttpRequest, textStatus, errorThrown) {
-                                                             
+
                                                                 notification.show({
                                                                     title: "Validación",
                                                                     message: textStatus + ": " + XMLHttpRequest.responseText
@@ -498,34 +497,57 @@
                                                 }
                                             }
 
+                                    function SelectAllClick() {
+                                        var multiSelect = $("#cbxBuscarCertificadosDeposito").data("kendoMultiSelect");
+
+                                        //multiSelect.wrapper.find(".k-multiselect-wrap").removeClass("floatWrap").addClass("k-floatwrap");
+                                        //var all = $.map(multiSelect.dataSource.data(), function (dataItem) {
+                                        //    return dataItem.IdCD;
+                                        //});
+                                        //console.log(all);
+                                        //multiSelect.value(all);
+
+
+                                        var selectedValues = "";
+                                        var strComma = "";
+                                        for (var i = 0; i < multiSelect.dataSource.data().length; i++) {
+                                            var item = multiSelect.dataSource.data()[i];
+                                            console.log(item);
+                                            selectedValues += strComma + item.IdCD;
+                                            strComma = ",";
+                                        }
+                                        multiSelect.value(selectedValues.split(","));
+                                    }
 
                                 </script>
 
                                 <input type="hidden" id="IdentificadorCalculo" value="0" />
                                 <input type="hidden" id="CustomerIdhidden" value="0" />
+                                <button id="btnSeleccionarCertificadoDeposito" class="form-control" onclick="SelectAllClick();">Seleccionar todos</button>
                                 <label for="cbxBuscar" class="control-label" style="width:100%">Asociar certificado(s) de depósito con proforma</label>
                                 @(Html.Kendo().MultiSelect()
-                                                 .Name("cbxBuscarCertificadosDeposito")
-                                                 .Filter(Kendo.Mvc.UI.FilterType.Contains)
-                                                 .Placeholder("Seleccionar Certificado(s)")
-                                                 .DataTextField("CustomerName")
-                                                 .DataValueField("IdCD")
-                                                 .HtmlAttributes(new { style = "width:100%" })
-                                                 .Height(290)
-                                                 .Events(e =>
-                                                 {
-                                                   //e.Change("changesetearvaluesCertificado");
-                                                 })
-                                                 .AutoBind(false)
-                                                 .DataSource(source =>
-                                                 {
-                                                     source.Ajax()
-                                                     .PageSize(80)
-                                                      .Read(read => read.Action("Virtualization_ReadByCustomer", "CertificadoDeposito")
-                                                      .Data("ClienteId"));
-                                                     source.ServerFiltering(true);
-                                                 })
-                                                 .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapperCertificado"))
+                                                         .Name("cbxBuscarCertificadosDeposito")
+                                                         .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                                                         .Placeholder("Seleccionar Certificado(s)")
+                                                         .DataTextField("CustomerName")
+                                                         .DataValueField("IdCD")
+                                                         
+                                                         .HtmlAttributes(new { style = "width:100%" })
+                                                         .Height(290)
+                                                         .Events(e =>
+                                                         {
+                                                                             //e.Change("changesetearvaluesCertificado");
+                                                         })
+                                                         .AutoBind(false)
+                                                         .DataSource(source =>
+                                                         {
+                                                             source.Ajax()
+                                                             .PageSize(80)
+                                                              .Read(read => read.Action("Virtualization_ReadByCustomer", "CertificadoDeposito")
+                                                              .Data("ClienteId"));
+                                                             source.ServerFiltering(true);
+                                                         })
+                                                         .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapperCertificado"))
                                 )
 
                                 <button id="btnAsociarCertificados" class="form-control" onclick="changesetearvaluesCertificado();">Calcular Factura por certificado</button>
@@ -584,19 +606,19 @@
 
                                                 var datasourced = grid.dataSource;
 
-                                              
-                                              
-                                                for (var i = 0; i < datasource._data.length; i++) {                                             
+
+
+                                                for (var i = 0; i < datasource._data.length; i++) {
 
                                                     var midataobj = {};
                                                     var dataItem = datasource._data[i];
 
                                                     if (datasource._data[i].SubProductName == "Almacenaje") {
 
-                                                       
+
                                                         //dataItem.set("SubProductId", 1);
-                                                        //dataItem.set("SubProductName", "Almacenaje");                                                    
-                                                      
+                                                        //dataItem.set("SubProductName", "Almacenaje");
+
 
                                                         midataobj={
                                                             ProformaLineId: i + 1, ProformaInvoiceId: 0
@@ -611,15 +633,15 @@
                                                             , TaxPercentage: datasource._data[i].TaxPercentage
                                                             , Amount: data.UsedArea * dataItem.Price
                                                             , TaxAmount: (data.UsedArea * dataItem.Price) * 0.15
-                                                            , Total: (data.UsedArea * dataItem.Price) * 1.15                                                         
+                                                            , Total: (data.UsedArea * dataItem.Price) * 1.15
                                                             , ControlPalletsId: $("#cbxBuscarCotizaciones").val()
                                                         };
 
 
-                                                       
+
                                                     }
                                                     else {
-                                                        midataobj = { 
+                                                        midataobj = {
                                                             ProformaLineId: i + 1, ProformaInvoiceId: 0
                                                             , UnitOfMeasureName: datasource._data[i].UnitOfMeasureName, UnitOfMeasureId: datasource._data[i].UnitOfMeasureId
                                                             , SubProductId: datasource._data[i].SubProductId, SubProductName: datasource._data[i].SubProductName
@@ -639,7 +661,7 @@
 
                                                     datasource.remove(dataItem);
                                                     datasource.insert(midataobj);
-                                                 
+
                                                       $.ajax({
                                                             url: '@Url.Action("SetLinesInSession", "ProformaInvoiceLine")',
                                                             method: 'POST',
@@ -656,7 +678,7 @@
                                                                 alert(textStatus + ": " + XMLHttpRequest.responseText);
                                                             }
                                                         });
-                                                }            
+                                                }
 
                                                 CalcularTotalDocumento();
 
@@ -691,29 +713,29 @@
                             </script>
                             <label for="cbxBuscar" class="control-label" style="width:100%">Agregar area utilizada</label>
                             @(Html.Kendo().DropDownList()
-                                                                        .Name("cbxBuscarCustomerArea")
-                                                                        .Filter(Kendo.Mvc.UI.FilterType.Contains)
-                                                                        .OptionLabel("Buscar Area utilizada")
-                                                                        .DataTextField("CustomerName")
-                                                                        .DataValueField("CustomerAreaId")
-                                                                        .HtmlAttributes(new { style = "width:100%" })
-                                                                        .Height(290)
-                                                                        .Events(e =>
-                                                                        {
-                                                                           // e.Change("changeAreaUtilizada");
-                                                                                        //e.Filtering("applyFilterCustomer");
-                                                                                    })
-                                                                        .AutoBind(true)
+                                                                                .Name("cbxBuscarCustomerArea")
+                                                                                .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                                                                                .OptionLabel("Buscar Area utilizada")
+                                                                                .DataTextField("CustomerName")
+                                                                                .DataValueField("CustomerAreaId")
+                                                                                .HtmlAttributes(new { style = "width:100%" })
+                                                                                .Height(290)
+                                                                                .Events(e =>
+                                                                                {
+                                                                                                // e.Change("changeAreaUtilizada");
+                                                                                                //e.Filtering("applyFilterCustomer");
+                                                                                            })
+                                                                                .AutoBind(true)
 
-                                                                        .DataSource(source =>
-                                                                        {
-                                                                            source.Ajax()
-                                                                            .PageSize(80)
+                                                                                .DataSource(source =>
+                                                                                {
+                                                                                    source.Ajax()
+                                                                                    .PageSize(80)
 
-                                                                            .Read("Virtualization_Read", "CustomerArea");
-                                                                            source.ServerFiltering(true);
-                                                                        })
-                                                                        .Virtual(v => v.ItemHeight(26).ValueMapper("valueMappercustomerarea"))
+                                                                                    .Read("Virtualization_Read", "CustomerArea");
+                                                                                    source.ServerFiltering(true);
+                                                                                })
+                                                                                .Virtual(v => v.ItemHeight(26).ValueMapper("valueMappercustomerarea"))
                             )
 
                             <button id="btnAsociarAreasUtilizadas" class="form-control" onclick="changeAreaUtilizada();">Calcular Factura por area utilizada</button>
@@ -819,33 +841,33 @@
 
                                         <div class="row">
                                             @*<div class="col-md-4">
-                                        <div class="form-group">
+                                                    <div class="form-group">
 
-                                            <script>
-                                                function GrupoConfiguracionTipoContrato() {
-                                                    return { 'Id': 1 };
-                                                }
-                                            </script>
+                                                        <script>
+                                                            function GrupoConfiguracionTipoContrato() {
+                                                                return { 'Id': 1 };
+                                                            }
+                                                        </script>
 
-                                            <label asp-for="TypeContractId" class="control-label" style="width:100%"></label>
+                                                        <label asp-for="TypeContractId" class="control-label" style="width:100%"></label>
 
-                                            <kendo-dropdownlist name="TypeContractId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                for="TypeContractId"
-                                                                option-label="Seleccione el tipo de contrato"
-                                                                datatextfield="Nombre"
-                                                                datavaluefield="Id"
-                                                                required
-                                                                style="width: 100%;">
-                                                <datasource type="DataSourceTagHelperType.WebApi">
-                                                    <transport>
-                                                        <read url="@Url.Action("GetElementoByIdConfiguracion", "ElementoConfiguracion")" data="GrupoConfiguracionTipoContrato" />
+                                                        <kendo-dropdownlist name="TypeContractId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                            for="TypeContractId"
+                                                                            option-label="Seleccione el tipo de contrato"
+                                                                            datatextfield="Nombre"
+                                                                            datavaluefield="Id"
+                                                                            required
+                                                                            style="width: 100%;">
+                                                            <datasource type="DataSourceTagHelperType.WebApi">
+                                                                <transport>
+                                                                    <read url="@Url.Action("GetElementoByIdConfiguracion", "ElementoConfiguracion")" data="GrupoConfiguracionTipoContrato" />
 
-                                                    </transport>
-                                                </datasource>
-                                            </kendo-dropdownlist>
-                                            <span asp-validation-for="TypeContractId" class="text-danger"></span>
-                                        </div>
-                                    </div>*@
+                                                                </transport>
+                                                            </datasource>
+                                                        </kendo-dropdownlist>
+                                                        <span asp-validation-for="TypeContractId" class="text-danger"></span>
+                                                    </div>
+                                                </div>*@
 
 
                                             <div class="col-sm-4 col-md-4">
@@ -1349,7 +1371,7 @@
 
                 validadetalle = false;
             }
-        }       
+        }
 
         if (validadetalle) {
             var dataObject = {
@@ -1434,7 +1456,7 @@
                         success: function (data) {
                             RefreshCotizaciones();
 
-                            $("#ProformaId").data("kendoNumericTextBox").value(data.ProformaId);                        
+                            $("#ProformaId").data("kendoNumericTextBox").value(data.ProformaId);
 
 
                             $.toast({

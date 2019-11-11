@@ -25,8 +25,8 @@ function GetIdEmployees() {
                                                                       }).Width(150);
                                                                       columns.Bound(p => p.EmployeeSalaryId).Width(100).Visible(false);
                                                                       columns.Bound(p => p.IdEmpleado).Title("Empleado").Width(150).Visible(false);
-                                                                      columns.Bound(p => p.QtySalary).Title("Salario").Width(150);
-                                                                      columns.Bound(p => p.IdFrequency).Title("Código Frecuencia").Width(150);
+                                                                      columns.Bound(p => p.QtySalary).Title("Salario").Width(150).EditorTemplateName("EmployeeSalary");
+                                                                      //columns.Bound(p => p.QtySalary).Format("{0:n2}").Title("Salario").Width(150);
                                                                       columns.Bound(p => p.DayApplication).Title("Dia de Aplicacion").Format("{0:dd/MM/yyyy HH:mm}").Width(190);
                                                                       columns.Bound(p => p.IdEstado).ClientTemplate("#if (IdEstado =='1') {#Activo#} else {#Inactivo#} #").Width(150);
                                                                       columns.Bound(p => p.CreatedDate).Title("Fecha creacion").Format("{0:dd/MM/yyyy HH:mm}").Width(150).Sortable(false);
@@ -98,7 +98,6 @@ function GetIdEmployees() {
                 model.Field(p => p.EmployeeSalaryId).Editable(false);
                 model.Field(p => p.IdEmpleado).Editable(false);
                 model.Field(p => p.QtySalary).Editable(true);
-                model.Field(p => p.IdFrequency).Editable(false);
                 model.Field(p => p.DayApplication).Editable(true);
                 model.Field(p => p.IdEstado).Editable(false).DefaultValue("1");
                 model.Field(p => p.CreatedDate).Editable(false);
@@ -120,7 +119,12 @@ function GetIdEmployees() {
         if (data != null) {
             data.DayApplication = data.DayApplication.toJSON();
             data.CreatedDate = data.CreatedDate.toJSON();
-            data.IdEmpleado = $("#IdEmpleado").val()
+            data.IdEmpleado = $("#IdEmpleado").val();
+            data.IdFrequency = 0;
+            $('#QtySalary').val($('#QtySalary').val().replace(/\./g, ','));
+
+            var Salario = $('#QtySalary').val();
+            data.QtySalary = Salario;
             var displayedData = $("#gridEmployeeSalary").data().kendoGrid.dataSource.view();
             var id = 0;
             if ($("#IdEmpleado").val() == 0) {
@@ -134,12 +138,30 @@ function GetIdEmployees() {
             }
             data.EmployeeSalaryId = id;
         }
+        console.log(data);
     }
     function GetDataUpdate(data) {
         if (data != null) {
             data.DayApplication = data.DayApplication.toJSON();
             data.CreatedDate = data.CreatedDate.toJSON();
             data.IdEmpleado = $("#IdEmpleado").val();
+            $('#QtySalary').val($('#QtySalary').val().replace(/\./g, ','));
+
+            var Salario = $('#QtySalary').val();
+            data.QtySalary = Salario;
+            //var displayedData = $("#gridEmployeeSalary").data().kendoGrid.dataSource.view();
+            //var id = 0;
+            //if ($("#IdEmpleado").val() == 0) {
+            //    if (displayedData.length > 0) {
+            //        for (var i = 0; i < displayedData.length; i++) {
+            //            if (displayedData[i].EmployeeSalaryId > id)
+            //                displayedData[i].EmployeeSalaryId = 0;
+
+            //        }
+            //        id = 0;
+            //    }
+            //}
+            //data.EmployeeSalaryId = displayedData.EmployeeSalaryId
         }
     }
 
@@ -155,10 +177,18 @@ function GetIdEmployees() {
         //var element = e.target || e.srcElement;
         //var data = $("#gridEmployeeSalary").data("kendoGrid").dataItem($(element).closest("tr"));
         //var data = this.dataItem($(e.currentTarget).closest("tr"));
-        if (data.model.EmployeeSalaryId == 0 || data.model.EmployeeSalaryId == null) {
+        if (data.model.EmployeeSalaryId == 0 || data.model.EmployeeSalaryId == null && data.model.IdEmpleado == 0) {
+            //$("#Salario").data('kendoNumericTextBox').value(QtySalary);
             $("#Salario").val(QtySalary);
         }
-        if (data.model.IdEstado == 1) {
+        else if (data.model.EmployeeSalaryId == 0 || data.model.EmployeeSalaryId == null && data.model.IdEmpleado > 0){
+            $("#Salario").val(QtySalary);
+        }
+        if (data.model.IdEstado == 1 && data.model.IdEmpleado == 0) {
+            //$("#Salario").data('kendoNumericTextBox').value(QtySalary);
+            $("#Salario").val(QtySalary);
+        }
+        else if (data.model.IdEstado == 1 && data.model.IdEmpleado > 0){
             $("#Salario").val(QtySalary);
         }
         $("#myModalSalarioEmpleado").modal('hide');

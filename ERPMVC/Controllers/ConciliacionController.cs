@@ -55,18 +55,18 @@ namespace ERPMVC.Controllers
         //    this.config = config;
         //    this._logger = logger;
         //}
-
+        
 
         // GET: Conciliacion
-        public ActionResult Conciliacion()
+        public IActionResult Conciliacion()
         {
             return View();
         }
 
         [HttpGet("[action]")]
-        public async Task<DataSourceResult> GetConciliacion([DataSourceRequest]DataSourceRequest request, Int64 CustomerId)
+        public async Task<DataSourceResult> GetConciliacion([DataSourceRequest]DataSourceRequest request)
         {
-            List<CustomerDocument> _CustomerDocument = new List<CustomerDocument>();
+            List<Conciliacion> _Conciliacion = new List<Conciliacion>();
 
 
             try
@@ -75,12 +75,12 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CustomerDocument/GeDocumentByCustomerId/" + CustomerId);
+                var result = await _client.GetAsync(baseadress + "api/Conciliacion/GetConciliacion");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CustomerDocument = JsonConvert.DeserializeObject<List<CustomerDocument>>(valorrespuesta);
+                    _Conciliacion = JsonConvert.DeserializeObject<List<Conciliacion>>(valorrespuesta);
 
                 }
 
@@ -93,14 +93,14 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _CustomerDocument.ToDataSourceResult(request);
+            return _Conciliacion.ToDataSourceResult(request);
 
         }
 
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> pvwAddConciliacion([FromBody]Conciliacion _Conciliaciontp)
         {
-            Conciliacion _Conciliacion = new Conciliacion();
+            ConciliacionDTO _Conciliacion = new ConciliacionDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -111,13 +111,13 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Conciliacion = JsonConvert.DeserializeObject<Conciliacion>(valorrespuesta);
+                    _Conciliacion = JsonConvert.DeserializeObject<ConciliacionDTO>(valorrespuesta);
 
                 }
 
                 if (_Conciliacion == null)
                 {
-                    _Conciliacion = new Conciliacion();
+                    _Conciliacion = new ConciliacionDTO();
                 }
 
             }
@@ -135,81 +135,81 @@ namespace ERPMVC.Controllers
 
 
 
-        [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<Conciliacion>> SaveConciliacion(List<IFormFile> files, ConciliacionDTO _Conciliaciontp)
-        {
+        //[HttpPost("[controller]/[action]")]
+        //public async Task<ActionResult<Conciliacion>> SaveConciliacion(List<IFormFile> files, ConciliacionDTO _Conciliaciontp)
+        //{
 
-            try
-            {
+        //    try
+        //    {
 
-                Conciliacion _listConciliacion = new Conciliacion();
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Conciliacion/GetConciliacionById/" + _Conciliaciontp.ConciliacionId);
-                string valorrespuesta = "";
+        //        Conciliacion _listConciliacion = new Conciliacion();
+        //        string baseadress = config.Value.urlbase;
+        //        HttpClient _client = new HttpClient();
+        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+        //        var result = await _client.GetAsync(baseadress + "api/Conciliacion/GetConciliacionById/" + _Conciliaciontp.ConciliacionId);
+        //        string valorrespuesta = "";
 
-                foreach (var file in files)
-                {
-
-
-                    FileInfo info = new FileInfo(file.FileName);
-                    if (info.Extension.Equals(".pdf") || info.Extension.Equals(".jpg")
-                        || info.Extension.Equals(".png")
-                       || info.Extension.Equals(".xls") || info.Extension.Equals(".xlsx"))
-                    {
-
-                        _Conciliaciontp.FechaModificacion = DateTime.Now;
-                        _Conciliaciontp.UsuarioModificacion = HttpContext.Session.GetString("user");
-                        if (result.IsSuccessStatusCode)
-                        {
-
-                            valorrespuesta = await (result.Content.ReadAsStringAsync());
-                            _listConciliacion = JsonConvert.DeserializeObject<Conciliacion>(valorrespuesta);
-                        }
-
-                        if (_listConciliacion == null) { _listConciliacion = new Models.Conciliacion(); }
-                        if (_listConciliacion.ConciliacionId == 0)
-                        {
-                            _Conciliaciontp.FechaCreacion = DateTime.Now;
-                            //_Conciliacion.DocumentName = file.FileName;
-                            _Conciliaciontp.UsuarioCreacion = HttpContext.Session.GetString("user");
-                            var insertresult = await Insert(_Conciliaciontp);
-                            var value = (insertresult.Result as ObjectResult).Value;
-                            _Conciliaciontp = ((ConciliacionDTO)(value));
-                        }
-                        else
-                        {
-                            var updateresult = await Update(_Conciliaciontp.ConciliacionId, _Conciliaciontp);
-                        }
+        //        foreach (var file in files)
+        //        {
 
 
+        //            FileInfo info = new FileInfo(file.FileName);
+        //            if (info.Extension.Equals(".pdf") || info.Extension.Equals(".jpg")
+        //                || info.Extension.Equals(".png")
+        //               || info.Extension.Equals(".xls") || info.Extension.Equals(".xlsx"))
+        //            {
 
-                        //var filePath = _hostingEnvironment.WebRootPath + "/Conciliacions/" + _Conciliacion.ConciliacionId + "_"
-                        //    + file.FileName.Replace(info.Extension, "") + "_" + _Conciliacion.DocumentTypeId + "_" + _Conciliacion.DocumentTypeName
-                        //    + info.Extension;
+        //                _Conciliaciontp.FechaModificacion = DateTime.Now;
+        //                _Conciliaciontp.UsuarioModificacion = HttpContext.Session.GetString("user");
+        //                if (result.IsSuccessStatusCode)
+        //                {
 
-                        //using (var stream = new FileStream(filePath, FileMode.Create))
-                        //{
-                        //    await file.CopyToAsync(stream);
-                        //    // MemoryStream mstream = new MemoryStream();
-                        //    //mstream.WriteTo(stream);
-                        //}
+        //                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+        //                    _listConciliacion = JsonConvert.DeserializeObject<Conciliacion>(valorrespuesta);
+        //                }
 
-                        //_Conciliacion.Path = filePath;
-                        var updateresult2 = await Update(_Conciliaciontp.ConciliacionId, _Conciliaciontp);
-                    }
-                }
+        //                if (_listConciliacion == null) { _listConciliacion = new Models.Conciliacion(); }
+        //                if (_listConciliacion.ConciliacionId == 0)
+        //                {
+        //                    _Conciliaciontp.FechaCreacion = DateTime.Now;
+        //                    //_Conciliacion.DocumentName = file.FileName;
+        //                    _Conciliaciontp.UsuarioCreacion = HttpContext.Session.GetString("user");
+        //                    var insertresult = await Insert(_Conciliaciontp);
+        //                    var value = (insertresult.Result as ObjectResult).Value;
+        //                    _Conciliaciontp = ((ConciliacionDTO)(value));
+        //                }
+        //                else
+        //                {
+        //                    var updateresult = await Update(_Conciliaciontp.ConciliacionId, _Conciliaciontp);
+        //                }
 
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
 
-            return Json(_Conciliaciontp);
-        }
+
+        //                //var filePath = _hostingEnvironment.WebRootPath + "/Conciliacions/" + _Conciliacion.ConciliacionId + "_"
+        //                //    + file.FileName.Replace(info.Extension, "") + "_" + _Conciliacion.DocumentTypeId + "_" + _Conciliacion.DocumentTypeName
+        //                //    + info.Extension;
+
+        //                //using (var stream = new FileStream(filePath, FileMode.Create))
+        //                //{
+        //                //    await file.CopyToAsync(stream);
+        //                //    // MemoryStream mstream = new MemoryStream();
+        //                //    //mstream.WriteTo(stream);
+        //                //}
+
+        //                //_Conciliacion.Path = filePath;
+        //                var updateresult2 = await Update(_Conciliaciontp.ConciliacionId, _Conciliaciontp);
+        //            }
+        //        }
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+        //        throw ex;
+        //    }
+
+        //    return Json(_Conciliaciontp);
+        //}
 
         public async Task<ActionResult> Submit(List<IFormFile> files, ConciliacionDTO _Conciliaciontp)
         {
@@ -307,7 +307,12 @@ namespace ERPMVC.Controllers
                 int colCount = worksheet.UsedRange.LastColumn;
 
                 //OBTENER LA DATA DE LA BASE DE DATOS A LA CUAL TENGO QUE COMPARAR
-
+                string cadena;
+                for (int ro = 1; ro < rowCount; ro++) {
+                    for (int col = 1; col < colCount; col++) {
+                        cadena=worksheet[col, ro].Text;
+                    }
+                }
 
 
                 string baseadress = config.Value.urlbase;
@@ -413,7 +418,7 @@ namespace ERPMVC.Controllers
         {
 
            //ConciliacionDTO _Conciliacion = new ConciliacionDTO();
-           List<ConciliacionDTO> _Conciliacion = new List<ConciliacionDTO>();
+           List<ConciliacionLinea> _Conciliacion = new List<ConciliacionLinea>();
 
 
 
@@ -428,7 +433,7 @@ namespace ERPMVC.Controllers
             {
                 //_Conciliacion = JsonConvert.DeserializeObject<ConciliacionDTO>(dto.ToString());
 
-                _Conciliacion = JsonConvert.DeserializeObject<List<ConciliacionDTO>>(dto.ToString());
+                _Conciliacion = JsonConvert.DeserializeObject<List<ConciliacionLinea>>(dto.ToString());
 
                 //objeto _Conciliacion = JsonConvert.DeserializeObject<objeto>(dto.ToString());
 
@@ -443,20 +448,23 @@ namespace ERPMVC.Controllers
             return Json(null);
         }
 
-        [HttpPost]
+        [HttpPost("[controller]/[action]")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<ConciliacionDTO>> Insert(ConciliacionDTO _Conciliacion)
+        public async Task<ActionResult<ConciliacionDTO>> Insert(ConciliacionDTO _ConciliacionP)
         {
-            ConciliacionDTO _custo = new ConciliacionDTO();
+            Conciliacion _custo = new Conciliacion();
+
+            List<ConciliacionLinea> _Conciliacionq = new List<ConciliacionLinea>();
+            //_Conciliacionq = _ConciliacionP;
             try
             {
                 // TODO: Add insert logic here
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _Conciliacion.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _Conciliacion.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Conciliacion/Insert", _Conciliacion);
+                //_Conciliacion.UsuarioCreacion = HttpContext.Session.GetString("user");
+                //_Conciliacion.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/ConciliacionLinea/InsertBulk/", _Conciliacionq);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -477,7 +485,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<ConciliacionDTO>> Update(Int64 id, ConciliacionDTO _Conciliacion)
+        public async Task<ActionResult<ConciliacionDTO>> Update(Int64 id, ConciliacionDTO _ConciliacionP)
         {
             ConciliacionDTO _ConciliacionDTO = new ConciliacionDTO();
             try
@@ -486,7 +494,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PutAsJsonAsync(baseadress + "api/Conciliacion/Update", _Conciliacion);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/Conciliacion/Update", _ConciliacionP);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -533,5 +541,80 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _Conciliacion }, Total = 1 });
         }
 
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<Insurances>> SaveConciliacion(IEnumerable<IFormFile> files, ConciliacionDTO _ConciliacionDTO)
+        {
+
+            try
+            {
+
+                Conciliacion _listConciliacion = new Conciliacion();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Conciliacion/GetConciliacionById/" + _ConciliacionDTO.ConciliacionId);
+                string valorrespuesta = "";
+
+                foreach (var file in files)
+                {
+
+
+                    FileInfo info = new FileInfo(file.FileName);
+                    if (
+                        info.Extension.Equals(".xls") || info.Extension.Equals(".xlsx"))
+                    {
+
+                        _ConciliacionDTO.FechaModificacion = DateTime.Now;
+                        _ConciliacionDTO.UsuarioModificacion = HttpContext.Session.GetString("user");
+                        if (result.IsSuccessStatusCode)
+                        {
+
+                            valorrespuesta = await (result.Content.ReadAsStringAsync());
+                            _listConciliacion = JsonConvert.DeserializeObject<Conciliacion>(valorrespuesta);
+                        }
+
+                        if (_listConciliacion == null) { _listConciliacion = new Models.Conciliacion(); }
+                        if (_listConciliacion.ConciliacionId == 0)
+                        {
+                            _ConciliacionDTO.FechaCreacion = DateTime.Now;
+                            _ConciliacionDTO.UsuarioCreacion = HttpContext.Session.GetString("user");
+                            var insertresult = await Insert(_ConciliacionDTO);
+                            var value = (insertresult.Result as ObjectResult).Value;
+                            _ConciliacionDTO = ((ConciliacionDTO)(value));
+                        }
+                        else
+                        {
+                            var updateresult = await Update(_ConciliacionDTO.ConciliacionId, _ConciliacionDTO);
+                        }
+
+
+
+                        var filePath = _hostingEnvironment.WebRootPath + "/Conciliacion/" + _ConciliacionDTO.ConciliacionId + "_"
+                            + file.FileName.Replace(info.Extension, "") + "_"  + file.FileName
+                            + info.Extension;
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                            // MemoryStream mstream = new MemoryStream();
+                            //mstream.WriteTo(stream);
+                        }
+
+                        //_ConciliacionDTO.Path = filePath;
+                       // var updateresult2 = await Update(_ConciliacionDTO.ConciliacionId, _InsurancesDTO);
+                    }
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_ConciliacionDTO);
+        }
     }
+    
+
 }

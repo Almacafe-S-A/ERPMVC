@@ -1,0 +1,140 @@
+﻿@using Kendo.Mvc.UI
+@{
+	ViewData["Title"] = "FixedAsset";
+}
+
+<h3 class="text-themecolor">Activos Fijos</h3>
+
+@* Telerik *@
+@(Html.Kendo().Grid<ERPMVC.Models.FixedAsset>()
+						.Name("gridFixedAsset")
+						.Columns(c =>
+						{
+							c.Command(cmd =>
+							{
+								cmd.Custom("Editar").Click("EditFixedAsset");
+								cmd.Destroy().Text("Eliminar");
+							}).Width(160);
+							c.Bound(p => p.FixedAssetId).Width(100);
+							c.Bound(p => p.FixedAssetName).Width(100).Title("Nombre");
+							c.Bound(p => p.FixedAssetDescription).Width(100).Title("Descripción");
+							c.Bound(p => p.AssetDate).ClientTemplate("#= kendo.toString(AssetDate, \"dd/MM/yyyy\") #") .Width(100).Title("Fecha");
+							c.Bound(p => p.FixedAssetCode).Width(100).Title("Código");
+							c.Bound(p => p.BranchName).Width(100).Title("Sucursal");
+							c.Bound(p => p.WarehouseName).Width(100).Title("Bodega");
+							c.Bound(p => p.CenterCostName).Width(100).Title("Centro Costo");
+							c.Bound(p => p.FixedActiveLife).Width(100).Title("Vida Útil");
+							c.Bound(p => p.Amount).Width(100).Title("Monto").Format("{0:C}");
+							c.Bound(p => p.Cost).Width(100).Title("Costo").Format("{0:C}");
+							c.Bound(p => p.ResidualValue).Width(100).Title("Valor Residual").Format("{0:C}");
+						})
+						.Filterable(f => f.Operators(o => o.ForString(s => s.Clear()
+																			.Contains("Contiene")
+																			.DoesNotContain("No contiene")
+																			.EndsWith("Termina con")
+																			.IsEqualTo("Es igual a")
+																			.IsNull("Es nulo")
+																			.StartsWith("Inicia con"))
+																			.ForNumber(n => n.Clear()
+																							 .IsEqualTo("Es igual a")
+																							 .IsGreaterThan("Es mayor que")
+																							 .IsNull("Es nulo")
+																							 .IsLessThanOrEqualTo("Es menor o igual que")
+																							 .IsGreaterThanOrEqualTo("Es mayor o igual que"))
+																			.ForDate(d => d.Clear()
+																						   .IsEqualTo("Es igual a")
+																						   .IsGreaterThan("Es mayor que")
+																						   .IsLessThan("Es menor que")
+																						   .IsLessThanOrEqualTo("Es menor o igual que")
+																						   .IsGreaterThanOrEqualTo("Es mayor o igual que")
+																						   .IsNotEqualTo("No es igual que"))
+													)
+						)
+						.ToolBar(tools =>
+						{
+							tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+							.HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddFixedAsset()" });
+							tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+							tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+						})
+						.Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+						.Sortable()
+						.Pageable()
+						.Filterable()
+						.Scrollable()
+						.Pdf(pdf => pdf.FileName("ActivosFijosReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_" +
+							DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" +
+							DateTime.Now.Second + ".pdf")
+							.ProxyURL(Url.Action("Export", "Home")).AllPages())
+							.Excel(excel => excel.FileName("ActivosFijosReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+							+ DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+							.ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+						.DataSource(ds => ds
+						.WebApi()
+						.ServerOperation(true)
+						.Model(m =>
+						{
+							m.Id(p => p.FixedAssetId);
+							m.Field(p => p.FixedAssetId).Editable(false);
+						})
+						.Events(e => e.Error("error_handler"))
+						.Read(r => r.Action("Get", "FixedAsset"))
+						.Create(c => c.Action("Insert", "FixedAsset").Type(HttpVerbs.Post))
+						.Update(u => u.Action("Update", "FixedAsset", new { FixedAssetId = "{0}" }).Type(HttpVerbs.Post))
+						.Destroy(d => d.Action("Delete", "FixedAsset", new { FixedAssetId = "{0}" }).Type(HttpVerbs.Delete))
+					)
+					.Events(e =>
+					{
+						e.Save("OnSave");
+					})
+					.Resizable(conf => conf.Columns(true))
+)
+
+<script>
+	function AddFixedAsset() {
+		$('#ModalFixedAsset').find(':input').not(':submit').val('');
+		$('#ModalFixedAsset').modal('show');
+		$('#FixedAssetId').val('0');
+	}
+
+	function OnSave() {
+		console.log("Salvando");
+	}
+
+	function EditFixedAsset(e) {
+		e.preventDefault();
+		var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+		var dataObject = {
+			FixedAssetId: dataItem.FixedAssetId,
+			editar: 0
+		};
+
+		$.ajax({
+			url: '@Url.Action("pvwFixedAsset", "FixedAsset")',
+			method: 'POST',
+			datatype: "json",
+			contentType: 'application/json',
+			async: false,
+			data: JSON.stringify(dataObject),
+			success: function (result) {
+				$("#numFixedAsset").html('');
+				$("#numFixedAsset").html(result);
+				$("#ModalFixedAsset").modal('show');
+			},
+			error: function (xhr, status, error) {
+				var errorMessage = xhr.status + ': ' + xhr.statusText
+				alert('Error - ' + errorMessage);
+			}
+		});
+	}
+
+	function RefrescarGrid() {
+		var grid = $("#gridFixedAsset").getKendoGrid();
+		grid.dataSource.read();		
+	}
+</script>
+
+
+<div id="numFixedAsset">
+	@await Html.PartialAsync("pvwFixedAsset", new ERPMVC.DTO.FixedAssetDTO { FixedAssetId = 0 })
+</div>

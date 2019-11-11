@@ -160,17 +160,18 @@
                     <section>
 
                         <div class="row">
-                            <div class="col-md-12">
+                            <div class="col-md-6">
                                 <div class="form-group">
                                     <script>
 
                                         function GetSubProduct(e) {
                                             //var dataItem = e.dataItem;
                                             //$("#hcustomerid").val(dataItem.CustomerId);
-                                           
+
                                             hcustom = $("#CustomerIdAsociarRecibo").val();
                                             $("#SubProductId").data("kendoDropDownList").dataSource.read();
 
+                                            changeServicioFilter();
                                         }
 
                                     </script>
@@ -195,7 +196,34 @@
 
                                 </div>
                             </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <script>
+                                        function changeServicioFilter() {
+                                            $("#cbxBuscarGoodsReceived").data("kendoDropDownList").dataSource.read();
+                                        }
+                                    </script>
+                                    <label class="control-label" style="width:100%">Seleccione el tipo de servicio a certificar</label>
+
+                                    <kendo-dropdownlist name="ServicioFilter" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                        id="ServicioFilter"
+                                                        onchange="changeServicioFilter();"
+                                                        option-label="Seleccione el servicio"
+                                                        datatextfield="ProductName"
+                                                        datavaluefield="ProductId"
+                                                        required
+                                                        style="width: 100%;">
+                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="999999999">
+                                            <transport>
+                                                <read url="@Url.Action("GetProduct", "Common")" />
+                                            </transport>
+                                        </datasource>
+                                    </kendo-dropdownlist>
+                                    <span class="text-danger"></span>
+                                </div>
+                            </div>
                         </div>
+                      
 
 
                     </section>
@@ -280,6 +308,12 @@
                                             return { 'CustomerId': $("#CustomerIdAsociarRecibo").val() }
                                         }
 
+                                        function FillGoodsReceived() {
+                                            return {
+                                                'CustomerId': $("#CustomerIdAsociarRecibo").val(),
+                                                'ProductId': $("#ServicioFilter").val()
+                                            }
+                                        }
 
                                     </script>
 
@@ -310,7 +344,7 @@
                                                       .DataValueField("GoodsReceivedId")
                                                       .HtmlAttributes(new { style = "width:100%" })
                                                       .Height(290)
-                                                      .CascadeFrom("CustomerIdAsociarRecibo")
+                                                      //.CascadeFrom("CustomerIdAsociarRecibo")
                                                       .Events(e =>
                                                       {
                                                           e.Change("changesetearvalues");
@@ -322,8 +356,7 @@
                                                           source.Ajax()
                                                           .PageSize(80)
 
-                                                          .Read(r=> {
-                                                              r.Action("Virtualization_Read", "GoodsReceived");
+                                                          .Read(r=> { r.Action("Virtualization_Read", "GoodsReceived").Data("FillGoodsReceived");
 
                                                           });
                                                       })

@@ -53,31 +53,41 @@
     
     function EditBranch(e) {
         e.preventDefault();
+        var notification = $("#notification").data("kendoNotification");
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        var dataObject = {
-            BranchId: dataItem.BranchId,
-            editar: 0
-        };
 
-        $.ajax({
-            url: '@Url.Action("pvwAddBranch", "Branch")',
-            method: 'POST',
-            datatype: "json",
-            contentType: 'application/json',
-            async: false,
-            data: JSON.stringify(dataObject),
-            success: function (result) {
-                $("#NumBranch").html('');
-                $("#NumBranch").html(result);
+        if (dataItem.CustomerId == null || dataItem.CustomerId == 0) {
+            var dataObject = {
+                BranchId: dataItem.BranchId,
+                editar: 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddBranch", "Branch")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumBranch").html('');
+                    $("#NumBranch").html(result);
 
 
-                //$("#btnCAI").hide();
-                $('#ModalBranch').modal('show');
-            },
-            error: function (XMLHttpRequest, textStatus, errorThrown) {
-                alert(textStatus + ": " + XMLHttpRequest.responseText);
-            }
-        });
+                    //$("#btnCAI").hide();
+                    $('#ModalBranch').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+        }
+        else if( dataItem.CustomerId >0) {
+            notification.show({
+                title: "Validación",
+                message: "Ud debe modificar dicha sucursal en el cliente asignado"
+            }, "error");
+        }
     }
 
 
@@ -107,6 +117,8 @@
                 columns.Bound(p => p.Estado).Width(200);
                 columns.Bound(p => p.Address).Width(300);
                 columns.Bound(p => p.City).Width(200);
+                columns.Bound(p => p.CustomerId).Width(200);
+                columns.Bound(p => p.CustomerName).Width(200);
                 //columns.Bound(p => p.UsuarioCreacion).Width(250);
                 //columns.Bound(p => p.UsuarioModificacion).Width(250);
                 //columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy}").Width(450);

@@ -17,19 +17,19 @@ namespace ERPMVC.Models
         public Bank Banco { get; set; }
 
         [Required]
-        [Display(Name = "BankName")]
+        [Display(Name = "Banco")]
         public string BankName { get; set; }
 
         [Required]
-        [Display(Name = "FechaConciliacion")]
+        [Display(Name = "Fecha Conciliacion")]
         public DateTime FechaConciliacion { get; set; }
 
         [Required]
-        [Display(Name = "SaldoConciliado")]
+        [Display(Name = "Saldo Conciliado")]
         public Double SaldoConciliado { get; set; }
 
         [Required]
-        [Display(Name = "NombreArchivo")]
+        [Display(Name = "Nombre Archivo")]
         public string NombreArchivo { get; set; }
 
 
@@ -48,6 +48,8 @@ namespace ERPMVC.Models
         [Required]
         [Display(Name = "UsuarioModificacion")]
         public string UsuarioModificacion { get; set; }
+
+        public List<ConciliacionLinea> ConciliacionLinea { get; set; }
 
     }
 }

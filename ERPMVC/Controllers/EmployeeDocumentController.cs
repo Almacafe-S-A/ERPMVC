@@ -322,8 +322,8 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _EmployeeDocumentDTO }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult<EmployeeDocument>> Delete([FromBody]EmployeeDocument _EmployeeDocument)
+        [HttpPost]
+        public async Task<ActionResult<EmployeeDocument>> Delete(EmployeeDocument _EmployeeDocument)
         {
             try
             {

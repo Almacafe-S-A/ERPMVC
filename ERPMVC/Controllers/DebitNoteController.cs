@@ -90,7 +90,14 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    _DebitNote.NumeroDEIString = $"{_DebitNote.Sucursal}-{_DebitNote.Caja}-05-{_DebitNote.NúmeroDEI.ToString().PadLeft(8, '0')} ";
+                    Branch _branch = new Branch();
+                    string valorrespuestaBranch = "";
+                    var resultBranch = await _client.GetAsync(baseadress + "api/Branch/GetBranchById/" + _DebitNote.BranchId);
+                    valorrespuestaBranch = await (resultBranch.Content.ReadAsStringAsync());
+                    _branch = JsonConvert.DeserializeObject<Branch>(valorrespuestaBranch);
+
+                    _DebitNote.NumeroDEIString = $"{_branch.BranchCode}-{_DebitNote.Caja}-05-{_DebitNote.NúmeroDEI.ToString().PadLeft(8, '0')} ";
+                    //var resultado = new BranchController().FileUploadMsgView(_DebitNote.BranchId);
                 }
             }
             catch (Exception ex)
@@ -199,18 +206,12 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _DebitNote = JsonConvert.DeserializeObject<DebitNote>(valorrespuesta);
                 }
-                else
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    throw new Exception($"Ocurrio un error: {valorrespuesta}");
-                }
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-                //return BadRequest($"Ocurrio un error{ex.Message}");
+                return BadRequest($"Ocurrio un error{ex.Message}");
             }
             return Ok(_DebitNote);
             // return new ObjectResult(new DataSourceResult { Data = new[] { _DebitNote }, Total = 1 });

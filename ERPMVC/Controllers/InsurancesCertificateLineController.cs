@@ -207,12 +207,12 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<InsurancesCertificateLine>> SaveInsurancesCertificateLine([FromBody]InsurancesCertificateLine _InsurancesCertificateLine)
+        public async Task<ActionResult<InsurancesCertificateLine>> SaveInsurancesCertificateLine([FromBody]InsurancesCertificateLineDTO _InsurancesCertificateLineP)
         {
-
+            InsurancesCertificateLine _InsurancesCertificateLine = _InsurancesCertificateLineP;
             try
             {
-                InsurancesCertificateLine _listInsurancesCertificateLine = new InsurancesCertificateLine();
+                //InsurancesCertificateLine _listInsurancesCertificateLine = new InsurancesCertificateLine();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -222,16 +222,23 @@ namespace ERPMVC.Controllers
                 _InsurancesCertificateLine.ModifiedUser = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
-
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listInsurancesCertificateLine = JsonConvert.DeserializeObject<InsurancesCertificateLine>(valorrespuesta);
+                    _InsurancesCertificateLine = JsonConvert.DeserializeObject<InsurancesCertificateLine>(valorrespuesta);
                 }
 
-                if (_InsurancesCertificateLine.InsurancesCertificateLineId == 0)
+                if (_InsurancesCertificateLine == null) { _InsurancesCertificateLine = new Models.InsurancesCertificateLine(); }
+                if (_InsurancesCertificateLineP.InsurancesCertificateLineId == 0)
                 {
                     _InsurancesCertificateLine.CreatedDate = DateTime.Now;
                     _InsurancesCertificateLine.CreatedUser = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_InsurancesCertificateLine);
+                    var insertresult = await Insert(_InsurancesCertificateLineP);
+                    var value = (insertresult.Result as ObjectResult).Value;
+                    _InsurancesCertificateLine = ((InsurancesCertificateLine)(value));
+                    if (_InsurancesCertificateLine.InsurancesCertificateLineId <= 0)
+
+                    {
+                        return BadRequest("No se guardo el formulario!");
+                    }
                 }
                 else
                 {

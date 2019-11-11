@@ -315,6 +315,12 @@ namespace ERPMVC.Controllers
                 SalesOrder _SalesOrdermodel = new SalesOrder();
                 try
                 {
+
+                    if (_SalesOrder.Total <= 0 || _SalesOrder.SubTotal <= 0)
+                    {
+                        return await Task.Run(() => BadRequest($"No se esta calculando correctamente los totales!"));
+                    }
+
                     _SalesOrder.CustomerId = _SalesOrder.CustomerId == null ? 0 : _SalesOrder.CustomerId;
                     _SalesOrdermodel = mapper.Map<SalesOrderDTO, SalesOrder>(_SalesOrder);
                     if (_SalesOrder.SalesOrderId == 0)
@@ -646,8 +652,8 @@ namespace ERPMVC.Controllers
                     }
                     else
                     {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        throw new Exception($"Ocurrio un error: {valorrespuesta}");
+                        string request = await result.Content.ReadAsStringAsync();
+                        return BadRequest(request);
                     }
 
 
@@ -661,8 +667,7 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-                // return BadRequest($"Ocurrio un error{ex.Message}");
+                return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
             return Ok(_SalesOrder);

@@ -7,7 +7,14 @@
 }
 
 <script>
+    $(document).on('load', '#FechaNacimiento', function () {
+        GenerarEdad();
+    });
     $(document).ready(function () {
+        debugger;
+        //$('#Salario').val("@Model.Salario").replace(/\./g, ',');
+        $('#Salario').val($('#Salario').val().replace(/\,/g, '.'));
+        GenerarEdad();
         var data = [
             { text: "Seleccionar Género", value: "0" },
             { text: "Masculino", value: "1" },
@@ -151,14 +158,22 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-4">
+                            <div class="col-md-3">
                                 <div class="form-group">
                                     <label asp-for="FechaNacimiento" class=" control-label" style="width:100%">Fecha nacimiento</label>
-                                    <kendo-datetimepicker name="FechaNacimiento" style="width: 100%;"
+                                    @*<input asp-for="FechaNacimiento" name="FechaNacimiento" onchange="GenerarEdad()" autocomplete="off" style="min-width:100%" />*@
+                                    <kendo-datetimepicker name="FechaNacimiento" style="width: 100%;" onchange="GenerarEdad()" onload="GenerarEdad();"
                                                           format="dd/MM/yyyy"
                                                           data-val-required="La fecha es requerida"
                                                           value="Model.FechaNacimiento"></kendo-datetimepicker>
                                     <span asp-validation-for="FechaNacimiento" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-md-1">
+                                <div class="form-group">
+                                    <label class=" control-label" style="width:100%">Edad</label>
+                                    <input name="edadcalculada" id="edadcalculada" type="text" readonly autocomplete="off" class="form-control" style="min-width:100%" />
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -208,9 +223,46 @@
                         <div class="row">
                             <div class="col-sm-4 col-md-4">
                                 <div class="form-group">
+                                    <label asp-for="RTN" class=" control-label" style="width:100%">RTN</label>
+                                    <input type="text" asp-for="RTN" name="RTN" class="form-control" maxlength="14" onkeypress="return SoloNumeros(event)" autocomplete="off" style="min-width:100%" />
+                                    <span asp-validation-for="RTN" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4 col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="Profesion" class=" control-label" style="width:100%">Profesión</label>
+                                    <input type="text" asp-for="Profesion" name="Profesion" class="form-control" maxlength="150" autocomplete="off" style="min-width:100%" />
+                                    <span asp-validation-for="Profesion" class="text-danger"></span>
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4 col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="IdTipoPlanilla" class="control-label"></label>
+                                    <kendo-dropdownlist name="IdTipoPlanilla"
+                                                        for="@Model.IdTipoPlanilla"
+                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                        option-label="Seleccionar Tipo Planilla"
+                                                        datatextfield="TipoPlanilla"
+                                                        datavaluefield="IdTipoPlanilla"
+                                                        style="width: 100%;">
+                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                            <transport>
+                                                <read url="@Url.Action("Get", "TipoPlanillas")" />
+                                            </transport>
+                                        </datasource>
+                                    </kendo-dropdownlist>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-sm-4 col-md-4">
+                                <div class="form-group">
                                     <label asp-for="Notas" class=" control-label" style="width:100%">Notas</label>
-                                        <textarea asp-for="Notas" name="Notas" rows="6" maxlength="250" class="form-control form-control-line" autocomplete="off" style="min-width:100%"></textarea>
-                                        <span asp-validation-for="Notas" class="text-danger"></span>
+                                    <textarea asp-for="Notas" name="Notas" rows="6" maxlength="250" class="form-control form-control-line" autocomplete="off" style="min-width:100%"></textarea>
+                                    <span asp-validation-for="Notas" class="text-danger"></span>
                                 </div>
                             </div>
                             <div class="col-md-4">
@@ -303,15 +355,17 @@
                                 <div class="form-group">
                                     <label asp-for="Salario" class=" control-label" style="width:100%">Salario</label>
                                     <div class="input-group">
-                                        <input type="text" asp-for="Salario" name="Salario" readonly autocomplete="off" class="form-control" style="min-width:70%" />
                                         @*<kendo-numerictextbox name="Salario"
-                                                            id="Salario"
-                                                              format="n2"
                                                               spinners="false"
+                                                              min="0"
+                                                              step="1"
+                                                              disabled
+                                                              required class="control-label right bold"
                                                               style="width: 100%;text-align:right;padding-right: 3px;"
-                                                              min="0" disabled class="control-label right bold"
                                                               max="999999999"
                                                               value="Model.Salario"></kendo-numerictextbox>*@
+                                        <input type="text" step="1" asp-for="Salario" name="Salario" readonly autocomplete="off" class="form-control" style="min-width:70%" />
+                                        
                                         <span class="input-group-btn">
                                             <button type="button" class="btn btn-info" onclick="AddSalarioEmpleado()">AÑADIR</button>
                                         </span>
@@ -568,6 +622,43 @@
     </div>
 </div>
 <script>
+    function GenerarEdad() {
+        debugger
+
+        @*var fechaN = '@Model.FechaNacimiento' // 10/11/2009
+        var anio = String(fechaN).substring(6, 10); //2009
+        var dia = String(fechaN).substring(0, 2); //10
+        var mes = String(fechaN).substring(3, 5); //11
+
+        var FechaFormatiada = mes + '/' + dia + '/' + anio *@
+
+        var fecha = new Date('@Model.FechaNacimiento');
+        console.log($("#FechaNacimiento").val());
+            $("#FechaNacimiento").val('@Model.FechaNacimiento');
+            var FechaNacimiento = $("#FechaNacimiento").val();
+            console.log(FechaNacimiento);
+            var n = fecha.toJSON();
+            //fecha = JSON.stringify($("#FechaNacimiento").val().toJSON());
+            //fecha = $("#FechaNacimiento").getKendoDateTimePicker().value().toJSON();
+            //var newDate = new Date(Date.UTC(dt.getFullYear(), dt.getMonth(), dt.getDate(), dt.getHours(), dt.getMinutes(), dt.getSeconds(), dt.getMilliseconds()));
+        
+        var fecha_value = new Date(fecha).getFullYear(fecha);
+        var fecha_valuem = new Date(fecha).getMonth(fecha) + 1;
+        var fecha_valued = new Date(fecha).getDate(fecha);
+        const fechaActual = new Date().getFullYear();
+        const fechaActualm = new Date().getMonth() + 1;
+        const fechaActuald = new Date().getDate();
+
+        let edad = parseInt(fechaActual) - parseInt(fecha_value);
+
+        if ((fecha_valuem == fechaActualm) && (fecha_valued > fechaActuald)) {
+            edad = (edad - 1);
+        } else
+            if (fecha_valuem > fechaActualm) {
+                edad = (edad - 1);
+            }
+        document.getElementById('edadcalculada').value = edad;
+    }
     function ValidacionFinContrato() {
         console.log("Cambio El Contrato!");
         if ($("#IdTipoContrato").data("kendoDropDownList").text() == "Temporal") {
@@ -612,6 +703,7 @@
         grid.dataSource.read();
     }
     function SaveEmployee() {
+        debugger;
         if ($('#Genero').val() == 0) {
             $('#GeneroAlert').show();
         }
@@ -626,7 +718,7 @@
             $("#btnGuardarEmployees").hide();
                 $("#btnGuardarEmployees").prop("disabled", true);
                 var setFechaEgreso = null;
-                var setFechaFinContrato = "01/01/0001";
+                var setFechaFinContrato = null;
                 if ($("#FechaEgreso").getKendoDateTimePicker().value() != null || $("#FechaEgreso").getKendoDateTimePicker().value() != undefined || $("#FechaEgreso").val() != "") {
                     setFechaEgreso = $("#FechaEgreso").getKendoDateTimePicker().value().toJSON();
                 }
@@ -658,6 +750,9 @@
                     'FechaFinContrato': setFechaFinContrato,
                     'Telefono': $("#Telefono").val(),
                     'Extension': $("#Extension").val(),
+                    'RTN': $("#RTN").val(),
+                    'Profesion': $("#Profesion").val(),
+                    'IdTipoPlanilla': $("#IdTipoPlanilla").val(),
                     'IdPuesto': $("#IdPuesto").val(),
                     'IdSucursal': $("#IdSucursal").val(),
                     'IdDepartamento': $("#IdDepartamento").val(),
@@ -778,40 +873,40 @@
 
 <div class="container-fluid">
     <div class="row">
-        <div class="col-12">
+        <div class="col-md-12">
             <div class="card">
                 <div class="card-body">
-
-                    @(Html.Kendo().TabStrip()
-
+                    <div class="card-header">
+                        @(Html.Kendo().TabStrip()
                             .Name("tabDetalleEmployees")
+                            .HtmlAttributes(new { style = "width:100%;" })
                             .Items(tabstrip =>
                             {
-
-
                                 tabstrip.Add().Text("Dependientes")
-                               //.ImageUrl(Url.Content("~/shared/icons/sports/baseball.png"))
-                               .LoadContentFrom(@Url.Action("Index", "Dependientes"));
+                                //.ImageUrl(Url.Content("~/shared/icons/sports/baseball.png"))
+                                .LoadContentFrom(@Url.Action("Index", "Dependientes"));
 
                                 tabstrip.Add().Text("Documentos")
-                      //.ImageUrl(Url.Content("~/shared/icons/sports/baseball.png"))
-                      .LoadContentFrom("EmployeeDocument", "EmployeeDocument");
-
+                                    //.ImageUrl(Url.Content("~/shared/icons/sports/baseball.png"))
+                                    .LoadContentFrom("EmployeeDocument", "EmployeeDocument");
                             })
                             .SelectedIndex(0)
-                    )
+                        )
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+ 
+
 <script>
     $("#tabDetalleEmployees").kendoTabStrip({
         collapsible: true
     });
 
-    $("#tabDetalleEmployees").width($("#tabDetalleEmployees").innerWidth());
+    //$("#tabDetalleEmployees").width($("#tabDetalleEmployees").innerWidth());
 
     console.log($("#tabDetalleEmployees").innerWidth());
 </script>

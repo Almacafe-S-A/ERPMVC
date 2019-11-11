@@ -187,11 +187,6 @@ namespace ERPMVC.Controllers
                             _HoursWorkedDetail = JsonConvert.DeserializeObject<List<HoursWorkedDetail>>(valorrespuesta);
                             HttpContext.Session.SetString("listadoHoursWorkedDetail", JsonConvert.SerializeObject(_HoursWorkedDetail).ToString());
                         }
-                        else
-                        {
-                            valorrespuesta = await (result.Content.ReadAsStringAsync());
-                            throw new Exception($"Ocurrio un error: {valorrespuesta}");
-                        }
                     }
                     else
                     {
@@ -248,21 +243,32 @@ namespace ERPMVC.Controllers
         [HttpPut("PutHoursWorkedDetail")]
         public async Task<IActionResult> PutHoursWorkedDetail(Int64 Id, HoursWorkedDetail _HoursWorkedDetail)
         {
+            List<HoursWorkedDetail> _HoursWorkedDetailP = new List<HoursWorkedDetail>();
+
             try
             {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _HoursWorkedDetail.FechaModificacion = DateTime.Now;
-                _HoursWorkedDetail.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PutAsJsonAsync(baseadress + "api/HoursWorkedDetail/Update", _HoursWorkedDetail);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
+                if (_HoursWorkedDetail.IdHorasTrabajadas == 0)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _HoursWorkedDetail = JsonConvert.DeserializeObject<HoursWorkedDetail>(valorrespuesta);
-                }
 
+                    _HoursWorkedDetailP.Add(_HoursWorkedDetail);
+                    HttpContext.Session.SetString("listadoHoursWorkedDetail", JsonConvert.SerializeObject(_HoursWorkedDetailP).ToString());
+                    HttpContext.Session.SetString("listadoHoursWorkedDetail", "");
+                }
+                else
+                {
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    _HoursWorkedDetail.FechaModificacion = DateTime.Now;
+                    _HoursWorkedDetail.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    var result = await _client.PutAsJsonAsync(baseadress + "api/HoursWorkedDetail/Update", _HoursWorkedDetail);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _HoursWorkedDetail = JsonConvert.DeserializeObject<HoursWorkedDetail>(valorrespuesta);
+                    }
+                }
             }
             catch (Exception ex)
             {
@@ -278,18 +284,19 @@ namespace ERPMVC.Controllers
         {
             try
             {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                if (_HoursWorkedDetail.IdHorasTrabajadas > 0) {
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/HoursWorkedDetail/Delete", _HoursWorkedDetail);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _HoursWorkedDetail = JsonConvert.DeserializeObject<HoursWorkedDetail>(valorrespuesta);
+                    var result = await _client.PostAsJsonAsync(baseadress + "api/HoursWorkedDetail/Delete", _HoursWorkedDetail);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _HoursWorkedDetail = JsonConvert.DeserializeObject<HoursWorkedDetail>(valorrespuesta);
+                    }
                 }
-
             }
             catch (Exception ex)
             {

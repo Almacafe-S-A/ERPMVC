@@ -172,18 +172,12 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _JournalEntryConfiguration = JsonConvert.DeserializeObject<JournalEntryConfiguration>(valorrespuesta);
                 }
-                else
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    throw new Exception($"Ocurrio un error: {valorrespuesta}");
-                }
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-                //  return BadRequest($"Ocurrio un error{ex.Message}");
+                return BadRequest($"Ocurrio un error{ex.Message}");
             }
             return Ok(_JournalEntryConfiguration);
             // return new ObjectResult(new DataSourceResult { Data = new[] { _JournalEntryConfiguration }, Total = 1 });
@@ -205,18 +199,12 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _JournalEntryConfiguration = JsonConvert.DeserializeObject<JournalEntryConfiguration>(valorrespuesta);
                 }
-                else
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    throw new Exception($"Ocurrio un error: {valorrespuesta}");
-                }
 
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-                // return BadRequest($"Ocurrio un error{ex.Message}");
+                return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _JournalEntryConfiguration }, Total = 1 });

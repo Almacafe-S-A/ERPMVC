@@ -26,7 +26,8 @@
         </div>
 
     </div>*@
-
+<link href="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.10/css/select2.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/select2/4.0.10/js/select2.js"></script>
 
 
 <div class="container-fluid">
@@ -41,55 +42,61 @@
                     <br />
 
                     @*<div class="row">
-                        <div class="col-md-12">
-                            <div class="form-group text-center">
-                                <h3>CUENTA: <b>@Model.Last().AccountName</b></h3>
+                            <div class="col-md-12">
+                                <div class="form-group text-center">
+                                    <h3>CUENTA: <b>@Model.Last().AccountName</b></h3>
+                                </div>
+                                <hr />
                             </div>
-                            <hr />
-                        </div>
-                    </div>*@
+                        </div>*@
 
                     @*<div class="row">
-                        <div class="col-md-12 ">
-                            <div class="form-group">
-                                <h5>SALDO SEGÚN ESTADO DE CUENTA DEL BANCO: <b>@Model.Last().Saldo</b></h5>
+                            <div class="col-md-12 ">
+                                <div class="form-group">
+                                    <h5>SALDO SEGÚN ESTADO DE CUENTA DEL BANCO: <b>@Model.Last().Saldo</b></h5>
+                                </div>
                             </div>
-                        </div>
-                    </div><div class="row">
-                        <div class="col-md-12 ">
-                            <div class="form-group">
-                                <h5>SALDO SEGÚN NUESTROS LIBROS : <b>@Model.Last().Credit</b></h5>
+                        </div><div class="row">
+                            <div class="col-md-12 ">
+                                <div class="form-group">
+                                    <h5>SALDO SEGÚN NUESTROS LIBROS : <b>@Model.Last().Credit</b></h5>
+                                </div>
                             </div>
-                        </div>
-                    </div>*@
+                        </div>*@
 
                     <div class="row">
                         @*<div class="col-md-4 ">
-                            <div class="form-group">
+                                <div class="form-group">
 
-                                <label class="control-label" style="width: 100%;">DÉBITO</label>
-                                <input type="text" id="CustomerId" disabled required class="form-control" style="min-width:100%;" />
+                                    <label class="control-label" style="width: 100%;">DÉBITO</label>
+                                    <input type="text" id="CustomerId" disabled required class="form-control" style="min-width:100%;" />
+                                </div>
                             </div>
-                        </div>
+                            <div class="col-md-4 ">
+                                <div class="form-group">
+
+                                    <label class="control-label" style="width: 100%;">CRÉDITO</label>
+                                    <input type="text" id="CustomerId" disabled required class="form-control" style="min-width:100%;" />
+                                </div>
+                            </div>
+                            <div class="col-md-4 ">
+                                <div class="form-group">
+
+                                    <label class="control-label" style="width: 100%;">SALDO</label>
+                                    <input type="text" id="CustomerId" disabled required class="form-control" style="min-width:100%;" />
+                                </div>
+                            </div>*@
+                        <script>
+                            function abrirmodal() {
+                                crearkendoddw();
+                                $("#conciliacionmodal").modal('show');
+                            }
+                        </script>
                         <div class="col-md-4 ">
                             <div class="form-group">
 
-                                <label class="control-label" style="width: 100%;">CRÉDITO</label>
-                                <input type="text" id="CustomerId" disabled required class="form-control" style="min-width:100%;" />
-                            </div>
-                        </div>
-                        <div class="col-md-4 ">
-                            <div class="form-group">
-
-                                <label class="control-label" style="width: 100%;">SALDO</label>
-                                <input type="text" id="CustomerId" disabled required class="form-control" style="min-width:100%;" />
-                            </div>
-                        </div>*@
-                        <div class="col-md-4 ">
-                            <div class="form-group">
-
-                                <button type="button" class="btn btn-success" data-toggle="modal" data-target=".bd-example-modal-lg">
-                                    Crear balance
+                                <button type="button" class="btn btn-success" data-toggle="modal" onclick="abrirmodal();">
+                                    Crear conciliación
                                 </button>
 
                             </div>
@@ -103,12 +110,50 @@
 </div>
 
 
+<script>
+    function crearkendoddw() {
+        $.ajax({
+                url: '@Url.Action("GetAccounting", "Accounting")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+              //  data: dataObject,
+                success: function (data) {
+                   // combobox.setDataSource(data);
+                    console.log(data);
+                    $("input[name*='description']").kendoDropDownList({
+                        dataTextField: "AccountName",
+                        dataValueField: "AccountId",
+                        dataSource: data.Data,
+                        index: 0,
+                        filter: "contains"
+                        //style"width: 100%;"
+
+                    });
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+
+
+                    //  $("#btngenerarfactura").show();
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+
+
+
+                }
+            });
+
+    }
+</script>
 
 
 
 
-
-<div class="modal fade bd-example-modal-lg" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
+<div class="modal fade bd-example-modal-lg" id="conciliacionmodal" role="dialog" aria-labelledby="myLargeModalLabel" aria-hidden="true">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
@@ -136,6 +181,21 @@
                                     <tr>
                                         <td width="60%">
                                             <input class="form-control" type="text" id="descripcion" name="description">
+                                            <select class="form-control" id="cuenta" name="descripcion"></select>
+
+                                            @*<kendo-dropdownlist name="descripcion" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                    option-label="Seleccione la cuenta "
+                                                                    datatextfield="AccountName"
+                                                                    datavaluefield="AccountId"
+                                                                    style="width: 100%;">
+                                                    <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
+                                                        <transport>
+                                                            <read url="@Url.Action("GetAccounting", "Accounting")" />
+                                                        </transport>
+                                                    </datasource>
+                                                </kendo-dropdownlist>
+                                                <span id="Span" class="text-danger"></span>*@
+
 
                                         </td>
                                         <td>
@@ -165,30 +225,46 @@
 <script>
 
     $('#agregarProducto').click(function () {
-        var descripcion = $("#descripcion").val();
+
+        //var cuenta = $("#descripcion").val();
+        //var descripcion = $("#descripcion option[value='" + cuenta + "']").text()
+
+            
+
+        //var accountid = $("#descripcion").val();
+        var cuenta = $("#descripcion").val();//.data('kendoDropDownList').text();
         var debito = $("#debito").val();
         var credito = $("#credito").val();
 
-        console.log(descripcion);
-        console.log(debito);
-        console.log(credito);
+        //console.log(descripcion);
+        //console.log(debito);
+        //console.log(credito);
 
-        if (descripcion == '') {
-
-            if (debito == '' || credito == '') {
-                confirm('LLene las casillas correctamente');
-            }
+        if (cuenta == '') {
+            alert('Seleccione la cuenta');
+            return;
 
         }
-        else if (descripcion != '') {
+        else if (debito == '' && credito == '') {
+            alert('LLene débito o crédito');
+            return;
+        }
+        else if (debito != '' && credito != '') {
+            alert('Solo debe llenar una casilla, débito o crédito');
+        }
+        else if (cuenta != '') {
             if (debito == '' && credito != '') {
                 console.log('lleno correctamente1');
                 $("#idMdlProductoIngresar").find("tbody").append('<tr>' +
                     '<td>' +
-                    '<input type="text" disabled  class="form-control" name="descripcion" value="' + descripcion + '">' +
+                    '<input type="text" disabled  class="form-control" name="AccountName" value="' + cuenta + '">' +
+                    //'<input type="hidden" name="Account" value="' + cuenta + '">' +
+                    //'<input type="text" disabled  class="form-control" name="producto[]" value="' + descripcion + '">' +
                     '</td>' +
-                    '<td><input type="text" class="form-control" name="debito" value="' + debito + '"></td>' +
-                    '<td><input type="text" class="form-control" name="credito" value="' + credito + '"></td>' +
+                    
+                    '<td><input type="text" class="form-control" name="Debit" value="' + debito + '"></td>' +
+                    '<td><input type="text" class="form-control" name="Credit" value="' + credito + '"></td>' +
+                   
                     '<td><button type="button" class="btn btn-warning eliminar"><i class="fa fa-trash"></i></button></td>' +
                     '</tr>'
                 )
@@ -197,10 +273,14 @@
                 console.log('lleno correctamenteo2');
                 $("#idMdlProductoIngresar").find("tbody").append('<tr>' +
                     '<td>' +
-                    '<input type="text" disabled  class="form-control" name="descripcion" value="' + descripcion + '">' +
+                    '<input type="text" disabled  class="form-control" name="AccountName" value="' + cuenta + '">' +
+                    //'<input type="hidden" name="Account" value="' + cuenta + '">' +
+                    //'<input type="text" disabled  class="form-control" name="producto[]" value="' + descripcion + '">' +
                     '</td>' +
-                    '<td><input type="text" class="form-control" name="debito" value="' + debito + '"></td>' +
-                    '<td><input type="text" class="form-control" name="credito" value="' + credito + '"></td>' +
+                    
+                    '<td><input type="text" class="form-control" name="Debit" value="' + debito + '"></td>' +
+                    '<td><input type="text" class="form-control" name="Credit" value="' + credito + '"></td>' +
+                    
                     '<td><button type="button" class="btn btn-warning eliminar"><i class="fa fa-trash"></i></button></td>' +
                     '</tr>'
                 )
@@ -208,55 +288,56 @@
             }
 
             else {
-                confirm('Solo llenar una en débito o crédito');
+
             }
         }
         else {
             console.log('error');
-            
+
         }
 
-       
+        crearkendoddw();
 
-            
+    });
 
 
 
-        
+
+
+
 
         $("#cuentasForm").submit(function (e) {
             e.preventDefault();
 
             console.log('');
 
-            var arreglo = [];
-            var elementos = document.getElementsByName("descripcion");
+            var arreglo = new Array();
+            var elementos = document.getElementsByName("AccountName");
 
             for (var i = 0; i < elementos.length; i++) {
                 for (var j = 0; j < 1; j++) {
 
                     arreglo.push({
+
                         "AccountName": elementos[i].parentElement.parentElement.childNodes[0].children[0].value,
-                        "Debit": elementos[i].parentElement.parentElement.childNodes[1].children[0].value,
-                        "Credit ": elementos[i].parentElement.parentElement.childNodes[2].children[0].value
+                        "Debit": elementos[i].parentElement.parentElement.childNodes[1].children[0].value == ""
+                            || elementos[i].parentElement.parentElement.childNodes[1].children[0].value == null ? 0 : elementos[i].parentElement.parentElement.childNodes[1].children[0].value,
+                        "Credit": elementos[i].parentElement.parentElement.childNodes[2].children[0].value == null || elementos[i].parentElement.parentElement.childNodes[2].children[0].value == "" ? 0 :
+                            elementos[i].parentElement.parentElement.childNodes[2].children[0].value
                     });
                 }
             }
             console.log("----------------VERIFICAR--------------")
-            console.log(arreglo);  
+            console.log(arreglo);
 
 
             $.ajax({
-
-
-
-
                 url: '@Url.Action("Confirmacion", "Conciliacion")',
                 method: 'POST',
                 datatype: "json",
                 contentType: 'application/json',
                 async: false,
-                data: JSON.stringify({ arreglo }),
+                data: JSON.stringify(arreglo),
                // data: JSON.stringify(arreglo),
                 success: function (data) {
 
@@ -283,7 +364,41 @@
         })
         */
 
-    });
+    $(document).ready(function () {
+        $("#cuenta").select2({
+            theme: "bootstrap4",
+            minimumInputLength: 4,
+            tags: [],
+            ajax: {
+                url: '@Url.Action("GetAccounting", "Accounting")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: function (term) {
+                    return {
+                        term: term
+                    };
+                },
+
+
+                processResults: function (data) {
+                    console.log(data);
+                    return {
+                        results: $.map(data, function (item) {
+                            return {
+                                text: item.Description,
+                                id: item.AccountId
+                            }
+                            console.log(text)
+                        })
+                    };
+
+                }
+            }
+        });
+        });
+
 
     $(document).on('click', '.eliminar', function () {
         if (confirm('Desea eliminar este producto?')) {
