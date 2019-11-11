@@ -169,9 +169,8 @@ namespace ERPMVC.Controllers
 
 
                     FileInfo info = new FileInfo(file.FileName);
-                    if (info.Extension.Equals(".pdf") || info.Extension.Equals(".jpg")
-                        || info.Extension.Equals(".png")
-                       || info.Extension.Equals(".xls") || info.Extension.Equals(".xlsx"))
+                    if (info.Extension.Equals(".jpeg") || info.Extension.Equals(".jpg")
+                        || info.Extension.Equals(".png"))
                     {
 
                         _InsurancesDTO.ModifiedDate = DateTime.Now;
@@ -195,6 +194,9 @@ namespace ERPMVC.Controllers
                         }
                         else
                         {
+                            _InsurancesDTO.DocumentName = file.FileName;
+                            _InsurancesDTO.CreatedDate = _listInsurances.CreatedDate;
+                            _InsurancesDTO.CreatedUser = _listInsurances.CreatedUser;
                             var updateresult = await Update(_InsurancesDTO.InsurancesId, _InsurancesDTO);
                         }
 
@@ -267,7 +269,8 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-
+                _InsurancesDocument.ModifiedDate = DateTime.Now;
+                _InsurancesDocument.ModifiedUser = HttpContext.Session.GetString("user");
                 var result = await _client.PutAsJsonAsync(baseadress + "api/Insurances/Update", _InsurancesDocument);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
