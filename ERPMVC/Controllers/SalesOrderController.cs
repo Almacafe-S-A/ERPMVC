@@ -315,6 +315,12 @@ namespace ERPMVC.Controllers
                 SalesOrder _SalesOrdermodel = new SalesOrder();
                 try
                 {
+
+                    if (_SalesOrder.Total <= 0 || _SalesOrder.SubTotal <= 0)
+                    {
+                        return await Task.Run(() => BadRequest($"No se esta calculando correctamente los totales!"));
+                    }
+
                     _SalesOrder.CustomerId = _SalesOrder.CustomerId == null ? 0 : _SalesOrder.CustomerId;
                     _SalesOrdermodel = mapper.Map<SalesOrderDTO, SalesOrder>(_SalesOrder);
                     if (_SalesOrder.SalesOrderId == 0)

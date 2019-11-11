@@ -276,14 +276,6 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            //  JsonSerializerSettings settings = new JsonSerializerSettings();
-            //  settings.Formatting = Formatting.Indented;
-            //  settings.TypeNameHandling = TypeNameHandling.Auto;
-            //settingall
-            // return Json(new { _clientes });
-
-
-
             return Json(_clientes.ToDataSourceResult(request));
         }
 
