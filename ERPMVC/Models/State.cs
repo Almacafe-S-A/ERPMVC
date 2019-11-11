@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 
 namespace ERPMVC.Models
 {
+    [DisplayColumn("Name")]
     public partial class State
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]

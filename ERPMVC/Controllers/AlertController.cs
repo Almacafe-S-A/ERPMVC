@@ -29,10 +29,10 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-        public IActionResult Index()
-        {
-            return View();
-        }
+        //public IActionResult Index()
+        //{
+        //    return View();
+        //}
 
         //[HttpGet("[controller]/[action]")]
         public IActionResult Alerts()
