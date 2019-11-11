@@ -344,6 +344,11 @@ namespace ERPMVC.Controllers
                 if (_ProformaInvoice != null)
                 {
 
+                    if (_ProformaInvoice.Total <= 0 || _ProformaInvoice.SubTotal <= 0)
+                    {
+                        return await Task.Run(() => BadRequest($"No se esta calculando correctamente los totales!"));
+                    }
+
                     foreach (var item in _ProformaInvoice.ProformaInvoiceLine)
                     {
                         if (item.UnitOfMeasureId == 0)
