@@ -118,6 +118,8 @@ namespace ERPMVC.Controllers
                 if (_Conciliacion == null)
                 {
                     _Conciliacion = new ConciliacionDTO();
+                    _Conciliacion.Fechainico = DateTime.Now;
+                    _Conciliacion.Fechafinal = DateTime.Now;
                 }
 
             }
@@ -211,11 +213,9 @@ namespace ERPMVC.Controllers
         //    return Json(_Conciliaciontp);
         //}
 
-        public async Task<ActionResult> Submit(List<IFormFile> files, ConciliacionDTO _Conciliaciontp)
+        public async Task<ActionResult> Submit(IEnumerable<IFormFile> files, ConciliacionDTO _Conciliaciontp)
         {
-            string FechaInicio = String.Format("{0}", Request.Form["fechainicio"]);
-            string FechaFinal = String.Format("{0}", Request.Form["fechafinal"]);
-            Int64 AccountId = Convert.ToInt16(Request.Form["AccountId"]);
+            Int64 AccountId = _Conciliaciontp.AccountId;
             
 
 
@@ -227,11 +227,11 @@ namespace ERPMVC.Controllers
             if (files != null)
             {
 
-                List<ConciliacionDTO> resultadoProcesoConciliacion = await ProcesoConciliacion(files, FechaInicio, FechaFinal, AccountId);
+                Conciliacion resultadoProcesoConciliacion = await ProcesoConciliacion(files, _Conciliaciontp);
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/JournalEntry/GetJournalEntry/");
+                var result = await _client.GetAsync(baseadress + "api/JournalEntry/GetJournalEntry");
 
 
                 ViewBag.resultado = resultadoProcesoConciliacion;
@@ -251,13 +251,46 @@ namespace ERPMVC.Controllers
         {
             return View();
         }
+        public async Task<JsonResult> GetCheckAccountByAccountNumber(string AccountNumber)
+        {
+            CheckAccount _CheckAccountP = new CheckAccount();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CheckAccount/GetCheckAccountByAccountNumber/" + AccountNumber);
+                string valorrespuesta = "";
+                _CheckAccountP.FechaModificacion = DateTime.Now;
+                _CheckAccountP.UsuarioModificacion = HttpContext.Session.GetString("user");
+                if (result.IsSuccessStatusCode)
+                {
 
-        private async Task<List<ConciliacionDTO>> ProcesoConciliacion(List<IFormFile> files,string FechaInicio,string FechaFinal, Int64 AccountId)
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CheckAccountP = JsonConvert.DeserializeObject<CheckAccount>(valorrespuesta);
+                }
+
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_CheckAccountP);
+        }
+        //IEnumerable<IFormFile>
+        private async Task<Conciliacion> ProcesoConciliacion(IEnumerable<IFormFile> files, ConciliacionDTO _ConciliacionP)
         {
             List<string> fileInfo = new List<string>();
-            List<ConciliacionDTO> _JournalEntry = new List<ConciliacionDTO>();
+            //Aigno la conciliacion para crearla
+            Conciliacion _NewConciliacionP = _ConciliacionP; 
+
+            ConciliacionDTO _JournalEntry = new ConciliacionDTO();
             //List<Accounting> _JournalEntryAccountName = new List<Accounting>();
-            Accounting _JournalEntryAccountName = new Accounting();
+            //Accounting _JournalEntryAccountName = new Accounting();
 
 
 
@@ -307,19 +340,48 @@ namespace ERPMVC.Controllers
                 int colCount = worksheet.UsedRange.LastColumn;
 
                 //OBTENER LA DATA DE LA BASE DE DATOS A LA CUAL TENGO QUE COMPARAR
-                string cadena;
-                for (int ro = 1; ro < rowCount; ro++) {
-                    for (int col = 1; col < colCount; col++) {
-                        cadena=worksheet[col, ro].Text;
-                    }
+                string CuentaBancaria="";
+
+                for (int ro = 2; ro < rowCount; ro++) {
+
+                    ConciliacionLinea _ConciliacionLineaP = new ConciliacionLinea();
+                    _ConciliacionLineaP.AccountId = _ConciliacionP.AccountId;
+                    _ConciliacionLineaP.AccountName = _ConciliacionP.AccountName;
+                    _ConciliacionLineaP.Credit = Convert.ToDouble(worksheet[ro, 7].Text);
+                    _ConciliacionLineaP.Debit = Convert.ToDouble(worksheet[ro, 6].Text);
+                    _ConciliacionLineaP.Monto = Convert.ToDouble(worksheet[ro,8 ].Text);
+                    _ConciliacionLineaP.ReferenceTrans = worksheet[ro, 2].Text;
+                    _ConciliacionLineaP.CurrencyId= Convert.ToInt32(worksheet[ro, 5].Text);
+                    _ConciliacionLineaP.MonedaName = worksheet[ ro,9].Text;
+                    string datetran = worksheet[ ro, 1].Text;
+                    _ConciliacionLineaP.TransDate =Convert.ToDateTime(datetran);
+                    _ConciliacionLineaP.ReferenciaBancaria= worksheet[ ro,3].Text;
+                    CuentaBancaria= worksheet[ro,3].Text;
+                    // for (int col = 1; col < colCount; col++) {
+                    //   cadena=worksheet[col, ro].Text;
+                    //}
+                    _NewConciliacionP.ConciliacionLinea.Add(_ConciliacionLineaP);
                 }
 
+                //
+                var CheckAccountP = await GetCheckAccountByAccountNumber(CuentaBancaria);
+                CheckAccount CuentaCheque = new CheckAccount();
+                CuentaCheque = ((CheckAccount)CheckAccountP.Value);
 
+                _NewConciliacionP.CheckAccountId = CuentaCheque.CheckAccountId;
+                _NewConciliacionP.BankId = CuentaCheque.BankId;
+                _NewConciliacionP.BankName = CuentaCheque.BankName;
+                _NewConciliacionP.FechaConciliacion = DateTime.Now;
+                _NewConciliacionP.SaldoConciliado = 0;
+                _NewConciliacionP.NombreArchivo = fileName;
+
+
+                /*
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/JournalEntry/GetJournalEntryByDateAccount/" + FechaInicio + "/"+ FechaFinal + "/"+ AccountId);
-                var accountName = await _client.GetAsync(baseadress + "api/Accounting/GetAccountById/" + AccountId);
+                var result = await _client.GetAsync(baseadress + "api/JournalEntry/GetJournalEntryByDateAccount/" + Convert.ToString(_ConciliacionP.Fechainico) + "/"+ _ConciliacionP.Fechafinal.ToString() + "/"+ _ConciliacionP.AccountId);
+                var accountName = await _client.GetAsync(baseadress + "api/Accounting/GetAccountById/" + _ConciliacionP.AccountId);
                 string valorrespuesta = "";
                 string valorAccountName = "";
                 if (result.IsSuccessStatusCode)
@@ -327,13 +389,13 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     valorAccountName = await (accountName.Content.ReadAsStringAsync());
 
-                    _JournalEntry = JsonConvert.DeserializeObject<List<ConciliacionDTO>>(valorrespuesta);
+                    _JournalEntry = JsonConvert.DeserializeObject<ConciliacionDTO>(valorrespuesta);
                     //_JournalEntryAccountName = JsonConvert.DeserializeObject<List<ConciliacionDTO>>(valorAccountName);
-                    _JournalEntryAccountName = JsonConvert.DeserializeObject<Accounting>(valorAccountName);
-                    _JournalEntry[0].Saldo = Convert.ToDouble(worksheet.Range["D8"].Number);
-                    _JournalEntry[0].AccountName = _JournalEntryAccountName.AccountName;
+                   // _JournalEntryAccountName = JsonConvert.DeserializeObject<Accounting>(valorAccountName);
+                //    _JournalEntry[0].Saldo = Convert.ToDouble(worksheet.Range["D8"].Number);
+                //    _JournalEntry[0].AccountName = _JournalEntryAccountName.AccountName;
                 }
-
+                */
 
                 //foreach (var item in _JournalEntry)
                 //{
@@ -404,7 +466,7 @@ namespace ERPMVC.Controllers
             //double saldito=23.3;
             //var resultado = new OkObjectResult(new { message = saldito, currentDate = DateTime.Now });
             //return resultado;
-            return _JournalEntry;
+            return _NewConciliacionP;
 
 
         }
@@ -454,7 +516,7 @@ namespace ERPMVC.Controllers
         {
             Conciliacion _custo = new Conciliacion();
 
-            List<ConciliacionLinea> _Conciliacionq = new List<ConciliacionLinea>();
+            //List<ConciliacionLinea> _Conciliacionq = new List<ConciliacionLinea>();
             //_Conciliacionq = _ConciliacionP;
             try
             {
@@ -464,7 +526,7 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 //_Conciliacion.UsuarioCreacion = HttpContext.Session.GetString("user");
                 //_Conciliacion.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/ConciliacionLinea/InsertBulk/", _Conciliacionq);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Conciliacion/Insert", _ConciliacionP);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -542,11 +604,12 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<Insurances>> SaveConciliacion(IEnumerable<IFormFile> files, ConciliacionDTO _ConciliacionDTO)
+        public async Task<ActionResult<Conciliacion>> SaveConciliacion(IEnumerable<IFormFile> files, ConciliacionDTO _ConciliacionDTO)
         {
 
             try
             {
+               // var Conciliacionvar = await Submit(files, _ConciliacionDTO);
 
                 Conciliacion _listConciliacion = new Conciliacion();
                 string baseadress = config.Value.urlbase;
@@ -576,6 +639,11 @@ namespace ERPMVC.Controllers
                         if (_listConciliacion == null) { _listConciliacion = new Models.Conciliacion(); }
                         if (_listConciliacion.ConciliacionId == 0)
                         {
+                            Conciliacion NuevaConciliacion = await ProcesoConciliacion(files, _ConciliacionDTO);
+   //                         NuevaConciliacion = ((Conciliacion)Conciliacionvar.va);
+
+
+
                             _ConciliacionDTO.FechaCreacion = DateTime.Now;
                             _ConciliacionDTO.UsuarioCreacion = HttpContext.Session.GetString("user");
                             var insertresult = await Insert(_ConciliacionDTO);
@@ -589,7 +657,7 @@ namespace ERPMVC.Controllers
 
 
 
-                        var filePath = _hostingEnvironment.WebRootPath + "/Conciliacion/" + _ConciliacionDTO.ConciliacionId + "_"
+                     /*   var filePath = _hostingEnvironment.WebRootPath + "/Conciliacion/" + _ConciliacionDTO.ConciliacionId + "_"
                             + file.FileName.Replace(info.Extension, "") + "_"  + file.FileName
                             + info.Extension;
 
@@ -599,9 +667,9 @@ namespace ERPMVC.Controllers
                             // MemoryStream mstream = new MemoryStream();
                             //mstream.WriteTo(stream);
                         }
-
+                        */
                         //_ConciliacionDTO.Path = filePath;
-                       // var updateresult2 = await Update(_ConciliacionDTO.ConciliacionId, _InsurancesDTO);
+                        // var updateresult2 = await Update(_ConciliacionDTO.ConciliacionId, _InsurancesDTO);
                     }
                 }
 
@@ -611,9 +679,10 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
-            return Json(_ConciliacionDTO);
+             return Json(_ConciliacionDTO);
+            
         }
+
     }
     
 
