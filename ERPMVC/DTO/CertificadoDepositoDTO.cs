@@ -10,6 +10,7 @@ namespace ERPMVC.DTO
     {
         public List<Int64> RecibosAsociados { get; set; }
         public List<Int64> CertificadosList { get; set; }
+        public Int64 SalesOrderId { get; set; }
         public int editar { get; set; } = 1;
        
     }

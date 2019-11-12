@@ -1,4 +1,4 @@
-﻿
+﻿@model ERPMVC.DTO.SeveridadRiesgoDTO
 @{
     ViewData["Title"] = "Severidad de Riesgo";
 }
@@ -7,90 +7,94 @@
 
 
 @(Html.Kendo().Grid<ERPMVC.Models.SeveridadRiesgo>()
-                              .Name("gridSeveridadRiesgo")
-                              .Columns(columns =>
-                              {
-                                  columns.Command(command =>
+                                  .Name("gridSeveridadRiesgo")
+                                  .Events(events => events
+                                            //.DataBound("onDataBound")
+                                            .DataBinding("onDataBinding")
+                                            )
+                                  .Columns(columns =>
                                   {
-                                      command.Custom("Editar").IconClass("fa fa-edit").Click("EditSeveridadRiesgo");
-                                      //command.Destroy().Text("Eliminar");
-                                  }).Title("Acciones").Width(100);
-                                  columns.Bound(p => p.IdSeveridad).Width(100);
-                                  columns.Bound(p => p.Impacto).Width(100);
-                                  columns.Bound(p => p.Probabilidad).Width(120);
-                                  columns.Bound(p => p.LimeteCalidadSuperir).Width(100).Hidden(true);
-                                  columns.Bound(p => p.LimiteCalidadInferior).Width(100).Hidden(true);
-                                  columns.Template("#=LimeteCalidadSuperir# <br> #=LimiteCalidadInferior#").Title("Calificación").Width(100);
-                                  columns.Bound(p => p.RangoInferiorSeveridad).Width(100).Hidden(true);
-                                  columns.Bound(p => p.RangoSuperiorSeveridad).Width(100).Hidden(true);
-                                  columns.Template("#=RangoInferiorSeveridad# - #=RangoSuperiorSeveridad#").Title("Valor").Width(100);
-                                  columns.Bound(p => p.ColorHexadecimal).Hidden(true);
-                                  columns.Bound(p => p.Nivel).Width(100);
-                              })
-                                            .Filterable(f => f.Operators(o => o.ForString(s => s
+                                      columns.Command(command =>
+                                      {
+                                          command.Custom("Editar").IconClass("fa fa-edit").Click("EditSeveridadRiesgo");
+                                          //command.Destroy().Text("Eliminar");
+                                      }).Title("Acciones").Width(100);
+                                      columns.Bound(p => p.IdSeveridad).Width(100);
+                                      columns.Bound(p => p.Impacto).Width(100);
+                                      columns.Bound(p => p.Probabilidad).Width(120);
+                                      columns.Bound(p => p.LimeteCalidadSuperir).Width(100).Hidden(true);
+                                      columns.Bound(p => p.LimiteCalidadInferior).Width(100).Hidden(true);
+                                      columns.Template("#=LimeteCalidadSuperir# <br> #=LimiteCalidadInferior#").Title("Calificación").Width(100);
+                                      columns.Bound(p => p.RangoInferiorSeveridad).Width(100).Hidden(true);
+                                      columns.Bound(p => p.RangoSuperiorSeveridad).Width(100).Hidden(true);
+                                      columns.Template("#=RangoInferiorSeveridad# - #=RangoSuperiorSeveridad#").Title("Valor").Width(100);
+                                      columns.Bound(p => p.ColorHexadecimal).Hidden(true);
+                                      columns.Bound(p => p.Nivel).Width(100).HtmlAttributes(new { @style = "background:#=ColorHexadecimal#;color:white;" }); 
+                                  })
+                                                .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                                .Clear()
+                                                                .Contains("Contiene")
+                                                                .DoesNotContain("No contiene")
+                                                                .EndsWith("Termina con")
+                                                                .IsEqualTo("Es igual a")
+                                                                .IsNotEqualTo("No es igual a")
+                                                                .IsNull("Es nulo")
+                                                                .StartsWith("Inicia con")
+                                                            )
+                                                            .ForNumber(n => n
                                                             .Clear()
-                                                            .Contains("Contiene")
-                                                            .DoesNotContain("No contiene")
-                                                            .EndsWith("Termina con")
                                                             .IsEqualTo("Es igual a")
-                                                            .IsNotEqualTo("No es igual a")
+                                                            .IsGreaterThan("Es mayor que")
+                                                            .IsLessThan("Es menor que")
                                                             .IsNull("Es nulo")
-                                                            .StartsWith("Inicia con")
-                                                        )
-                                                        .ForNumber(n => n
-                                                        .Clear()
-                                                        .IsEqualTo("Es igual a")
-                                                        .IsGreaterThan("Es mayor que")
-                                                        .IsLessThan("Es menor que")
-                                                        .IsNull("Es nulo")
-                                                        .IsLessThanOrEqualTo("Es menor o igual que")
-                                                        .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                        )
-                                                        .ForDate(d => d
-                                                        .Clear()
-                                                        .IsEqualTo("Es igual que")
-                                                        .IsGreaterThan("Es mayor que")
-                                                        .IsLessThan("Es menor que")
-                                                        .IsLessThanOrEqualTo("Es menor o igual que")
-                                                        .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                        .IsNotEqualTo("No es igual que")
-                                                        )
-                                                    ))
-                                        .ToolBar(tools =>
-                                        {
-                                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddSeveridadRiesgo()" });
-                                            //tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                            //tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-                                        })
-                                        .Editable(e => e.Mode(GridEditMode.PopUp))
-                                        .Sortable()
-                                        .Pageable()
-                                        .Filterable()
-                                        .Scrollable()
-                                        .Pdf(pdf => pdf.FileName("RolesReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                            .Excel(excel => excel.FileName("RolesReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                        .DataSource(dataSource =>
-                                            dataSource
-                                            .WebApi()
-                                            .ServerOperation(true)
-                                            .Model(model =>
+                                                            .IsLessThanOrEqualTo("Es menor o igual que")
+                                                            .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                            )
+                                                            .ForDate(d => d
+                                                            .Clear()
+                                                            .IsEqualTo("Es igual que")
+                                                            .IsGreaterThan("Es mayor que")
+                                                            .IsLessThan("Es menor que")
+                                                            .IsLessThanOrEqualTo("Es menor o igual que")
+                                                            .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                            .IsNotEqualTo("No es igual que")
+                                                            )
+                                                        ))
+                                            .ToolBar(tools =>
                                             {
-                                                model.Id(p => p.IdSeveridad);
-                                                model.Field(p => p.IdSeveridad).Editable(false);
-                                                model.Field(p => p.Impacto).Editable(true);
-                                                model.Field(p => p.Probabilidad).Editable(true);
-                                                model.Field(p => p.Nivel).Editable(false);
+                                                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @id = "SeveridadRiesgo_Add", @class = "k-i-plus-sm", onclick = "AddSeveridadRiesgo()" });
+                                                //tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                //tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
                                             })
-                                            .Events(events => events.Error("error_handler"))
-                                            .Read(read => read.Action("GetSeveridadRiesgo", "SeveridadRiesgo"))
-                                        //.Create(create => create.Action("PostRol", "Roles"))
-                                        //.Update(update => update.Action("PutRol", "Roles", new { id = "{0}" }))
-                                        //.Destroy(destroy => destroy.Action("DeleteRole", "Roles", new { id = "{0}" }))
-                                        )
+                                            .Editable(e => e.Mode(GridEditMode.PopUp))
+                                            .Sortable()
+                                            .Pageable()
+                                            .Filterable()
+                                            .Scrollable()
+                                            .Pdf(pdf => pdf.FileName("RolesReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                                .Excel(excel => excel.FileName("RolesReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                            .DataSource(dataSource =>
+                                                dataSource
+                                                .WebApi()
+                                                .ServerOperation(true)
+                                                .Model(model =>
+                                                {
+                                                    model.Id(p => p.IdSeveridad);
+                                                    model.Field(p => p.IdSeveridad).Editable(false);
+                                                    model.Field(p => p.Impacto).Editable(true);
+                                                    model.Field(p => p.Probabilidad).Editable(true);
+                                                    model.Field(p => p.Nivel).Editable(false);
+                                                })
+                                                .Events(events => events.Error("error_handler"))
+                                                .Read(read => read.Action("GetSeveridadRiesgo", "SeveridadRiesgo"))
+                                            //.Create(create => create.Action("PostRol", "Roles"))
+                                            //.Update(update => update.Action("PutRol", "Roles", new { id = "{0}" }))
+                                            //.Destroy(destroy => destroy.Action("DeleteRole", "Roles", new { id = "{0}" }))
+                                            )
 )
 
 <div id="numSeveridadRiesgo">
@@ -98,6 +102,35 @@
 </div>
 
 <script>
+    $(document).ready(function () {
+
+    });
+
+    function onDataBinding() {
+        var displayedData = $("#gridSeveridadRiesgo").data().kendoGrid.dataSource.view();
+        if (displayedData.length == 4) {
+            $("#SeveridadRiesgo_Add").hide();
+        }
+        else {
+            $("#SeveridadRiesgo_Add").show();
+        }
+
+        if (displayedData.length == 0) {
+            $("#LimeteCalidadSuperir").prop("disabled", true);
+        }
+        
+        //var grid = $("#gridSeveridadRiesgo").data("kendoGrid");
+        //var data = grid.dataSource.data();
+        //$.each(data, function (i, row, gridcell) {
+        //    //Change the background color of QtyReceived here 
+        //    console.log("row",row);
+        //    //console.log($('tr[data-uid="' + row.uid + '"] td:nth-child(11)'));
+        //    $('tr[data-uid="' + row.uid + '"]').css("background","red");
+        //    //console.log(data);
+        //    //grid.table.find("tr[data-uid='" + data[i].uid + "']")[0].cells[2].style.backgroundColor = 'pink';
+        //})
+    }
+
     function RefrescarGrid() {
         var grid = $("#gridSeveridadRiesgo").getKendoGrid();
         grid.dataSource.read();
@@ -132,36 +165,54 @@
         console.log("RangoInferiorSeveridad", RangoInferiorSeveridad);
         console.log("RangoSuperiorSeveridad", RangoSuperiorSeveridad);
 
-        $("#LimiteCalidadInferior").attr({
-            "max": LimeteCalidadSuperir + 1,
-            "min": LimeteCalidadSuperir + 1
-        });
+        if (displayedData.length > 0) {
+            $("#LimiteCalidadInferior").attr({
+                "max": LimeteCalidadSuperir + 1,
+                "min": LimeteCalidadSuperir + 1
+            });
 
-        $("#LimiteCalidadInferior").val(LimeteCalidadSuperir + 1);
-        var LimiteCalidadSuperirActual = $("#LimiteCalidadInferior").val();
+            $("#LimiteCalidadInferior").val(LimeteCalidadSuperir + 1);
+            var LimiteCalidadSuperirActual = $("#LimiteCalidadInferior").val();
 
-        $("#LimeteCalidadSuperir").attr({
-            "min": Number(LimiteCalidadSuperirActual) + 1
-        });
+            $("#LimeteCalidadSuperir").attr({
+                "min": Number(LimiteCalidadSuperirActual) + 1
+            });
 
-        $("#RangoInferiorSeveridad").attr({
-            "max": RangoSuperiorSeveridad + 0.01,
-            "min": RangoSuperiorSeveridad + 0.01
-        });
+            $("#RangoInferiorSeveridad").attr({
+                "max": RangoSuperiorSeveridad + 0.01,
+                "min": RangoSuperiorSeveridad + 0.01
+            });
 
-        $("#RangoInferiorSeveridad").val(RangoSuperiorSeveridad + 0.01);
-        var RangoSuperiorSeveridadActual = $("#RangoInferiorSeveridad").val();
+            $("#RangoInferiorSeveridad").val(RangoSuperiorSeveridad + 0.01);
+            var RangoSuperiorSeveridadActual = $("#RangoInferiorSeveridad").val();
 
-        $("#RangoSuperiorSeveridad").attr({
-            "min": Number(RangoSuperiorSeveridadActual) + 0.01
-        });
-
+            $("#RangoSuperiorSeveridad").attr({
+                "min": Number(RangoSuperiorSeveridadActual) + 0.01
+            });
+        }
         SetNivelRiesgo();
     }
 
     function EditSeveridadRiesgo(e) {
         debugger;
+        var displayedData = $("#gridSeveridadRiesgo").data().kendoGrid.dataSource.view();
+
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var id = dataItem.IdSeveridad;
+        var position = 0;
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+
+        if (dataItem.IdSeveridad > 0) {
+            for (var i = 0; i < displayedData.length; i++) {
+                if (displayedData[i].IdSeveridad == id) {
+                 position = i
+                }
+            }
+            position = position + 1
+        }
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+
         var dataObject = {
             IdSeveridad: dataItem.IdSeveridad,
             editar : 0
@@ -177,11 +228,9 @@
             success: function (result) {
                 $("#numSeveridadRiesgo").html('');
                 $("#numSeveridadRiesgo").html(result);
-                
                 $('#ModalSeveridadRiesgo').modal('show');
                 $('#RangoInferiorSeveridad').val(dataItem.RangoInferiorSeveridad);
                 $('#RangoSuperiorSeveridad').val(dataItem.RangoSuperiorSeveridad);
-                //$('#Nivel').data("KendoDropDownList").text(dataItem.Nivel);
             },
             error: function (XMLHttpRequest, textStatus, errorThrown) {
                 alert(textStatus + ": " + XMLHttpRequest.responseText);

@@ -17,5 +17,7 @@ namespace ERPMVC.DTO
         public bool IsEnable { get; set; } = true;
 
         public string TituloVentana { get; set; }
+        public string TipoProducto { get; set; }
+
     }
 }
