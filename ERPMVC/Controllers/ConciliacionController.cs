@@ -50,11 +50,6 @@ namespace ERPMVC.Controllers
             
         }
 
-        //public ConciliacionController(ILogger<HomeController> logger, IOptions<MyConfig> config)
-        //{
-        //    this.config = config;
-        //    this._logger = logger;
-        //}
         
 
         // GET: Conciliacion
@@ -118,8 +113,8 @@ namespace ERPMVC.Controllers
                 if (_Conciliacion == null)
                 {
                     _Conciliacion = new ConciliacionDTO();
-                    _Conciliacion.Fechainico = DateTime.Now;
-                    _Conciliacion.Fechafinal = DateTime.Now;
+                    _Conciliacion.DateBeginReconciled = DateTime.Now;
+                    _Conciliacion.DateEndReconciled = DateTime.Now;
                 }
 
             }
@@ -246,7 +241,10 @@ namespace ERPMVC.Controllers
 
 
         }
-
+        public ActionResult DetailsConciliation()
+        {
+            return View();
+        }
         public ActionResult Result()
         {
             return View();
@@ -354,10 +352,14 @@ namespace ERPMVC.Controllers
                     _ConciliacionLineaP.ReferenceTrans = worksheet[ro, 2].Text;
                     _ConciliacionLineaP.CurrencyId= Convert.ToInt32(worksheet[ro, 5].Text);
                     _ConciliacionLineaP.MonedaName = worksheet[ ro,9].Text;
-                    string datetran = worksheet[ ro, 1].Text;
-                    _ConciliacionLineaP.TransDate =Convert.ToDateTime(datetran);
+                    
+                    _ConciliacionLineaP.TransDate =Convert.ToDateTime(worksheet[ro, 1].Text);
                     _ConciliacionLineaP.ReferenciaBancaria= worksheet[ ro,3].Text;
-                    CuentaBancaria= worksheet[ro,3].Text;
+                    _ConciliacionLineaP.UsuarioCreacion= HttpContext.Session.GetString("user");
+                    _ConciliacionLineaP.UsuarioModificacion= HttpContext.Session.GetString("user");
+                    _ConciliacionLineaP.FechaCreacion = DateTime.Now;
+                    _ConciliacionLineaP.FechaModificacion = DateTime.Now;
+                    CuentaBancaria = worksheet[ro,3].Text;
                     // for (int col = 1; col < colCount; col++) {
                     //   cadena=worksheet[col, ro].Text;
                     //}
@@ -446,10 +448,10 @@ namespace ERPMVC.Controllers
                 //newstream.Position = 0;
 
                 //Closing the workbook.
-                // workbook.Close();
+                 workbook.Close();
 
                 //Dispose the Excel engine
-                //excelEngine.Dispose();
+                excelEngine.Dispose();
 
                 //Creates a FileContentResult object by using the file contents, content type, and file name.
                 //return File(newstream, ContentType, fileoutput);
@@ -480,8 +482,8 @@ namespace ERPMVC.Controllers
 
         {
 
-           //ConciliacionDTO _Conciliacion = new ConciliacionDTO();
-           List<ConciliacionLinea> _Conciliacion = new List<ConciliacionLinea>();
+           ConciliacionDTO _Conciliacion = new ConciliacionDTO();
+           List<ConciliacionLinea> _ConciliacionP = new List<ConciliacionLinea>();
 
 
 
@@ -508,14 +510,15 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
             
-            return Json(null);
+            return Ok(_Conciliacion);
+
         }
 
         [HttpPost("[controller]/[action]")]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<ConciliacionDTO>> Insert(ConciliacionDTO _ConciliacionP)
+        public async Task<ActionResult<Conciliacion>> Insert(ConciliacionDTO _ConciliacionP)
         {
-            Conciliacion _custo = new Conciliacion();
+           // Conciliacion _ConciliacionBanco = _ConciliacionP;
 
             //List<ConciliacionLinea> _Conciliacionq = new List<ConciliacionLinea>();
             //_Conciliacionq = _ConciliacionP;
@@ -525,14 +528,14 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                //_Conciliacion.UsuarioCreacion = HttpContext.Session.GetString("user");
-                //_Conciliacion.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _ConciliacionP.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _ConciliacionP.UsuarioModificacion = HttpContext.Session.GetString("user");
                 var result = await _client.PostAsJsonAsync(baseadress + "api/Conciliacion/Insert", _ConciliacionP);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _custo = JsonConvert.DeserializeObject<ConciliacionDTO>(valorrespuesta);
+                    _ConciliacionP = JsonConvert.DeserializeObject<ConciliacionDTO>(valorrespuesta);
                 }
 
             }
@@ -541,7 +544,7 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-            return Ok(_custo);
+            return Ok(_ConciliacionP);
             // return new ObjectResult(new DataSourceResult { Data = new[] { _Conciliacion }, Total = 1 });
         }
 
@@ -648,8 +651,10 @@ namespace ERPMVC.Controllers
                             NuevaConciliacion.FechaCreacion = DateTime.Now;
                             NuevaConciliacion.UsuarioCreacion = HttpContext.Session.GetString("user");
                             var insertresult = await Insert(NuevaConciliacion);
-                            var value = (insertresult.Result as ObjectResult).Value;
-                            _ConciliacionDTO = ((ConciliacionDTO)value);
+                            var value = ((ConciliacionDTO)insertresult.Value);
+                           
+
+                            _ConciliacionDTO = value;
                         }
                         else
                         {
@@ -680,8 +685,10 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-             return Json(_ConciliacionDTO);
             
+            return View("Conciliacion");
+            //return Json(_ConciliacionDTO);
+
         }
 
     }
