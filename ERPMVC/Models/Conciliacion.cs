@@ -14,24 +14,25 @@ namespace ERPMVC.Models
         public int ConciliacionId { get; set; }
 
         [ForeignKey("IdBanco")]
-        public Bank Banco { get; set; }
+        public Int64 BankId { get; set; }
 
         [Required]
-        [Display(Name = "Banco")]
+        [Display(Name = "BankName")]
         public string BankName { get; set; }
+        [Display(Name = "Cuenta Bancaria")]
+        public Int64 CheckAccountId { get; set; }
 
         [Required]
-        [Display(Name = "Fecha Conciliacion")]
+        [Display(Name = "FechaConciliacion")]
         public DateTime FechaConciliacion { get; set; }
 
         [Required]
-        [Display(Name = "Saldo Conciliado")]
+        [Display(Name = "SaldoConciliado")]
         public Double SaldoConciliado { get; set; }
 
         [Required]
-        [Display(Name = "Nombre Archivo")]
+        [Display(Name = "NombreArchivo")]
         public string NombreArchivo { get; set; }
-
 
         [Required]
         [Display(Name = "FechaCreacion")]
