@@ -49,6 +49,7 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/CustomerArea/GetCustomerAreaById/" + _CustomerAreap.CustomerAreaId);
                 string valorrespuesta = "";
+                _CustomerArea.DocumentDate = DateTime.Now;
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
@@ -57,6 +58,7 @@ namespace ERPMVC.Controllers
                     {
                         if (_CustomerArea.CustomerAreaProduct != null)
                         {
+                            _CustomerArea.FechaModificacion = DateTime.Now;
 
                             int i = 1;
                             foreach (var item in _CustomerArea.CustomerAreaProduct)
@@ -71,6 +73,8 @@ namespace ERPMVC.Controllers
                 if (_CustomerArea == null)
                 {
                     _CustomerArea = new CustomerArea();
+                    _CustomerArea.DocumentDate = DateTime.Now;
+
                 }
             }
             catch (Exception ex)
