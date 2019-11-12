@@ -216,6 +216,8 @@ namespace ERPMVC.Controllers
                             _Invoice.NumeroDEIString = $"{resultado.Sucursal}-{resultado.Caja}-01-{resultado.NumeroDEI.ToString().PadLeft(8, '0')} ";
                         }
 
+                        _Invoice.InvoiceId = resultado.InvoiceId;
+
                     }
                     else
                     {
