@@ -10,7 +10,68 @@
     }
     /*
    */
-    function EditConciliacionLinea() {
+     function AddConciliacionLinea() {
+             // e.preventDefault();
+           // clearsession();
+             var notification = $("#notification").data("kendoNotification");
+         
+         $("#frmConciliacionLinea :input").not('#ConciliacionId').prop("disabled", false);
+            
+         $('#ModalConciliacionLinea').modal('show');
+
+
+         
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+            $.ajax({
+                url: '@Url.Action("pvwAddConciliacionLinea", "ConciliacionLinea")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumConciliacionLinea").html('');
+                    $("#NumConciliacionLinea").html(result);
+
+                    //$("#DocumentTypeId").data("kendoDropDownList").trigger('change');
+                    $('#ModalConciliacionLinea').modal('show');
+                },
+                 error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        alert(textStatus + ": " + XMLHttpRequest.responseText);
+                  }
+            });
+       }
+   
+    function EditConciliacionLinea(e) {
+                e.preventDefault();
+
+           // clearsession();
+
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                ConciliacionLineaId: dataItem.ConciliacionLineaId,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddConciliacionLinea", "ConciliacionLinea")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumConciliacionLinea").html('');
+                    $("#NumConciliacionLinea").html(result);
+
+                    //$("#DocumentTypeId").data("kendoDropDownList").trigger('change');
+                    $('#ModalConciliacionLinea').modal('show');
+                },
+                 error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        alert(textStatus + ": " + XMLHttpRequest.responseText);
+                  }
+            });
        }
     function BackConciliacion() {
         window.location.href = "@Url.Action("Conciliacion", "Conciliacion")";
@@ -70,7 +131,7 @@
 
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label asp-for="BankId" class=" control-label" style="width:100%">Ciudad</label>
+                            <label asp-for="BankId" class=" control-label" style="width:100%"></label>
                             @* <input type="text" asp-for="City" name="City" class="form-control" autocomplete="off" style="width:100%" />
                             *@<kendo-dropdownlist name="BankId"
                                                   for="@Model.BankId"
@@ -92,7 +153,7 @@
                     </div>
                     <div class="col-md-4">
                         <div class="form-group">
-                            <label asp-for="CheckAccountId" class=" control-label" style="width:100%">Departamento</label>
+                            <label asp-for="CheckAccountId" class=" control-label" style="width:100%"></label>
                             @*<input asp-for="State" name="State" class="form-control" autocomplete="off" style="width:100%" />
                             *@<kendo-dropdownlist name="StateId"
                                                   for="@Model.CheckAccountId"
@@ -158,122 +219,123 @@
 
 
                 </div>
+                <div class="row">
+
+                    <h3 class="text-themecolor">Lineas de Conciliacion Bancaria</h3>
+                    @(Html.Kendo().Grid<ERPMVC.Models.ConciliacionLinea>
+                                    ()
+                                    .Name("gridConciliacionLinea")
+                                    .Columns(columns =>
+                                    {
+                                        columns.Command(command =>
+                                        {
+
+                                //command.Custom("Ver detalles").Text(" ").IconClass("far fa-list-alt").Click("DetallesVendor");
+                                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditConciliacionLinea");
+
+                                        }).Width(100);
+
+                                        columns.Bound(p => p.ConciliacionLineaId).Title("Id").Width(1);
+                                        columns.Bound(p => p.ReferenceTrans).Title("Referencia de Transaccion").Width(250);
+                                        columns.Bound(p => p.Debit).Title("Debito").Width(250);
+                                        columns.Bound(p => p.Credit).Title("Credito").Width(250);
+                                        columns.Bound(p => p.Monto).Title("Balance").Width(150);
+                                        columns.Bound(p => p.TransDate).Title("Fecha de Transaccion").Format("{0:dd/MM/yyyy}").Width(200);
+
+                                    })
+                                    .Filterable(f => f.Operators(o => o.ForString(s => s
+                                    .Clear()
+                                    .Contains("Contiene")
+                                    .DoesNotContain("No contiene")
+                                    .EndsWith("Termina con")
+                                    .IsEqualTo("Es igual a")
+                                    .IsNotEqualTo("No es igual a")
+                                    .IsNull("Es nulo")
+                                    .StartsWith("Inicia con")
 
 
+                                    )
+                                    .ForNumber(n => n
+                                    .Clear()
+                                    .IsEqualTo("Es igual a")
+                                    .IsGreaterThan("Es mayor que")
+                                    .IsLessThan("Es menor que")
+                                    .IsNull("Es nulo")
+                                    .IsLessThanOrEqualTo("Es menor o igual que")
+                                    .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                    )
+                                    .ForDate(d => d
+                                    .Clear()
+                                    .IsEqualTo("Es igual que")
+                                    .IsGreaterThan("Es mayor que")
+                                    .IsLessThan("Es menor que")
+                                    .IsLessThanOrEqualTo("Es menor o igual que")
+                                    .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                    .IsNotEqualTo("No es igual que")
+                                    )
+                                    ))
+                                    .ToolBar(tools =>
+                                    {
+                            // tools.Create();
+                            //  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                            // .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddConciliacionLinea();" });
+                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                                    })
+                                    .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                                    .Sortable()
+                                    .Pageable()
+                                    .Filterable()
+                                    .Scrollable()
+                                    .Pdf(pdf => pdf.FileName("ConciliacionLineaReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                    .Excel(excel => excel.FileName("ConciliacionLineaReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                    .DataSource(dataSource =>
+                                    dataSource
+                                    .WebApi()
+
+                                    .ServerOperation(true)
+                                    .Model(model =>
+                                    {
+                                        model.Id(p => p.ConciliacionLineaId);
+                                        model.Field(p => p.ReferenceTrans).Editable(true);
+                                        model.Field(p => p.TransDate);//.DefaultValue(
+                                                                      //ViewData["defaultVendor"] as ERPMVC.Models.VendorType);
+
+
+                        })
+                                    //.Events(events => events.Error("error_hadndler"))
+                                    .Read(read => read.Action("GetConciliacionLineaByConciliacionId", "Conciliacion").Data("GetConciliacionId"))
+                                    .Create(create => create.Action("Insert", "ConciliacionLinea"))
+                                    .Update(update => update.Action("Update", "ConciliacionLinea", new { ConciliacionLineaId = "{0}" }).Type(HttpVerbs.Put))
+                                    //.Destroy(destroy => destroy.Action("Delete", "Vendor", new { VendorId = "{0}" }).Type(HttpVerbs.Delete))
+
+                                    )
+                                    .Events(e =>
+                                    {
+                                        e.Save("onsave");
+
+                                    })
+                    )
+
+
+                    <div id="NumConciliacionLinea">
+                        @await Html.PartialAsync("~/Views/ConciliacionLinea/pvwAddConciliacionLinea.cshtml", new ERPMVC.DTO.ConciliacionLineaDTO { ConciliacionLineaId = 0 })
+                    </div>
+
+                </div>
+                </div>
             </div>
-        </div>
     </div>
 
 </div>
-<h3 class="text-themecolor">Lineas de Conciliacion Bancaria</h3>
-@(Html.Kendo().Grid<ERPMVC.Models.ConciliacionLinea>
-            ()
-            .Name("gridConciliacionLinea")
-            .Columns(columns =>
-            {
-                columns.Command(command =>
-                {
 
-        //command.Custom("Ver detalles").Text(" ").IconClass("far fa-list-alt").Click("DetallesVendor");
-        command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditConciliacionLinea");
-
-                }).Width(100);
-
-                columns.Bound(p => p.ConciliacionLineaId).Title("Id").Width(1);
-                columns.Bound(p => p.ReferenceTrans).Title("Referencia de Transaccion").Width(250);
-                columns.Bound(p => p.Debit).Title("Debito").Width(250);
-                columns.Bound(p => p.Debit).Title("Credito").Width(250);
-                columns.Bound(p => p.Monto).Title("Balance").Width(150);
-                columns.Bound(p => p.TransDate).Title("Fecha de Transaccion").Format("{0:dd/MM/yyyy}").Width(200);
-
-            })
-            .Filterable(f => f.Operators(o => o.ForString(s => s
-            .Clear()
-            .Contains("Contiene")
-            .DoesNotContain("No contiene")
-            .EndsWith("Termina con")
-            .IsEqualTo("Es igual a")
-            .IsNotEqualTo("No es igual a")
-            .IsNull("Es nulo")
-            .StartsWith("Inicia con")
-
-
-            )
-            .ForNumber(n => n
-            .Clear()
-            .IsEqualTo("Es igual a")
-            .IsGreaterThan("Es mayor que")
-            .IsLessThan("Es menor que")
-            .IsNull("Es nulo")
-            .IsLessThanOrEqualTo("Es menor o igual que")
-            .IsGreaterThanOrEqualTo("Es mayor o igual que")
-            )
-            .ForDate(d => d
-            .Clear()
-            .IsEqualTo("Es igual que")
-            .IsGreaterThan("Es mayor que")
-            .IsLessThan("Es menor que")
-            .IsLessThanOrEqualTo("Es menor o igual que")
-            .IsGreaterThanOrEqualTo("Es mayor o igual que")
-            .IsNotEqualTo("No es igual que")
-            )
-            ))
-            .ToolBar(tools =>
-            {
-    // tools.Create();
-    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddConciliacionLinea()" });
-                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-
-            })
-            .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
-            .Sortable()
-            .Pageable()
-            .Filterable()
-            .Scrollable()
-            .Pdf(pdf => pdf.FileName("ConciliacionLineaReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-            .ProxyURL(Url.Action("Export", "Home")).AllPages())
-            .Excel(excel => excel.FileName("ConciliacionLineaReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-            .DataSource(dataSource =>
-            dataSource
-            .WebApi()
-
-            .ServerOperation(true)
-            .Model(model =>
-            {
-                model.Id(p => p.ConciliacionLineaId);
-                model.Field(p => p.ReferenceTrans).Editable(true);
-                model.Field(p => p.TransDate);//.DefaultValue(
-                                              //ViewData["defaultVendor"] as ERPMVC.Models.VendorType);
-
-
-})
-            //.Events(events => events.Error("error_hadndler"))
-            .Read(read => read.Action("GetConciliacionLineaByConciliacionId", "Conciliacion").Data("GetConciliacionId"))
-            .Create(create => create.Action("Insert", "ConciliacionLinea"))
-            .Update(update => update.Action("Update", "ConciliacionLinea", new { VendorId = "{0}" }).Type(HttpVerbs.Put))
-            //.Destroy(destroy => destroy.Action("Delete", "Vendor", new { VendorId = "{0}" }).Type(HttpVerbs.Delete))
-
-            )
-            .Events(e =>
-            {
-                e.Save("onsave");
-
-            })
-)
-
-@*
-    <div id="NumConciliacionLinea">
-        @await Html.PartialAsync("pvwAddVendor", new ERPMVC.DTO.VendorDTO { VendorId = 0 })
-    </div>
-
-*@
 
 <script>
     function GetConciliacionId() {
