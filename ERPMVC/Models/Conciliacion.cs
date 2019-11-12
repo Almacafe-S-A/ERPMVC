@@ -21,6 +21,10 @@ namespace ERPMVC.Models
         public string BankName { get; set; }
         [Display(Name = "Cuenta Bancaria")]
         public Int64 CheckAccountId { get; set; }
+        [Display(Name = "Fecha Inicio")]
+        public DateTime DateBeginReconciled { get; set; }
+        [Display(Name = "Fecha Fin")]
+        public DateTime DateEndReconciled { get; set; }
 
         [Required]
         [Display(Name = "FechaConciliacion")]
