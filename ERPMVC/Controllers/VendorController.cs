@@ -99,6 +99,37 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpPost]
+        public async Task<ActionResult> GetVendorByRTN([FromBody]Vendor _Invoicep)
+        {
+            Vendor _Invoice = new Vendor();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Vendor/GetVendorByRTN", _Invoicep);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Invoice = JsonConvert.DeserializeObject<Vendor>(valorrespuesta);
+                }
+                if (_Invoice == null)
+                {
+                    _Invoice = new Vendor();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(_Invoice);
+        }
+
+
+
 
 
         [HttpPost]
