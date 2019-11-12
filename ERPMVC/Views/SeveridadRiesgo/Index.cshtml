@@ -8,6 +8,10 @@
 
 @(Html.Kendo().Grid<ERPMVC.Models.SeveridadRiesgo>()
                                   .Name("gridSeveridadRiesgo")
+                                  .Events(events => events
+                                            //.DataBound("onDataBound")
+                                            .DataBinding("onDataBinding")
+                                            )
                                   .Columns(columns =>
                                   {
                                       columns.Command(command =>
@@ -25,7 +29,7 @@
                                       columns.Bound(p => p.RangoSuperiorSeveridad).Width(100).Hidden(true);
                                       columns.Template("#=RangoInferiorSeveridad# - #=RangoSuperiorSeveridad#").Title("Valor").Width(100);
                                       columns.Bound(p => p.ColorHexadecimal).Hidden(true);
-                                      columns.Bound(p => p.Nivel).Width(100);
+                                      columns.Bound(p => p.Nivel).Width(100).HtmlAttributes(new { @style = "background:#=ColorHexadecimal#;color:white;" }); 
                                   })
                                                 .Filterable(f => f.Operators(o => o.ForString(s => s
                                                                 .Clear()
@@ -99,18 +103,33 @@
 
 <script>
     $(document).ready(function () {
+
+    });
+
+    function onDataBinding() {
         var displayedData = $("#gridSeveridadRiesgo").data().kendoGrid.dataSource.view();
-        if (displayedData.length == 2) {
+        if (displayedData.length == 4) {
             $("#SeveridadRiesgo_Add").hide();
         }
         else {
             $("#SeveridadRiesgo_Add").show();
         }
-    });
 
-    $(document).on('load', '#gridSeveridadRiesgo', function () {
-        console.log("YaCargo");
-    });
+        if (displayedData.length == 0) {
+            $("#LimeteCalidadSuperir").prop("disabled", true);
+        }
+        
+        //var grid = $("#gridSeveridadRiesgo").data("kendoGrid");
+        //var data = grid.dataSource.data();
+        //$.each(data, function (i, row, gridcell) {
+        //    //Change the background color of QtyReceived here 
+        //    console.log("row",row);
+        //    //console.log($('tr[data-uid="' + row.uid + '"] td:nth-child(11)'));
+        //    $('tr[data-uid="' + row.uid + '"]').css("background","red");
+        //    //console.log(data);
+        //    //grid.table.find("tr[data-uid='" + data[i].uid + "']")[0].cells[2].style.backgroundColor = 'pink';
+        //})
+    }
 
     function RefrescarGrid() {
         var grid = $("#gridSeveridadRiesgo").getKendoGrid();
@@ -146,36 +165,54 @@
         console.log("RangoInferiorSeveridad", RangoInferiorSeveridad);
         console.log("RangoSuperiorSeveridad", RangoSuperiorSeveridad);
 
-        $("#LimiteCalidadInferior").attr({
-            "max": LimeteCalidadSuperir + 1,
-            "min": LimeteCalidadSuperir + 1
-        });
+        if (displayedData.length > 0) {
+            $("#LimiteCalidadInferior").attr({
+                "max": LimeteCalidadSuperir + 1,
+                "min": LimeteCalidadSuperir + 1
+            });
 
-        $("#LimiteCalidadInferior").val(LimeteCalidadSuperir + 1);
-        var LimiteCalidadSuperirActual = $("#LimiteCalidadInferior").val();
+            $("#LimiteCalidadInferior").val(LimeteCalidadSuperir + 1);
+            var LimiteCalidadSuperirActual = $("#LimiteCalidadInferior").val();
 
-        $("#LimeteCalidadSuperir").attr({
-            "min": Number(LimiteCalidadSuperirActual) + 1
-        });
+            $("#LimeteCalidadSuperir").attr({
+                "min": Number(LimiteCalidadSuperirActual) + 1
+            });
 
-        $("#RangoInferiorSeveridad").attr({
-            "max": RangoSuperiorSeveridad + 0.01,
-            "min": RangoSuperiorSeveridad + 0.01
-        });
+            $("#RangoInferiorSeveridad").attr({
+                "max": RangoSuperiorSeveridad + 0.01,
+                "min": RangoSuperiorSeveridad + 0.01
+            });
 
-        $("#RangoInferiorSeveridad").val(RangoSuperiorSeveridad + 0.01);
-        var RangoSuperiorSeveridadActual = $("#RangoInferiorSeveridad").val();
+            $("#RangoInferiorSeveridad").val(RangoSuperiorSeveridad + 0.01);
+            var RangoSuperiorSeveridadActual = $("#RangoInferiorSeveridad").val();
 
-        $("#RangoSuperiorSeveridad").attr({
-            "min": Number(RangoSuperiorSeveridadActual) + 0.01
-        });
-
+            $("#RangoSuperiorSeveridad").attr({
+                "min": Number(RangoSuperiorSeveridadActual) + 0.01
+            });
+        }
         SetNivelRiesgo();
     }
 
     function EditSeveridadRiesgo(e) {
         debugger;
+        var displayedData = $("#gridSeveridadRiesgo").data().kendoGrid.dataSource.view();
+
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var id = dataItem.IdSeveridad;
+        var position = 0;
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+
+        if (dataItem.IdSeveridad > 0) {
+            for (var i = 0; i < displayedData.length; i++) {
+                if (displayedData[i].IdSeveridad == id) {
+                 position = i
+                }
+            }
+            position = position + 1
+        }
+
+        /////////////////////////////////////////////////////////////////////////////////////////////////
+
         var dataObject = {
             IdSeveridad: dataItem.IdSeveridad,
             editar : 0
