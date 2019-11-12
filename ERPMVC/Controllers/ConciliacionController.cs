@@ -91,6 +91,38 @@ namespace ERPMVC.Controllers
             return _Conciliacion.ToDataSourceResult(request);
 
         }
+        [HttpGet("[controller]/[action]")]
+
+        public async Task<DataSourceResult> GetConciliacionLineaByConciliacionId([DataSourceRequest]DataSourceRequest request, Int64 ConciliacionId)
+        {
+            List<ConciliacionLinea> _ConciliacionLineas = new List<ConciliacionLinea>();
+
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/ConciliacionLinea/GetConciliacionLineaByConciliacionId/" + ConciliacionId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _ConciliacionLineas = JsonConvert.DeserializeObject<List<ConciliacionLinea>>(valorrespuesta);
+                    
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return (_ConciliacionLineas.ToDataSourceResult(request));
+        }
+
+
+
+       
 
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> pvwAddConciliacion([FromBody]Conciliacion _Conciliaciontp)
@@ -241,9 +273,34 @@ namespace ERPMVC.Controllers
 
 
         }
-        public ActionResult DetailsConciliation()
+        public async Task<ActionResult> DetailsConciliation(Int64 ConciliacionId)
         {
-            return View();
+            Conciliacion _ConciliacionP = new Conciliacion();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Conciliacion/GetConciliacionById/" + ConciliacionId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await(result.Content.ReadAsStringAsync());
+                    _ConciliacionP = JsonConvert.DeserializeObject<Conciliacion>(valorrespuesta);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return await Task.Run(() => View(_ConciliacionP));
+
+            
         }
         public ActionResult Result()
         {
