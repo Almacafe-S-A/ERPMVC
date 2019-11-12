@@ -282,11 +282,12 @@ namespace ERPMVC.Controllers
             return Json(_CheckAccountP);
         }
         //IEnumerable<IFormFile>
-        private async Task<Conciliacion> ProcesoConciliacion(IEnumerable<IFormFile> files, ConciliacionDTO _ConciliacionP)
+        private async Task<ConciliacionDTO> ProcesoConciliacion(IEnumerable<IFormFile> files, ConciliacionDTO _ConciliacionP)
         {
             List<string> fileInfo = new List<string>();
             //Aigno la conciliacion para crearla
-            Conciliacion _NewConciliacionP = _ConciliacionP; 
+            ConciliacionDTO _NewConciliacionP = _ConciliacionP;
+            _NewConciliacionP.ConciliacionLinea = new List<ConciliacionLinea>();
 
             ConciliacionDTO _JournalEntry = new ConciliacionDTO();
             //List<Accounting> _JournalEntryAccountName = new List<Accounting>();
@@ -364,7 +365,7 @@ namespace ERPMVC.Controllers
                 }
 
                 //
-                var CheckAccountP = await GetCheckAccountByAccountNumber(CuentaBancaria);
+                var CheckAccountP = await GetCheckAccountByAccountNumber(_NewConciliacionP.ConciliacionLinea[0].ReferenciaBancaria);
                 CheckAccount CuentaCheque = new CheckAccount();
                 CuentaCheque = ((CheckAccount)CheckAccountP.Value);
 
@@ -639,16 +640,16 @@ namespace ERPMVC.Controllers
                         if (_listConciliacion == null) { _listConciliacion = new Models.Conciliacion(); }
                         if (_listConciliacion.ConciliacionId == 0)
                         {
-                            Conciliacion NuevaConciliacion = await ProcesoConciliacion(files, _ConciliacionDTO);
+                            ConciliacionDTO NuevaConciliacion = await ProcesoConciliacion(files, _ConciliacionDTO);
    //                         NuevaConciliacion = ((Conciliacion)Conciliacionvar.va);
 
 
 
-                            _ConciliacionDTO.FechaCreacion = DateTime.Now;
-                            _ConciliacionDTO.UsuarioCreacion = HttpContext.Session.GetString("user");
-                            var insertresult = await Insert(_ConciliacionDTO);
+                            NuevaConciliacion.FechaCreacion = DateTime.Now;
+                            NuevaConciliacion.UsuarioCreacion = HttpContext.Session.GetString("user");
+                            var insertresult = await Insert(NuevaConciliacion);
                             var value = (insertresult.Result as ObjectResult).Value;
-                            _ConciliacionDTO = ((ConciliacionDTO)(value));
+                            _ConciliacionDTO = ((ConciliacionDTO)value);
                         }
                         else
                         {
