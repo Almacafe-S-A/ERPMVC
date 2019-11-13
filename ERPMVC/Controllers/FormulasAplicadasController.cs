@@ -34,6 +34,10 @@ namespace ERPMVC.Controllers
         {
             return View();
         }
+        public IActionResult FormulasAplicadas()
+        {
+            return PartialView();
+        }
 
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
@@ -99,7 +103,37 @@ namespace ERPMVC.Controllers
             return PartialView(_FormulasAplicadas);
 
         }
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetFormulasAplicadasByEmployeeId([DataSourceRequest]DataSourceRequest request, Int64 EmployeeId)
+        {
+            List<FormulasAplicadas> _FormulasAplicadas = new List<FormulasAplicadas>();
+            try
+            {
 
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/FormulasAplicadas/GetFormulasAplicadasByEmployeeId/" + EmployeeId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _FormulasAplicadas = JsonConvert.DeserializeObject<List<FormulasAplicadas>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _FormulasAplicadas.ToDataSourceResult(request);
+
+        }
 
 
         [HttpPost("[action]")]

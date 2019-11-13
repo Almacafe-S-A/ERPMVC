@@ -164,81 +164,7 @@ namespace ERPMVC.Controllers
 
 
 
-        //[HttpPost("[controller]/[action]")]
-        //public async Task<ActionResult<Conciliacion>> SaveConciliacion(List<IFormFile> files, ConciliacionDTO _Conciliaciontp)
-        //{
-
-        //    try
-        //    {
-
-        //        Conciliacion _listConciliacion = new Conciliacion();
-        //        string baseadress = config.Value.urlbase;
-        //        HttpClient _client = new HttpClient();
-        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-        //        var result = await _client.GetAsync(baseadress + "api/Conciliacion/GetConciliacionById/" + _Conciliaciontp.ConciliacionId);
-        //        string valorrespuesta = "";
-
-        //        foreach (var file in files)
-        //        {
-
-
-        //            FileInfo info = new FileInfo(file.FileName);
-        //            if (info.Extension.Equals(".pdf") || info.Extension.Equals(".jpg")
-        //                || info.Extension.Equals(".png")
-        //               || info.Extension.Equals(".xls") || info.Extension.Equals(".xlsx"))
-        //            {
-
-        //                _Conciliaciontp.FechaModificacion = DateTime.Now;
-        //                _Conciliaciontp.UsuarioModificacion = HttpContext.Session.GetString("user");
-        //                if (result.IsSuccessStatusCode)
-        //                {
-
-        //                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-        //                    _listConciliacion = JsonConvert.DeserializeObject<Conciliacion>(valorrespuesta);
-        //                }
-
-        //                if (_listConciliacion == null) { _listConciliacion = new Models.Conciliacion(); }
-        //                if (_listConciliacion.ConciliacionId == 0)
-        //                {
-        //                    _Conciliaciontp.FechaCreacion = DateTime.Now;
-        //                    //_Conciliacion.DocumentName = file.FileName;
-        //                    _Conciliaciontp.UsuarioCreacion = HttpContext.Session.GetString("user");
-        //                    var insertresult = await Insert(_Conciliaciontp);
-        //                    var value = (insertresult.Result as ObjectResult).Value;
-        //                    _Conciliaciontp = ((ConciliacionDTO)(value));
-        //                }
-        //                else
-        //                {
-        //                    var updateresult = await Update(_Conciliaciontp.ConciliacionId, _Conciliaciontp);
-        //                }
-
-
-
-        //                //var filePath = _hostingEnvironment.WebRootPath + "/Conciliacions/" + _Conciliacion.ConciliacionId + "_"
-        //                //    + file.FileName.Replace(info.Extension, "") + "_" + _Conciliacion.DocumentTypeId + "_" + _Conciliacion.DocumentTypeName
-        //                //    + info.Extension;
-
-        //                //using (var stream = new FileStream(filePath, FileMode.Create))
-        //                //{
-        //                //    await file.CopyToAsync(stream);
-        //                //    // MemoryStream mstream = new MemoryStream();
-        //                //    //mstream.WriteTo(stream);
-        //                //}
-
-        //                //_Conciliacion.Path = filePath;
-        //                var updateresult2 = await Update(_Conciliaciontp.ConciliacionId, _Conciliaciontp);
-        //            }
-        //        }
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-        //        throw ex;
-        //    }
-
-        //    return Json(_Conciliaciontp);
-        //}
+       
 
         public async Task<ActionResult> Submit(IEnumerable<IFormFile> files, ConciliacionDTO _Conciliaciontp)
         {
@@ -437,24 +363,6 @@ namespace ERPMVC.Controllers
 
 
                 /*
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/JournalEntry/GetJournalEntryByDateAccount/" + Convert.ToString(_ConciliacionP.Fechainico) + "/"+ _ConciliacionP.Fechafinal.ToString() + "/"+ _ConciliacionP.AccountId);
-                var accountName = await _client.GetAsync(baseadress + "api/Accounting/GetAccountById/" + _ConciliacionP.AccountId);
-                string valorrespuesta = "";
-                string valorAccountName = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    valorAccountName = await (accountName.Content.ReadAsStringAsync());
-
-                    _JournalEntry = JsonConvert.DeserializeObject<ConciliacionDTO>(valorrespuesta);
-                    //_JournalEntryAccountName = JsonConvert.DeserializeObject<List<ConciliacionDTO>>(valorAccountName);
-                   // _JournalEntryAccountName = JsonConvert.DeserializeObject<Accounting>(valorAccountName);
-                //    _JournalEntry[0].Saldo = Convert.ToDouble(worksheet.Range["D8"].Number);
-                //    _JournalEntry[0].AccountName = _JournalEntryAccountName.AccountName;
-                }
                 */
 
                 //foreach (var item in _JournalEntry)
@@ -532,10 +440,8 @@ namespace ERPMVC.Controllers
         }
 
 
-        //[HttpPost("[controller]/[action]")]
-        // public async Task<ActionResult<SubProduct>> SaveSubProduct([FromBody]dynamic dto)
-
-        public async Task<ActionResult<ConciliacionDTO>> Confirmacion([FromBody] dynamic dto)
+        
+        /*public async Task<ActionResult<ConciliacionDTO>> Confirmacion([FromBody] dynamic dto)
 
         {
 
@@ -570,7 +476,7 @@ namespace ERPMVC.Controllers
             return await Task.Run(()=> Ok(_Conciliacion));
 
         }
-
+        */
         [HttpPost("[controller]/[action]")]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult<Conciliacion>> Insert(ConciliacionDTO _ConciliacionP)
