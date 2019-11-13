@@ -398,7 +398,7 @@ namespace ERPMVC.Controllers
                                 //var template = "Dear @Model.Name, You are totally @Model.Compliment. Ya que el nombre se encontro en los listados";
                                 var email = Email
                                     .From(_config.Value.emailsender)
-                                     .To("freddy.chinchilla@bi-dss.com")
+                                   //  .To("freddy.chinchilla@bi-dss.com")
                                      .To("freddys18@yahoo.com")
                                      .To("cumplimiento@almacafehn.com")
                                      .CC("gerencia@almacafehn.com")

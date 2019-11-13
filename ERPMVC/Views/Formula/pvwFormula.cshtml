@@ -2,24 +2,24 @@
 
 @{ Layout = null;
     var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
-           {"required","Valor requerido" }
-        };
+   {"required","Valor requerido" }
+};
     var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
 }
 
 <script>
 
-        function customFunction(input) {
+    function customFunction(input) {
 
-            if (input.attr('name') === "IdFormula" && input.val() === "0") {
-                return false;
-            }
-
+        if (input.attr('name') === "IdFormula" && input.val() === "0") {
+            return false;
         }
+
+    }
     function TipoFormula() {
         return { Id: 24 };
-    } 
-        //$('#btnprueba').val("");
+    }
+    //$('#btnprueba').val("");
 </script>
 
 
@@ -65,7 +65,7 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="CalculoFormula" class=" control-label" style="width:100%"></label>
-                                                    <input type="text" asp-for="CalculoFormula" name="TipoFormula" class="form-control" autocomplete="off" style="min-width:100%" required  maxlength="60"/>
+                                                    <input type="text" asp-for="CalculoFormula" name="TipoFormula" onchange="Validar()" class="form-control" autocomplete="off" style="min-width:100%" required maxlength="60" />
                                                     <span asp-validation-for="CalculoFormula" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -147,7 +147,7 @@
             'IdTipoFormula': $("#IdTipoFormula").val(),
             'NombreTipoFormula': $("#IdTipoFormula").data("kendoDropDownList").text(),
         };
- 
+
 
         var validator = $("#frmFormula").data("kendoValidator");
                  var status = $(".status");
@@ -203,4 +203,330 @@
             $("#btnFormula").show();
             $("#btnFormula").prop("disabled", false);
     }
+</script>
+
+<script type="text/javascript" language="javascript">
+
+    var _numeros = '0123456789';
+    var _operadores = '/*-+^';
+    var _cadenas = 'abcdefghijklmnñopqrstuvwxyzABCDEFGHIJKLMNÑOPQRSTUVWXYZ_';
+
+    function _porId(id) {
+        return document.getElementById(id);
+    }
+
+    function rtrim(s, que) {
+        var j = 0;
+
+        // Busca el último caracter segun el especificado
+        for (var i = s.length - 1; i > -1; i--)
+            if (s.substring(i, i + 1) != que) {
+                j = i;
+                break;
+            }
+        return s.substring(0, j + 1);
+    }
+
+    function InsEnCursor(idcampo, valor) {
+        var campo = document.getElementById(idcampo);
+        //IE support
+        if (document.selection) {
+            campo.focus();
+            sel = document.selection.createRange();
+            sel.text = valor;
+        }
+        //MOZILLA/NETSCAPE support
+        else if (campo.selectionStart || campo.selectionStart == '0') {
+            var startPos = campo.selectionStart;
+            var endPos = campo.selectionEnd;
+            campo.value = campo.value.substring(0, startPos)
+                + valor
+                + campo.value.substring(endPos, campo.value.length);
+        }
+        else {
+            campo.value += valor;
+        }
+    }
+
+    function Seleccionado(idcampo) {
+        var campo = document.getElementById(idcampo);
+        //IE support
+        if (document.selection) {
+            campo.focus();
+            sel = document.selection.createRange();
+            return sel.text;
+        }
+        //MOZILLA/NETSCAPE support
+        else if (campo.selectionStart || campo.selectionStart == '0') {
+            var startPos = campo.selectionStart;
+            var endPos = campo.selectionEnd;
+            return campo.value.substring(startPos, endPos);
+        }
+        else {
+            return campo.value;
+        }
+    }
+
+    function CaracterAntesCursor(idcampo) {
+        var campo = _porId(idcampo);
+        //IE support
+        if (document.selection) {
+            campo.focus();
+            sel = document.selection.createRange();
+            sel.moveStart("character", -1);
+
+            sel2 = document.selection.createRange();
+
+            //Si se había seleccionado desde el principio de texto
+            if (sel.text == sel2.text) {
+                return null;
+            }
+            return sel.text.substr(0, 1);
+        }
+        //MOZILLA/NETSCAPE support
+        else if (campo.selectionStart || campo.selectionStart == '0') {
+            var startPos = campo.selectionStart;
+
+            if (startPos == 0) {
+                return null;
+            }
+
+            return campo.value.substr(startPos - 1, 1);
+        }
+
+        return null;
+    }
+
+    function CaracterDespuesCursor(idcampo) {
+        var campo = _porId(idcampo);
+        //IE support
+        if (document.selection) {
+            campo.focus();
+            sel = document.selection.createRange();
+            sel.moveStart("character", sel.text.length);
+            sel.moveEnd("character", 1);
+            return sel.text.substr(0, 1);
+        }
+        //MOZILLA/NETSCAPE support
+        else if (campo.selectionStart || campo.selectionStart == '0') {
+            var endPos = campo.selectionEnd;
+
+            if (endPos == campo.value.length - 1) {
+                return null;
+            }
+
+            return campo.value.substr(endPos, 1);
+        }
+
+        return null;
+    }
+
+    function ValidarParentesis(s) {
+        var i;
+        var va = 0;
+        for (i = 0; i < s.length; i++) {
+            if (s.substring(i, i + 1) == '(') {
+                va++;
+            }
+            else if (s.substring(i, i + 1) == ')') {
+                va--;
+            }
+
+            if (va < 0) {
+                return false;
+            }
+        }
+
+        //si va no termina en cero la expresión está incorrectamente parentisada
+        return va == 0;
+    }
+
+    function ValidarCampos(s) {
+        var i;
+
+        for (i = 0; i < s.length; i++) {
+            if (s.substring(i, i + 1) == '{') {
+                va++;
+            }
+            else if (s.substring(i, i + 1) == ')') {
+                va--;
+            }
+
+            if (va < 0) {
+                return false;
+            }
+        }
+
+        //si va no termina en cero la expresión está incorrectamente parentisada
+        return va == 0;
+    }
+
+    function Validar() {
+        var s = _porId('CalculoFormula').value;
+
+        if (rtrim(s, ' ') == '') {
+            alert('La formula no puede estar vacía');
+            return false;
+        }
+
+        if (!ValidarParentesis(s)) {
+            alert('La operación está mal parentisada, por favor verifique');
+            return false;
+        }
+
+        var c = '';
+        var estado = 0;
+        for (var i = 0; i < s.length; i++) {
+            c = EsteCaracter(s, i);
+            switch (estado) {
+                case 0:
+                    switch (true) {
+                        case EsNumero(c):
+                            estado = 2;
+                            continue;
+                        case c == '-':
+                            estado = 3;
+                            continue;
+                        case c == '(':
+                            estado = 0;
+                            continue;
+                        case c == '{':
+                            estado = 1;
+                            continue;
+                    }
+                    return Error(i, c, '0-9, -, (, {');
+                    break;
+                case 1:
+                    switch (true) {
+                        case EsLetra(c):
+                            estado = 7;
+                            continue;
+                    }
+                    return Error(i, c, 'a-z, A-Z, _');
+                    break;
+                case 2:
+                    switch (true) {
+                        case EsNumero(c):
+                            estado = 2;
+                            continue;
+                        case c == '-' || EsOperador(c):
+                            estado = 3;
+                            continue;
+                        case c == ')':
+                            estado = 4;
+                            continue;
+                        case c == '.':
+                            estado = 5;
+                            continue;
+                    }
+                    return Error(i, c, '0-9, ), ., -, *, +, /, ^');
+                    break;
+                case 3:
+                    switch (true) {
+                        case EsNumero(c):
+                            estado = 2;
+                            continue;
+                        case c == '(':
+                            estado = 0;
+                            continue;
+                        case c == '{':
+                            estado = 1;
+                            continue;
+                    }
+                    return Error(i, c, '0-9, (, {');
+                    break;
+                case 4:
+                    switch (true) {
+                        case c == '-' || EsOperador(c):
+                            estado = 3;
+                            continue;
+                        case c == ')':
+                            estado = 4;
+                            continue;
+                    }
+                    return Error(i, c, '), -, *, +, /, ^');
+                    break;
+                case 5:
+                    switch (true) {
+                        case EsNumero(c):
+                            estado = 6;
+                            continue;
+                    }
+                    return Error(i, c, '0-9');
+                    break;
+                case 6:
+                    switch (true) {
+                        case EsNumero(c):
+                            estado = 6;
+                            continue;
+                        case c == '-' || EsOperador(c):
+                            estado = 3;
+                            continue;
+                        case c == ')':
+                            estado = 4;
+                            continue;
+                    }
+                    return Error(i, c, '0-9, ), -, *, +, /, ^');
+                    break;
+                case 7:
+                    switch (true) {
+                        case EsLetra(c):
+                            estado = 7;
+                            continue;
+                        case c == '}':
+                            estado = 4;
+                            continue;
+                    }
+                    return Error(i, c, 'a-z, A-Z, _, }');
+                    break;
+            }
+            return;
+        }
+
+        if (estado != 2 && estado != 4 && estado != 6) {
+            alert('La formula se encuentra incompleta');
+            return false;
+        }
+
+        alert('¡Expresión correcta!');
+        return true;
+    }
+
+    function Error(i, c, esperaba) {
+        alert('Se encontró "' + c + '" cuando se esperaba uno de los siguientes: ' + esperaba + ' \n columna: ' + (i + 1) + '');
+        return false;
+    }
+
+    function EsNumero(c) {
+        if (_numeros.indexOf(c) != -1) {
+            return true;
+        }
+
+        return false;
+    }
+
+    function EsLetra(c) {
+        if (_cadenas.indexOf(c) != -1) {
+            return true;
+        }
+
+        return false;
+    }
+
+    function EsOperador(c) {
+        if (_operadores.indexOf(c) != -1) {
+            return true;
+        }
+
+        return false;
+    }
+
+    function EsteCaracter(s, k) {
+        if (s.length < k) {
+            return null;
+        }
+
+        return s.substr(k, 1);
+    }
+
 </script>
