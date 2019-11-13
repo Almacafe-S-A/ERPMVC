@@ -344,6 +344,59 @@ namespace ERPMVC.Controllers
             }
             return PartialView(_ConciliacionLinea);
         }
+        //
+        [HttpGet("[action]")]
+        public async Task<ActionResult> GetConciliacionLineaByJournalEntryLine(Int64 ConciliacionId)
+        {
+            Conciliacion _ConciliacionDTO = new Conciliacion();
+            string baseadress = config.Value.urlbase;
+            HttpClient _client = new HttpClient();
+            _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+            var result = await _client.GetAsync(baseadress + "api/Conciliacion/GetConciliacionById/"+ _ConciliacionDTO.ConciliacionId);//
+            string valorrespuesta = "";
+            _ConciliacionDTO.FechaModificacion = DateTime.Now;
+            _ConciliacionDTO.UsuarioModificacion = HttpContext.Session.GetString("user");
+            if (result.IsSuccessStatusCode)
+            {
+
+                valorrespuesta = await (result.Content.ReadAsStringAsync());
+                _ConciliacionDTO = JsonConvert.DeserializeObject<Conciliacion>(valorrespuesta);
+            }
+            
+            JournalEntry _JournalEntryq = new JournalEntry();
+            try
+            {
+
+                string baseadress3 = config.Value.urlbase;
+            HttpClient _client3 = new HttpClient();
+            _client3.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+               
+            var result3 = await _client3.PostAsJsonAsync(baseadress3 + "api/JournalEntry/GetJournalEntryByDateAccount",_ConciliacionDTO);
+            //var accountName = await _client.GetAsync(baseadress + "api/Accounting/GetAccountById/" + _ConciliacionDTO.AccountId);
+            string valorrespuesta3 = "";
+            //string valorAccountName = "";
+            if (result.IsSuccessStatusCode)
+            {
+                valorrespuesta3 = await (result.Content.ReadAsStringAsync());
+               // valorAccountName = await (accountName.Content.ReadAsStringAsync());
+
+                    _JournalEntryq = JsonConvert.DeserializeObject<JournalEntry>(valorrespuesta);
+                //_JournalEntryAccountName = JsonConvert.DeserializeObject<List<CociliacionDTO>>(valorAccountName);
+                // _JournalEntryAccountName = JsonConvert.DeserializeObject<Accounting>(valorAccountName);
+                //    _JournalEntry[0].Saldo = Convert.ToDouble(worksheet.Range["D8"].Number);
+                //    _JournalEntry[0].AccountName = _JournalEntryAccountName.AccountName;
+            }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+            return Ok(_JournalEntryq);
+
+           
+           // return await Task.Run(() => Json(_customers));
+        }
         [HttpGet("[action]")]
         public async Task<ActionResult> GetConciliacionLineaLineById(Int64 ConciliacionLineaId)
         {

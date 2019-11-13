@@ -130,7 +130,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_GoodsDeliveryAuthorizationLine);
+            return await Task.Run(()=> Json(_GoodsDeliveryAuthorizationLine));
         }
 
 
