@@ -16,12 +16,17 @@ namespace ERPMVC.Models
         [Required]
         [Display(Name = "Id Politica")]
         public Guid IdPolicy { get; set; }
+        [ForeignKey("IdPolicy")]
+        public Policy Policy { get; set; }
 
         public string PolicyName { get; set; }
 
         [Required]
         [Display(Name = "Rol")]
         public Guid IdRol { get; set; }
+        [ForeignKey("IdRol")]
+        public ApplicationRole Role { get; set; }
+
 
         public string RolName { get; set; }
 
