@@ -567,7 +567,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
             
-            return Ok(_Conciliacion);
+            return await Task.Run(()=> Ok(_Conciliacion));
 
         }
 
