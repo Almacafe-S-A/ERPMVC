@@ -604,14 +604,6 @@ namespace ERPMVC.Controllers
 
 
 
-
-
-
-
-
-
-
-
         public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request,Int64 CustomerId)
         {
             var res = await GetCertificados(CustomerId);
