@@ -213,7 +213,8 @@ namespace ERPMVC.Controllers
                     }
                     catch (Exception ex)
                     {
-                        return await Task.Run(() => BadRequest($"No se guardo el formulario, favor revisar: {value.ToString()}"));
+                        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                        return await Task.Run(() => BadRequest($"No se guardo el formulario, favor revisar: {value.ToString()}{ex.ToString()}"));
                     }
                  
                     if (resultado.IdCAI <= 0)
