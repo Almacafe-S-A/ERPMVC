@@ -28,9 +28,9 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return View();
+            return await Task.Run(() => View());
         }
 
         public async Task<ActionResult> pvwScheduleSubservices(Int64 Id = 0)
@@ -63,7 +63,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_ScheduleSubservices);
+            return await Task.Run(() => PartialView(_ScheduleSubservices));
 
         }
 
@@ -96,7 +96,7 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _ScheduleSubservices.ToDataSourceResult(request);
+            return await Task.Run(() => _ScheduleSubservices.ToDataSourceResult(request));
 
         }
 
@@ -141,7 +141,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_ScheduleSubservices);
+            return await Task.Run(() => Json(_ScheduleSubservices));
         }
 
         // POST: ScheduleSubservices/Insert
@@ -177,7 +177,8 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-            return Ok(_ScheduleSubservices);
+
+            return await Task.Run(() => Ok(_ScheduleSubservices));
             // return new ObjectResult(new DataSourceResult { Data = new[] { _ScheduleSubservices }, Total = 1 });
         }
 
@@ -211,7 +212,7 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return Ok(_ScheduleSubservices);
+            return await Task.Run(() => Ok(_ScheduleSubservices));
         }
 
         [HttpPost("[action]")]
@@ -246,7 +247,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return Ok(_ScheduleSubservices);
+            return await Task.Run(()=> Ok(_ScheduleSubservices));
         }
 
 

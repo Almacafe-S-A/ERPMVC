@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -28,31 +29,32 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-        public IActionResult Index()
+        public async  Task<IActionResult> Index()
         {
-            return View();
+            return await Task.Run(()=> View());
         }
 
-        public async Task<ActionResult> pvwEmployeeExtraHours(Int64 Id = 0)
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> pvwAddEmployeeExtraHours([FromBody]EmployeeExtraHoursDTO _EmployeeExtraHoursDTO)
         {
-            EmployeeExtraHours _EmployeeExtraHours = new EmployeeExtraHours();
+            EmployeeExtraHoursDTO _EmployeeExtraHours = new EmployeeExtraHoursDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/EmployeeExtraHours/GetEmployeeExtraHoursById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/EmployeeExtraHours/GetEmployeeExtraHoursById/" + _EmployeeExtraHoursDTO.EmployeeExtraHoursId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _EmployeeExtraHours = JsonConvert.DeserializeObject<EmployeeExtraHours>(valorrespuesta);
+                    _EmployeeExtraHours = JsonConvert.DeserializeObject<EmployeeExtraHoursDTO>(valorrespuesta);
 
                 }
 
                 if (_EmployeeExtraHours == null)
                 {
-                    _EmployeeExtraHours = new EmployeeExtraHours();
+                    _EmployeeExtraHours = new EmployeeExtraHoursDTO();
                 }
             }
             catch (Exception ex)
@@ -141,7 +143,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_EmployeeExtraHours);
+            return await Task.Run(() => Json(_EmployeeExtraHours));
         }
 
         // POST: EmployeeExtraHours/Insert
@@ -177,7 +179,7 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-            return Ok(_EmployeeExtraHours);
+            return await Task.Run(() =>  Ok(_EmployeeExtraHours));
             // return new ObjectResult(new DataSourceResult { Data = new[] { _EmployeeExtraHours }, Total = 1 });
         }
 
@@ -211,10 +213,10 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return Ok(_EmployeeExtraHours);
+            return await Task.Run(() => Ok(_EmployeeExtraHours));
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<EmployeeExtraHours>> Delete([FromBody]EmployeeExtraHours _EmployeeExtraHours)
         {
             try
@@ -246,7 +248,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return Ok(_EmployeeExtraHours);
+            return await Task.Run(() => Ok(_EmployeeExtraHours));
         }
 
 

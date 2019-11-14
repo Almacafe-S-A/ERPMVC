@@ -474,7 +474,8 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Employees }, Total = 1 });
+            return await Task.Run(() => Ok(_Employees));
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _Employees }, Total = 1 });
         }
 
 
@@ -505,8 +506,8 @@ namespace ERPMVC.Controllers
             }
 
 
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Employees }, Total = 1 });
+            return await Task.Run(() => Ok(_Employees));
+           // return new ObjectResult(new DataSourceResult { Data = new[] { _Employees }, Total = 1 });
         }
 
 
@@ -542,7 +543,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_Employees);
+            return await Task.Run(() => PartialView(_Employees));
 
         }
 
@@ -572,9 +573,41 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-            return _Employees.ToDataSourceResult(request);
+
+            return await Task.Run(() => _Employees.ToDataSourceResult(request));
 
         }
+
+
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> GetEmployees([DataSourceRequest]DataSourceRequest request)
+        {
+            List<Employees> _Employees = new List<Employees>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Employees/GetEmployees");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Employees = JsonConvert.DeserializeObject<List<Employees>>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return await Task.Run(()=>  Json(_Employees.ToDataSourceResult(request)));
+
+        }
+
 
     }
 }

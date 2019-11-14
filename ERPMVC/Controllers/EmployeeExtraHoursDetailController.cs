@@ -28,11 +28,12 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-        public IActionResult Index()
+        public async Task< IActionResult> Index()
         {
-            return View();
+            return await Task.Run(() => View());
         }
 
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> pvwEmployeeExtraHoursDetail(Int64 Id = 0)
         {
             EmployeeExtraHoursDetail _EmployeeExtraHoursDetail = new EmployeeExtraHoursDetail();
@@ -63,7 +64,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_EmployeeExtraHoursDetail);
+            return await Task.Run(() => PartialView(_EmployeeExtraHoursDetail));
 
         }
 
@@ -96,7 +97,7 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _EmployeeExtraHoursDetail.ToDataSourceResult(request);
+            return await Task.Run(() => _EmployeeExtraHoursDetail.ToDataSourceResult(request));
 
         }
 
@@ -141,7 +142,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_EmployeeExtraHoursDetail);
+            return await Task.Run(() => Json(_EmployeeExtraHoursDetail));
         }
 
         // POST: EmployeeExtraHoursDetail/Insert
@@ -175,9 +176,9 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                return await Task.Run(() => BadRequest($"Ocurrio un error{ex.Message}"));
             }
-            return Ok(_EmployeeExtraHoursDetail);
+            return await Task.Run(() => Ok(_EmployeeExtraHoursDetail));
             // return new ObjectResult(new DataSourceResult { Data = new[] { _EmployeeExtraHoursDetail }, Total = 1 });
         }
 
@@ -208,13 +209,13 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                return await Task.Run(() => BadRequest($"Ocurrio un error{ex.Message}"));
             }
 
-            return Ok(_EmployeeExtraHoursDetail);
+            return await Task.Run(() => Ok(_EmployeeExtraHoursDetail));
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<EmployeeExtraHoursDetail>> Delete([FromBody]EmployeeExtraHoursDetail _EmployeeExtraHoursDetail)
         {
             try
@@ -241,12 +242,12 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error: {ex.Message}");
+                return await Task.Run(() => BadRequest($"Ocurrio un error: {ex.Message}"));
             }
 
 
 
-            return Ok(_EmployeeExtraHoursDetail);
+            return await Task.Run(() => Ok(_EmployeeExtraHoursDetail));
         }
 
 
