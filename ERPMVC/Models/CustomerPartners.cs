@@ -35,6 +35,9 @@ namespace ERPMVC.Models
         public string Listados { get; set; }
 
         [EmailAddress]
+        [RegularExpression(@"\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*", ErrorMessage = "Correo invalido")]
+        [DataType(DataType.EmailAddress)]
+        [Display(Name = "Correo")]
         public string Correo { get; set; }
 
         public string UsuarioCreacion { get; set; }
