@@ -50,11 +50,14 @@ namespace ERPMVC.Controllers
             
         }
 
-        
+
 
         // GET: Conciliacion
-        public IActionResult Conciliacion()
+        [Authorize(Policy = "Admin")]
+        public async Task<IActionResult> Conciliacion()
         {
+            ViewData["CheckAccount"] = await ObtenerCheckAccount();
+
             return View();
         }
 
@@ -509,6 +512,33 @@ namespace ERPMVC.Controllers
             }
             return Ok(_ConciliacionP);
             // return new ObjectResult(new DataSourceResult { Data = new[] { _Conciliacion }, Total = 1 });
+        }
+        async Task<IEnumerable<CheckAccount>> ObtenerCheckAccount()
+        {
+            IEnumerable<CheckAccount> CheckAccount = null;
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CheckAccount/GetCheckAccount");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    CheckAccount = JsonConvert.DeserializeObject<IEnumerable<CheckAccount>>(valorrespuesta);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            ViewData["defaultcheckaccount"] = CheckAccount.FirstOrDefault();
+            return CheckAccount;
+
         }
 
 

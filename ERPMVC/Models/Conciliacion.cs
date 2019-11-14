@@ -16,8 +16,12 @@ namespace ERPMVC.Models
         [ForeignKey("IdBanco")]
         public Int64 BankId { get; set; }
 
+        [ForeignKey("AccountId")]
+        [Display(Name = "Id")]
+        public Int64 AccountId { get; set; }
+
         [Required]
-        [Display(Name = "BankName")]
+        [Display(Name = "Nombre del Banco")]
         public string BankName { get; set; }
         [Display(Name = "Cuenta Bancaria")]
         public Int64 CheckAccountId { get; set; }
@@ -27,15 +31,15 @@ namespace ERPMVC.Models
         public DateTime DateEndReconciled { get; set; }
 
         [Required]
-        [Display(Name = "FechaConciliacion")]
+        [Display(Name = "Fecha de Conciliacion")]
         public DateTime FechaConciliacion { get; set; }
 
         [Required]
-        [Display(Name = "SaldoConciliado")]
+        [Display(Name = "Saldo Conciliado")]
         public Double SaldoConciliado { get; set; }
 
         [Required]
-        [Display(Name = "NombreArchivo")]
+        [Display(Name = "Nombre Archivo")]
         public string NombreArchivo { get; set; }
 
         [Required]

@@ -74,7 +74,7 @@ namespace ERPMVC.Models
 
         [Display(Name = "Cuenta")]
         public Int64 AccountId { get; set; }
-        [Display(Name = "Cuenta")]
+        [Display(Name = "Nombre de Cuenta")]
         public string AccountName { get; set; }
 
         [Display(Name = "Crédito")]
