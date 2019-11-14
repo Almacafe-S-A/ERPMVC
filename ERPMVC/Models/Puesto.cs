@@ -23,6 +23,11 @@ namespace ERPMVC.Models
         [Display(Name = "Departamento")]
         [Required]
         public string NombreDepartamento { get; set; }
+        [Display(Name = "Estado")]
+        public Int64 IdEstado { get; set; }
+
+        [Display(Name = "Estado")]
+        public string Estado { get; set; }
         [Display(Name = "Usuario de creación")]
         public string Usuariocreacion { get; set; }
         [Display(Name = "Usuario de modificación")]

@@ -13,6 +13,7 @@ using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Http;
 using System.Net.Http;
 using Kendo.Mvc.Extensions;
+using ERPMVC.DTO;
 
 namespace ERPMVC.Controllers
 {
@@ -160,7 +161,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<InsuranceEndorsement>> SaveInsuranceEndorsement([FromBody]InsuranceEndorsement _InsuranceEndorsement)
+        public async Task<ActionResult<InsuranceEndorsementDTO>> SaveInsuranceEndorsement([FromBody]InsuranceEndorsementDTO _InsuranceEndorsement)
         {
 
             try
@@ -188,7 +189,7 @@ namespace ERPMVC.Controllers
                     var insertresult = await Insert(_InsuranceEndorsement);
                     var value = (insertresult.Result as ObjectResult).Value;
 
-                    InsuranceEndorsement resultado = ((InsuranceEndorsement)(value));
+                    InsuranceEndorsementDTO resultado = ((InsuranceEndorsementDTO)(value));
                     if (resultado.InsuranceEndorsementId <= 0)
                     {
                         return await Task.Run(() => BadRequest("No se genero la factura!"));
@@ -219,7 +220,7 @@ namespace ERPMVC.Controllers
         // POST: InsuranceEndorsement/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<InsuranceEndorsement>> Insert(InsuranceEndorsement _InsuranceEndorsement)
+        public async Task<ActionResult<InsuranceEndorsement>> Insert(InsuranceEndorsementDTO _InsuranceEndorsement)
         {
             try
             {
@@ -234,7 +235,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _InsuranceEndorsement = JsonConvert.DeserializeObject<InsuranceEndorsement>(valorrespuesta);
+                    _InsuranceEndorsement = JsonConvert.DeserializeObject<InsuranceEndorsementDTO>(valorrespuesta);
                 }
                 else
                 {
