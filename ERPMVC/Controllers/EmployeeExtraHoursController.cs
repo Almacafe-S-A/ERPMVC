@@ -54,7 +54,7 @@ namespace ERPMVC.Controllers
 
                 if (_EmployeeExtraHours == null)
                 {
-                    _EmployeeExtraHours = new EmployeeExtraHoursDTO();
+                    _EmployeeExtraHours = new EmployeeExtraHoursDTO { WorkDate = DateTime.Now };
                 }
             }
             catch (Exception ex)
@@ -133,7 +133,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    var updateresult = await Update(_EmployeeExtraHours.EmployeeExtraHoursId, _EmployeeExtraHours);
+                    var updateresult = await Update(_EmployeeExtraHours);
                 }
 
             }
@@ -183,8 +183,8 @@ namespace ERPMVC.Controllers
             // return new ObjectResult(new DataSourceResult { Data = new[] { _EmployeeExtraHours }, Total = 1 });
         }
 
-        [HttpPut("{id}")]
-        public async Task<ActionResult<EmployeeExtraHours>> Update(Int64 id, EmployeeExtraHours _EmployeeExtraHours)
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<EmployeeExtraHours>> Update(EmployeeExtraHours _EmployeeExtraHours)
         {
             try
             {
