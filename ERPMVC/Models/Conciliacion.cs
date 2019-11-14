@@ -10,14 +10,15 @@ namespace ERPMVC.Models
     public class Conciliacion
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Display(Name = "Id")]
+        [Display(Name = "Id de Conciliacion")]
         public int ConciliacionId { get; set; }
 
         [ForeignKey("IdBanco")]
+        [Display(Name = "Id de Banco")]
         public Int64 BankId { get; set; }
 
         [ForeignKey("AccountId")]
-        [Display(Name = "Id")]
+        [Display(Name = "Numero de cuenta Contable")]
         public Int64 AccountId { get; set; }
 
         [Required]
@@ -38,9 +39,7 @@ namespace ERPMVC.Models
         [Display(Name = "Saldo Conciliado")]
         public Double SaldoConciliado { get; set; }
 
-        [Required]
-        [Display(Name = "Nombre Archivo")]
-        public string NombreArchivo { get; set; }
+        
 
         [Required]
         [Display(Name = "FechaCreacion")]
