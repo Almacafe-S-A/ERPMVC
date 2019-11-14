@@ -19,7 +19,6 @@ namespace ERPMVC.DTO
         public double Credit { get; set; }
         public double Saldo { get; set; }
         public string AccountName { get; set; }
-        public Int64 AccountId { get; set; }
         
         public IEnumerable<IFormFile> files { get; set; }
         //public string FechaInicio { get; internal set; }
