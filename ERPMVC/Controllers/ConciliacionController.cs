@@ -150,6 +150,7 @@ namespace ERPMVC.Controllers
                     _Conciliacion = new ConciliacionDTO();
                     _Conciliacion.DateBeginReconciled = DateTime.Now;
                     _Conciliacion.DateEndReconciled = DateTime.Now;
+                    _Conciliacion.FechaConciliacion = DateTime.Now;
                 }
 
             }
@@ -362,8 +363,7 @@ namespace ERPMVC.Controllers
                 _NewConciliacionP.BankName = CuentaCheque.BankName;
                 _NewConciliacionP.FechaConciliacion = DateTime.Now;
                 _NewConciliacionP.SaldoConciliado = 0;
-                _NewConciliacionP.NombreArchivo = fileName;
-
+                
 
                 /*
                 */
@@ -601,7 +601,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<Conciliacion>> SaveConciliacion(IEnumerable<IFormFile> files, ConciliacionDTO _ConciliacionDTO)
+        public async Task<ActionResult<Conciliacion>> SaveConciliacion([FromBody]ConciliacionDTO _ConciliacionDTO)
         {
 
             try
@@ -615,14 +615,14 @@ namespace ERPMVC.Controllers
                 var result = await _client.GetAsync(baseadress + "api/Conciliacion/GetConciliacionById/" + _ConciliacionDTO.ConciliacionId);
                 string valorrespuesta = "";
 
-                foreach (var file in files)
-                {
+                //foreach (var file in files)
+                //{
 
 
-                    FileInfo info = new FileInfo(file.FileName);
-                    if (
-                        info.Extension.Equals(".xls") || info.Extension.Equals(".xlsx"))
-                    {
+                   // FileInfo info = new FileInfo(file.FileName);
+                    //if (
+                     //   info.Extension.Equals(".xls") || info.Extension.Equals(".xlsx"))
+                    //{
 
                         _ConciliacionDTO.FechaModificacion = DateTime.Now;
                         _ConciliacionDTO.UsuarioModificacion = HttpContext.Session.GetString("user");
@@ -636,15 +636,19 @@ namespace ERPMVC.Controllers
                         if (_listConciliacion == null) { _listConciliacion = new Models.Conciliacion(); }
                         if (_listConciliacion.ConciliacionId == 0)
                         {
-                            ConciliacionDTO NuevaConciliacion = await ProcesoConciliacion(files, _ConciliacionDTO);
-   //                         NuevaConciliacion = ((Conciliacion)Conciliacionvar.va);
+                    //  ConciliacionDTO NuevaConciliacion = await ProcesoConciliacion(files, _ConciliacionDTO);
+                    //                         NuevaConciliacion = ((Conciliacion)Conciliacionvar.va);
 
 
 
-                            NuevaConciliacion.FechaCreacion = DateTime.Now;
-                            NuevaConciliacion.UsuarioCreacion = HttpContext.Session.GetString("user");
-                            var insertresult = await Insert(NuevaConciliacion);
-                            var value = ((ConciliacionDTO)insertresult.Value);
+                    //NuevaConciliacion.FechaCreacion = DateTime.Now;
+                    // NuevaConciliacion.UsuarioCreacion = HttpContext.Session.GetString("user");
+
+                    //var insertresult = await Insert(NuevaConciliacion);
+                    _ConciliacionDTO.FechaCreacion = DateTime.Now;
+                    _ConciliacionDTO.UsuarioCreacion = HttpContext.Session.GetString("user");
+                        var insertresult = await Insert(_ConciliacionDTO);
+                        var value = ((ConciliacionDTO)insertresult.Value);
                            
 
                             _ConciliacionDTO = value;
@@ -669,8 +673,8 @@ namespace ERPMVC.Controllers
                         */
                         //_ConciliacionDTO.Path = filePath;
                         // var updateresult2 = await Update(_ConciliacionDTO.ConciliacionId, _InsurancesDTO);
-                    }
-                }
+                    //}
+                //}
 
             }
             catch (Exception ex)
