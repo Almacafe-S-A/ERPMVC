@@ -15,9 +15,9 @@ namespace ERPMVC.Models
         [Display(Name = "Nombre")]
         public string ContactPersonName { get; set; }
 
-        [Display(Name = "IdProveedor")]
+        [Display(Name = "Id Proveedor")]
         public Int64 VendorId { get; set; }
-        [Display(Name = "IdCliente")]
+        [Display(Name = "Id Cliente")]
         public Int64 CustomerId { get; set; }
 
 
@@ -25,7 +25,7 @@ namespace ERPMVC.Models
         [Display(Name = "Identidad")]
         public string ContactPersonIdentity { get; set; }
 
-        [Display(Name = "Telefono")]
+        [Display(Name = "Télefono")]
         public string ContactPersonPhone { get; set; }
 
         [Display(Name = "Ciudad")]
