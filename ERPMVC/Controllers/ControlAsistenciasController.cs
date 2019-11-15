@@ -87,12 +87,15 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet]
-        public async Task<DataSourceResult> GetGetControlAsistencias([DataSourceRequest]DataSourceRequest request)
+        public async Task<DataSourceResult> GetGetControlAsistencias([DataSourceRequest]DataSourceRequest request/*,ControlAsistenciasDTO _Parametro*/)
         {
+
+           // var variable = _Parametro;
+
             List<ControlAsistencias> _ControlAsistencias = new List<ControlAsistencias>();
 
             //Cargar de lista de empleados
-            List<Employees> _ListEmpleados = new List<Employees>();
+             List<Employees> _ListEmpleados = new List<Employees>();
 
             try
             {
@@ -132,12 +135,8 @@ namespace ERPMVC.Controllers
 
 
 
-
-
-
-
                 }
-
+            
 
             
 
@@ -175,26 +174,26 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost]
-        public async 
-         Task<ActionResult> GetControlAsistenciasByEmpl(ControlAsistencias NuevaControlAsistencia)
+        public async Task<JsonResult> GetControlAsistenciasByEmpl(ControlAsistencias NuevaControlAsistencia)
         {
-           
+
+            //DateTime Fecha = new DateTime(01-11-2019);
 
             try
             {
                     string baseadress = _config.Value.urlbase;
-        HttpClient _client = new HttpClient();
-        NuevaControlAsistencia.FechaCreacion = DateTime.Now;
-                    NuevaControlAsistencia.FechaModificacion= DateTime.Now;
+                    HttpClient _client = new HttpClient();
+                    NuevaControlAsistencia.FechaCreacion = new DateTime(2019, 11, 01) ;
+                    NuevaControlAsistencia.FechaModificacion= DateTime.Now; 
                     NuevaControlAsistencia.UsuarioCreacion = HttpContext.Session.GetString("user");
                     NuevaControlAsistencia.UsuarioModificacion = HttpContext.Session.GetString("user");
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                     var result = await _client.PostAsJsonAsync(baseadress + "api/ControlAsistencias/GetControlAsistenciasByEmployeeId", NuevaControlAsistencia);
-        string valorrespuesta = "";
+                    string valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
                         valorrespuesta = await(result.Content.ReadAsStringAsync());
-        NuevaControlAsistencia = JsonConvert.DeserializeObject<ControlAsistencias>(valorrespuesta);
+                    NuevaControlAsistencia = JsonConvert.DeserializeObject<ControlAsistencias>(valorrespuesta);
 
                     }
     //foreach (var data in _ListEmpleados)
@@ -213,7 +212,7 @@ namespace ERPMVC.Controllers
                 }
 
 
-            return View();
+            return Json(NuevaControlAsistencia);
         }
 
         [HttpGet]
