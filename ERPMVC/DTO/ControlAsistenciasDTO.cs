@@ -46,6 +46,9 @@ namespace ERPMVC.DTO
         public DateTime Dia29 { get; set; }
         public DateTime Dia30 { get; set; }
         public DateTime Dia31 { get; set; }
+        public int LlegadasTarde { get; set; }
+        public int DiasLaborales { get; set; }
+        public String PorcentajeLlegadasTarde { get; set; }
 
 
     }
