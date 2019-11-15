@@ -180,8 +180,8 @@ namespace ERPMVC.Controllers
         }
 
         // POST: PaymentScheduleRulesByCustomer/Insert
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost("[controller]/[action]")]
+       // [ValidateAntiForgeryToken]
         public async Task<ActionResult<PaymentScheduleRulesByCustomer>> Insert(PaymentScheduleRulesByCustomer _PaymentScheduleRulesByCustomer)
         {
             try
@@ -212,8 +212,8 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-            return Ok(_PaymentScheduleRulesByCustomer);
-            // return new ObjectResult(new DataSourceResult { Data = new[] { _PaymentScheduleRulesByCustomer }, Total = 1 });
+          //  return Ok(_PaymentScheduleRulesByCustomer);
+            return new ObjectResult(new DataSourceResult { Data = new[] { _PaymentScheduleRulesByCustomer }, Total = 1 });
         }
 
         [HttpPost("[controller]/[action]")]
@@ -246,7 +246,8 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return Ok(_PaymentScheduleRulesByCustomer);
+            return new ObjectResult(new DataSourceResult { Data = new[] { _PaymentScheduleRulesByCustomer }, Total = 1 });
+            // return Ok(_PaymentScheduleRulesByCustomer);
         }
 
         [HttpPost("[controller]/[action]")]
