@@ -484,7 +484,7 @@ namespace ERPMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult<Conciliacion>> Insert(ConciliacionDTO _ConciliacionP)
         {
-           // Conciliacion _ConciliacionBanco = _ConciliacionP;
+            Conciliacion _ConciliacionBanco = _ConciliacionP;
 
             //List<ConciliacionLinea> _Conciliacionq = new List<ConciliacionLinea>();
             //_Conciliacionq = _ConciliacionP;
@@ -494,9 +494,9 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _ConciliacionP.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _ConciliacionP.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Conciliacion/Insert", _ConciliacionP);
+                _ConciliacionBanco.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _ConciliacionBanco.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Conciliacion/Insert", _ConciliacionBanco);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -608,7 +608,7 @@ namespace ERPMVC.Controllers
             {
                // var Conciliacionvar = await Submit(files, _ConciliacionDTO);
 
-                Conciliacion _listConciliacion = new Conciliacion();
+                Conciliacion _listConciliacion = _ConciliacionDTO;
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -682,8 +682,8 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-            
-            return View("Conciliacion");
+
+            return new ObjectResult(new DataSourceResult { Data = new[] { _ConciliacionDTO }, Total = 1 });
             //return Json(_ConciliacionDTO);
 
         }
