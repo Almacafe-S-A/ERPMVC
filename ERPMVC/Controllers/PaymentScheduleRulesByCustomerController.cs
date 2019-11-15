@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -33,26 +34,26 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwPaymentScheduleRulesByCustomer(Int64 Id = 0)
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> pvwPaymentScheduleRulesByCustomer([FromBody]PaymentScheduleRulesByCustomer _PaymentScheduleRulesByCustomerp)
         {
-            PaymentScheduleRulesByCustomer _PaymentScheduleRulesByCustomer = new PaymentScheduleRulesByCustomer();
+            PaymentScheduleRulesByCustomerDTO _PaymentScheduleRulesByCustomer = new PaymentScheduleRulesByCustomerDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/PaymentScheduleRulesByCustomer/GetPaymentScheduleRulesByCustomerById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/PaymentScheduleRulesByCustomer/GetPaymentScheduleRulesByCustomerById/" + _PaymentScheduleRulesByCustomerp.ScheduleSubservicesId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _PaymentScheduleRulesByCustomer = JsonConvert.DeserializeObject<PaymentScheduleRulesByCustomer>(valorrespuesta);
-
+                    _PaymentScheduleRulesByCustomer = JsonConvert.DeserializeObject<PaymentScheduleRulesByCustomerDTO>(valorrespuesta);
                 }
 
                 if (_PaymentScheduleRulesByCustomer == null)
                 {
-                    _PaymentScheduleRulesByCustomer = new PaymentScheduleRulesByCustomer();
+                    _PaymentScheduleRulesByCustomer = new PaymentScheduleRulesByCustomerDTO();
                 }
             }
             catch (Exception ex)
@@ -100,6 +101,40 @@ namespace ERPMVC.Controllers
 
         }
 
+
+        [HttpGet]
+        public async Task<DataSourceResult> GetByScheduleId([DataSourceRequest]DataSourceRequest request, PaymentScheduleRulesByCustomer _PaymentScheduleRulesByCustomerp)
+        {
+            List<PaymentScheduleRulesByCustomer> _PaymentScheduleRulesByCustomer = new List<PaymentScheduleRulesByCustomer>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/PaymentScheduleRulesByCustomer/GetByScheduleId/"+ _PaymentScheduleRulesByCustomerp.ScheduleSubservicesId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _PaymentScheduleRulesByCustomer = JsonConvert.DeserializeObject<List<PaymentScheduleRulesByCustomer>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _PaymentScheduleRulesByCustomer.ToDataSourceResult(request);
+
+        }
+
+
         [HttpPost("[action]")]
         public async Task<ActionResult<PaymentScheduleRulesByCustomer>> SavePaymentScheduleRulesByCustomer([FromBody]PaymentScheduleRulesByCustomer _PaymentScheduleRulesByCustomer)
         {
@@ -131,7 +166,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    var updateresult = await Update(_PaymentScheduleRulesByCustomer.PaymentScheduleRulesByCustomerId, _PaymentScheduleRulesByCustomer);
+                    var updateresult = await Update(_PaymentScheduleRulesByCustomer);
                 }
 
             }
@@ -181,8 +216,8 @@ namespace ERPMVC.Controllers
             // return new ObjectResult(new DataSourceResult { Data = new[] { _PaymentScheduleRulesByCustomer }, Total = 1 });
         }
 
-        [HttpPut("{id}")]
-        public async Task<ActionResult<PaymentScheduleRulesByCustomer>> Update(Int64 id, PaymentScheduleRulesByCustomer _PaymentScheduleRulesByCustomer)
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<PaymentScheduleRulesByCustomer>> Update(PaymentScheduleRulesByCustomer _PaymentScheduleRulesByCustomer)
         {
             try
             {
@@ -214,7 +249,7 @@ namespace ERPMVC.Controllers
             return Ok(_PaymentScheduleRulesByCustomer);
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<PaymentScheduleRulesByCustomer>> Delete([FromBody]PaymentScheduleRulesByCustomer _PaymentScheduleRulesByCustomer)
         {
             try
