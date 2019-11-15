@@ -103,13 +103,13 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<ScheduleSubservices>> SaveScheduleSubservices([FromBody]dynamic dto)
-        //public async Task<ActionResult<ScheduleSubservices>> SaveScheduleSubservices([FromBody]ScheduleSubservices _ScheduleSubservices)
+      //  public async Task<ActionResult<ScheduleSubservices>> SaveScheduleSubservices([FromBody]dynamic dto)
+       public async Task<ActionResult<ScheduleSubservices>> SaveScheduleSubservices([FromBody]ScheduleSubservices _ScheduleSubservices)
         {
-            ScheduleSubservices _ScheduleSubservices = new ScheduleSubservices();
+            //ScheduleSubservices _ScheduleSubservices = new ScheduleSubservices();
             try
             {
-                _ScheduleSubservices = JsonConvert.DeserializeObject<ScheduleSubservices>(dto.ToString());
+               // _ScheduleSubservices = JsonConvert.DeserializeObject<ScheduleSubservices>(dto.ToString());
                 if (_ScheduleSubservices != null)
                 {
                     ScheduleSubservices _listScheduleSubservices = new ScheduleSubservices();
