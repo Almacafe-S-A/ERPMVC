@@ -180,8 +180,8 @@ namespace ERPMVC.Controllers
         }
 
         // POST: PaymentScheduleRulesByCustomer/Insert
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost("[controller]/[action]")]
+       // [ValidateAntiForgeryToken]
         public async Task<ActionResult<PaymentScheduleRulesByCustomer>> Insert(PaymentScheduleRulesByCustomer _PaymentScheduleRulesByCustomer)
         {
             try

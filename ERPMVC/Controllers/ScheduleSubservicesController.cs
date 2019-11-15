@@ -102,38 +102,47 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult<ScheduleSubservices>> SaveScheduleSubservices([FromBody]ScheduleSubservices _ScheduleSubservices)
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<ScheduleSubservices>> SaveScheduleSubservices([FromBody]dynamic dto)
+        //public async Task<ActionResult<ScheduleSubservices>> SaveScheduleSubservices([FromBody]ScheduleSubservices _ScheduleSubservices)
         {
-
+            ScheduleSubservices _ScheduleSubservices = new ScheduleSubservices();
             try
             {
-                ScheduleSubservices _listScheduleSubservices = new ScheduleSubservices();
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ScheduleSubservices/GetScheduleSubservicesById/" + _ScheduleSubservices.ScheduleSubservicesId);
-                string valorrespuesta = "";
-                _ScheduleSubservices.FechaModificacion = DateTime.Now;
-                _ScheduleSubservices.UsuarioModificacion = HttpContext.Session.GetString("user");
-                if (result.IsSuccessStatusCode)
+                _ScheduleSubservices = JsonConvert.DeserializeObject<ScheduleSubservices>(dto.ToString());
+                if (_ScheduleSubservices != null)
                 {
+                    ScheduleSubservices _listScheduleSubservices = new ScheduleSubservices();
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/ScheduleSubservices/GetScheduleSubservicesById/" + _ScheduleSubservices.ScheduleSubservicesId);
+                    string valorrespuesta = "";
+                    _ScheduleSubservices.FechaModificacion = DateTime.Now;
+                    _ScheduleSubservices.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    if (result.IsSuccessStatusCode)
+                    {
 
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listScheduleSubservices = JsonConvert.DeserializeObject<ScheduleSubservices>(valorrespuesta);
-                }
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _listScheduleSubservices = JsonConvert.DeserializeObject<ScheduleSubservices>(valorrespuesta);
+                    }
 
-                if (_listScheduleSubservices == null) { _listScheduleSubservices = new ScheduleSubservices(); }
+                    if (_listScheduleSubservices == null) { _listScheduleSubservices = new ScheduleSubservices(); }
 
-                if (_listScheduleSubservices.ScheduleSubservicesId == 0)
-                {
-                    _ScheduleSubservices.FechaCreacion = DateTime.Now;
-                    _ScheduleSubservices.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_ScheduleSubservices);
+                    if (_listScheduleSubservices.ScheduleSubservicesId == 0)
+                    {
+                        _ScheduleSubservices.FechaCreacion = DateTime.Now;
+                        _ScheduleSubservices.UsuarioCreacion = HttpContext.Session.GetString("user");
+                        var insertresult = await Insert(_ScheduleSubservices);
+                    }
+                    else
+                    {
+                        var updateresult = await Update(_ScheduleSubservices.ScheduleSubservicesId, _ScheduleSubservices);
+                    }
                 }
                 else
                 {
-                    var updateresult = await Update(_ScheduleSubservices.ScheduleSubservicesId, _ScheduleSubservices);
+                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
                 }
 
             }
