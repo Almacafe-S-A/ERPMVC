@@ -117,17 +117,55 @@ namespace ERPMVC.Controllers
 
             // Fin de lista de empleados
 
-            ControlAsistencias NuevaControlAsistencia = new ControlAsistencias();
-            NuevaControlAsistencia.Empleado = new Employees();
+            
 
-            //var lista = _ListEmpleados
-            // .Select(a => new { a.IdEmpleado, a.NombreEmpleado })
-            // .Concat(_ControlAsistencias.
-            //  Select(p => new { p.Empleado.IdEmpleado,p.Id }))
-            // .OrderBy(x => x.Id);
+            foreach (var _ListEmpleadosLis in _ListEmpleados)
+             {
+                ControlAsistencias NuevaControlAsistencia = new ControlAsistencias();
+                NuevaControlAsistencia.Empleado = _ListEmpleadosLis;
+                _ControlAsistencias.Add(NuevaControlAsistencia);
+                //NuevaControlAsistencia.Empleado.IdEmpleado = _ListEmpleadosLis.IdEmpleado;
+                //DateTime crea = DateTime.Now;
+                //DateTime modi = DateTime.Now;   
+
+                var fechas=await GetControlAsistenciasByEmpl(NuevaControlAsistencia);
 
 
 
+
+
+
+
+                }
+
+
+            
+
+            
+
+
+
+
+            //try
+            //{
+
+            //    string baseadress = _config.Value.urlbase;
+            //    HttpClient _client = new HttpClient();
+            //    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+            //    var result = await _client.GetAsync(baseadress + "api/ControlAsistencias/GetControlAsistenciasByEmployeeId");
+            //    string valorrespuesta = "";
+            //    if (result.IsSuccessStatusCode)
+            //    {
+            //        valorrespuesta = await (result.Content.ReadAsStringAsync());
+            //        _ListEmpleados = JsonConvert.DeserializeObject<List<Employees>>(valorrespuesta);
+            //        _ListEmpleados = _ListEmpleados.OrderByDescending(q => q.IdEmpleado).ToList();
+            //    }
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+            //    throw ex;
+            //}
 
             //----------------------------------------------------------------------------------------
 
@@ -135,6 +173,100 @@ namespace ERPMVC.Controllers
             return _ControlAsistencias.ToDataSourceResult(request);
 
         }
+
+        [HttpPost]
+        public async 
+         Task<ActionResult> GetControlAsistenciasByEmpl(ControlAsistencias NuevaControlAsistencia)
+        {
+           
+
+            try
+            {
+                    string baseadress = _config.Value.urlbase;
+        HttpClient _client = new HttpClient();
+        NuevaControlAsistencia.FechaCreacion = DateTime.Now;
+                    NuevaControlAsistencia.FechaModificacion= DateTime.Now;
+                    NuevaControlAsistencia.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    NuevaControlAsistencia.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.PostAsJsonAsync(baseadress + "api/ControlAsistencias/GetControlAsistenciasByEmployeeId", NuevaControlAsistencia);
+        string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await(result.Content.ReadAsStringAsync());
+        NuevaControlAsistencia = JsonConvert.DeserializeObject<ControlAsistencias>(valorrespuesta);
+
+                    }
+    //foreach (var data in _ListEmpleados)
+    //{
+
+    //    ControlAsistencias NuevaControlAsistencias = new ControlAsistencias();
+    //    NuevaControlAsistencias.Empleado = data;
+    //    _ControlAsistencias.Add(NuevaControlAsistencias);
+
+    //}
+}
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                    throw ex;
+                }
+
+
+            return View();
+        }
+
+        [HttpGet]
+        public async Task<ActionResult> GetSumControlAsistenciasByEmployeeId(Int64 EmpleadoId)
+        {
+            ControlAsistencias _suma = new ControlAsistencias();
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/ControlAsistencias/GetSumControlAsistenciasByEmployeeId/" + EmpleadoId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _suma = JsonConvert.DeserializeObject<ControlAsistencias>(valorrespuesta);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return View(_suma);
+        }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
         [HttpGet]
