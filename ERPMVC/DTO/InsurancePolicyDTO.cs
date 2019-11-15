@@ -6,15 +6,12 @@ using System.Threading.Tasks;
 
 namespace ERPMVC.DTO
 {
-    public class ProformaInvoiceDTO : ProformaInvoice
+    public class InsurancePolicyDTO:InsurancePolicy
     {
-        public Kardex Kardex { get; set; } = new Kardex();
+        public List<InsurancePolicy> _InsurancePolicy { get; set; }
 
         public int editar { get; set; } = 1;
 
-        //public Guid Identificador { get; set; }
+        public string token { get; set; }
     }
-
-
 }
- 

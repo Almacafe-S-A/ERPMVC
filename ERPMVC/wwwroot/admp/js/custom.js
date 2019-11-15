@@ -5,9 +5,9 @@ Email: niravjoshi87@gmail.com
 File: js
 */
 $(function () {
-	"use strict";
-	$(function () {
-		$(".preloader").fadeOut();
+    "use strict";
+    $(function () {
+        $(".preloader").fadeOut();
     });
     jQuery(document).on('click', '.mega-dropdown', function (e) {
         e.stopPropagation()
@@ -17,7 +17,9 @@ $(function () {
     // ==============================================================  
     var set = function () {
         var width = (window.innerWidth > 0) ? window.innerWidth : this.screen.width;
+
 		var topOffset = 70;
+
         if (width < 3170) {
             $("body").addClass("mini-sidebar");
             $('.navbar-brand span').hide();
@@ -26,7 +28,7 @@ $(function () {
         } else {
             $("body").removeClass("mini-sidebar");
             $('.navbar-brand span').show();
-            $(".sidebartoggler i").removeClass("ti-menu");
+            //$(".sidebartoggler i").removeClass("ti-menu");
         }
 
         var height = ((window.innerHeight > 0) ? window.innerHeight : this.screen.height) - 1;
@@ -48,13 +50,13 @@ $(function () {
             $(".scroll-sidebar, .slimScrollDiv").css("overflow", "hidden").parent().css("overflow", "visible");
             $("body").removeClass("mini-sidebar");
             $('.navbar-brand span').show();
-            $(".sidebartoggler i").addClass("ti-menu");
+            //$(".sidebartoggler i").addClass("ti-menu");
         } else {
             $("body").trigger("resize");
             $(".scroll-sidebar, .slimScrollDiv").css("overflow-x", "visible").parent().css("overflow", "visible");
             $("body").addClass("mini-sidebar");
             $('.navbar-brand span').hide();
-            $(".sidebartoggler i").removeClass("ti-menu");
+            //$(".sidebartoggler i").removeClass("ti-menu");
         }
     });
     // topbar stickey on scroll

@@ -1,20 +1,16 @@
 ﻿using ERPMVC.Models;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 
 namespace ERPMVC.DTO
 {
-    public class ProformaInvoiceDTO : ProformaInvoice
+    public class InsuranceEndorsementDTO : InsuranceEndorsement
     {
-        public Kardex Kardex { get; set; } = new Kardex();
 
+        public List<InsuranceEndorsement> _InsuranceEndorsement { get; set; }
         public int editar { get; set; } = 1;
-
-        //public Guid Identificador { get; set; }
     }
-
-
 }
- 

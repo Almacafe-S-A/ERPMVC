@@ -15,6 +15,8 @@ namespace ERPMVC.Models
         public Int64 CustomerId { get; set; }
 
         public string Customername { get; set; }
+        [Display(Name = "Centro de costos")]
+        public Int64 CostCenterId { get; set; }
 
         public int WarehouseId { get; set; }
 
