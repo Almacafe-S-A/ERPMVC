@@ -200,7 +200,7 @@ namespace ERPMVC.Controllers
                     FileInfo info = new FileInfo(file.FileName);
                     if (info.Extension.Equals(".pdf") || info.Extension.Equals(".jpg")
                         || info.Extension.Equals(".png")
-                       || info.Extension.Equals(".xls") || info.Extension.Equals(".xlsx"))
+                       || info.Extension.Equals(".xls") || info.Extension.Equals(".xlsx") || info.Extension.Equals(".txt"))
                     {
 
                         _VendorDocumentd.ModifiedDate = DateTime.Now;

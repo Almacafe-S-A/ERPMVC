@@ -34,7 +34,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult> pvwEmployeeExtraHoursDetail(Int64 Id = 0)
+        public async Task<ActionResult> pvwEmployeeExtraHoursDetail([FromBody]EmployeeExtraHoursDetail _EmployeeExtraHoursDetailp)
         {
             EmployeeExtraHoursDetail _EmployeeExtraHoursDetail = new EmployeeExtraHoursDetail();
             try
@@ -42,13 +42,12 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/EmployeeExtraHoursDetail/GetEmployeeExtraHoursDetailById/" + Id);
+                var result = await _client.GetAsync(baseadress + "api/EmployeeExtraHoursDetail/GetEmployeeExtraHoursDetailById/" + _EmployeeExtraHoursDetailp.EmployeeExtraHoursDetailId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _EmployeeExtraHoursDetail = JsonConvert.DeserializeObject<EmployeeExtraHoursDetail>(valorrespuesta);
-
                 }
 
                 if (_EmployeeExtraHoursDetail == null)
@@ -101,6 +100,39 @@ namespace ERPMVC.Controllers
 
         }
 
+        
+       [HttpGet]
+        public async Task<DataSourceResult> GetEmployeeExtraHoursDetailByEmployeeExtraHoursId([DataSourceRequest]DataSourceRequest request, EmployeeExtraHoursDetail _EmployeeExtraHoursDetailp)
+        {
+            List<EmployeeExtraHoursDetail> _EmployeeExtraHoursDetail = new List<EmployeeExtraHoursDetail>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/EmployeeExtraHoursDetail/GetEmployeeExtraHoursDetailByEmployeeExtraHoursId/"+ _EmployeeExtraHoursDetailp.EmployeeExtraHoursId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _EmployeeExtraHoursDetail = JsonConvert.DeserializeObject<List<EmployeeExtraHoursDetail>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return await Task.Run(() => _EmployeeExtraHoursDetail.ToDataSourceResult(request));
+
+        }
+
         [HttpPost("[action]")]
         public async Task<ActionResult<EmployeeExtraHoursDetail>> SaveEmployeeExtraHoursDetail([FromBody]EmployeeExtraHoursDetail _EmployeeExtraHoursDetail)
         {
@@ -132,7 +164,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    var updateresult = await Update(_EmployeeExtraHoursDetail.EmployeeExtraHoursDetailId, _EmployeeExtraHoursDetail);
+                    var updateresult = await UpdateEmployeeExtraHoursDetail(_EmployeeExtraHoursDetail);
                 }
 
             }
@@ -146,8 +178,8 @@ namespace ERPMVC.Controllers
         }
 
         // POST: EmployeeExtraHoursDetail/Insert
-        [HttpPost]
-        [ValidateAntiForgeryToken]
+        [HttpPost("[controller]/[action]")]
+       // [ValidateAntiForgeryToken]
         public async Task<ActionResult<EmployeeExtraHoursDetail>> Insert(EmployeeExtraHoursDetail _EmployeeExtraHoursDetail)
         {
             try
@@ -157,7 +189,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 _EmployeeExtraHoursDetail.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _EmployeeExtraHoursDetail.FechaCreacion = DateTime.Now;
+                _EmployeeExtraHoursDetail.FechaModificacion = DateTime.Now;
                 _EmployeeExtraHoursDetail.UsuarioModificacion = HttpContext.Session.GetString("user");
+
+                TimeSpan t = _EmployeeExtraHoursDetail.EndTime.Subtract(_EmployeeExtraHoursDetail.StartTime);
+                _EmployeeExtraHoursDetail.QuantityHours = t.TotalHours;
                 var result = await _client.PostAsJsonAsync(baseadress + "api/EmployeeExtraHoursDetail/Insert", _EmployeeExtraHoursDetail);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -178,19 +215,22 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return await Task.Run(() => BadRequest($"Ocurrio un error{ex.Message}"));
             }
-            return await Task.Run(() => Ok(_EmployeeExtraHoursDetail));
-            // return new ObjectResult(new DataSourceResult { Data = new[] { _EmployeeExtraHoursDetail }, Total = 1 });
+          //  return await Task.Run(() => Ok(_EmployeeExtraHoursDetail));
+             return new ObjectResult(new DataSourceResult { Data = new[] { _EmployeeExtraHoursDetail }, Total = 1 });
         }
 
-        [HttpPut("{id}")]
-        public async Task<ActionResult<EmployeeExtraHoursDetail>> Update(Int64 id, EmployeeExtraHoursDetail _EmployeeExtraHoursDetail)
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<EmployeeExtraHoursDetail>> UpdateEmployeeExtraHoursDetail(EmployeeExtraHoursDetail _EmployeeExtraHoursDetail)
         {
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-
+                _EmployeeExtraHoursDetail.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _EmployeeExtraHoursDetail.FechaModificacion = DateTime.Now;
+                TimeSpan t = _EmployeeExtraHoursDetail.EndTime.Subtract(_EmployeeExtraHoursDetail.StartTime);
+                _EmployeeExtraHoursDetail.QuantityHours = t.TotalHours;
                 var result = await _client.PutAsJsonAsync(baseadress + "api/EmployeeExtraHoursDetail/Update", _EmployeeExtraHoursDetail);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -212,7 +252,8 @@ namespace ERPMVC.Controllers
                 return await Task.Run(() => BadRequest($"Ocurrio un error{ex.Message}"));
             }
 
-            return await Task.Run(() => Ok(_EmployeeExtraHoursDetail));
+            return new ObjectResult(new DataSourceResult { Data = new[] { _EmployeeExtraHoursDetail }, Total = 1 });
+            //  return await Task.Run(() => Ok(_EmployeeExtraHoursDetail));
         }
 
         [HttpPost("[controller]/[action]")]
