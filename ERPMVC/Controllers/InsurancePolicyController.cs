@@ -154,72 +154,51 @@ namespace ERPMVC.Controllers
     */
 
 
-        [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<InsurancePolicyDTO>> SaveInsurancePolicyDocument(IEnumerable<IFormFile> files, InsurancePolicyDTO _InsurancePolicyDTO)
+        [HttpPost("[action]")]
+        public async Task<ActionResult<InsurancePolicy>> SaveInsurancePolicy([FromBody]InsurancePolicyDTO _InsurancePolicyS)
         {
-
+            InsurancePolicy _InsurancePolicy = _InsurancePolicyS;
             try
             {
-
                 InsurancePolicy _listInsurancePolicy = new InsurancePolicy();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/InsurancePolicy/GetInsurancePolicyById/" + _InsurancePolicyDTO.InsurancePolicyId);
-                string valorrespuesta = "";
 
-                foreach (var file in files)
+                if (_InsurancePolicy.InsurancePolicyId == 0)
                 {
-
-
-                    FileInfo info = new FileInfo(file.FileName);
-                    if (info.Extension.Equals(".jpeg") || info.Extension.Equals(".jpg")
-                        || info.Extension.Equals(".png"))
+                    var result = await _client.GetAsync(baseadress + "api/InsurancePolicy/GetInsurancePolicyById/" + _InsurancePolicy.InsurancePolicyId);
+                    //var result = await _client.GetAsync(baseadress + "api/InsurancePolicy/GetInsurancePolicyById/" + _InsurancePolicy.InsurancePolicyId);
+                    string valorrespuesta = "";
+                    _InsurancePolicy.FechaModificacion = DateTime.Now;
+                    _InsurancePolicy.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    if (result.IsSuccessStatusCode)
                     {
 
-                        _InsurancePolicyDTO.FechaModificacion = DateTime.Now;
-                        _InsurancePolicyDTO.UsuarioModificacion = HttpContext.Session.GetString("user");
-                        if (result.IsSuccessStatusCode)
-                        {
-
-                            valorrespuesta = await (result.Content.ReadAsStringAsync());
-                            _listInsurancePolicy = JsonConvert.DeserializeObject<InsurancePolicy>(valorrespuesta);
-                        }
-
-                        if (_listInsurancePolicy == null) { _listInsurancePolicy = new Models.InsurancePolicy(); }
-                        if (_listInsurancePolicy.InsurancePolicyId == 0)
-                        {
-                            _InsurancePolicyDTO.FechaCreacion = DateTime.Now;
-                            _InsurancePolicyDTO.AttachmentURL = file.FileName;
-                            _InsurancePolicyDTO.UsuarioCreacion = HttpContext.Session.GetString("user");
-                            var insertresult = await Insert(_InsurancePolicyDTO);
-                            var value = (insertresult.Result as ObjectResult).Value;
-                            _InsurancePolicyDTO = ((InsurancePolicyDTO)(value));
-                        }
-                        else
-                        {
-                            _InsurancePolicyDTO.AttachmentURL = file.FileName;
-                            _InsurancePolicyDTO.FechaCreacion = _listInsurancePolicy.FechaCreacion;
-                            _InsurancePolicyDTO.UsuarioCreacion = _listInsurancePolicy.UsuarioCreacion;
-                            var updateresult = await Update(_InsurancePolicyDTO.InsurancePolicyId, _InsurancePolicyDTO);
-                        }
-
-
-
-                        var filePath = _hostingEnvironment.WebRootPath + "/InsurancePolicy/" + _InsurancePolicyDTO.InsurancePolicyId + "_"
-                            + file.FileName.Replace(info.Extension, "") + "_" + _InsurancePolicyDTO.AttachmentURL + "_" + _InsurancePolicyDTO.AttachmentURL
-                            + info.Extension;
-
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await file.CopyToAsync(stream);
-                            // MemoryStream mstream = new MemoryStream();
-                            //mstream.WriteTo(stream);
-                        }
-
-                        _InsurancePolicyDTO.AttachmentURL = filePath;
-                        var updateresult2 = await Update(_InsurancePolicyDTO.InsurancePolicyId, _InsurancePolicyDTO);
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _InsurancePolicy = JsonConvert.DeserializeObject<InsurancePolicyDTO>(valorrespuesta);
                     }
+
+                    if (_InsurancePolicy == null) { _InsurancePolicy = new Models.InsurancePolicy(); }
+
+                    if (_InsurancePolicy.InsurancePolicyId > 0)
+                    {
+                        return await Task.Run(() => BadRequest($"Ya existe una poliza registrada."));
+                    }
+                }
+
+                if (_InsurancePolicyS.InsurancePolicyId == 0)
+                {
+                    _InsurancePolicyS.FechaCreacion = DateTime.Now;
+                    _InsurancePolicyS.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_InsurancePolicyS);
+                }
+                else
+                {
+                    var result = await _client.GetAsync(baseadress + "api/InsurancePolicy/GetInsurancePolicyById/" + _InsurancePolicy.InsurancePolicyId);
+                    _InsurancePolicyS.UsuarioCreacion = _InsurancePolicy.UsuarioCreacion;
+                    _InsurancePolicyS.FechaCreacion = _InsurancePolicy.FechaCreacion;
+                    var updateresult = await Update(_InsurancePolicy.InsurancePolicyId, _InsurancePolicyS);
                 }
 
             }
@@ -229,7 +208,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_InsurancePolicyDTO);
+            return Json(_InsurancePolicyS);
         }
 
         // POST: CustomerDocument/Insert
