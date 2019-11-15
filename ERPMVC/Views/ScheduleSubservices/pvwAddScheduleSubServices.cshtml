@@ -55,45 +55,115 @@
                                                 </div>
                                             </div>
 
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <script>
+                                                        function GetSubProducts() {
+                                                            console.log('Trata de refrescar!!');
+                                                            $("#SubServiceId").data("kendoDropDownList").dataSource.read();
+                                                        }
+
+                                                      
+                                                    </script>
+                                                    <label asp-for="ServiceId" class="control-label" style="width:100%"></label>
+
+                                                    <kendo-dropdownlist name="ServiceId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        for="ServiceId"
+                                                                        onchange="GetSubProducts()"
+                                                                        option-label="Seleccione el Producto"
+                                                                        datatextfield="ProductName"
+                                                                        datavaluefield="ProductId"
+                                                                        required
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="999999999">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetProduct", "Common")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="ServiceId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
                                             <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
-                                                    <label asp-for="SubServiceId" class=" control-label" style="width:100%">SubServicio</label>                                                 
+                                                    <label asp-for="SubServiceId" class=" control-label" style="width:100%">SubServicio</label>
                                                     <div class="form-group">
-                                                        <script>
+                                                        <script>                                                         
 
-                                                            function GetSubProduct(e) {
-                                                                var dataItem = e.dataItem;
+                                                            function GetProductIdS() {
+                                                                return { 'ProductId': $("#ServiceId").val() }
                                                             }
-
                                                         </script>
 
-                                                        <kendo-dropdownlist name="SubServiceId" for="@Model.SubServiceId"
+                                                        <kendo-dropdownlist name="SubServiceId" 
+                                                                            for="SubServiceId"
                                                                             filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                            option-label="Seleccione el empleado"
+                                                                            option-label="Seleccione el sub servicio"                                                                            
                                                                             required
+                                                                            auto-bind="false"
                                                                             datatextfield="ProductName"
-                                                                            datavaluefield="SubProductId"
+                                                                            datavaluefield="SubproductId"
                                                                             style="width: 100%;">
                                                             <datasource type="DataSourceTagHelperType.WebApi" page-size="99999999">
                                                                 <transport>
-                                                                    <read url="@Url.Action("GetSubProductByProductId", "ProductRelation")" />
+                                                                    <read url="@Url.Action("GetSubProductByProductIdRelation", "ProductRelation")" data="GetProductIdS" />
                                                                 </transport>
                                                             </datasource>
                                                         </kendo-dropdownlist>
 
-                                                        @*<span asp-validation-for="CustomerId" class="text-danger"></span>*@
+                                                        <span asp-validation-for="SubServiceId" class="text-danger"></span>
                                                     </div>
 
-                                                    <span asp-validation-for="SubServiceId" class="text-danger"></span>
+                                                    
                                                 </div>
                                             </div>
+                                          
+
+                                        </div>
+
+                                        <div class="row">
                                             <div class="col-md-4">
 
                                                 <label asp-for="Transport" class="control-label" style="width: 100%;"></label>
-                                                @(Html.Kendo().SwitchFor(m => m.Transport)                                                                                                                                                                                                                                         .Name("ClienteRecoger")
-                                                     
+                                                @(Html.Kendo().SwitchFor(m => m.Transport).Name("Transport")
+
                                                 )
 
+                                            </div>
+                                            <div class="col-md-4">
+                                                <script>
+                                                    function GrupoConfiguracionCondicionLogica() {
+                                                        return { Id: 10 };
+                                                    }
+                                                </script>
+                                                <div class="form-group">
+                                                    <label asp-for="LogicalConditionId" class="  control-label" style="width:100%"></label>
+
+                                                    <kendo-dropdownlist name="LogicalConditionId"
+                                                                        for="LogicalConditionId"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione la condición logica"
+                                                                        datatextfield="Nombre"
+                                                                        datavaluefield="Id"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999999">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetElementoByIdConfiguracion", "ElementoConfiguracion")" data="GrupoConfiguracionCondicionLogica" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="LogicalConditionId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-sm-4 col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Day" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="Day" name="Day" class="form-control form-control-line" required  style="min-width:100%" />
+                                                    <span asp-validation-for="Day" class="text-danger"></span>
+                                                </div>
                                             </div>
 
                                         </div>
@@ -259,21 +329,25 @@
     }
 
     function SaveEmployeeExtraHours(e) {
-                var notification = $("#notification").data("kendoNotification");
-
+        var notification = $("#notification").data("kendoNotification");
+        console.log($("#SubServiceId").data("kendoDropDownList").value());
 				var dataObject = {
                     'ScheduleSubservicesId': $("#ScheduleSubservicesId").val(),
                     'Day': $("#Day").val(),
-                    'Condition': $("#Condition").val(),
+                    'LogicalConditionId': $("#LogicalConditionId").val(),
+                    'Condition': $("#LogicalConditionId").data("kendoDropDownList").text(),
                     'StartTime': $("#StartTime").getKendoDateTimePicker().value().toJSON(),
                     'EndTime': $("#EndTime").getKendoDateTimePicker().value().toJSON(),
                     'QuantityHours': $("#QuantityHours").val(),
-                    'SubServiceId': $("#SubServiceId").val(),
+                    'ServiceId': $("#ServiceId").val(),
+                    'ServiceName': $("#ServiceId").data("kendoDropDownList").text(),
+                    'SubServiceId': $("#SubServiceId").data("kendoDropDownList").value(),
+                    'SubServiceName': $("#SubServiceId").data("kendoDropDownList").text(),
                     'Description': $("#Description").val(),
                     'Transport': $("#Transport").is(':checked'), 
 				};
 
-                var validator = $("#ScheduleSubservices").data("kendoValidator");
+               var validator = $("#frmScheduleSubservices").data("kendoValidator");
                 if (validator.validate()) {
 
                     $.ajax({

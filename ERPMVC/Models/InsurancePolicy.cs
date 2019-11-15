@@ -7,20 +7,33 @@ using System.Threading.Tasks;
 
 namespace ERPMVC.Models
 {
-    public class PaymentScheduleRulesByCustomer
+    public class InsurancePolicy
     {
-        [Display(Name = "Id")]
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public Int64 PaymentScheduleRulesByCustomerId { get; set; }
+        public Int64 InsurancePolicyId { get; set; }
 
-        [Display(Name = "Cliente")]
+        [Required]
+        public DateTime PolicyDate { get; set; }
+        public DateTime PolicyDueDate { get; set; }
+        [Required]
+        public string PolicyNumber { get; set; }
+
+        public int InsurancesId { get; set; }
+        [Display(Name = "Nombre Aseguradora")]
+        public string InsurancesName { get; set; }
+
+        [Display(Name = "Id Cliente")]
         public Int64 CustomerId { get; set; }
-
-        [Display(Name = "Cliente")]
+        [Display(Name = "Nombre del cliente")]
         public string CustomerName { get; set; }
 
-        [Display(Name = "Horario servicio")]
-        public Int64 ScheduleSubservicesId { get; set; }
+        public double LpsAmount { get; set; }
+
+        public double DollarAmount { get; set; }
+
+        public string AttachmentURL { get; set; }
+
+        public string Status { get; set; }
 
         [Display(Name = "Fecha de creación")]
         public DateTime FechaCreacion { get; set; }
@@ -33,6 +46,6 @@ namespace ERPMVC.Models
 
         [Display(Name = "Usuario de modificación")]
         public string UsuarioModificacion { get; set; }
-             
+
     }
 }
