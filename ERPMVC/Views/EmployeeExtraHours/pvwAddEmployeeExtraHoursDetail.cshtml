@@ -4,8 +4,14 @@
 
     function onsaveEmployeesHoursDetail(e) {
         console.log(e);
-        e.model.EndTime = e.model.EndTime.toJSON();
-        e.model.StartTime = e.model.StartTime.toJSON();
+        try {
+            e.model.EndTime = e.model.EndTime.toJSON();
+            e.model.StartTime = e.model.StartTime.toJSON();
+        } catch (e) {
+
+        }
+       
+        
     }
 
     function addRowD() {
@@ -13,10 +19,20 @@
         var notification = $("#notification").data("kendoNotification");
         //console.log('Horas extras detalle');
         if (Number($("#EmployeeExtraHoursId").val()) > 0) {
-            let grid = $("#gridEmployeesExtraHoursDetail").data("kendoGrid");
-           //grid.addRow({EmployeeExtraHoursDetailId: 0, EmployeeExtraHoursId: $("#EmployeeExtraHoursId").val(), StartTime: "00:00:00", EndTime: "09:00:00" });
-          //  grid.dataSource.insert({ EmployeeExtraHoursDetailId: 0, EmployeeExtraHoursId: $("#EmployeeExtraHoursId").val(), StartTime: "00:00:00", EndTime: "09:00:00" });
-            grid.dataSource.add({ EmployeeExtraHoursDetailId: 0, EmployeeExtraHoursId: $("#EmployeeExtraHoursId").val(), StartTime: "00:00:00", EndTime: "09:00:00" });
+            if ($("#CustomerIdSeleccion").val() > 0) {
+                let grid = $("#gridEmployeesExtraHoursDetail").data("kendoGrid");
+                var today = new Date();
+                let fechaactual = String(today.getDate()).padStart(2, '0') + "/" + String(today.getMonth() + 1).padStart(2, '0') + "/" + today.getFullYear();
+                //grid.addRow({EmployeeExtraHoursDetailId: 0, EmployeeExtraHoursId: $("#EmployeeExtraHoursId").val(), StartTime: "00:00:00", EndTime: "09:00:00" });
+                grid.dataSource.insert({ EmployeeExtraHoursDetailId: 0, EmployeeExtraHoursId: $("#EmployeeExtraHoursId").val(), StartTime: fechaactual + " 00:00:00", EndTime: fechaactual + " 09:00:00", CustomerId: $("#CustomerIdSeleccion").val(), CustomerName: "Seleccione el cliente" });
+                //  grid.dataSource.add({ EmployeeExtraHoursDetailId: 0, EmployeeExtraHoursId: $("#EmployeeExtraHoursId").val(), StartTime: fechaactual + " 00:00:00", EndTime: fechaactual + " 09:00:00", CustomerName: "Seleccione el cliente" });
+            }
+            else {
+                notification.show({
+                    title: "Validación",
+                    message: "Seleccione el cliente!"
+                }, "error");
+            }
         }
         else {
             notification.show({
@@ -24,6 +40,8 @@
                 message: "Debe guardar la fecha de trabajo!"
             }, "error");
         }
+
+
     }
 
     function dataEmployeeExtraHoursId() {
@@ -47,8 +65,10 @@
                                                                 command.Destroy().Text("Eliminar");
 
                                                             }).Width(250);
-                                                            columns.Bound(p => p.EmployeeExtraHoursDetailId).Width(137);
-                                                            columns.Bound(p => p.EmployeeExtraHoursId).Width(135);
+                                                            columns.Bound(p => p.EmployeeExtraHoursDetailId).Width(127);
+                                                            columns.Bound(p => p.EmployeeExtraHoursId).Width(125);
+                                                            columns.Bound(p => p.CustomerId).EditorTemplateName("Customer").Width(135);
+                                                            columns.Bound(p => p.CustomerName).Title("Nombre Cliente").Width(120);
                                                             columns.Bound(p => p.StartTime).EditorTemplateName("TimePicker").Format("{0:dd/MM/yyyy HH:mm:ss}").Width(190);
                                                             columns.Bound(p => p.EndTime).EditorTemplateName("TimePicker").Format("{0:dd/MM/yyyy HH:mm:ss}").Width(190);
                                                             columns.Bound(p => p.QuantityHours).Width(170);
@@ -85,6 +105,7 @@
                                                             model.Id(p => p.EmployeeExtraHoursDetailId);
                                                             model.Field(p => p.EmployeeExtraHoursDetailId).Editable(false);
                                                             model.Field(p => p.QuantityHours).Editable(false);
+                                                            model.Field(p => p.CustomerName).Editable(false);
                                                             model.Field(p => p.EmployeeExtraHoursId).Editable(false);
                                                         })
                                                         .Events(events => events.Error("error_handler"))

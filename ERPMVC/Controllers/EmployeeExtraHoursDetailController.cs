@@ -215,8 +215,8 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return await Task.Run(() => BadRequest($"Ocurrio un error{ex.Message}"));
             }
-            return await Task.Run(() => Ok(_EmployeeExtraHoursDetail));
-            // return new ObjectResult(new DataSourceResult { Data = new[] { _EmployeeExtraHoursDetail }, Total = 1 });
+          //  return await Task.Run(() => Ok(_EmployeeExtraHoursDetail));
+             return new ObjectResult(new DataSourceResult { Data = new[] { _EmployeeExtraHoursDetail }, Total = 1 });
         }
 
         [HttpPost("[controller]/[action]")]
@@ -252,7 +252,8 @@ namespace ERPMVC.Controllers
                 return await Task.Run(() => BadRequest($"Ocurrio un error{ex.Message}"));
             }
 
-            return await Task.Run(() => Ok(_EmployeeExtraHoursDetail));
+            return new ObjectResult(new DataSourceResult { Data = new[] { _EmployeeExtraHoursDetail }, Total = 1 });
+            //  return await Task.Run(() => Ok(_EmployeeExtraHoursDetail));
         }
 
         [HttpPost("[controller]/[action]")]
