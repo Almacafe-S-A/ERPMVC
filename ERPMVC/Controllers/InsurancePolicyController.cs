@@ -1,5 +1,4 @@
-﻿
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -20,51 +19,57 @@ using Newtonsoft.Json;
 
 namespace ERPMVC.Controllers
 {
-    
     [Authorize]
     [CustomAuthorization]
-    public class VendorDocumentController : Controller
+    public class InsurancePolicyController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
         private IHostingEnvironment _hostingEnvironment;
-        public VendorDocumentController(IHostingEnvironment hostingEnvironment
-            , ILogger<VendorDocumentController> logger, IOptions<MyConfig> config)
+        public InsurancePolicyController(IHostingEnvironment hostingEnvironment
+            , ILogger<InsurancePolicyController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
             _hostingEnvironment = hostingEnvironment;
 
         }
-
-        
-
-        public IActionResult VendorDocument()
+        public IActionResult Index()
         {
-            return PartialView();
+            return View();
+        }
+
+
+        public IActionResult InsurancePolicy()
+        {
+            return View();
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult> pvwVendorDocumentUpload([FromBody]VendorDocument _VendorDocumentp)
+        public async Task<ActionResult> pvwAddInsurancePolicy([FromBody]InsurancePolicy _InsurancePolicyDocumentp)
         {
-            VendorDocument _VendorDocument = new VendorDocument();
+            InsurancePolicy _InsurancePolicyDocument = new InsurancePolicy();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/VendorDocument/GetVendorDocumentById/" + _VendorDocumentp.VendorDocumentId);
+                var result = await _client.GetAsync(baseadress + "api/InsurancePolicy/GetInsurancePolicyById/" + _InsurancePolicyDocumentp.InsurancePolicyId);
                 string valorrespuesta = "";
+                _InsurancePolicyDocument.PolicyDate = DateTime.Now;
+                _InsurancePolicyDocument.PolicyDueDate = DateTime.Now;
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _VendorDocument = JsonConvert.DeserializeObject<VendorDocument>(valorrespuesta);
+                    _InsurancePolicyDocument = JsonConvert.DeserializeObject<InsurancePolicy>(valorrespuesta);
 
                 }
 
-                if (_VendorDocument == null)
+                if (_InsurancePolicyDocument == null)
                 {
-                    _VendorDocument = new VendorDocument();
+                    _InsurancePolicyDocument = new InsurancePolicy();
+                    _InsurancePolicyDocument.PolicyDate = DateTime.Now;
+                    _InsurancePolicyDocument.PolicyDueDate = DateTime.Now;
                 }
 
             }
@@ -75,8 +80,8 @@ namespace ERPMVC.Controllers
             }
 
 
-
-            return PartialView(_VendorDocument);
+            //
+            return PartialView(_InsurancePolicyDocument);
 
         }
 
@@ -84,19 +89,19 @@ namespace ERPMVC.Controllers
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<VendorDocument> _VendorDocument = new List<VendorDocument>();
+            List<InsurancePolicy> _InsurancePolicy = new List<InsurancePolicy>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/VendorDocument/GetVendorDocument");
+                var result = await _client.GetAsync(baseadress + "api/InsurancePolicy/GetInsurancePolicy");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _VendorDocument = JsonConvert.DeserializeObject<List<VendorDocument>>(valorrespuesta);
+                    _InsurancePolicy = JsonConvert.DeserializeObject<List<InsurancePolicy>>(valorrespuesta);
 
                 }
 
@@ -109,57 +114,27 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _VendorDocument.ToDataSourceResult(request);
+            return _InsurancePolicy.ToDataSourceResult(request);
 
         }
 
 
-        public async Task<ActionResult> SFVendorDocument(Int64 id)
+        /*[HttpGet("[action]")]
+        public async Task<DataSourceResult> GeDocumentByCustomerId([DataSourceRequest]DataSourceRequest request, Int64 CustomerId)
         {
-
-            try
-            {
-                VendorDocument _VendorDocument = new VendorDocument();
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/VendorDocument/GetVendorDocumentById/" + id);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _VendorDocument = JsonConvert.DeserializeObject<VendorDocument>(valorrespuesta);
-
-                }
-                
-                ViewBag.pathcontrato = _VendorDocument.Path;
-            }
-            catch (Exception ex)
-            {
-
-                throw ex;
-            }
-
-
-            return View();
-        }
-
-        [HttpGet("[action]")]
-        public async Task<DataSourceResult> GeDocumentByVendorId([DataSourceRequest]DataSourceRequest request, Int64 VendorId)
-        {
-            List<VendorDocument> _VendorDocument = new List<VendorDocument>();
+            List<CustomerDocument> _CustomerDocument = new List<CustomerDocument>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/VendorDocument/GeDocumentByVendorId/" + VendorId);
+                var result = await _client.GetAsync(baseadress + "api/CustomerDocument/GeDocumentByCustomerId/" + CustomerId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _VendorDocument = JsonConvert.DeserializeObject<List<VendorDocument>>(valorrespuesta);
+                    _CustomerDocument = JsonConvert.DeserializeObject<List<CustomerDocument>>(valorrespuesta);
 
                 }
 
@@ -172,25 +147,25 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _VendorDocument.ToDataSourceResult(request);
+            return _CustomerDocument.ToDataSourceResult(request);
 
         }
 
-
+    */
 
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<VendorDocument>> SaveVendorDocument(IEnumerable<IFormFile> files, VendorDocumentDTO _VendorDocumentd)
+        public async Task<ActionResult<InsurancePolicyDTO>> SaveInsurancePolicyDocument(IEnumerable<IFormFile> files, InsurancePolicyDTO _InsurancePolicyDTO)
         {
 
             try
             {
 
-                VendorDocument _listVendorDocument = new VendorDocument();
+                InsurancePolicy _listInsurancePolicy = new InsurancePolicy();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/VendorDocument/GetVendorDocumentById/" + _VendorDocumentd.VendorDocumentId);
+                var result = await _client.GetAsync(baseadress + "api/InsurancePolicy/GetInsurancePolicyById/" + _InsurancePolicyDTO.InsurancePolicyId);
                 string valorrespuesta = "";
 
                 foreach (var file in files)
@@ -198,39 +173,41 @@ namespace ERPMVC.Controllers
 
 
                     FileInfo info = new FileInfo(file.FileName);
-                    if (info.Extension.Equals(".pdf") || info.Extension.Equals(".jpg")
-                        || info.Extension.Equals(".png")
-                       || info.Extension.Equals(".xls") || info.Extension.Equals(".xlsx") || info.Extension.Equals(".txt"))
+                    if (info.Extension.Equals(".jpeg") || info.Extension.Equals(".jpg")
+                        || info.Extension.Equals(".png"))
                     {
 
-                        _VendorDocumentd.ModifiedDate = DateTime.Now;
-                        _VendorDocumentd.ModifiedUser = HttpContext.Session.GetString("user");
+                        _InsurancePolicyDTO.FechaModificacion = DateTime.Now;
+                        _InsurancePolicyDTO.UsuarioModificacion = HttpContext.Session.GetString("user");
                         if (result.IsSuccessStatusCode)
                         {
 
                             valorrespuesta = await (result.Content.ReadAsStringAsync());
-                            _listVendorDocument = JsonConvert.DeserializeObject<VendorDocument>(valorrespuesta);
+                            _listInsurancePolicy = JsonConvert.DeserializeObject<InsurancePolicy>(valorrespuesta);
                         }
 
-                        if (_listVendorDocument == null) { _listVendorDocument = new Models.VendorDocument(); }
-                        if (_listVendorDocument.VendorDocumentId == 0)
+                        if (_listInsurancePolicy == null) { _listInsurancePolicy = new Models.InsurancePolicy(); }
+                        if (_listInsurancePolicy.InsurancePolicyId == 0)
                         {
-                            _VendorDocumentd.CreatedDate = DateTime.Now;
-                            _VendorDocumentd.DocumentName = file.FileName;
-                            _VendorDocumentd.CreatedUser = HttpContext.Session.GetString("user");
-                            var insertresult = await Insert(_VendorDocumentd);
+                            _InsurancePolicyDTO.FechaCreacion = DateTime.Now;
+                            _InsurancePolicyDTO.AttachmentURL = file.FileName;
+                            _InsurancePolicyDTO.UsuarioCreacion = HttpContext.Session.GetString("user");
+                            var insertresult = await Insert(_InsurancePolicyDTO);
                             var value = (insertresult.Result as ObjectResult).Value;
-                            _VendorDocumentd = ((VendorDocumentDTO)(value));
+                            _InsurancePolicyDTO = ((InsurancePolicyDTO)(value));
                         }
                         else
                         {
-                            var updateresult = await Update(_VendorDocumentd.VendorDocumentId, _VendorDocumentd);
+                            _InsurancePolicyDTO.AttachmentURL = file.FileName;
+                            _InsurancePolicyDTO.FechaCreacion = _listInsurancePolicy.FechaCreacion;
+                            _InsurancePolicyDTO.UsuarioCreacion = _listInsurancePolicy.UsuarioCreacion;
+                            var updateresult = await Update(_InsurancePolicyDTO.InsurancePolicyId, _InsurancePolicyDTO);
                         }
 
 
 
-                        var filePath = _hostingEnvironment.WebRootPath + "/VendorDocuments/" + _VendorDocumentd.VendorDocumentId + "_"
-                            + file.FileName.Replace(info.Extension, "") + "_" + _VendorDocumentd.DocumentTypeId + "_" + _VendorDocumentd.DocumentTypeName
+                        var filePath = _hostingEnvironment.WebRootPath + "/InsurancePolicy/" + _InsurancePolicyDTO.InsurancePolicyId + "_"
+                            + file.FileName.Replace(info.Extension, "") + "_" + _InsurancePolicyDTO.AttachmentURL + "_" + _InsurancePolicyDTO.AttachmentURL
                             + info.Extension;
 
                         using (var stream = new FileStream(filePath, FileMode.Create))
@@ -240,8 +217,8 @@ namespace ERPMVC.Controllers
                             //mstream.WriteTo(stream);
                         }
 
-                        _VendorDocumentd.Path = filePath;
-                        var updateresult2 = await Update(_VendorDocumentd.VendorDocumentId, _VendorDocumentd);
+                        _InsurancePolicyDTO.AttachmentURL = filePath;
+                        var updateresult2 = await Update(_InsurancePolicyDTO.InsurancePolicyId, _InsurancePolicyDTO);
                     }
                 }
 
@@ -252,29 +229,29 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_VendorDocumentd);
+            return Json(_InsurancePolicyDTO);
         }
 
-        // POST: PurchDocument/Insert
+        // POST: CustomerDocument/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<VendorDocumentDTO>> Insert(VendorDocumentDTO _VendorDocumentd)
+        public async Task<ActionResult<InsurancePolicy>> Insert(InsurancePolicy _InsurancePolicy)
         {
-            VendorDocumentDTO _VendorDocumento = new VendorDocumentDTO();
+            InsurancePolicy _custo = new InsurancePolicy();
             try
             {
                 // TODO: Add insert logic here
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _VendorDocumentd.CreatedUser = HttpContext.Session.GetString("user");
-                _VendorDocumentd.ModifiedUser = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/VendorDocument/Insert", _VendorDocumentd);
+                _InsurancePolicy.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _InsurancePolicy.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/InsurancePolicy/Insert", _InsurancePolicy);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _VendorDocumento = JsonConvert.DeserializeObject<VendorDocumentDTO>(valorrespuesta);
+                    _custo = JsonConvert.DeserializeObject<InsurancePolicy>(valorrespuesta);
                 }
 
             }
@@ -283,26 +260,27 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-            return Ok(_VendorDocumento);
+            return Ok(_custo);
             // return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerDocument }, Total = 1 });
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<VendorDocumentDTO>> Update(Int64 id, VendorDocumentDTO _VendorDocumentd)
+        public async Task<ActionResult<InsurancePolicy>> Update(Int64 id, InsurancePolicy _InsurancePolicyDocument)
         {
-            VendorDocumentDTO _VendorDocumentDTO = new VendorDocumentDTO();
+            InsurancePolicy _InsurancePolicy = new InsurancePolicy();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-
-                var result = await _client.PutAsJsonAsync(baseadress + "api/VendorDocument/Update", _VendorDocumentd);
+                _InsurancePolicyDocument.FechaModificacion = DateTime.Now;
+                _InsurancePolicyDocument.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PutAsJsonAsync(baseadress + "api/InsurancePolicy/Update", _InsurancePolicyDocument);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _VendorDocumentDTO = JsonConvert.DeserializeObject<VendorDocumentDTO>(valorrespuesta);
+                    _InsurancePolicy = JsonConvert.DeserializeObject<InsurancePolicy>(valorrespuesta);
                 }
 
             }
@@ -312,34 +290,36 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _VendorDocumentDTO }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _InsurancePolicyDocument }, Total = 1 });
         }
 
-        [HttpDelete]
-        public async Task<ActionResult<VendorDocument>> Delete(Int64 Id, VendorDocument _ContactP)
+        [HttpPost("[action]")]
+        public async Task<ActionResult<InsurancePolicy>> Delete([FromBody]InsurancePolicy _InsurancePolicyDocument)
         {
-            VendorDocument _Contact = _ContactP;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/VendorDocument/Delete", _Contact);
+
+                var result = await _client.PostAsJsonAsync(baseadress + "api/InsurancePolicy/Delete", _InsurancePolicyDocument);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Contact = JsonConvert.DeserializeObject<VendorDocument>(valorrespuesta);
+                    _InsurancePolicyDocument = JsonConvert.DeserializeObject<InsurancePolicy>(valorrespuesta);
                 }
 
             }
             catch (Exception ex)
             {
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error: {ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Contact }, Total = 1 });
+
+
+            return new ObjectResult(new DataSourceResult { Data = new[] { _InsurancePolicyDocument }, Total = 1 });
         }
 
 
