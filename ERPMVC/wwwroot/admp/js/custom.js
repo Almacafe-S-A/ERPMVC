@@ -17,7 +17,9 @@ $(function () {
     // ==============================================================  
     var set = function () {
         var width = (window.innerWidth > 0) ? window.innerWidth : this.screen.width;
-        var topOffset = 70;
+
+		var topOffset = 70;
+
         if (width < 3170) {
             $("body").addClass("mini-sidebar");
             $('.navbar-brand span').hide();

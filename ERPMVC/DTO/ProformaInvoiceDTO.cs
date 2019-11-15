@@ -12,8 +12,9 @@ namespace ERPMVC.DTO
 
         public int editar { get; set; } = 1;
 
-        public Guid Identificador { get; set; }
+        //public Guid Identificador { get; set; }
     }
 
 
 }
+ 
