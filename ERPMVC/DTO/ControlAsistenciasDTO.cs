@@ -50,6 +50,6 @@ namespace ERPMVC.DTO
         public int DiasLaborales { get; set; }
         public String PorcentajeLlegadasTarde { get; set; }
 
-
+        public String Parmetro { get; set; }
     }
 }
