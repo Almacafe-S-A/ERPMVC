@@ -647,7 +647,32 @@ namespace ERPMVC.Controllers
                     //var insertresult = await Insert(NuevaConciliacion);
                     _ConciliacionDTO.FechaCreacion = DateTime.Now;
                     _ConciliacionDTO.UsuarioCreacion = HttpContext.Session.GetString("user");
-                        var insertresult = await Insert(_ConciliacionDTO);
+
+                    ConciliacionDTO _ConciliacionDuplicated = new ConciliacionDTO();
+                    //string baseadress = config.Value.urlbase;
+                    HttpClient _client2 = new HttpClient();
+                    _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var resultado = await _client.PostAsJsonAsync(baseadress + "api/Conciliacion/GetConciliacionByDate" , _ConciliacionDTO);
+                    string valorrespuesta2 = "";
+
+                    if (resultado.IsSuccessStatusCode)
+                    {
+                        valorrespuesta2 = await (resultado.Content.ReadAsStringAsync());
+                        _ConciliacionDuplicated = JsonConvert.DeserializeObject<ConciliacionDTO>(valorrespuesta2);
+
+                    }
+                    if (_ConciliacionDuplicated != null)
+                    {
+
+                       
+                        string error = await result.Content.ReadAsStringAsync();
+                        return await Task.Run(() => BadRequest($"El rango de fechas ya esta ingresado..."));
+
+                                            }
+
+                   // var insertresult = await Insert(_CostCenter);
+                //}
+                             var insertresult = await Insert(_ConciliacionDTO);
                         var value = ((ConciliacionDTO)insertresult.Value);
                            
 
