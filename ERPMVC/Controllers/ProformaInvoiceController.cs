@@ -335,7 +335,7 @@ namespace ERPMVC.Controllers
         [HttpPost("[action]")]
         // [ValidateAntiForgeryToken]
         // public async Task<ActionResult<ProformaInvoice>> SaveProformaInvoice([FromBody]ProformaInvoice _ProformaInvoice)
-        public async Task<ActionResult<SalesOrder>> SaveProformaInvoice([FromBody]dynamic dto)
+        public async Task<ActionResult<ProformaInvoiceDTO>> SaveProformaInvoice([FromBody]dynamic dto)
         {
             ProformaInvoiceDTO _ProformaInvoice = new ProformaInvoiceDTO();
             try
