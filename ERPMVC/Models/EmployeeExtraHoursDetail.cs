@@ -32,6 +32,9 @@ namespace ERPMVC.Models
         [Display(Name = "Cantidad de horas")]
         public double QuantityHours { get; set; }
 
+        [Display(Name = "Factor Salario")]
+        public double HourlySalary { get; set; }
+
         [Display(Name = "Usuario de creación")]
         public string UsuarioCreacion { get; set; }
 
