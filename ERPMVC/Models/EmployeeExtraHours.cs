@@ -22,6 +22,9 @@ namespace ERPMVC.Models
         [Display(Name = "Fecha de trabajo")]
         public DateTime WorkDate { get; set; }
 
+        [Display(Name = "Motivo")]
+        public string Motivo { get; set; }
+
         [Display(Name = "Usuario modificación")]
         public string UsuarioModificacion { get; set; }
 
