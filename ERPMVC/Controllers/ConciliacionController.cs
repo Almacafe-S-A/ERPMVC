@@ -636,6 +636,12 @@ namespace ERPMVC.Controllers
                         if (_listConciliacion == null) { _listConciliacion = new Models.Conciliacion(); }
                         if (_listConciliacion.ConciliacionId == 0)
                         {
+                    if (_ConciliacionDTO.DateBeginReconciled >= _ConciliacionDTO.DateEndReconciled)
+                    {
+                        string error = await result.Content.ReadAsStringAsync();
+                        return await Task.Run(() => BadRequest($"La fecha de fin debe ser mayor a la fecha de inicio..."));
+
+                    }
                     //  ConciliacionDTO NuevaConciliacion = await ProcesoConciliacion(files, _ConciliacionDTO);
                     //                         NuevaConciliacion = ((Conciliacion)Conciliacionvar.va);
 
@@ -669,10 +675,10 @@ namespace ERPMVC.Controllers
                         return await Task.Run(() => BadRequest($"El rango de fechas ya esta ingresado..."));
 
                                             }
-
-                   // var insertresult = await Insert(_CostCenter);
-                //}
-                             var insertresult = await Insert(_ConciliacionDTO);
+                    
+                    // var insertresult = await Insert(_CostCenter);
+                    //}
+                    var insertresult = await Insert(_ConciliacionDTO);
                         var value = ((ConciliacionDTO)insertresult.Value);
                            
 
