@@ -133,11 +133,12 @@ namespace ERPMVC.Controllers
                     _CreditNote.FechaCreacion = DateTime.Now;
                     _CreditNote.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_CreditNote);
-                    if (_CreditNote.CAI == "" || _CreditNote.CAI == null)
-                    {
-                        string error = await result.Content.ReadAsStringAsync();
-                        return await Task.Run(() => BadRequest($" No existe un CAI activo para el punto de emisión."));
-                    }
+                    //if (_CreditNote.CAI==null || _CreditNote.CAI=="")
+                    //{
+                    //    string error = await result.Content.ReadAsStringAsync();
+                    //    return await Task.Run(() => BadRequest($" No existe un CAI activo para el punto de emisión."));
+                    //}
+
                 }
                 else
                 {
@@ -173,6 +174,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CreditNote = JsonConvert.DeserializeObject<CreditNote>(valorrespuesta);
+
                 }
 
             }
