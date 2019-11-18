@@ -96,7 +96,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/InsurancePolicy/GetInsurancePolicy");
+                var result = await _client.GetAsync(baseadress + "api/InsurancePolicy/GetSeveridadRiesgo");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
