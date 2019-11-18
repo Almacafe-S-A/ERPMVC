@@ -21,7 +21,7 @@ namespace ERPMVC.Models
         [Display(Name = "Dia")]
         public int Dia { get; set; }
         [Display(Name = "Tipo Asistencia")]
-        public string TipoAsistencia { get; set; }
+        public Int64 TipoAsistencia { get; set; }
         [Display(Name = "Usuario de creacion")]
         public string UsuarioCreacion { get; set; }
         [Display(Name = "Usuario de modificacion")]
@@ -31,7 +31,8 @@ namespace ERPMVC.Models
         [Display(Name = "Fecha de modificación")]
         public DateTime FechaModificacion { get; set; }
 
-
+       // public virtual List<ElementoConfiguracion> ElementoConfiguration { get; set; } = new List<ElementoConfiguracion>();
+       
 
     }
 }
