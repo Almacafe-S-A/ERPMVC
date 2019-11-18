@@ -113,8 +113,38 @@ namespace ERPMVC.Controllers
                     _ConciliacionLineas = JsonConvert.DeserializeObject<List<ConciliacionLinea>>(valorrespuesta);
                     
                 }
+                if (_ConciliacionLineas.Count == 0)
+                {
+                    Conciliacion _ConciliacionP = new Conciliacion();
+                    
+                        string baseadressP = config.Value.urlbase;
+                        HttpClient _clientP = new HttpClient();
+                        _clientP.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                        var resultP = await _client.GetAsync(baseadressP + "api/Conciliacion/GetConciliacionById/" + ConciliacionId);
+                        string valorrespuestaP = "";
+                        if (resultP.IsSuccessStatusCode)
+                        {
+                            valorrespuestaP = await (resultP.Content.ReadAsStringAsync());
+                            _ConciliacionP = JsonConvert.DeserializeObject<Conciliacion>(valorrespuestaP);
+
+                        }
+                    string baseadressE = config.Value.urlbase;
+                    HttpClient _clientE = new HttpClient();
+                    _clientE.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var resultE = await _client.PostAsJsonAsync(baseadressE + "api/Conciliacion/GetConciliacionByDate",  _ConciliacionP);
+                    string valorrespuestaE = "";
+                    if (resultE.IsSuccessStatusCode)
+                    {
+                        valorrespuestaE = await (resultE.Content.ReadAsStringAsync());
+                        _ConciliacionP = JsonConvert.DeserializeObject<Conciliacion>(valorrespuestaE);
+
+                    }
+
+                    _ConciliacionLineas = _ConciliacionP.ConciliacionLinea;
+                }
+
             }
-            catch (Exception ex)
+          catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
@@ -484,7 +514,7 @@ namespace ERPMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult<Conciliacion>> Insert(ConciliacionDTO _ConciliacionP)
         {
-           // Conciliacion _ConciliacionBanco = _ConciliacionP;
+            Conciliacion _ConciliacionBanco = _ConciliacionP;
 
             //List<ConciliacionLinea> _Conciliacionq = new List<ConciliacionLinea>();
             //_Conciliacionq = _ConciliacionP;
@@ -494,9 +524,9 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _ConciliacionP.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _ConciliacionP.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Conciliacion/Insert", _ConciliacionP);
+                _ConciliacionBanco.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _ConciliacionBanco.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Conciliacion/Insert", _ConciliacionBanco);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -608,7 +638,7 @@ namespace ERPMVC.Controllers
             {
                // var Conciliacionvar = await Submit(files, _ConciliacionDTO);
 
-                Conciliacion _listConciliacion = new Conciliacion();
+                Conciliacion _listConciliacion = _ConciliacionDTO;
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -636,6 +666,12 @@ namespace ERPMVC.Controllers
                         if (_listConciliacion == null) { _listConciliacion = new Models.Conciliacion(); }
                         if (_listConciliacion.ConciliacionId == 0)
                         {
+                    if (_ConciliacionDTO.DateBeginReconciled >= _ConciliacionDTO.DateEndReconciled)
+                    {
+                        string error = await result.Content.ReadAsStringAsync();
+                        return await Task.Run(() => BadRequest($"La fecha de fin debe ser mayor a la fecha de inicio..."));
+
+                    }
                     //  ConciliacionDTO NuevaConciliacion = await ProcesoConciliacion(files, _ConciliacionDTO);
                     //                         NuevaConciliacion = ((Conciliacion)Conciliacionvar.va);
 
@@ -647,7 +683,32 @@ namespace ERPMVC.Controllers
                     //var insertresult = await Insert(NuevaConciliacion);
                     _ConciliacionDTO.FechaCreacion = DateTime.Now;
                     _ConciliacionDTO.UsuarioCreacion = HttpContext.Session.GetString("user");
-                        var insertresult = await Insert(_ConciliacionDTO);
+
+                    ConciliacionDTO _ConciliacionDuplicated = new ConciliacionDTO();
+                    //string baseadress = config.Value.urlbase;
+                    HttpClient _client2 = new HttpClient();
+                    _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var resultado = await _client.PostAsJsonAsync(baseadress + "api/Conciliacion/GetConciliacionByDate" , _ConciliacionDTO);
+                    string valorrespuesta2 = "";
+
+                    if (resultado.IsSuccessStatusCode)
+                    {
+                        valorrespuesta2 = await (resultado.Content.ReadAsStringAsync());
+                        _ConciliacionDuplicated = JsonConvert.DeserializeObject<ConciliacionDTO>(valorrespuesta2);
+
+                    }
+                    if (_ConciliacionDuplicated != null)
+                    {
+
+                       
+                        string error = await result.Content.ReadAsStringAsync();
+                        return await Task.Run(() => BadRequest($"El rango de fechas ya esta ingresado..."));
+
+                                            }
+                    
+                    // var insertresult = await Insert(_CostCenter);
+                    //}
+                    var insertresult = await Insert(_ConciliacionDTO);
                         var value = ((ConciliacionDTO)insertresult.Value);
                            
 
@@ -682,8 +743,8 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-            
-            return View("Conciliacion");
+
+            return new ObjectResult(new DataSourceResult { Data = new[] { _ConciliacionDTO }, Total = 1 });
             //return Json(_ConciliacionDTO);
 
         }

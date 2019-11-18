@@ -16,6 +16,13 @@ namespace ERPMVC.Models
         [Display(Name = "Id horas extras")]
         public Int64 EmployeeExtraHoursId { get; set; }
 
+        [Display(Name = "Cliente")]
+        [Required]
+        public Int64 CustomerId { get; set; }
+
+        [Display(Name = "Cliente")]
+        public string CustomerName { get; set; }
+
         [Display(Name = "Hora de inicio")]
         public DateTime StartTime { get; set; }
 
@@ -24,6 +31,9 @@ namespace ERPMVC.Models
 
         [Display(Name = "Cantidad de horas")]
         public double QuantityHours { get; set; }
+
+        [Display(Name = "Factor Salario")]
+        public double HourlySalary { get; set; }
 
         [Display(Name = "Usuario de creación")]
         public string UsuarioCreacion { get; set; }

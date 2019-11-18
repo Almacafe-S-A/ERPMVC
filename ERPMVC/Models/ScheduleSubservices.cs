@@ -29,14 +29,48 @@ namespace ERPMVC.Models
         [Display(Name = "Cantidad de horas")]
         public double QuantityHours { get; set; }
 
+        [Display(Name = "Servicio")]
+        public Int64 ServiceId { get; set; }
+
+        [Display(Name = "Servicio")]
+        public string ServiceName { get; set; }
+
+
         [Display(Name = "Subservicio")]
         public Int64 SubServiceId { get; set; }
 
+        [Display(Name = "Subservicio")]
+        public string SubServiceName { get; set; }
+
+        [Display(Name = "Factor hora")]
+        public double FactorHora { get; set; }
+
+        [Display(Name = "Desayuno")]
+        public double Desayuno { get; set; }
+
+        [Display(Name = "Almuerzo")]
+        public double Almuerzo { get; set; }
+
+        [Display(Name = "Cena")]
+        public double Cena { get; set; }
+
+        [Display(Name = "Desayuno")]
+        public double Transporte { get; set; }
+
+        [Display(Name = "Id Condición")]
+        public Int64 LogicalConditionId { get; set; }
+
         [Display(Name = "Descripción")]
-        public double Description { get; set; }
+        public string Description { get; set; }
 
         [Display(Name = "Genera Transporte")]
         public bool Transport { get; set; }
+
+        [Display(Name = "Estado")]
+        public Int64 IdEstado { get; set; }
+
+        [Display(Name = "Estado")]
+        public string Estado { get; set; }
 
         [Display(Name = "Fecha de creación")]
         public DateTime FechaCreacion { get; set; }

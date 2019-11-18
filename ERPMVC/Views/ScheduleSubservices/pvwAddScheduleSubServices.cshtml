@@ -1,0 +1,483 @@
+﻿@model ERPMVC.DTO.ScheduleSubservicesDTO
+
+@{ Layout = null;
+	var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+            // {"required","Valor requerido" }
+};
+	var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<script>
+	$(document).ready(function () {
+	
+		
+	});
+
+	function customFunction(input) {
+
+		if (input.attr('name') === "IdEmpleado" && input.val() === "0") {
+			return false;
+		}
+
+	}
+</script>
+
+
+
+
+<div id="ModalScheduleSubservice" class="modal fade" role="dialog">
+	<!-- Modal content-->
+	<div class="modal-dialog modal-lg">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+				<h4 class="modal-title">Empleados</h4>
+			</div>
+			<div class="modal-body">
+				<div class="row" id="validation">
+					<div class="col-lg-12">
+						<div class="card">
+                            <div class="card-body">
+                                <form id="frmScheduleSubservices" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <h3 class="card-title"> Cobros de SubServicios por Horarios</h3>
+                                        <hr>
+
+                                        <div class="row">
+                                            <div class="col-sm-4 col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="ScheduleSubservicesId" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="ScheduleSubservicesId" name="ScheduleSubservicesId" class="form-control form-control-line" disabled="disabled" style="min-width:100%" />
+                                                    <span asp-validation-for="ScheduleSubservicesId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <script>
+                                                        function GetSubProducts() {
+
+                                                            $("#SubServiceId").data("kendoDropDownList").dataSource.read();
+                                                        }
+
+
+                                                    </script>
+                                                    <label asp-for="ServiceId" class="control-label" style="width:100%"></label>
+
+                                                    <kendo-dropdownlist name="ServiceId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        for="ServiceId"
+                                                                        onchange="GetSubProducts()"
+                                                                        option-label="Seleccione el Producto"
+                                                                        datatextfield="ProductName"
+                                                                        datavaluefield="ProductId"
+                                                                        required
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="999999999">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetProduct", "Common")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="ServiceId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-sm-4 col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="SubServiceId" class=" control-label" style="width:100%">SubServicio</label>
+                                                    <div class="form-group">
+                                                        <script>
+
+                                                            function GetProductIdS() {
+                                                                return { 'ProductId': $("#ServiceId").val() }
+                                                            }
+                                                        </script>
+
+                                                        <kendo-dropdownlist name="SubServiceId"
+                                                                            for="SubServiceId"
+                                                                            filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                            option-label="Seleccione el sub servicio"
+                                                                            required
+                                                                            auto-bind="false"
+                                                                            datatextfield="ProductName"
+                                                                            datavaluefield="SubproductId"
+                                                                            style="width: 100%;">
+                                                            <datasource type="DataSourceTagHelperType.WebApi" page-size="99999999">
+                                                                <transport>
+                                                                    <read url="@Url.Action("GetSubProductByProductIdRelation", "ProductRelation")" data="GetProductIdS" />
+                                                                </transport>
+                                                            </datasource>
+                                                        </kendo-dropdownlist>
+
+                                                        <span asp-validation-for="SubServiceId" class="text-danger"></span>
+                                                    </div>
+
+
+                                                </div>
+                                            </div>
+
+
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-4">
+
+                                                <label asp-for="Transport" class="control-label" style="width: 100%;"></label>
+                                                @(Html.Kendo().SwitchFor(m => m.Transport).Name("Transport")
+
+                                                )
+
+                                            </div>
+                                            <div class="col-md-4">
+                                                <script>
+                                                    function GrupoConfiguracionCondicionLogica() {
+                                                        return { Id: 10 };
+                                                    }
+                                                </script>
+                                                <div class="form-group">
+                                                    <label asp-for="LogicalConditionId" class="  control-label" style="width:100%"></label>
+
+                                                    <kendo-dropdownlist name="LogicalConditionId"
+                                                                        for="LogicalConditionId"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione la condición logica"
+                                                                        datatextfield="Nombre"
+                                                                        datavaluefield="Id"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999999">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetElementoByIdConfiguracion", "ElementoConfiguracion")" data="GrupoConfiguracionCondicionLogica" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="LogicalConditionId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-sm-4 col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Day" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="Day" name="Day" class="form-control form-control-line" required style="min-width:100%" />
+                                                    <span asp-validation-for="Day" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="StartTime" class=" control-label" style="width:100%"></label>
+                                                    <kendo-timepicker name="StartTime"
+                                                                      value="Model.StartTime"
+                                                                      format="HH:mm:ss"
+                                                                      style="width:100%;"
+                                                                      data-val-required="La fecha es requerida" />
+                                                    <span asp-validation-for="StartTime" class="text-danger"></span>
+                                                </div>
+                                                <script>
+                                                    $(document).ready(function () {
+                                                        $("#dateinput").kendoDateInput();
+                                                    });
+                                                </script>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="EndTime" class=" control-label" style="width:100%"></label>
+                                                    <kendo-timepicker name="EndTime"
+                                                                      value="Model.EndTime"
+                                                                      format="HH:mm:ss"
+                                                                      style="width:100%;"
+                                                                      data-val-required="La fecha es requerida" />
+                                                    <span asp-validation-for="StartTime" class="text-danger"></span>
+                                                </div>
+                                                <script>
+                                                    $(document).ready(function () {
+                                                        $("#dateinput").kendoDateInput();
+                                                    });
+                                                </script>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class=" control-label" style="width:100%">Cliente</label>
+                                                <kendo-dropdownlist name="CustomerIdSeleccion"
+                                                                    filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                    option-label="Seleccione el cliente"
+                                                                    datatextfield="CustomerName"
+                                                                    datavaluefield="CustomerId"
+                                                                    class="form-control-line"
+                                                                    style="width: 100%;">
+                                                    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
+                                                        <transport>
+                                                            <read url="@Url.Action("GetCustomer", "Common")" />
+                                                        </transport>
+                                                    </datasource>
+                                                </kendo-dropdownlist>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class=" col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="FactorHora" class="control-label" style="width: 100%;"></label>
+                                                    <kendo-numerictextbox name="FactorHora"
+                                                                          format="n2"
+                                                                          min="0"
+                                                                          max="99999999"
+                                                                          step="1"
+                                                                          style="width: 100%;"
+                                                                          for="FactorHora"></kendo-numerictextbox>
+                                                    <span asp-validation-for="FactorHora" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="IdEstado" class="control-label"></label>
+                                                    <kendo-dropdownlist name="IdEstado" style="width:100%;"
+                                                                        for="IdEstado"
+                                                                        id="IdEstado"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        datatextfield="NombreEstado"
+                                                                        datavaluefield="IdEstado">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class=" col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Desayuno" class="control-label" style="width: 100%;"></label>
+                                                    <kendo-numerictextbox name="Desayuno"
+                                                                          format="n2"
+                                                                          min="0"
+                                                                          max="99999999"
+                                                                          step="1"
+                                                                          style="width: 100%;"
+                                                                          for="Desayuno"></kendo-numerictextbox>
+                                                    <span asp-validation-for="Desayuno" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class=" col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Almuerzo" class="control-label" style="width: 100%;"></label>
+                                                    <kendo-numerictextbox name="Almuerzo"
+                                                                          format="n2"
+                                                                          min="0"
+                                                                          max="99999999"
+                                                                          step="1"
+                                                                          style="width: 100%;"
+                                                                          for="Almuerzo"></kendo-numerictextbox>
+                                                    <span asp-validation-for="Almuerzo" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class=" col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Cena" class="control-label" style="width: 100%;"></label>
+                                                    <kendo-numerictextbox name="Cena"
+                                                                          format="n2"
+                                                                          min="0"
+                                                                          max="99999999"
+                                                                          step="1"
+                                                                          style="width: 100%;"
+                                                                          for="Cena"></kendo-numerictextbox>
+                                                    <span asp-validation-for="Cena" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                            <div class="row">
+
+                                                <div class=" col-md-12">
+                                                    <div class="form-group">
+                                                        <label asp-for="Description" class="control-label" style="width: 100%;"></label>
+                                                        <textarea id="Description" required class="form-control" style="min-width:100%;" asp-for="Description"></textarea>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button id="btnEmployees" class="form-control btn-miboton" onclick="SaveEmployeeExtraHours(this);"> Guardar </button>
+                                            </div>
+                                        </div>
+                                    </form>
+
+                                <div id="numEmployeesExtraHoursDetail">
+                                    @await Html.PartialAsync("pvwAddScheduleSubServicesDetail", new ERPMVC.DTO.PaymentScheduleRulesByCustomerDTO { PaymentScheduleRulesByCustomerId = 0 })
+                                </div>
+
+
+                            </div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+
+
+
+ <script>
+
+
+
+
+    function validarGenero() {
+        var Genero = $("#Genero").val();
+       // console.log("Valor Genero", Genero);
+        if (Genero == 0 || $("#Genero").data("kendoDropDownList").text() == "Seleccionar Género") {
+            $("#GeneroAlert").show();
+        }
+        else {
+            $("#GeneroAlert").hide();
+        }
+    }
+
+	function validarTipoSangre() {
+        var TipoSangre = $("#TipoSangre").val();
+        if (TipoSangre == 0 || $("#TipoSangre").data("kendoDropDownList").text() == "Seleccionar Tipo de Sangre") {
+            $("#TipoSangreAlert").show();
+        }
+        else {
+            $("#TipoSangreAlert").hide();
+        }
+    }
+
+	function AddSalarioEmpleado() {
+        var displayedData = $("#gridEmployeeSalary").data().kendoGrid.dataSource.view();
+        if (displayedData.length == 1) {
+            $("#AgregarSalario").hide();
+        }
+        $('#myModalSalarioEmpleado').modal('show');
+    }
+
+
+
+    //Validaciones
+    function SoloLetras(e) {
+        key = e.keyCode || e.which;
+        tecla = String.fromCharCode(key).toLowerCase();
+        letras = " áéíóúabcdefghijklmnñopqrstuvwxyz";
+        especiales = "8-37-39-46";
+
+        tecla_especial = false
+        for (var i in especiales) {
+            if (key == especiales[i]) {
+                tecla_especial = true;
+                break;
+            }
+        }
+
+        if (letras.indexOf(tecla) == -1 && !tecla_especial) {
+            return false;
+        }
+    }
+
+    function SoloNumeros(e) {
+        key = e.keyCode || e.which;
+        tecla = String.fromCharCode(key).toLowerCase();
+        letras = "1234567890";
+        especiales = "8-37-39-46";
+
+        tecla_especial = false
+        for (var i in especiales) {
+            if (key == especiales[i]) {
+                tecla_especial = true;
+                break;
+            }
+        }
+
+        if (letras.indexOf(tecla) == -1 && !tecla_especial) {
+            return false;
+        }
+    }
+
+    function SaveEmployeeExtraHours(e) {
+          var notification = $("#notification").data("kendoNotification");
+          console.log($("#StartTime").getKendoTimePicker().value().toJSON());
+          var today = new Date();
+          let fechaactual = String(today.getDate()).padStart(2, '0') + "/" + String(today.getMonth() + 1).padStart(2, '0') + "/" + today.getFullYear();
+        let sttime = $("#StartTime").getKendoTimePicker().value().toJSON();  // fechaactual + " "+$("#StartTime").getKendoTimePicker().value().toJSON();
+        let ettime = $("#EndTime").getKendoTimePicker().value().toJSON();    // fechaactual + " " + $("#EndTime").getKendoTimePicker().value().toJSON();
+
+				var dataObject = {
+                    'ScheduleSubservicesId': $("#ScheduleSubservicesId").val(),
+                    'Day': $("#Day").val(),
+                    'LogicalConditionId': $("#LogicalConditionId").val(),
+                    'Condition': $("#LogicalConditionId").data("kendoDropDownList").text(),
+                    'StartTime': sttime,// $("#StartTime").getKendoDateTimePicker().value().toJSON(),
+                    'EndTime': ettime,  //$("#EndTime").getKendoDateTimePicker().value().toJSON(),
+                    'QuantityHours': $("#QuantityHours").val(),
+                    'ServiceId': $("#ServiceId").val(),
+                    'ServiceName': $("#ServiceId").data("kendoDropDownList").text(),
+                    'SubServiceId': $("#SubServiceId").data("kendoDropDownList").value(),
+                    'SubServiceName': $("#SubServiceId").data("kendoDropDownList").text(),
+                    'IdEstado': $("#IdEstado").val(),
+                    'Estado': $("#IdEstado").data("kendoDropDownList").text(),
+                    'FactorHora': $("#FactorHora").val(),
+                    'Description': $("#Description").val(),
+                    'Transport': $("#Transport").is(':checked'),
+                    'Desayuno': $("#Desayuno").val(),
+                    'Almuerzo': $("#Almuerzo").val(),
+                    'Cena': $("#Cena").val(),
+				};
+
+               var validator = $("#frmScheduleSubservices").data("kendoValidator");
+                if (validator.validate()) {
+
+                    $.ajax({
+                        url: '@Url.Action("SaveScheduleSubservices", "ScheduleSubservices")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+							$.toast({
+                                heading: 'Satisfactorio',
+                                text: '<br/><br/> Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+
+							RefrescarGrid();
+
+                            $('#ModalScheduleSubservice').modal('hide');
+
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                            notification.show({
+                                title: "Validación",
+                                message: textStatus + ": " + XMLHttpRequest.responseText
+                            }, "error");
+
+                        }
+                    });
+
+                }
+                else {
+                    $("#btnEmployees").prop("disabled", false);
+                }
+
+
+
+    }
+                    </script>
+
+
