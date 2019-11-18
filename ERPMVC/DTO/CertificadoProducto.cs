@@ -14,6 +14,9 @@ namespace ERPMVC.DTO
         [Display(Name = "Producto")]
         public Int64 ProductId { get; set; }
 
+        [Display(Name = "Id")]
+        public Int64 Id { get; set; }
+
 
     }
 }
