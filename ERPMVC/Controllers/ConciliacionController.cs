@@ -113,8 +113,38 @@ namespace ERPMVC.Controllers
                     _ConciliacionLineas = JsonConvert.DeserializeObject<List<ConciliacionLinea>>(valorrespuesta);
                     
                 }
+                if (_ConciliacionLineas.Count == 0)
+                {
+                    Conciliacion _ConciliacionP = new Conciliacion();
+                    
+                        string baseadressP = config.Value.urlbase;
+                        HttpClient _clientP = new HttpClient();
+                        _clientP.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                        var resultP = await _client.GetAsync(baseadressP + "api/Conciliacion/GetConciliacionById/" + ConciliacionId);
+                        string valorrespuestaP = "";
+                        if (resultP.IsSuccessStatusCode)
+                        {
+                            valorrespuestaP = await (resultP.Content.ReadAsStringAsync());
+                            _ConciliacionP = JsonConvert.DeserializeObject<Conciliacion>(valorrespuestaP);
+
+                        }
+                    string baseadressE = config.Value.urlbase;
+                    HttpClient _clientE = new HttpClient();
+                    _clientE.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var resultE = await _client.PostAsJsonAsync(baseadressE + "api/Conciliacion/GetConciliacionByDate",  _ConciliacionP);
+                    string valorrespuestaE = "";
+                    if (resultE.IsSuccessStatusCode)
+                    {
+                        valorrespuestaE = await (resultE.Content.ReadAsStringAsync());
+                        _ConciliacionP = JsonConvert.DeserializeObject<Conciliacion>(valorrespuestaE);
+
+                    }
+
+                    _ConciliacionLineas = _ConciliacionP.ConciliacionLinea;
+                }
+
             }
-            catch (Exception ex)
+          catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
