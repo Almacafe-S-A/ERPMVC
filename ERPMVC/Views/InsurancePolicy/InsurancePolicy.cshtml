@@ -31,8 +31,7 @@
 
     //AddInsurancePolicy
     function AddInsurancePolicy() {
-
-        var dataObject = null;
+        clearsession();
         var dataObject = {
             InsurancePolicyId:0,
             editar: 1
@@ -47,9 +46,11 @@
             async: false,
             data: JSON.stringify(dataObject),
             success: function (result) {
-                $("#InsurancePolicy").html('');
-                $("#InsurancePolicy").html(result);
-             
+                $("#divInsurancePolicy").html('');
+                $("#divInsurancePolicy").html(result);
+                RefrescarGrid();
+                //$("#btnInsurancePolicy").hide();
+
                 $('#myModalInsurancePolicy').modal('show');
             },
              error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -66,7 +67,8 @@
 
 
     function EditInsurancePolicy(e) {
-             e.preventDefault();
+        e.preventDefault();
+        clearsession();
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         var dataObject = {
             InsurancePolicyId: dataItem.InsurancePolicyId,
@@ -81,8 +83,8 @@
                 async: false,
                 data: JSON.stringify(dataObject),
                 success: function (result) {
-                    $("#InsurancePolicy").html('');
-                    $("#InsurancePolicy").html(result);
+                    $("#divInsurancePolicy").html('');
+                    $("#divInsurancePolicy").html(result);
                    
 
                     $('#InsurancePolicyId').val(dataItem.InsurancePolicyId);
@@ -110,13 +112,21 @@
 
                                                                     //  command.Destroy();
                                                                 }).Width(30);
-                                                                columns.Bound(p => p.InsurancePolicyId).Title("Codigo").Width(100);
-                                                                columns.Bound(p => p.InsurancesName).Title("Nombre Aseguradora").Width(150);
-                                                                columns.Bound(p => p.PolicyDate).Title("Fecha Poliza").Width(150);
+                                                                columns.Bound(p => p.InsurancePolicyId).Title("Codigo").Width(100).Visible(false);
+                                                                columns.Bound(p => p.PolicyNumber).Title("Número Póliza").Width(150);
+
+                                                                columns.Bound(p => p.InsurancesName).Title("Nombre Aseguradora").Width(180);
+                                                                columns.Bound(p => p.PolicyDate).Format("{0:dd/MM/yyyy}").Title("Fecha Emisión").Width(150);
+                                                                columns.Bound(p => p.PolicyDueDate).Format("{0:dd/MM/yyyy}").Title("Fecha Vencimiento").Width(180);
+                                                                columns.Bound(p => p.CustomerId).Title("Id").Width(150).Visible(false);
+
                                                                 columns.Bound(p => p.CustomerName).Title("Cliente").Width(150);
+                                                                columns.Bound(p => p.DollarAmount).Title("Monto $").Width(150).Visible(false);
+                                                                columns.Bound(p => p.LpsAmount).Title("Monto Lps").Width(150).Visible(false);
+
                                                                 columns.Bound(p => p.Status).Title("Estado").Width(150);
 
-                                                                
+
 
                                                             })
                                                                 .Filterable(f => f.Operators(o => o.ForString(s => s
@@ -163,6 +173,7 @@
                                                             })
                                                             .Editable(e => e.Mode(GridEditMode.PopUp))
                                                             .Sortable()
+                                                            .AutoBind(true)
                                                             .Pageable()
                                                             .Filterable()
                                                             .Scrollable()
@@ -180,13 +191,17 @@
                                                                 .Model(model =>
                                                                 {
                                                                     model.Id(p => p.InsurancePolicyId);
-                                                                    model.Field(p => p.InsurancePolicyId).Editable(false);
+                                                                    model.Field(p => p.InsurancePolicyId).Editable(true);
 
                                                                 })
-                                                                .Events(events => events.Error("error_handler"))
+                                                                 .Events(events =>
+                                                                 {
+                                                                     events.Error("error_handler");
+                                                                     //events.upda("EditHandler");
+                                                                 })
                                                                 .Read(read => read.Action("Get", "InsurancePolicy"))
                                                                 .Create(create => create.Action("Insert", "InsurancePolicy"))
-                                                                .Update(update => update.Action("Update", "InsurancePolicy", new { InsurancePolicyId = "{0}" }).Type(HttpVerbs.Put))
+                                                                .Update(update => update.Action("Update", "InsurancePolicy", new { id = "{0}" }))
                                                             //.Destroy(destroy => destroy.Action("Delete", "TypeAccount", new { Num = "{1}" }).Type(HttpVerbs.Delete))
 
                                                             )
@@ -197,7 +212,7 @@
                                                                 })
 )
 
-<div id="InsurancePolicyDocument">
+<div id="divInsurancePolicy">
     @await Html.PartialAsync("pvwAddInsurancePolicy", new ERPMVC.Models.InsurancePolicy { InsurancePolicyId = 0, PolicyDate = DateTime.Now, PolicyDueDate = DateTime.Now })
 </div>
 

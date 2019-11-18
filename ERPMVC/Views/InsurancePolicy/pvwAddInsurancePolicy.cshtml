@@ -11,21 +11,19 @@
         return ((key >= 48 && key <= 57) || (key == 8))
     }
 
-    function ValidarFechas() {
-        var fechainicial = document.getElementById("#PolicyDate").value;
-        var fechafinal = document.getElementById("#PolicyDueDate").value;
-
-        if (Date.parse(fechafinal) < Date.parse(fechainicial)) {
-
-            alert("La fecha de vencimiento debe ser mayor a la fecha de inicio");
+    $("#PolicyDueDate").change(function () {
+        debugger;
+        var FechaInicio = $("#PolicyDate").getKendoDateTimePicker().value().toJSON();
+        var FechaVencimiento = $("#PolicyDueDate").getKendoDatePicker().value().toJSON();
+        if (Date.parse(FechaInicio) >= Date.parse(FechaVencimiento)) {
+            alert("Fecha de Vencimiento no puede ser menor que la fecha de hoy.")
+            console.log('HEY');
+            $("#PolicyDueDate").val('');
         }
-    }
-    $(document).ready(function () {
-
     });
     //SaveInsurancePolicyDocument
-    function SaveInsurancePolicyDocument(e) {
-
+    function SaveInsurancePolicy(e) {
+        debugger;
         var notification = $("#notification").data("kendoNotification");
         $("#btnInsurancePolicy").prop("disabled", true);
 
@@ -44,6 +42,7 @@
             'DollarAmount': $("#DollarAmount").val(),
             'AttachmentURL': $("#AttachmentURL").val(),
             'Status': $("#Status").val(),
+            '_InsurancePolicy': displayedData
 
         };
         console.log(dataObject);
@@ -61,10 +60,10 @@
                         async: false,
                         data: JSON.stringify(dataObject),
                         success: function (data) {
+                            $("#InsurancePolicyId").data("kendoNumericTextBox").value(data.InsurancePolicyId);
+
                             RefrescarGrid();
-                            //notification.show({
-                            //    message: "Guardado correctamente!"
-                            //}, "upload-success");
+
                             $.toast({
                                 heading: 'Satisfactorio',
                                 text: 'Datos guardados correctamente.',
@@ -108,20 +107,12 @@
         
     }
 
-    function closeInsurancePolicyDocument() {
-      
-        RefrescarGrid();
-
-
-
-    }
- 
+    
 </script>
 
 
 <div id="myModalInsurancePolicy" class="modal fade" role="dialog">
     <div class="modal-dialog modal-lg">
-
         <!-- Modal content-->
         <div class="modal-content">
             <div class="modal-header">
@@ -137,23 +128,35 @@
                         <div class="card">
                             <div class="card-body">
                                 <form id="InsuracesDocument" kendo-validator="true" kendo-messages="messages"
-                                      data-ajax="true">
-
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                       method="post"
+                                      data-ajax-begin="SaveInsurancePolicy">
                                     <div class="row">
                                         <div class="col-md-4">
-                                            <label asp-for="InsurancePolicyId" class="control-label" style="width: 100%;">Póliza</label>
-                                            <input type="number" readonly name="InsurancePolicyId" asp-for="InsurancePolicyId" class="form-control" style="min-width:100%" />
+                                            <label asp-for="InsurancePolicyId" class="control-label"></label>
+                                            <kendo-numerictextbox name="InsurancePolicyId"
+                                                                  format="n"
+                                                                  min="0"
+                                                                  enable="false"
+                                                                  disabled
+                                                                  max="99999999"
+                                                                  step="1"
+                                                                  style="width: 100%;"
+                                                                  value="Model.InsurancePolicyId" />
+                                            <span asp-validation-for="InsurancePolicyId" class="text-danger"></span>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <label asp-for="PolicyDate" class="control-label" style="width: 100%;">Fecha de Emisión</label>
                                                 <kendo-datetimepicker name="PolicyDate"
                                                                       style="width: 100%;"
-                                                                      format="dd/MM/yyyy hh:mm:ss"
-                                                                      time-format="hh:mm:ss"
+                                                                      id="PolicyDate"
+                                                                      format="dd/MM/yyyy"
+                                                                      required
                                                                       data-val-required="La fecha es requerida"
                                                                       value="Model.PolicyDate" />
-                                                <span asp-validation-for="PolicyDate" class="text-danger"></span>
+                                                <span asp-validation-for="PolicyDate" class="text-danger k-invalid-msg" data-for="PolicyDate"></span>
                                             </div>
                                         </div>
                                         <div class="col-md-4">
@@ -161,17 +164,18 @@
                                                 <label asp-for="PolicyDueDate" class="control-label" style="width: 100%;">Fecha de Vencimiento</label>
                                                 <kendo-datetimepicker name="PolicyDueDate"
                                                                       style="width: 100%;"
-                                                                      format="dd/MM/yyyy hh:mm:ss"
-                                                                      time-format="hh:mm:ss"
+                                                                      id="PolicyDueDate"
+                                                                      format="dd/MM/yyyy"
+                                                                      required
                                                                       data-val-required="La fecha es requerida"
                                                                       value="Model.PolicyDueDate" />
-                                                <span asp-validation-for="PolicyDueDate" class="text-danger"></span>
+                                                <span asp-validation-for="PolicyDueDate" class="text-danger k-invalid-msg" data-for="PolicyDueDate"></span>
                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <label asp-for="PolicyNumber" class="control-label" style="width: 100%;">Número de Póliza</label>
-                                                <input type="text" name="PolicyNumber" min="0" maxlength="30" asp-for="PolicyNumber" class="form-control" style="min-width:100%" onKeyPress="return soloNumeros(event)" />
+                                                <input type="text" name="PolicyNumber" min="0" required maxlength="30" asp-for="PolicyNumber" class="form-control" style="min-width:100%" onKeyPress="return soloNumeros(event)" />
                                             </div>
                                         </div>
                                         <div class="col-md-4">
@@ -181,6 +185,7 @@
                                                                     option-label="Seleccione la aseguradora"
                                                                     datatextfield="InsurancesName"
                                                                     datavaluefield="InsurancesId"
+                                                                    required
                                                                     class="form-control-line"
                                                                     style="width: 100%;">
                                                     <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
@@ -199,6 +204,7 @@
                                                                     datatextfield="CustomerName"
                                                                     datavaluefield="CustomerId"
                                                                     class="form-control-line"
+                                                                    required
                                                                     style="width: 100%;">
                                                     <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
                                                         <transport>
@@ -220,6 +226,7 @@
                                                                     option-label="Seleccionar Estado"
                                                                     datatextfield="NombreEstado"
                                                                     datavaluefield="IdEstado"
+                                                                    required
                                                                     style="width: 100%;">
                                                     <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
                                                         <transport>
@@ -264,7 +271,7 @@
 
                                     <div class="row">
                                         <div class="col-md-12">
-                                            <button id="btnInsurancePolicy" class="form-control btn-miboton" type="submit" onclick="SaveInsurancePolicyDocument(this);"> Guardar </button>
+                                            <button id="btnInsurancePolicy" class="form-control btn-miboton" type="submit"> Guardar </button>
                                         </div>
                                     </div>
 
