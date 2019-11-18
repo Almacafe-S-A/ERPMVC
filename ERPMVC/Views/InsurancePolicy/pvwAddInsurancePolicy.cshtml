@@ -21,7 +21,7 @@
         }
     });
     //SaveInsurancePolicy
-    function SaveInsurancePolicy(e) {
+    @*function SaveInsurancePolicy(e) {
         debugger;
         var notification = $("#notification").data("kendoNotification");
         $("#btnInsurancePolicy").prop("disabled", true);
@@ -99,6 +99,51 @@
 
         $("#btnInsurancePolicy").show();
         $("#btnInsurancePolicy").prop("disabled", false);
+    }*@
+
+    function SaveInsurancePolicy(e) {
+
+        var displayedData = $("#gridInsurancePolicy").data().kendoGrid.dataSource.view();
+
+        //var formdata = new FormData($('#CustomerDocument').get(0));
+
+        var dataObject = {
+            'InsurancePolicyId': $("#InsurancePolicyId").val(),
+            'PolicyNumber': $("#PolicyNumber").val(),
+            'PolicyDate': $("#PolicyDate").getKendoDateTimePicker().value().toJSON(),
+            'PolicyDueDate': $("#PolicyDueDate").getKendoDateTimePicker().value().toJSON(),
+            'InsurancesId': $("#InsurancesId").val(),
+            'InsurancesName': $("#InsurancesId").data("kendoDropDownList").text(),
+            'CustomerId': $("#CustomerId").val(),
+            'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
+            'LpsAmount': $("#LpsAmount").val(),
+            'DollarAmount': $("#DollarAmount").val(),
+            'AttachmentURL': $("#AttachmentURL").val(),
+            'Status': $("#Status").val(),
+            '_InsurancePolicy': displayedData
+
+        };
+
+        e.data = dataObject;
+        RefrescarGrid();
+        @* $.ajax({
+            url: '@Url.Action("SaveCustomerDocument", "CustomerDocument")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: formdata,
+            success: function (result) {
+                //console.log(result);
+                //debugger;
+                $("#ConditionView").html('');
+                $("#ConditionView").html(result);
+
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });*@
     }
     function RefrescarGrid() {
         var grid = $("#gridInsurancePolicy").getKendoGrid();
@@ -106,6 +151,15 @@
         
     }
 
+    function closeInsurancePolicy() {
+        //$('#myModalCustomerAuthorizedSignature').find(':input').not(':submit').val('0');
+        //   RefreshGridCustomerAuthorizedSignature();
+        RefrescarGrid();
+        $("#myModalInsurancePolicy").modal('hide');
+
+
+
+    }
     
 </script>
 
@@ -115,7 +169,7 @@
         <!-- Modal content-->
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+                <button type="button" class="close" onclick="closeInsurancePolicy();">&times;</button>
                 <h4 class="modal-title">Póliza</h4>
             </div>
             <div class="modal-body">
@@ -254,7 +308,7 @@
                                             <div class="form-group">
                                                 <label asp-for="DollarAmount" class="control-label" style="width:100%">Monto Dolares</label>
                                                 <kendo-numerictextbox name="DollarAmount"
-                                                                     format="'$.' #.## "
+                                                                      format="'$.' #.## "
                                                                       min="0"
                                                                       spinners="false"
                                                                       required
@@ -265,14 +319,35 @@
                                             </div>
                                         </div>
                                     </div>
-                                  
-
-
                                     <div class="row">
+                                        <div class="col-md-5">
+                                             <kendo-upload drop-zone="drop-zone1" name="files" on-upload="SaveInsurancePolicy">
+                                                <localization select="Seleccionar Archivos" cancel="Cancelar" drop-files-here="Soltar Archivo aquí" invalid-file-extension="Extensión de Archivo Invalido" retry="Reintentar" />
+                                                <files />
+                                                <async save-url="@Url.Action("SaveInsurancePolicy","InsurancePolicy")" />
+                                                <validation allowed-extensions='@new string[] { ".jpg",".png",".jpeg" }' max-file-size="10485760" />
+                                            </kendo-upload>
+                                        </div>
+
+                                        <script>
+                                                function GetDocumentName(dataName) {
+                                                    var fileName = "@Model.AttachementFileName";
+                                                    return fileName
+                                                }
+                                                function GetDocumentExtension(dataExtension) {
+                                                    var fileName = "@Model.AttachementFileName";
+                                                    var fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1);
+                                                    return fileExtension
+                                                }
+                                        </script>
+                                    </div>
+
+
+                                    @*<div class="row">
                                         <div class="col-md-12">
                                             <button id="btnInsurancePolicy" class="form-control btn-miboton" type="submit"> Guardar </button>
                                         </div>
-                                    </div>
+                                    </div>*@
 
                                 </form>
                             </div>
