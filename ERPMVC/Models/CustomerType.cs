@@ -15,7 +15,6 @@ namespace ERPMVC.Models
         [Display(Name = "Nombre")]
         public string CustomerTypeName { get; set; }
         [Display(Name = "Descripción")]
-        [Required(AllowEmptyStrings = false, ErrorMessage = "*El campo {0} es requerido")]
         public string Description { get; set; }
         [Display(Name = "Estado Id")]
         public Int64 IdEstado { get; set; }
