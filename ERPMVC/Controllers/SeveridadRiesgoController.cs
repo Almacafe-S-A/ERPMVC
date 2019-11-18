@@ -41,7 +41,7 @@ namespace ERPMVC.Controllers
         [HttpGet]
         public async Task<DataSourceResult> GetSeveridadRiesgo([DataSourceRequest]DataSourceRequest request)
         {
-            List<SeveridadRiesgo> _Insurances = new List<SeveridadRiesgo>();
+            List<SeveridadRiesgo> _SeveridadRiesgo = new List<SeveridadRiesgo>();
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -52,7 +52,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Insurances = JsonConvert.DeserializeObject<List<SeveridadRiesgo>>(valorrespuesta);
+                    _SeveridadRiesgo = JsonConvert.DeserializeObject<List<SeveridadRiesgo>>(valorrespuesta);
                 }
             }
             catch (Exception ex)
@@ -60,7 +60,7 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-            return _Insurances.ToDataSourceResult(request);
+            return _SeveridadRiesgo.ToDataSourceResult(request);
         }
 
         //--------------------------------------------------------------------------------------
@@ -211,6 +211,33 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
             return new ObjectResult(new DataSourceResult { Data = new[] { _SeveridadRiesgo }, Total = 1 });
+        }
+
+        //--------------------------------------------------------------------------------------
+
+        [HttpGet]
+        public async Task<DataSourceResult> BrechasEntreRango([DataSourceRequest]DataSourceRequest request)
+        {
+            List<SeveridadRiesgo> _SeveridadRiesgo = new List<SeveridadRiesgo>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/SeveridadRiesgoes/GetSeveridadRiesgo");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _SeveridadRiesgo = JsonConvert.DeserializeObject<List<SeveridadRiesgo>>(valorrespuesta);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return _SeveridadRiesgo.ToDataSourceResult(request);
         }
     }
 }
