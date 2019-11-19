@@ -5,6 +5,14 @@
 
 <h3 class="text-themecolor">Severidad de Riesgo</h3>
 
+    <div id="msj_failed" hidden>
+        <div class="col-md-12" id="mensaje">
+            <div class="alert alert-warning alert-danger">
+                <button type="button" class="close" data-dissmiss="warning" onclick="AlertClose();" aria-hidden="true">&times;</button>
+                <h5><i class="icon fa fa-warning"></i> Exísten brechas o valores iguales entre los Rangos!</h5>
+            </div>
+        </div>
+    </div>
 
 @(Html.Kendo().Grid<ERPMVC.Models.SeveridadRiesgo>()
                                   .Name("gridSeveridadRiesgo")
@@ -29,7 +37,7 @@
                                       columns.Bound(p => p.RangoSuperiorSeveridad).Width(100).Hidden(true);
                                       columns.Template("#=RangoInferiorSeveridad# - #=RangoSuperiorSeveridad#").Title("Valor").Width(100);
                                       columns.Bound(p => p.ColorHexadecimal).Hidden(true);
-                                      columns.Bound(p => p.Nivel).Width(100).HtmlAttributes(new { @style = "background:#=ColorHexadecimal#;color:white;" }); 
+                                      columns.Bound(p => p.Nivel).Width(100).HtmlAttributes(new { @style = "background:#=ColorHexadecimal#;color:white;" });
                                   })
                                                 .Filterable(f => f.Operators(o => o.ForString(s => s
                                                                 .Clear()
@@ -63,8 +71,8 @@
                                             .ToolBar(tools =>
                                             {
                                                 tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @id = "SeveridadRiesgo_Add", @class = "k-i-plus-sm", onclick = "AddSeveridadRiesgo()" });
-                                                //tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                                //tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
                                             })
                                             .Editable(e => e.Mode(GridEditMode.PopUp))
                                             .Sortable()
@@ -103,10 +111,84 @@
 
 <script>
     $(document).ready(function () {
-
+        $("#NivelAlert").prop("hidden", true);
     });
 
+    function AlertClose() {
+        $("#msj_failed").prop("hidden", true);
+    }
+
     function onDataBinding() {
+        $.ajax({
+            url: '@Url.Action("BrechasEntreRango", "SeveridadRiesgo")',
+            method: 'GET',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(),
+            success: function (displayedData) {
+                var Bajo = "", Medio = "", Alto = "", MuyAlto = "";
+                if (displayedData.Data.length > 0) {
+                    for (var i = 0; i < displayedData.Data.length; i++) {
+                        debugger;
+                        if (displayedData.Data[i].Nivel == "Bajo") {
+                            Bajo = i;
+                        }
+                        if (displayedData.Data[i].Nivel == "Medio") {
+                            Medio = i;
+                        }
+                        if (displayedData.Data[i].Nivel == "Alto") {
+                            Alto = i;
+                        }
+                        if (displayedData.Data[i].Nivel == "Muy Alto") {
+                            MuyAlto= i;
+                        }
+                    }
+
+                    if (displayedData.Data[Bajo] != undefined && displayedData.Data[Medio] != undefined) {
+                        var BrechaInferior = displayedData.Data[Bajo].RangoSuperiorSeveridad - displayedData.Data[Medio].RangoInferiorSeveridad
+                        BrechaInferior = Math.round(BrechaInferior * 100) / 100;
+                    }
+                    if (displayedData.Data[Medio] != undefined && displayedData.Data[Alto] != undefined) {
+                        var BrechaIntermedia = Number(displayedData.Data[Medio].RangoSuperiorSeveridad) - Number(displayedData.Data[Alto].RangoInferiorSeveridad)
+                        BrechaIntermedia = Math.round(BrechaIntermedia * 100) / 100;
+                    }
+                    if (displayedData.Data[Alto] != undefined && displayedData.Data[MuyAlto] != undefined) {
+                        var BrechaSuperior = Number(displayedData.Data[Alto].RangoSuperiorSeveridad) - Number(displayedData.Data[MuyAlto].RangoInferiorSeveridad)
+                        BrechaSuperior = Math.round(BrechaSuperior * 100) / 100;
+                    }
+                    if (BrechaInferior != undefined) {
+                        if (BrechaInferior == -0.01) {
+                            $("#msj_failed").prop("hidden", true);
+                            if (BrechaIntermedia != undefined) {
+                                if (BrechaIntermedia == -0.01) {
+                                    $("#msj_failed").prop("hidden", true);
+                                    if (BrechaSuperior != undefined) {
+                                        if (BrechaSuperior == -0.01) {
+                                            $("#msj_failed").prop("hidden", true);
+                                        }
+                                        else {
+                                            $("#msj_failed").prop("hidden", false);
+                                        }
+                                    }
+                                }
+                                else {
+                                    $("#msj_failed").prop("hidden", false);
+                                }
+                            }
+                        }
+                        else {
+                            $("#msj_failed").prop("hidden", false);
+                        }
+                    }
+                }
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+        
+
         var displayedData = $("#gridSeveridadRiesgo").data().kendoGrid.dataSource.view();
         if (displayedData.length == 4) {
             $("#SeveridadRiesgo_Add").hide();
@@ -118,17 +200,6 @@
         if (displayedData.length == 0) {
             $("#LimeteCalidadSuperir").prop("disabled", true);
         }
-        
-        //var grid = $("#gridSeveridadRiesgo").data("kendoGrid");
-        //var data = grid.dataSource.data();
-        //$.each(data, function (i, row, gridcell) {
-        //    //Change the background color of QtyReceived here 
-        //    console.log("row",row);
-        //    //console.log($('tr[data-uid="' + row.uid + '"] td:nth-child(11)'));
-        //    $('tr[data-uid="' + row.uid + '"]').css("background","red");
-        //    //console.log(data);
-        //    //grid.table.find("tr[data-uid='" + data[i].uid + "']")[0].cells[2].style.backgroundColor = 'pink';
-        //})
     }
 
     function RefrescarGrid() {
@@ -137,18 +208,19 @@
     }
 
     function AddSeveridadRiesgo() {
+        $("#NivelAlert").prop("hidden", true);
         var validator = $("#frmSeveridadRiesgo").data("kendoValidator");
         validator.hideMessages();
         $('#ModalSeveridadRiesgo').find(':input').not(':submit').val('');
         $('#ModalSeveridadRiesgo').modal('show');
         $("#IdSeveridad").val('0');
         $("#Nivel").data("kendoDropDownList").value(0);
-        debugger;
+        $("#LimeteCalidadSuperir").prop("disabled", true);
+        $("#RangoSuperiorSeveridad").prop("disabled", true);
         var id = 0;
         var LimiteCalidadInferior = 0, LimeteCalidadSuperir = 0, RangoInferiorSeveridad = 0, RangoSuperiorSeveridad = 0
         var displayedData = $("#gridSeveridadRiesgo").data().kendoGrid.dataSource.view();
         if (displayedData.length > 0) {
-            console.log("displayedData: ", displayedData);
             for (var i = 0; i < displayedData.length; i++) {
                 if (displayedData[i].IdSeveridad > id) {
                     id = displayedData[i].IdSeveridad;
@@ -160,41 +232,38 @@
             }
             id = id + 1;
         }
-        console.log("LimiteCalidadInferior", LimiteCalidadInferior);
-        console.log("LimeteCalidadSuperir", LimeteCalidadSuperir);
-        console.log("RangoInferiorSeveridad", RangoInferiorSeveridad);
-        console.log("RangoSuperiorSeveridad", RangoSuperiorSeveridad);
 
-        if (displayedData.length > 0) {
-            $("#LimiteCalidadInferior").attr({
-                "max": LimeteCalidadSuperir + 1,
-                "min": LimeteCalidadSuperir + 1
-            });
+        //if (displayedData.length > 0) {
+        //    $("#LimiteCalidadInferior").attr({
+        //        "max": LimeteCalidadSuperir + 1,
+        //        "min": LimeteCalidadSuperir + 1
+        //    });
 
-            $("#LimiteCalidadInferior").val(LimeteCalidadSuperir + 1);
-            var LimiteCalidadSuperirActual = $("#LimiteCalidadInferior").val();
+        //    $("#LimiteCalidadInferior").val(LimeteCalidadSuperir + 1);
+        //    var LimiteCalidadSuperirActual = $("#LimiteCalidadInferior").val();
 
-            $("#LimeteCalidadSuperir").attr({
-                "min": Number(LimiteCalidadSuperirActual) + 1
-            });
+        //    $("#LimeteCalidadSuperir").attr({
+        //        "min": Number(LimiteCalidadSuperirActual) + 1
+        //    });
 
-            $("#RangoInferiorSeveridad").attr({
-                "max": RangoSuperiorSeveridad + 0.01,
-                "min": RangoSuperiorSeveridad + 0.01
-            });
+        //    $("#RangoInferiorSeveridad").attr({
+        //        "max": RangoSuperiorSeveridad + 0.01,
+        //        "min": RangoSuperiorSeveridad + 0.01
+        //    });
 
-            $("#RangoInferiorSeveridad").val(RangoSuperiorSeveridad + 0.01);
-            var RangoSuperiorSeveridadActual = $("#RangoInferiorSeveridad").val();
+        //    $("#RangoInferiorSeveridad").val(RangoSuperiorSeveridad + 0.01);
+        //    var RangoSuperiorSeveridadActual = $("#RangoInferiorSeveridad").val();
 
-            $("#RangoSuperiorSeveridad").attr({
-                "min": Number(RangoSuperiorSeveridadActual) + 0.01
-            });
-        }
-        SetNivelRiesgo();
+        //    $("#RangoSuperiorSeveridad").attr({
+        //        "min": Number(RangoSuperiorSeveridadActual) + 0.01
+        //    });
+        //}
+        //SetNivelRiesgo();
     }
 
     function EditSeveridadRiesgo(e) {
-        debugger;
+        $("#NivelAlert").prop("hidden", true);
+
         var displayedData = $("#gridSeveridadRiesgo").data().kendoGrid.dataSource.view();
 
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
@@ -229,6 +298,14 @@
                 $("#numSeveridadRiesgo").html('');
                 $("#numSeveridadRiesgo").html(result);
                 $('#ModalSeveridadRiesgo').modal('show');
+                var LimeteCalidadSuperirActual = $("#LimiteCalidadInferior").val();
+                $("#LimeteCalidadSuperir").attr({
+                    "min": Number(LimeteCalidadSuperirActual) + 1
+                });
+                var RangoSuperiorSeveridadActual = $("#RangoInferiorSeveridad").val();
+                $("#RangoSuperiorSeveridad").attr({
+                    "min": Number(RangoSuperiorSeveridadActual) + 0.01
+                });
                 $('#RangoInferiorSeveridad').val(dataItem.RangoInferiorSeveridad);
                 $('#RangoSuperiorSeveridad').val(dataItem.RangoSuperiorSeveridad);
             },
@@ -236,9 +313,5 @@
                 alert(textStatus + ": " + XMLHttpRequest.responseText);
             }
         });
-    }
-
-    function SeveridadRiesgoValidacion() {
-
     }
 </script>

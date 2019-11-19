@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using ERPMVC.DTO;
+﻿using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -15,14 +9,15 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using Newtonsoft.Json;
-
-using Syncfusion.XlsIO;
-
-using Syncfusion.Drawing;
-
-
 using Microsoft.Net.Http.Headers;
+using Newtonsoft.Json;
+using Syncfusion.XlsIO;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 
 namespace ERPMVC.Controllers
@@ -131,12 +126,12 @@ namespace ERPMVC.Controllers
                     string baseadressE = config.Value.urlbase;
                     HttpClient _clientE = new HttpClient();
                     _clientE.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var resultE = await _client.PostAsJsonAsync(baseadressE + "api/Conciliacion/GetConciliacionByDate",  _ConciliacionP);
+                    var resultE = await _client.PostAsJsonAsync(baseadressE + "api/Conciliacion/GetJournalEntryByDateAccount",  _ConciliacionP);
                     string valorrespuestaE = "";
                     if (resultE.IsSuccessStatusCode)
                     {
                         valorrespuestaE = await (resultE.Content.ReadAsStringAsync());
-                        _ConciliacionP = JsonConvert.DeserializeObject<Conciliacion>(valorrespuestaE);
+                        _ConciliacionP.ConciliacionLinea = JsonConvert.DeserializeObject<List<ConciliacionLinea>>(valorrespuestaE);
 
                     }
 
@@ -166,7 +161,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CustomerDocument/GetCustomerDocumentById/" + _Conciliaciontp.ConciliacionId);
+                var result = await _client.GetAsync(baseadress + "api/Conciliacion/GetConciliacionById/" + _Conciliaciontp.ConciliacionId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -716,7 +711,10 @@ namespace ERPMVC.Controllers
                         }
                         else
                         {
-                            var updateresult = await Update(_ConciliacionDTO.ConciliacionId, _ConciliacionDTO);
+                    _ConciliacionDTO.FechaCreacion = _listConciliacion.FechaCreacion;
+                    _ConciliacionDTO.UsuarioCreacion = _listConciliacion.UsuarioCreacion;
+
+                    var updateresult = await Update(_ConciliacionDTO.ConciliacionId, _ConciliacionDTO);
                         }
 
 
