@@ -170,6 +170,14 @@ namespace ERPMVC.Controllers
                     _DebitNote.FechaCreacion = DateTime.Now;
                     _DebitNote.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_DebitNote);
+                    var value = (insertresult.Result as ObjectResult).Value;
+
+                    DebitNote resultado = ((DebitNote)(value));
+                    if (_DebitNote.CAI == "" || _DebitNote.CAI == null)
+                    {
+                        string error = await result.Content.ReadAsStringAsync();
+                        return await Task.Run(() => BadRequest($" No existe un CAI activo para el punto de emisión."));
+                    }
                 }
                 else
                 {
