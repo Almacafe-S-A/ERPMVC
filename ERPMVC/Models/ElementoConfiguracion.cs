@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -21,6 +22,8 @@ namespace ERPMVC.Models
         public string Estado { get; set; }
         [Display(Name = "Configuración")]
         public long? Idconfiguracion { get; set; }
+        [ForeignKey("Idconfiguracion")]
+        public GrupoConfiguracion GrupoConfiguracion { get; set; }
         [Display(Name = "Valor decimal")]
         public double? Valordecimal { get; set; }
         [Display(Name = "Valor cadena")]
