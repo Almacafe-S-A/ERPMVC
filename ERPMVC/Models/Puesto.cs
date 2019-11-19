@@ -15,14 +15,19 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long IdPuesto { get; set; }
         [Display(Name = "Nombre de puesto")]
-        [Required]
         public string NombrePuesto { get; set; }
         [Display(Name = "Departamento")]
-        [Required]
+        [Required(AllowEmptyStrings = false, ErrorMessage = "*El campo {0} es requerido")]
         public long? IdDepartamento { get; set; }
         [Display(Name = "Departamento")]
-        [Required]
+        [Required(AllowEmptyStrings = false, ErrorMessage = "*El campo {0} es requerido")]
         public string NombreDepartamento { get; set; }
+        [Display(Name = "Estado")]
+        [Required(AllowEmptyStrings = false, ErrorMessage = "*El campo {0} es requerido")]
+        public Int64 IdEstado { get; set; }
+        [Required(AllowEmptyStrings = false, ErrorMessage = "*El campo {0} es requerido")]
+        [Display(Name = "Estado")]
+        public string Estado { get; set; }
         [Display(Name = "Usuario de creación")]
         public string Usuariocreacion { get; set; }
         [Display(Name = "Usuario de modificación")]

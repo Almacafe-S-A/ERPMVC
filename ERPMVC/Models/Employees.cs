@@ -30,6 +30,7 @@ namespace ERPMVC.Models
         [Required]
         [Display(Name = "Fecha de Ingreso")]
         public DateTime? FechaIngreso { get; set; }
+        public string BirthPlace { get; set; }
         [Required]
         [Display(Name = "Salario")]
         public decimal? Salario { get; set; }
