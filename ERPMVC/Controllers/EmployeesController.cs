@@ -608,6 +608,61 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpPost("[action]")]
+        public async Task<ActionResult> ValidacionIdentidad1([FromBody]Employees employee)
+        {
+            Employees _Employees = new Employees();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Employees/ValidacionIdentidad/" + employee.Identidad + "/" + employee.IdEmpleado);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Employees = JsonConvert.DeserializeObject<Employees>(valorrespuesta);
 
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return await Task.Run(() => Ok(_Employees));
+        }
+        [HttpPost("[action]")]
+        public async Task<ActionResult> ValidacionRTN1([FromBody]Employees employee)
+        {
+            Employees _Employees = new Employees();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Employees/ValidacionRTN/" + employee.RTN + "/" + employee.IdEmpleado);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Employees = JsonConvert.DeserializeObject<Employees>(valorrespuesta);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return await Task.Run(() => Ok(_Employees));
+        }
     }
 }
