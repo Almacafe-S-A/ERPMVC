@@ -56,19 +56,22 @@
 												<div class="form-group">
 													<label asp-for="FixedAssetName" class="control-label" style="min-width:100%">Nombre</label>
 													<input asp-for="FixedAssetName" name="FixedAssetName" type="text" class="form-control"
-														   autocomplete="off" style="width:100%;" required />
+														   validationMessage="Nombre es requerido" autocomplete="off" style="width:100%;" required />
+													<span asp-validation-for="FixedAssetName" class="text-danger"></span>
 												</div>
 											</div>
 											<div class="col-sm-3">
 												<div class="form-group">
 													<label asp-for="FixedAssetDescription" class="control-label" style="min-width:100%;">Descripción</label>
-													<input asp-for="FixedAssetDescription" type="text" name="FixedAssetDescription" class="form-control" autocomplete="off" style="width:100%;" required />
+													<input asp-for="FixedAssetDescription" type="text" name="FixedAssetDescription" class="form-control" autocomplete="off" style="width:100%;" validationMessage="Descripción es requerida" required />
+													<span asp-validation-for="FixedAssetDescription" class="text-danger"></span>
 												</div>
 											</div>
 											<div class="col-sm-3">
 												<div class="form-group">
 													<label asp-for="FixedAssetCode" class="control-label" style="min-width:100%;">Código</label>
-													<input asp-for="FixedAssetCode" type="text" name="FixedAssetCode" class="form-control" autocomplete="off" style="width:100%;" required />
+													<input asp-for="FixedAssetCode" type="text" name="FixedAssetCode" class="form-control" autocomplete="off" style="width:100%;" validationMessage="Código es requerido" required />
+													<span asp-validation-for="FixedAssetCode" class="text-danger"></span>
 												</div>
 											</div>
 											<div class="col-sm-3">
@@ -151,7 +154,7 @@
 																		option-label="Seleccionar Centro"
 																		datatextfield="CostCenterName"
 																		datavaluefield="CostCenterId"
-																		data-val-required="Centro es requerida"
+																		data-val-required="Centro es requerido"
 																		style="width:100%;">
 														<datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
 															<transport>
@@ -167,6 +170,7 @@
 												<label asp-for="FixedActiveLife" class="control-label" style="min-width:100%;">Vida Útil</label>
 												<kendo-numerictextbox name="FixedActiveLife"
 																	  for="FixedActiveLife" format="###"
+																	  onchange="onChangeVidaUtil()"
 																	  style="width:100%" maxlength="3"
 																	  data-val-required="Vida útil es requerida" />
 												<span asp-validation-for="FixedActiveLife" class="text-danger"></span>
@@ -174,6 +178,7 @@
 											<div class="col-md-3">
 												<label asp-for="Amount" class="control-label" style="min-width:100%">Monto</label>
 												<kendo-numerictextbox name="Amount"
+																	  onchange="onChangeMonto()"
 																	  for="Amount" style="width:100%" data-val-required="Monto es requerido"/>
 												<span asp-validation-for="Amount" class="text-danger"></span>
 											</div>
@@ -206,9 +211,9 @@
 																		for="@Model.IdEstado"
 																		filter="Kendo.Mvc.UI.FilterType.Contains"
 																		option-label="Seleccionar Estado"
-																		required
 																		datatextfield="NombreEstado"
 																		datavaluefield="IdEstado"
+																		data-val-required="Estado es requerido"																		
 																		style="width: 100%;">
 														<datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
 															<transport>
@@ -241,18 +246,28 @@
 
 
 <script>
-	// Keyup para calculo de valor residual
+	function onChangeVidaUtil() {
+		$("#Amount").val("");
+		$("#Cost").val("");
+	}
+
+	function onChangeMonto() {
+		$("#Cost").val("");
+	}
+
 	function SaveFixedAsset(e) {
 		var notification = $("#notification").data("kendoNotification");
-		$("#btnFixedAsset").hide();
-		$("#btnBbtnFixedAsset").prop("disabled", true);
-		var displayData = $("#gridFixedAsset").data().kendoGrid.dataSource.view();
 		var group = $("#FixedAssetGroupId").data("kendoDropDownList");
 		var branch = $("#BranchId").data("kendoDropDownList");
 		var warehouse = $("#WarehouseId").data("kendoDropDownList");
 		var costCenter = $("#CenterCostId").data("kendoDropDownList");
 		var estado = $("#IdEstado").data("kendoDropDownList");
 		var fechaConvert = $("#AssetDate").getKendoDateTimePicker().value().toJSON()
+
+		if ($('#FixedActiveLife').val() < 0 || $('#Amount').val() < 0 || $('#Cost').val() < 0) {
+			alert("No se permiten valores negativos");
+			return;
+		}
 
 		var dataObject =
 		{
@@ -297,7 +312,7 @@
 						position: 'top-right',
 						oaderBg: '#ff6849',
 						icon: 'success',
-						hideAfter: 30000,
+						hideAfter: 10000,
 						stack: 6
 					});
 					SaveHistorial(data)
@@ -369,7 +384,6 @@
 	}
 
 	function SaveHistorial(_data) {
-		// _data si viene de agregar 
 		var _fechaInicial;
 		var _fechaInicialConvert;
 		var _fechaActual = new Date();
@@ -391,15 +405,25 @@
 
 		if (_data.FixedAssetId !== 0) {
 			_id = _data.FixedAssetId;
+		} else {
+			_id = $('#FixedAssetId').val();
+		}
+
+		//_fechaInicial = $("#AssetDate").getKendoDateTimePicker().value().toJSON()
+		//_vidaUtil = parseInt($('#FixedActiveLife').val(), 10);
+		//_totalDepreciated = $('#TotalDepreciated').val();
+
+		if (_data.FixedAssetId !== 0) {
 			_fechaInicial = _data.AssetDate;
 			_vidaUtil = _data.FixedActiveLife;
 			_totalDepreciated = _data.TotalDepreciated;
 		} else {
-			_id = $('#FixedAssetId').val();
 			_fechaInicial = $("#AssetDate").getKendoDateTimePicker().value().toJSON()        
 			_vidaUtil = parseInt($('#FixedActiveLife').val(), 10);
 			_totalDepreciated = parseFloat($('#TotalDepreciated').val());
 		}
+
+		console.log(_fechaInicial, _vidaUtil, _totalDepreciated);
 
 		_fechaInicialConvert = new Date(_fechaInicial);
 		_anioInicio = _fechaInicialConvert.getFullYear();
@@ -434,8 +458,7 @@
 						'November': _totalDepreciated,
 						'December': _totalDepreciated,
 						'TotalDepreciated': _sumaTotal,
-					};
-				
+					};				
 				$.ajax({
 					url: '@Url.Action("SaveDepreciationFixedAsset", "DepreciationFixedAsset")',
 					method: "POST",
@@ -596,7 +619,6 @@
 				dif = (_anioActual - _anioInicio);
 				for (var i = 1; i <= dif; i++) {
 					_sumaTotal = (_data.TotalDepreciated * 12);
-
 					dataObject = {
 						'FixedAssetId': _id,
 						'Year': (_anioInicio + i),
@@ -614,7 +636,6 @@
 						'December': _totalDepreciated,
 						'TotalDepreciated': _sumaTotal,
 					};
-
 					$.ajax({
 						url: '@Url.Action("SaveDepreciationFixedAsset", "DepreciationFixedAsset")',
 						method: "POST",
@@ -665,11 +686,9 @@
 							}, "error");
 						}
 					});
-				}
-				
+				}				
 			}
 		}
-
 	}
 
 	function DeleteDepreciateFixedAsset(_id) {
