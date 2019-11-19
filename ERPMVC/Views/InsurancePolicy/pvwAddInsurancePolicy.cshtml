@@ -1,4 +1,4 @@
-﻿@model ERPMVC.Models.InsurancePolicy
+﻿@model ERPMVC.DTO.InsurancePolicyDTO
 @{ Layout = null;
     var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
    {"required","Valor requerido" }
@@ -6,23 +6,22 @@
     var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
 }
 <script>
+    //Retornar solo numeros
     function soloNumeros(e) {
         var key = window.Event ? e.which : e.keyCode
         return ((key >= 48 && key <= 57) || (key == 8))
     }
-
+    //Validación de Fechas
     $("#PolicyDueDate").change(function () {
-        debugger;
         var FechaInicio = $("#PolicyDate").getKendoDateTimePicker().value().toJSON();
-        var FechaVencimiento = $("#PolicyDueDate").getKendoDatePicker().value().toJSON();
+        var FechaVencimiento = $("#PolicyDueDate").getKendoDateTimePicker().value().toJSON();
         if (Date.parse(FechaInicio) >= Date.parse(FechaVencimiento)) {
-            alert("Fecha de Vencimiento no puede ser menor que la fecha de hoy.")
-            console.log('HEY');
+            alert("Fecha de Vencimiento no puede ser menor que la fecha de emisión.")
             $("#PolicyDueDate").val('');
         }
     });
-    //SaveInsurancePolicyDocument
-    function SaveInsurancePolicy(e) {
+    //SaveInsurancePolicy
+    @*function SaveInsurancePolicy(e) {
         debugger;
         var notification = $("#notification").data("kendoNotification");
         $("#btnInsurancePolicy").prop("disabled", true);
@@ -100,6 +99,51 @@
 
         $("#btnInsurancePolicy").show();
         $("#btnInsurancePolicy").prop("disabled", false);
+    }*@
+
+    function SaveInsurancePolicy(e) {
+
+        var displayedData = $("#gridInsurancePolicy").data().kendoGrid.dataSource.view();
+
+        //var formdata = new FormData($('#CustomerDocument').get(0));
+
+        var dataObject = {
+            'InsurancePolicyId': $("#InsurancePolicyId").val(),
+            'PolicyNumber': $("#PolicyNumber").val(),
+            'PolicyDate': $("#PolicyDate").getKendoDateTimePicker().value().toJSON(),
+            'PolicyDueDate': $("#PolicyDueDate").getKendoDateTimePicker().value().toJSON(),
+            'InsurancesId': $("#InsurancesId").val(),
+            'InsurancesName': $("#InsurancesId").data("kendoDropDownList").text(),
+            'CustomerId': $("#CustomerId").val(),
+            'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
+            'LpsAmount': $("#LpsAmount").val(),
+            'DollarAmount': $("#DollarAmount").val(),
+            'AttachmentURL': $("#AttachmentURL").val(),
+            'Status': $("#Status").val(),
+            '_InsurancePolicy': displayedData
+
+        };
+
+        e.data = dataObject;
+        RefrescarGrid();
+        @* $.ajax({
+            url: '@Url.Action("SaveCustomerDocument", "CustomerDocument")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: formdata,
+            success: function (result) {
+                //console.log(result);
+                //debugger;
+                $("#ConditionView").html('');
+                $("#ConditionView").html(result);
+
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });*@
     }
     function RefrescarGrid() {
         var grid = $("#gridInsurancePolicy").getKendoGrid();
@@ -107,6 +151,15 @@
         
     }
 
+    function closeInsurancePolicy() {
+        //$('#myModalCustomerAuthorizedSignature').find(':input').not(':submit').val('0');
+        //   RefreshGridCustomerAuthorizedSignature();
+        RefrescarGrid();
+        $("#myModalInsurancePolicy").modal('hide');
+
+
+
+    }
     
 </script>
 
@@ -116,7 +169,7 @@
         <!-- Modal content-->
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+                <button type="button" class="close" onclick="closeInsurancePolicy();">&times;</button>
                 <h4 class="modal-title">Póliza</h4>
             </div>
             <div class="modal-body">
@@ -130,11 +183,10 @@
                                 <form id="InsuracesDocument" kendo-validator="true" kendo-messages="messages"
                                       data-ajax="true"
                                       data-ajax-method="post"
-                                       method="post"
                                       data-ajax-begin="SaveInsurancePolicy">
                                     <div class="row">
                                         <div class="col-md-4">
-                                            <label asp-for="InsurancePolicyId" class="control-label"></label>
+                                            <label asp-for="InsurancePolicyId" class="control-label">Id Póliza</label>
                                             <kendo-numerictextbox name="InsurancePolicyId"
                                                                   format="n"
                                                                   min="0"
@@ -245,6 +297,7 @@
                                                                       min="0"
                                                                       spinners="false"
                                                                       required
+                                                                      decimals="2"
                                                                       maxlength="9"
                                                                       style="width:100%"
                                                                       value="Model.LpsAmount" />
@@ -255,7 +308,7 @@
                                             <div class="form-group">
                                                 <label asp-for="DollarAmount" class="control-label" style="width:100%">Monto Dolares</label>
                                                 <kendo-numerictextbox name="DollarAmount"
-                                                                      format="c2"
+                                                                      format="'$.' #.## "
                                                                       min="0"
                                                                       spinners="false"
                                                                       required
@@ -266,14 +319,35 @@
                                             </div>
                                         </div>
                                     </div>
-                                  
-
-
                                     <div class="row">
+                                        <div class="col-md-5">
+                                             <kendo-upload drop-zone="drop-zone1" name="files" on-upload="SaveInsurancePolicy">
+                                                <localization select="Seleccionar Archivos" cancel="Cancelar" drop-files-here="Soltar Archivo aquí" invalid-file-extension="Extensión de Archivo Invalido" retry="Reintentar" />
+                                                <files />
+                                                <async save-url="@Url.Action("SaveInsurancePolicy","InsurancePolicy")" />
+                                                <validation allowed-extensions='@new string[] { ".jpg",".png",".jpeg" }' max-file-size="10485760" />
+                                            </kendo-upload>
+                                        </div>
+
+                                        <script>
+                                                function GetDocumentName(dataName) {
+                                                    var fileName = "@Model.AttachementFileName";
+                                                    return fileName
+                                                }
+                                                function GetDocumentExtension(dataExtension) {
+                                                    var fileName = "@Model.AttachementFileName";
+                                                    var fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1);
+                                                    return fileExtension
+                                                }
+                                        </script>
+                                    </div>
+
+
+                                    @*<div class="row">
                                         <div class="col-md-12">
                                             <button id="btnInsurancePolicy" class="form-control btn-miboton" type="submit"> Guardar </button>
                                         </div>
-                                    </div>
+                                    </div>*@
 
                                 </form>
                             </div>
