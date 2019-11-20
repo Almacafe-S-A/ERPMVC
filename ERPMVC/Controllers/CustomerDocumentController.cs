@@ -228,6 +228,11 @@ namespace ERPMVC.Controllers
                         }
                         else
                         {
+                            if (System.IO.File.Exists(_listCustomerDocument.Path))
+                                System.IO.File.Delete(_listCustomerDocument.Path);
+                            _CustomerDocument.DocumentName = file.FileName;
+                            _CustomerDocument.UsuarioCreacion = _listCustomerDocument.UsuarioCreacion;
+                            _CustomerDocument.FechaCreacion = _listCustomerDocument.FechaCreacion;
                             var updateresult = await Update(_CustomerDocument.CustomerDocumentId, _CustomerDocument);
                         }
 
@@ -302,7 +307,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-
+               
                 var result = await _client.PutAsJsonAsync(baseadress + "api/CustomerDocument/Update", _CustomerDocument);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
