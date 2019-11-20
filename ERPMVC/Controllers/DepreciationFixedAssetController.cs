@@ -157,11 +157,11 @@ namespace ERPMVC.Controllers
                 {
                     _DepreciationFixedAsset.FechaCreacion = DateTime.Now;
                     _DepreciationFixedAsset.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_DepreciationFixedAsset);
+                    var insertresult = await Insert(_DepreciationFixedAsset).ConfigureAwait(false);
                 }
                 else
                 {
-                    var updateresult = await Update(_DepreciationFixedAsset.DepreciationFixedAssetId, _DepreciationFixedAsset);
+                    var updateresult = await Update(_DepreciationFixedAsset.DepreciationFixedAssetId, _DepreciationFixedAsset).ConfigureAwait(false);
                 }
 
             }
