@@ -82,7 +82,7 @@ namespace ERPMVC.Controllers
 
                 if (_AccountManagement == null)
                 {
-                    _AccountManagement = new AccountManagementDTO { FechaCreacion = DateTime.Now };
+                    _AccountManagement = new AccountManagementDTO { FechaCreacion = DateTime.Now , OpeningDate = DateTime.Now};
                 }
             }
             catch (Exception ex)
