@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -38,7 +39,7 @@ namespace ERPMVC.Controllers
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> pvwAddSubServicesWareHouse([FromBody]SubServicesWareHouse _SubServicesWareHousep)
         {
-            SubServicesWareHouse _SubServicesWareHouse = new SubServicesWareHouse();
+            SubServicesWareHouseDTO _SubServicesWareHouse = new SubServicesWareHouseDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -49,12 +50,12 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _SubServicesWareHouse = JsonConvert.DeserializeObject<SubServicesWareHouse>(valorrespuesta);
+                    _SubServicesWareHouse = JsonConvert.DeserializeObject<SubServicesWareHouseDTO>(valorrespuesta);
                 }
 
-                if (_SubServicesWareHouse == null)
+                if (_SubServicesWareHouse == null || _SubServicesWareHousep.SubServicesWareHouseId==0)
                 {
-                    _SubServicesWareHouse = new SubServicesWareHouse { SubServicesWareHouseId = 0, StartTime = DateTime.Now, EndTime = DateTime.Now , BranchId = _SubServicesWareHousep.BranchId };
+                    _SubServicesWareHouse = new SubServicesWareHouseDTO { SubServicesWareHouseId = 0, StartTime = DateTime.Now, EndTime = DateTime.Now , BranchId = _SubServicesWareHousep.BranchId , DocumentDate = DateTime.Now };
                 }
             }
             catch (Exception ex)
@@ -112,10 +113,13 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                TimeSpan t = _SubServicesWareHouse.EndTime.Subtract(_SubServicesWareHouse.StartTime);
+                _SubServicesWareHouse.QuantityHours = t.TotalHours;
                 var result = await _client.GetAsync(baseadress + "api/SubServicesWareHouse/GetSubServicesWareHouseById/" + _SubServicesWareHouse.SubServicesWareHouseId);
                 string valorrespuesta = "";
                 _SubServicesWareHouse.FechaModificacion = DateTime.Now;
                 _SubServicesWareHouse.UsuarioModificacion = HttpContext.Session.GetString("user");
+            
                 if (result.IsSuccessStatusCode)
                 {
 

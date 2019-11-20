@@ -13,8 +13,8 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Int64 SubServicesWareHouseId { get; set; }
 
-        //[Display(Name = "Id horas extras")]
-        //public Int64 EmployeeExtraHoursId { get; set; }
+        [Display(Name = "Fecha de Subservicios")]
+        public DateTime DocumentDate { get; set; }
 
         [Display(Name = "Cliente")]
         public Int64 CustomerId { get; set; }
