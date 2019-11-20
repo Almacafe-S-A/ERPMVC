@@ -306,6 +306,8 @@
 				async: false,
 				data: JSON.stringify(dataObject),
 				success: function (data) {
+					$("#btnFixedAsset").hide();
+					SaveHistorial(data)
 					$.toast({
 						heading: 'Satisfactorio',
 						text: 'Datos guardados correctamente.',
@@ -315,7 +317,6 @@
 						hideAfter: 10000,
 						stack: 6
 					});
-					SaveHistorial(data)
 					RefrescarGrid();
 					$("#FixedAssetGroupId").data("kendoDropDownList").value(-1);
 					$("#BranchId").data("kendoDropDownList").value(-1);
@@ -337,9 +338,6 @@
 				message: "Ingrese todos los datos en el formulario!"
 			}, "error");
 		}
-
-		$("#btnFixedAsset").show();
-		$("#btnFixedAsset").prop("disabled", false);
 	}
 
 	function RefreshWarehouse() {
@@ -409,19 +407,19 @@
 			_id = $('#FixedAssetId').val();
 		}
 
-		_fechaInicial = $("#AssetDate").getKendoDateTimePicker().value().toJSON()
-		_vidaUtil = parseInt($('#FixedActiveLife').val(), 10);
-		_totalDepreciated = parseFloat($('#TotalDepreciated').val());
+		//_fechaInicial = $("#AssetDate").getKendoDateTimePicker().value().toJSON()
+		//_vidaUtil = parseInt($('#FixedActiveLife').val(), 10);
+		//_totalDepreciated = parseFloat($('#TotalDepreciated').val());
 
-		//if (_data.FixedAssetId !== 0) {
-		//	_fechaInicial = _data.AssetDate;
-		//	_vidaUtil = _data.FixedActiveLife;
-		//	_totalDepreciated = _data.TotalDepreciated;
-		//} else {
-		//	_fechaInicial = $("#AssetDate").getKendoDateTimePicker().value().toJSON()        
-		//	_vidaUtil = parseInt($('#FixedActiveLife').val(), 10);
-		//	_totalDepreciated = parseFloat($('#TotalDepreciated').val());
-		//}
+		if (_data.FixedAssetId !== 0) {
+			_fechaInicial = _data.AssetDate;
+			_vidaUtil = _data.FixedActiveLife;
+			_totalDepreciated = _data.TotalDepreciated;
+		} else {
+			_fechaInicial = $("#AssetDate").getKendoDateTimePicker().value().toJSON()        
+			_vidaUtil = parseInt($('#FixedActiveLife').val(), 10);
+			_totalDepreciated = parseFloat($('#TotalDepreciated').val());
+		}
 
 		_fechaInicialConvert = new Date(_fechaInicial);
 		_anioInicio = _fechaInicialConvert.getFullYear();
@@ -435,7 +433,7 @@
 			DeleteDepreciateFixedAsset(_id);
 		}
 
-		if ((_anioActual < _sumaAnios) && (_mesInicio == 1)) {
+		if ((_anioActual < _sumaAnios) && (_mesInicio == 0)) {
 			dif = (_anioActual - _anioInicio);
 			for (var i = 0; i <= dif; i++) {
 				_sumaTotal = (_totalDepreciated * 12);
@@ -476,9 +474,10 @@
 			}
 
 		} else {
-			_valorAcumulado = _totalDepreciated * (12 - _mesInicio);
+			
 			if (_fechaInicialConvert.getDate() == 1) {
 			/**Paso 1 --> Llenar los meses del primer año del registro */
+				_valorAcumulado = _totalDepreciated * (12 - _mesInicio);
 				dataObject = {
 					'FixedAssetId': _id,
 					'Year': _anioInicio,
@@ -581,10 +580,12 @@
 					});
 				}				
 			} else {
-				/**Paso 1 --> Llenar los meses del primer año del registro */
+			/**Paso 1 --> Llenar los meses del primer año del registro */
+				console.log("Entra cuando no es 1 de mes");
+				_valorAcumulado = _totalDepreciated * (11 - _mesInicio);
 				dataObject = {
 					'FixedAssetId': _id,
-					'Year': anioVencimiento,
+					'Year': _anioInicio,
 					'TotalDepreciated': _valorAcumulado,
 				}
 				for (var i = _mesInicio + 1; i <= 11; i++) {
@@ -616,7 +617,7 @@
 				/**Paso 2 --> llenar todos los años de vida util comezando un año despues */
 				dif = (_anioActual - _anioInicio);
 				for (var i = 1; i <= dif; i++) {
-					_sumaTotal = (_data.TotalDepreciated * 12);
+					_sumaTotal = (_totalDepreciated * 12);
 					dataObject = {
 						'FixedAssetId': _id,
 						'Year': (_anioInicio + i),
