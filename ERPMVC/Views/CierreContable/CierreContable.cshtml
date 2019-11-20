@@ -1,136 +1,247 @@
-﻿@using Kendo.Mvc.UI
+﻿@model ERPMVC.Models.BitacoraCierreContable
+@using Kendo.Mvc.UI
 
-<script>
+<script>  
+    function RefrescarGridCierreContable() {
+        var grid = $("#gridBitacoraCierreContable").getKendoGrid();
+        grid.dataSource.read();
+    }
 
+    function RefrescarGridCierreProcesos() {
+        var grid = $("#grid_#=Id#").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+
+    function Cierre() {
+        debugger
+        var parametro = $("#FechaCierre").getKendoDatePicker().value().toJSON();
+        console.log("parametro", parametro)
+        if (parametro != '') {
+            var dataObjectConfiguration = {
+                FechaCierre: parametro
+            };
+            $.ajax({
+             url: '@Url.Action("GetEjecutarCierreContable", "CierreContable")',
+                   method: 'POST',
+                   datatype: "json",
+                   contentType: 'application/json',
+                   async: false,
+                   data: JSON.stringify(dataObjectConfiguration),
+                success: function (result) {
+                    if (result.FechaCierre == parametro) {
+                        $("#FechaCierre").val('');
+                         $.toast({
+                           heading: 'Error',
+                             text: '<br/><br/>' + 'No se puede hacer cierre.',
+                           position: 'top-right',
+                           showHideTransition: 'fade',
+                           loaderBg: '#ff6849',
+                           icon: 'error',
+                           hideAfter: 30000,
+                           stack: 6
+                         });
+                    }
+                    else {
+                        $.toast({
+                            heading: 'Satisfactorio',
+                            text: '<br/><br/>' +'Se aplico el cierre contable.',
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'success',
+                            hideAfter: 30000,
+                            stack: 6
+                        });
+                        $("#FechaCierre").val('');
+                        RefrescarGridCierreContable();
+                        RefrescarGridCierreProcesos();
+                    }
+                },
+             });
+        }
+    }
 </script>
 
 
-    <!-- Modal content-->
-    <div class="modal-dialog modal-lg">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h4 class="modal-title">Cierre Contable Manual</h4>
-            </div>
-            <div class="modal-body">
-                <div class="col-lg-12">
-                    <div class="row">
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label style="width:100%">Fecha</label>
-                                <kendo-datetimepicker name="Date" style="width: 100%;"
-                                                      format="dd/MM/yyyy hh:mm:ss"
-                                                      time-format="hh:mm:ss"
-                                                      data-val-required="La fecha es requerida"></kendo-datetimepicker>
-                                <span class="text-danger k-invalid-msg" data-for="Date"></span>
-                            </div>
+<!-- Modal content-->
+<div class="modal-dialog modal-lg">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">Cierre Contable Manual</h4>
+        </div>
+        <div class="modal-body">
+            <div class="col-lg-12">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label style="width:100%">Fecha</label>
+                            <kendo-datepicker name="Date" style="width: 100%;"
+                                              id="FechaCierre"
+                                              format="dd/MM/yyyy"
+                                              required
+                                              data-val-required="La fecha es requerida"></kendo-datepicker>
+                            <span class="text-danger k-invalid-msg" data-for="Date"></span>
                         </div>
-                        <div class="col-md-4">
-                            <div class="form-group">
-                                <label style="width:100%"></label>
-                                <button type="button" id="Cierre" class="form-control btn-miboton">Ejecutar</button>
-                            </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label style="width:100%"></label>
+                            <button type="button" id="Cierre" class="form-control btn-miboton" onclick="Cierre();">Ejecutar</button>
                         </div>
                     </div>
                 </div>
-
-                <h3 class="text-themecolor"></h3>
-                @(Html.Kendo().Grid<ERPMVC.Models.BitacoraCierreProcesos>
-                                            ()
-                                            .Name("gridBitacoraCierreProcesos")
-                                            .Columns(columns =>
-                                            {
-                                                columns.Command(command =>
-                                                {
-                                                    //command.Custom("Ver detalles").Click("Detalles");
-                                                    //command.Custom("Editar").Click("EditBank");
-                                                    //command.Destroy().Text("Eliminar");
-                                                }).Width(50);
-                                                columns.Bound(p => p.IdBitacoraCierre).Width(100);
-                                                columns.Bound(p => p.IdProceso).Width(200);
-                                                columns.Bound(p => p.FechaCierre).Width(150);
-                                                columns.Bound(p => p.PasoCierre).Width(150);
-                                                columns.Bound(p => p.Proceso).Width(150);
-                                                columns.Bound(p => p.Estatus).Width(150);
-                                            })
-                                                .Filterable(f => f.Operators(o => o.ForString(s => s
-                                                                       .Clear()
-                                                                       .Contains("Contiene")
-                                                                       .DoesNotContain("No contiene")
-                                                                       .EndsWith("Termina con")
-                                                                       .IsEqualTo("Es igual a")
-                                                                       .IsNotEqualTo("No es igual a")
-                                                                       .IsNull("Es nulo")
-                                                                       .StartsWith("Inicia con")
-                                                                 )
-                                                                 .ForNumber(n => n
-                                                                   .Clear()
-                                                                   .IsEqualTo("Es igual a")
-                                                                   .IsGreaterThan("Es mayor que")
-                                                                   .IsLessThan("Es menor que")
-                                                                   .IsNull("Es nulo")
-                                                                   .IsLessThanOrEqualTo("Es menor o igual que")
-                                                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                                 )
-                                                                 .ForDate(d => d
-                                                                 .Clear()
-                                                                 .IsEqualTo("Es igual que")
-                                                                 .IsGreaterThan("Es mayor que")
-                                                                 .IsLessThan("Es menor que")
-                                                                 .IsLessThanOrEqualTo("Es menor o igual que")
-                                                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                                 .IsNotEqualTo("No es igual que")
-                                                                  )
-                                                               ))
-                                            .ToolBar(tools =>
-                                            {
-                                                // tools.Create();
-                                                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                                                   .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddBank()" });
-                                                tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
-                                                tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
-
-
-
-                                            })
-                                            .Editable(e => e.Mode(GridEditMode.PopUp))
-                                            .Sortable()
-                                            .Pageable()
-                                            .Filterable()
-                                            .Scrollable()
-                                            .Pdf(pdf => pdf.FileName("BankReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                                .Excel(excel => excel.FileName("BankReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                            .DataSource(dataSource =>
-                                                dataSource
-                                                .WebApi()
-
-                                                .ServerOperation(true)
-                                                .Model(model =>
-                                                {
-                                                    model.Id(p => p.IdBitacoraCierre);
-                                                    model.Field(p => p.IdProceso).Editable(false);
-                                                    //model.Field(p => p.FechaCreacion).Editable(true);
-                                                    //model.Field(p => p.UsuarioCreacion).Editable(false);
-                                                    //model.Field(p => p.UsuarioModificacion).Editable(false);
-
-                                                })
-                                                .Events(events => events.Error("error_handler"))
-                                            //.Read(read => read.Action("GetBank", "Bank"))
-                                            //.Create(create => create.Action("Insert", "Bank"))
-                                            //.Update(update => update.Action("Update", "Bank").Type(HttpVerbs.Put))
-                                            //.Destroy(destroy => destroy.Action("Delete", "Bank").Type(HttpVerbs.Post))
-
-                                            )
-                                            .Events(e =>
-                                            {
-                                                //e.Save("onsave");
-
-                                            })
-                )
-
             </div>
+
+            <h3 class="text-themecolor"></h3>
+            @(Html.Kendo().Grid<ERPMVC.Models.BitacoraCierreContable>
+                                                                                ()
+                                                                                .Name("gridBitacoraCierreContable")
+                                                                                .Columns(columns =>
+                                                                                {
+                                                                                    //columns.Command(command =>
+                                                                                    //{
+                                                                                    //command.Custom("Ver detalles").Click("Detalles");
+                                                                                    //command.Custom("Editar").Click("EditBank");
+                                                                                    //command.Destroy().Text("Eliminar");
+                                                                                    //}).Width(10);
+                                                                                    columns.Bound(p => p.Id).Width(100);
+                                                                                    columns.Bound(p => p.FechaCierre).Format("{0:dd/MM/yyyy}").Width(200);
+                                                                                    columns.Bound(p => p.EstatusId).Width(150);
+                                                                                    columns.Bound(p => p.Estatus).Width(150);
+                                                                                    columns.Bound(p => p.Mensaje).Width(150);
+                                                                                })
+                                                                                    .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                                                                           .Clear()
+                                                                                                           .Contains("Contiene")
+                                                                                                           .DoesNotContain("No contiene")
+                                                                                                           .EndsWith("Termina con")
+                                                                                                           .IsEqualTo("Es igual a")
+                                                                                                           .IsNotEqualTo("No es igual a")
+                                                                                                           .IsNull("Es nulo")
+                                                                                                           .StartsWith("Inicia con")
+                                                                                                     )
+                                                                                                     .ForNumber(n => n
+                                                                                                       .Clear()
+                                                                                                       .IsEqualTo("Es igual a")
+                                                                                                       .IsGreaterThan("Es mayor que")
+                                                                                                       .IsLessThan("Es menor que")
+                                                                                                       .IsNull("Es nulo")
+                                                                                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                                                     )
+                                                                                                     .ForDate(d => d
+                                                                                                     .Clear()
+                                                                                                     .IsEqualTo("Es igual que")
+                                                                                                     .IsGreaterThan("Es mayor que")
+                                                                                                     .IsLessThan("Es menor que")
+                                                                                                     .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                                                     .IsNotEqualTo("No es igual que")
+                                                                                                      )
+                                                                                                   ))
+                                                                                .ToolBar(tools =>
+                                                                                {
+                                                                                    // tools.Create();
+                                                                                    //tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                    //    .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddBank()" });
+                                                                                    tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                                                                                    tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+                                                                                })
+                                                                                .Editable(e => e.Mode(GridEditMode.PopUp))
+                                                                                .Sortable()
+                                                                                .AutoBind(true)
+                                                                                .Pageable()
+                                                                                .Filterable()
+                                                                                .Scrollable()
+                                                                                .ClientDetailTemplateId("template")
+                                                                                .Pdf(pdf => pdf.FileName("CierreContableReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                                                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                                                                .Excel(excel => excel.FileName("CierreContableReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                                                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                                                                .DataSource(dataSource =>
+                                                                                    dataSource
+                                                                                    .WebApi()
+                                                                                    .ServerOperation(true)
+                                                                                    .Model(model =>
+                                                                                    {
+                                                                                        model.Id(p => p.Id);
+                                                                                        model.Field(p => p.Id).Editable(false);
+                                                                                    })
+                                                                                    .Events(events => events.Error("error_handler"))
+                                                                                .Read(read => read.Action("GetBitacoraCierreContable", "BitacoraCierreContable"))
+                                                                                )
+                                                                                .Events(e =>
+                                                                                {
+                                                                                    //e.Save("onsave");
+                                                                                })
+            )
+
+
+            <script id="template" type="text/kendo-tmpl">
+                @(Html.Kendo().Grid<ERPMVC.Models.BitacoraCierreProcesos>()
+                                                  .Name("grid_#=Id#")
+                                                  .Columns(columns =>
+                                                  {
+                                                      //columns.Command(command =>
+                                                      //{
+                                                      //    // command.Destroy();
+                                                      //    command.Custom("Delete").Text(" ").IconClass("fa fa-trash").Click("EliminarUsuarioRol");
+                                                      //}).Width(10);
+                                                      columns.Bound(o => o.IdProceso).Title("Id").Width(80).Visible(false);
+                                                      columns.Bound(o => o.IdBitacoraCierre).Title("Id Bitacora Cierre").Width(150).Visible(false);
+                                                      columns.Bound(o => o.FechaCierre).Title("Fecha Cierre").Format("{0:dd/MM/yyyy}").Width(150).Visible(false);
+                                                      columns.Bound(o => o.PasoCierre).Title("Paso Cierre").Width(150).Visible(true);
+                                                      columns.Bound(o => o.Proceso).Title("Proceso").Width(200).Visible(true);
+                                                      columns.Bound(o => o.Estatus).Title("Estatus").Width(200).Visible(true);
+                                                  })
+                                                  .DataSource(dataSource => dataSource
+                                                     .WebApi()
+                                                     .ServerOperation(true)
+                                                     //.PageSize(5)
+                                                     .Read(read => read.Action("GetCierreProcesosByCierreContableId", "BitacoraCierreProceso", new { IdBitacoraCierre = "#=Id#" }))
+                                                     //.Destroy(destroy => destroy.Action("Delete", "UserRol", new { RoleId = "#=Id#" }))
+                                                     // .Destroy(destroy => destroy.Action("Delete", "UserRol", new { UserId  = "{0}", RoleId="#=Id#" }))
+                                                     )
+                                                 //.Pageable()
+                                                 .Sortable()
+                                                 .ToClientTemplate())
+
+            </script>
+
+            <script>
+                function dataBound() {
+                    this.expandRow(this.tbody.find("tr.k-master-row").first());
+                }
+            </script>
+            <style>
+                .k-detail-cell .k-tabstrip .k-content {
+                    padding: 0.2em;
+                }
+
+                .employee-details ul {
+                    list-style: none;
+                    font-style: italic;
+                    margin: 15px;
+                    padding: 0;
+                }
+
+                    .employee-details ul li {
+                        margin: 0;
+                        line-height: 1.7em;
+                    }
+
+                .employee-details label {
+                    display: inline-block;
+                    width: 90px;
+                    padding-right: 10px;
+                    text-align: right;
+                    font-style: normal;
+                    font-weight: bold;
+                }
+            </style>
+
         </div>
     </div>
+</div>

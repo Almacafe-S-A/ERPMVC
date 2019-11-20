@@ -9,10 +9,9 @@ namespace ERPMVC.Models
 {
     public class CustomerType
     {
-        [Display(Name = "Id")]
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
+        [Display(Name = "Id")]      
         public Int64 CustomerTypeId { get; set; }
-        [Required]
         [Display(Name = "Nombre")]
         public string CustomerTypeName { get; set; }
         [Display(Name = "Descripción")]

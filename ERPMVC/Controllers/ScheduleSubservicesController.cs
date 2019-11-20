@@ -19,6 +19,7 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class ScheduleSubservicesController : Controller
     {
         private readonly IOptions<MyConfig> config;
@@ -168,6 +169,8 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 _ScheduleSubservices.UsuarioCreacion = HttpContext.Session.GetString("user");
                 _ScheduleSubservices.UsuarioModificacion = HttpContext.Session.GetString("user");
+                TimeSpan t = _ScheduleSubservices.EndTime.Subtract(_ScheduleSubservices.StartTime);
+                _ScheduleSubservices.QuantityHours = t.TotalHours;
                 var result = await _client.PostAsJsonAsync(baseadress + "api/ScheduleSubservices/Insert", _ScheduleSubservices);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -198,10 +201,12 @@ namespace ERPMVC.Controllers
         {
             try
             {
+                
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-
+                TimeSpan t = _ScheduleSubservices.EndTime.Subtract(_ScheduleSubservices.StartTime);
+                _ScheduleSubservices.QuantityHours = t.TotalHours;
                 var result = await _client.PutAsJsonAsync(baseadress + "api/ScheduleSubservices/Update", _ScheduleSubservices);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)

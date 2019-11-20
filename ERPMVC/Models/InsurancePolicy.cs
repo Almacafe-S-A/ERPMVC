@@ -32,6 +32,7 @@ namespace ERPMVC.Models
         public double DollarAmount { get; set; }
 
         public string AttachmentURL { get; set; }
+        public string AttachementFileName { get; set; }
 
         public string Status { get; set; }
 

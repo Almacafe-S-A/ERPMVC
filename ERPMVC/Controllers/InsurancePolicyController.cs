@@ -45,29 +45,29 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult> pvwAddInsurancePolicy([FromBody]InsurancePolicy _InsurancePolicyDocumentp)
+        //[HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> pvwAddInsurancePolicy([FromBody]InsurancePolicyDTO _InsurancePolicyDocumentp)
         {
-            InsurancePolicy _InsurancePolicyDocument = new InsurancePolicy();
+            InsurancePolicyDTO _InsurancePolicyDocument = new InsurancePolicyDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/InsurancePolicy/GetInsurancePolicyById/" + _InsurancePolicyDocumentp.InsurancePolicyId);
+                var result = await _client.GetAsync(baseadress + "api/InsurancePolicy/GetSeveridadRiesgoById/" + _InsurancePolicyDocumentp.InsurancePolicyId);
                 string valorrespuesta = "";
-                _InsurancePolicyDocument.PolicyDate = DateTime.Now;
-                _InsurancePolicyDocument.PolicyDueDate = DateTime.Now;
+                //_InsurancePolicyDocument.PolicyDate = DateTime.Now;
+                //_InsurancePolicyDocument.PolicyDueDate = DateTime.Now;
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _InsurancePolicyDocument = JsonConvert.DeserializeObject<InsurancePolicy>(valorrespuesta);
+                    _InsurancePolicyDocument = JsonConvert.DeserializeObject<InsurancePolicyDTO>(valorrespuesta);
 
                 }
 
                 if (_InsurancePolicyDocument == null)
                 {
-                    _InsurancePolicyDocument = new InsurancePolicy();
+                    _InsurancePolicyDocument = new InsurancePolicyDTO();
                     _InsurancePolicyDocument.PolicyDate = DateTime.Now;
                     _InsurancePolicyDocument.PolicyDueDate = DateTime.Now;
                 }
@@ -96,12 +96,14 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/InsurancePolicy/GetInsurancePolicy");
+                var result = await _client.GetAsync(baseadress + "api/InsurancePolicy/GetSeveridadRiesgo");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _InsurancePolicy = JsonConvert.DeserializeObject<List<InsurancePolicy>>(valorrespuesta);
+                    _InsurancePolicy = _InsurancePolicy.OrderByDescending(q => q.InsurancePolicyId).ToList();
+
 
                 }
 
@@ -155,19 +157,17 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<InsurancePolicyDTO>> SaveInsurancePolicyDocument(IEnumerable<IFormFile> files, InsurancePolicyDTO _InsurancePolicyDTO)
+        public async Task<ActionResult<InsurancePolicy>> SaveInsurancePolicy(IEnumerable<IFormFile> files, InsurancePolicyDTO _InsurancePolicyS)
         {
-
+            //InsurancePolicy _InsurancePolicy = _InsurancePolicyS;
             try
             {
-
                 InsurancePolicy _listInsurancePolicy = new InsurancePolicy();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/InsurancePolicy/GetInsurancePolicyById/" + _InsurancePolicyDTO.InsurancePolicyId);
+                var result = await _client.GetAsync(baseadress + "api/InsurancePolicy/GetSeveridadRiesgoById/" + _InsurancePolicyS.InsurancePolicyId);
                 string valorrespuesta = "";
-
                 foreach (var file in files)
                 {
 
@@ -177,8 +177,8 @@ namespace ERPMVC.Controllers
                         || info.Extension.Equals(".png"))
                     {
 
-                        _InsurancePolicyDTO.FechaModificacion = DateTime.Now;
-                        _InsurancePolicyDTO.UsuarioModificacion = HttpContext.Session.GetString("user");
+                        _InsurancePolicyS.FechaModificacion = DateTime.Now;
+                        _InsurancePolicyS.UsuarioModificacion = HttpContext.Session.GetString("user");
                         if (result.IsSuccessStatusCode)
                         {
 
@@ -189,26 +189,26 @@ namespace ERPMVC.Controllers
                         if (_listInsurancePolicy == null) { _listInsurancePolicy = new Models.InsurancePolicy(); }
                         if (_listInsurancePolicy.InsurancePolicyId == 0)
                         {
-                            _InsurancePolicyDTO.FechaCreacion = DateTime.Now;
-                            _InsurancePolicyDTO.AttachmentURL = file.FileName;
-                            _InsurancePolicyDTO.UsuarioCreacion = HttpContext.Session.GetString("user");
-                            var insertresult = await Insert(_InsurancePolicyDTO);
+                            _InsurancePolicyS.FechaCreacion = DateTime.Now;
+                            _InsurancePolicyS.AttachementFileName = file.FileName;
+                            _InsurancePolicyS.UsuarioCreacion = HttpContext.Session.GetString("user");
+                            var insertresult = await Insert(_InsurancePolicyS);
                             var value = (insertresult.Result as ObjectResult).Value;
-                            _InsurancePolicyDTO = ((InsurancePolicyDTO)(value));
+                            _InsurancePolicyS = ((InsurancePolicyDTO)(value));
                         }
                         else
                         {
-                            _InsurancePolicyDTO.AttachmentURL = file.FileName;
-                            _InsurancePolicyDTO.FechaCreacion = _listInsurancePolicy.FechaCreacion;
-                            _InsurancePolicyDTO.UsuarioCreacion = _listInsurancePolicy.UsuarioCreacion;
-                            var updateresult = await Update(_InsurancePolicyDTO.InsurancePolicyId, _InsurancePolicyDTO);
+                            _InsurancePolicyS.AttachementFileName = file.FileName;
+                            _InsurancePolicyS.FechaCreacion = _listInsurancePolicy.FechaCreacion;
+                            _InsurancePolicyS.UsuarioCreacion = _listInsurancePolicy.UsuarioCreacion;
+                            var updateresult = await Update(_InsurancePolicyS.InsurancePolicyId, _InsurancePolicyS);
                         }
 
 
 
-                        var filePath = _hostingEnvironment.WebRootPath + "/InsurancePolicy/" + _InsurancePolicyDTO.InsurancePolicyId + "_"
-                            + file.FileName.Replace(info.Extension, "") + "_" + _InsurancePolicyDTO.AttachmentURL + "_" + _InsurancePolicyDTO.AttachmentURL
-                            + info.Extension;
+                        var filePath = _hostingEnvironment.WebRootPath + "/InsurancePolicy/" + _InsurancePolicyS.InsurancePolicyId + "_"
+                             + file.FileName.Replace(info.Extension, "") + "_" + file.FileName
+                             + info.Extension;
 
                         using (var stream = new FileStream(filePath, FileMode.Create))
                         {
@@ -217,8 +217,9 @@ namespace ERPMVC.Controllers
                             //mstream.WriteTo(stream);
                         }
 
-                        _InsurancePolicyDTO.AttachmentURL = filePath;
-                        var updateresult2 = await Update(_InsurancePolicyDTO.InsurancePolicyId, _InsurancePolicyDTO);
+                        _InsurancePolicyS.AttachmentURL = filePath;
+                        _listInsurancePolicy = _InsurancePolicyS;
+                        var updateresult2 = await Update(_InsurancePolicyS.InsurancePolicyId, _listInsurancePolicy);
                     }
                 }
 
@@ -229,10 +230,10 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_InsurancePolicyDTO);
+            return Json(_InsurancePolicyS);
         }
 
-        // POST: CustomerDocument/Insert
+        
         [HttpPost]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult<InsurancePolicy>> Insert(InsurancePolicy _InsurancePolicy)
