@@ -52,11 +52,7 @@
                                   .Events(e => e.Change("monthpicker_change"))
 
     )
-    @*<div class="row">
-        <div class="col-md-12">
-            <button id="btnAsistencias" class="form-control btn-miboton" onclick="ConsultarAsistencias(this);"> Conultar </button>
-        </div>
-    </div>*@
+    
 
 </div>
 
@@ -164,34 +160,70 @@
 
         var dates = displayedData1.split("-");
 
-        //var fin = stringVal.substring(0, 9).toString();
-
-       
+        //var fin = stringVal.substring(0, 9).toString();      
 
         var p1 = dates[0];
         var p2 = dates[1];
         var p3 = dates[2];
         console.log("_____________________________________")
         var primero = (p1 + "-" + p2 + "-" + "01").toString();
+        console.log(primero)    
 
 
 
-
-        console.log(primero)
+        var dataObject = {
+            
+        };
        
 
-				//var dataObject = {
-                    
-    //                '_Data': displayedData1
-				//};
+       
 
-       // console(dataObject)
+        $.ajax({
+            url: '@Url.Action("GetGetControlAsistencias", "ControlAsistencias")',
+            method: 'GET',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: { 'primero': primero, 'actual': stringVal},
+                                success: function (data) {
+                                    var grid = $("#gridControlAsistencia").getKendoGrid();
+                                    var datasource = grid.dataSource;
+                                    var raw = datasource._data;
+                                    for (i = datasource._data.length - 1; i >= 0; i--) {
+                                        var item = raw[i];
+                                        datasource.remove(item);
+                                    }
 
-               // var validator = $("#frmEmployees").data("kendoValidator");
-                //if (validator.validate()) {
+                                    for (var i = 0; i < data.Data.length; i++) {
+                                    
+                                       
+                                        datasource.insert(data.Data[i]);
+                                    }
+
+                                    var gridCertificadoDeposito = $("#gridControlAsistencia").data().kendoGrid.dataSource.data();
+                                    //console.log('Listado Certificado: ' + gridCertificadoDeposito.length);
+                                    if (gridCertificadoDeposito.length > 0) {
+                                        //$("#myModalCertificate").modal('show');
+                                    }
+                                    else {
+                                        //$("#myModalCertificate").modal('hide');
+                                    }
+
+                                },
+                                //error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                                //    notification.show({
+                                //        title: "Validación",
+                                //        message: textStatus + ": " + XMLHttpRequest.responseText
+                                //    }, "error");
+
+                                //}
+                            });
+
+                        }
 
 
-                    $.ajax({
+                    @*$.ajax({
                         url: '@Url.Action("GetGetControlAsistencias", "ControlAsistencias")',
                         method: 'GET',
                         datatype: "json",
@@ -199,17 +231,45 @@
                         async: false,
                         data: { 'primero': primero, 'actual': stringVal},
                         success: function (data) {
-							$.toast({
-                                heading: 'Satisfactorio',
-                                text: '<br/><br/> Resiviendo Listado de Asistencia.',
-                                position: 'top-right',
-                                loaderBg: '#ff6849',
-                                icon: 'success',
-                                hideAfter: 30000,
-                                stack: 6
-                            });
-							//RefrescarGrid();
-                            //$('#ModalEmployees').modal('hide');
+                            var grid = $("#gridControlAsistencia").getKendoGrid();
+                            var datasource = grid.dataSource;
+                            var raw = datasource._data;
+                            for (i = datasource._data.length - 1; i >= 0; i--) {
+                                var item = raw[i];
+                                datasource.remove(item);
+                            }
+
+                            for (var i = 0; i < data.Data.length; i++) {
+
+
+                                datasource.insert(data.Data[i]);
+                            }
+
+                            //var gridAsistencia = $("#gridControlAsistencia").data().kendoGrid.dataSource.data();
+                            
+                            //if (gridAsistencia.length > 0) {
+                            //    $.toast({
+                            //        heading: 'Satisfactorio',
+                            //        text: '<br/><br/> Lista Encontrada.',
+                            //        position: 'top-right',
+                            //        loaderBg: '#ff6849',
+                            //        icon: 'success',
+                            //        hideAfter: 30000,
+                            //        stack: 6
+                            //    });
+                            //}
+                            //else {
+                            //    $.toast({
+                            //        heading: 'Satisfactorio',
+                            //        text: '<br/><br/>Mes sin Control de asistencia.',
+                            //        position: 'top-right',
+                            //        loaderBg: '#ff6849',
+                            //        icon: 'success',
+                            //        hideAfter: 30000,
+                            //        stack: 6
+                            //    });
+                            //}
+                           
                         },
                         //error: function (XMLHttpRequest, textStatus, errorThrown) {
                         //    notification.show({ 
@@ -217,15 +277,17 @@
                         //        message: textStatus + ": " + XMLHttpRequest.responseText
                         //    }, "error");
                         //}
-                    });
-               //}
-                //else {
-                //    $("#btnEmployees").prop("disabled", false);
-                //}
+                    });*@
+               
+    
+
+
+    function RefrescarGrid() {
+
+        var grid = $("#gridControlAsistencia").getKendoGrid();
+        grid.dataSource.read();
+
     }
-
-
-
 
     //    var datepicker = $("#monthpicker").data("kendoDatePicker");
     //    var value = datepicker.value();
@@ -324,15 +386,12 @@
                                         command.Edit().Text("Editar").UpdateText("Actualizar").CancelText("Cancelar");
                                         //command.Destroy().Text("Eliminar");
                                     }).Width(250);
-                                    columns.Bound(p => p.Contador).Width(100);
-                                   
+                                    columns.Bound(p => p.EmployeesId).Width(100);
+
                                     columns.Bound(p => p.Empleado.IdEmpleado).Width(150);
                                     //columns.ForeignKey()
                                     columns.Bound(p => p.Empleado.NombreEmpleado).Width(150);
-                                    columns.ForeignKey(p => p.Dia1TA,
-                                                                   (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("1").Width(100);
-                                    //columns.Bound(p => p.Empleado.NombreEmpleado).Width(150);
-
+                                    columns.ForeignKey(p => p.Dia1TA,(System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("1").Width(100);
                                     columns.ForeignKey(p => p.Dia2TA,(System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("2").Width(100);
                                     columns.ForeignKey(p => p.Dia3TA,(System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("3").Width(100);
                                     columns.ForeignKey(p => p.Dia4TA,(System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("4").Width(100);
@@ -472,10 +531,11 @@
                                     .ServerOperation(true)
                                     .Model(model =>
                                     {
-                                        model.Field(p => p.Contador);
+                                        model.Id(p => p.EmployeesId);
                                         model.Field(p => p.Empleado.IdEmpleado).Editable(false);
                                         model.Field(p => p.Empleado.NombreEmpleado).Editable(false);
                                         model.Field(p => p.Dia1TA).DefaultValue(1);
+
                                         model.Field(p => p.Dia2TA).DefaultValue(1);
                                         model.Field(p => p.Dia3TA).DefaultValue(1);
                                         model.Field(p => p.Dia4TA).DefaultValue(1);
@@ -536,9 +596,9 @@
                                         //model.Field(p => p.Dia29).Editable(true);
                                         //model.Field(p => p.Dia30).Editable(true);
                                         //model.Field(p => p.Dia31).Editable(true);
-                                        model.Field(p => p.LlegadasTarde);
-                                        model.Field(p => p.DiasLaborales);
-                                        model.Field(p => p.PorcentajeLlegadasTarde);
+                                        model.Field(p => p.LlegadasTarde).Editable(false);
+                                        model.Field(p => p.DiasLaborales).Editable(false);
+                                        model.Field(p => p.PorcentajeLlegadasTarde).Editable(false);
 
                                         // model.Field(p => p.TipoAsistencia).DefaultValue(ViewData["defaultTipo"] as ERPMVC.Models.ControlAsistencias);
 
@@ -553,13 +613,15 @@
 
                                     })
                                     .Events(events => events.Error("error_handler"))
-                                    .Read(read => read.Action("GetGetControlAsistencias", "ControlAsistencias"))
+                                    .Read(read => read.Action("", "ControlAsistencias"))
                                 //   .Read(read => read.Action("GetGetControlAsistencias", "ControlAsistencias"))
                                 //.Read(read => read.Action("GetControlAsistencias", "ControlAsistencias"))
-                                .Create(create => create.Action("PostControlAsistencias", "ControlAsistencias"))
-                                .Update(update => update.Action("PostControlAsistencias", "ControlAsistencias", new { Id = "{0}" }))
+                                //.Create(create => create.Action("PostControlAsistencias", "ControlAsistencias"))
+                                .Update(update => update.Action("PostControlAsistencias", "ControlAsistencias", new { Id = "{0}"}).Type(HttpVerbs.Post))
+
                                 //.Update(update => update.Action("PostControlAsistencias", "ControlAsistencias", new { Id = "{0}" }))
-                                 // .Update(update => update.Action("PostControlAsistenciasS", "ControlAsistencias", new { ExchangeRateId = "{0}" }).Type(HttpVerbs.Put))
+                                //.Update(update => update.Action("PostControlAsistencias", "ControlAsistencias", new { Id = "{0}" }))
+                                // .Update(update => update.Action("PostControlAsistenciasS", "ControlAsistencias", new { ExchangeRateId = "{0}" }).Type(HttpVerbs.Put))
                                 //.Update(update => update.Action("Update", "ControlAsistencias", new { Id = "{0}" }).Type(HttpVerbs.Put))
                                 //.Destroy(destroy => destroy.Action("Delete", "Estados", new { IdEstado = "{0}" }).Type(HttpVerbs.Delete))
 
