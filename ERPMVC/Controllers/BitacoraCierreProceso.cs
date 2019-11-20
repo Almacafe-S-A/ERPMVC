@@ -32,7 +32,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet("[controller]/[action]")]
-        public async Task<DataSourceResult> GetCierreProcesosByCierreContableId([DataSourceRequest]DataSourceRequest request, int IdProceso)
+        public async Task<DataSourceResult> GetCierreProcesosByCierreContableId([DataSourceRequest]DataSourceRequest request, int IdBitacoraCierre)
         {
             List<BitacoraCierreProcesos> _roles = new List<BitacoraCierreProcesos>();
             try
@@ -46,13 +46,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _roles = JsonConvert.DeserializeObject<List<BitacoraCierreProcesos>>(valorrespuesta);
-                    _roles = _roles.Where(q => q.IdProceso == IdProceso).ToList();
-
-                    //foreach (var item in _roles)
-                    //{
-                    //   var resultclient = await _client.GetAsync(baseadress + "api/BitacoraCierreContable/GetBitacoraCierreContableById/" + item.IdBitacoraCierre).Result.Content.ReadAsStringAsync();
-                    //   item.Estatus = (JsonConvert.DeserializeObject<BitacoraCierreContable>(resultclient)).Estatus;
-                    //}
+                    _roles = _roles.Where(q => q.IdBitacoraCierre == IdBitacoraCierre).ToList();
                 }
             }
             catch (System.Exception ex)

@@ -19,6 +19,7 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class ScheduleSubservicesController : Controller
     {
         private readonly IOptions<MyConfig> config;
@@ -200,6 +201,7 @@ namespace ERPMVC.Controllers
         {
             try
             {
+                
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));

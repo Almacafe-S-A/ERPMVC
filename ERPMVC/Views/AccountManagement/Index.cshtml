@@ -1,0 +1,197 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "Index";
+}
+
+
+<script>
+
+    function onsave(e) {
+     //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+       // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+    function caidata(data) {
+        //data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+        //data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    }
+
+    function AddAccountManagement() {
+
+        $('#ModalAccountManagement').find(':input').not(':submit').val('');
+        //$('#ModalCheckAccount').modal('show');
+        $("#AccountManagementId").val('0');
+        var dataObject = {
+            AccountManagementId: 0,
+            editar: 0
+        };
+         $.ajax({
+                url: '@Url.Action("pvwAddAccountManagement", "AccountManagement")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumAccountManagement").html('');
+                    $("#NumAccountManagement").html(result);
+
+
+                    //$("#btnBlackListCustomers").hide();
+                    $('#ModalAccountManagement').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+
+    }
+
+
+    function EditAccountManagement(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                AccountManagementId: dataItem.AccountManagementId,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddAccountManagement", "AccountManagement")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumAccountManagement").html('');
+                    $("#NumAccountManagement").html(result);
+
+
+                    //$("#btnBlackListCustomers").hide();
+                    $('#ModalAccountManagement').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+         }
+
+
+
+</script>
+
+<h3 class="text-themecolor">Tipos de Cuentas</h3>
+@(Html.Kendo().Grid<ERPMVC.Models.AccountManagement>
+                                    ()
+                                    .Name("gridAccountManagement")
+                                    .Columns(columns =>
+                                    {
+
+                                        columns.Command(command =>
+                                        {
+                                //command.Custom("Ver detalles").Click("Detalles");
+                                command.Custom("Editar").Click("EditAccountManagement");
+                                            command.Destroy().Text("Eliminar");
+                                        }).Width(250);
+
+                                        columns.Bound(p => p.AccountManagementId).Width(100);
+                                        columns.Bound(p => p.OpeningDate).Width(200);
+                                        columns.Bound(p => p.AccountNumber).Width(150);
+                                        columns.Bound(p => p.BankName).Width(200);
+                                        columns.Bound(p => p.CurrencyName).Width(200);
+                                        columns.Bound(p => p.Description).Width(200);
+                                        columns.Bound(p => p.Status).Width(150);
+
+
+
+
+
+
+                                    })
+                                        .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                               .Clear()
+                                                               .Contains("Contiene")
+                                                               .DoesNotContain("No contiene")
+                                                               .EndsWith("Termina con")
+                                                               .IsEqualTo("Es igual a")
+                                                               .IsNotEqualTo("No es igual a")
+                                                               .IsNull("Es nulo")
+                                                               .StartsWith("Inicia con")
+
+
+                                                         )
+                                                         .ForNumber(n => n
+                                                           .Clear()
+                                                           .IsEqualTo("Es igual a")
+                                                           .IsGreaterThan("Es mayor que")
+                                                           .IsLessThan("Es menor que")
+                                                           .IsNull("Es nulo")
+                                                           .IsLessThanOrEqualTo("Es menor o igual que")
+                                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                         )
+                                                         .ForDate(d => d
+                                                         .Clear()
+                                                         .IsEqualTo("Es igual que")
+                                                         .IsGreaterThan("Es mayor que")
+                                                         .IsLessThan("Es menor que")
+                                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                         .IsNotEqualTo("No es igual que")
+                                                          )
+                                                       ))
+                                    .ToolBar(tools =>
+                                    {
+                            // tools.Create();
+                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                           .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddAccountManagement()" });
+                                        tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                                        tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                                    })
+                                    .Editable(e => e.Mode(GridEditMode.PopUp))
+                                    .Sortable()
+                                    .Pageable()
+                                    .Filterable()
+                                    .Scrollable()
+                                    .Pdf(pdf => pdf.FileName("AccountManagementReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                        .Excel(excel => excel.FileName("AccountManagementReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                    .DataSource(dataSource =>
+                                        dataSource
+                                        .WebApi()
+
+                                        .ServerOperation(true)
+                                        .Model(model =>
+                                        {
+                                            model.Id(p => p.AccountManagementId);
+                                            model.Field(p => p.AccountManagementId).Editable(false);
+                                            model.Field(p => p.FechaCreacion).Editable(true);
+                                            model.Field(p => p.UsuarioCreacion).Editable(false);
+                                            model.Field(p => p.UsuarioModificacion).Editable(false);
+
+                                        })
+                                        .Events(events => events.Error("error_handler"))
+                                        .Read(read => read.Action("GetAccountManagement", "AccountManagement"))
+                                        .Create(create => create.Action("Insert", "AccountManagement"))
+                                        .Update(update => update.Action("Update", "AccountManagement").Type(HttpVerbs.Put))
+                                        .Destroy(destroy => destroy.Action("Delete", "AccountManagement").Type(HttpVerbs.Post))
+
+                                    )
+                                    .Events(e =>
+                                    {
+                                        e.Save("onsave");
+
+                                    })
+)
+
+<div id="NumAccountManagement">
+    @await Html.PartialAsync("pvwAddAccountManagement", new ERPMVC.DTO.AccountManagementDTO { AccountManagementId = 0, FechaCreacion = DateTime.Now })
+</div>
+
