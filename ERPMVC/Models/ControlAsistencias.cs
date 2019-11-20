@@ -9,15 +9,18 @@ namespace ERPMVC.Models
 {
     public class ControlAsistencias
     {
+
+
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Display(Name = "Id")]
         public int Id { get; set; }
         [Display(Name = "Fecha")]
         [DisplayFormat(DataFormatString = "{0:MM/dd/yyyy}", ApplyFormatInEditMode = true)]
         public DateTime Fecha { get; set; }
+        public Employees Empleado { get; set; }
         [Display(Name = "Empleado")]
         [ForeignKey("IdEmpleado")]
-        public Employees Empleado { get; set; }
+        public long IdEmpleado { get; set; }
         [Display(Name = "Dia")]
         public int Dia { get; set; }
         [Display(Name = "Tipo Asistencia")]
@@ -31,6 +34,7 @@ namespace ERPMVC.Models
         [Display(Name = "Fecha de modificación")]
         public DateTime FechaModificacion { get; set; }
 
+        
        // public virtual List<ElementoConfiguracion> ElementoConfiguration { get; set; } = new List<ElementoConfiguracion>();
        
 
