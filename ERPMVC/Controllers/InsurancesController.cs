@@ -194,6 +194,10 @@ namespace ERPMVC.Controllers
                         }
                         else
                         {
+                            if (System.IO.File.Exists(_listInsurances.Path))
+                            {
+                                System.IO.File.Delete(_listInsurances.Path);
+                            }
                             _InsurancesDTO.DocumentName = file.FileName;
                             _InsurancesDTO.CreatedDate = _listInsurances.CreatedDate;
                             _InsurancesDTO.CreatedUser = _listInsurances.CreatedUser;
