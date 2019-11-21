@@ -10,11 +10,11 @@ namespace ERPMVC.Models
     {
         [Display(Name = "Id")]
         public int CurrencyId { get; set; }
-        [Required]
+        //[Required]
 
         [Display(Name = "Moneda")]
         public string CurrencyName { get; set; }
-        [Required]
+        //[Required]
 
         [Display(Name = "Código de moneda")]
         public string CurrencyCode { get; set; }
