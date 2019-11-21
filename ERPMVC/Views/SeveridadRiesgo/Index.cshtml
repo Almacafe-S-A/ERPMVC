@@ -24,10 +24,10 @@
                                   {
                                       columns.Command(command =>
                                       {
-                                          command.Custom("Editar").IconClass("fa fa-edit").Click("EditSeveridadRiesgo");
+                                          command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditSeveridadRiesgo");
                                           //command.Destroy().Text("Eliminar");
-                                      }).Title("Acciones").Width(100);
-                                      columns.Bound(p => p.IdSeveridad).Width(100);
+                                      }).Title("Acciones").Width(80);
+                                      columns.Bound(p => p.IdSeveridad).Width(100).Visible(false);
                                       columns.Bound(p => p.Impacto).Width(100);
                                       columns.Bound(p => p.Probabilidad).Width(120);
                                       columns.Bound(p => p.LimeteCalidadSuperir).Width(100).Hidden(true);
@@ -130,7 +130,6 @@
                 var Bajo = "", Medio = "", Alto = "", MuyAlto = "";
                 if (displayedData.Data.length > 0) {
                     for (var i = 0; i < displayedData.Data.length; i++) {
-                        debugger;
                         if (displayedData.Data[i].Nivel == "Bajo") {
                             Bajo = i;
                         }
@@ -171,8 +170,12 @@
                                             $("#msj_failed").prop("hidden", false);
                                             var NivelAnterior = displayedData.Data[Alto].Nivel;
                                             var NivelPosterior = displayedData.Data[MuyAlto].Nivel;
+                                            var RangoSuperiorAnterior = displayedData.Data[Bajo].RangoSuperiorSeveridad;
+                                            var RangoInferiorPosterior = displayedData.Data[Medio].RangoInferiorSeveridad;
                                             localStorage.setItem("NivelAnterior", NivelAnterior);
                                             localStorage.setItem("NivelPosterior", NivelPosterior);
+                                            localStorage.setItem("RangoSuperiorAnterior", RangoSuperiorAnterior);
+                                            localStorage.setItem("RangoInferiorPosterior", RangoInferiorPosterior);
                                         }
                                     }
                                 }
@@ -180,8 +183,12 @@
                                     $("#msj_failed").prop("hidden", false);
                                     var NivelAnterior = displayedData.Data[Medio].Nivel;
                                     var NivelPosterior = displayedData.Data[Alto].Nivel;
+                                    var RangoSuperiorAnterior = displayedData.Data[Bajo].RangoSuperiorSeveridad;
+                                    var RangoInferiorPosterior = displayedData.Data[Medio].RangoInferiorSeveridad;
                                     localStorage.setItem("NivelAnterior", NivelAnterior);
                                     localStorage.setItem("NivelPosterior", NivelPosterior);
+                                    localStorage.setItem("RangoSuperiorAnterior", RangoSuperiorAnterior);
+                                    localStorage.setItem("RangoInferiorPosterior", RangoInferiorPosterior);
                                 }
                             }
                         }
@@ -189,15 +196,32 @@
                             $("#msj_failed").prop("hidden", false);
                             var NivelAnterior = displayedData.Data[Bajo].Nivel;
                             var NivelPosterior = displayedData.Data[Medio].Nivel;
+                            var RangoSuperiorAnterior = displayedData.Data[Bajo].RangoSuperiorSeveridad;
+                            var RangoInferiorPosterior = displayedData.Data[Medio].RangoInferiorSeveridad;
                             localStorage.setItem("NivelAnterior", NivelAnterior);
                             localStorage.setItem("NivelPosterior", NivelPosterior);
+                            localStorage.setItem("RangoSuperiorAnterior", RangoSuperiorAnterior);
+                            localStorage.setItem("RangoInferiorPosterior", RangoInferiorPosterior);
                         }
                     }
                     if (localStorage.getItem("NivelAnterior")) {
                         $('#msj_failed').prop("hidden", false);
                         var NivelAnterior = localStorage.getItem("NivelAnterior")
                         var NivelPosterior = localStorage.getItem("NivelPosterior")
-                        $('#MensajeBrecha').text(" Exísten brechas, valores Intercalados o valores Iguales entre los rangos de los siguientes niveles: " + NivelAnterior + " y " + NivelPosterior + ".");
+                        var RangoSuperiorAnterior = localStorage.getItem("RangoSuperiorAnterior")
+                        var RangoInferiorPosterior = localStorage.getItem("RangoInferiorPosterior")
+                        var MensajeRango = RangoSuperiorAnterior - RangoInferiorPosterior
+                        MensajeRango = Math.round(MensajeRango * 100) / 100;
+                        console.log("MensajeRango", MensajeRango)
+                        if (MensajeRango < -0.01) {
+                            $('#MensajeBrecha').text(" Exísten brechas entre los rangos de los siguientes niveles: " + NivelAnterior + " y " + NivelPosterior + ".");
+                        }
+                        else if (MensajeRango == 0) {
+                            $('#MensajeBrecha').text(" Exísten valores iguales entre los rangos de los siguientes niveles: " + NivelAnterior + " y " + NivelPosterior + ".");
+                        }
+                        else if (MensajeRango > -0.01) {
+                            $('#MensajeBrecha').text(" Exísten rangos Intercalados en los siguientes niveles: " + NivelAnterior + " y " + NivelPosterior + ".");
+                        }
                         localStorage.clear();
                     }
                     else {
@@ -255,6 +279,18 @@
             id = id + 1;
         }
 
+        $("#RangoInferiorSeveridad").attr({
+            "min": 0
+        });
+        $("#LimiteCalidadInferior").attr({
+            "min": 0
+        });
+        $("#Impacto").attr({
+            "min": 0
+        });
+        $("#Probabilidad").attr({
+            "min": 0
+        });
         //if (displayedData.length > 0) {
         //    $("#LimiteCalidadInferior").attr({
         //        "max": LimeteCalidadSuperir + 1,
