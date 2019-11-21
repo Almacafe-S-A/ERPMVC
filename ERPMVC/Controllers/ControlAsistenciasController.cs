@@ -131,6 +131,27 @@ namespace ERPMVC.Controllers
             var pmes = Convert.ToDateTime(uno);
             var dctual = Convert.ToDateTime(diactual);
 
+            DateTime fechafindmes = DateTime.Now;
+            //Int64 idempleado = _CtlAsis.EmployeesId;
+            if (pmes.Month == DateTime.Now.Month)
+            {
+                fechafindmes = DateTime.Now;
+
+            }
+            else
+            { //validar año
+                              
+
+                int me = pmes.Month;
+                int ao = pmes.Year;
+                int diass = DateTime.DaysInMonth(pmes.Year, pmes.Month);
+                string fechavieja = diass+"-"+me+ "-"+ao;
+
+                fechafindmes = Convert.ToDateTime(fechavieja);
+
+
+            }
+
 
 
             //  var actualfecha = dia.ToString("yyyy-MM-dd");
@@ -184,7 +205,7 @@ namespace ERPMVC.Controllers
                     //for(int c=1, c>actual, c++)
                     //foreach (var _Listardias in LSCA)
                     //for ( pmes = 1; i <= 31; i++)
-                        for (var d = pmes; d < dctual; d = d.AddDays(1))
+                        for (var d = pmes; d < fechafindmes; d = d.AddDays(1))
 
                         {
 
@@ -813,29 +834,67 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult<ControlAsistencias>> PostControlAsistencias(ControlAsistenciasDTO _CtlAsis)
         {
             // List<ControlAsistencias> Listado = new List<ControlAsistencias>();
-            ControlAsistencias _ControlAsis = new ControlAsistencias();
+            ControlAsistencias _ControlAsis1 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis2 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis3 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis4 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis5 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis6 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis7 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis8 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis9 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis10 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis11 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis12 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis13 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis14 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis15 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis16 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis17 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis18 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis19 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis20 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis21 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis22 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis23 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis24 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis25 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis26 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis27 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis28 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis29 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis30 = new ControlAsistencias();
+            ControlAsistencias _ControlAsis31 = new ControlAsistencias();
+            DateTime fechafindmes = DateTime.Now;
             //Int64 idempleado = _CtlAsis.EmployeesId;
-
-
-
-
-            DateTime fechaActual = DateTime.Now;
-
-            string mes = fechaActual.ToString("MMMM"); 
-            
-            string dia = fechaActual.ToString("dddd");
-
-            int dias = DateTime.DaysInMonth(fechaActual.Year, fechaActual.Month);
-
-            for (int i = 1; i <= 31; i++)
+              if ( _CtlAsis.Dia1.Month== DateTime.Now.Month)
             {
-                switch (_CtlAsis.Fecha.Day)
+                 fechafindmes = DateTime.Now;
+
+            }
+            else
+            { //validar año
+
+                int me = _CtlAsis.Dia1.Month;
+                int ao = _CtlAsis.Dia1.Year;
+                int diass = DateTime.DaysInMonth(_CtlAsis.Dia1.Year, _CtlAsis.Dia1.Month);
+                string fechavieja = diass + "-" + me + "-" + ao;
+
+                fechafindmes = Convert.ToDateTime(fechavieja);            
+
+            }
+
+            //for (int i = 1; i <= 31; i++)
+                for (var d = _CtlAsis.Dia1; d < fechafindmes; d = d.AddDays(1))
+
+                {
+                switch (d.Day)
                 {
                     case 1:
-                        _ControlAsis.Fecha = _CtlAsis.Dia1;
+                        _ControlAsis1.Fecha = _CtlAsis.Dia1;
                         //_ControlAsis.Dia = _CtlAsis.Dia1.d;
                         
-                        _ControlAsis.IdEmpleado= _CtlAsis.EmployeesId;
+                        _ControlAsis1.IdEmpleado= _CtlAsis.EmployeesId;
                         string dialetras1 = _CtlAsis.Dia1.ToString("dddd");
                         int dianum1 = 0;
 
@@ -867,13 +926,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum1 = 7;
                         }
-                        _ControlAsis.Dia = dianum1;                        
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia1TA;
-                        var insert1 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis1.Dia = dianum1;                        
+                        _ControlAsis1.TipoAsistencia = _CtlAsis.Dia1TA;
+                        var insert1 = await SaveControlAsistencia(_ControlAsis1);
                         break;
                     case 2:
-                        _ControlAsis.Fecha = _CtlAsis.Dia2;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.EmployeesId;
+                        _ControlAsis2.Fecha = _CtlAsis.Dia2;
+                        _ControlAsis2.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras2 = _CtlAsis.Dia2.ToString("dddd");
                         int dianum2 = 0;
                         if (dialetras2 == "lunes")
@@ -904,13 +963,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum2 = 7;
                         }
-                        _ControlAsis.Dia = dianum2;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia2TA;
-                        var insert2 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis2.Dia = dianum2;
+                        _ControlAsis2.TipoAsistencia = _CtlAsis.Dia2TA;
+                        var insert2 = await SaveControlAsistencia(_ControlAsis2);
                         break;
                     case 3:
-                        _ControlAsis.Fecha = _CtlAsis.Dia3;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis3.Fecha = _CtlAsis.Dia3;
+                        _ControlAsis3.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras3 = _CtlAsis.Dia3.ToString("dddd");
                         int dianum3 = 0;
                         if (dialetras3 == "lunes")
@@ -941,13 +1000,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum3 = 7;
                         }
-                        _ControlAsis.Dia = dianum3;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia3TA;
-                        var insert3 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis3.Dia = dianum3;
+                        _ControlAsis3.TipoAsistencia = _CtlAsis.Dia3TA;
+                        var insert3 = await SaveControlAsistencia(_ControlAsis3);
                         break;
                     case 4:
-                        _ControlAsis.Fecha = _CtlAsis.Dia4;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis4.Fecha = _CtlAsis.Dia4;
+                        _ControlAsis4.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras4 = _CtlAsis.Dia4.ToString("dddd");
                         int dianum4= 0;
                         if (dialetras4 == "lunes")
@@ -978,13 +1037,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum4 = 7;
                         }
-                        _ControlAsis.Dia = dianum4;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia4TA;
-                        var insert4 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis4.Dia = dianum4;
+                        _ControlAsis4.TipoAsistencia = _CtlAsis.Dia4TA;
+                        var insert4 = await SaveControlAsistencia(_ControlAsis4);
                         break;
                     case 5:
-                        _ControlAsis.Fecha = _CtlAsis.Dia5;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis5.Fecha = _CtlAsis.Dia5;
+                        _ControlAsis5.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras5 = _CtlAsis.Dia5.ToString("dddd");
                         int dianum5 = 0;
                         if (dialetras5 == "lunes")
@@ -1015,13 +1074,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum5 = 7;
                         }
-                        _ControlAsis.Dia = dianum5;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia5TA;
-                        var insert5 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis5.Dia = dianum5;
+                        _ControlAsis5.TipoAsistencia = _CtlAsis.Dia5TA;
+                        var insert5 = await SaveControlAsistencia(_ControlAsis5);
                         break;
                     case 6:
-                        _ControlAsis.Fecha = _CtlAsis.Dia6;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis6.Fecha = _CtlAsis.Dia6;
+                        _ControlAsis6.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras6 = _CtlAsis.Dia6.ToString("dddd");
                         int dianum6 = 0;
                         if (dialetras6 == "lunes")
@@ -1052,13 +1111,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum6 = 7;
                         }
-                        _ControlAsis.Dia = dianum6;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia6TA;
-                        var insert6 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis6.Dia = dianum6;
+                        _ControlAsis6.TipoAsistencia = _CtlAsis.Dia6TA;
+                        var insert6 = await SaveControlAsistencia(_ControlAsis6);
                         break;
                     case 7:
-                        _ControlAsis.Fecha = _CtlAsis.Dia7;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis7.Fecha = _CtlAsis.Dia7;
+                        _ControlAsis7.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras7 = _CtlAsis.Dia7.ToString("dddd");
                         int dianum7 = 0;
                         if (dialetras7 == "lunes")
@@ -1089,13 +1148,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum7 = 7;
                         }
-                        _ControlAsis.Dia = dianum7;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia7TA;
-                        var insert7 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis7.Dia = dianum7;
+                        _ControlAsis7.IdEmpleado = _CtlAsis.EmployeesId;
+                        var insert7 = await SaveControlAsistencia(_ControlAsis7);
                         break;
                     case 8:
-                        _ControlAsis.Fecha = _CtlAsis.Dia8;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis8.Fecha = _CtlAsis.Dia8;
+                        _ControlAsis8.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras8 = _CtlAsis.Dia8.ToString("dddd");
                         int dianum8 = 0;
                         if (dialetras8 == "lunes")
@@ -1126,13 +1185,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum8 = 7;
                         }
-                        _ControlAsis.Dia = dianum8;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia8TA;
-                        var insert8 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis8.Dia = dianum8;
+                        _ControlAsis8.TipoAsistencia = _CtlAsis.Dia8TA;
+                        var insert8 = await SaveControlAsistencia(_ControlAsis8);
                         break;
                     case 9:
-                        _ControlAsis.Fecha = _CtlAsis.Dia9;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis9.Fecha = _CtlAsis.Dia9;
+                        _ControlAsis9.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras9 = _CtlAsis.Dia9.ToString("dddd");
                         int dianum9 = 0;
                         if (dialetras9 == "lunes")
@@ -1163,13 +1222,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum9 = 7;
                         }
-                        _ControlAsis.Dia = dianum9;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia9TA;
-                        var insert9 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis9.Dia = dianum9;
+                        _ControlAsis9.TipoAsistencia = _CtlAsis.Dia9TA;
+                        var insert9 = await SaveControlAsistencia(_ControlAsis9);
                         break;
                     case 10:
-                        _ControlAsis.Fecha = _CtlAsis.Dia10;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis10.Fecha = _CtlAsis.Dia10;
+                        _ControlAsis10.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras10 = _CtlAsis.Dia10.ToString("dddd");
                         int dianum10 = 0;
                         if (dialetras10 == "lunes")
@@ -1200,13 +1259,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum10 = 7;
                         }
-                        _ControlAsis.Dia = dianum10;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia10TA;
-                        var insert10 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis11.Dia = dianum10;
+                        _ControlAsis10.TipoAsistencia = _CtlAsis.Dia10TA;
+                        var insert10 = await SaveControlAsistencia(_ControlAsis10);
                         break;
                     case 11:
-                        _ControlAsis.Fecha = _CtlAsis.Dia11;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis11.Fecha = _CtlAsis.Dia11;
+                        _ControlAsis11.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras11 = _CtlAsis.Dia11.ToString("dddd");
                         int dianum11 = 0;
                         if (dialetras11 == "lunes")
@@ -1237,13 +1296,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum11 = 7;
                         }
-                        _ControlAsis.Dia = dianum11;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia11TA;
-                        var insert11 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis11.Dia = dianum11;
+                        _ControlAsis11.TipoAsistencia = _CtlAsis.Dia11TA;
+                        var insert11 = await SaveControlAsistencia(_ControlAsis11);
                         break;
                     case 12:
-                        _ControlAsis.Fecha = _CtlAsis.Dia12;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis12.Fecha = _CtlAsis.Dia12;
+                        _ControlAsis12.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras12 = _CtlAsis.Dia12.ToString("dddd");
                         int dianum12 = 0;
                         if (dialetras12 == "lunes")
@@ -1274,13 +1333,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum12 = 7;
                         }
-                        _ControlAsis.Dia = dianum12;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia12TA;
-                        var insert12 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis12.Dia = dianum12;
+                        _ControlAsis12.TipoAsistencia = _CtlAsis.Dia12TA;
+                        var insert12 = await SaveControlAsistencia(_ControlAsis12);
                         break;
                     case 13:
-                        _ControlAsis.Fecha = _CtlAsis.Dia13;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis13.Fecha = _CtlAsis.Dia13;
+                        _ControlAsis13.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras13 = _CtlAsis.Dia13.ToString("dddd");
                         int dianum13 = 0;
                         if (dialetras13 == "lunes")
@@ -1311,13 +1370,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum13 = 7;
                         }
-                        _ControlAsis.Dia = dianum13;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia13TA;
-                        var insert13 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis13.Dia = dianum13;
+                        _ControlAsis13.TipoAsistencia = _CtlAsis.Dia13TA;
+                        var insert13 = await SaveControlAsistencia(_ControlAsis13);
                         break;
                     case 14:
-                        _ControlAsis.Fecha = _CtlAsis.Dia14;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis14.Fecha = _CtlAsis.Dia14;
+                        _ControlAsis14.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras14 = _CtlAsis.Dia14.ToString("dddd");
                         int dianum14 = 0;
                         if (dialetras14 == "lunes")
@@ -1348,13 +1407,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum14 = 7;
                         }
-                        _ControlAsis.Dia = dianum14;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia14TA;
-                        var insert14 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis14.Dia = dianum14;
+                        _ControlAsis14.TipoAsistencia = _CtlAsis.Dia14TA;
+                        var insert14 = await SaveControlAsistencia(_ControlAsis14);
                         break;
                     case 15:
-                        _ControlAsis.Fecha = _CtlAsis.Dia15;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis15.Fecha = _CtlAsis.Dia15;
+                        _ControlAsis15.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras15 = _CtlAsis.Dia15.ToString("dddd");
                         int dianum15 = 0;
                         if (dialetras15 == "lunes")
@@ -1385,13 +1444,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum15 = 7;
                         }
-                        _ControlAsis.Dia = dianum15;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia15TA;
-                        var insert15 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis15.Dia = dianum15;
+                        _ControlAsis15.TipoAsistencia = _CtlAsis.Dia15TA;
+                        var insert15 = await SaveControlAsistencia(_ControlAsis15);
                         break;
                     case 16:
-                        _ControlAsis.Fecha = _CtlAsis.Dia16;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis16.Fecha = _CtlAsis.Dia16;
+                        _ControlAsis16.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras16 = _CtlAsis.Dia16.ToString("dddd");
                         int dianum16 = 0;
                         if (dialetras16 == "lunes")
@@ -1422,13 +1481,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum16 = 7;
                         }
-                        _ControlAsis.Dia = dianum16;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia16TA;
-                        var insert16 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis16.Dia = dianum16;
+                        _ControlAsis16.TipoAsistencia = _CtlAsis.Dia16TA;
+                        var insert16 = await SaveControlAsistencia(_ControlAsis16);
                         break;
                     case 17:
-                        _ControlAsis.Fecha = _CtlAsis.Dia17;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis17.Fecha = _CtlAsis.Dia17;
+                        _ControlAsis17.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras17 = _CtlAsis.Dia17.ToString("dddd");
                         int dianum17 = 0;
                         if (dialetras17 == "lunes")
@@ -1459,13 +1518,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum17 = 7;
                         }
-                        _ControlAsis.Dia = dianum17;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia17TA;
-                        var insert17 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis17.Dia = dianum17;
+                        _ControlAsis17.TipoAsistencia = _CtlAsis.Dia17TA;
+                        var insert17 = await SaveControlAsistencia(_ControlAsis17);
                         break;
                     case 18:
-                        _ControlAsis.Fecha = _CtlAsis.Dia18;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis18.Fecha = _CtlAsis.Dia18;
+                        _ControlAsis18.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras18 = _CtlAsis.Dia18.ToString("dddd");
                         int dianum18 = 0;
                         if (dialetras18 == "lunes")
@@ -1496,13 +1555,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum18 = 7;
                         }
-                        _ControlAsis.Dia = dianum18;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia18TA;
-                        var insert18 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis18.Dia = dianum18;
+                        _ControlAsis18.TipoAsistencia = _CtlAsis.Dia18TA;
+                        var insert18 = await SaveControlAsistencia(_ControlAsis18);
                         break;
                     case 19:
-                        _ControlAsis.Fecha = _CtlAsis.Dia19;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis19.Fecha = _CtlAsis.Dia19;
+                        _ControlAsis19.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras19 = _CtlAsis.Dia19.ToString("dddd");
                         int dianum19 = 0;
                         if (dialetras19 == "lunes")
@@ -1533,13 +1592,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum19 = 7;
                         }
-                        _ControlAsis.Dia = dianum19;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia19TA;
-                        var insert19 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis19.Dia = dianum19;
+                        _ControlAsis19.TipoAsistencia = _CtlAsis.Dia19TA;
+                        var insert19 = await SaveControlAsistencia(_ControlAsis19);
                         break;
                     case 20:
-                        _ControlAsis.Fecha = _CtlAsis.Dia20;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis20.Fecha = _CtlAsis.Dia20;
+                        _ControlAsis20.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras20 = _CtlAsis.Dia20.ToString("dddd");
                         int dianum20 = 0;
                         if (dialetras20 == "lunes")
@@ -1570,13 +1629,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum20 = 7;
                         }
-                        _ControlAsis.Dia = dianum20;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia20TA;
-                        var insert20 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis20.Dia = dianum20;
+                        _ControlAsis20.TipoAsistencia = _CtlAsis.Dia20TA;
+                        var insert20 = await SaveControlAsistencia(_ControlAsis20);
                         break;
                     case 21:
-                        _ControlAsis.Fecha = _CtlAsis.Dia21;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis21.Fecha = _CtlAsis.Dia21;
+                        _ControlAsis21.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras21 = _CtlAsis.Dia21.ToString("dddd");
                         int dianum21 = 0;
                         if (dialetras21 == "lunes")
@@ -1607,13 +1666,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum21 = 7;
                         }
-                        _ControlAsis.Dia = dianum21;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia21TA;
-                        var insert21 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis21.Dia = dianum21;
+                        _ControlAsis21.TipoAsistencia = _CtlAsis.Dia21TA;
+                        var insert21 = await SaveControlAsistencia(_ControlAsis21);
                         break;
                     case 22:
-                        _ControlAsis.Fecha = _CtlAsis.Dia22;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis22.Fecha = _CtlAsis.Dia22;
+                        _ControlAsis22.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras22 = _CtlAsis.Dia22.ToString("dddd");
                         int dianum22 = 0;
                         if (dialetras22 == "lunes")
@@ -1644,13 +1703,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum22 = 7;
                         }
-                        _ControlAsis.Dia = dianum22;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia22TA;
-                        var insert22 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis22.Dia = dianum22;
+                        _ControlAsis22.TipoAsistencia = _CtlAsis.Dia22TA;
+                        var insert22 = await SaveControlAsistencia(_ControlAsis22);
                         break;
                     case 23:
-                        _ControlAsis.Fecha = _CtlAsis.Dia23;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis23.Fecha = _CtlAsis.Dia23;
+                        _ControlAsis23.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras23 = _CtlAsis.Dia23.ToString("dddd");
                         int dianum23 = 0;
                         if (dialetras23 == "lunes")
@@ -1681,13 +1740,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum23 = 7;
                         }
-                        _ControlAsis.Dia = dianum23;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia23TA;
-                        var insert23 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis23.Dia = dianum23;
+                        _ControlAsis23.TipoAsistencia = _CtlAsis.Dia23TA;
+                        var insert23 = await SaveControlAsistencia(_ControlAsis23);
                         break;
                     case 24:
-                        _ControlAsis.Fecha = _CtlAsis.Dia24;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis24.Fecha = _CtlAsis.Dia24;
+                        _ControlAsis24.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras24 = _CtlAsis.Dia24.ToString("dddd");
                         int dianum24 = 0;
                         if (dialetras24 == "lunes")
@@ -1718,13 +1777,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum24 = 7;
                         }
-                        _ControlAsis.Dia = dianum24;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia24TA;
-                        var insert24 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis24.Dia = dianum24;
+                        _ControlAsis24.TipoAsistencia = _CtlAsis.Dia24TA;
+                        var insert24 = await SaveControlAsistencia(_ControlAsis24);
                         break;
                     case 25:
-                        _ControlAsis.Fecha = _CtlAsis.Dia25;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis25.Fecha = _CtlAsis.Dia25;
+                        _ControlAsis25.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras25 = _CtlAsis.Dia25.ToString("dddd");
                         int dianum25 = 0;
                         if (dialetras25 == "lunes")
@@ -1755,13 +1814,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum25 = 7;
                         }
-                        _ControlAsis.Dia = dianum25;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia25TA;
-                        var insert25 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis25.Dia = dianum25;
+                        _ControlAsis25.TipoAsistencia = _CtlAsis.Dia25TA;
+                        var insert25 = await SaveControlAsistencia(_ControlAsis25);
                         break;
                     case 26:
-                        _ControlAsis.Fecha = _CtlAsis.Dia26;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis26.Fecha = _CtlAsis.Dia26;
+                        _ControlAsis26.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras26 = _CtlAsis.Dia26.ToString("dddd");
                         int dianum26 = 0;
                         if (dialetras26 == "lunes")
@@ -1792,13 +1851,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum26 = 7;
                         }
-                        _ControlAsis.Dia = dianum26;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia26TA;
-                        var insert26 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis26.Dia = dianum26;
+                        _ControlAsis26.TipoAsistencia = _CtlAsis.Dia26TA;
+                        var insert26 = await SaveControlAsistencia(_ControlAsis26);
                         break;
                     case 27:
-                        _ControlAsis.Fecha = _CtlAsis.Dia27;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis27.Fecha = _CtlAsis.Dia27;
+                        _ControlAsis27.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras27 = _CtlAsis.Dia27.ToString("dddd");
                         int dianum27 = 0;
                         if (dialetras27 == "lunes")
@@ -1829,13 +1888,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum27 = 7;
                         }
-                        _ControlAsis.Dia = dianum27;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia27TA;
-                        var insert27 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis27.Dia = dianum27;
+                        _ControlAsis27.TipoAsistencia = _CtlAsis.Dia27TA;
+                        var insert27 = await SaveControlAsistencia(_ControlAsis27);
                         break;
                     case 28:
-                        _ControlAsis.Fecha = _CtlAsis.Dia28;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis28.Fecha = _CtlAsis.Dia28;
+                        _ControlAsis28.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras28 = _CtlAsis.Dia28.ToString("dddd");
                         int dianum28 = 0;
                         if (dialetras28 == "lunes")
@@ -1866,13 +1925,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum28 = 7;
                         }
-                        _ControlAsis.Dia = dianum28;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia28TA;
-                        var insert28 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis28.Dia = dianum28;
+                        _ControlAsis28.TipoAsistencia = _CtlAsis.Dia28TA;
+                        var insert28 = await SaveControlAsistencia(_ControlAsis28);
                         break;
                     case 29:
-                        _ControlAsis.Fecha = _CtlAsis.Dia29;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis29.Fecha = _CtlAsis.Dia29;
+                        _ControlAsis29.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras29 = _CtlAsis.Dia29.ToString("dddd");
                         int dianum29 = 0;
                         if (dialetras29 == "lunes")
@@ -1903,13 +1962,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum29 = 7;
                         }
-                        _ControlAsis.Dia = dianum29;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia29TA;
-                        var insert29 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis29.Dia = dianum29;
+                        _ControlAsis29.TipoAsistencia = _CtlAsis.Dia29TA;
+                        var insert29 = await SaveControlAsistencia(_ControlAsis29);
                         break;
                     case 30:
-                        _ControlAsis.Fecha = _CtlAsis.Dia30;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis30.Fecha = _CtlAsis.Dia30;
+                        _ControlAsis30.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras30 = _CtlAsis.Dia30.ToString("dddd");
                         int dianum30 = 0;
                         if (dialetras30 == "lunes")
@@ -1940,13 +1999,13 @@ namespace ERPMVC.Controllers
                         {
                             dianum30 = 7;
                         }
-                        _ControlAsis.Dia = dianum30;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia30TA;
-                        var insert30 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis30.Dia = dianum30;
+                        _ControlAsis30.TipoAsistencia = _CtlAsis.Dia30TA;
+                        var insert30 = await SaveControlAsistencia(_ControlAsis30);
                         break;
                     case 31:
-                        _ControlAsis.Fecha = _CtlAsis.Dia31;
-                        _ControlAsis.Empleado.IdEmpleado = _CtlAsis.Empleado.IdEmpleado;
+                        _ControlAsis31.Fecha = _CtlAsis.Dia31;
+                        _ControlAsis31.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras31 = _CtlAsis.Dia31.ToString("dddd");
                         int dianum31 = 0;
                         if (dialetras31 == "lunes")
@@ -1977,9 +2036,9 @@ namespace ERPMVC.Controllers
                         {
                             dianum31 = 7;
                         }
-                        _ControlAsis.Dia = dianum31;
-                        _ControlAsis.TipoAsistencia = _CtlAsis.Dia31TA;
-                        var insert31 = await SaveControlAsistencia(_ControlAsis);
+                        _ControlAsis31.Dia = dianum31;
+                        _ControlAsis31.TipoAsistencia = _CtlAsis.Dia31TA;
+                        var insert31 = await SaveControlAsistencia(_ControlAsis31);
                         break;
                     default:
 
@@ -2065,6 +2124,9 @@ namespace ERPMVC.Controllers
        
         public async Task<ActionResult<ControlAsistencias>> SaveControlAsistencia(ControlAsistencias _Nuevo_Update)
         {
+
+           ControlAsistencias  ControlAsistenciainsert = _Nuevo_Update;
+            
             try
             {
                 ControlAsistencias _listAccount = new ControlAsistencias();
@@ -2072,20 +2134,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 // var result = await _client.GetAsync(baseadress + "api/ExchangeRate/GetExchangeRateById/" + _ExchangeRate.ExchangeRateId);
-                if (_Nuevo_Update.Fecha == null)
+                if (_Nuevo_Update.Fecha != null)
                 {
                     _Nuevo_Update.UsuarioCreacion = HttpContext.Session.GetString("user");
                     _Nuevo_Update.UsuarioModificacion = HttpContext.Session.GetString("user");
                     var resultdate = await _client.PostAsJsonAsync(baseadress + "api/ControlAsistencias/GetControlAsistenciasByFecha", _Nuevo_Update);
-                    string valorrespuesta = "";
-                    //PRUEBA
-                    //decimal valor = Convert.ToDecimal(_ExchangeRate.ExchangeRateValue);
-                    //decimal temp = decimal.Round(valor, 4, MidpointRounding.AwayFromZero);
-                    // temp = decimal.Parse(temp.ToString("N4"));
-                    //string a = String.Format("{0:F2}", temp);                  
-                    //temp = decimal.Parse(a); 
-                    //decimal variable1 = Convert.ToDecimal(temp, System.Globalization.CultureInfo.InvariantCulture);
-                    //_ExchangeRate.ExchangeRateValue = Convert.ToDecimal(variable1);
+                    string valorrespuesta = "";                    
                     _Nuevo_Update.FechaModificacion = DateTime.Now;
                     _Nuevo_Update.UsuarioModificacion = HttpContext.Session.GetString("user");
                     if (resultdate.IsSuccessStatusCode)
@@ -2107,39 +2161,36 @@ namespace ERPMVC.Controllers
                 }
 
                 ///
-                if (_Nuevo_Update.Id == 0)
+                if (ControlAsistenciainsert.Id == 0 && ControlAsistenciainsert.TipoAsistencia > 0)
                 {
-                    _Nuevo_Update.Fecha = _Nuevo_Update.Fecha;
-                    _Nuevo_Update.IdEmpleado = _Nuevo_Update.IdEmpleado;
-                    _Nuevo_Update.Dia = _Nuevo_Update.Dia;
-                    _Nuevo_Update.TipoAsistencia = _Nuevo_Update.TipoAsistencia;
+                    _Nuevo_Update.Fecha = ControlAsistenciainsert.Fecha;
+                    _Nuevo_Update.IdEmpleado = ControlAsistenciainsert.IdEmpleado;
+                    _Nuevo_Update.Dia = ControlAsistenciainsert.Dia;
+                    _Nuevo_Update.TipoAsistencia = ControlAsistenciainsert.TipoAsistencia;
 
                     var insertresult = await Insert(_Nuevo_Update);
                     var value = (insertresult.Result as ObjectResult).Value;
                     ControlAsistencias resultado = ((ControlAsistencias)(value));
-                    if (resultado.Id <= 0)
-                    {
-                        return await Task.Run(() => BadRequest($"No se guardo la asistencia."));
-                    }
+                    
                 }
                 else
                 {
                     //Hacer por fecha
-                    var result = await _client.GetAsync(baseadress + "api/ControlAsistencias/GetControlAsistenciasById/" + _Nuevo_Update.Id);
-                    string valorrespuesta = "";
+                    //var result = await _client.GetAsync(baseadress + "api/ControlAsistencias/GetControlAsistenciasById/" + _Nuevo_Update.Id);
+                    //string valorrespuesta = "";
 
-                    if (result.IsSuccessStatusCode)
-                    {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _Nuevo_Update = JsonConvert.DeserializeObject<ControlAsistencias>(valorrespuesta);
+                    //if (result.IsSuccessStatusCode)
+                    //{
+                    //    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    //    _Nuevo_Update = JsonConvert.DeserializeObject<ControlAsistencias>(valorrespuesta);
 
-                        if (_Nuevo_Update == null)
-                        {
-                            _Nuevo_Update = new Models.ControlAsistencias();
-                        }
+                    //    if (_Nuevo_Update == null)
+                    //    {
+                    //        _Nuevo_Update = new Models.ControlAsistencias();
+                    //    }
 
 
-                    }
+                    //}
 
                     _Nuevo_Update.UsuarioCreacion = _Nuevo_Update.UsuarioCreacion;
                     _Nuevo_Update.FechaCreacion = _Nuevo_Update.FechaCreacion;
