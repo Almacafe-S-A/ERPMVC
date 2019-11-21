@@ -15,7 +15,7 @@ namespace ERPMVC.DTO
 
         public string token { get; set; }
 
-       public long EmployeesId { get; set; }        
+        public long EmployeesId { get; set; }        
         public DateTime Dia1 { get; set; }
         public DateTime Dia2 { get; set; }
         public DateTime Dia3 { get; set; }
@@ -112,6 +112,38 @@ namespace ERPMVC.DTO
         public Int64 Dia31TA { get; set; }
 
 
+        public string ColorD1 { get; set; }
+        public string ColorD2 { get; set; }
+        public string ColorD3 { get; set; }
+        public string ColorD4 { get; set; }
+        public string ColorD5 { get; set; }
+        public string ColorD6 { get; set; }
+        public string ColorD7 { get; set; }
+        public string ColorD8 { get; set; }
+        public string ColorD9 { get; set; }
+        public string ColorD10 { get; set; }
+        public string ColorD11 { get; set; }
+        public string ColorD12 { get; set; }
+        public string ColorD13 { get; set; }
+        public string ColorD14 { get; set; }
+        public string ColorD15 { get; set; }
+        public string ColorD16 { get; set; }
+        public string ColorD17 { get; set; }
+        public string ColorD18 { get; set; }
+        public string ColorD19 { get; set; }
+        public string ColorD20 { get; set; }
+        public string ColorD21 { get; set; }
+        public string ColorD22 { get; set; }
+        public string ColorD23 { get; set; }
+        public string ColorD24 { get; set; }
+        public string ColorD25 { get; set; }
+        public string ColorD26 { get; set; }
+        public string ColorD27 { get; set; }
+        public string ColorD28 { get; set; }
+        public string ColorD29 { get; set; }
+        public string ColorD30 { get; set; }
+        public string ColorD31 { get; set; }
+        
         public Int64 Contador { get; set; }
 
         public int LlegadasTarde { get; set; }
