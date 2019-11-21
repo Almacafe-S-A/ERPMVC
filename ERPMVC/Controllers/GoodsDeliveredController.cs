@@ -141,7 +141,7 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
+                //throw ex;
             }
 
             return Json(_GoodsDelivered);
