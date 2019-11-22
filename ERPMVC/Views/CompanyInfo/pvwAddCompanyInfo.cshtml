@@ -38,6 +38,17 @@
                                     <div class="form-body">
                                         <h3 class="card-title">Información de la Empresa</h3>
                                         <hr>
+                                        @if (Model.CompanyInfoId != 0)
+                                        {
+                                            <div id="divimprimir" style="width:200px;height:200px">
+                                                <img src="@Url.Content(Model.image)" alt="Logo Empresa" width="200" height="200">
+                                            </div>
+                                        }
+                                        <style>
+                                            #divimprimir {
+                                                float: right;
+                                            }
+                                        </style>
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
@@ -149,19 +160,37 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="RTNMANAGER" class=" control-label" style="width:100%"></label>
-                                                    <input type="text" asp-for="RTNMANAGER" name="RTNMANAGER" class="form-control" autocomplete="off" style="min-width:100%" maxlength="30" />
+                                                    <input type="text" asp-for="RTNMANAGER" name="RTNMANAGER" class="form-control" autocomplete="off" style="min-width:100%" maxlength="60" />
                                                     <span asp-validation-for="RTNMANAGER" class="text-danger"></span>
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label asp-for="RevOffice" class=" control-label" style="width:100%">HACIENDA</label>
+                                                    <label asp-for="RevOffice" class=" control-label" style="width:100%">Hacienda</label>
                                                     <input type="text" asp-for="RevOffice" name="RevOffice" class="form-control" autocomplete="off" style="min-width:100%" maxlength="50" />
                                                     <span asp-validation-for="RevOffice" class="text-danger"></span>
                                                 </div>
-                                            </div>
+                                            </div>                                              
                                         </div>
                                         <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Estado" class="control-label" style="width:100%"></label>
+                                                    <kendo-dropdownlist name="IdEstado"
+                                                                        for="@Model.IdEstado"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar Estado"
+                                                                        datatextfield="NombreEstado"
+                                                                        datavaluefield="IdEstado"
+                                                                        data-val-required="Valor requerido" style="min-width:100%">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Email" class=" control-label" style="width:100%">Correo</label>
@@ -170,27 +199,40 @@
                                                 </div>
                                             </div>
                                             @*<div class="col-md-4">
-                                                <div class="demo-section k-content">
-                                                    <input name="image" id="image" type="file" aria-label="files" />
+            <div class="demo-section k-content">
+                <input name="image" id="image" type="file" aria-label="files" />
+            </div>
+        </div>*@
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    @if (Model.CompanyInfoId != 0)
+                                                    {
+                                                        <label id="editar" class=" control-label" style="width:100%">Actualizar Imagen</label>
+                                                    }
+                                                    else
+                                                    {
+                                                        <label id="crear" class=" control-label" style="width:100%">Subir Imagen</label>
+                                                    }
+                                                    <div class="demo-section k-content">
+                                                        <kendo-upload drop-zone="drop-zone1" name="files" on-upload="">
+                                                            <async save-url="@Url.Action("SaveImage","CompanyInfo")" />
+                                                            <validation allowed-extensions='@new string[] {".jpg",".png",".jpeg" }' max-file-size="10485760" />
+                                                        </kendo-upload>
+                                                    </div>
                                                 </div>
-                                            </div>*@
-                                        </div>
-                                        <div class="row">
-                                            <div class="demo-section k-content">
-                                                <kendo-upload drop-zone="drop-zone1" name="files" on-upload="">
-                                                    <async save-url="@Url.Action("SaveImage","CompanyInfo")" />
-                                                    <validation allowed-extensions='@new string[] {".jpg",".png",".jpeg" }' max-file-size="10485760" />
-                                                </kendo-upload>
                                             </div>
                                         </div>
-                                       
+                                        <div class="row">
+                                           
+                                        </div>
+
                                         <div class="row">
                                             <div class="col-md-12">
                                                 <button id="btnCompanyInfo" class="form-control btn-miboton" type="submit"> Guardar </button>
                                             </div>
                                         </div>
                                     </div>
-                                </form>
+                                 </form>
                             </div>
                         </div>
                     </div>
@@ -228,12 +270,10 @@
     }
 
         function SaveCompanyInfo(e) {
-
             var notification = $("#notification").data("kendoNotification");
            // e.preventDefault();
             $("#btnCompanyInfo").hide();
             $("#btnCompanyInfo").prop("disabled", true);
-
             var displayedData = $("#gridCompanyInfo").data().kendoGrid.dataSource.view();
 
             var dataObject = {
@@ -252,6 +292,8 @@
                 'PrintHeader': $("#PrintHeader").val(),
                 'RTNMANAGER': $("#RTNMANAGER").val(),
                 'RevOffice': $("#RevOffice").val(),
+                'Estado': $("#IdEstado").data("kendoDropDownList").text(),
+                'IdEstado': $("#IdEstado").val(),
                 //'image': $("#image").val(),
 
                   //'FechaCreacion': $("#FechaCreacion").val(),
@@ -283,10 +325,9 @@
 
                             //notification.show({
                             //    message: "Guardado correctamente!"
-                            //}, "upload-success");
                             $.toast({
                                 heading: 'Satisfactorio',
-                                text: 'Datos guardados correctamente.',
+                                text: '<br/><br/>Datos guardados correctamente.',
                                 position: 'top-right',
                                 loaderBg: '#ff6849',
                                 icon: 'success',
