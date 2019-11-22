@@ -228,6 +228,7 @@ namespace ERPMVC.Controllers
                                 {
                                     NuevaControlAsistencia.Dia1 = LSCAdia[0].Fecha;
                                     NuevaControlAsistencia.Dia1TA = LSCAdia[0].TipoAsistencia;
+                                    NuevaControlAsistencia.LetraD1 = LSCAdia[0].Fecha.ToString("dddd"); 
                                 }
                                 break;
                             case 2:
@@ -244,6 +245,8 @@ namespace ERPMVC.Controllers
                                 {
                                     NuevaControlAsistencia.Dia2 = LSCAdia2[0].Fecha;
                                     NuevaControlAsistencia.Dia2TA = LSCAdia2[0].TipoAsistencia;
+                                    NuevaControlAsistencia.LetraD2 = LSCAdia2[0].Fecha.ToString("dddd");   
+
                                     
                                 }
                                 
@@ -260,7 +263,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia3 = LSCAdia3[0].Fecha;
-                                    NuevaControlAsistencia.Dia3TA = LSCAdia3[0].TipoAsistencia;                                    
+                                    NuevaControlAsistencia.Dia3TA = LSCAdia3[0].TipoAsistencia; 
+                                    NuevaControlAsistencia.LetraD3 = LSCAdia3[0].Fecha.ToString("dddd");                                   
                                 }
                                 break;
                             case 4:
@@ -274,7 +278,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia4 = LSCAdia4[0].Fecha;
-                                    NuevaControlAsistencia.Dia4TA = LSCAdia4[0].TipoAsistencia;                                    
+                                    NuevaControlAsistencia.Dia4TA = LSCAdia4[0].TipoAsistencia; 
+                                    NuevaControlAsistencia.LetraD4 = LSCAdia4[0].Fecha.ToString("dddd");                                    
                                 }
                                 break;
                             case 5:
@@ -289,7 +294,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia5 = LSCAdia5[0].Fecha;
-                                    NuevaControlAsistencia.Dia5TA = LSCAdia5[0].TipoAsistencia;                                   
+                                    NuevaControlAsistencia.Dia5TA = LSCAdia5[0].TipoAsistencia;  
+                                    NuevaControlAsistencia.LetraD5 = LSCAdia5[0].Fecha.ToString("dddd");                                  
                                 }
                                 break;
                             case 6:
@@ -304,7 +310,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia6 = LSCAdia6[0].Fecha;
-                                    NuevaControlAsistencia.Dia6TA = LSCAdia6[0].TipoAsistencia;                                    
+                                    NuevaControlAsistencia.Dia6TA = LSCAdia6[0].TipoAsistencia;  
+                                    NuevaControlAsistencia.LetraD6 = LSCAdia6[0].Fecha.ToString("dddd");                                   
                                 }
                                 break;
                             case 7:
@@ -319,7 +326,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia7 = LSCAdia7[0].Fecha;
-                                    NuevaControlAsistencia.Dia7TA = LSCAdia7[0].TipoAsistencia;                                    
+                                    NuevaControlAsistencia.Dia7TA = LSCAdia7[0].TipoAsistencia; 
+                                    NuevaControlAsistencia.LetraD7 = LSCAdia7[0].Fecha.ToString("dddd");                                    
                                 }
                                 break;
                             case 8:
@@ -334,7 +342,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia8 = LSCAdia8[0].Fecha;
-                                    NuevaControlAsistencia.Dia8TA = LSCAdia8[0].TipoAsistencia;                                    
+                                    NuevaControlAsistencia.Dia8TA = LSCAdia8[0].TipoAsistencia; 
+                                    NuevaControlAsistencia.LetraD8 = LSCAdia8[0].Fecha.ToString("dddd");                                    
                                 }
                                 break;
                             case 9:
@@ -349,7 +358,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia9 = LSCAdia9[0].Fecha;
-                                    NuevaControlAsistencia.Dia9TA = LSCAdia9[0].TipoAsistencia;                                    
+                                    NuevaControlAsistencia.Dia9TA = LSCAdia9[0].TipoAsistencia; 
+                                    NuevaControlAsistencia.LetraD9 = LSCAdia9[0].Fecha.ToString("dddd");                                    
                                 }
                                 break;
                             case 10:
@@ -364,7 +374,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia10 = LSCAdia10[0].Fecha;
-                                    NuevaControlAsistencia.Dia10TA = LSCAdia10[0].TipoAsistencia;                                    
+                                    NuevaControlAsistencia.Dia10TA = LSCAdia10[0].TipoAsistencia; 
+                                    NuevaControlAsistencia.LetraD10 = LSCAdia10[0].Fecha.ToString("dddd");                                    
                                 }
                                 break;
                             case 11:
@@ -379,7 +390,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia11 = LSCAdia11[0].Fecha;
-                                    NuevaControlAsistencia.Dia11TA = LSCAdia11[0].TipoAsistencia;                                    
+                                    NuevaControlAsistencia.Dia11TA = LSCAdia11[0].TipoAsistencia; 
+                                    NuevaControlAsistencia.LetraD11 = LSCAdia11[0].Fecha.ToString("dddd");                                    
                                 }
                                 break;
                             case 12:
@@ -394,7 +406,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia12 = LSCAdia12[0].Fecha;
-                                    NuevaControlAsistencia.Dia12TA = LSCAdia12[0].TipoAsistencia;                                    
+                                    NuevaControlAsistencia.Dia12TA = LSCAdia12[0].TipoAsistencia; 
+                                    NuevaControlAsistencia.LetraD12 = LSCAdia12[0].Fecha.ToString("dddd");                                    
                                 }
                                 break;
                             case 13:
@@ -409,7 +422,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia13 = LSCAdia13[0].Fecha;
-                                    NuevaControlAsistencia.Dia13TA = LSCAdia13[0].TipoAsistencia;                                    
+                                    NuevaControlAsistencia.Dia13TA = LSCAdia13[0].TipoAsistencia; 
+                                    NuevaControlAsistencia.LetraD13 = LSCAdia13[0].Fecha.ToString("dddd");                                    
                                 }
                                 break;
                             case 14:
@@ -424,7 +438,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia14 = LSCAdia14[0].Fecha;
-                                    NuevaControlAsistencia.Dia14TA = LSCAdia14[0].TipoAsistencia;                                   
+                                    NuevaControlAsistencia.Dia14TA = LSCAdia14[0].TipoAsistencia; 
+                                    NuevaControlAsistencia.LetraD14 = LSCAdia14[0].Fecha.ToString("dddd");                                   
                                 }                            
                                 break;
                             case 15:
@@ -440,6 +455,7 @@ namespace ERPMVC.Controllers
                                 {                                    
                                     NuevaControlAsistencia.Dia15 = LSCAdia15[0].Fecha;
                                     NuevaControlAsistencia.Dia15TA = LSCAdia15[0].TipoAsistencia;
+                                    NuevaControlAsistencia.LetraD15 = LSCAdia15[0].Fecha.ToString("dddd"); 
                                 }
                                 break;
                             case 16:
@@ -454,7 +470,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia16 = LSCAdia16[0].Fecha;
-                                    NuevaControlAsistencia.Dia16TA = LSCAdia16[0].TipoAsistencia;                                   
+                                    NuevaControlAsistencia.Dia16TA = LSCAdia16[0].TipoAsistencia;  
+                                    NuevaControlAsistencia.LetraD16 = LSCAdia16[0].Fecha.ToString("dddd");                                  
                                 }
                                 break;
                             case 17:
@@ -469,7 +486,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia17 = LSCAdia17[0].Fecha;
-                                    NuevaControlAsistencia.Dia17TA = LSCAdia17[0].TipoAsistencia;                                    
+                                    NuevaControlAsistencia.Dia17TA = LSCAdia17[0].TipoAsistencia; 
+                                    NuevaControlAsistencia.LetraD17 = LSCAdia17[0].Fecha.ToString("dddd");                                    
                                 }
                                 break;
                             case 18:
@@ -484,7 +502,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia18 = LSCAdia18[0].Fecha;
-                                    NuevaControlAsistencia.Dia18TA = LSCAdia18[1].TipoAsistencia;                                    
+                                    NuevaControlAsistencia.Dia18TA = LSCAdia18[1].TipoAsistencia;     
+                                    NuevaControlAsistencia.LetraD18= LSCAdia18[0].Fecha.ToString("dddd");                                
                                 }
                                 break;
                             case 19:
@@ -499,7 +518,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia19 = LSCAdia19[0].Fecha;
-                                    NuevaControlAsistencia.Dia19TA = LSCAdia19[0].TipoAsistencia;                                    
+                                    NuevaControlAsistencia.Dia19TA = LSCAdia19[0].TipoAsistencia;   
+                                    NuevaControlAsistencia.LetraD19 = LSCAdia19[0].Fecha.ToString("dddd");                                  
                                 }
                                 break;
                             case 20:
@@ -514,7 +534,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia20 = LSCAdia20[0].Fecha;
-                                    NuevaControlAsistencia.Dia20TA = LSCAdia20[0].TipoAsistencia;                                    
+                                    NuevaControlAsistencia.Dia20TA = LSCAdia20[0].TipoAsistencia; 
+                                    NuevaControlAsistencia.LetraD20 = LSCAdia20[0].Fecha.ToString("dddd");                                    
                                 }
                                 break;
                             case 21:
@@ -530,6 +551,7 @@ namespace ERPMVC.Controllers
                                 {
                                     NuevaControlAsistencia.Dia21 = LSCAdia21[0].Fecha;
                                     NuevaControlAsistencia.Dia21TA = LSCAdia21[0].TipoAsistencia;
+                                    NuevaControlAsistencia.LetraD21 = LSCAdia21[0].Fecha.ToString("dddd"); 
                                 }
                                 break;
                             case 22:
@@ -544,7 +566,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia22 = LSCAdia22[0].Fecha;
-                                    NuevaControlAsistencia.Dia22TA = LSCAdia22[0].TipoAsistencia;                                    
+                                    NuevaControlAsistencia.Dia22TA = LSCAdia22[0].TipoAsistencia; 
+                                    NuevaControlAsistencia.LetraD22 = LSCAdia22[0].Fecha.ToString("dddd");                                    
                                 }
                                 break;
                             case 23:
@@ -559,7 +582,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia23 = LSCAdia23[0].Fecha;
-                                    NuevaControlAsistencia.Dia23TA = LSCAdia23[0].TipoAsistencia;                                    
+                                    NuevaControlAsistencia.Dia23TA = LSCAdia23[0].TipoAsistencia; 
+                                    NuevaControlAsistencia.LetraD23 = LSCAdia23[0].Fecha.ToString("dddd");                                    
                                 }
                                 break;
                             case 24:
@@ -574,7 +598,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia24 = LSCAdia24[0].Fecha;
-                                    NuevaControlAsistencia.Dia24TA = LSCAdia24[0].TipoAsistencia;                                    
+                                    NuevaControlAsistencia.Dia24TA = LSCAdia24[0].TipoAsistencia; 
+                                    NuevaControlAsistencia.LetraD24 = LSCAdia24[0].Fecha.ToString("dddd");                                    
                                 }
                                 break;
                             case 25:
@@ -589,7 +614,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia25 = LSCAdia25[0].Fecha;
-                                    NuevaControlAsistencia.Dia25TA = LSCAdia25[0].TipoAsistencia;                                    
+                                    NuevaControlAsistencia.Dia25TA = LSCAdia25[0].TipoAsistencia;
+                                    NuevaControlAsistencia.LetraD5 = LSCAdia25[0].Fecha.ToString("dddd");                                     
                                 }
                                 break;
                             case 26:
@@ -605,7 +631,7 @@ namespace ERPMVC.Controllers
                                 {
                                     NuevaControlAsistencia.Dia26 = LSCAdia26[0].Fecha;
                                     NuevaControlAsistencia.Dia26TA = LSCAdia26[0].TipoAsistencia;
-                                   
+                                   NuevaControlAsistencia.LetraD26 = LSCAdia26[0].Fecha.ToString("dddd"); 
                                 }//  NuevaControlAsistencia.Dia=
                                 break;
                             case 27:
@@ -620,7 +646,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia27 = LSCAdia27[0].Fecha;
-                                    NuevaControlAsistencia.Dia27TA = LSCAdia27[0].TipoAsistencia;                                    
+                                    NuevaControlAsistencia.Dia27TA = LSCAdia27[0].TipoAsistencia; 
+                                    NuevaControlAsistencia.LetraD27 = LSCAdia27[0].Fecha.ToString("dddd");                                    
                                 }
                                 break;
                             case 28:
@@ -635,7 +662,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia28 = LSCAdia28[0].Fecha;
-                                    NuevaControlAsistencia.Dia28TA = LSCAdia28[0].TipoAsistencia;                                    
+                                    NuevaControlAsistencia.Dia28TA = LSCAdia28[0].TipoAsistencia;    
+                                    NuevaControlAsistencia.LetraD28 = LSCAdia28[0].Fecha.ToString("dddd");                                 
                                 }
                                 break;
                             case 29:
@@ -650,7 +678,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia29 = LSCAdia29[0].Fecha;
-                                    NuevaControlAsistencia.Dia29TA = LSCAdia29[0].TipoAsistencia;                                    
+                                    NuevaControlAsistencia.Dia29TA = LSCAdia29[0].TipoAsistencia;  
+                                    NuevaControlAsistencia.LetraD29 = LSCAdia29[0].Fecha.ToString("dddd");                                   
                                 }
                                 break;
                             case 30:
@@ -665,7 +694,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia30 = LSCAdia30[0].Fecha;
-                                    NuevaControlAsistencia.Dia30TA = LSCAdia30[0].TipoAsistencia;                                    
+                                    NuevaControlAsistencia.Dia30TA = LSCAdia30[0].TipoAsistencia;  
+                                    NuevaControlAsistencia.LetraD30 = LSCAdia30[0].Fecha.ToString("dddd");                                   
                                 }
                                 break;
                             case 31:
@@ -680,7 +710,8 @@ namespace ERPMVC.Controllers
                                 else
                                 {
                                     NuevaControlAsistencia.Dia31 = LSCAdia31[0].Fecha;
-                                    NuevaControlAsistencia.Dia31TA = LSCAdia31[0].TipoAsistencia;                                    
+                                    NuevaControlAsistencia.Dia31TA = LSCAdia31[0].TipoAsistencia;   
+                                    NuevaControlAsistencia.LetraD31 = LSCAdia31[0].Fecha.ToString("dddd");                                  
                                 }
                                 break;
                             default:
