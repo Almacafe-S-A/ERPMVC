@@ -117,6 +117,7 @@ namespace ERPMVC.Controllers
         //public async Task<ActionResult> GetGoodsDeliveredById([FromBody]dynamic dto)
         {
             GoodsDelivered _GoodsDelivered = new GoodsDelivered();
+            if(_GoodsDeliveredp != null) { 
             try
             {
 
@@ -141,7 +142,9 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                //throw ex;
+                throw ex;
+            }
+
             }
 
             return Json(_GoodsDelivered);
