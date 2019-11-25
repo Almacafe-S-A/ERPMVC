@@ -60,6 +60,10 @@ namespace ERPMVC.Models
         [Display(Name = "Hacienda")]
         public string RevOffice { get; set; }
 
+        [Display(Name = "Id de estado")]
+        public Int64? IdEstado { get; set; }
+        [Display(Name = "Estado")]
+        public string Estado { get; set; }
 
         [Display(Name = "Fecha de Creación")]
         public DateTime FechaCreacion { get; set; }

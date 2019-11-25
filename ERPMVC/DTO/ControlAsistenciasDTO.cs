@@ -15,7 +15,7 @@ namespace ERPMVC.DTO
 
         public string token { get; set; }
 
-       public long EmployeesId { get; set; }        
+        public long EmployeesId { get; set; }        
         public DateTime Dia1 { get; set; }
         public DateTime Dia2 { get; set; }
         public DateTime Dia3 { get; set; }
@@ -112,6 +112,38 @@ namespace ERPMVC.DTO
         public Int64 Dia31TA { get; set; }
 
 
+        public string LetraD1 { get; set; }
+        public string LetraD2 { get; set; }
+        public string LetraD3 { get; set; }
+        public string LetraD4 { get; set; }
+        public string LetraD5 { get; set; }
+        public string LetraD6 { get; set; }
+        public string LetraD7 { get; set; }
+        public string LetraD8 { get; set; }
+        public string LetraD9 { get; set; }
+        public string LetraD10 { get; set; }
+        public string LetraD11 { get; set; }
+        public string LetraD12 { get; set; }
+        public string LetraD13 { get; set; }
+        public string LetraD14 { get; set; }
+        public string LetraD15 { get; set; }
+        public string LetraD16 { get; set; }
+        public string LetraD17 { get; set; }
+        public string LetraD18 { get; set; }
+        public string LetraD19 { get; set; }
+        public string LetraD20 { get; set; }
+        public string LetraD21 { get; set; }
+        public string LetraD22 { get; set; }
+        public string LetraD23 { get; set; }
+        public string LetraD24 { get; set; }
+        public string LetraD25 { get; set; }
+        public string LetraD26 { get; set; }
+        public string LetraD27 { get; set; }
+        public string LetraD28 { get; set; }
+        public string LetraD29 { get; set; }
+        public string LetraD30 { get; set; }
+        public string LetraD31 { get; set; }
+        
         public Int64 Contador { get; set; }
 
         public int LlegadasTarde { get; set; }

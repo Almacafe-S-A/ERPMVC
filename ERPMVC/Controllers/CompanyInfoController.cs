@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.IO;
+using Microsoft.AspNetCore.Hosting;
 
 namespace ERPMVC.Controllers
 {
@@ -23,11 +25,19 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public CompanyInfoController(ILogger<CompanyInfoController> logger, IOptions<MyConfig> config)
+        private IHostingEnvironment _hostingEnvironment;
+        public CompanyInfoController(IHostingEnvironment hostingEnvironment
+            , ILogger<CompanyInfoController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
+            _hostingEnvironment = hostingEnvironment;
         }
+        //public CompanyInfoController(ILogger<CompanyInfoController> logger, IOptions<MyConfig> config)
+        //{
+        //    this.config = config;
+        //    this._logger = logger;
+        //}
 
         public IActionResult CompanyInfo()
         {
@@ -146,7 +156,48 @@ namespace ERPMVC.Controllers
         //    return Json(_CompanyInfo);
         //}
 
+        [HttpPost("[action]")]
+        public async Task<ActionResult<CompanyInfo>> SaveImage(IEnumerable<IFormFile> files, CompanyInfoDTO _CompanyInfoS)
+        {
+            CompanyInfo _CompanyInfo = _CompanyInfoS;
+            try
+            {
+                foreach (var file in files)
+                {
+                    FileInfo info = new FileInfo(file.FileName);
+                    if (info.Extension.Equals(".jpg") || info.Extension.Equals(".png") || info.Extension.Equals(".jpeg")
+                        || info.Extension.Equals(".JPG") || info.Extension.Equals(".PNG") || info.Extension.Equals(".JPEG"))
+                    {
+                        var filePath = _hostingEnvironment.WebRootPath + "/CompanyImages/" + _CompanyInfoS.CompanyInfoId + "_"
+                            + file.FileName.Replace(info.Extension, "") + "_" + _CompanyInfoS.Company_Name
+                            + info.Extension;
 
+
+
+                        var filePathName = "~/CompanyImages/" + _CompanyInfoS.CompanyInfoId + "_"
+                            + file.FileName.Replace(info.Extension, "") + "_" + _CompanyInfoS.Company_Name
+                            + info.Extension;
+                      using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                            // MemoryStream mstream = new MemoryStream();
+                            //mstream.WriteTo(stream);
+                        }                 
+                        //HttpContext.Session.SetString("Nombre", filePath);
+                        HttpContext.Session.SetString("NombreURL", filePathName);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return Json(_CompanyInfo);
+        }
 
         [HttpPost("[action]")]
         public async Task<ActionResult<CompanyInfo>> SaveCompanyInfo([FromBody]CompanyInfoDTO _CompanyInfoS)
@@ -160,6 +211,7 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/CompanyInfo/GetCompanyInfoById/" + _CompanyInfo.CompanyInfoId);
                 string valorrespuesta = "";
+                _CompanyInfo.image = HttpContext.Session.GetString("NombreURL");
                 _CompanyInfo.FechaModificacion = DateTime.Now;
                 _CompanyInfo.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
