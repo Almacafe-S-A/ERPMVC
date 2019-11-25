@@ -538,7 +538,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountDiary");
+                var result = await _client.GetAsync(baseadress + "api/Accounting/GetNoChildAccounts");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
