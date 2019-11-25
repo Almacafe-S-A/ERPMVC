@@ -122,7 +122,6 @@ namespace ERPMVC.Controllers
             
                 if (result.IsSuccessStatusCode)
                 {
-
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _listSubServicesWareHouse = JsonConvert.DeserializeObject<SubServicesWareHouse>(valorrespuesta);
                 }
