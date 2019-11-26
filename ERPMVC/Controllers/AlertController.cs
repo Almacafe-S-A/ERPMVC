@@ -116,6 +116,37 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult> pvwAddAlert([FromBody]AlertDTO _sarpara)
+        {
+            AlertDTO _Alert = new AlertDTO();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Alert/GetAlertById/" + _sarpara.AlertId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Alert = JsonConvert.DeserializeObject<AlertDTO>(valorrespuesta);
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return PartialView(_Alert);
+
+        }
+
 
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)

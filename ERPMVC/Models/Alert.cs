@@ -28,7 +28,7 @@ namespace ERPMVC.Models
         public Int64 ActionTakenId { get; set; }
 
         [Display(Name = "Acción tomada")]
-        public Int64 ActionTakenName { get; set; }
+        public string ActionTakenName { get; set; }
 
         [Display(Name = "Estado")]
         public Int64 IdEstado { get; set; }
