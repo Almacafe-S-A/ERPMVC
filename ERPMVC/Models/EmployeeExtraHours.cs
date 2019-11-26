@@ -25,10 +25,10 @@ namespace ERPMVC.Models
         [Display(Name = "Motivo")]
         public string Motivo { get; set; }
 
-        public Customer Customer { get; set; }
-        [Display(Name = "Id Cliente")]
-        [ForeignKey("CustomerId")]
-        public Int64? CustomerId { get; set; }
+        //public Customer Customer { get; set; }
+        //[Display(Name = "Id Cliente")]
+        //[ForeignKey("CustomerId")]
+        //public Int64? CustomerId { get; set; }
 
         [Display(Name = "Usuario modificación")]
         public string UsuarioModificacion { get; set; }
