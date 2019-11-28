@@ -1,0 +1,74 @@
+# ASP.NET Core (.NET Framework)
+# Build and test ASP.NET Core projects targeting the full .NET Framework.
+# Add steps that publish symbols, save build artifacts, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
+
+trigger:
+- desarrollo
+- master
+
+pool:
+  vmImage: 'windows-latest'
+
+variables:
+  solution: '**/*.sln'
+  project: 'ERPMVC/ERPMVC.csproj'
+  buildPlatform: 'Any CPU'
+  buildConfiguration: 'Release'
+
+steps:
+
+- task: SonarQubePrepare@4
+  inputs:
+    SonarQube: 'Sonarqube HTTP'
+    scannerMode: 'MSBuild'
+    projectKey: 'ALMACAFE-FE'
+    projectName: 'ALMACAFE FRONT END'
+    extraProperties: |
+      # Additional properties that will be passed to the scanner, 
+      # Put one key=value per line, example:
+      # sonar.exclusions=**/*.bin
+      sonar.login=DevOps
+      sonar.password=$(SonarPassword)
+  condition: eq(variables['Build.SourceBranchName'], 'master')
+
+- task: NuGetToolInstaller@1
+
+- task: NuGetCommand@2
+  inputs:
+    command: 'restore'
+    restoreSolution: '$(solution)'
+    feedsToUse: 'select'
+    vstsFeed: 'c95ba75f-3196-4d73-85d7-20c031c0680b/32d191e1-0185-45bd-83d9-4b35be7ed8f1'
+
+- task: VSBuild@1
+  inputs:
+    solution: '$(project)'
+    msbuildArgs: '/p:DeployOnBuild=true /p:WebPublishMethod=Package /p:PackageAsSingleFile=true /p:SkipInvalidConfigurations=true /p:DesktopBuildPackageLocation="$(build.artifactStagingDirectory)\WebApp.zip" /p:DeployIisAppPath="ERPMVC"'
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+
+- task: FileTransform@2
+  inputs:
+    folderPath: '$(build.artifactStagingDirectory)/WebApp.zip'
+    xmlTransformationRules: 
+    jsonTargetFiles: '**/appsettings.json'
+
+- task: VSTest@2
+  inputs:
+    platform: '$(buildPlatform)'
+    configuration: '$(buildConfiguration)'
+
+- task: SonarQubeAnalyze@4
+  condition: eq(variables['Build.SourceBranchName'], 'master')
+
+- task: SonarQubePublish@4
+  inputs:
+    pollingTimeoutSec: '300'
+  condition: eq(variables['Build.SourceBranchName'], 'master')
+
+- task: PublishBuildArtifacts@1
+  inputs:
+    PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    ArtifactName: 'ERPMVC_Build'
+    publishLocation: 'Container'
