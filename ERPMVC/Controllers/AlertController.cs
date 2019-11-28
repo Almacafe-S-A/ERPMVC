@@ -186,6 +186,10 @@ namespace ERPMVC.Controllers
 
             try
             {
+                if (_Alert.Estado == "Cerrada")
+                {
+                    _Alert.CloseDate = DateTime.Now;
+                }
                 Alert _listAlert = new Alert();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
