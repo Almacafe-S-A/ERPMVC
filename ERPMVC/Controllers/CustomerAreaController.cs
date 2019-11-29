@@ -129,15 +129,22 @@ namespace ERPMVC.Controllers
             try
             {
                 string baseadress = _config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CustomerArea/GetCustomerAreaById/" + _CustomerAreap.CustomerAreaId);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
+                if (_CustomerAreap != null)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CustomerArea = JsonConvert.DeserializeObject<CustomerArea>(valorrespuesta);
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/CustomerArea/GetCustomerAreaById/" + _CustomerAreap.CustomerAreaId);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _CustomerArea = JsonConvert.DeserializeObject<CustomerArea>(valorrespuesta);
 
+                    }
+                }
+                else
+                {
+                    return await Task.Run(() => BadRequest("Seleccione el area!"));
                 }
 
             }
@@ -148,7 +155,7 @@ namespace ERPMVC.Controllers
             }
 
 
-            return Json(_CustomerArea);
+            return await Task.Run(()=> Json(_CustomerArea));
 
         }
 
