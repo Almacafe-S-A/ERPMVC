@@ -113,6 +113,36 @@ namespace ERPMVC.Controllers
 
         }
 
+
+        [HttpPost]
+        public async Task<ActionResult> GetCompanyByRTN([FromBody]CompanyInfo _Companyp)
+        {
+            CompanyInfo _Company = new CompanyInfo();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/CompanyInfo/GetCompanyByRTN", _Companyp);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Company = JsonConvert.DeserializeObject<CompanyInfo>(valorrespuesta);
+                }
+                if (_Company == null)
+                {
+                    _Company = new CompanyInfo();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(_Company);
+        }
+
         //[HttpPost("[action]")]
         //public async Task<ActionResult<CompanyInfo>> SaveCompanyInfo([FromBody]CompanyInfoDTO _CompanyInfo)
         //{
@@ -168,21 +198,35 @@ namespace ERPMVC.Controllers
                     if (info.Extension.Equals(".jpg") || info.Extension.Equals(".png") || info.Extension.Equals(".jpeg")
                         || info.Extension.Equals(".JPG") || info.Extension.Equals(".PNG") || info.Extension.Equals(".JPEG"))
                     {
-                        var filePath = _hostingEnvironment.WebRootPath + "/CompanyImages/" + _CompanyInfoS.CompanyInfoId + "_"
+                        if (_CompanyInfo.CompanyInfoId != 0)
+                        {
+                            string[] separar;
+                            if (_CompanyInfoS.image != null)
+                            {
+                                if (_CompanyInfoS.image != "Imagen")
+                                {
+                                    separar = _CompanyInfoS.image.Split("/");
+                                    _CompanyInfo.image = _hostingEnvironment.WebRootPath + "/" + separar[1] + "/" + separar[2];
+                                }
+                            }
+                            if (System.IO.File.Exists(_CompanyInfo.image))
+                            {
+                                System.IO.File.Delete(_CompanyInfo.image);
+                            }
+                        }
+                        var filePath = _hostingEnvironment.WebRootPath + "/CompanyImages/"
                             + file.FileName.Replace(info.Extension, "") + "_" + _CompanyInfoS.Company_Name
                             + info.Extension;
 
-
-
-                        var filePathName = "~/CompanyImages/" + _CompanyInfoS.CompanyInfoId + "_"
+                        var filePathName = "~/CompanyImages/"
                             + file.FileName.Replace(info.Extension, "") + "_" + _CompanyInfoS.Company_Name
                             + info.Extension;
-                      using (var stream = new FileStream(filePath, FileMode.Create))
+                        using (var stream = new FileStream(filePath, FileMode.Create))
                         {
                             await file.CopyToAsync(stream);
                             // MemoryStream mstream = new MemoryStream();
                             //mstream.WriteTo(stream);
-                        }                 
+                        }
                         //HttpContext.Session.SetString("Nombre", filePath);
                         HttpContext.Session.SetString("NombreURL", filePathName);
                     }
@@ -198,6 +242,38 @@ namespace ERPMVC.Controllers
 
             return Json(_CompanyInfo);
         }
+
+
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<CompanyInfo>> DeleteImage(CompanyInfoDTO _CompanyInfoS)
+        {
+            CompanyInfo _CompanyInfo = _CompanyInfoS;
+            _CompanyInfoS.image = HttpContext.Session.GetString("NombreURL");
+            string[] separar;
+            separar = _CompanyInfoS.image.Split("/");
+            _CompanyInfo.image = _hostingEnvironment.WebRootPath + "/" + separar[1] + "/" + separar[2];
+            try
+            {
+                if (_CompanyInfo.CompanyInfoId == 0)
+                {
+                    if (System.IO.File.Exists(_CompanyInfo.image))
+                    {
+                        System.IO.File.Delete(_CompanyInfo.image);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return Json(_CompanyInfo);
+        }
+
 
         [HttpPost("[action]")]
         public async Task<ActionResult<CompanyInfo>> SaveCompanyInfo([FromBody]CompanyInfoDTO _CompanyInfoS)

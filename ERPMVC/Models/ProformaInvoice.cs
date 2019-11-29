@@ -55,6 +55,13 @@ namespace ERPMVC.Models
         [Display(Name = "Nombre Producto")]
         public string ProductName { get; set; }
 
+
+        [Display(Name = "Fecha de inicio")]
+        public DateTime? StartDate { get; set; }
+
+        [Display(Name = "Fecha de fin")]
+        public DateTime? EndDate { get; set; }
+
         [Display(Name = "Fecha proforma")]
         public DateTime OrderDate { get; set; }
 
@@ -111,9 +118,13 @@ namespace ERPMVC.Models
         public Int64 IdEstado { get; set; }
         public string Estado { get; set; }
 
+        [Display(Name = "Fecha de creación")]
         public DateTime FechaCreacion { get; set; }
+        [Display(Name = "Fecha de modificación")]
         public DateTime FechaModificacion { get; set; }
+        [Display(Name = "Usuario de creación")]
         public string UsuarioCreacion { get; set; }
+        [Display(Name = "Usuario de modificación")]
         public string UsuarioModificacion { get; set; }
 
         public string Impreso { get; set; }
