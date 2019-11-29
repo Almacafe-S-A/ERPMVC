@@ -117,6 +117,8 @@
                             <div class="form-group">
                                 <script>
                                     function FillCotizacionCertificados() {
+                                        $("#CustomerId").data("kendoDropDownList").value($("#CustomerIdFilter").val());
+                                        $("#CustomerId").trigger('change');
                                         $("#cbxBuscarCotizaciones").data("kendoDropDownList").dataSource.read();
                                         $("#cbxBuscarCertificadosDeposito").data("kendoMultiSelect").dataSource.read();
                                     }
@@ -184,7 +186,7 @@
 
                                                 $("#BranchId").data("kendoDropDownList").value(data.BranchId);
                                                 $("#CustomerId").data("kendoDropDownList").value(data.CustomerId);
-                                                console.log('Producto' + data.ProductId);
+                                               // console.log('Producto' + data.ProductId);
                                                 $("#ProductId").data("kendoDropDownList").value(data.ProductId);
                                                 $("#CurrencyId").data("kendoDropDownList").value(data.CustomerId);
                                                 $("#SalesTypeId").data("kendoDropDownList").value(data.CustomerId);
@@ -370,7 +372,9 @@
                                                 var dataObject = {
                                                     'CertificadosList': cdlist,
                                                     'CustomerId': $("#CustomerIdFilter").val(),
-                                                    'SalesOrderId': $("#cbxBuscarCotizaciones").val()
+                                                    'SalesOrderId': $("#cbxBuscarCotizaciones").val(),
+                                                    'StartDate': $("#StartDate").getKendoDateTimePicker().value().toJSON(),
+                                                    'EndDate': $("#EndDate").getKendoDateTimePicker().value().toJSON(),
                                                 };
 
                                                 if (cdlist != null) {
@@ -613,7 +617,7 @@
                                                 console.log(data);
                                                 var grid = $("#gridProformaInvoiceDetail").data("kendoGrid");
                                                 var datasource = grid.dataSource;
-                                                console.log('------DataSource----------'); console.log(datasource);
+                                                //console.log('------DataSource----------'); console.log(datasource);
                                                 //var dataItem = datasource.get(0);
 
                                                 var datasourced = grid.dataSource;
@@ -626,11 +630,6 @@
                                                     var dataItem = datasource._data[i];
 
                                                     if (datasource._data[i].SubProductName == "Almacenaje") {
-
-
-                                                        //dataItem.set("SubProductId", 1);
-                                                        //dataItem.set("SubProductName", "Almacenaje");
-
 
                                                         midataobj={
                                                             ProformaLineId: i + 1, ProformaInvoiceId: 0
@@ -768,17 +767,12 @@
                                     <form id="frmSalesOrder" kendo-validator="true" kendo-messages="messages" kendo-rules="rules"
                                           data-ajax="true"
                                           data-ajax-method="post"
-                                          method="post" class="validation-wizard wizard-circle">
-                                        @*<div class="form-body">*@
-
-
+                                          method="post" class="validation-wizard wizard-circle">                                     
 
                                         <div class="row">
                                             <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
-                                                    <label asp-for="ProformaId" class="control-label"></label>
-                                                    @*<input asp-for="ProformaId" disable class="form-control" style="min-width: 100%" />*@
-                                                    @*<label for="recipient-name" class="control-label">Recipient:</label>*@
+                                                    <label asp-for="ProformaId" class="control-label"></label>                                                   
                                                     <kendo-numerictextbox name="SalesOrderId"
                                                                           format="n"
                                                                           min="0"
@@ -851,6 +845,85 @@
 
                                         </div>
 
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <script>
+                                                        function SetCustomerName(e) {
+                                                           // console.log(e);
+                                                            if ($("#CustomerId").val() > 0) {
+                                                                $("#SalesOrderName").prop('disabled', true);
+                                                                $("#SalesOrderName").val($("#CustomerId").data("kendoDropDownList").text());
+                                                                var dataObject = { CustomerId: $("#CustomerId").val()};
+                                                                  $.ajax({
+                                                                     url: '@Url.Action("GetCustomerById", "Customer")',
+                                                                     method: 'GET',
+                                                                     datatype: "json",
+                                                                     contentType: 'application/json',
+                                                                     async: false,
+                                                                     data: dataObject,
+                                                                      success: function (result) {
+                                                                          //console.log(result);
+                                                                          // setearvalor("TaxPercentage", result.TaxPercentage);
+                                                                          $("#ProformaName").val(result.CustomerName);
+                                                                          $("#RTN").val(result.RTN);
+                                                                          $("#Correo").val(result.Email);
+                                                                          $("#Tefono").val(result.Phone);
+                                                                          $("#CustomerRefNumber").val(result.CustomerRefNumber);
+                                                                          $("#StartDate").data("kendoDateTimePicker").value(result.StartDate);
+                                                                          $("#EndDate").data("kendoDateTimePicker").value(result.EndDate);                                                                         
+                                                                     },
+                                                                      error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                                                             alert(textStatus + ": " + XMLHttpRequest.responseText);
+                                                                       }
+                                                                  });
+                                                            }
+                                                            else {
+                                                                $("#SalesOrderName").prop('disabled', false);
+                                                            }
+                                                        }
+                                                    </script>
+                                                    <label asp-for="CustomerId" class="control-label"></label>
+
+                                                    <kendo-dropdownlist name="CustomerId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione el cliente"
+                                                                        datatextfield="CustomerName"
+                                                                        datavaluefield="CustomerId"
+                                                                        class="form-control-line"
+                                                                        onchange="SetCustomerName();"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetCustomer", "Common")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="StartDate" class="control-label" style="width: 100%;"></label>
+                                                    <kendo-datetimepicker name="StartDate"
+                                                                          style="width: 100%;"
+                                                                          format="dd/MM/yyyy hh:mm:ss"
+                                                                          time-format="hh:mm:ss"
+                                                                          value="Model.StartDate"></kendo-datetimepicker>
+                                                    <span asp-validation-for="StartDate" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="EndDate" class="control-label" style="width: 100%;"></label>
+                                                    <kendo-datetimepicker name="EndDate"
+                                                                          style="width: 100%;"
+                                                                          format="dd/MM/yyyy hh:mm:ss"
+                                                                          time-format="hh:mm:ss"
+                                                                          value="Model.EndDate"></kendo-datetimepicker>
+                                                    <span asp-validation-for="EndDate" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
 
                                         <div class="row">
                                             @*<div class="col-md-4">
@@ -903,58 +976,7 @@
 
                                         <div class="row">
 
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <script>
-                                                        function SetCustomerName(e) {
-                                                           // console.log(e);
-                                                            if ($("#CustomerId").val() > 0) {
-                                                                $("#SalesOrderName").prop('disabled', true);
-                                                                $("#SalesOrderName").val($("#CustomerId").data("kendoDropDownList").text());
-                                                                var dataObject = { CustomerId: $("#CustomerId").val()};
-                                                                  $.ajax({
-                                                                     url: '@Url.Action("GetCustomerById", "Customer")',
-                                                                     method: 'GET',
-                                                                     datatype: "json",
-                                                                     contentType: 'application/json',
-                                                                     async: false,
-                                                                     data: dataObject,
-                                                                      success: function (result) {
-                                                                          //console.log(result);
-                                                                          // setearvalor("TaxPercentage", result.TaxPercentage);
-                                                                          $("#ProformaName").val(result.CustomerName);
-                                                                          $("#RTN").val(result.RTN);
-                                                                          $("#Correo").val(result.Email);
-                                                                          $("#Tefono").val(result.Phone);
-                                                                          $("#CustomerRefNumber").val(result.CustomerRefNumber);
-                                                                     },
-                                                                      error: function (XMLHttpRequest, textStatus, errorThrown) {
-                                                                             alert(textStatus + ": " + XMLHttpRequest.responseText);
-                                                                       }
-                                                                  });
-                                                            }
-                                                            else {
-                                                                $("#SalesOrderName").prop('disabled', false);
-                                                            }
-                                                        }
-                                                    </script>
-                                                    <label asp-for="CustomerId" class="control-label"></label>
-
-                                                    <kendo-dropdownlist name="CustomerId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        option-label="Seleccione el cliente"
-                                                                        datatextfield="CustomerName"
-                                                                        datavaluefield="CustomerId"
-                                                                        class="form-control-line"
-                                                                        onchange="SetCustomerName();"
-                                                                        style="width: 100%;">
-                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
-                                                            <transport>
-                                                                <read url="@Url.Action("GetCustomer", "Common")" />
-                                                            </transport>
-                                                        </datasource>
-                                                    </kendo-dropdownlist>
-                                                </div>
-                                            </div>
+                                      
 
                                             <div class="col-md-4">
                                                 <div class="form-group">
@@ -1399,6 +1421,8 @@
                 'OrderDate': $("#OrderDate").getKendoDateTimePicker().value().toJSON(),
                // 'DeliveryDate': $("#DeliveryDate").getKendoDateTimePicker().value().toJSON(),
                 'ExpirationDate': $("#ExpirationDate").getKendoDateTimePicker().value().toJSON(),
+                'StartDate': $("#StartDate").getKendoDateTimePicker().value().toJSON(),
+                'EndDate': $("#EndDate").getKendoDateTimePicker().value().toJSON(),
                 'CurrencyId': Number($("#CurrencyId").val()),
                 'CurrencyName': $("#CurrencyId").data("kendoDropDownList").text(),
                 'CustomerRefNumber': $("#CustomerRefNumber").val(),
