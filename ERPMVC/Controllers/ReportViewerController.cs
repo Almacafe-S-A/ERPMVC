@@ -91,13 +91,12 @@ namespace ERPMVC.Controllers
         public IConfiguration Configuration { get; }
         public void OnInitReportOptions(ReportViewerOptions reportOption)
         {
-
-            //Syncfusion.Report.DataSourceCredentials dsc = new Syncfusion.Report.DataSourceCredentials();
-            //dsc.ConnectionString = "Data Source=DESKTOP-RFQ3R0I;Initial Catalog=ERP;";//Configuration.GetConnectionString("DefaultConnection");
-            //dsc.IntegratedSecurity = false;
-            //dsc.UserId = "sa";
-            //dsc.Password = "sql20.15";
-            //dsc.Name = "DefaultConnection";
+            Syncfusion.Report.DataSourceCredentials dsc = new Syncfusion.Report.DataSourceCredentials();
+            dsc.ConnectionString = "Data Source=localhost;Initial Catalog=ERP;";
+            dsc.IntegratedSecurity = false;
+            dsc.UserId = "sa";
+            dsc.Password = "D3sarr0ll0";
+            dsc.Name = "ERP";
             //if (reportOption.ReportModel.DataSourceCredentials == null)
             //{ reportOption.ReportModel.DataSourceCredentials = new List<Syncfusion.Report.DataSourceCredentials>(); }
             //reportOption.ReportModel.DataSourceCredentials.Add(dsc);
@@ -112,6 +111,8 @@ namespace ERPMVC.Controllers
             FileStream inputStream = new FileStream(basePath + reportOption.ReportModel.ReportPath, FileMode.Open, FileAccess.Read);
             reportOption.ReportModel.Stream = inputStream;
             reportOption.ReportModel.EmbedImageData = true;
+            
+            reportOption.ReportModel.DataSourceCredentials.Add(dsc);
 
 
             //reportOption.ReportModel.ProcessingMode = Syncfusion.EJ.ReportViewer.ProcessingMode.Local;
