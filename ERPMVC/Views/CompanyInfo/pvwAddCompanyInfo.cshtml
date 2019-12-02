@@ -216,9 +216,13 @@
                                                     <div class="demo-section k-content">
 
                                                         <kendo-upload drop-zone="drop-zone1" name="files" on-upload="SaveCompanyImages" multiple="false">
-                                                            <localization select="Seleccionar Imagen" cancel="Cancelar" drop-files-here="Soltar Archivo aquí" invalid-file-extension="Extensión de Archivo Invalido" retry="Reintentar" />
-                                                            <async save-url="@Url.Action("SaveImage","CompanyInfo")" />
+                                                            <localization select="Seleccionar Imagen" cancel="Cancelar" drop-files-here="Soltar Archivo aquí" invalid-file-extension="Extensión de Archivo Invalido" retry="Reintentar"  header-status-uploaded="Listo" header-status-uploading="Cargando"/>
+                                                            <async save-url="@Url.Action("SaveImage","CompanyInfo")"  auto-upload="true"/>
                                                             <validation allowed-extensions='@new string[] {".jpg",".png",".jpeg" }' max-file-size="10485760" />
+                                                            @if (Model.CompanyInfoId != 0)
+                                                            {
+                                                                <files><file name="@ViewData["Nombreimg"]" extension="@ViewData["Extensionimg"]" size="10" /></files>
+                                                            }
                                                         </kendo-upload>
                                                     </div>
 
@@ -340,8 +344,9 @@
 
     function Salir() {
         debugger
-        if ($("#CompanyInfoId").val() == 0 || $("#CompanyInfoId").val() == "" && $("#url").val()=='Imagen') {
-            var dataObject = {
+        if ($("#CompanyInfoId").val() == 0 || $("#CompanyInfoId").val() == "") {
+            if ($("#url").val() == 'Imagen') {
+                var dataObject = {
                 'CompanyInfoId': $("#CompanyInfoId").val() === "" ? "0" : $("#CompanyInfoId").val(),
                 'Company_Name': $("#Company_Name").val(),
                 'Tax_Id': $("#Tax_Id").val(),
@@ -373,6 +378,7 @@
                     alert(textStatus + ": " + XMLHttpRequest.responseText);
                 }
             });
+            }           
         }
     }
 
@@ -396,15 +402,17 @@
             'image': $("#url").val(),
         };
         e.data = dataObject;
-        $("#url").val('Imagen');
+        if ($("#url").val() == "" && $("#CompanyInfoId").val() == 0) {
+            $("#url").val('Imagen');
+        }
     }
 
 
-    $(document).ready(function () {
-        $("#files").closest(".k-upload-button")
-            .find("span")
-            .text("Seleccionar imagen");
-    });
+    //$(document).ready(function () {
+    //    $("#files").closest(".k-upload-button")
+    //        .find("span")
+    //        .text("Seleccionar imagen");
+    //});
 
     function SoloNumeros(e) {
         key = e.keyCode || e.which;

@@ -62,11 +62,29 @@ namespace ERPMVC.Controllers
                     _CompanyInfo = JsonConvert.DeserializeObject<CompanyInfoDTO>(valorrespuesta);
 
                 }
-
                 if (_CompanyInfo == null)
                 {
                     _CompanyInfo = new CompanyInfoDTO();
                 }
+
+                string[] separar;
+                string[] separar1;
+                if (_CompanyInfo.image != null)
+                {
+                    if (_CompanyInfo.image != "Imagen")
+                    {
+                        separar = _CompanyInfo.image.Split("/");
+                        separar1 = separar[2].Split(".");
+                        ViewData["Nombreimg"] = separar1[0].ToString();
+                        ViewData["Extensionimg"] = "." + separar1[1].ToString();
+                    }
+                    else
+                    {
+                        ViewData["Nombreimg"] = "";
+                        ViewData["Extensionimg"] = "";
+                    }
+                }
+               
             }
             catch (Exception ex)
             {
