@@ -14,6 +14,8 @@
 <link rel="stylesheet" href="~/admp/assets/plugins/dropify/dist/css/dropify.min.css">
 <script>
     $(document).ready(function () {
+        $("#AlertSalario").prop("hidden", true);
+        $("#AgregarSalarioCustom").prop("hidden", true)
         //$("#NombreEmpleado_validationMessage").css({ "width": "100%"})
         //document.getElementById("FechaFinContrato").required = false;
         var data = [
@@ -57,8 +59,7 @@
         $("#TipoSangreAlert").prop("hidden", true);
         $("#IdentidadAlert").prop("hidden", true);
         $("#RTNAlert").prop("hidden", true);
-
-    });
+	});
 
     function customFunction(input) {
 
@@ -66,6 +67,75 @@
             return false;
         }
 
+    }
+    
+
+    function GetDataUpload(e) {
+        debugger;
+        var validator = $("#frmEmployees").kendoValidator().data("kendoValidator")
+        if (validator.validate()) {
+            var displayedData1 = $("#gridEmployeeSalary").data().kendoGrid.dataSource.view();
+            var id = 0;
+            if ($("#IdEmpleado").val() == 0) {
+                if (displayedData1.length > 0) {
+                    for (var i = 0; i < displayedData1.length; i++) {
+                        if (displayedData1[i].EmployeeSalaryId > id)
+                            displayedData1[i].EmployeeSalaryId = 0;
+                    }
+                    id = 0;
+                }
+            }
+            var setFechaEgreso = null;
+            var setFechaFinContrato = null;
+            if ($("#FechaEgreso").getKendoDatePicker().value() != null || $("#FechaEgreso").getKendoDatePicker().value() != undefined || $("#FechaEgreso").val() != "") {
+                setFechaEgreso = $("#FechaEgreso").getKendoDatePicker().value().toJSON();
+            }
+            if ($("#FechaFinContrato").getKendoDatePicker().value() != null || $("#FechaFinContrato").getKendoDatePicker().value() != undefined || $("#FechaFinContrato").val() != "") {
+                setFechaFinContrato = $("#FechaFinContrato").getKendoDatePicker().value().toJSON();
+            }
+            var _fechaNacimiento = $("#FechaNacimiento").getKendoDatePicker().value().toJSON()
+            var _fechaIngreso = $("#FechaIngreso").getKendoDatePicker().value().toJSON()
+
+            var dataObject = {
+                'IdEmpleado': $("#IdEmpleado").val() === "" ? "0" : $("#IdEmpleado").val(),
+                'NombreEmpleado': $("#NombreEmpleado").val(),
+                'Correo': $("#Correo").val(),
+                'FechaNacimiento': _fechaNacimiento,
+                'FechaIngreso': _fechaIngreso,
+                'Salario': Number($("#Salario").val()),
+                'Identidad': $("#Identidad").val(),
+                'FechaEgreso': setFechaEgreso,
+                'Direccion': $("#Direccion").val(),
+                'Genero': $("#Genero").data("kendoDropDownList").text(),
+                'TipoSangre': $("#TipoSangre").data("kendoDropDownList").text(),
+                'IdEstado': $("#IdEstado").val(),
+                'IdState': $("#IdState").val(),
+                'NombreContacto': $("#NombreContacto").val(),
+                'TelefonoContacto': $("#TelefonoContacto").val(),
+                'IdCountry': $("#IdCountry").val(),
+                'IdCity': $("#IdCity").val(),
+                'IdCurrency': $("#IdCurrency").val(),
+                'IdActivoinactivo': $("#IdEstado").val(),
+                'IdBank': $("#IdBank").val(),
+                'CuentaBanco': $("#CuentaBanco").val(),
+                'FechaFinContrato': setFechaFinContrato,
+                'Telefono': $("#Telefono").val(),
+                'Extension': $("#Extension").val(),
+                'IdPuesto': $("#IdPuesto").val(),
+                'IdSucursal': $("#IdSucursal").val(),
+                'IdDepartamento': $("#IdDepartamento").val(),
+                'IdTipoContrato': $("#IdTipoContrato").val(),
+                'Notas': $("#Notas").val(),
+                'IdBranch': $("#IdBranch").val(),
+                'ApplicationUserId': 'FC405B7D-9FE3-43C9-97B5-D87A174CAB8A',
+                'RTN': $("#RTN").val(),
+                'Profesion': $("#Profesion").val(),
+                'IdTipoPlanilla': $("#IdTipoPlanilla").val(),
+                'BirthPlace': $("#BirthPlace").val(),
+                '_EmployeeSalary': displayedData1
+            };
+            e.data = dataObject;
+        }
     }
 </script>
 
@@ -612,6 +682,14 @@
     </div>
 </div>
 <script>
+    //function onSelect(e) {
+    //    $.each(e.files, function (index, value) {
+    //        console.log("Name: " + value.name);
+    //        console.log("Size: " + value.size + " bytes");
+    //        console.log("Extension: " + value.extension);
+    //    });
+    //};
+
     function ValidarRTN() {
         var dataObject = {
             RTN: $("#RTN").val(),
@@ -645,7 +723,6 @@
     }
 
     function ValidarIdentidad() {
-        debugger;
         var dataObject = {
             Identidad: $("#Identidad").val(),
             IdEmpleado: $("#IdEmpleado").val()
@@ -729,7 +806,18 @@
         }
     }
 
-	function AddSalarioEmpleado() {
+    function AddSalarioEmpleado() {
+        var displayedData = $("#gridEmployeeSalary").data().kendoGrid.dataSource.view();
+        if (displayedData.length >= 1 && $("#IdEmpleado").val() == 0) {
+            $("#AgregarSalario").prop("hidden", true);
+            $("#AgregarSalarioCustom").prop("hidden", false);
+            $("#AlertSalario").prop("hidden", false);
+        }
+        else {
+            $("#AgregarSalario").prop("hidden", false);
+            $("#AgregarSalarioCustom").prop("hidden", true);
+            $("#AlertSalario").prop("hidden", true);
+        }
         $('#myModalSalarioEmpleado').modal('show');
     }
 
@@ -813,7 +901,8 @@
         }
     }
 
-	function SaveEmployees(e) {
+    function SaveEmployees(e) {
+        debugger;
 		if ($('#TipoSangre').val() == 0) {
             $('#TipoSangreAlert').show();
         }
@@ -847,7 +936,9 @@
 
                         var _fechaNacimiento = $("#FechaNacimiento").getKendoDatePicker().value().toJSON()
                         var _fechaIngreso = $("#FechaIngreso").getKendoDatePicker().value().toJSON()
-
+                        var upload = $("#Foto").data("kendoUpload"),
+                            files = upload.getFiles();
+                        var Foto1 = files[0].rawFile
                         var dataObject = {
                             'IdEmpleado': $("#IdEmpleado").val() === "" ? "0" : $("#IdEmpleado").val(),
                             'NombreEmpleado': $("#NombreEmpleado").val(),
@@ -879,19 +970,16 @@
                             'IdTipoContrato': $("#IdTipoContrato").val(),
                             'Notas': $("#Notas").val(),
                             'IdBranch': $("#IdBranch").val(),
+                            
                             //temporal
                             'ApplicationUserId': 'FC405B7D-9FE3-43C9-97B5-D87A174CAB8A',
                             'RTN': $("#RTN").val(),
                             'Profesion': $("#Profesion").val(),
                             'IdTipoPlanilla': $("#IdTipoPlanilla").val(),
                             'BirthPlace': $("#BirthPlace").val(),
-
                             //'_Employees': displayedData,
-                            '_EmployeeSalary': displayedData1
+                            '_EmployeeSalary': displayedData1,
                         };
-
-                        //var form = $("#frmNumeracion");
-                        // form.validate();
 
                         var validator = $("#frmEmployees").data("kendoValidator");
 
@@ -901,9 +989,9 @@
                                 url: '@Url.Action("SaveEmployees", "Employees")',
                                 method: 'POST',
                                 datatype: "json",
-                                contentType: 'application/json',
+                                contentType: "application/json",
                                 async: false,
-                                data: JSON.stringify(dataObject),
+                                data: { 'Foto': Foto1, '_EmployeesDTO': JSON.stringify(dataObject) },
                                 success: function (data) {
                                     $.toast({
                                         heading: 'Satisfactorio',
@@ -981,6 +1069,39 @@
                 }
             })
         });
+        }
+    }
+    //$("#NombreEmpleado").keyup(function (e) {
+    //    if ($("#NombreEmpleado").val() == "" || $("#Identidad").val() == "" || $("#FechaNacimiento").val() == "" || $("#LugarNacimiento").val() == ""
+    //        || $("#Genero").data("kendoDropDownList").value() == 0 || $("#TipoSangre").data("kendoDropDownList").value() == 0 || $("#Correo").val() == ""
+    //        || $("#Telefono").val() == "" || $("#Extension").val() == "" || $("#RTN").val() == "" || $("#Profesion").val() == ""
+    //        || $("#IdEstado").data("kendoDropDownList").value() == 0 || $("#FechaIngreso").val() == "" || $("#IdPuesto").data("kendoDropDownList").value() == 0
+    //        || $("#IdDepartamento").data("kendoDropDownList").value() == 0 || $("#Salario").val() == "" || $("#IdCurrency").data("kendoDropDownList").value() == 0
+    //        || $("#IdCountry").data("kendoDropDownList").value() == 0 || $("#IdState").data("kendoDropDownList").value() == 0 || $("#IdCity").data("kendoDropDownList").value() == 0
+    //        || $("#Direccion").val() == "" || $("#IdBank").data("kendoDropDownList").value() == 0 || $("#CuentaBanco").val() == "" || $("#IdBranch").data("kendoDropDownList").value() == 0
+    //        || $("#IdTipoContrato").data("kendoDropDownList").value() == 0) {
+    //        $("#Foto").data("kendoUpload").disable();
+    //    }
+    //    else {
+    //        $("#Foto").data("kendoUpload").enable();
+    //    }
+    //});
+
+    //$("#Identidad").keyup(function (e) {
+    //    if ($("#NombreEmpleado").val() == "" || $("#Identidad").val() == "" || $("#FechaNacimiento").val() == "" || $("#LugarNacimiento").val() == ""
+    //        || $("#Genero").data("kendoDropDownList").value() == 0 || $("#TipoSangre").data("kendoDropDownList").value() == 0 || $("#Correo").val() == ""
+    //        || $("#Telefono").val() == "" || $("#Extension").val() == "" || $("#RTN").val() == "" || $("#Profesion").val() == ""
+    //        || $("#IdEstado").data("kendoDropDownList").value() == 0 || $("#FechaIngreso").val() == "" || $("#IdPuesto").data("kendoDropDownList").value() == 0
+    //        || $("#IdDepartamento").data("kendoDropDownList").value() == 0 || $("#Salario").val() == "" || $("#IdCurrency").data("kendoDropDownList").value() == 0
+    //        || $("#IdCountry").data("kendoDropDownList").value() == 0 || $("#IdState").data("kendoDropDownList").value() == 0 || $("#IdCity").data("kendoDropDownList").value() == 0
+    //        || $("#Direccion").val() == "" || $("#IdBank").data("kendoDropDownList").value() == 0 || $("#CuentaBanco").val() == "" || $("#IdBranch").data("kendoDropDownList").value() == 0
+    //        || $("#IdTipoContrato").data("kendoDropDownList").value() == 0) {
+    //        $("#Foto").data("kendoUpload").disable();
+    //    }
+    //    else {
+    //        $("#Foto").data("kendoUpload").enable();
+    //    }
+    //});
 </script>
 
 

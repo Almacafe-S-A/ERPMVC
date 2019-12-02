@@ -118,15 +118,13 @@ namespace ERPMVC.Controllers
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<EmployeesDTO>> SaveEmployees(IEnumerable<IFormFile> files, EmployeesDTO _EmployeesP)
         {
-
-            Employees _Employees = _EmployeesP;
             try
             {
-                // DTO_NumeracionSAR _liNumeracionSAR = new DTO_NumeracionSAR();
+                Employees _listEmployees = new Employees();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Employees/GetEmployeesById/" + _Employees.IdEmpleado);
+                var result = await _client.GetAsync(baseadress + "api/Employees/GetEmployeesById/" + _EmployeesDTO.IdEmpleado);
                 string valorrespuesta = "";
                 foreach (var file in files)
                 {
@@ -173,6 +171,8 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
+            return Json(_EmployeesDTO);
+        }
 
             return Json(_Employees);
         }
@@ -182,26 +182,24 @@ namespace ERPMVC.Controllers
         // POST: Employees/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<Employees>> Insert(Employees _EmployeesP)
+        public async Task<ActionResult<EmployeesDTO>> Insert(EmployeesDTO _EmployeesDTO)
         {
-            Employees _Employees = _EmployeesP;
+            EmployeesDTO _Employees = new EmployeesDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _Employees.Usuariocreacion = HttpContext.Session.GetString("user");
-                _Employees.Usuariomodificacion = HttpContext.Session.GetString("user");
-                _Employees.FechaCreacion = DateTime.Now;
-                _Employees.FechaModificacion = DateTime.Now;
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Employees/Insert", _Employees);
-                string jsonresult = "";
-                jsonresult = JsonConvert.SerializeObject(_Employees);
+                _EmployeesDTO.Usuariocreacion = HttpContext.Session.GetString("user");
+                _EmployeesDTO.Usuariomodificacion = HttpContext.Session.GetString("user");
+                _EmployeesDTO.FechaCreacion = DateTime.Now;
+                _EmployeesDTO.FechaModificacion = DateTime.Now;
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Employees/Insert", _EmployeesDTO);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Employees = JsonConvert.DeserializeObject<Employees>(valorrespuesta);
+                    _Employees = JsonConvert.DeserializeObject<EmployeesDTO>(valorrespuesta);
                 }
 
             }
@@ -209,27 +207,27 @@ namespace ERPMVC.Controllers
             {
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Employees }, Total = 1 });
+            return Ok(_Employees);
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _Employees }, Total = 1 });
         }
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Int64 Id, Employees _EmployeesP)
+        public async Task<ActionResult<EmployeesDTO>> Update(Int64 Id, EmployeesDTO _EmployeesDTO)
         {
-            Employees _Employees = _EmployeesP;
+            EmployeesDTO _Employees = new EmployeesDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _Employees.FechaModificacion = DateTime.Now;
-                _Employees.Usuariomodificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PutAsJsonAsync(baseadress + "api/Employees/Update", _Employees);
+                _EmployeesDTO.FechaModificacion = DateTime.Now;
+                _EmployeesDTO.Usuariomodificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PutAsJsonAsync(baseadress + "api/Employees/Update", _EmployeesDTO);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Employees = JsonConvert.DeserializeObject<Employees>(valorrespuesta);
+                    _Employees = JsonConvert.DeserializeObject<EmployeesDTO>(valorrespuesta);
                 }
 
             }
@@ -238,8 +236,8 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return await Task.Run(() => Ok(_Employees));
-            //return new ObjectResult(new DataSourceResult { Data = new[] { _Employees }, Total = 1 });
+            //return await Task.Run(() => Ok(_Employees));
+            return new ObjectResult(new DataSourceResult { Data = new[] { _EmployeesDTO }, Total = 1 });
         }
 
 
