@@ -181,7 +181,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<Alert>> SaveAlert([FromBody]Alert _Alert)
+        public async Task<ActionResult<Alert>> SaveAlert(AlertDTO _Alert)
         {
 
             try
