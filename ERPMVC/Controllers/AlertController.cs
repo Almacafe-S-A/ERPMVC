@@ -180,7 +180,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<Alert>> SaveAlert([FromBody]Alert _Alert)
         {
 
