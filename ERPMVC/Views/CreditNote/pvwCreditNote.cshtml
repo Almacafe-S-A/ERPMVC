@@ -49,19 +49,11 @@
 
 @await Html.PartialAsync("~/Views/OFAC/Index.cshtml")
 
+
 <script>
-    $(document).ready(function () {
-        //$("#IdFacturaFiscal").kendoMaskedTextBox({
-        //    mask: "000-000-00-00000000"
-        //});
-        document.getElementById('FacturaInterna').style.display = 'none';
-        //$("#TelefonoContacto").kendoMaskedTextBox({
-        //    mask: "(999) 0000-0000"
-        //});
-        //$("#Identidad").kendoMaskedTextBox({
-        //    mask: "0000-0000-00000#"
-        //});
-    });
+    
+
+    
 
     function soloNumeros(e) {
         var key = window.Event ? e.which : e.keyCode
@@ -327,8 +319,9 @@
                                             <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Tefono" class="control-label" style="width:100%"></label>
-                                                    <input type="text" asp-for="Tefono" class="form-control required " style="min-width: 100%" onKeyPress="return soloNumeros(event)" />
+                                                    <input type="text" asp-for="Tefono" class="form-control required " required data-msg-required="Telefono requerido." style="min-width: 100%" onchange="validarTefono()" />
                                                     <span asp-validation-for="Tefono" class="text-danger"></span>
+                                                    <span id="TefonoAlert" class="text-danger"><span role="alert" class="k-icon k-i-warning"></span> Complete el número de teléfono.</span>
                                                 </div>
                                             </div>
 
@@ -733,9 +726,31 @@
     </div>
 </div>
 
-
 <script>
+    function validarTefono() {
+        var cadena = $("#Tefono").val();
+        if (cadena.indexOf("_") > -1 == true) {
+            $("#TefonoAlert").show();
+        }
+        else {
+            $("#TefonoAlert").hide();
+        }
+    }
+</script>
+<script>
+    $(document).ready(function () {
+        debugger;
+        
+        //$("#IdFacturaFiscal").kendoMaskedTextBox({
+        //    mask: "000-000-00-00000000"
+        //});
+        document.getElementById('FacturaInterna').style.display = 'none';
 
+        //$("#Identidad").kendoMaskedTextBox({
+        //    mask: "0000-0000-00000#"
+        //});
+        $("#TefonoAlert").hide();
+    });
     function GetProductIdS() {
         return { 'ProductId': $("#ProductId").val() }
     }
@@ -828,46 +843,47 @@
             debugger
             if (displayedData.length > 0) {
                 if (validator.validate() && validator2.validate()) {
-                    dataObject
-                    $.ajax({
-                        url: '@Url.Action("SaveCreditNote", "CreditNote")',
-                        method: 'POST',
-                        datatype: "json",
-                        //  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-                        contentType: 'application/json',
-                        async: false,
-                        data: JSON.stringify(dataObject),
-                        success: function (data) {
+                    if ($('#TefonoAlert').is(':hidden')) {
+                        dataObject
+                        $.ajax({
+                            url: '@Url.Action("SaveCreditNote", "CreditNote")',
+                            method: 'POST',
+                            datatype: "json",
+                            //  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                            contentType: 'application/json',
+                            async: false,
+                            data: JSON.stringify(dataObject),
+                            success: function (data) {
+                                debugger;
+                                $.toast({
+                                    heading: 'Satisfactorio',
+                                    text: '<br/><br/>Datos guardados correctamente.',
+                                    position: 'top-right',
+                                    loaderBg: '#ff6849',
+                                    icon: 'success',
+                                    hideAfter: 30000,
+                                    stack: 6
+                                });
+                                //notification.show({
+                                //    message: "Guardado correctamente!"
+                                //}, "upload-success");
 
-                            $.toast({
-                                heading: 'Satisfactorio',
-                                text: '<br/><br/>Datos guardados correctamente.',
-                                position: 'top-right',
-                                loaderBg: '#ff6849',
-                                icon: 'success',
-                                hideAfter: 30000,
-                                stack: 6
-                            });
-                            //notification.show({
-                            //    message: "Guardado correctamente!"
-                            //}, "upload-success");
+                                RefreshCotizaciones();
+                                $('#myModalSalesOrder').modal('hide');
 
-                            RefreshCotizaciones();
-                            $('#myModalSalesOrder').modal('hide');
+                            },
+                            error: function (XMLHttpRequest, textStatus, errorThrown) {
 
-                        },
-                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                $("#btnSaveCreditNote").show();
+                                $("#btnSaveCreditNote").prop("disabled", false);
+                                notification.show({
+                                    title: "Validación",
+                                    message: textStatus + ": " + XMLHttpRequest.responseText
+                                }, "error");
 
-                            $("#btnSaveCreditNote").show();
-                            $("#btnSaveCreditNote").prop("disabled", false);
-                            notification.show({
-                                title: "Validación",
-                                message: textStatus + ": " + XMLHttpRequest.responseText
-                            }, "error");
-
-                        }
-                    });
-
+                            }
+                        });
+                    }
                 }
                 else {
                     notification.show({
