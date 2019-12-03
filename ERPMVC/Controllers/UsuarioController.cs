@@ -279,59 +279,30 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<ApplicationUser>> ChangePassword([FromBody]ApplicationUserDTO _usuario)
+        public async Task<ActionResult<ApplicationUser>> ChangePassword([FromBody]CambiarPassDTO _cambio)
         {
             try
             {
-                // TODO: Add insert logic here
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-
              
-                var result = await _client.GetAsync(baseadress + "api/Usuario/GetUserByEmail/"+ _usuario.Email);
-                string valorrespuesta = "";
+                var result = await _client.GetAsync(baseadress + "api/Usuario/GetUserByEmail/"+ _cambio.Email);
                 if (result.IsSuccessStatusCode)
                 {
-
-                    string password = _usuario.PasswordHash;
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _usuario = JsonConvert.DeserializeObject<ApplicationUserDTO>(valorrespuesta);
-                    var hasher = new PasswordHasher<ApplicationUser>();
-
-
-                    _usuario.PasswordHash = password;
-                    _usuario.cambiarpassword = true;
-                    //hasher.HashPassword(_usuario,_usuario.PasswordHash)
-                    if (!await IsPasswordHistory(_usuario.Id.ToString(),_usuario.PasswordHash ))
+                    string password = _cambio.Password;
+                    string datosUsuario = await (result.Content.ReadAsStringAsync());
+                    if (!await IsPasswordHistory(JsonConvert.DeserializeObject<ApplicationUser>(datosUsuario).Id.ToString(),password))
                     {
-
-                        result = await _client.PostAsJsonAsync(baseadress + "api/Usuario/ChangePassword", _usuario);
-                        valorrespuesta = "";
+                        result = await _client.PostAsJsonAsync(baseadress + "api/Usuario/ChangePassword", _cambio);
                         if (result.IsSuccessStatusCode)
                         {
-                            valorrespuesta = await (result.Content.ReadAsStringAsync());
-                            _usuario = JsonConvert.DeserializeObject<ApplicationUserDTO>(valorrespuesta);
-
-                            _usuario.PasswordHash = "**********************";
+                            return new ObjectResult(new DataSourceResult { Data = "", Total = 1 });
                         }
                         else
-                        {
-
-                            //   _usuario.PasswordHash = await result.Content.ReadAsStringAsync() + " El password debe tener mayusculas y minusculas!";
+                        {   
                             string error = await result.Content.ReadAsStringAsync();
                             return await Task.Run(() => BadRequest($"{error}"));
-
-                            //return this.Json(new DataSourceResult
-                            //{
-                            //    //Data=  _usuario ,
-                            //    Errors = $"Ocurrio un error:{error} El password debe tener mayusculas y minusculas!"
-
-                            //});
-
-                            // return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
-                            //return await Task.Run(() => BadRequest($"Ocurrio un error:{result.Content.ReadAsStringAsync()} El password debe tener mayusculas y minusculas!"));
-                            //  throw new Exception($"Ocurrio un error:{result.Content.ReadAsStringAsync()} El password debe tener mayusculas y minusculas!");
                         }
                     }
                     else
@@ -339,18 +310,16 @@ namespace ERPMVC.Controllers
                         return await Task.Run(() => BadRequest($"No puede utilizar las ultimas contraseñas "));
                     }
                 }
-
+                else
+                {
+                    return await Task.Run(() => BadRequest($"Usuario o contraseña incorrecta"));
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                //return BadRequest($"Ocurrio un error{ex.Message}");
-                throw ex;
-
+                return await Task.Run(() => BadRequest($"Ocurrio un error no manejado en el sistema "));
             }
-
-            _usuario.PasswordHash = "**********************";
-            return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
         }
 
         [HttpPut("PutUsuario")]
