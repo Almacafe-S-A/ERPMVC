@@ -117,17 +117,17 @@ namespace ERPMVC.Controllers
 
          [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<EmployeesDTO>> SaveEmployees(IEnumerable<IFormFile> files, EmployeesDTO _EmployeesP)
-        {
 
-            Employees _Employees = _EmployeesP;
+        {
             try
             {
-                // DTO_NumeracionSAR _liNumeracionSAR = new DTO_NumeracionSAR();
+                Employees _listEmployees = new Employees();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Employees/GetEmployeesById/" + _Employees.IdEmpleado);
+                var result = await _client.GetAsync(baseadress + "api/Employees/GetEmployeesById/" + _EmployeesDTO.IdEmpleado);
                 string valorrespuesta = "";
+
                 IFormFile file = files.FirstOrDefault();
                 if (file != null)
                 {
@@ -172,6 +172,7 @@ namespace ERPMVC.Controllers
                
                         
                     
+
             }
             catch (Exception ex)
             {
@@ -180,8 +181,10 @@ namespace ERPMVC.Controllers
                 
             }
 
+
             return Json(_EmployeesP);
         }
+
         //--------------------------------------------------------------------------------------
         // POST: Employees/Insert
         [HttpPost]

@@ -203,47 +203,54 @@ namespace ERPMVC.Controllers
             CertificadoDeposito _CertificadoDeposito = new CertificadoDeposito();
             try
             {
-
-                foreach (var _Certificado in _listado.CertificadosList)
+                if(_listado!=null)
                 {
-
-                    string baseadress = config.Value.urlbase;
-                    HttpClient _client = new HttpClient();
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoById/" + _Certificado);
-                    string valorrespuesta = "";
-                    if (result.IsSuccessStatusCode)
+                    foreach (var _Certificado in _listado.CertificadosList)
                     {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDeposito>(valorrespuesta);
+
+                        string baseadress = config.Value.urlbase;
+                        HttpClient _client = new HttpClient();
+                        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                        var result = await _client.GetAsync(baseadress + "api/CertificadoDeposito/GetCertificadoDepositoById/" + _Certificado);
+                        string valorrespuesta = "";
+                        if (result.IsSuccessStatusCode)
+                        {
+                            valorrespuesta = await (result.Content.ReadAsStringAsync());
+                            _CertificadoDeposito = JsonConvert.DeserializeObject<CertificadoDeposito>(valorrespuesta);
+
+                        }
+
+                        if (_CertificadoDeposito == null)
+                        {
+                            _CertificadoDeposito = new CertificadoDeposito();
+                        }
+
+                        KardexDTO _kardexparam = new KardexDTO
+                        {
+                            Ids = _listado.CertificadosList,
+                            DocumentName = "CD"
+                            ,
+                            SalesOrderId = _listado.SalesOrderId,
+                            EndDate = _listado.EndDate,
+                            StartDate = _listado.EndDate
+                        };
+                        //  List<KardexLine> _kardexsaldo = new List<KardexLine>();
+                        _kardexparam.UsuarioCreacion = HttpContext.Session.GetString("user");
+                        _kardexparam.UsuarioModificacion = HttpContext.Session.GetString("user");
+                        result = await _client.PostAsJsonAsync(baseadress + "api/Kardex/GetMovimientosCertificados", _kardexparam);
+                        valorrespuesta = "";
+                        if (result.IsSuccessStatusCode)
+                        {
+                            valorrespuesta = await (result.Content.ReadAsStringAsync());
+                            _ProformaInvoiceDTO = JsonConvert.DeserializeObject<ProformaInvoiceDTO>(valorrespuesta);
+                        }
+
 
                     }
-
-                    if (_CertificadoDeposito == null)
-                    {
-                        _CertificadoDeposito = new CertificadoDeposito();
-                    }
-
-                    KardexDTO _kardexparam = new KardexDTO { Ids = _listado.CertificadosList , DocumentName = "CD" };
-                    //  List<KardexLine> _kardexsaldo = new List<KardexLine>();
-                    _kardexparam.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    _kardexparam.UsuarioModificacion = HttpContext.Session.GetString("user");
-                    result = await _client.PostAsJsonAsync(baseadress + "api/Kardex/GetMovimientosCertificados", _kardexparam);
-                    valorrespuesta = "";
-                    if (result.IsSuccessStatusCode)
-                    {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _ProformaInvoiceDTO = JsonConvert.DeserializeObject<ProformaInvoiceDTO>(valorrespuesta);
-                    }
-
-                    // _CertificadoDeposito._CertificadoLine.Clear();
-                    //foreach (var item in _CertificadoDeposito._CertificadoLine)
-                    //{
-                    //    item.Quantity = (from c in _kardexsaldo
-                    //                     .Where(q => q.SubProducId == item.SubProductId)
-                    //                     select c.TotalCD
-                    //                     ).FirstOrDefault();
-                    //}
+                }
+                else
+                {
+                    return await Task.Run(() => BadRequest("No se anulo el documento!"));
                 }
 
 
@@ -289,10 +296,10 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-
+                    return await Task.Run(() => BadRequest("No llego correctamente el documento!"));
                 }
 
-            return Json(_CertificadoDeposito);
+            return await Task.Run(()=>Json(_CertificadoDeposito));
         }
 
 
@@ -358,7 +365,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_CertificadoDeposito);
+            return await Task.Run(() => Json(_CertificadoDeposito));
         }
 
 
@@ -433,7 +440,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_CertificadoDeposito);
+            return await Task.Run(() => Json(_CertificadoDeposito));
         }
 
         // POST: CertificadoDeposito/Insert

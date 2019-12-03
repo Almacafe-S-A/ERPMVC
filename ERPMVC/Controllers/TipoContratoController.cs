@@ -144,21 +144,30 @@ namespace ERPMVC.Controllers
             TipoContrato _TipoContrato = _TipoContratoP;
             try
             {
+                TipoContrato _listTipoContrato = new TipoContrato();
                 // DTO_NumeracionSAR _liNumeracionSAR = new DTO_NumeracionSAR();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/TipoContrato/GetTipoContratoById/" + _TipoContrato.IdTipoContrato);
-                string valorrespuesta = "";
+                var result1 = await _client.GetAsync(baseadress + "api/TipoContrato/GetTipoContratoByName/" + _TipoContrato.NombreTipoContrato);
+                //var result = await _client.GetAsync(baseadress + "api/TipoContrato/GetTipoContratoById/" + _TipoContrato.IdTipoContrato);
+                string valorrespuesta1 = "";
                 _TipoContrato.FechaModificacion = DateTime.Now;
                 _TipoContrato.Usuariomodificacion = HttpContext.Session.GetString("user");
-                if (result.IsSuccessStatusCode)
+                if (result1.IsSuccessStatusCode)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _TipoContrato = JsonConvert.DeserializeObject<TipoContratoDTO>(valorrespuesta);
+                    valorrespuesta1 = await (result1.Content.ReadAsStringAsync());
+                    _TipoContrato = JsonConvert.DeserializeObject<TipoContratoDTO>(valorrespuesta1);
                 }
 
                 if (_TipoContrato == null) { _TipoContrato = new Models.TipoContrato(); }
+
+                if (_TipoContrato.IdTipoContrato > 0)
+                {
+                    if (_TipoContrato.IdTipoContrato != _TipoContratoP.IdTipoContrato)
+                    return await Task.Run(() => BadRequest($"Ya existe un Contrato registrado con ese nombre."));
+                }
+                
 
                 if (_TipoContratoP.IdTipoContrato == 0)
                 {
@@ -168,6 +177,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
+                    var result = await _client.GetAsync(baseadress + "api/TipoContrato/GetTipoContratoById/" + _TipoContrato.IdTipoContrato);
                     _TipoContratoP.Usuariocreacion = _TipoContrato.Usuariocreacion;
                     _TipoContratoP.FechaCreacion = _TipoContrato.FechaCreacion;
                     var updateresult = await Update(_TipoContrato.IdTipoContrato, _TipoContratoP);

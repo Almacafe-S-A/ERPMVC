@@ -5,6 +5,7 @@
 
 trigger:
 - desarrollo
+- master
 
 pool:
   vmImage: 'windows-latest'
@@ -17,17 +18,19 @@ variables:
 
 steps:
 
-- task: Npm@1
-  inputs:
-    command: 'custom'
-    customCommand: 'install npm -g --ca=null'
-
 - task: SonarQubePrepare@4
   inputs:
-    SonarQube: 'SonarQube'
+    SonarQube: 'Sonarqube HTTP'
     scannerMode: 'MSBuild'
-    projectKey: 'ALMACAFE-FRONTEND'
-    projectName: 'ALMACAFE Fron End'
+    projectKey: 'ALMACAFE-FE'
+    projectName: 'ALMACAFE FRONT END'
+    extraProperties: |
+      # Additional properties that will be passed to the scanner, 
+      # Put one key=value per line, example:
+      sonar.exclusions=**/*.bin,**/wwwroot/**,
+      sonar.login=DevOps
+      sonar.password=$(SonarPassword)      
+  condition: eq(variables['Build.SourceBranchName'], 'master')
 
 - task: NuGetToolInstaller@1
 
@@ -51,10 +54,15 @@ steps:
     xmlTransformationRules: 
     jsonTargetFiles: '**/appsettings.json'
 
-- task: VSTest@2
+
+
+- task: SonarQubeAnalyze@4
+  condition: eq(variables['Build.SourceBranchName'], 'master')
+
+- task: SonarQubePublish@4
   inputs:
-    platform: '$(buildPlatform)'
-    configuration: '$(buildConfiguration)'
+    pollingTimeoutSec: '300'
+  condition: eq(variables['Build.SourceBranchName'], 'master')
 
 - task: PublishBuildArtifacts@1
   inputs:
