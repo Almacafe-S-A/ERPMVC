@@ -119,13 +119,14 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult<EmployeesDTO>> SaveEmployees(IEnumerable<IFormFile> files, EmployeesDTO _EmployeesP)
 
         {
+            Employees _Employees = _EmployeesP;
             try
             {
                 Employees _listEmployees = new Employees();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Employees/GetEmployeesById/" + _EmployeesDTO.IdEmpleado);
+                var result = await _client.GetAsync(baseadress + "api/Employees/GetEmployeesById/" + _EmployeesP.IdEmpleado);
                 string valorrespuesta = "";
 
                 IFormFile file = files.FirstOrDefault();
