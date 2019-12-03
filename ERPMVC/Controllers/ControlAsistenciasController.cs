@@ -150,6 +150,7 @@ namespace ERPMVC.Controllers
             return Json(ControlAsistencia);
         }
 
+
         [HttpPost]
         public async Task<JsonResult> ColorTipoAsistencia(Int32 Id)
         {
@@ -165,15 +166,19 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     Ele = JsonConvert.DeserializeObject<ElementoConfiguracion>(valorrespuesta);
+
                 }
+
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
+
             return Json(Ele);
         }
+
 
         [HttpGet]
         public async Task<DataSourceResult> GetGetControlAsistencias([DataSourceRequest]DataSourceRequest request, string primero, string actual)

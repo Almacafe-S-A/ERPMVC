@@ -7,6 +7,11 @@
 	var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
 }
 
+<script src="~/admp/assets/plugins/dropify/dist/js/dropify.min.js"></script>
+
+<link rel="stylesheet" href="~/admp/assets/plugins/dropify/dist/css/dropify.min.css">
+
+
 <script>
     $(document).ready(function () {
         $("#AlertSalario").prop("hidden", true);
@@ -132,6 +137,49 @@
             e.data = dataObject;
         }
     }
+
+    var onBegin = function () {
+        //alert("Begin");
+        
+    };
+
+    var onComplete = function () {
+        //alert("Complete");
+        //$('#ModalEmployees').modal('hide');
+    };
+
+    var onSuccess = function (context) {
+        //alert(context);
+        console.log(context);
+        $.toast({
+            heading: 'Satisfactorio',
+            text: '<br/><br/> Datos guardados correctamente.',
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'success',
+            hideAfter: 30000,
+            stack: 6
+        });
+        $('#ModalEmployees').modal('hide');
+    };
+
+    var onFailed = function (context) {
+        // alert(context);
+        console.log(context);
+        $.toast({
+            heading: 'Error',
+            text: '<br/><br/> Error al Crear Empleado',
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'error',
+            hideAfter: 30000,
+            stack: 6
+        });
+    };
+
+
+
+
 </script>
 
 
@@ -150,10 +198,13 @@
 					<div class="col-lg-12">
 						<div class="card">
 							<div class="card-body">
-								<form id="frmEmployees" kendo-validator="true"
+								<form id="frmEmployees" kendo-validator="true" asp-action="SaveEmployees" asp-controller="Employees"
 									  data-ajax="true"
-									  data-ajax-method="post"
-                                      data-ajax-begin="SaveEmployees" enctype="multipart/form-data"
+
+									  data-ajax-method="post" enctype="multipart/form-data"
+                                      data-ajax-begin="onBegin" data-ajax-complete="onComplete"
+                                     data-ajax-failure="onFailed" data-ajax-success="onSuccess"
+
 									  class="validation-wizard wizard-circle">
 									<div class="form-body">
 										<h3 class="card-title">Empleados</h3>
@@ -623,13 +674,24 @@
                                             </div>
 
 
-                                            <div class="col-sm-4 col-md-4">
-                                                <label asp-for="Foto" class=" control-label" style="width:100%">Foto del Empleado</label>
-                                                @*<kendo-upload asp-for="Foto" drop-zone="drop-zone1" name="files" on-upload="SaveEmployees">
-                                                    <async save-url="@Url.Action("SaveEmployees","Employees")" />
-                                                    <validation allowed-extensions='@new string[] { ".jpg",".png",".jpeg" }' max-file-size="10485760" />
-                                                </kendo-upload>*@
-                                                <input type="file" name="Foto" id="Foto"/>
+
+                                             <div class="col-md-4" hidden>
+                                                <div class="form-group">
+                                                    @(Html.Kendo().Upload()
+                                                        .Name("file")                                                        
+                                                        .HtmlAttributes(new { aria_label = "Foto Empleado" })
+                                                    )
+                                                </div>
+                                            </div>
+
+                                            <div class="col-sm-4 col-md-4">                                                
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <h4 class="card-title">Foto Empleado</h4>
+                                                        <input type="file" asp-for="files" id="files" name="files" class="dropify" data-max-file-size="2M" accept=".jpg,.jpeg,.png,.gif" />
+                                                    </div>
+                                                </div>
+
                                             </div>
                                         </div>
 									</div>
@@ -796,11 +858,15 @@
     function AddSalarioEmpleado() {
         var displayedData = $("#gridEmployeeSalary").data().kendoGrid.dataSource.view();
         if (displayedData.length >= 1 && $("#IdEmpleado").val() == 0) {
-            $("#AgregarSalario").prop("disabled", true);
+
+            $("#AgregarSalario").prop("hidden", true);
+            $("#AgregarSalarioCustom").prop("hidden", false);
             $("#AlertSalario").prop("hidden", false);
         }
         else {
-            $("#AgregarSalario").prop("disabled", false);
+            $("#AgregarSalario").prop("hidden", false);
+            $("#AgregarSalarioCustom").prop("hidden", true);
+
             $("#AlertSalario").prop("hidden", true);
         }
         $('#myModalSalarioEmpleado').modal('show');
@@ -1043,6 +1109,52 @@
     //        $("#Foto").data("kendoUpload").enable();
     //    }
     //});
+
+
+
+        
+        $(document).ready(function () {
+            // Basic
+            $('.dropify-std').dropify();
+
+            // Translated
+            $('.dropify').dropify({
+                messages: {
+                    default: 'Arrastre un archivo de Imagen o click para cagar archivo',
+                    replace: 'Click para Reemplazar',
+                    remove: 'Quitar',
+                    error: 'Error'
+                    
+                }
+            });
+
+            // Used events
+            var drEvent = $('#input-file-events').dropify();
+
+            drEvent.on('dropify.beforeClear', function (event, element) {
+                return confirm("Esta seguro que desea eliminar el archivo \"" + element.file.name + "\" ?");
+            });
+
+            drEvent.on('dropify.afterClear', function (event, element) {
+                alert('Archivo eliminado');
+            });
+
+            drEvent.on('dropify.errors', function (event, element) {
+                console.log('Has Errors');
+            });
+
+            var drDestroy = $('#input-file-to-destroy').dropify();
+            drDestroy = drDestroy.data('dropify')
+            $('#toggleDropify').on('click', function (e) {
+                e.preventDefault();
+                if (drDestroy.isDropified()) {
+                    drDestroy.destroy();
+                } else {
+                    drDestroy.init();
+                }
+            })
+        });
+
 </script>
 
 

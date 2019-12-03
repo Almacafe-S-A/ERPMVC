@@ -115,70 +115,9 @@ namespace ERPMVC.Controllers
 
         }
 
-        //[HttpPost]
-        //public async Task<ActionResult<Employees>> SaveEmployees(IEnumerable<IFormFile> files, EmployeesDTO _EmployeesP)
-        //{
+         [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<EmployeesDTO>> SaveEmployees(IEnumerable<IFormFile> files, EmployeesDTO _EmployeesP)
 
-        //    Employees _Employees = _EmployeesP;
-        //    try
-        //    {
-        //        // DTO_NumeracionSAR _liNumeracionSAR = new DTO_NumeracionSAR();
-        //        string baseadress = config.Value.urlbase;
-        //        HttpClient _client = new HttpClient();
-        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-        //        var result = await _client.GetAsync(baseadress + "api/Employees/GetEmployeesById/" + _Employees.IdEmpleado);
-        //        string valorrespuesta = "";
-        //        foreach (var file in files)
-        //        {
-        //            FileInfo info = new FileInfo(file.FileName);
-        //            if (info.Extension.Equals(".jpg") || info.Extension.Equals(".png") || info.Extension.Equals(".jpeg"))
-        //            {
-        //                //_Employees.FechaModificacion = DateTime.Now;
-        //                //_Employees.Usuariomodificacion = HttpContext.Session.GetString("user");
-        //                if (result.IsSuccessStatusCode)
-        //                {
-        //                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-        //                    _Employees = JsonConvert.DeserializeObject<EmployeesDTO>(valorrespuesta);
-        //                }
-
-        //                if (_Employees == null) { _Employees = new Models.Employees(); }
-
-        //                if (_EmployeesP.IdEmpleado == 0)
-        //                {
-        //                    _Employees.FechaCreacion = DateTime.Now;
-        //                    _EmployeesP.ApplicationUserId = Guid.Parse("FC405B7D-9FE3-43C9-97B5-D87A174CAB8A");
-        //                    _EmployeesP.Foto = file.FileName;
-        //                    _Employees.Usuariocreacion = HttpContext.Session.GetString("user");
-        //                    var insertresult = await Insert(_EmployeesP);
-        //                }
-        //                else
-        //                {
-        //                    _EmployeesP.Usuariocreacion = _Employees.Usuariocreacion;
-        //                    _EmployeesP.FechaCreacion = _Employees.FechaCreacion;
-        //                    var updateresult = await Update(_Employees.IdEmpleado, _EmployeesP);
-        //                }
-        //                var filePath = _hostingEnvironment.WebRootPath + "/images/emp/"
-        //                        + file.FileName.Replace(info.Extension, "")
-        //                        + info.Extension;
-
-        //                using (var stream = new FileStream(filePath, FileMode.Create))
-        //                {
-        //                    await file.CopyToAsync(stream);
-        //                }
-        //            }
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-        //        throw ex;
-        //    }
-
-        //    return Json(_Employees);
-        //}
-
-        [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<Employees>> SaveEmployees(IEnumerable<IFormFile> Foto, [FromBody]EmployeesDTO _EmployeesDTO)
         {
             try
             {
@@ -188,296 +127,63 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/Employees/GetEmployeesById/" + _EmployeesDTO.IdEmpleado);
                 string valorrespuesta = "";
-                foreach (var file in Foto)
+
+                IFormFile file = files.FirstOrDefault();
+                if (file != null)
                 {
                     FileInfo info = new FileInfo(file.FileName);
-                    if (info.Extension.Equals(".jpg") || info.Extension.Equals(".png") || info.Extension.Equals(".jpeg"))
+                    _EmployeesP.Foto = file.FileName;
+                    var filePath = _hostingEnvironment.WebRootPath + "/images/emp/"
+                                + file.FileName.Replace(info.Extension, "")
+                                + info.Extension;
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
                     {
-                        _EmployeesDTO.FechaModificacion = DateTime.Now;
-                        _EmployeesDTO.Usuariomodificacion = HttpContext.Session.GetString("user");
-                        if (result.IsSuccessStatusCode)
+                        await file.CopyToAsync(stream);
+                    }
+                }
+
+                
+
+                //_Employees.FechaModificacion = DateTime.Now;
+                //_Employees.Usuariomodificacion = HttpContext.Session.GetString("user");
+                if (result.IsSuccessStatusCode)
                         {
                             valorrespuesta = await (result.Content.ReadAsStringAsync());
-                            _listEmployees = JsonConvert.DeserializeObject<Employees>(valorrespuesta);
+                            _Employees = JsonConvert.DeserializeObject<EmployeesDTO>(valorrespuesta);
                         }
 
-                        if (_listEmployees == null) { _listEmployees = new Models.Employees(); }
-                        if (_listEmployees.IdEmpleado == 0)
+                        if (_Employees == null) { _Employees = new Models.Employees(); }
+
+                        if (_EmployeesP.IdEmpleado == 0)
                         {
-                            _EmployeesDTO.FechaCreacion = DateTime.Now;
-                            _EmployeesDTO.Usuariocreacion = HttpContext.Session.GetString("user");
-                            var insertresult = await Insert(_EmployeesDTO);
-                            var value = (insertresult.Result as ObjectResult).Value;
-                            _EmployeesDTO = ((EmployeesDTO)(value));
+                            _Employees.FechaCreacion = DateTime.Now;
+                            //_EmployeesP.ApplicationUserId = Guid.Parse("FC405B7D-9FE3-43C9-97B5-D87A174CAB8A");
+                            
+                            _Employees.Usuariocreacion = HttpContext.Session.GetString("user");
+                            var insertresult = await Insert(_EmployeesP);
                         }
                         else
                         {
-                            if (System.IO.File.Exists(_listEmployees.Foto))
-                            {
-                                System.IO.File.Delete(_listEmployees.Foto);
-                            }
-                            _EmployeesDTO.Usuariocreacion = _listEmployees.Usuariocreacion;
-                            _EmployeesDTO.FechaCreacion = _listEmployees.FechaCreacion;
-                            var updateresult = await Update(_EmployeesDTO.IdEmpleado, _EmployeesDTO);
+                            _EmployeesP.Usuariocreacion = _Employees.Usuariocreacion;
+                            _EmployeesP.FechaCreacion = _Employees.FechaCreacion;
+                            var updateresult = await Update(_Employees.IdEmpleado, _EmployeesP);
                         }
-                        if (_EmployeesDTO.IdEmpleado > 0) { 
-                        var filePath = _hostingEnvironment.WebRootPath + "/images/emp/" + _EmployeesDTO.IdEmpleado + "_"
-                                + file.FileName.Replace(info.Extension, "") + info.Extension;
+               
+                        
+                    
 
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await file.CopyToAsync(stream);
-                        }
-                        _EmployeesDTO.Foto = filePath;
-                        var updateresult2 = await Update(_EmployeesDTO.IdEmpleado, _EmployeesDTO);
-                        }
-                    }
-                }
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
+                
             }
-            return Json(_EmployeesDTO);
+
+
+            return Json(_EmployeesP);
         }
-
-        //[HttpPost]
-        //public async Task<ActionResult<Employees>> SaveEmployees([FromBody]EmployeesDTO _EmployeesP)
-        //{
-
-        //    Employees _Employees = _EmployeesP;
-        //    try
-        //    {
-        //        // DTO_NumeracionSAR _liNumeracionSAR = new DTO_NumeracionSAR();
-        //        string baseadress = config.Value.urlbase;
-        //        HttpClient _client = new HttpClient();
-        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-        //        var result = await _client.GetAsync(baseadress + "api/Employees/GetEmployeesById/" + _Employees.IdEmpleado);
-        //        string valorrespuesta = "";
-        //        _Employees.FechaModificacion = DateTime.Now;
-        //        _Employees.Usuariomodificacion = HttpContext.Session.GetString("user");
-        //        if (result.IsSuccessStatusCode)
-        //        {
-        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
-        //            _Employees = JsonConvert.DeserializeObject<EmployeesDTO>(valorrespuesta);
-        //        }
-
-        //        if (_Employees == null) { _Employees = new Models.Employees(); }
-
-        //        if (_EmployeesP.IdEmpleado == 0)
-        //        {
-        //            _Employees.FechaCreacion = DateTime.Now;
-        //            _Employees.Usuariocreacion = HttpContext.Session.GetString("user");
-        //            var insertresult = await Insert(_EmployeesP);
-        //        }
-        //        else
-        //        {
-        //            _EmployeesP.Usuariocreacion = _Employees.Usuariocreacion;
-        //            _EmployeesP.FechaCreacion = _Employees.FechaCreacion;
-        //            var updateresult = await Update(_Employees.IdEmpleado, _EmployeesP);
-        //        }
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-        //        throw ex;
-        //    }
-
-        //    return Json(_Employees);
-        //}
-
-
-
-        //[HttpPost("[controller]/[action]")]
-        //public async Task<ActionResult<Employees>> SaveEmployees([FromBody]EmployeesDTO _EmployeesP)
-        ////public async Task<ActionResult<Employees>> SaveEmployees([FromBody]EmployeesDTO _EmployeesP)
-        //{
-
-        //    Employees _Employees = _EmployeesP;
-        //    try
-        //    {
-        //        // DTO_NumeracionSAR _liNumeracionSAR = new DTO_NumeracionSAR();
-        //        string baseadress = config.Value.urlbase;
-        //        HttpClient _client = new HttpClient();
-        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-        //        var result = await _client.GetAsync(baseadress + "api/Employees/GetEmployeesById/" + _Employees.IdEmpleado);
-        //        string valorrespuesta = "";
-        //        _Employees.FechaModificacion = DateTime.Now;
-        //        _Employees.Usuariomodificacion = HttpContext.Session.GetString("user");
-        //        if (result.IsSuccessStatusCode)
-        //        {
-        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
-        //            _Employees = JsonConvert.DeserializeObject<EmployeesDTO>(valorrespuesta);
-        //        }
-
-        //        if (_Employees == null) { _Employees = new Models.Employees(); }
-
-        //        if (_EmployeesP.IdEmpleado == 0)
-        //        {
-        //            _Employees.FechaCreacion = DateTime.Now;
-        //            _Employees.Usuariocreacion = HttpContext.Session.GetString("user");
-        //            var insertresult = await Insert(_EmployeesP);
-        //        }
-        //        else
-        //        {
-        //            _EmployeesP.Usuariocreacion = _Employees.Usuariocreacion;
-        //            _EmployeesP.FechaCreacion = _Employees.FechaCreacion;
-        //            var updateresult = await Update(_Employees.IdEmpleado, _EmployeesP);
-        //        }
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-        //        throw ex;
-        //    }
-
-        //    return Json(_Employees);
-        //}
-
-
-        //public async Task<ActionResult> SaveEmployees([FromBody]dynamic dto)
-        ////public async Task<ActionResult> SaveEmployees([FromBody]ProductRelation _ProductRelationp)
-        //{
-        //    Employees _Employees = new Employees();
-        //    List<Employees> _Employeeslist = new List<Employees>();
-        //    try
-        //    {
-
-
-
-        //        ProductRelation _Employeesp = JsonConvert.DeserializeObject<ProductRelation>(dto);
-        //        //ProductRelation _ProductRelationp = dto;
-        //        string baseadress = config.Value.urlbase;
-        //        HttpClient _client = new HttpClient();
-        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-        //        var result = await _client.PostAsJsonAsync(baseadress + "api/ProductRelation/GetProductRelationByProductIDSubProductId", _Employeesp);
-        //        string valorrespuesta = "";
-        //        if (result.IsSuccessStatusCode)
-        //        {
-        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
-        //            _Employeeslist = JsonConvert.DeserializeObject<List<Employees>>(valorrespuesta);
-
-
-
-        //        }
-
-
-        //        if (_Employeeslist.Count == 0)
-        //        {
-        //            _Employeesp.FechaCreacion = DateTime.Now;
-        //            _Employeesp.UsuarioCreacion = HttpContext.Session.GetString("user");
-        //            var insertresult = await Insert(_Employeesp);
-        //        }
-        //        else
-        //        {
-        //            _Employeesp.UsuarioModificacion = HttpContext.Session.GetString("user");
-        //            _Employeesp.FechaModificacion = DateTime.Now;
-        //            var updateresult = await Update(_Employeesp.RelationProductId, _Employeesp);
-        //        }
-
-
-
-
-
-
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-        //        throw ex;
-        //    }
-
-
-
-        //    return Json(_ProductRelation);
-        //}
-
-
-
-        //[HttpPost("[controller]/[action]")]
-        //public async Task<ActionResult<Employees>> SaveEmployees([FromBody]EmployeesDTO _EmployeesP)
-        ////public async Task<ActionResult> SaveEmployees([FromBody]dynamic dto)
-        //{
-        //    Employees _Employeesd = new Employees();
-        //    try
-        //    {
-
-
-        //        //Employees _Employeesp = JsonConvert.DeserializeObject<Employees>(dto);
-        //        string baseadress = config.Value.urlbase;
-        //        HttpClient _client = new HttpClient();
-        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-        //        var result = await _client.GetAsync(baseadress + "api/Employees/GetEmployeesById/" + _Employeesd.IdEmpleado);
-        //        string valorrespuesta = "";
-        //        if (result.IsSuccessStatusCode)
-        //        {
-        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
-        //            _Employeesd = JsonConvert.DeserializeObject<Employees>(valorrespuesta);
-
-
-        //        }
-
-
-        //        if (_Employeesd == null)
-        //        {
-        //            _Employeesd = new Employees();
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-        //        throw ex;
-        //    }
-
-
-        //    return Json(_Employeesd);
-        //}
-
-
-        ////public async Task<ActionResult<Employees>> SaveEmployees([FromBody]EmployeesDTO _EmployeesP)
-        ////public async Task<ActionResult> SaveEmployees([FromBody]dynamic dto)
-        //{
-        //    Employees _Employees = new Employees();
-        //    Employees _Employeesp = JsonConvert.DeserializeObject<Employees>(dto);
-        //    try
-        //    {
-
-        //        string baseadress = config.Value.urlbase;
-        //        HttpClient _client = new HttpClient();
-        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-        //        var result = await _client.GetAsync(baseadress + "api/Employees/GetEmployeesById/" + _Employeesp.IdEmpleado);
-        //        string valorrespuesta = "";
-        //        if (result.IsSuccessStatusCode)
-        //        {
-        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
-        //            _Employeesp = JsonConvert.DeserializeObject<Employees>(valorrespuesta);
-
-
-
-        //        }
-
-
-
-        //        if (_Employeesp == null)
-        //        {
-        //            _Employeesp = new Employees();
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-        //        throw ex;
-        //    }
-
-
-
-        //    return Json(_Employeesp);
-        //}
-
 
         //--------------------------------------------------------------------------------------
         // POST: Employees/Insert
