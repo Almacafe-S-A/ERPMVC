@@ -286,10 +286,8 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
-
-
-            return Json(_CompanyInfo);
+            return await Task.Run(() => Ok(_CompanyInfo));
+            // return Json(_CompanyInfo);
         }
 
 
