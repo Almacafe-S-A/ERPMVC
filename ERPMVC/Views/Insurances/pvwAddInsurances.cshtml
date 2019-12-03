@@ -1,5 +1,9 @@
 ﻿@model ERPMVC.Models.Insurances
 
+<script src="~/admp/assets/plugins/dropify/dist/js/dropify.min.js"></script>
+
+<link rel="stylesheet" href="~/admp/assets/plugins/dropify/dist/css/dropify.min.css">
+
 <script>
     $(document).ready(function () {
 
@@ -53,22 +57,66 @@
         RefrescarGrid();
         $("#myModalInsurancesDocumentUpload").modal('hide');
     }
-    function disabledUpload() {
-        if ($("#DocumentTypeId").data("kendoDropDownList").value() == 0 || $("#InsurancesName").val() == "") {
-            $("#files").data("kendoUpload").disable();
+    function DocumentTypeN() {
+        if ($("#DocumentTypeId").data("kendoDropDownList").value() == 0) {
+            //$("#files").data("kendoUpload").disable();
+            $("#DocumentTypeName").val("");
         }
         else {
-            $("#files").data("kendoUpload").enable();
+            //$("#files").data("kendoUpload").enable();
+            var TipoDocumento = $("#DocumentTypeId").data("kendoDropDownList").text()
+            $("#DocumentTypeName").val(TipoDocumento);
         }
     }
     $("#InsurancesName").keyup(function (e) {
         if ($("#DocumentTypeId").data("kendoDropDownList").value() == 0 || $("#InsurancesName").val() == "") {
-            $("#files").data("kendoUpload").disable();
+            //$("#files").data("kendoUpload").disable();
         }
         else {
-            $("#files").data("kendoUpload").enable();
+            //$("#files").data("kendoUpload").enable();
         }
     });
+
+    var onBegin = function () {
+        //alert("Begin");
+
+    };
+
+    var onComplete = function () {
+        //alert("Complete");
+        //$('#ModalEmployees').modal('hide');
+    };
+
+    var onSuccess = function (context) {
+        //alert(context);
+        console.log(context);
+        $.toast({
+            heading: 'Satisfactorio',
+            text: '<br/><br/> Datos guardados correctamente.',
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'success',
+            hideAfter: 30000,
+            stack: 6
+        });
+
+        RefrescarGrid();
+        $('#myModalInsurancesDocumentUpload').modal('hide');
+    };
+
+    var onFailed = function (context) {
+        // alert(context);
+        console.log(context);
+        $.toast({
+            heading: 'Error',
+            text: '<br/><br/> Error al Crear la Aseguradora',
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'error',
+            hideAfter: 30000,
+            stack: 6
+        });
+    };
 </script>
 
 
@@ -83,7 +131,7 @@
             </div>
             <div class="modal-body">
                 <div class="box">
-                    Extensiones Permitidas: .jpg, .jpeg y .png
+                    Extensiones Permitidas: .jpg, .jpeg, .png y .gif
                 </div>
 
                 <div class="row" id="validation">
@@ -96,12 +144,15 @@
                                 data-ajax="true"*@
 
                             <div class="card-body">
-                                <form id="InsuracesDocument"
-                                      data-ajax="true">
+                                <form id="InsuracesDocument" kendo-validator="true" asp-action="SaveInsurancesDocument" asp-controller="Insurances"
+                                      data-ajax="true"
+                                      data-ajax-method="post" enctype="multipart/form-data"
+                                      data-ajax-begin="onBegin" data-ajax-complete="onComplete"
+                                      data-ajax-failure="onFailed" data-ajax-success="onSuccess">
 
                                     <div class="row">
                                         <div class="col-md-5">
-                                            <input type="text" name="InsurancesId" hidden="hidden" asp-for="InsurancesId" class="form-control" style="min-width:100%"  />
+                                            <input type="text" name="InsurancesId" hidden="hidden" asp-for="InsurancesId" class="form-control" style="min-width:100%" />
 
                                             <script>
                                                 function GetDocumentos() {
@@ -111,12 +162,12 @@
 
                                             <label asp-for="DocumentTypeId" class="control-label" style="width:100%"></label>
                                             <kendo-dropdownlist name="DocumentTypeId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                option-label="Seleccion el tipo de documento"
+                                                                option-label="Seleccionar tipo de documento"
                                                                 for="DocumentTypeId"
                                                                 datatextfield="Nombre"
                                                                 datavaluefield="Id"
                                                                 auto-bind="false"
-                                                                onchange="disabledUpload();"
+                                                                onchange="DocumentTypeN();"
                                                                 required
                                                                 style="width: 100%;">
                                                 <datasource type="DataSourceTagHelperType.WebApi" server-filtering="true">
@@ -128,6 +179,9 @@
                                             </kendo-dropdownlist>
                                             <span asp-validation-for="DocumentTypeId" class="text-danger"></span>
                                         </div>
+
+                                        <input type="text" hidden="hidden" name="DocumentTypeName" asp-for="DocumentTypeName" class="form-control" style="min-width:100%" />
+
                                         <div class="col-md-5">
                                             <label asp-for="InsurancesName" class="control-label" style="width:100%"></label>
                                             <input type="text" name="InsurancesName" class="form-control" style="min-width:100%" asp-for="InsurancesName" />
@@ -137,34 +191,85 @@
 
                                     </div>
                                     <div class="row">
-                                        <div class="col-md-5">
-                                            @*<div class="demo-section k-content" width:100%;>*@ 
-                                            @if (Model.InsurancesId == 0)
-	                                        {
-                                            <kendo-upload drop-zone="drop-zone1" name="files" on-upload="SaveInsurancesDocument">
-                                                <localization select="Seleccionar Archivos" cancel="Cancelar" drop-files-here="Soltar Archivo aquí" invalid-file-extension="Extensión de Archivo Invalido" retry="Reintentar" />
-                                                <async save-url="@Url.Action("SaveInsurancesDocument","Insurances")" />
-                                                <validation allowed-extensions='@new string[] { ".jpg",".png",".jpeg" }' max-file-size="10485760" />
-                                            </kendo-upload>
-                                            }
-                                            else
-                                            {
-                                                <input type="file" name="files" id="files"/>
-                                            }
+                                        <div class="col-md-5" hidden>
+                                            <div class="form-group">
+                                                @(Html.Kendo().Upload()
+                                                                    .Name("file")
+                                                                    .HtmlAttributes(new { aria_label = "Foto Empleado" })
+                                                )
+                                            </div>
+                                        </div>
+                                        <div class="col-sm-4 col-md-4">
+                                            <div class="card">
+                                                <div class="card-body">
+                                                    <h4 class="card-title">Imagen de Aseguradora</h4>
+                                                    @if (Model.Path != null)
+                                                    {
+                                                        <input type="file" id="files" asp-for="Path" name="files" class="dropify" data-max-file-size="2M" accept=".jpg,.jpeg,.png,.gif" data-default-file="../Insurances/@Model.Path.Split("/").Last()" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <input type="file" id="files" asp-for="Path" name="files" class="dropify" data-max-file-size="2M" accept=".jpg,.jpeg,.png,.gif" />
+                                                    }
+                                                </div>
+                                            </div>
+
                                         </div>
                                     </div>
-                                    <div class="col-md-5">
-                                        <label asp-for="DocumentName" hidden class="control-label" style="width:100%">Notas</label>
-                                        <textarea asp-for="DocumentName" hidden name="Notas" class="form-control" autocomplete="off" style="width:100%" />
-                                        <span asp-validation-for="DocumentName" class="text-danger"></span>
-
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <button id="btnInsuranceDocument" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                        </div>
                                     </div>
                                 </form>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        // Basic
+        $('.dropify-std').dropify();
+
+        // Translated
+        $('.dropify').dropify({
+            messages: {
+                default: 'Arrastre un archivo de Imagen o click para cargar archivo',
+                replace: 'Click para Reemplazar',
+                remove: 'Quitar',
+                error: 'Error'
+
+            }
+        });
+
+        // Used events
+        var drEvent = $('#input-file-events').dropify();
+
+        drEvent.on('dropify.beforeClear', function (event, element) {
+            return confirm("Esta seguro que desea eliminar el archivo \"" + element.file.name + "\" ?");
+        });
+
+        drEvent.on('dropify.afterClear', function (event, element) {
+            alert('Archivo eliminado');
+        });
+
+        drEvent.on('dropify.errors', function (event, element) {
+            console.log('Has Errors');
+        });
+
+        var drDestroy = $('#input-file-to-destroy').dropify();
+        drDestroy = drDestroy.data('dropify')
+        $('#toggleDropify').on('click', function (e) {
+            e.preventDefault();
+            if (drDestroy.isDropified()) {
+                drDestroy.destroy();
+            } else {
+                drDestroy.init();
+            }
+        })
+    });
+</script>
