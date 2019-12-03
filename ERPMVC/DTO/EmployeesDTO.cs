@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace ERPMVC.DTO
 {
@@ -13,5 +14,6 @@ namespace ERPMVC.DTO
         public int editar { get; set; } = 1;
 
         public string token { get; set; }
+        public IFormFile files { get; set; }
     }
 }
