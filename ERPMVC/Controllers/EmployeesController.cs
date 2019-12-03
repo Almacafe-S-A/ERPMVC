@@ -128,14 +128,26 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/Employees/GetEmployeesById/" + _Employees.IdEmpleado);
                 string valorrespuesta = "";
-                foreach (var file in files)
+                IFormFile file = files.FirstOrDefault();
+                if (file != null)
                 {
                     FileInfo info = new FileInfo(file.FileName);
-                    if (info.Extension.Equals(".jpg") || info.Extension.Equals(".png") || info.Extension.Equals(".jpeg"))
+                    _EmployeesP.Foto = file.FileName;
+                    var filePath = _hostingEnvironment.WebRootPath + "/images/emp/"
+                                + file.FileName.Replace(info.Extension, "")
+                                + info.Extension;
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
                     {
-                        //_Employees.FechaModificacion = DateTime.Now;
-                        //_Employees.Usuariomodificacion = HttpContext.Session.GetString("user");
-                        if (result.IsSuccessStatusCode)
+                        await file.CopyToAsync(stream);
+                    }
+                }
+
+                
+
+                //_Employees.FechaModificacion = DateTime.Now;
+                //_Employees.Usuariomodificacion = HttpContext.Session.GetString("user");
+                if (result.IsSuccessStatusCode)
                         {
                             valorrespuesta = await (result.Content.ReadAsStringAsync());
                             _Employees = JsonConvert.DeserializeObject<EmployeesDTO>(valorrespuesta);
@@ -147,7 +159,7 @@ namespace ERPMVC.Controllers
                         {
                             _Employees.FechaCreacion = DateTime.Now;
                             //_EmployeesP.ApplicationUserId = Guid.Parse("FC405B7D-9FE3-43C9-97B5-D87A174CAB8A");
-                            _EmployeesP.Foto = file.FileName;
+                            
                             _Employees.Usuariocreacion = HttpContext.Session.GetString("user");
                             var insertresult = await Insert(_EmployeesP);
                         }
@@ -157,24 +169,18 @@ namespace ERPMVC.Controllers
                             _EmployeesP.FechaCreacion = _Employees.FechaCreacion;
                             var updateresult = await Update(_Employees.IdEmpleado, _EmployeesP);
                         }
-                        var filePath = _hostingEnvironment.WebRootPath + "/images/emp/"
-                                + file.FileName.Replace(info.Extension, "")
-                                + info.Extension;
-
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await file.CopyToAsync(stream);
-                        }
-                    }
-                }
+               
+                        
+                    
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
+                
             }
 
-            return Json(_Employees);
+            return Json(_EmployeesP);
         }
         //--------------------------------------------------------------------------------------
         // POST: Employees/Insert
