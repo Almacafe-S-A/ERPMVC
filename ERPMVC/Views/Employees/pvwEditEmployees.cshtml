@@ -6,12 +6,18 @@
     var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
 }
 
+<script src="~/admp/assets/plugins/dropify/dist/js/dropify.min.js"></script>
+
+<link rel="stylesheet" href="~/admp/assets/plugins/dropify/dist/css/dropify.min.css">
+
+
 <script>
     $(document).on('load', '#FechaNacimiento', function () {
         GenerarEdad();
     });
     $(document).ready(function () {
-        debugger;
+        $("#AlertSalario").prop("hidden", true);
+        $("#AgregarSalarioCustom").prop("hidden", true)
         //$('#Salario').val("@Model.Salario").replace(/\./g, ',');
         $('#Salario').val($('#Salario').val().replace(/\,/g, '.'));
         GenerarEdad();
@@ -590,12 +596,30 @@
                                     <span asp-validation-for="TelefonoContacto" class="text-danger"></span>
                                 </div>
                             </div>
-                            <div class="col-sm-4 col-md-4" hidden>
-                                <label asp-for="Foto" class=" control-label" style="width:100%">Foto del Empleado</label>
-                                <kendo-upload drop-zone="drop-zone1" name="files">
-                                    <async save-url="@Url.Action("SaveEmployees","Employees")" />
-                                    <validation allowed-extensions='@new string[] { ".jpg",".png",".jpeg" }' max-file-size="10485760" />
-                                </kendo-upload>
+                             <div class="col-md-4" hidden>
+                                <div class="form-group">
+                                    @(Html.Kendo().Upload()
+                                                        .Name("file")
+                                                        .HtmlAttributes(new { aria_label = "Foto Empleado" })
+                                    )
+                                </div>
+                            </div>
+
+                            <div class="col-sm-4 col-md-4">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <h4 class="card-title">Foto Empleado</h4>
+                                        @if (Model.Foto != null)
+                                        {
+                                            <input type="file" id="files" name="files" class="dropify" data-max-file-size="2M" accept=".jpg,.jpeg,.png,.gif" data-default-file="../images/emp/@Model.Foto" />
+                                        }
+                                        else
+                                        {
+                                            <input type="file" id="files" name="files" class="dropify" data-max-file-size="2M" accept=".jpg,.jpeg,.png,.gif" />
+                                        }
+
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
@@ -990,5 +1014,46 @@
     //$("#tabDetalleEmployees").width($("#tabDetalleEmployees").innerWidth());
 
     console.log($("#tabDetalleEmployees").innerWidth());
+
+     $(document).ready(function () {
+        // Basic
+        $('.dropify-std').dropify();
+
+        // Translated
+        $('.dropify').dropify({
+            messages: {
+                default: 'Arrastre un archivo de Imagen o click para cagar archivo',
+                replace: 'Click para Reemplazar',
+                remove: 'Quitar',
+                error: 'Error'
+            }
+        });
+
+        // Used events
+        var drEvent = $('#input-file-events').dropify();
+
+        drEvent.on('dropify.beforeClear', function (event, element) {
+            return confirm("Do you really want to delete \"" + element.file.name + "\" ?");
+        });
+
+        drEvent.on('dropify.afterClear', function (event, element) {
+            alert('File deleted');
+        });
+
+        drEvent.on('dropify.errors', function (event, element) {
+            console.log('Has Errors');
+        });
+
+        var drDestroy = $('#input-file-to-destroy').dropify();
+        drDestroy = drDestroy.data('dropify')
+        $('#toggleDropify').on('click', function (e) {
+            e.preventDefault();
+            if (drDestroy.isDropified()) {
+                drDestroy.destroy();
+            } else {
+                drDestroy.init();
+            }
+        })
+    });
 </script>
 

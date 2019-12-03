@@ -15,7 +15,7 @@ namespace ERPMVC.DTO
 
         public string token { get; set; }
 
-        public long EmployeesId { get; set; }        
+        public long EmployeesId { get; set; }
         public DateTime Dia1 { get; set; }
         public DateTime Dia2 { get; set; }
         public DateTime Dia3 { get; set; }
