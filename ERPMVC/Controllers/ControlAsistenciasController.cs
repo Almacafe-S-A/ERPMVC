@@ -188,7 +188,7 @@ namespace ERPMVC.Controllers
             if (uno == null && diactual == null)
             {
                 fechafindmes = DateTime.Now;
-                pmes = Convert.ToDateTime(1 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                pmes = Convert.ToDateTime(fechafindmes.Month + "-" + 1 + "-" + fechafindmes.Year);
 
             }
             else if (pmes.Month == DateTime.Now.Month)
@@ -201,7 +201,7 @@ namespace ERPMVC.Controllers
                 int me = pmes.Month;
                 int ao = pmes.Year;
                 int diass = DateTime.DaysInMonth(pmes.Year, pmes.Month);
-                string fechavieja = diass + "-" + me + "-" + ao;
+                string fechavieja =  me + "-" + diass + "-" + ao;
                 fechafindmes = Convert.ToDateTime(fechavieja);
             }
             int letras = DateTime.DaysInMonth(fechafindmes.Year, fechafindmes.Month);
@@ -228,113 +228,112 @@ namespace ERPMVC.Controllers
                     NuevaControlAsistencia.EmployeesId = _ListEmpleadosLis.IdEmpleado;
                     //-------------------------------------Iniciarl de el dia----------------------------------------------------
 
-                    var l1 = Convert.ToDateTime(1 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l1 = Convert.ToDateTime(fechafindmes.Month + "-" + 1 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD1 = l1.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l2 = Convert.ToDateTime(2 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l2 = Convert.ToDateTime(fechafindmes.Month + "-" + 2 + "-" + fechafindmes.Year);
                     NuevaControlAsistencia.LetraD2 = l2.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l3 = Convert.ToDateTime(3 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l3 = Convert.ToDateTime(fechafindmes.Month + "-" + 3 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD3 = l3.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l4 = Convert.ToDateTime(4 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l4 = Convert.ToDateTime(fechafindmes.Month + "-" + 4 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD4 = l4.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l5 = Convert.ToDateTime(5 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l5 = Convert.ToDateTime(fechafindmes.Month + "-" + 5 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD5 = l5.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l6 = Convert.ToDateTime(6 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-
+                    var l6 = Convert.ToDateTime(fechafindmes.Month + "-" + 6 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD6 = l6.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l7 = Convert.ToDateTime(7 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l7 = Convert.ToDateTime(fechafindmes.Month + "-" + 7 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD7 = l7.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l8 = Convert.ToDateTime(8 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l8 = Convert.ToDateTime(fechafindmes.Month + "-" + 8 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD8 = l8.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l9 = Convert.ToDateTime(9 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l9 = Convert.ToDateTime(fechafindmes.Month + "-" + 9 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD9 = l9.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l10 = Convert.ToDateTime(10 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l10 = Convert.ToDateTime(fechafindmes.Month + "-" + 10 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD10 = l10.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l11 = Convert.ToDateTime(11 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l11 = Convert.ToDateTime(fechafindmes.Month + "-" + 11 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD11 = l11.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l12 = Convert.ToDateTime(12 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l12 = Convert.ToDateTime(fechafindmes.Month + "-" + 12 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD12 = l12.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l13 = Convert.ToDateTime(13 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l13 = Convert.ToDateTime(fechafindmes.Month + "-" + 13 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD13 = l13.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l14 = Convert.ToDateTime(14 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l14 = Convert.ToDateTime(fechafindmes.Month + "-" + 14 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD14 = l14.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l15 = Convert.ToDateTime(15 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l15 = Convert.ToDateTime(fechafindmes.Month + "-" + 15 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD15 = l15.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l16 = Convert.ToDateTime(16 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l16 = Convert.ToDateTime(fechafindmes.Month + "-" + 16 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD16 = l16.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l17 = Convert.ToDateTime(17 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l17 = Convert.ToDateTime(fechafindmes.Month + "-" + 17 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD17 = l17.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l18 = Convert.ToDateTime(18 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l18 = Convert.ToDateTime(fechafindmes.Month + "-" + 18 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD18 = l18.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l19 = Convert.ToDateTime(19 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l19 = Convert.ToDateTime(fechafindmes.Month + "-" + 19 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD19 = l19.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l20 = Convert.ToDateTime(20 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l20 = Convert.ToDateTime(fechafindmes.Month + "-" + 20 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD20 = l20.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l21 = Convert.ToDateTime(21 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l21 = Convert.ToDateTime(fechafindmes.Month + "-" + 21 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD21 = l21.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l22 = Convert.ToDateTime(22 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l22 = Convert.ToDateTime(fechafindmes.Month + "-" + 22 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD22 = l22.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l23 = Convert.ToDateTime(23 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l23 = Convert.ToDateTime(fechafindmes.Month + "-" + 23 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD23 = l23.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l24 = Convert.ToDateTime(24 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l24 = Convert.ToDateTime(fechafindmes.Month + "-" + 24 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD24 = l24.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l25 = Convert.ToDateTime(25 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l25 = Convert.ToDateTime(fechafindmes.Month + "-" + 25 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD25 = l25.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l26 = Convert.ToDateTime(26 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l26 = Convert.ToDateTime(fechafindmes.Month + "-" + 26 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD26 = l26.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l27 = Convert.ToDateTime(27 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l27 = Convert.ToDateTime(fechafindmes.Month + "-" + 27 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD27 = l27.ToString("dddd").Substring(0, 1).ToUpper();
 
-                    var l28 = Convert.ToDateTime(28 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    var l28 = Convert.ToDateTime(fechafindmes.Month + "-" + 28 + "-"+ fechafindmes.Year);
                     NuevaControlAsistencia.LetraD28 = l28.ToString("dddd").Substring(0, 1).ToUpper();
 
                     if (letras == 29)
                     {
-                        var l29 = Convert.ToDateTime(29 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                        var l29 = Convert.ToDateTime(fechafindmes.Month + "-" + 29 + "-"+ fechafindmes.Year);
                         NuevaControlAsistencia.LetraD29 = l29.ToString("dddd").Substring(0, 1).ToUpper();
                     }
                     if (letras == 30)
                     {
-                        var l29 = Convert.ToDateTime(29 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                        var l29 = Convert.ToDateTime(fechafindmes.Month + "-" + 29 + "-"+ fechafindmes.Year);
                         NuevaControlAsistencia.LetraD29 = l29.ToString("dddd").Substring(0, 1).ToUpper();
 
-                        var l30 = Convert.ToDateTime(30 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                        var l30 = Convert.ToDateTime(fechafindmes.Month + "-" + 30 + "-"+ fechafindmes.Year);
                         NuevaControlAsistencia.LetraD30 = l30.ToString("dddd").Substring(0, 1).ToUpper();
                     }
                     if (letras == 31)
                     {
-                        var l29 = Convert.ToDateTime(29 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                        var l29 = Convert.ToDateTime(fechafindmes.Month + "-" + 29 + "-"+ fechafindmes.Year);
                         NuevaControlAsistencia.LetraD29 = l29.ToString("dddd").Substring(0, 1).ToUpper();
 
-                        var l30 = Convert.ToDateTime(30 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                        var l30 = Convert.ToDateTime(fechafindmes.Month + "-" + 30 + "-"+ fechafindmes.Year);
                         NuevaControlAsistencia.LetraD30 = l30.ToString("dddd").Substring(0, 1).ToUpper();
 
-                        var l31 = Convert.ToDateTime(31 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                        var l31 = Convert.ToDateTime(fechafindmes.Month + "-" + 31 + "-"+ fechafindmes.Year);
                         NuevaControlAsistencia.LetraD31 = l31.ToString("dddd").Substring(0, 1).ToUpper();
                     }
 
@@ -1199,7 +1198,7 @@ namespace ERPMVC.Controllers
                 int me = _CtlAsis.Dia1.Month;
                 int ao = _CtlAsis.Dia1.Year;
                 int diass = DateTime.DaysInMonth(_CtlAsis.Dia1.Year, _CtlAsis.Dia1.Month);
-                string fechavieja = diass + "-" + me + "-" + ao;
+                string fechavieja =  me + "-" + diass + "-"  + ao;
                 fechafindmes = Convert.ToDateTime(fechavieja);
             }
 
@@ -2370,7 +2369,7 @@ namespace ERPMVC.Controllers
 
         public async Task<ActionResult<ControlAsistencias>> SaveControlAsistencia(ControlAsistencias _Nuevo_Update)
         {
-            ControlAsistencias ControlAsistenciainsert = _Nuevo_Update;
+           ControlAsistencias ControlAsistenciainsert = _Nuevo_Update;
             try
             {
                 ControlAsistencias _listAccount = new ControlAsistencias();
@@ -2394,31 +2393,40 @@ namespace ERPMVC.Controllers
                         {
                             _Nuevo_Update = new Models.ControlAsistencias();
                         }
+
+                        if (_Nuevo_Update.Id > 0)
+                        {
+                            
+                            _Nuevo_Update.UsuarioModificacion = HttpContext.Session.GetString("user");
+                            _Nuevo_Update.FechaModificacion = DateTime.Now;
+                            _Nuevo_Update.TipoAsistencia = ControlAsistenciainsert.TipoAsistencia;
+                            var updateresult = await Update(_Nuevo_Update.Id, _Nuevo_Update);
+                        }
+                        else if(_Nuevo_Update.Id == 0 && ControlAsistenciainsert.TipoAsistencia > 0 )
+                        {
+                            _Nuevo_Update.Fecha = ControlAsistenciainsert.Fecha;
+                            _Nuevo_Update.IdEmpleado = ControlAsistenciainsert.IdEmpleado;
+                            _Nuevo_Update.Dia = ControlAsistenciainsert.Dia;
+                            _Nuevo_Update.TipoAsistencia = ControlAsistenciainsert.TipoAsistencia;
+
+                            var insertresult = await Insert(_Nuevo_Update);
+                            var value = (insertresult.Result as ObjectResult).Value;
+                            ControlAsistencias resultado = ((ControlAsistencias)(value));
+                        }
+
                     }
                 }
 
 
-                if (ControlAsistenciainsert.Id == 0 && ControlAsistenciainsert.TipoAsistencia > 0)
-                {
-                    _Nuevo_Update.Fecha = ControlAsistenciainsert.Fecha;
-                    _Nuevo_Update.IdEmpleado = ControlAsistenciainsert.IdEmpleado;
-                    _Nuevo_Update.Dia = ControlAsistenciainsert.Dia;
-                    _Nuevo_Update.TipoAsistencia = ControlAsistenciainsert.TipoAsistencia;
+                //if (ControlAsistenciainsert.Id == 0 && ControlAsistenciainsert.TipoAsistencia > 0)
+                //{
+                   
 
-                    var insertresult = await Insert(_Nuevo_Update);
-                    var value = (insertresult.Result as ObjectResult).Value;
-                    ControlAsistencias resultado = ((ControlAsistencias)(value));
-
-                }
-                else
-                {
-                    _Nuevo_Update.UsuarioCreacion = _Nuevo_Update.UsuarioCreacion;
-                    _Nuevo_Update.FechaCreacion = _Nuevo_Update.FechaCreacion;
-                    _Nuevo_Update.UsuarioModificacion = HttpContext.Session.GetString("user");
-                    _Nuevo_Update.FechaModificacion = DateTime.Now;
-
-                    var updateresult = await Update(_Nuevo_Update.Id, _Nuevo_Update);
-                }
+                //}
+                //else
+                //{
+                    
+                //}
             }
             catch (Exception ex)
             {
