@@ -55,7 +55,7 @@ namespace ERPMVC.Controllers
 
         public async Task<ActionResult> pvwEditEmployees(Int64 IdEmpleado)
         {
-            Employees _Employees = new Employees();
+            EmployeesDTO _Employees = new EmployeesDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -66,7 +66,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Employees = JsonConvert.DeserializeObject<Employees>(valorrespuesta);
+                    _Employees = JsonConvert.DeserializeObject<EmployeesDTO>(valorrespuesta);
 
                 }
             }
@@ -132,9 +132,13 @@ namespace ERPMVC.Controllers
                 if (file != null)
                 {
                     FileInfo info = new FileInfo(file.FileName);
-                    _EmployeesP.Foto = file.FileName;
+                    string filename = _EmployeesP.IdEmpleado + "_" + _EmployeesP.NombreEmpleado;
+                    _EmployeesP.Foto = filename;
+                    
+                    //_EmployeesP.Foto = file.FileName;
                     var filePath = _hostingEnvironment.WebRootPath + "/images/emp/"
-                                + file.FileName.Replace(info.Extension, "")
+                                // + file.FileName.Replace(info.Extension, "")
+                                 + filename
                                 + info.Extension;
 
                     using (var stream = new FileStream(filePath, FileMode.Create))

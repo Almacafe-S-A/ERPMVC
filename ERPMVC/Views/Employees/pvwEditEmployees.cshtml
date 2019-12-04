@@ -1,7 +1,9 @@
-﻿@model ERPMVC.Models.Employees
+﻿@*@model ERPMVC.Models.Employees*@
+@model ERPMVC.DTO.EmployeesDTO
+
 @{
     var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
-                                       { "required","Valor requerido" }};
+                       { "required","Valor requerido" }};
 
     var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
 }
@@ -134,16 +136,18 @@
                     </div>
                     <br />
 
-                    <form id="frmEmployees" kendo-validator="true"
+                    <form id="frmEmployees" kendo-validator="true" asp-action="SaveEmployees" asp-controller="Employees"
                           data-ajax="true"
-                          data-ajax-method="post">
+                          data-ajax-method="post" enctype="multipart/form-data"
+                          data-ajax-begin="onBegin" data-ajax-complete="onComplete"
+                          data-ajax-failure="onFailed" data-ajax-success="onSuccess">
 
 
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label asp-for="IdEmpleado" class=" control-label" style="width:100%">Id Empleado</label>
-                                    <input type="text" asp-for="IdEmpleado" name="IdEmployees" class="form-control" disabled="disabled" style="min-width:100%" />
+                                    <input type="text" asp-for="IdEmpleado" name="IdEmpleado" class="form-control" readonly style="min-width:100%" />
                                     <span asp-validation-for="IdEmpleado" class="text-danger"></span>
                                 </div>
                             </div>
@@ -596,11 +600,11 @@
                                     <span asp-validation-for="TelefonoContacto" class="text-danger"></span>
                                 </div>
                             </div>
-                             <div class="col-md-4" hidden>
+                            <div class="col-md-4" hidden>
                                 <div class="form-group">
                                     @(Html.Kendo().Upload()
-                                                        .Name("file")
-                                                        .HtmlAttributes(new { aria_label = "Foto Empleado" })
+                                                                        .Name("file")
+                                                                        .HtmlAttributes(new { aria_label = "Foto Empleado" })
                                     )
                                 </div>
                             </div>
@@ -625,7 +629,7 @@
 
                         <div class="row">
                             <div class="col-md-12">
-                                <button id="btnGuardarEmployees" onclick="SaveEmployee();" class="form-control  btn-miboton">Guardar</button>
+                                <button id="btnGuardarEmployees" type="submit" class="form-control  btn-miboton">Guardar</button>
                             </div>
                         </div>
                     </form>
@@ -739,7 +743,7 @@
             //fecha = JSON.stringify($("#FechaNacimiento").val().toJSON());
             //fecha = $("#FechaNacimiento").getKendoDateTimePicker().value().toJSON();
             //var newDate = new Date(Date.UTC(dt.getFullYear(), dt.getMonth(), dt.getDate(), dt.getHours(), dt.getMinutes(), dt.getSeconds(), dt.getMilliseconds()));
-        
+
         var fecha_value = new Date(fecha).getFullYear(fecha);
         var fecha_valuem = new Date(fecha).getMonth(fecha) + 1;
         var fecha_valued = new Date(fecha).getDate(fecha);
@@ -979,23 +983,23 @@
                 <div class="card-body">
                     <div class="card-header">
                         @(Html.Kendo().TabStrip()
-                            .Name("tabDetalleEmployees")
-                            .HtmlAttributes(new { style = "width:100%;" })
-                            .Items(tabstrip =>
-                            {
-                                tabstrip.Add().Text("Dependientes")
-                                //.ImageUrl(Url.Content("~/shared/icons/sports/baseball.png"))
-                                .LoadContentFrom(@Url.Action("Index", "Dependientes"));
+                                            .Name("tabDetalleEmployees")
+                                            .HtmlAttributes(new { style = "width:100%;" })
+                                            .Items(tabstrip =>
+                                            {
+                                                tabstrip.Add().Text("Dependientes")
+                                                //.ImageUrl(Url.Content("~/shared/icons/sports/baseball.png"))
+                                                .LoadContentFrom(@Url.Action("Index", "Dependientes"));
 
-                                tabstrip.Add().Text("Documentos")
-                                    //.ImageUrl(Url.Content("~/shared/icons/sports/baseball.png"))
-                                    .LoadContentFrom("EmployeeDocument", "EmployeeDocument");
+                                                tabstrip.Add().Text("Documentos")
+                                                    //.ImageUrl(Url.Content("~/shared/icons/sports/baseball.png"))
+                                                    .LoadContentFrom("EmployeeDocument", "EmployeeDocument");
 
-                                tabstrip.Add().Text("Fórmulas")
-                                    //.ImageUrl(Url.Content("~/shared/icons/sports/baseball.png"))
-                                    .LoadContentFrom("FormulasAplicadas", "FormulasAplicadas");
-                            })
-                            .SelectedIndex(0)
+                                                tabstrip.Add().Text("Fórmulas")
+                                                    //.ImageUrl(Url.Content("~/shared/icons/sports/baseball.png"))
+                                                    .LoadContentFrom("FormulasAplicadas", "FormulasAplicadas");
+                                            })
+                                            .SelectedIndex(0)
                         )
                     </div>
                 </div>
@@ -1004,7 +1008,7 @@
     </div>
 </div>
 
- 
+
 
 <script>
     $("#tabDetalleEmployees").kendoTabStrip({
@@ -1015,7 +1019,7 @@
 
     console.log($("#tabDetalleEmployees").innerWidth());
 
-     $(document).ready(function () {
+    $(document).ready(function () {
         // Basic
         $('.dropify-std').dropify();
 
@@ -1055,5 +1059,45 @@
             }
         })
     });
+
+
+    var onBegin = function () {
+        //alert("Begin");
+
+    };
+
+    var onComplete = function () {
+        //alert("Complete");
+        //$('#ModalEmployees').modal('hide');
+    };
+
+    var onSuccess = function (context) {
+        //alert(context);
+        console.log(context);
+        $.toast({
+            heading: 'Satisfactorio',
+            text: '<br/><br/> Datos guardados correctamente.',
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'success',
+            hideAfter: 30000,
+            stack: 6
+        });
+        $('#ModalEmployees').modal('hide');
+    };
+
+    var onFailed = function (context) {
+        // alert(context);
+        console.log(context);
+        $.toast({
+            heading: 'Error',
+            text: '<br/><br/> Error al Crear Empleado',
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'error',
+            hideAfter: 30000,
+            stack: 6
+        });
+    };
 </script>
 
