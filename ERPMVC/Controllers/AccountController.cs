@@ -46,7 +46,12 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-     
+        public async Task<ActionResult> ChangePassword()
+        {
+            return await Task.Run(() => View());
+        }
+
+
         [HttpPost]
         [AllowAnonymous]
         public async Task<ActionResult> Login(LoginViewModel model, string returnUrl = null)
@@ -83,9 +88,16 @@ namespace ERPMVC.Controllers
                         HttpContext.Session.SetString("user", model.Email);
                         HttpContext.Session.SetString("BranchId", _userToken.BranchId.ToString());
 
+                        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:key"]));
+                        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+                        JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+                        JwtSecurityToken secToken = handler.ReadJwtToken(_userToken.Token);
+                        
                         var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
-                        identity.AddClaims(_userToken.Claims);
+                        identity.AddClaims(secToken.Claims);
                         var principal = new ClaimsPrincipal(identity);
+
                         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
                         return RedirectToAction("Index", "Home");
@@ -126,9 +138,8 @@ namespace ERPMVC.Controllers
         // [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
+            await HttpContext.SignOutAsync();
             HttpContext.Session.Clear();
-            //  await _signInManager.SignOutAsync();                 
-            //  _logger.LogInformation($"User signed out");
             return await Task.Run(() => RedirectToAction(nameof(HomeController.Index), "Home"));
         }
 

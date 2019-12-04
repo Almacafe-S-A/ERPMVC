@@ -20,6 +20,5 @@ namespace ERPMVC.Models
 
         public DateTime LastPasswordChangedDate { get; set; }
 
-        public List<Claim> Claims { get; set; }
     }
 }

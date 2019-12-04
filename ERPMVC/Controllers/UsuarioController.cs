@@ -26,15 +26,12 @@ namespace ERPMVC.Controllers
 
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        private readonly UserManager<ApplicationUser> _userManager;
 
-        public UsuarioController(ILogger<UserRolController> logger
-             ,UserManager<ApplicationUser> userManager
-            , IOptions<MyConfig> config)
+        public UsuarioController(ILogger<UserRolController> logger,
+            IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
-            this._userManager = userManager;
         }
 
         [Authorize(Policy = "Admin")]
@@ -240,43 +237,6 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
         }
 
-        private async Task<bool> IsPasswordHistory(string userId, string newPassword)
-        {
-        //    PasswordHasher<ApplicationUser> passwordhasher = new PasswordHasher<ApplicationUser>();
-            var user = await _userManager.FindByIdAsync(userId);
-            
-            string baseadress = config.Value.urlbase;
-            HttpClient _client = new HttpClient();
-            _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-            var result = await _client.GetAsync(baseadress + "api/PasswordHistory/GetPasswordHistoryByUserId/" + user.Id.ToString());
-            string valorrespuesta = "";
-            List<PasswordHistory> _listhistory = new List<PasswordHistory>();//user.PasswordHistory.OrderByDescending(o => o.CreatedDate).Take(5).ToList();
-            if (result.IsSuccessStatusCode)
-            {
-                valorrespuesta = await (result.Content.ReadAsStringAsync());
-                _listhistory = JsonConvert.DeserializeObject<List<PasswordHistory>>(valorrespuesta);
-                _listhistory = _listhistory.OrderByDescending(q => q.CreatedDate).Take(5).ToList();
-            }
-
-              
-
-            foreach (var item in _listhistory)
-            {
-                var res =  _userManager.PasswordHasher.VerifyHashedPassword(user, item.PasswordHash, newPassword);
-                if(res ==PasswordVerificationResult.Success)
-                {
-                    return true;
-                }
-            }
-
-            //if (user.PasswordHistory.OrderByDescending(o => o.CreatedDate)
-            //    .Select(s => s.PasswordHash)
-            //    .Take(5)
-            //    .Where(w => passwordhasher.VerifyHashedPassword(user, user.PasswordHash, newPassword) != PasswordVerificationResult.Failed).Any())
-             
-            return false;
-        }
-
 
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<ApplicationUser>> ChangePassword([FromBody]CambiarPassDTO _cambio)
@@ -292,8 +252,8 @@ namespace ERPMVC.Controllers
                 {
                     string password = _cambio.Password;
                     string datosUsuario = await (result.Content.ReadAsStringAsync());
-                    if (!await IsPasswordHistory(JsonConvert.DeserializeObject<ApplicationUser>(datosUsuario).Id.ToString(),password))
-                    {
+                    /*if (!await IsPasswordHistory(JsonConvert.DeserializeObject<ApplicationUser>(datosUsuario).Id.ToString(),password))
+                    {*/
                         result = await _client.PostAsJsonAsync(baseadress + "api/Usuario/ChangePassword", _cambio);
                         if (result.IsSuccessStatusCode)
                         {
@@ -304,11 +264,11 @@ namespace ERPMVC.Controllers
                             string error = await result.Content.ReadAsStringAsync();
                             return await Task.Run(() => BadRequest($"{error}"));
                         }
-                    }
+                    /*}
                     else
                     {
                         return await Task.Run(() => BadRequest($"No puede utilizar las ultimas contraseñas "));
-                    }
+                    }*/
                 }
                 else
                 {

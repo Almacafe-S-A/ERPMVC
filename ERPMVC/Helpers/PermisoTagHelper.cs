@@ -35,7 +35,7 @@ namespace ERPMVC.Helpers
                 return Task.CompletedTask;
             }
 
-            if(!_principal.HasClaim("Permiso",permiso.Value.ToString()))
+            if(!_principal.HasClaim(permiso.Value.ToString(),"true"))
                 output.SuppressOutput();
             return Task.CompletedTask;
         }
