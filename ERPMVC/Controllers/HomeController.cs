@@ -14,7 +14,7 @@ namespace ERPMVC.Controllers
 {
     // [Authorize(Policy ="Admin")]
     [Authorize]
-    [CustomAuthorization]
+    //[CustomAuthorization]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     [EnableCors("AllowAllOrigins")]
     public class HomeController : Controller
