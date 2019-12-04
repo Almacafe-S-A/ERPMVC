@@ -77,7 +77,7 @@ namespace ERPMVC.Controllers
                             HttpContext.Session.SetString("token", _userToken.Token);
                             HttpContext.Session.SetString("user", model.Email);
                             HttpContext.Session.SetString("Expiration", _userToken.Expiration.ToString());
-                            return RedirectToAction("ChangePassword", "Usuario");
+                            return RedirectToAction("ChangePassword", "Account");
                         }
                     }
 
