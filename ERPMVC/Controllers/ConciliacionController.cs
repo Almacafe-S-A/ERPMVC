@@ -48,7 +48,7 @@ namespace ERPMVC.Controllers
 
 
         // GET: Conciliacion
-        [Authorize(Policy = "Admin")]
+        //[Authorize(Policy = "Admin")]
         public async Task<IActionResult> Conciliacion()
         {
             ViewData["CheckAccount"] = await ObtenerCheckAccount();

@@ -34,7 +34,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-        [Authorize(Policy = "Admin")]
+        [Authorize(Policy = "Seguridad.Usuarios")]
         public async Task<IActionResult> Usuarios()
         {
             ViewData["Branches"] = await ObtenerBranches();

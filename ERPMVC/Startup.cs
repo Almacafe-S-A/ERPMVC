@@ -152,6 +152,22 @@ namespace ERPMVC
                 options.Filters.Add(new CorsAuthorizationFilterFactory("AllowAllOrigins"));
             });
 
+            string baseadress = Configuration.GetSection("AppSettings").GetSection("urlbase").Value;
+            HttpClient _client = new HttpClient();
+            var result = _client.GetAsync(baseadress + "api/Permisos/ListarPermisos");
+            if (result.Result.IsSuccessStatusCode)
+            {
+                var respuesta = (result.Result.Content.ReadAsStringAsync());
+                List<string> permisos = JsonConvert.DeserializeObject<List<string>>(respuesta.Result);
+                services.AddAuthorization(options =>
+                {
+                    foreach (var permiso in permisos)
+                    {
+                        options.AddPolicy(permiso, policy => policy.RequireClaim(permiso, "true"));
+                    }
+                });
+            }
+            
 
             services.AddKendo();
 
