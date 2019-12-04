@@ -60,37 +60,6 @@ namespace ERPMVC.Controllers
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        [HttpGet]
-        public async Task<DataSourceResult> GetControlAsistencias([DataSourceRequest]DataSourceRequest request)
-        {
-            List<ControlAsistencias> _ControlAsistencias = new List<ControlAsistencias>();
-            try
-            {
-
-                string baseadress = _config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ControlAsistencias/GetControlAsistencias");
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ControlAsistencias = JsonConvert.DeserializeObject<List<ControlAsistencias>>(valorrespuesta);
-                    _ControlAsistencias = _ControlAsistencias.OrderByDescending(q => q.Id).ToList();
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-
-            return _ControlAsistencias.ToDataSourceResult(request);
-
-        }
 
         async Task<IEnumerable<ElementoConfiguracion>> ObtenerTiposControlAsistencias()
         {
@@ -108,7 +77,6 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     TA = JsonConvert.DeserializeObject<IEnumerable<ElementoConfiguracion>>(valorrespuesta);
-
                 }
             }
             catch (Exception ex)
@@ -127,17 +95,13 @@ namespace ERPMVC.Controllers
             ControlAsistencias _suma = new ControlAsistencias();
             try
             {
-
                 ControlAsistencias prueba = new ControlAsistencias();
-
                 prueba.IdEmpleado = empleado;
                 prueba.FechaCreacion = pemes;
                 prueba.FechaModificacion = ultimafecha;
                 prueba.TipoAsistencia = TipoAsistencia;
-
                 string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/ControlAsistencias/GetSumControlAsistenciasByEmployeeId" + prueba);
                 string valorrespuesta = "";
@@ -145,7 +109,6 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _suma = JsonConvert.DeserializeObject<ControlAsistencias>(valorrespuesta);
-
                 }
             }
             catch (Exception ex)
@@ -153,18 +116,12 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
-
             return Json(_suma);
         }
 
-
-
         [HttpPost]
-        public async Task<JsonResult> CantidadTipoAsietnciaByEmpleado(ControlAsistencias NuevaControlAsistencia,  DateTime primero, DateTime actual, Int64 TipoAsistencia)
+        public async Task<JsonResult> CantidadTipoAsietnciaByEmpleado(ControlAsistencias NuevaControlAsistencia, DateTime primero, DateTime actual, Int64 TipoAsistencia)
         {
-            
-            
             Int32 ControlAsistencia = 0;
             try
             {
@@ -182,19 +139,14 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    //ControlAsistencia = JsonConvert.DeserializeObject<List<ControlAsistencias>>(valorrespuesta);
                     ControlAsistencia = JsonConvert.DeserializeObject<Int32>(valorrespuesta);
-
                 }
-
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
-
             return Json(ControlAsistencia);
         }
 
@@ -214,7 +166,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     Ele = JsonConvert.DeserializeObject<ElementoConfiguracion>(valorrespuesta);
-                    //_ElementoConfiguracion = _ElementoConfiguracion.Where(q => q.Estado == Estado).ToList();
+
                 }
 
             }
@@ -224,73 +176,46 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-
-
             return Json(Ele);
         }
-
 
 
         [HttpGet]
         public async Task<DataSourceResult> GetGetControlAsistencias([DataSourceRequest]DataSourceRequest request, string primero, string actual)
         {
-
             var uno = primero;
             var diactual = actual;
-
             var pmes = Convert.ToDateTime(uno);
             var dctual = Convert.ToDateTime(diactual);
 
             DateTime fechafindmes = DateTime.Now;
 
-             if (uno == null && diactual == null)
+            if (uno == null && diactual == null)
             {
-
-                fechafindmes = DateTime.Now;               
-                pmes = Convert.ToDateTime(1+"-"+fechafindmes.Month+"-"+fechafindmes.Year);
+                fechafindmes = DateTime.Now;
+                pmes = Convert.ToDateTime(1 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
 
             }
-
-
-            //Int64 idempleado = _CtlAsis.EmployeesId;
-           else if (pmes.Month == DateTime.Now.Month)
+            else if (pmes.Month == DateTime.Now.Month)
             {
                 fechafindmes = DateTime.Now;
 
-            }          
+            }
             else
-            { //validar año
-                           
+            {
                 int me = pmes.Month;
                 int ao = pmes.Year;
                 int diass = DateTime.DaysInMonth(pmes.Year, pmes.Month);
-                string fechavieja = diass+"-"+me+ "-"+ao;
-
+                string fechavieja = diass + "-" + me + "-" + ao;
                 fechafindmes = Convert.ToDateTime(fechavieja);
             }
-
-            
-
-           
-
-
-            //  var actualfecha = dia.ToString("yyyy-MM-dd");
-
-            //String FechaTexto = "14/04/2014 9:10:45";
-            //DateTime fecha = DateTime.Parse(FechaTexto);
-            //FechaTexto = fecha.ToString("dd/MM/yyyy");
+            int letras = DateTime.DaysInMonth(fechafindmes.Year, fechafindmes.Month);
 
 
             List<ControlAsistenciasDTO> _ControlAsistencias = new List<ControlAsistenciasDTO>();
-
-
-            //Cargar de lista de empleados
             List<Employees> _ListEmpleados = new List<Employees>();
-
-
             try
             {
-
                 string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -300,20 +225,125 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ListEmpleados = JsonConvert.DeserializeObject<List<Employees>>(valorrespuesta);
-                    //  _ListEmpleados = _ListEmpleados.OrderByDescending(q => q.IdEmpleado).ToList();
                 }
-
-                // Fin de lista de empleados
-
-                //int c = 1;
-
                 foreach (var _ListEmpleadosLis in _ListEmpleados)
                 {
                     ControlAsistenciasDTO NuevaControlAsistencia = new ControlAsistenciasDTO();
                     NuevaControlAsistencia.Empleado = _ListEmpleadosLis;
-                   // NuevaControlAsistencia.Contador = c++;
                     NuevaControlAsistencia.EmployeesId = _ListEmpleadosLis.IdEmpleado;
+                    //-------------------------------------Iniciarl de el dia----------------------------------------------------
 
+                    var l1 = Convert.ToDateTime(1 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD1 = l1.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l2 = Convert.ToDateTime(2 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD2 = l2.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l3 = Convert.ToDateTime(3 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD3 = l3.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l4 = Convert.ToDateTime(4 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD4 = l4.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l5 = Convert.ToDateTime(5 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD5 = l5.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l6 = Convert.ToDateTime(6 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+
+                    NuevaControlAsistencia.LetraD6 = l6.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l7 = Convert.ToDateTime(7 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD7 = l7.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l8 = Convert.ToDateTime(8 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD8 = l8.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l9 = Convert.ToDateTime(9 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD9 = l9.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l10 = Convert.ToDateTime(10 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD10 = l10.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l11 = Convert.ToDateTime(11 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD11 = l11.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l12 = Convert.ToDateTime(12 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD12 = l12.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l13 = Convert.ToDateTime(13 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD13 = l13.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l14 = Convert.ToDateTime(14 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD14 = l14.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l15 = Convert.ToDateTime(15 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD15 = l15.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l16 = Convert.ToDateTime(16 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD16 = l16.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l17 = Convert.ToDateTime(17 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD17 = l17.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l18 = Convert.ToDateTime(18 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD18 = l18.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l19 = Convert.ToDateTime(19 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD19 = l19.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l20 = Convert.ToDateTime(20 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD20 = l20.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l21 = Convert.ToDateTime(21 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD21 = l21.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l22 = Convert.ToDateTime(22 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD22 = l22.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l23 = Convert.ToDateTime(23 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD23 = l23.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l24 = Convert.ToDateTime(24 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD24 = l24.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l25 = Convert.ToDateTime(25 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD25 = l25.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l26 = Convert.ToDateTime(26 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD26 = l26.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l27 = Convert.ToDateTime(27 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD27 = l27.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    var l28 = Convert.ToDateTime(28 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                    NuevaControlAsistencia.LetraD28 = l28.ToString("dddd").Substring(0, 1).ToUpper();
+
+                    if (letras == 29)
+                    {
+                        var l29 = Convert.ToDateTime(29 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                        NuevaControlAsistencia.LetraD29 = l29.ToString("dddd").Substring(0, 1).ToUpper();
+                    }
+                    if (letras == 30)
+                    {
+                        var l29 = Convert.ToDateTime(29 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                        NuevaControlAsistencia.LetraD29 = l29.ToString("dddd").Substring(0, 1).ToUpper();
+
+                        var l30 = Convert.ToDateTime(30 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                        NuevaControlAsistencia.LetraD30 = l30.ToString("dddd").Substring(0, 1).ToUpper();
+                    }
+                    if (letras == 31)
+                    {
+                        var l29 = Convert.ToDateTime(29 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                        NuevaControlAsistencia.LetraD29 = l29.ToString("dddd").Substring(0, 1).ToUpper();
+
+                        var l30 = Convert.ToDateTime(30 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                        NuevaControlAsistencia.LetraD30 = l30.ToString("dddd").Substring(0, 1).ToUpper();
+
+                        var l31 = Convert.ToDateTime(31 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                        NuevaControlAsistencia.LetraD31 = l31.ToString("dddd").Substring(0, 1).ToUpper();
+                    }
+
+                    //-------------------------------------------------------------------------------------------------------------
                     //Calculos
                     //-----------------------------Llegadas Tarde por Empleado--------------------------------------------
                     short LlegadaTarde = 75;
@@ -349,8 +379,8 @@ namespace ERPMVC.Controllers
                     int DiasLaborales = (cLLegadasTarde + cDomingosandLibres + cPermisoshora + cPrecente);
                     NuevaControlAsistencia.DiasLaborales = DiasLaborales;
 
-                    double porcentajellegadastarde = ((double)DiasLaborales / (double)cLLegadasTarde);                                                         
-                    if (double.IsNaN(porcentajellegadastarde))    
+                    double porcentajellegadastarde = ((double)DiasLaborales / (double)cLLegadasTarde);
+                    if (double.IsNaN(porcentajellegadastarde))
                     {
                         NuevaControlAsistencia.PorcentajeLlegadasTarde = "0%";
                     }
@@ -359,52 +389,32 @@ namespace ERPMVC.Controllers
                         NuevaControlAsistencia.PorcentajeLlegadasTarde = Convert.ToString(porcentajellegadastarde + "%");
                     }
 
-
-                    // var fechasdia2 = await GetControlAsistenciasByEmpl(NuevaControlAsistenc  ia, d, d);
-                    // List<ControlAsistencias> cantidad = ((List<ControlAsistencias>)fechasdia2.Value);
-
-
-                    //pasaron al foreach
-                    //var fechas = await GetControlAsistenciasByEmpl(NuevaControlAsistencia, primero, actual);
-                    //List<ControlAsistencias> LSCA = ((List<ControlAsistencias>)fechas.Value);
-
                     int hola = 0;
-                    //Hacer un foreach para recorer fechas luego hacer el swicht
-                    //-----------------------------------------------------------------
-
-                    //for(int c=1, c>actual, c++)
-                    //foreach (var _Listardias in LSCA)
-                    //for ( pmes = 1; i <= 31; i++)
-                        for (var d = pmes; d < fechafindmes; d = d.AddDays(1))
-
-                        {
-
-                        //string asString = now.ToString("dd MMMM yyyy hh:mm:ss tt");
-
-                        //switch (_Listardias.Fecha.Day)
+                    for (var d = pmes; d < fechafindmes; d = d.AddDays(1))
+                    {
                         switch (d.Day)
                         {
                             case 1:
                                 var fechasdia = await GetControlAsistenciasByEmpl(NuevaControlAsistencia, d, d);
                                 List<ControlAsistencias> LSCAdia = ((List<ControlAsistencias>)fechasdia.Value);
-                                
+
                                 if (LSCAdia.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia1 = d; 
+                                    NuevaControlAsistencia.Dia1 = d;
                                     NuevaControlAsistencia.Dia1TA = 0;
-                                    var l1 = Convert.ToDateTime(1 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD1 = l1.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l1 = Convert.ToDateTime(1 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD1 = l1.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
-                                    
+
                                     var getTipoAsistencia = await ColorTipoAsistencia(Convert.ToInt32(LSCAdia[0].TipoAsistencia));
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD1 = li.Formula;
 
                                     NuevaControlAsistencia.Dia1 = LSCAdia[0].Fecha;
-                                    NuevaControlAsistencia.Dia1TA = LSCAdia[0].TipoAsistencia;                                 
-                                    NuevaControlAsistencia.LetraD1 = LSCAdia[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper(); 
+                                    NuevaControlAsistencia.Dia1TA = LSCAdia[0].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD1 = LSCAdia[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper(); 
                                 }
                                 break;
                             case 2:
@@ -413,10 +423,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia2.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia2 = d; 
+                                    NuevaControlAsistencia.Dia2 = d;
                                     NuevaControlAsistencia.Dia2TA = 0;
-                                    var l2 = Convert.ToDateTime(2 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD2 = l2.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l2 = Convert.ToDateTime(2 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD2 = l2.ToString("dddd").Substring(0, 1).ToUpper();
 
                                 }
                                 else
@@ -427,9 +437,9 @@ namespace ERPMVC.Controllers
 
                                     NuevaControlAsistencia.Dia2 = LSCAdia2[0].Fecha;
                                     NuevaControlAsistencia.Dia2TA = LSCAdia2[0].TipoAsistencia;
-                                    NuevaControlAsistencia.LetraD2 = LSCAdia2[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                       
+                                    //NuevaControlAsistencia.LetraD2 = LSCAdia2[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                       
                                 }
-                                
+
                                 break;
                             case 3:
                                 var fechasdia3 = await GetControlAsistenciasByEmpl(NuevaControlAsistencia, d, d);
@@ -437,10 +447,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia3.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia3 = d; 
+                                    NuevaControlAsistencia.Dia3 = d;
                                     NuevaControlAsistencia.Dia3TA = 0;
-                                    var l3 = Convert.ToDateTime(3 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD3 = l3.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l3 = Convert.ToDateTime(3 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD3 = l3.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -448,8 +458,8 @@ namespace ERPMVC.Controllers
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD3 = li.Formula;
                                     NuevaControlAsistencia.Dia3 = LSCAdia3[0].Fecha;
-                                    NuevaControlAsistencia.Dia3TA = LSCAdia3[0].TipoAsistencia; 
-                                    NuevaControlAsistencia.LetraD3 = LSCAdia3[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                   
+                                    NuevaControlAsistencia.Dia3TA = LSCAdia3[0].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD3 = LSCAdia3[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                   
                                 }
                                 break;
                             case 4:
@@ -458,10 +468,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia4.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia4 = d; 
+                                    NuevaControlAsistencia.Dia4 = d;
                                     NuevaControlAsistencia.Dia4TA = 0;
-                                    var l4 = Convert.ToDateTime(4 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD4 = l4.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l4 = Convert.ToDateTime(4 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD4 = l4.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -469,8 +479,8 @@ namespace ERPMVC.Controllers
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD4 = li.Formula;
                                     NuevaControlAsistencia.Dia4 = LSCAdia4[0].Fecha;
-                                    NuevaControlAsistencia.Dia4TA = LSCAdia4[0].TipoAsistencia; 
-                                    NuevaControlAsistencia.LetraD4 = LSCAdia4[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
+                                    NuevaControlAsistencia.Dia4TA = LSCAdia4[0].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD4 = LSCAdia4[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
                                 }
                                 break;
                             case 5:
@@ -479,10 +489,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia5.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia5 = d; 
+                                    NuevaControlAsistencia.Dia5 = d;
                                     NuevaControlAsistencia.Dia5TA = 0;
-                                    var l5 = Convert.ToDateTime(5 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD5 = l5.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l5 = Convert.ToDateTime(5 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD5 = l5.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -490,8 +500,8 @@ namespace ERPMVC.Controllers
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD5 = li.Formula;
                                     NuevaControlAsistencia.Dia5 = LSCAdia5[0].Fecha;
-                                    NuevaControlAsistencia.Dia5TA = LSCAdia5[0].TipoAsistencia;  
-                                    NuevaControlAsistencia.LetraD5 = LSCAdia5[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                  
+                                    NuevaControlAsistencia.Dia5TA = LSCAdia5[0].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD5 = LSCAdia5[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                  
                                 }
                                 break;
                             case 6:
@@ -500,10 +510,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia6.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia6 = d; 
+                                    NuevaControlAsistencia.Dia6 = d;
                                     NuevaControlAsistencia.Dia6TA = 0;
-                                    var l6 = Convert.ToDateTime(6+"-"+fechafindmes.Month +"-"+ fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD6 = l6.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l6 = Convert.ToDateTime(6+"-"+fechafindmes.Month +"-"+ fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD6 = l6.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -511,8 +521,8 @@ namespace ERPMVC.Controllers
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD6 = li.Formula;
                                     NuevaControlAsistencia.Dia6 = LSCAdia6[0].Fecha;
-                                    NuevaControlAsistencia.Dia6TA = LSCAdia6[0].TipoAsistencia;  
-                                    NuevaControlAsistencia.LetraD6 = LSCAdia6[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                   
+                                    NuevaControlAsistencia.Dia6TA = LSCAdia6[0].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD6 = LSCAdia6[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                   
                                 }
                                 break;
                             case 7:
@@ -521,10 +531,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia7.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia7 = d; 
+                                    NuevaControlAsistencia.Dia7 = d;
                                     NuevaControlAsistencia.Dia7TA = 0;
-                                    var l7 = Convert.ToDateTime(7 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD7 = l7.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l7 = Convert.ToDateTime(7 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD7 = l7.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -532,8 +542,8 @@ namespace ERPMVC.Controllers
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD7 = li.Formula;
                                     NuevaControlAsistencia.Dia7 = LSCAdia7[0].Fecha;
-                                    NuevaControlAsistencia.Dia7TA = LSCAdia7[0].TipoAsistencia; 
-                                    NuevaControlAsistencia.LetraD7 = LSCAdia7[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
+                                    NuevaControlAsistencia.Dia7TA = LSCAdia7[0].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD7 = LSCAdia7[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
                                 }
                                 break;
                             case 8:
@@ -542,10 +552,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia8.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia8 = d; 
+                                    NuevaControlAsistencia.Dia8 = d;
                                     NuevaControlAsistencia.Dia8TA = 0;
-                                    var l8 = Convert.ToDateTime(8 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD8 = l8.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l8 = Convert.ToDateTime(8 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD8 = l8.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -553,8 +563,8 @@ namespace ERPMVC.Controllers
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD8 = li.Formula;
                                     NuevaControlAsistencia.Dia8 = LSCAdia8[0].Fecha;
-                                    NuevaControlAsistencia.Dia8TA = LSCAdia8[0].TipoAsistencia; 
-                                    NuevaControlAsistencia.LetraD8 = LSCAdia8[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
+                                    NuevaControlAsistencia.Dia8TA = LSCAdia8[0].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD8 = LSCAdia8[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
                                 }
                                 break;
                             case 9:
@@ -563,10 +573,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia9.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia9 = d; 
+                                    NuevaControlAsistencia.Dia9 = d;
                                     NuevaControlAsistencia.Dia9TA = 0;
-                                    var l9 = Convert.ToDateTime(9 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD9 = l9.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l9 = Convert.ToDateTime(9 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD9 = l9.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -574,20 +584,20 @@ namespace ERPMVC.Controllers
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD9 = li.Formula;
                                     NuevaControlAsistencia.Dia9 = LSCAdia9[0].Fecha;
-                                    NuevaControlAsistencia.Dia9TA = LSCAdia9[0].TipoAsistencia; 
-                                    NuevaControlAsistencia.LetraD9 = LSCAdia9[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
+                                    NuevaControlAsistencia.Dia9TA = LSCAdia9[0].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD9 = LSCAdia9[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
                                 }
                                 break;
                             case 10:
-                               var fechasdia10 = await GetControlAsistenciasByEmpl(NuevaControlAsistencia, d, d);
+                                var fechasdia10 = await GetControlAsistenciasByEmpl(NuevaControlAsistencia, d, d);
                                 List<ControlAsistencias> LSCAdia10 = ((List<ControlAsistencias>)fechasdia10.Value);
-                                
+
                                 if (LSCAdia10.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia10 = d; 
+                                    NuevaControlAsistencia.Dia10 = d;
                                     NuevaControlAsistencia.Dia10TA = 0;
-                                    var l10 = Convert.ToDateTime(10 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD10 = l10.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l10 = Convert.ToDateTime(10 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD10 = l10.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -595,20 +605,20 @@ namespace ERPMVC.Controllers
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD10 = li.Formula;
                                     NuevaControlAsistencia.Dia10 = LSCAdia10[0].Fecha;
-                                    NuevaControlAsistencia.Dia10TA = LSCAdia10[0].TipoAsistencia; 
-                                    NuevaControlAsistencia.LetraD10 = LSCAdia10[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
+                                    NuevaControlAsistencia.Dia10TA = LSCAdia10[0].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD10 = LSCAdia10[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
                                 }
                                 break;
                             case 11:
-                               var fechasdia11 = await GetControlAsistenciasByEmpl(NuevaControlAsistencia, d, d);
+                                var fechasdia11 = await GetControlAsistenciasByEmpl(NuevaControlAsistencia, d, d);
                                 List<ControlAsistencias> LSCAdia11 = ((List<ControlAsistencias>)fechasdia11.Value);
-                                
+
                                 if (LSCAdia11.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia11 = d; 
+                                    NuevaControlAsistencia.Dia11 = d;
                                     NuevaControlAsistencia.Dia11TA = 0;
-                                    var l11 = Convert.ToDateTime(11 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD11 = l11.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l11 = Convert.ToDateTime(11 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD11 = l11.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -616,8 +626,8 @@ namespace ERPMVC.Controllers
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD11 = li.Formula;
                                     NuevaControlAsistencia.Dia11 = LSCAdia11[0].Fecha;
-                                    NuevaControlAsistencia.Dia11TA = LSCAdia11[0].TipoAsistencia; 
-                                    NuevaControlAsistencia.LetraD11 = LSCAdia11[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
+                                    NuevaControlAsistencia.Dia11TA = LSCAdia11[0].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD11 = LSCAdia11[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
                                 }
                                 break;
                             case 12:
@@ -626,10 +636,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia12.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia12 = d; 
+                                    NuevaControlAsistencia.Dia12 = d;
                                     NuevaControlAsistencia.Dia21TA = 0;
-                                    var l12 = Convert.ToDateTime(12 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD12 = l12.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l12 = Convert.ToDateTime(12 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD12 = l12.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -637,8 +647,8 @@ namespace ERPMVC.Controllers
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD12 = li.Formula;
                                     NuevaControlAsistencia.Dia12 = LSCAdia12[0].Fecha;
-                                    NuevaControlAsistencia.Dia12TA = LSCAdia12[0].TipoAsistencia; 
-                                    NuevaControlAsistencia.LetraD12 = LSCAdia12[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
+                                    NuevaControlAsistencia.Dia12TA = LSCAdia12[0].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD12 = LSCAdia12[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
                                 }
                                 break;
                             case 13:
@@ -649,8 +659,8 @@ namespace ERPMVC.Controllers
                                 {
                                     NuevaControlAsistencia.Dia13 = d;
                                     NuevaControlAsistencia.Dia13TA = 0;
-                                    var l13 = Convert.ToDateTime(13 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD13 = l13.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l13 = Convert.ToDateTime(13 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD13 = l13.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -658,8 +668,8 @@ namespace ERPMVC.Controllers
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD13 = li.Formula;
                                     NuevaControlAsistencia.Dia13 = LSCAdia13[0].Fecha;
-                                    NuevaControlAsistencia.Dia13TA = LSCAdia13[0].TipoAsistencia; 
-                                    NuevaControlAsistencia.LetraD13 = LSCAdia13[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
+                                    NuevaControlAsistencia.Dia13TA = LSCAdia13[0].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD13 = LSCAdia13[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
                                 }
                                 break;
                             case 14:
@@ -668,10 +678,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia14.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia14 = d; 
+                                    NuevaControlAsistencia.Dia14 = d;
                                     NuevaControlAsistencia.Dia14TA = 0;
-                                    var l14 = Convert.ToDateTime(14 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD14 = l14.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l14 = Convert.ToDateTime(14 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD14 = l14.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -679,9 +689,9 @@ namespace ERPMVC.Controllers
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD14 = li.Formula;
                                     NuevaControlAsistencia.Dia14 = LSCAdia14[0].Fecha;
-                                    NuevaControlAsistencia.Dia14TA = LSCAdia14[0].TipoAsistencia; 
-                                    NuevaControlAsistencia.LetraD14 = LSCAdia14[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                   
-                                }                            
+                                    NuevaControlAsistencia.Dia14TA = LSCAdia14[0].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD14 = LSCAdia14[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                   
+                                }
                                 break;
                             case 15:
                                 var fechasdia15 = await GetControlAsistenciasByEmpl(NuevaControlAsistencia, d, d);
@@ -689,10 +699,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia15.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia15 = d; 
+                                    NuevaControlAsistencia.Dia15 = d;
                                     NuevaControlAsistencia.Dia15TA = 0;
-                                    var l15 = Convert.ToDateTime(15 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD15 = l15.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l15 = Convert.ToDateTime(15 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD15 = l15.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -701,7 +711,7 @@ namespace ERPMVC.Controllers
                                     NuevaControlAsistencia.ColorD15 = li.Formula;
                                     NuevaControlAsistencia.Dia15 = LSCAdia15[0].Fecha;
                                     NuevaControlAsistencia.Dia15TA = LSCAdia15[0].TipoAsistencia;
-                                    NuevaControlAsistencia.LetraD15 = LSCAdia15[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper(); 
+                                    //NuevaControlAsistencia.LetraD15 = LSCAdia15[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper(); 
                                 }
                                 break;
                             case 16:
@@ -710,10 +720,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia16.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia16 = d; 
+                                    NuevaControlAsistencia.Dia16 = d;
                                     NuevaControlAsistencia.Dia16TA = 0;
-                                    var l16 = Convert.ToDateTime(16 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD16 = l16.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l16 = Convert.ToDateTime(16 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD16 = l16.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -721,8 +731,8 @@ namespace ERPMVC.Controllers
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD16 = li.Formula;
                                     NuevaControlAsistencia.Dia16 = LSCAdia16[0].Fecha;
-                                    NuevaControlAsistencia.Dia16TA = LSCAdia16[0].TipoAsistencia;  
-                                    NuevaControlAsistencia.LetraD16 = LSCAdia16[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                  
+                                    NuevaControlAsistencia.Dia16TA = LSCAdia16[0].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD16 = LSCAdia16[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                  
                                 }
                                 break;
                             case 17:
@@ -731,10 +741,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia17.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia17 = d; 
+                                    NuevaControlAsistencia.Dia17 = d;
                                     NuevaControlAsistencia.Dia17TA = 0;
-                                    var l17 = Convert.ToDateTime(17 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD17 = l17.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l17 = Convert.ToDateTime(17 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD17 = l17.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -742,8 +752,8 @@ namespace ERPMVC.Controllers
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD17 = li.Formula;
                                     NuevaControlAsistencia.Dia17 = LSCAdia17[0].Fecha;
-                                    NuevaControlAsistencia.Dia17TA = LSCAdia17[0].TipoAsistencia; 
-                                    NuevaControlAsistencia.LetraD17 = LSCAdia17[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
+                                    NuevaControlAsistencia.Dia17TA = LSCAdia17[0].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD17 = LSCAdia17[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
                                 }
                                 break;
                             case 18:
@@ -752,10 +762,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia18.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia18 = d; 
+                                    NuevaControlAsistencia.Dia18 = d;
                                     NuevaControlAsistencia.Dia18TA = 0;
-                                    var l18 = Convert.ToDateTime(18 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD18 = l18.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l18 = Convert.ToDateTime(18 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD18 = l18.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -763,8 +773,8 @@ namespace ERPMVC.Controllers
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD18 = li.Formula;
                                     NuevaControlAsistencia.Dia18 = LSCAdia18[0].Fecha;
-                                    NuevaControlAsistencia.Dia18TA = LSCAdia18[1].TipoAsistencia;     
-                                    NuevaControlAsistencia.LetraD18= LSCAdia18[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                
+                                    NuevaControlAsistencia.Dia18TA = LSCAdia18[1].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD18= LSCAdia18[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                
                                 }
                                 break;
                             case 19:
@@ -773,10 +783,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia19.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia19 = d; 
+                                    NuevaControlAsistencia.Dia19 = d;
                                     NuevaControlAsistencia.Dia19TA = 0;
-                                    var l19 = Convert.ToDateTime(19 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD19 = l19.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l19 = Convert.ToDateTime(19 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD19 = l19.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -784,8 +794,8 @@ namespace ERPMVC.Controllers
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD19 = li.Formula;
                                     NuevaControlAsistencia.Dia19 = LSCAdia19[0].Fecha;
-                                    NuevaControlAsistencia.Dia19TA = LSCAdia19[0].TipoAsistencia;   
-                                    NuevaControlAsistencia.LetraD19 = LSCAdia19[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                  
+                                    NuevaControlAsistencia.Dia19TA = LSCAdia19[0].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD19 = LSCAdia19[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                  
                                 }
                                 break;
                             case 20:
@@ -794,10 +804,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia20.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia20 = d; 
+                                    NuevaControlAsistencia.Dia20 = d;
                                     NuevaControlAsistencia.Dia20TA = 0;
-                                    var l20 = Convert.ToDateTime(20 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD20 = l20.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l20 = Convert.ToDateTime(20 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD20 = l20.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -805,8 +815,8 @@ namespace ERPMVC.Controllers
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD20 = li.Formula;
                                     NuevaControlAsistencia.Dia20 = LSCAdia20[0].Fecha;
-                                    NuevaControlAsistencia.Dia20TA = LSCAdia20[0].TipoAsistencia; 
-                                    NuevaControlAsistencia.LetraD20 = LSCAdia20[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
+                                    NuevaControlAsistencia.Dia20TA = LSCAdia20[0].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD20 = LSCAdia20[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
                                 }
                                 break;
                             case 21:
@@ -815,10 +825,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia21.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia21 = d; 
+                                    NuevaControlAsistencia.Dia21 = d;
                                     NuevaControlAsistencia.Dia21TA = 0;
-                                    var l21 = Convert.ToDateTime(21 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD21 = l21.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l21 = Convert.ToDateTime(21 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD21 = l21.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -827,7 +837,7 @@ namespace ERPMVC.Controllers
                                     NuevaControlAsistencia.ColorD21 = li.Formula;
                                     NuevaControlAsistencia.Dia21 = LSCAdia21[0].Fecha;
                                     NuevaControlAsistencia.Dia21TA = LSCAdia21[0].TipoAsistencia;
-                                    NuevaControlAsistencia.LetraD21 = LSCAdia21[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper(); 
+                                    //NuevaControlAsistencia.LetraD21 = LSCAdia21[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper(); 
                                 }
                                 break;
                             case 22:
@@ -836,10 +846,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia22.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia22 = d; 
+                                    NuevaControlAsistencia.Dia22 = d;
                                     NuevaControlAsistencia.Dia22TA = 0;
-                                    var l22 = Convert.ToDateTime(22 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD22 = l22.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l22 = Convert.ToDateTime(22 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD22 = l22.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -847,8 +857,8 @@ namespace ERPMVC.Controllers
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD22 = li.Formula;
                                     NuevaControlAsistencia.Dia22 = LSCAdia22[0].Fecha;
-                                    NuevaControlAsistencia.Dia22TA = LSCAdia22[0].TipoAsistencia; 
-                                    NuevaControlAsistencia.LetraD22 = LSCAdia22[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
+                                    NuevaControlAsistencia.Dia22TA = LSCAdia22[0].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD22 = LSCAdia22[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
                                 }
                                 break;
                             case 23:
@@ -857,10 +867,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia23.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia23 = d; 
+                                    NuevaControlAsistencia.Dia23 = d;
                                     NuevaControlAsistencia.Dia23TA = 0;
-                                    var l23 = Convert.ToDateTime(23 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD23 = l23.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l23 = Convert.ToDateTime(23 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD23 = l23.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -868,8 +878,8 @@ namespace ERPMVC.Controllers
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD23 = li.Formula;
                                     NuevaControlAsistencia.Dia23 = LSCAdia23[0].Fecha;
-                                    NuevaControlAsistencia.Dia23TA = LSCAdia23[0].TipoAsistencia; 
-                                    NuevaControlAsistencia.LetraD23 = LSCAdia23[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
+                                    NuevaControlAsistencia.Dia23TA = LSCAdia23[0].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD23 = LSCAdia23[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
                                 }
                                 break;
                             case 24:
@@ -878,10 +888,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia24.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia24 = d; 
+                                    NuevaControlAsistencia.Dia24 = d;
                                     NuevaControlAsistencia.Dia24TA = 0;
-                                    var l24 = Convert.ToDateTime(24 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD24 = l24.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l24 = Convert.ToDateTime(24 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD24 = l24.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -889,8 +899,8 @@ namespace ERPMVC.Controllers
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD24 = li.Formula;
                                     NuevaControlAsistencia.Dia24 = LSCAdia24[0].Fecha;
-                                    NuevaControlAsistencia.Dia24TA = LSCAdia24[0].TipoAsistencia; 
-                                    NuevaControlAsistencia.LetraD24 = LSCAdia24[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
+                                    NuevaControlAsistencia.Dia24TA = LSCAdia24[0].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD24 = LSCAdia24[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
                                 }
                                 break;
                             case 25:
@@ -899,10 +909,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia25.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia25 = d; 
+                                    NuevaControlAsistencia.Dia25 = d;
                                     NuevaControlAsistencia.Dia25TA = 0;
-                                    var l25 = Convert.ToDateTime(25 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD25 = l25.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l25 = Convert.ToDateTime(25 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD25 = l25.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -911,7 +921,7 @@ namespace ERPMVC.Controllers
                                     NuevaControlAsistencia.ColorD25 = li.Formula;
                                     NuevaControlAsistencia.Dia25 = LSCAdia25[0].Fecha;
                                     NuevaControlAsistencia.Dia25TA = LSCAdia25[0].TipoAsistencia;
-                                    NuevaControlAsistencia.LetraD25 = LSCAdia25[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                     
+                                    //NuevaControlAsistencia.LetraD25 = LSCAdia25[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                     
                                 }
                                 break;
                             case 26:
@@ -920,10 +930,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia26.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia26 = d; 
+                                    NuevaControlAsistencia.Dia26 = d;
                                     NuevaControlAsistencia.Dia26TA = 0;
-                                    var l26 = Convert.ToDateTime(26 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD26 = l26.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l26 = Convert.ToDateTime(26 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD26 = l26.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -932,8 +942,8 @@ namespace ERPMVC.Controllers
                                     NuevaControlAsistencia.ColorD26 = li.Formula;
                                     NuevaControlAsistencia.Dia26 = LSCAdia26[0].Fecha;
                                     NuevaControlAsistencia.Dia26TA = LSCAdia26[0].TipoAsistencia;
-                                   NuevaControlAsistencia.LetraD26 = LSCAdia26[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper(); 
-                                }//  NuevaControlAsistencia.Dia=
+                                    //NuevaControlAsistencia.LetraD26 = LSCAdia26[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper(); 
+                                }
                                 break;
                             case 27:
                                 var fechasdia27 = await GetControlAsistenciasByEmpl(NuevaControlAsistencia, d, d);
@@ -941,10 +951,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia27.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia27 = d; 
+                                    NuevaControlAsistencia.Dia27 = d;
                                     NuevaControlAsistencia.Dia27TA = 0;
-                                    var l27 = Convert.ToDateTime(27 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD27 = l27.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l27 = Convert.ToDateTime(27 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD27 = l27.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -952,8 +962,8 @@ namespace ERPMVC.Controllers
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD27 = li.Formula;
                                     NuevaControlAsistencia.Dia27 = LSCAdia27[0].Fecha;
-                                    NuevaControlAsistencia.Dia27TA = LSCAdia27[0].TipoAsistencia; 
-                                    NuevaControlAsistencia.LetraD27 = LSCAdia27[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
+                                    NuevaControlAsistencia.Dia27TA = LSCAdia27[0].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD27 = LSCAdia27[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                    
                                 }
                                 break;
                             case 28:
@@ -962,10 +972,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia28.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia28 = d; 
+                                    NuevaControlAsistencia.Dia28 = d;
                                     NuevaControlAsistencia.Dia28TA = 0;
-                                    var l28 = Convert.ToDateTime(28 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD28 = l28.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l28 = Convert.ToDateTime(28 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD28 = l28.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -973,8 +983,8 @@ namespace ERPMVC.Controllers
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD28 = li.Formula;
                                     NuevaControlAsistencia.Dia28 = LSCAdia28[0].Fecha;
-                                    NuevaControlAsistencia.Dia28TA = LSCAdia28[0].TipoAsistencia;    
-                                    NuevaControlAsistencia.LetraD28 = LSCAdia28[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                 
+                                    NuevaControlAsistencia.Dia28TA = LSCAdia28[0].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD28 = LSCAdia28[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                 
                                 }
                                 break;
                             case 29:
@@ -983,10 +993,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia29.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia29 = d; 
+                                    NuevaControlAsistencia.Dia29 = d;
                                     NuevaControlAsistencia.Dia29TA = 0;
-                                    var l29 = Convert.ToDateTime(29 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD29 = l29.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l29 = Convert.ToDateTime(29 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD29 = l29.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -994,8 +1004,8 @@ namespace ERPMVC.Controllers
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD29 = li.Formula;
                                     NuevaControlAsistencia.Dia29 = LSCAdia29[0].Fecha;
-                                    NuevaControlAsistencia.Dia29TA = LSCAdia29[0].TipoAsistencia;  
-                                    NuevaControlAsistencia.LetraD29 = LSCAdia29[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                   
+                                    NuevaControlAsistencia.Dia29TA = LSCAdia29[0].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD29 = LSCAdia29[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                   
                                 }
                                 break;
                             case 30:
@@ -1004,10 +1014,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia30.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia30 = d; 
+                                    NuevaControlAsistencia.Dia30 = d;
                                     NuevaControlAsistencia.Dia30TA = 0;
-                                    var l30 = Convert.ToDateTime(30 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD30 = l30.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l30 = Convert.ToDateTime(30 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD30 = l30.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -1015,8 +1025,8 @@ namespace ERPMVC.Controllers
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD30 = li.Formula;
                                     NuevaControlAsistencia.Dia30 = LSCAdia30[0].Fecha;
-                                    NuevaControlAsistencia.Dia30TA = LSCAdia30[0].TipoAsistencia;  
-                                    NuevaControlAsistencia.LetraD30 = LSCAdia30[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                   
+                                    NuevaControlAsistencia.Dia30TA = LSCAdia30[0].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD30 = LSCAdia30[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                   
                                 }
                                 break;
                             case 31:
@@ -1025,10 +1035,10 @@ namespace ERPMVC.Controllers
 
                                 if (LSCAdia31.Count <= 0)
                                 {
-                                    NuevaControlAsistencia.Dia31 = d; 
+                                    NuevaControlAsistencia.Dia31 = d;
                                     NuevaControlAsistencia.Dia31TA = 0;
-                                    var l31 = Convert.ToDateTime(31 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
-                                    NuevaControlAsistencia.LetraD31 = l31.ToString("dddd").Substring(0, 1).ToUpper();
+                                    //var l31 = Convert.ToDateTime(31 + "-" + fechafindmes.Month + "-" + fechafindmes.Year);
+                                    //NuevaControlAsistencia.LetraD31 = l31.ToString("dddd").Substring(0, 1).ToUpper();
                                 }
                                 else
                                 {
@@ -1036,17 +1046,17 @@ namespace ERPMVC.Controllers
                                     var li = ((ElementoConfiguracion)getTipoAsistencia.Value);
                                     NuevaControlAsistencia.ColorD31 = li.Formula;
                                     NuevaControlAsistencia.Dia31 = LSCAdia31[0].Fecha;
-                                    NuevaControlAsistencia.Dia31TA = LSCAdia31[0].TipoAsistencia;   
-                                    NuevaControlAsistencia.LetraD31 = LSCAdia31[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                  
+                                    NuevaControlAsistencia.Dia31TA = LSCAdia31[0].TipoAsistencia;
+                                    //NuevaControlAsistencia.LetraD31 = LSCAdia31[0].Fecha.ToString("dddd").Substring(0, 1).ToUpper();                                  
                                 }
                                 break;
                             default:
 
                                 break;
 
-                        }                       
+                        }
                     }
-                    _ControlAsistencias.Add(NuevaControlAsistencia);                    
+                    _ControlAsistencias.Add(NuevaControlAsistencia);
                 }
             }
             catch (Exception ex)
@@ -1054,9 +1064,7 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
             return _ControlAsistencias.ToDataSourceResult(request);
-
         }
 
         [HttpPost]
@@ -1084,7 +1092,7 @@ namespace ERPMVC.Controllers
                     ControlAsistencia = JsonConvert.DeserializeObject<List<ControlAsistencias>>(valorrespuesta);
 
                 }
-                
+
             }
             catch (Exception ex)
             {
@@ -1096,42 +1104,11 @@ namespace ERPMVC.Controllers
             return Json(ControlAsistencia);
         }
 
-        //[HttpGet]
-        //public async Task<ActionResult> GetSumControlAsistenciasByEmployeeId(Int64 EmpleadoId)
-        //{
-        //    ControlAsistencias _suma = new ControlAsistencias();
-        //    try
-        //    {
-        //        string baseadress = _config.Value.urlbase;
-        //        HttpClient _client = new HttpClient();
-
-        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-        //        var result = await _client.GetAsync(baseadress + "api/ControlAsistencias/GetSumControlAsistenciasByEmployeeId/" + EmpleadoId);
-        //        string valorrespuesta = "";
-        //        if (result.IsSuccessStatusCode)
-        //        {
-        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
-        //            _suma = JsonConvert.DeserializeObject<ControlAsistencias>(valorrespuesta);
-
-        //        }
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-        //        throw ex;
-        //    }
-
-
-        //    return View(_suma);
-        //}
-
         [HttpPost]
         public async Task<ActionResult<ControlAsistencias>> Insert(ControlAsistencias _ControlAsistencia)
         {
-
-           try
+            try
             {
-                // TODO: Add insert logic here
                 string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -1146,17 +1123,13 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ControlAsistencia = JsonConvert.DeserializeObject<ControlAsistencias>(valorrespuesta);
                 }
-
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-
-
             return Ok(_ControlAsistencia);
-            //return new ObjectResult(new DataSourceResult { Data = new[] { _ExchangeRate }, Total = 1 });
         }
 
         [HttpPut("Id")]
@@ -1174,7 +1147,6 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ControlAsistencia = JsonConvert.DeserializeObject<ControlAsistencias>(valorrespuesta);
                 }
-
             }
             catch (Exception ex)
             {
@@ -1190,7 +1162,6 @@ namespace ERPMVC.Controllers
         [HttpPost("PostControlAsistencias")]
         public async Task<ActionResult<ControlAsistencias>> PostControlAsistencias(ControlAsistenciasDTO _CtlAsis)
         {
-            // List<ControlAsistencias> Listado = new List<ControlAsistencias>();
             ControlAsistencias _ControlAsis1 = new ControlAsistencias();
             ControlAsistencias _ControlAsis2 = new ControlAsistencias();
             ControlAsistencias _ControlAsis3 = new ControlAsistencias();
@@ -1223,35 +1194,28 @@ namespace ERPMVC.Controllers
             ControlAsistencias _ControlAsis30 = new ControlAsistencias();
             ControlAsistencias _ControlAsis31 = new ControlAsistencias();
             DateTime fechafindmes = DateTime.Now;
-            //Int64 idempleado = _CtlAsis.EmployeesId;
-              if ( _CtlAsis.Dia1.Month== DateTime.Now.Month)
-            {
-                 fechafindmes = DateTime.Now;
 
+            if (_CtlAsis.Dia1.Month == DateTime.Now.Month)
+            {
+                fechafindmes = DateTime.Now;
             }
             else
-            { //validar año
-
+            {
                 int me = _CtlAsis.Dia1.Month;
                 int ao = _CtlAsis.Dia1.Year;
                 int diass = DateTime.DaysInMonth(_CtlAsis.Dia1.Year, _CtlAsis.Dia1.Month);
                 string fechavieja = diass + "-" + me + "-" + ao;
-
-                fechafindmes = Convert.ToDateTime(fechavieja);            
-
+                fechafindmes = Convert.ToDateTime(fechavieja);
             }
 
-            //for (int i = 1; i <= 31; i++)
-                for (var d = _CtlAsis.Dia1; d < fechafindmes; d = d.AddDays(1))
+            for (var d = _CtlAsis.Dia1; d < fechafindmes; d = d.AddDays(1))
 
-                {
+            {
                 switch (d.Day)
                 {
                     case 1:
                         _ControlAsis1.Fecha = _CtlAsis.Dia1;
-                        //_ControlAsis.Dia = _CtlAsis.Dia1.d;
-                        
-                        _ControlAsis1.IdEmpleado= _CtlAsis.EmployeesId;
+                        _ControlAsis1.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras1 = _CtlAsis.Dia1.ToString("dddd");
                         int dianum1 = 0;
 
@@ -1283,7 +1247,7 @@ namespace ERPMVC.Controllers
                         {
                             dianum1 = 7;
                         }
-                        _ControlAsis1.Dia = dianum1;                        
+                        _ControlAsis1.Dia = dianum1;
                         _ControlAsis1.TipoAsistencia = _CtlAsis.Dia1TA;
                         var insert1 = await SaveControlAsistencia(_ControlAsis1);
                         break;
@@ -1365,7 +1329,7 @@ namespace ERPMVC.Controllers
                         _ControlAsis4.Fecha = _CtlAsis.Dia4;
                         _ControlAsis4.IdEmpleado = _CtlAsis.EmployeesId;
                         string dialetras4 = _CtlAsis.Dia4.ToString("dddd");
-                        int dianum4= 0;
+                        int dianum4 = 0;
                         if (dialetras4 == "lunes")
                         {
                             dianum4 = 1;
@@ -2403,100 +2367,27 @@ namespace ERPMVC.Controllers
                 }
 
             }
-   
+
             return Json(_CtlAsis);
 
         }
 
 
-
-
-        [HttpGet]
-        public async Task<DataSourceResult> GetListEmployees([DataSourceRequest]DataSourceRequest request)
-        {
-            List<Employees> _ListEmpleados = new List<Employees>();
-            try
-            {
-
-                string baseadress = _config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Employees/GetEmployees");
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ListEmpleados = JsonConvert.DeserializeObject<List<Employees>>(valorrespuesta);
-                    _ListEmpleados = _ListEmpleados.OrderByDescending(q => q.IdEmpleado).ToList();
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-
-            return _ListEmpleados.ToDataSourceResult(request);
-
-        }
-
-
-        [HttpGet]
-        public async Task<DataSourceResult> GetDias([DataSourceRequest]DataSourceRequest request)
-        {
-            List<Employees> _ListEmpleados = new List<Employees>();
-            try
-            {
-
-                string baseadress = _config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Employees/GetEmployees");
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ListEmpleados = JsonConvert.DeserializeObject<List<Employees>>(valorrespuesta);
-                    _ListEmpleados = _ListEmpleados.OrderByDescending(q => q.IdEmpleado).ToList();
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-
-            return _ListEmpleados.ToDataSourceResult(request);
-
-        }
-
-
-        
-       
         public async Task<ActionResult<ControlAsistencias>> SaveControlAsistencia(ControlAsistencias _Nuevo_Update)
         {
-
-           ControlAsistencias  ControlAsistenciainsert = _Nuevo_Update;
-            
+            ControlAsistencias ControlAsistenciainsert = _Nuevo_Update;
             try
             {
                 ControlAsistencias _listAccount = new ControlAsistencias();
                 string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                // var result = await _client.GetAsync(baseadress + "api/ExchangeRate/GetExchangeRateById/" + _ExchangeRate.ExchangeRateId);
                 if (_Nuevo_Update.Fecha != null)
                 {
                     _Nuevo_Update.UsuarioCreacion = HttpContext.Session.GetString("user");
                     _Nuevo_Update.UsuarioModificacion = HttpContext.Session.GetString("user");
                     var resultdate = await _client.PostAsJsonAsync(baseadress + "api/ControlAsistencias/GetControlAsistenciasByFecha", _Nuevo_Update);
-                    string valorrespuesta = "";                    
+                    string valorrespuesta = "";
                     _Nuevo_Update.FechaModificacion = DateTime.Now;
                     _Nuevo_Update.UsuarioModificacion = HttpContext.Session.GetString("user");
                     if (resultdate.IsSuccessStatusCode)
@@ -2508,16 +2399,10 @@ namespace ERPMVC.Controllers
                         {
                             _Nuevo_Update = new Models.ControlAsistencias();
                         }
-
-                        //if (_ExchangeRate.Id > 0)
-                        //{
-                        //    return await Task.Run(() => BadRequest($"Ya existe."));
-                        //}
                     }
-
                 }
 
-                ///
+
                 if (ControlAsistenciainsert.Id == 0 && ControlAsistenciainsert.TipoAsistencia > 0)
                 {
                     _Nuevo_Update.Fecha = ControlAsistenciainsert.Fecha;
@@ -2528,27 +2413,10 @@ namespace ERPMVC.Controllers
                     var insertresult = await Insert(_Nuevo_Update);
                     var value = (insertresult.Result as ObjectResult).Value;
                     ControlAsistencias resultado = ((ControlAsistencias)(value));
-                    
+
                 }
                 else
                 {
-                    //Hacer por fecha
-                    //var result = await _client.GetAsync(baseadress + "api/ControlAsistencias/GetControlAsistenciasById/" + _Nuevo_Update.Id);
-                    //string valorrespuesta = "";
-
-                    //if (result.IsSuccessStatusCode)
-                    //{
-                    //    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    //    _Nuevo_Update = JsonConvert.DeserializeObject<ControlAsistencias>(valorrespuesta);
-
-                    //    if (_Nuevo_Update == null)
-                    //    {
-                    //        _Nuevo_Update = new Models.ControlAsistencias();
-                    //    }
-
-
-                    //}
-
                     _Nuevo_Update.UsuarioCreacion = _Nuevo_Update.UsuarioCreacion;
                     _Nuevo_Update.FechaCreacion = _Nuevo_Update.FechaCreacion;
                     _Nuevo_Update.UsuarioModificacion = HttpContext.Session.GetString("user");
@@ -2562,12 +2430,7 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
-
-
             return Json(_Nuevo_Update);
         }
-
-
     }
 }
