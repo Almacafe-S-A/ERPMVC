@@ -69,7 +69,7 @@ namespace ERPMVC.Controllers
         [HttpGet("[action]")]
         public async Task<ActionResult> GetCustomerById(Int64 CustomerId)
         {
-            Customer _customers = new Customer();
+            CustomerDTO _customers = new CustomerDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -80,8 +80,20 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _customers = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
+                    _customers = JsonConvert.DeserializeObject<CustomerDTO>(valorrespuesta);
 
+                    _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    result = await _client.GetAsync(baseadress + "api/ProformaInvoice/GetLastProformaInvoice/" + CustomerId);
+                    if(result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = "";
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        ProformaInvoice _proforma = JsonConvert.DeserializeObject<ProformaInvoice>(valorrespuesta);
+                        _customers.EndDate = DateTime.Now;
+                        _customers.StartDate = _proforma.OrderDate;
+                        
+                    }
                 }
             }
             catch (Exception ex)
@@ -148,7 +160,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        [Authorize(Policy = "Cliente")]
+        //[Authorize(Policy = "Cliente")]
         // GET: Customer/Details/5
         public async Task<ActionResult> Details(Int64 CustomerId)
         {

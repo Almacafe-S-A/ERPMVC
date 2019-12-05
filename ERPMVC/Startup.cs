@@ -59,16 +59,9 @@ namespace ERPMVC
             services.AddCors();
             services.AddSession(options =>
             {
-                // Set a short timeout for easy testing.
                 options.IdleTimeout = TimeSpan.FromMinutes(30);
-                //options.IdleTimeout = TimeSpan.FromSeconds(20);
-                // options.Cookie.HttpOnly = true;
-                // Make the session cookie essential
                 options.Cookie.IsEssential = true;
             });
-
-            services.AddDbContext<ApplicationDbContext>(options =>
-            options.UseSqlServer(Configuration.GetConnectionString("DefaultConnection")));
 
             services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
             .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme,
@@ -107,8 +100,13 @@ namespace ERPMVC
             var valuecaracteresminimos = (GetCaracteresMinimos().Result as Int32?);
             int caracteresminimos = valuecaracteresminimos == null ? 8 : valuecaracteresminimos.Value;
 
+            /*services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie();
 
-            services.AddIdentity<ApplicationUser, ApplicationRole>(
+            services.AddHttpContextAccessor();
+            services.AddMvc().SetCompatibilityVersion(CompatibilityVersion.Version_2_2);*/
+
+            /*services.AddIdentity<ApplicationUser, ApplicationRole>(
               options =>
               {
                   options.Lockout.MaxFailedAccessAttempts = maxfailed;
@@ -125,14 +123,7 @@ namespace ERPMVC
 
               })
               .AddEntityFrameworkStores<ApplicationDbContext>()
-              .AddDefaultTokenProviders();
-
-            //services.AddScoped<Filters.SessionsAuthorizationFilter>();
-
-            //services.AddCors(options => options.AddPolicy("ApiCorsPolicy", builder =>
-            //{
-            //    builder.WithOrigins("http://localhost:9200").AllowAnyMethod().AllowAnyHeader();
-            //}));
+              .AddDefaultTokenProviders();*/
 
             services.AddCors(o => o.AddPolicy("AllowAllOrigins", builder =>
             {
@@ -141,8 +132,6 @@ namespace ERPMVC
                             .AllowAnyMethod()
                             .AllowAnyOrigin()
                             .AllowAnyHeader()
-                            //  .WithMethods("GET")
-                            //  .WithOrigins("http://localhost:9200");
                             .AllowCredentials();
 
             }));
@@ -150,17 +139,7 @@ namespace ERPMVC
 
             services.AddMvc(config =>
             {
-                //var policy = new AuthorizationPolicyBuilder()
-                //.RequireAuthenticatedUser()
-                //.Build();
-                //config.Filters.Add(new AuthorizeFilter(policy));
             })
-            //.ConfigureApplicationPartManager(manager =>
-            //{
-            //    var oldMetadataReferenceFeatureProvider = manager.FeatureProviders.First(f => f is MetadataReferenceFeatureProvider);
-            //    manager.FeatureProviders.Remove(oldMetadataReferenceFeatureProvider);
-            //    manager.FeatureProviders.Add(new ReferencesMetadataReferenceFeatureProvider());
-            //})
             .AddJsonOptions(options => { options.SerializerSettings.ContractResolver = new Newtonsoft.Json.Serialization.DefaultContractResolver();
                 options.SerializerSettings.DateTimeZoneHandling = DateTimeZoneHandling.Local;
             })
