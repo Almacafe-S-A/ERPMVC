@@ -17,8 +17,8 @@ using Newtonsoft.Json;
 
 namespace ERPMVC.Controllers
 {
-     [Authorize]
-      [CustomAuthorization]
+    [Authorize]
+    [CustomAuthorization]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class RolesController : Controller
     {
@@ -32,6 +32,11 @@ namespace ERPMVC.Controllers
         }
 
         public IActionResult Roles()
+        {
+            return View();
+        }
+
+        public IActionResult PermisosRoles()
         {
             return View();
         }
