@@ -55,7 +55,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Currency = JsonConvert.DeserializeObject<List<Currency>>(valorrespuesta);
-                    _Currency = _Currency.Where(q => q.Estado == "Activo").ToList();
+                    //_Currency = _Currency.Where(q => q.Estado == "Activo").ToList();
 
                 }
 
@@ -245,8 +245,8 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpDelete("CurrencyId")]
-        public async Task<ActionResult<Currency>> Delete(Int64 CurrencyId, Currency _Currencyp)
+        [HttpPost("CurrencyId")]
+        public async Task<ActionResult<Currency>> Delete([FromBody]CurrencyDTO _Currencyp)
         {
             Currency _Currency = _Currencyp;
             try
@@ -263,10 +263,16 @@ namespace ERPMVC.Controllers
                     _Currency = JsonConvert.DeserializeObject<Currency>(valorrespuesta);
                 }
 
+                else 
+                {
+                    return BadRequest("No se puede eliminar la moneda porque ya esta siendo usada");
+                }
+
             }
             catch (Exception ex)
             {
                 return BadRequest($"Ocurrio un error{ex.Message}");
+                throw ex;
             }
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _Currency }, Total = 1 });
