@@ -62,11 +62,33 @@ namespace ERPMVC.Controllers
                     _CompanyInfo = JsonConvert.DeserializeObject<CompanyInfoDTO>(valorrespuesta);
 
                 }
-
                 if (_CompanyInfo == null)
                 {
                     _CompanyInfo = new CompanyInfoDTO();
                 }
+
+                string[] separar;
+                string[] separar1;
+                if (_CompanyInfo.image != null)
+                {
+                    if (_CompanyInfo.image != "Imagen")
+                    {
+                        separar = _CompanyInfo.image.Split("/");
+                        separar1 = separar[2].Split(".");
+                        ViewData["Nombreimg"] = separar1[0].ToString();
+                        ViewData["Extensionimg"] = "." + separar1[1].ToString();
+                    }
+                    else
+                    {
+                        ViewData["Nombreimg"] = "";
+                        ViewData["Extensionimg"] = "";
+                    }
+                }
+                else
+                {
+                        ViewData["Nombreimg"] = "";
+                        ViewData["Extensionimg"] = "";
+                }              
             }
             catch (Exception ex)
             {
@@ -97,7 +119,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CompanyInfo = JsonConvert.DeserializeObject<List<CompanyInfo>>(valorrespuesta);
-
+                    _CompanyInfo= _CompanyInfo.OrderByDescending(q => q.CompanyInfoId).ToList();
                 }
 
 
@@ -268,10 +290,8 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
-
-
-            return Json(_CompanyInfo);
+            return await Task.Run(() => Ok(_CompanyInfo));
+            // return Json(_CompanyInfo);
         }
 
 

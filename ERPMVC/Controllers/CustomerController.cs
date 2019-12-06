@@ -160,7 +160,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        [Authorize(Policy = "Cliente")]
+        //[Authorize(Policy = "Cliente")]
         // GET: Customer/Details/5
         public async Task<ActionResult> Details(Int64 CustomerId)
         {

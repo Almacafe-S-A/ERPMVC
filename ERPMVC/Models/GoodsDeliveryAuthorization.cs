@@ -18,10 +18,10 @@ namespace ERPMVC.Models
         [Display(Name = "Fecha de documento")]
         public DateTime DocumentDate { get; set; }
 
-        [Display(Name = "Fecha de autorizacion")]
+        [Display(Name = "Fecha de autorización")]
         public DateTime AuthorizationDate { get; set; }
 
-        [Display(Name = "Número de certificado de deposito")]
+        [Display(Name = "Número de certificado de depósito")]
         public Int64 NoCD { get; set; }
 
 

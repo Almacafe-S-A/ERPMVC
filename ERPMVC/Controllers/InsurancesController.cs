@@ -151,85 +151,83 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<Insurances>> SaveInsurancesDocument(IEnumerable<IFormFile> files, InsurancesDTO _InsurancesDTO)
+        public async Task<ActionResult<InsurancesDTO>> SaveInsurancesDocument(IEnumerable<IFormFile> files, InsurancesDTO _InsurancesP)
         {
-
+            Insurances _Insurances = _InsurancesP;
             try
             {
-
                 Insurances _listInsurances = new Insurances();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Insurances/GetInsurancesById/" + _InsurancesDTO.InsurancesId);
+                var result = await _client.GetAsync(baseadress + "api/Insurances/GetInsurancesById/" + _InsurancesP.InsurancesId);
                 string valorrespuesta = "";
-
-                foreach (var file in files)
+                IFormFile file = files.FirstOrDefault();
+                if (file != null)
                 {
-
-
                     FileInfo info = new FileInfo(file.FileName);
                     if (info.Extension.Equals(".jpeg") || info.Extension.Equals(".jpg")
-                        || info.Extension.Equals(".png"))
+                        || info.Extension.Equals(".png") || info.Extension.Equals(".gif"))
                     {
 
-                        _InsurancesDTO.ModifiedDate = DateTime.Now;
-                        _InsurancesDTO.ModifiedUser = HttpContext.Session.GetString("user");
+                        _InsurancesP.ModifiedDate = DateTime.Now;
+                        _InsurancesP.ModifiedUser = HttpContext.Session.GetString("user");
                         if (result.IsSuccessStatusCode)
                         {
-
                             valorrespuesta = await (result.Content.ReadAsStringAsync());
-                            _listInsurances = JsonConvert.DeserializeObject<Insurances>(valorrespuesta);
+                            _Insurances = JsonConvert.DeserializeObject<Insurances>(valorrespuesta);
                         }
 
-                        if (_listInsurances == null) { _listInsurances = new Models.Insurances(); }
-                        if (_listInsurances.InsurancesId == 0)
+                        if (_Insurances == null) { _Insurances = new Models.Insurances(); }
+                        if (_InsurancesP.InsurancesId == 0)
                         {
-                            _InsurancesDTO.CreatedDate = DateTime.Now;
-                            _InsurancesDTO.DocumentName = file.FileName;
-                            _InsurancesDTO.CreatedUser = HttpContext.Session.GetString("user");
-                            var insertresult = await Insert(_InsurancesDTO);
+                            _InsurancesP.CreatedDate = DateTime.Now;
+                            _InsurancesP.DocumentName = file.FileName;
+                            _InsurancesP.CreatedUser = HttpContext.Session.GetString("user");
+                            var insertresult = await Insert(_InsurancesP);
                             var value = (insertresult.Result as ObjectResult).Value;
-                            _InsurancesDTO = ((InsurancesDTO)(value));
+                            _InsurancesP = ((InsurancesDTO)(value));
                         }
                         else
                         {
-                            if (System.IO.File.Exists(_listInsurances.Path))
+                            if (System.IO.File.Exists(_Insurances.Path))
                             {
-                                System.IO.File.Delete(_listInsurances.Path);
+                                System.IO.File.Delete(_Insurances.Path);
                             }
-                            _InsurancesDTO.DocumentName = file.FileName;
-                            _InsurancesDTO.CreatedDate = _listInsurances.CreatedDate;
-                            _InsurancesDTO.CreatedUser = _listInsurances.CreatedUser;
-                            var updateresult = await Update(_InsurancesDTO.InsurancesId, _InsurancesDTO);
+                            _InsurancesP.DocumentName = file.FileName;
+                            _InsurancesP.CreatedDate = _Insurances.CreatedDate;
+                            _InsurancesP.CreatedUser = _Insurances.CreatedUser;
+                            var updateresult = await Update(_InsurancesP.InsurancesId, _InsurancesP);
                         }
 
-
-
-                        var filePath = _hostingEnvironment.WebRootPath + "/Insurances/" + _InsurancesDTO.InsurancesId + "_"
-                            + file.FileName.Replace(info.Extension, "") + "_" + _InsurancesDTO.DocumentTypeId + "_" + _InsurancesDTO.DocumentTypeName
+                        var filePath = _hostingEnvironment.WebRootPath + "/Insurances/" + _InsurancesP.InsurancesId + "_"
+                            + file.FileName.Replace(info.Extension, "") + "_" + _InsurancesP.DocumentTypeId + "_" + _InsurancesP.DocumentTypeName
                             + info.Extension;
 
                         using (var stream = new FileStream(filePath, FileMode.Create))
                         {
                             await file.CopyToAsync(stream);
-                            // MemoryStream mstream = new MemoryStream();
-                            //mstream.WriteTo(stream);
                         }
 
-                        _InsurancesDTO.Path = filePath;
-                        var updateresult2 = await Update(_InsurancesDTO.InsurancesId, _InsurancesDTO);
+                        _InsurancesP.Path = filePath;
+                        var updateresult2 = await Update(_Insurances.InsurancesId, _InsurancesP);
+                    }
+                    else
+                    {
+                        return await Task.Run(() => BadRequest("Extensión de Imagen no permitida"));
                     }
                 }
-
+                else
+                {
+                    return await Task.Run(() => BadRequest("Seleccione una Imagen"));
+                }
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
-            return Json(_InsurancesDTO);
+            return Json(_InsurancesP);
         }
 
         // POST: CustomerDocument/Insert
@@ -245,6 +243,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 _InsurancesDTO.CreatedUser = HttpContext.Session.GetString("user");
+                _InsurancesDTO.CreatedDate = DateTime.Now;
                 _InsurancesDTO.ModifiedUser = HttpContext.Session.GetString("user");
                 var result = await _client.PostAsJsonAsync(baseadress + "api/Insurances/Insert", _InsurancesDTO);
                 string valorrespuesta = "";

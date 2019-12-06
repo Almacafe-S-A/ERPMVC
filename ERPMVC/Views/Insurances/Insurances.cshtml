@@ -36,7 +36,7 @@
             InsurancesId:0,
             editar: 1
         };
-        
+
         $.ajax({
             url: '@Url.Action("pvwAddInsurances", "Insurances")',
             method: 'POST',
@@ -47,7 +47,7 @@
             success: function (result) {
                 $("#InsurancesDocument").html('');
                 $("#InsurancesDocument").html(result);
-                $("#files").data("kendoUpload").disable();
+                //$("#files").data("kendoUpload").disable();
                 $('#myModalInsurancesDocumentUpload').modal('show');
             },
              error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -75,12 +75,12 @@
                     $("#InsurancesDocument").html('');
                     $("#InsurancesDocument").html(result);
                     $("#DocumentTypeId").data("kendoDropDownList").value(dataItem.DocumentTypeId);
-                    var fileName = dataItem.DocumentName;
-                    var fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1);
-                    var files = [
-                        { name: fileName, extension: "." + fileExtension },
-                    ];
-                    $("#files").kendoUpload({
+                    //var fileName = dataItem.DocumentName;
+                    //var fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1);
+                    //var files = [
+                    //    { name: fileName, extension: "." + fileExtension },
+                    //];
+                    @*$("#files").kendoUpload({
                         async: {
                             saveUrl: "@Url.Action("SaveInsurancesDocument","Insurances")",
                             removeUrl: "@Url.Action("", "")",
@@ -95,8 +95,11 @@
                             invalidFileExtension: "Extensión de Archivo Invalido",
                             retry: "Reintentar",
                         },
+                        validation: {
+                            allowedExtensions: [".jpg", ".jpeg", ".png"]
+                        },
                         files: files,
-                    });
+                    });*@
                     $('#InsurancesId').val(dataItem.InsurancesId);
                     $('#InsurancesName').val(dataItem.InsurancesName);
 
@@ -106,7 +109,7 @@
                     alert(textStatus + ": " + XMLHttpRequest.responseText);
                 }
             });
-         }
+    }
 </script>
 
 @(Html.Kendo().Grid<ERPMVC.Models.Insurances>()
@@ -119,10 +122,12 @@
                 //command.Custom("Editar").Click("EditTypeAccount");
                         command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditInsurances");
                         }).Title("Acciones").Width(30);
-                        columns.Bound(p => p.InsurancesId).Title("Codigo").Width(50);
+                        columns.Bound(p => p.InsurancesId).Title("Código").Width(50);
                         columns.Bound(p => p.InsurancesName).Title("Nombre").Width(200);
                         columns.Bound(p => p.DocumentTypeId).Hidden();
+                        columns.Bound(p => p.CreatedDate).Title("Fecha Creación").Format("{0:dd/MM/yyyy HH:mm:ss}").Width(100).Hidden();
                     })
+                    
                         .Filterable(f => f.Operators(o => o.ForString(s => s
                                                 .Clear()
                                                 .Contains("Contiene")
@@ -187,6 +192,7 @@
                             model.Field(p => p.InsurancesName).Editable(false);
 
                         })
+                        .Sort(s => s.Add(m => m.CreatedDate).Descending())
                         .Events(events => events.Error("error_handler"))
                         .Read(read => read.Action("Get", "Insurances"))
                         .Create(create => create.Action("Insert", "Insurances"))
@@ -205,3 +211,27 @@
     @await Html.PartialAsync("pvwAddInsurances", new ERPMVC.Models.Insurances { InsurancesId = 0, DocumentTypeId = 0 })
 </div>
 
+<div id="CustomerConditionView">
+</div>
+
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridInsurancesDocument").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridInsurancesDocument").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar un nuevo registro");
+    //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
+    //setRowButtonTooltip(".k-grid-GenerarFactura", "Generar una factura fiscal!");
+    //setRowButtonTooltip(".k-grid-Imprimir", "Imprimir");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+</script>
