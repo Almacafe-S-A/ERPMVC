@@ -255,8 +255,40 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _rol }, Total = 1 });
         }
 
+        [Authorize(Policy = "Seguridad.Listar Permisos")]
+        [HttpGet("[action]")]
+        public async Task<ActionResult<string>> ListarPermisos()
+        {
+            try
+            {
+                string baseDireccion = config.Value.urlbase;
+                HttpClient _cliente = new HttpClient();
 
+                _cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
+                var result = await _cliente.GetAsync(baseDireccion + "api/Usuario/ListarPermisos","");
+                string respuesta = 
+                if (result.IsSuccessStatusCode)
+                {
+                    respuesta = await (result.Content.ReadAsStringAsync());
+                    _rol = JsonConvert.DeserializeObject<ApplicationRole>(respuesta);
+                }
 
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+
+            return new ObjectResult(new DataSourceResult { Data = new[] { _rol }, Total = 1 });
+        }
+
+        [Authorize(Policy = "Seguridad.Listar Permisos")]
+        [HttpGet("[action]")]
+        public async Task<ActionResult<string>> ListarPermisosUsuario(srting email)
+        {
+            var result = await _client.GetAsync(baseadress + "api/Usuario/GetUserById/" + UserId);
+        }
     }
 }
