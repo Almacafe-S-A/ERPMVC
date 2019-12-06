@@ -1,10 +1,19 @@
 ﻿@model ERPMVC.DTO.InsurancePolicyDTO
 @{ Layout = null;
     var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
-   {"required","Valor requerido" }
+{"required","Valor requerido" }
 };
     var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+
+
 }
+
+
+
+<script src="~/admp/assets/plugins/dropify/dist/js/dropify.min.js"></script>
+
+<link rel="stylesheet" href="~/admp/assets/plugins/dropify/dist/css/dropify.min.css">
+
 <script>
     //Retornar solo numeros
     function soloNumeros(e) {
@@ -20,7 +29,7 @@
             $("#PolicyDueDate").val('');
         }
     });
-    
+
 
     function SaveInsurancePolicy(e) {
 
@@ -47,12 +56,12 @@
 
         e.data = dataObject;
         RefrescarGrid();
-       
+
     }
     function RefrescarGrid() {
         var grid = $("#gridInsurancePolicy").getKendoGrid();
         grid.dataSource.read();
-        
+
     }
 
     function closeInsurancePolicy() {
@@ -62,7 +71,45 @@
 
 
     }
-    
+
+    var onBegin = function () {
+        //alert("Begin");
+
+    };
+
+    var onComplete = function () {
+        RefrescarGrid();
+    };
+
+    var onSuccess = function (context) {
+        //alert(context);
+        console.log(context);
+        $.toast({
+            heading: 'Satisfactorio',
+            text: '<br/><br/> Datos guardados correctamente.',
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'success',
+            hideAfter: 30000,
+            stack: 6
+        });
+        closeInsurancePolicy();
+    };
+
+    var onFailed = function (context) {
+        // alert(context);
+        console.log(context);
+        $.toast({
+            heading: 'Error',
+            text: '<br/><br/> Error ',// + context.error,
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'error',
+            hideAfter: 30000,
+            stack: 6
+        });
+    };
+
 </script>
 
 
@@ -82,22 +129,24 @@
                     <div class="col-lg-12">
                         <div class="card">
                             <div class="card-body">
-                                <form id="InsuracesDocument" kendo-validator="true" kendo-messages="messages"
+                                <form id="InsuracesDocument" kendo-validator="true" kendo-messages="messages" asp-controller="InsurancePolicy" asp-action="SaveInsurancePolicy"
                                       data-ajax="true"
-                                      data-ajax-method="post"
-                                      data-ajax-begin="SaveInsurancePolicy">
+                                      data-ajax-method="post" enctype="multipart/form-data"
+                                      data-ajax-begin="onBegin" data-ajax-complete="onComplete"
+                                      data-ajax-failure="onFailed" data-ajax-success="onSuccess">
                                     <div class="row">
                                         <div class="col-md-4">
                                             <label asp-for="InsurancePolicyId" class="control-label">Id Póliza</label>
-                                            <kendo-numerictextbox name="InsurancePolicyId"
-                                                                  format="n"
-                                                                  min="0"
-                                                                  enable="false"
-                                                                  disabled
-                                                                  max="99999999"
-                                                                  step="1"
-                                                                  style="width: 100%;"
-                                                                  value="Model.InsurancePolicyId" />
+                                            @*<kendo-numerictextbox name="InsurancePolicyId"
+                                                format="n"
+                                                min="0"
+                                                enable="false"
+                                                readonly
+                                                max="99999999"
+                                                step="1"
+                                                style="width: 100%;"
+                                                value="Model.InsurancePolicyId" />*@
+                                            <input asp-for="InsurancePolicyId" readonly class="form-control" />
                                             <span asp-validation-for="InsurancePolicyId" class="text-danger"></span>
                                         </div>
                                         <div class="col-md-4">
@@ -134,11 +183,13 @@
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-group">
+                                                <input name="InsurancesName" id="InsurancesName" asp-for="InsurancesName" hidden />
                                                 <label asp-for="InsurancesId" class="control-label">Aseguradora</label>
                                                 <kendo-dropdownlist name="InsurancesId" for="@Model.InsurancesId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                     option-label="Seleccione la aseguradora"
                                                                     datatextfield="InsurancesName"
                                                                     datavaluefield="InsurancesId"
+                                                                    on-change="function () { $('#InsurancesName').val(this.text()) }"
                                                                     required
                                                                     class="form-control-line"
                                                                     style="width: 100%;">
@@ -148,15 +199,18 @@
                                                         </transport>
                                                     </datasource>
                                                 </kendo-dropdownlist>
+
                                             </div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-group">
+                                                <input asp-for="CustomerName" hidden />
                                                 <label asp-for="CustomerId" class="control-label"> Cliente</label>
                                                 <kendo-dropdownlist name="CustomerId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                     option-label="Seleccione el cliente"
                                                                     datatextfield="CustomerName"
                                                                     datavaluefield="CustomerId"
+                                                                    on-change="function () { $('#CustomerName').val(this.text()) }"
                                                                     class="form-control-line"
                                                                     required
                                                                     style="width: 100%;">
@@ -221,17 +275,23 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="row">
+                                    <div class="row" hidden>
                                         <div class="col-md-5">
-                                             <kendo-upload drop-zone="drop-zone1" name="files" on-upload="SaveInsurancePolicy">
+                                            <kendo-upload show-file-list="true" drop-zone="drop-zone1" name="files" on-upload="SaveInsurancePolicy" multiple="false" accept=".jpg,.jpeg,.png,.gif,.pdf">
                                                 <localization select="Seleccionar Archivos" cancel="Cancelar" drop-files-here="Soltar Archivo aquí" invalid-file-extension="Extensión de Archivo Invalido" retry="Reintentar" />
                                                 <files />
-                                                <async save-url="@Url.Action("SaveInsurancePolicy","InsurancePolicy")" />
-                                                <validation allowed-extensions='@new string[] { ".jpg",".png",".jpeg" }' max-file-size="10485760" />
+
+                                                @*<async save-url="@Url.Action("SaveInsurancePolicy","InsurancePolicy")" auto-upload="false" />*@
+                                                <validation allowed-extensions='@new string[] { ".jpg",".png",".jpeg" ,".gif",".pdf"}' max-file-size="10485760" />
                                             </kendo-upload>
                                         </div>
 
                                         <script>
+                                            //function OnChange(e, target) {
+                                            //    console.log(e);
+                                            //    target.val( e.sender.data("kendoDropDownList").text());
+
+                                            //}
                                                 function GetDocumentName(dataName) {
                                                     var fileName = "@Model.AttachementFileName";
                                                     return fileName
@@ -243,21 +303,76 @@
                                                 }
                                         </script>
                                     </div>
+                                    <div class="col-sm-4 col-md-4">
+                                        <div class="card">
+                                            <div class="card-body">
+                                                <h4 class="card-title">Foto Empleado</h4>
+                                                <input type="file" asp-for="AttachementFileName" id="files" name="files" class="dropify" data-max-file-size="2M" accept=".jpg,.jpeg,.png,.gif,.pdf" />
+                                            </div>
+                                        </div>
+
+                                    </div>
 
 
-                                    @*<div class="row">
+                                    <div class="row">
                                         <div class="col-md-12">
                                             <button id="btnInsurancePolicy" class="form-control btn-miboton" type="submit"> Guardar </button>
                                         </div>
-                                    </div>*@
+                                    </div>
 
                                 </form>
                             </div>
                         </div>
                     </div>
+
+
                 </div>
 
             </div>
         </div>
     </div>
 </div>
+<script>
+    $(document).ready(function () {
+        // Basic
+        $('.dropify-std').dropify();
+
+        // Translated
+        $('.dropify').dropify({
+            messages: {
+                default: 'Arrastre un archivo de Imagen o click para cagar archivo',
+                replace: 'Click para Reemplazar',
+                remove: 'Quitar',
+                error: 'Error'
+
+            }
+        });
+
+        // Used events
+        var drEvent = $('#input-file-events').dropify();
+
+        drEvent.on('dropify.beforeClear', function (event, element) {
+            return confirm("Esta seguro que desea eliminar el archivo \"" + element.file.name + "\" ?");
+        });
+
+        drEvent.on('dropify.afterClear', function (event, element) {
+            alert('Archivo eliminado');
+        });
+
+        drEvent.on('dropify.errors', function (event, element) {
+            console.log('Has Errors');
+        });
+
+        var drDestroy = $('#input-file-to-destroy').dropify();
+        drDestroy = drDestroy.data('dropify')
+        $('#toggleDropify').on('click', function (e) {
+            e.preventDefault();
+            if (drDestroy.isDropified()) {
+                drDestroy.destroy();
+            } else {
+                drDestroy.init();
+            }
+        })
+    });
+
+</script>
