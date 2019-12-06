@@ -13,7 +13,13 @@
     
 <script>
 
-
+    $(document).ready(function () {
+        $("#TefonoAlert").hide();
+        
+        $("#Tefono").on('paste', function (e) {
+            e.preventDefault();
+        })
+    })
 
     function customFunction(input) {
 
@@ -251,15 +257,16 @@
                                                 <div class="form-group">
                                                     <label asp-for="VendorInvoiceId" class="control-label"></label>
                                                     @*<label for="recipient-name" class="control-label">Recipient:</label>*@
-                                                    <kendo-numerictextbox name="VendorInvoiceId"
-                                                                          format="n"
-                                                                          min="0"
-                                                                          enable="false"
-                                                                          disabled
-                                                                          max="99999999"
-                                                                          step="1"
-                                                                          style="width: 100%;"
-                                                                          value="Model.VendorInvoiceId" />
+                                                    @*<kendo-numerictextbox name="VendorInvoiceId"
+                                                                        format="n"
+                                                                        min="0"
+                                                                        enable="false"
+                                                                        disabled
+                                                                        max="99999999"
+                                                                        step="1"
+                                                                        style="width: 100%;"
+                                                                        value="Model.VendorInvoiceId" />*@
+                                                    <input type="text" asp-for="VendorInvoiceId" name="VendorInvoiceId" class="form-control form-control-line" disabled="disabled" style="min-width:100%" />
                                                     <span asp-validation-for="VendorInvoiceId" class="text-danger"></span>
                                                 </div>
 
@@ -322,9 +329,9 @@
                                             <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="VendorInvoiceName" class="control-label" style="width:100%"></label>
-                                                    <span>
-                                                        <input asp-for="VendorInvoiceName" required class="form-control form-control-line" style="min-width: 80%" maxlength="50" />
-                                                    </span>
+                                                    @*<span>*@
+                                                        <input asp-for="VendorInvoiceName" required class="form-control form-control-line" style="min-width: 100%" maxlength="50" />
+                                                    @*</span>*@
                                                     <span asp-validation-for="VendorInvoiceName" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -333,7 +340,7 @@
                                                 <div class="form-group">
                                                     <label asp-for="Correo" class="control-label" style="width:100%"></label>
                                                     @*<input type="email" asp-for="Correo" data-val-regex="Correo invalido" class="form-control required " style="min-width: 100%" />*@
-                                                    <input type="text" asp-for="Correo"  required class="form-control" style="min-width: 100%" maxlength="80"/>
+                                                    <input type="email" asp-for="Correo"  required class="form-control" data-email-msg="Formato del correo no valido." placeholder="Nombre@Ejemplo.com" style="min-width: 100%" maxlength="80"/>
                                                     <span asp-validation-for="Correo" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -348,8 +355,9 @@
                                             <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Tefono" class="control-label" style="width:100%"></label>
-                                                    <input type="text" asp-for="Tefono" required  class="form-control required " style="min-width: 100%" maxlength="25" onKeyPress="return soloNumeros(event)"/>
+                                                    <input type="text" asp-for="Tefono" name="Tefono" required class="form-control required " style="min-width: 100%" maxlength="25"  onchange="validarTefono()" />
                                                     <span asp-validation-for="Tefono" class="text-danger"></span>
+                                                    <span id="TefonoAlert" class="text-danger"><span role="alert" class="k-icon k-i-warning"></span> Complete el número de teléfono.</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -780,6 +788,17 @@
     </div>
 </div>
 
+<script>
+    function validarTefono() {
+        var cadena = $("#Tefono").val();
+        if (cadena.indexOf("_") > -1 == true) {
+            $("#TefonoAlert").show();
+        }
+        else {
+            $("#TefonoAlert").hide();
+        }
+    }
+</script>
 
 <script>
     function soloNumeros(e) {
@@ -818,7 +837,19 @@
             }
         }
 
-        if (validadetalle) {
+         if (validadetalle) {
+             var _receivedDate = "0001-01-01";
+             var _orderDate = "0001-01-01";
+             var _expirationDate = "0001-01-01";
+             if ($("#ReceivedDate").getKendoDateTimePicker().value() != null || $("#ReceivedDate").getKendoDateTimePicker().value() != undefined) {
+                 _deliveryDate = $("#ReceivedDate").getKendoDateTimePicker().value().toJSON()
+             }
+             if ($("#OrderDate").getKendoDateTimePicker().value() != null || $("#OrderDate").getKendoDateTimePicker().value() != undefined) {
+                 _orderDate = $("#OrderDate").getKendoDateTimePicker().value().toJSON()
+             }
+             if ($("#ExpirationDate").getKendoDateTimePicker().value() != null || $("#ExpirationDate").getKendoDateTimePicker().value() != undefined) {
+                 _expirationDate = $("#ExpirationDate").getKendoDateTimePicker().value().toJSON()
+             }
             var dataObject = {
                 'VendorInvoiceId': $("#VendorInvoiceId").val() === "" ? "0" : $("#VendorInvoiceId").val(),
                 'VendorInvoiceName': $("#VendorInvoiceName").val(),
@@ -827,10 +858,10 @@
                 'BranchName': $("#BranchId").data("kendoDropDownList").text(),
                 'VendorId': $("#VendorId").val(),
                 'VendorName': $("#VendorId").data("kendoDropDownList").text(),
-                'OrderDate': $("#OrderDate").getKendoDateTimePicker().value().toJSON(),
-                'VendorInvoiceDate': $("#OrderDate").getKendoDateTimePicker().value().toJSON(),
-                'ReceivedDate': $("#ReceivedDate").getKendoDateTimePicker().value().toJSON(),
-                'ExpirationDate': $("#ExpirationDate").getKendoDateTimePicker().value().toJSON(),
+                'OrderDate': _orderDate,
+                'VendorInvoiceDate': _orderDate,
+                'ReceivedDate': _receivedDate,
+                'ExpirationDate': _expirationDate,
                 'CurrencyId': Number($("#CurrencyId").val()),
                 'CurrencyName': $("#CurrencyId").data("kendoDropDownList").text(),
                 'VendorRefNumber': $("#VendorRefNumber").val(),
@@ -875,7 +906,7 @@
                         data: JSON.stringify(dataObject),
                         success: function (data) {
 
-                            $("#VendorInvoiceId").data("kendoNumericTextBox").value(data.VendorInvoiceId);
+                            $("#VendorInvoiceId").val(data.VendorInvoiceId);
                             //$("#NumeroDEIString").val(data.NumeroDEIString);
 
                             $.toast({
@@ -974,49 +1005,49 @@
 
             if (displayedData.length > 0) {
                 if (validator.validate() && validator2.validate()) {
+                    if ($('#TefonoAlert').is(':hidden')) {
+                        $.ajax({
+                            url: '@Url.Action("SaveVendorInvoice", "VendorInvoice")',
+                            method: 'POST',
+                            datatype: "json",
+                            //  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                            contentType: 'application/json',
+                            async: false,
+                            data: JSON.stringify(dataObject),
+                            success: function (data) {
 
-                    $.ajax({
-                        url: '@Url.Action("SaveVendorInvoice", "VendorInvoice")',
-                        method: 'POST',
-                        datatype: "json",
-                        //  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-                        contentType: 'application/json',
-                        async: false,
-                        data: JSON.stringify(dataObject),
-                        success: function (data) {
+                                $("#VendorInvoiceId").val(data.VendorInvoiceId);
+                                $("#NumeroDEIString").val(data.NumeroDEIString);
 
-                            $("#VendorInvoiceId").data("kendoNumericTextBox").value(data.VendorInvoiceId);
-                            $("#NumeroDEIString").val(data.NumeroDEIString);
+                                $.toast({
+                                    heading: 'Satisfactorio',
+                                    text: '<br/><br/>Datos guardados correctamente.',
+                                    position: 'top-right',
+                                    loaderBg: '#ff6849',
+                                    icon: 'success',
+                                    hideAfter: 7000,
+                                    stack: 6
+                                });
+                                //notification.show({
+                                //    message: "Guardado correctamente!"
+                                //}, "upload-success");
 
-                            $.toast({
-                                heading: 'Satisfactorio',
-                                text: '<br/><br/>Datos guardados correctamente.',
-                                position: 'top-right',
-                                loaderBg: '#ff6849',
-                                icon: 'success',
-                                hideAfter: 7000,
-                                stack: 6
-                            });
-                            //notification.show({
-                            //    message: "Guardado correctamente!"
-                            //}, "upload-success");
+                                RefreshCotizaciones();
+                                //  $('#myModalSalesOrder').modal('hide');
 
-                            RefreshCotizaciones();
-                            //  $('#myModalSalesOrder').modal('hide');
+                            },
+                            error: function (XMLHttpRequest, textStatus, errorThrown) {
 
-                        },
-                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                $("#btnSaveVendorInvoice").show();
+                                $("#btnSaveVendorInvoice").prop("disabled", false);
+                                notification.show({
+                                    title: "Validación",
+                                    message: textStatus + ": " + XMLHttpRequest.responseText
+                                }, "error");
 
-                            $("#btnSaveVendorInvoice").show();
-                            $("#btnSaveVendorInvoice").prop("disabled", false);
-                            notification.show({
-                                title: "Validación",
-                                message: textStatus + ": " + XMLHttpRequest.responseText
-                            }, "error");
-
-                        }
-                    });
-
+                            }
+                        });
+                    }
                 }
                 else {
                     notification.show({

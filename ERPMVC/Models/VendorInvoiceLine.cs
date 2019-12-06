@@ -16,7 +16,7 @@ namespace ERPMVC.Models
         public int VendorInvoiceId { get; set; }
         [Display(Name = "Factura Proveedor")]
         public VendorInvoice VendorInvoice { get; set; }
-        [Display(Name = "Producto Item")]
+        [Display(Name = "Producto Ítem")]
         public Int64 ProductId { get; set; }
 
         [Display(Name = "Nombre producto")]
