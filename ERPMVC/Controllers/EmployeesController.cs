@@ -126,48 +126,41 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/Employees/GetEmployeesById/" + _EmployeesP.IdEmpleado);
                 string valorrespuesta = "";
-                _Employees.FechaModificacion = DateTime.Now;
-                _Employees.Usuariomodificacion = HttpContext.Session.GetString("user");
+                _EmployeesP.FechaModificacion = DateTime.Now;
+                _EmployeesP.Usuariomodificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Employees = JsonConvert.DeserializeObject<EmployeesDTO>(valorrespuesta);
                 }
-
-                if (_Employees == null) { _Employees = new Models.Employees(); }
-
-                if (_EmployeesP.IdEmpleado == 0)
-                {
-                    _Employees.FechaCreacion = DateTime.Now;
-
-
-                    _Employees.Usuariocreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_EmployeesP);
-                }
-                else
-                {
-                    _EmployeesP.Usuariocreacion = _Employees.Usuariocreacion;
-                    _EmployeesP.FechaCreacion = _Employees.FechaCreacion;
-                    var updateresult = await Update(_Employees.IdEmpleado, _EmployeesP);
-                }
                 IFormFile file = files.FirstOrDefault();
                 if (file != null)
                 {
-                    FileInfo info = new FileInfo(file.FileName);
-                    string filename = _EmployeesP.IdEmpleado + "_" + _EmployeesP.NombreEmpleado;
+                    FileInfo info = new FileInfo(file.FileName);   
+                    string filename = _EmployeesP.IdEmpleado + "_" +  _EmployeesP.NombreEmpleado.Trim(' ') + info.Extension;
                     _EmployeesP.Foto = filename;
-
-                    //_EmployeesP.Foto = file.FileName;
-                    var filePath = _hostingEnvironment.WebRootPath + "/images/emp/"
-                                 // + file.FileName.Replace(info.Extension, "")
-                                 + filename
-                                + info.Extension;
+                    var filePath = _hostingEnvironment.WebRootPath + "/images/emp/" + filename ;
 
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
                         await file.CopyToAsync(stream);
                     }
                 }
+                if (_Employees == null) { _Employees = new Models.Employees(); }
+
+                if (_EmployeesP.IdEmpleado == 0)
+                {
+                    _EmployeesP.FechaCreacion = DateTime.Now;
+                    _EmployeesP.Usuariocreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_EmployeesP);
+                }
+                else
+                {
+                    _EmployeesP.Usuariocreacion = _Employees.Usuariocreacion;
+                    _EmployeesP.FechaCreacion = _Employees.FechaCreacion;
+                    var updateresult = await Update( _EmployeesP);
+                }
+                
 
 
 
@@ -217,7 +210,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<EmployeesDTO>> Update(Int64 Id, EmployeesDTO _EmployeesDTO)
+        public async Task<ActionResult<EmployeesDTO>> Update( EmployeesDTO _EmployeesDTO)
         {
             EmployeesDTO _Employees = new EmployeesDTO();
             try
