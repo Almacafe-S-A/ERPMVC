@@ -257,8 +257,9 @@ namespace ERPMVC.Controllers
 
         [Authorize(Policy = "Seguridad.Listar Permisos")]
         [HttpGet("[action]")]
-        public async Task<ActionResult<string>> ListarPermisos()
+        public async Task<ActionResult<List<string>>> ListarPermisos()
         {
+            List<string> permisos = new List<string>();
             try
             {
                 string baseDireccion = config.Value.urlbase;
@@ -266,12 +267,12 @@ namespace ERPMVC.Controllers
 
                 _cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _cliente.GetAsync(baseDireccion + "api/Usuario/ListarPermisos","");
-                string respuesta = 
+                var result = await _cliente.GetAsync(baseDireccion + "api/Permisos/ListarPermisos");
+                
                 if (result.IsSuccessStatusCode)
                 {
-                    respuesta = await (result.Content.ReadAsStringAsync());
-                    _rol = JsonConvert.DeserializeObject<ApplicationRole>(respuesta);
+                    var respuesta = await (result.Content.ReadAsStringAsync());
+                    permisos = JsonConvert.DeserializeObject<List<string>>(respuesta);
                 }
 
             }
@@ -281,14 +282,14 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _rol }, Total = 1 });
+            return await Task.Run(() => Ok(permisos));
         }
 
-        [Authorize(Policy = "Seguridad.Listar Permisos")]
+        /*[Authorize(Policy = "Seguridad.Listar Permisos")]
         [HttpGet("[action]")]
         public async Task<ActionResult<string>> ListarPermisosUsuario(srting email)
         {
             var result = await _client.GetAsync(baseadress + "api/Usuario/GetUserById/" + UserId);
-        }
+        }*/
     }
 }
