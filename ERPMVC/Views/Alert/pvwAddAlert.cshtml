@@ -1,4 +1,4 @@
-﻿@model ERPMVC.DTO.AlertDTO
+﻿@model ERPMVC.Models.Alert
 @addTagHelper *, Kendo.Mvc
 
 @{ Layout = null;
@@ -34,11 +34,13 @@
                     <div class="col-lg-12">
                         <div class="card">
                             <div class="card-body">
-                                <form id="frmAlerts" kendo-validator="true" kendo-messages="messages"
-                                      data-ajax="true"
-                                      data-ajax-method="post"
-                                      data-ajax-begin="SaveAlert"
-                                      class="validation-wizard wizard-circle">
+                                <form id="frmAlert" kendo-validator="true" asp-action="SaveAlert" asp-controller="Alert" 
+									  data-ajax="true"
+									  data-ajax-method="post" enctype="multipart/form-data"
+                                      data-ajax-begin="onBegin" data-ajax-complete="onComplete"
+                                     data-ajax-failure="onFailed" data-ajax-success="onSuccess"
+
+									  class="validation-wizard wizard-circle">
                                     <div class="form-body">
                                         <h3 class="card-title">Alertas</h3>
                                         <hr>
@@ -243,106 +245,43 @@
 
     });
 
+    var onBegin = function () {
+        //alert("Begin");
 
-    function SaveAlert(e) {
+    };
 
-        if (cerrada) {
-            $.toast({
-                heading: 'Error ',
-                text: ' Alerta Cerrada no puede ser modificada',
-                position: 'top-right',
-                loaderBg: '#ff6849',
-                icon: 'error',
-                hideAfter: 3000,
-                stack: 6
-            });
-            return;
-        }
+    var onComplete = function () {
+        var grid = $("#gridAlert").getKendoGrid();
+        grid.dataSource.read();
+    };
 
-            var notification = $("#notification").data("kendoNotification");
-           // e.preventDefault();
-                 $("#btnGuardar").hide();
-                $("#btnGuardar").prop("disabled", true);
+    var onSuccess = function (context) {
+        console.log(context);
+        $.toast({
+            heading: 'Satisfactorio',
+            text: '<br/><br/> Datos guardados correctamente.',
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'success',
+            hideAfter: 30000,
+            stack: 6
+        });
+        $('#ModalAlert').modal('hide');
+    };
 
-           // var displayedData = $("#gridCountry").data().kendoGrid.dataSource.view();
-
-        var dataObject = {
-            'AlertId': $("#AlertId").val() === "" ? "0" : $("#AlertId").val(),
-            'Code' : $('#Code').val(),
-            'CloseDate' : $('#CloseDate').val(),
-            'Estado' : $('#Estado').val(),
-            'AlertName' : $('#AlertName').val(),
-            'DocumentName' : $('#DocumentName').val(),
-            'Description' : $('#Description').val(),
-            'ActionTakenName' : $('#ActionTakenName').val(),
-            'FalsoPositivo' : $('#FalsoPositivo').is(':checked'),
-            'SujetaARos': $('#FalsoPositivo').is(':checked'),
-            'Type' : $('#Type').val(),
-            'AlertType': $('#AlertType').val(),
-            'Observacion' :  $('#Observacion').val(),
-                           
-            };
-
-           // console.log(JSON.stringify(dataObject));
-            //var form = $("#frmNumeracion");
-           // form.validate();
-
-            var validator = $("#frmAlerts").data("kendoValidator");
-                 var status = $(".status");
-
-                if (validator.validate()) {
-
-                    $.ajax({
-                        url: '@Url.Action("SaveAlert", "Alert")',
-                        method: 'POST',
-                        datatype: "json",
-                        contentType: 'application/json',
-                        async: false,
-                        data: JSON.stringify(dataObject),
-                        success: function (data) {
-
-                            //notification.show({
-                            //    message: "Guardado correctamente!"
-                            //}, "upload-success");
-                            $.toast({
-                                heading: 'Satisfactorio',
-                                text: 'Datos guardados correctamente.',
-                                position: 'top-right',
-                                loaderBg: '#ff6849',
-                                icon: 'success',
-                                hideAfter: 30000,
-                                stack: 6
-                            });
-
-                            RefrescarGrid();
-
-                            $('#ModalAlert').modal('hide');
+    var onFailed = function (context) {
+        console.log(context);
+        $.toast({
+            heading: 'Error',
+            text: '<br/><br/> Error al Crear Empleado',
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'error',
+            hideAfter: 30000,
+            stack: 6
+        });
+    };
 
 
-
-
-
-                        },
-                        error: function (XMLHttpRequest, textStatus, errorThrown) {
-
-                            notification.show({
-                                title: "Validación",
-                                message: textStatus + ": " + XMLHttpRequest.responseText
-                            }, "error");
-
-                        }
-                    });
-
-                }
-                else {
-                    notification.show({
-                        title: "Validación",
-                        message: "Datos no validos en el formulario"
-                    }, "error");
-                }
-
-
-            $("#btnGuardar").show();
-            $("#btnGuardar").prop("disabled", false);
-    }
+    
 </script>

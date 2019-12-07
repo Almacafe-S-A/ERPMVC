@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Threading.Tasks;
+using System.Security.Claims;
 
 namespace ERPMVC.Models
 {
@@ -20,5 +19,6 @@ namespace ERPMVC.Models
         public Int32 Passworddias { get; set; }
 
         public DateTime LastPasswordChangedDate { get; set; }
+
     }
 }

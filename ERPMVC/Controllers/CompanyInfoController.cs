@@ -84,7 +84,11 @@ namespace ERPMVC.Controllers
                         ViewData["Extensionimg"] = "";
                     }
                 }
-               
+                else
+                {
+                        ViewData["Nombreimg"] = "";
+                        ViewData["Extensionimg"] = "";
+                }              
             }
             catch (Exception ex)
             {
@@ -115,7 +119,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CompanyInfo = JsonConvert.DeserializeObject<List<CompanyInfo>>(valorrespuesta);
-
+                    _CompanyInfo= _CompanyInfo.OrderByDescending(q => q.CompanyInfoId).ToList();
                 }
 
 
@@ -286,10 +290,8 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
-
-
-            return Json(_CompanyInfo);
+            return await Task.Run(() => Ok(_CompanyInfo));
+            // return Json(_CompanyInfo);
         }
 
 
