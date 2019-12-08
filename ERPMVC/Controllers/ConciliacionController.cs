@@ -48,7 +48,6 @@ namespace ERPMVC.Controllers
 
 
         // GET: Conciliacion
-        
         public async Task<IActionResult> Conciliacion()
         {
             ViewData["CheckAccount"] = await ObtenerCheckAccount();
