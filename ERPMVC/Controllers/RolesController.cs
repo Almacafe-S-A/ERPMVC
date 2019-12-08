@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -81,7 +82,6 @@ namespace ERPMVC.Controllers
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-
                 string token = "";
                 token = HttpContext.Session.GetString("token");
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
@@ -285,11 +285,122 @@ namespace ERPMVC.Controllers
             return await Task.Run(() => Ok(permisos));
         }
 
-        /*[Authorize(Policy = "Seguridad.Listar Permisos")]
-        [HttpGet("[action]")]
-        public async Task<ActionResult<string>> ListarPermisosUsuario(srting email)
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<string>> GuardarAsignacionesPermisoRol([FromBody]PostAsignacionesPermisoRol asignaciones)
         {
-            var result = await _client.GetAsync(baseadress + "api/Usuario/GetUserById/" + UserId);
-        }*/
+            try
+            {
+                string urlBase = config.Value.urlbase;
+                HttpClient cliente = new HttpClient();
+                cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var resultado = await cliente.PostAsJsonAsync(urlBase + "api/Roles/GuardarPermisosAsignados", asignaciones);
+                if (resultado.IsSuccessStatusCode)
+                {
+                    return await Task.Run(() => Ok(0));
+                }
+                else
+                {
+                    _logger.LogError($"Ocurrio un error y no se pudieron almacenar los permisos");
+                    return BadRequest($"Ocurrio un error y no se pudieron almacenar los permisos");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+        }
+
+        [Authorize(Policy = "Seguridad.Listar Permisos")]
+        [HttpGet("[action]")]
+        public async Task<ActionResult<List<RolPermisoAsignacion>>> AsignacionPermisosRol([FromQuery(Name="idRol")]string idRol)
+        {
+            List<string> permisosSistema = new List<string>();
+            List<string> permisosRol = new List<string>();
+            TreeDataSourceResult datos;
+            if (idRol == null)
+            {
+                datos = new TreeDataSourceResult();
+
+                return await Task.Run(() => Ok(datos));
+
+            }
+            try
+            {
+                string urlBase = config.Value.urlbase;
+                HttpClient cliente = new HttpClient();
+                cliente.DefaultRequestHeaders.Add("Authorization","Bearer " + HttpContext.Session.GetString("token"));
+
+                var resPermisosSistema = await cliente.GetAsync(urlBase + "api/Permisos/ListarPermisos");
+                if (resPermisosSistema.IsSuccessStatusCode)
+                {
+                    var contenidoRespuesta = await resPermisosSistema.Content.ReadAsStringAsync();
+                    permisosSistema = JsonConvert.DeserializeObject<List<string>>(contenidoRespuesta);
+
+                    var resPermisosRol = await cliente.GetAsync(urlBase + $"api/Roles/ListarPermisos/{idRol}");
+                    if (resPermisosRol.IsSuccessStatusCode)
+                    {
+                        contenidoRespuesta = await resPermisosRol.Content.ReadAsStringAsync();
+                        permisosRol = JsonConvert.DeserializeObject<List<string>>(contenidoRespuesta);
+                        List<RolPermisoAsignacion> permisosAsignados = new List<RolPermisoAsignacion>();
+
+                        foreach (string permiso in permisosSistema)
+                        {
+                            var campos = permiso.Split(".");
+                            permisosAsignados.Add(new RolPermisoAsignacion()
+                                                {
+                                                    Id = permiso,
+                                                    Asignado = false,
+                                                    Categoria = campos.Length==1?campos[0]:"",
+                                                    Nivel1 = campos.Length==2?campos[1]:"",
+                                                    Nivel2 = campos.Length == 3 ? campos[2] : "",
+                                                    Nivel3 = campos.Length == 4 ? campos[3] : "",
+                                                    IdPadre = campos.Length<=1?null:
+                                                        campos.Length==2?campos[0]:
+                                                        campos.Length==3?campos[0]+"."+campos[1]:campos[0]+"."+campos[1]+"."+campos[2]
+                                                });
+                        }
+
+                        foreach (string permiso in permisosRol)
+                        {
+                            var permisoAsignado = permisosAsignados.Find(p => p.Id.Equals(permiso));
+                            if (permisoAsignado != null)
+                            {
+                                permisoAsignado.Asignado = true;
+                            }
+                        }
+
+                        return await Task.Run(() => Ok(permisosAsignados));
+                    }
+                    else if (resPermisosRol.StatusCode == HttpStatusCode.Forbidden)
+                    {
+                        _logger.LogError($"Acceso denegado");
+                        return BadRequest($"Acceso denegado");
+                    }
+                    else
+                    {
+                        _logger.LogError($"No se pudo cargar los permisos del rol {resPermisosSistema.ReasonPhrase}");
+                        return BadRequest($"No se pudo cargar los permisos del rol {resPermisosSistema.ReasonPhrase}");
+                    }
+                }
+                else if(resPermisosSistema.StatusCode == HttpStatusCode.Forbidden)
+                {
+                    _logger.LogError($"Acceso denegado");
+                    return BadRequest($"Acceso denegado");
+                }
+                else
+                {
+                    _logger.LogError($"No se pudo cargar los permisos del sistema {resPermisosSistema.ReasonPhrase}");
+                    return BadRequest($"No se pudo cargar los permisos del sistema {resPermisosSistema.ReasonPhrase}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+        }
     }
 }
