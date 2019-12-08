@@ -84,7 +84,11 @@ namespace ERPMVC.Controllers
                         ViewData["Extensionimg"] = "";
                     }
                 }
-               
+                else
+                {
+                        ViewData["Nombreimg"] = "";
+                        ViewData["Extensionimg"] = "";
+                }              
             }
             catch (Exception ex)
             {

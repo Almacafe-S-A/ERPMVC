@@ -10,7 +10,7 @@ namespace ERPMVC.Models
     public class CreditNoteLine
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Display(Name = "Linea Id")]
+        [Display(Name = "Línea Id")]
         public Int64 CreditNoteLineId { get; set; }
         [Display(Name = "Nota de crédito")]
         public int CreditNoteId { get; set; }
