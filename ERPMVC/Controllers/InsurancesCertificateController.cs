@@ -36,11 +36,6 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-<<<<<<< HEAD
-        //[Authorize(Policy = "Admin")]
-=======
-       // 
->>>>>>> 101567111939e02eac3b24870e995e477f277ceb
         public async Task<IActionResult> InsurancesCertificate()
         {
             ViewData["Insurances"] = await ObtenerInsurances();

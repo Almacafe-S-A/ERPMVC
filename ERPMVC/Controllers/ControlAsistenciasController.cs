@@ -47,11 +47,6 @@ namespace ERPMVC.Controllers
         }
 
 
-<<<<<<< HEAD
-        //[Authorize(Policy = "Admin")]
-=======
-        
->>>>>>> 101567111939e02eac3b24870e995e477f277ceb
         public async Task<IActionResult> ControlAsistencia()
         {
             ViewData["ElementoConfiguracion"] = await ObtenerTiposControlAsistencias();
