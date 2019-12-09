@@ -126,6 +126,7 @@ namespace ERPMVC.Controllers
                 if (_BlackListCustomers == null)
                 {
                     _BlackListCustomers = new BlackListCustomersDTO();
+                    _BlackListCustomers.DocumentDate = DateTime.Now;
                 }
             }
             catch (Exception ex)
