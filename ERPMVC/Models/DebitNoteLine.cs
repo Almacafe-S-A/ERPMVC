@@ -10,7 +10,7 @@ namespace ERPMVC.Models
     public class DebitNoteLine
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Display(Name = "Linea Id")]
+        [Display(Name = "Línea Id")]
         public Int64 DebitNoteLineId { get; set; }
         [Display(Name = "Nota de débito")]
         public Int64 DebitNoteId { get; set; }

@@ -88,16 +88,27 @@ namespace ERPMVC.Controllers
             return ReportHelper.ProcessReport(null, this, this._cache);
         }
         public IConfiguration Configuration { get; }
-        public void OnInitReportOptions(ReportViewerOptions reportOption)
+
+        [Authorize]
+        public async void OnInitReportOptions(ReportViewerOptions reportOption)
         {
-            Syncfusion.Report.DataSourceCredentials dsc = new Syncfusion.Report.DataSourceCredentials();
-            dsc.ConnectionString = Configuration.GetConnectionString("DefaultConnection");
-            dsc.Name = "ERP";
-            string basePath = _hostingEnvironment.WebRootPath;
-            FileStream inputStream = new FileStream(basePath + reportOption.ReportModel.ReportPath, FileMode.Open, FileAccess.Read);
-            reportOption.ReportModel.Stream = inputStream;
-            reportOption.ReportModel.EmbedImageData = true;
-            reportOption.ReportModel.DataSourceCredentials.Add(dsc);
+            var urlBase = Configuration.GetSection("AppSettings").GetSection("urlbase").Value;
+            HttpClient cliente = new HttpClient();
+            cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+            var resultado = await cliente.GetAsync(urlBase + "api/Reportes/CadenaConexionBD");
+            if (resultado.IsSuccessStatusCode)
+            {
+                var cadena = await resultado.Content.ReadAsStringAsync();
+                Syncfusion.Report.DataSourceCredentials dsc = new Syncfusion.Report.DataSourceCredentials();
+                dsc.ConnectionString = cadena;
+                dsc.Name = "ERP";
+                string basePath = _hostingEnvironment.WebRootPath;
+                FileStream inputStream = new FileStream(basePath + reportOption.ReportModel.ReportPath, FileMode.Open, FileAccess.Read);
+                reportOption.ReportModel.Stream = inputStream;
+                reportOption.ReportModel.EmbedImageData = true;
+                reportOption.ReportModel.DataSourceCredentials.Add(dsc);
+            }
+            
         }
 
         public  void OnReportLoaded(ReportViewerOptions reportOption)
