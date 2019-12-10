@@ -118,42 +118,7 @@ namespace ERPMVC.Controllers
 
             return _InsurancePolicy.ToDataSourceResult(request);
 
-        }
-
-
-        /*[HttpGet("[action]")]
-        public async Task<DataSourceResult> GeDocumentByCustomerId([DataSourceRequest]DataSourceRequest request, Int64 CustomerId)
-        {
-            List<CustomerDocument> _CustomerDocument = new List<CustomerDocument>();
-            try
-            {
-
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CustomerDocument/GeDocumentByCustomerId/" + CustomerId);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CustomerDocument = JsonConvert.DeserializeObject<List<CustomerDocument>>(valorrespuesta);
-
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-
-            return _CustomerDocument.ToDataSourceResult(request);
-
-        }
-
-    */
+        }       
 
 
         [HttpPost("[controller]/[action]")]
@@ -168,13 +133,31 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/InsurancePolicy/GetSeveridadRiesgoById/" + _InsurancePolicyS.InsurancePolicyId);
                 string valorrespuesta = "";
+
+
                 IFormFile file = files.FirstOrDefault();
-                FileInfo info = new FileInfo(file.FileName);
+                if (file != null)
+                {
+                    FileInfo info = new FileInfo(file.FileName);
+                    string nombreArchivo = "/PolizasdeSeguro/" + _InsurancePolicyS.InsurancePolicyId + "_"
+                         + _InsurancePolicyS.InsurancesName + info.Extension;
+                    var filePath = _hostingEnvironment.WebRootPath + nombreArchivo;
+                    _InsurancePolicyS.AttachementFileName = nombreArchivo;
+
+                    _InsurancePolicyS.AttachmentURL = _InsurancePolicyS.InsurancePolicyId + "_" + _InsurancePolicyS.InsurancesName + info.Extension;
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+
+                    }
+
+                }
+
+
                 _InsurancePolicyS.FechaModificacion = DateTime.Now;
                 _InsurancePolicyS.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
-
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _listInsurancePolicy = JsonConvert.DeserializeObject<InsurancePolicy>(valorrespuesta);
                 }
@@ -183,7 +166,7 @@ namespace ERPMVC.Controllers
                 if (_listInsurancePolicy.InsurancePolicyId == 0)
                 {
                     _InsurancePolicyS.FechaCreacion = DateTime.Now;
-                    _InsurancePolicyS.AttachementFileName = file.FileName;
+                    //_InsurancePolicyS.AttachementFileName = file.FileName;
                     _InsurancePolicyS.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_InsurancePolicyS);
                     var value = (insertresult.Result as ObjectResult).Value;
@@ -191,37 +174,14 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    _InsurancePolicyS.AttachementFileName = file.FileName;
                     _InsurancePolicyS.FechaCreacion = _listInsurancePolicy.FechaCreacion;
                     _InsurancePolicyS.UsuarioCreacion = _listInsurancePolicy.UsuarioCreacion;
-                    var updateresult = await Update(_InsurancePolicyS.InsurancePolicyId, _InsurancePolicyS);
-
-
-                    if (updateresult.Value == null)
-                    {
-                        throw new Exception("Error");
-                    }
+                    _listInsurancePolicy = _InsurancePolicyS;
+                    var updateresult2 = await Update(_listInsurancePolicy);
                 }
-
-
-
-                var filePath = _hostingEnvironment.WebRootPath + "/InsurancePolicy/" + _InsurancePolicyS.InsurancePolicyId + "_"
-                     + file.FileName.Replace(info.Extension, "") + "_" + file.FileName
-                     + info.Extension;
-
-                using (var stream = new FileStream(filePath, FileMode.Create))
-                {
-                    await file.CopyToAsync(stream);
-                    // MemoryStream mstream = new MemoryStream();
-                    //mstream.WriteTo(stream);
-
-                }
-
-                _InsurancePolicyS.AttachmentURL = filePath;
-                _listInsurancePolicy = _InsurancePolicyS;
-                var updateresult2 = await Update(_InsurancePolicyS.InsurancePolicyId, _listInsurancePolicy);
 
             }
+
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
@@ -264,7 +224,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<InsurancePolicy>> Update(Int64 id, InsurancePolicy _InsurancePolicyDocument)
+        public async Task<ActionResult<InsurancePolicy>> Update( InsurancePolicy _InsurancePolicyDocument)
         {
             InsurancePolicy _InsurancePolicy = new InsurancePolicy();
             try
@@ -280,10 +240,6 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _InsurancePolicy = JsonConvert.DeserializeObject<InsurancePolicy>(valorrespuesta);
-                }
-                else
-                {
-                    throw new Exception(result.ReasonPhrase);     
                 }
 
             }
