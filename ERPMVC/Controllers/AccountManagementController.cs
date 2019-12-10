@@ -168,27 +168,35 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/AccountManagement/GetSAccountManagementById/" + _AccountManagement.AccountManagementId);
-                string valorrespuesta = "";
+                var result1 = await _client.GetAsync(baseadress + "api/AccountManagement/GetSAccountManagementByAccountTypeAccountNumber/" + _AccountManagement.AccountNumber);
+                string valorrespuesta1 = "";
                 _AccountManagement.FechaModificacion = DateTime.Now;
                 _AccountManagement.UsuarioModificacion = HttpContext.Session.GetString("user");
-                if (result.IsSuccessStatusCode)
-                {
 
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _AccountManagement = JsonConvert.DeserializeObject<AccountManagement>(valorrespuesta);
+                if (result1.IsSuccessStatusCode)
+                {
+                    valorrespuesta1 = await (result1.Content.ReadAsStringAsync());
+                    _AccountManagement = JsonConvert.DeserializeObject<AccountManagementDTO>(valorrespuesta1);
                 }
 
                 if (_AccountManagement == null) { _AccountManagement = new Models.AccountManagement(); }
 
+                if (_AccountManagement.AccountManagementId > 0)
+                {
+                    if (_AccountManagement.AccountManagementId != _AccountManagementS.AccountManagementId)
+                        return await Task.Run(() => BadRequest($"Ya existe un registro con el mismo Número de Cuenta."));
+                }
+
+
                 if (_AccountManagementS.AccountManagementId == 0)
                 {
-                    _AccountManagementS.FechaCreacion = DateTime.Now;
-                    _AccountManagementS.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    _AccountManagement.FechaCreacion = DateTime.Now;
+                    _AccountManagement.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_AccountManagementS);
                 }
                 else
                 {
+                    var result = await _client.GetAsync(baseadress + "api/AccountManagement/GetSAccountManagementById/" + _AccountManagement.AccountManagementId);
                     _AccountManagementS.UsuarioCreacion = _AccountManagement.UsuarioCreacion;
                     _AccountManagementS.FechaCreacion = _AccountManagement.FechaCreacion;
                     var updateresult = await Update(_AccountManagement.AccountManagementId, _AccountManagementS);
@@ -201,7 +209,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_AccountManagementS);
+            return Json(_AccountManagement);
         }
         // POST: AccountManagement/Insert
         [HttpPost]
