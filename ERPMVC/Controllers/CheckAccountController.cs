@@ -155,10 +155,35 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
-
             return _CheckAccount.ToDataSourceResult(request);
+        }
 
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetCheckAccountByBankId([DataSourceRequest]DataSourceRequest request, string bankId)
+        {
+            List<CheckAccount> cuentasDeBanco = new List<CheckAccount>();
+            try
+            {
+                if (!string.IsNullOrEmpty(bankId))
+                {
+                    string baseAddress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseAddress + $"api/CheckAccount/GetCheckAccountByBankId/{bankId}");
+                    string valorRespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorRespuesta = await (result.Content.ReadAsStringAsync());
+                        cuentasDeBanco = JsonConvert.DeserializeObject<List<CheckAccount>>(valorRespuesta);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return cuentasDeBanco.ToDataSourceResult(request);
         }
 
         [HttpGet("[controller]/[action]")]
