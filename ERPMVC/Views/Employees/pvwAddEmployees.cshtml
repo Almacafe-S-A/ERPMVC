@@ -14,6 +14,14 @@
 
 <script>
     $(document).ready(function () {
+        $("#TelefonoAlert").hide();
+        $("#TelefonoContactoAlert").hide();
+        $("#Telefono").kendoMaskedTextBox({
+            mask: "(999) 0000-0000"
+        });
+        $("#TelefonoContacto").kendoMaskedTextBox({
+            mask: "(999) 0000-0000"
+        });
         $("#AlertSalario").prop("hidden", true);
         $("#AgregarSalarioCustom").prop("hidden", true)
         //$("#NombreEmpleado_validationMessage").css({ "width": "100%"})
@@ -290,7 +298,7 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="TipoSangre" class=" control-label" style="width:100%">Tipo de Sangre</label>
-                                                    <input asp-for="TipoSangre" name="TipoSangre" autocomplete="off" onchange="validarTipoSangre()" maxlength="3" style="min-width:100%" />
+                                                    <input asp-for="TipoSangre" name="TipoSangre" required data-required-msg="El Tipo de Sangre es requerido." autocomplete="off" onchange="validarTipoSangre()" maxlength="3" style="min-width:100%" />
                                                     @*<span asp-validation-for="TipoSangre" class="text-danger"></span>*@
                                                     @*<span id="TipoSangreAlert" role="alert" class="k-icon k-i-warning"><span class="text-danger"> El Tipo de Sangre es requerido.</span></span>*@
                                                     <span id="TipoSangreAlert" class="text-danger"><span role="alert" class="k-icon k-i-warning"></span> El Tipo de Sangre es requerido.</span>
@@ -299,7 +307,7 @@
                                             <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Correo" class=" control-label" style="width:100%">Correo</label>
-                                                    <input type="email" asp-for="Correo" name="Correo" placeholder="e.g. myname@example.net" maxlength="150" data-email-msg="Formato del Correo no valido." data-val-required="El Correo es requerido." class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <input type="email" asp-for="Correo" name="Correo" placeholder="nombre@ejemplo.com" maxlength="150" data-email-msg="Formato del Correo no valido." data-val-required="El Correo es requerido." class="form-control" autocomplete="off" style="min-width:100%" />
                                                     <span asp-validation-for="Correo" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -307,8 +315,9 @@
                                             <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Telefono" class=" control-label" style="width:100%">Teléfono</label>
-                                                    <input type="text" asp-for="Telefono" onkeypress="return SoloNumeros(event)" name="Telefono" required data-required-msg="El Número de Teléfono es requerido." maxlength="12" class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <input type="text" asp-for="Telefono" onchange="validarTelefono()" name="Telefono" required data-required-msg="El Número de Teléfono es requerido." class="form-control" autocomplete="off" style="min-width:100%" />
                                                     <span asp-validation-for="Telefono" class="text-danger"></span>
+                                                    <span id="TelefonoAlert" class="text-danger"><span role="alert" class="k-icon k-i-warning"></span> Complete el número de teléfono.</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -668,8 +677,10 @@
                                             <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="TelefonoContacto" class=" control-label" style="width:100%">Telefono Contacto de Emergencia</label>
-                                                    <input type="text" asp-for="TelefonoContacto" maxlength="12" onkeypress="return SoloNumeros(event)" name="TelefonoContacto" class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <input type="text" asp-for="TelefonoContacto" onchange="validarTelefono()" name="TelefonoContacto" class="form-control" autocomplete="off" style="min-width:100%" />
                                                     <span asp-validation-for="TelefonoContacto" class="text-danger"></span>
+                                                    <span id="TelefonoContactoAlert" class="text-danger"><span role="alert" class="k-icon k-i-warning"></span> Complete el número de teléfono.</span>
+
                                                 </div>
                                             </div>
 
@@ -731,14 +742,24 @@
 	</div>
 </div>
 <script>
-    //function onSelect(e) {
-    //    $.each(e.files, function (index, value) {
-    //        console.log("Name: " + value.name);
-    //        console.log("Size: " + value.size + " bytes");
-    //        console.log("Extension: " + value.extension);
-    //    });
-    //};
-
+    function validarTelefono() {
+        var cadena = $("#Telefono").val();
+        var cadenaContacto = $("#TelefonoContacto").val();
+        if (cadena.indexOf("_") > -1 == true) {
+            $("#TelefonoAlert").show();
+        }
+        else {
+            $("#TelefonoAlert").hide();
+        }
+        if (cadenaContacto.indexOf("_") > -1 == true) {
+            $("#TelefonoContactoAlert").show();
+        }
+        else {
+            $("#TelefonoContactoAlert").hide();
+        }
+    }
+</script>
+<script>
     function ValidarRTN() {
         var dataObject = {
             RTN: $("#RTN").val(),
@@ -845,13 +866,14 @@
         }
     }
 
-	function validarTipoSangre() {
+    function validarTipoSangre() {
+        
         var TipoSangre = $("#TipoSangre").val();
-        if (TipoSangre == 0 || $("#TipoSangre").data("kendoDropDownList").text() == "Seleccionar Tipo de Sangre") {
-            $("#TipoSangreAlert").show();
+        if ($("#TipoSangre").data("kendoDropDownList").value() == 0 || $("#TipoSangre").data("kendoDropDownList").text() == "Seleccionar Tipo de Sangre") {
+            $("#TipoSangreAlert").prop("hidden", false);
         }
         else {
-            $("#TipoSangreAlert").hide();
+            $("#TipoSangreAlert").prop("hidden", true);
         }
     }
 
@@ -961,155 +983,124 @@
             if ($('#TipoSangreAlert').is(':hidden')) {
                 if ($('#IdentidadAlert').is(':hidden')) {
                     if ($('#RTNAlert').is(':hidden')) {
-                        var notification = $("#notification").data("kendoNotification");
+                        if ($('#TelefonoAlert').is(':hidden')) {
+                            if ($('#TelefonoContactoAlert').is(':hidden')) {
+                                var notification = $("#notification").data("kendoNotification");
 
-                        var displayedData = $("#gridEmployees").data().kendoGrid.dataSource.view();
-                        var displayedData1 = $("#gridEmployeeSalary").data().kendoGrid.dataSource.view();
-                        var id = 0;
-                        if ($("#IdEmpleado").val() == 0) {
-                            if (displayedData1.length > 0) {
-                                for (var i = 0; i < displayedData1.length; i++) {
-                                    if (displayedData1[i].EmployeeSalaryId > id)
-                                        displayedData1[i].EmployeeSalaryId = 0;
+                                var displayedData = $("#gridEmployees").data().kendoGrid.dataSource.view();
+                                var displayedData1 = $("#gridEmployeeSalary").data().kendoGrid.dataSource.view();
+                                var id = 0;
+                                if ($("#IdEmpleado").val() == 0) {
+                                    if (displayedData1.length > 0) {
+                                        for (var i = 0; i < displayedData1.length; i++) {
+                                            if (displayedData1[i].EmployeeSalaryId > id)
+                                                displayedData1[i].EmployeeSalaryId = 0;
 
+                                        }
+                                        id = 0;
+                                    }
                                 }
-                                id = 0;
-                            }
-                        }
-                        var setFechaEgreso = null;
-                        var setFechaFinContrato = null;
-                        if ($("#FechaEgreso").getKendoDatePicker().value() != null || $("#FechaEgreso").getKendoDatePicker().value() != undefined || $("#FechaEgreso").val() != "") {
-                            setFechaEgreso = $("#FechaEgreso").getKendoDatePicker().value().toJSON();
-                        }
-                        if ($("#FechaFinContrato").getKendoDatePicker().value() != null || $("#FechaFinContrato").getKendoDatePicker().value() != undefined || $("#FechaFinContrato").val() != "") {
-                            setFechaFinContrato = $("#FechaFinContrato").getKendoDatePicker().value().toJSON();
-                        }
+                                var setFechaEgreso = null;
+                                var setFechaFinContrato = null;
+                                if ($("#FechaEgreso").getKendoDatePicker().value() != null || $("#FechaEgreso").getKendoDatePicker().value() != undefined || $("#FechaEgreso").val() != "") {
+                                    setFechaEgreso = $("#FechaEgreso").getKendoDatePicker().value().toJSON();
+                                }
+                                if ($("#FechaFinContrato").getKendoDatePicker().value() != null || $("#FechaFinContrato").getKendoDatePicker().value() != undefined || $("#FechaFinContrato").val() != "") {
+                                    setFechaFinContrato = $("#FechaFinContrato").getKendoDatePicker().value().toJSON();
+                                }
 
-                        var _fechaNacimiento = $("#FechaNacimiento").getKendoDatePicker().value().toJSON()
-                        var _fechaIngreso = $("#FechaIngreso").getKendoDatePicker().value().toJSON()
-                        var upload = $("#Foto").data("kendoUpload"),
-                            files = upload.getFiles();
-                        var Foto1 = files[0].rawFile
-                        var dataObject = {
-                            'IdEmpleado': $("#IdEmpleado").val() === "" ? "0" : $("#IdEmpleado").val(),
-                            'NombreEmpleado': $("#NombreEmpleado").val(),
-                            'Correo': $("#Correo").val(),
-                            'FechaNacimiento': _fechaNacimiento,
-                            'FechaIngreso': _fechaIngreso,
-                            'Salario': Number($("#Salario").val()),
-                            'Identidad': $("#Identidad").val(),
-                            'FechaEgreso': setFechaEgreso,
-                            'Direccion': $("#Direccion").val(),
-                            'Genero': $("#Genero").data("kendoDropDownList").text(),
-                            'TipoSangre': $("#TipoSangre").data("kendoDropDownList").text(),
-                            'IdEstado': $("#IdEstado").val(),
-                            'IdState': $("#IdState").val(),
-                            'NombreContacto': $("#NombreContacto").val(),
-                            'TelefonoContacto': $("#TelefonoContacto").val(),
-                            'IdCountry': $("#IdCountry").val(),
-                            'IdCity': $("#IdCity").val(),
-                            'IdCurrency': $("#IdCurrency").val(),
-                            'IdActivoinactivo': $("#IdEstado").val(),
-                            'IdBank': $("#IdBank").val(),
-                            'CuentaBanco': $("#CuentaBanco").val(),
-                            'FechaFinContrato': setFechaFinContrato,
-                            'Telefono': $("#Telefono").val(),
-                            'Extension': $("#Extension").val(),
-                            'IdPuesto': $("#IdPuesto").val(),
-                            'IdSucursal': $("#IdSucursal").val(),
-                            'IdDepartamento': $("#IdDepartamento").val(),
-                            'IdTipoContrato': $("#IdTipoContrato").val(),
-                            'Notas': $("#Notas").val(),
-                            'IdBranch': $("#IdBranch").val(),
-                            
-                            //temporal
-                            'ApplicationUserId': 'FC405B7D-9FE3-43C9-97B5-D87A174CAB8A',
-                            'RTN': $("#RTN").val(),
-                            'Profesion': $("#Profesion").val(),
-                            'IdTipoPlanilla': $("#IdTipoPlanilla").val(),
-                            'BirthPlace': $("#BirthPlace").val(),
-                            //'_Employees': displayedData,
-                            '_EmployeeSalary': displayedData1,
-                        };
+                                var _fechaNacimiento = $("#FechaNacimiento").getKendoDatePicker().value().toJSON()
+                                var _fechaIngreso = $("#FechaIngreso").getKendoDatePicker().value().toJSON()
+                                var dataObject = {
+                                    'IdEmpleado': $("#IdEmpleado").val() === "" ? "0" : $("#IdEmpleado").val(),
+                                    'NombreEmpleado': $("#NombreEmpleado").val(),
+                                    'Correo': $("#Correo").val(),
+                                    'FechaNacimiento': _fechaNacimiento,
+                                    'FechaIngreso': _fechaIngreso,
+                                    'Salario': Number($("#Salario").val()),
+                                    'Identidad': $("#Identidad").val(),
+                                    'FechaEgreso': setFechaEgreso,
+                                    'Direccion': $("#Direccion").val(),
+                                    'Genero': $("#Genero").data("kendoDropDownList").text(),
+                                    'TipoSangre': $("#TipoSangre").data("kendoDropDownList").text(),
+                                    'IdEstado': $("#IdEstado").val(),
+                                    'IdState': $("#IdState").val(),
+                                    'NombreContacto': $("#NombreContacto").val(),
+                                    'TelefonoContacto': $("#TelefonoContacto").val(),
+                                    'IdCountry': $("#IdCountry").val(),
+                                    'IdCity': $("#IdCity").val(),
+                                    'IdCurrency': $("#IdCurrency").val(),
+                                    'IdActivoinactivo': $("#IdEstado").val(),
+                                    'IdBank': $("#IdBank").val(),
+                                    'CuentaBanco': $("#CuentaBanco").val(),
+                                    'FechaFinContrato': setFechaFinContrato,
+                                    'Telefono': $("#Telefono").val(),
+                                    'Extension': $("#Extension").val(),
+                                    'IdPuesto': $("#IdPuesto").val(),
+                                    'IdSucursal': $("#IdSucursal").val(),
+                                    'IdDepartamento': $("#IdDepartamento").val(),
+                                    'IdTipoContrato': $("#IdTipoContrato").val(),
+                                    'Notas': $("#Notas").val(),
+                                    'IdBranch': $("#IdBranch").val(),
 
-                        var validator = $("#frmEmployees").data("kendoValidator");
+                                    //temporal
+                                    'ApplicationUserId': 'FC405B7D-9FE3-43C9-97B5-D87A174CAB8A',
+                                    'RTN': $("#RTN").val(),
+                                    'Profesion': $("#Profesion").val(),
+                                    'IdTipoPlanilla': $("#IdTipoPlanilla").val(),
+                                    'BirthPlace': $("#BirthPlace").val(),
+                                    //'_Employees': displayedData,
+                                    '_EmployeeSalary': displayedData1,
+                                };
 
-                        if (validator.validate()) {
+                                var validator = $("#frmEmployees").data("kendoValidator");
 
-                            $.ajax({
-                                url: '@Url.Action("SaveEmployees", "Employees")',
-                                method: 'POST',
-                                datatype: "json",
-                                contentType: "application/json",
-                                async: false,
-                                data: { 'Foto': Foto1, '_EmployeesDTO': JSON.stringify(dataObject) },
-                                success: function (data) {
-                                    $.toast({
-                                        heading: 'Satisfactorio',
-                                        text: '<br/><br/> Datos guardados correctamente.',
-                                        position: 'top-right',
-                                        loaderBg: '#ff6849',
-                                        icon: 'success',
-                                        hideAfter: 30000,
-                                        stack: 6
+                                if (validator.validate()) {
+
+                                    $.ajax({
+                                        url: '@Url.Action("SaveEmployees", "Employees")',
+                                        method: 'POST',
+                                        datatype: "json",
+                                        contentType: "application/json",
+                                        async: false,
+                                        data: JSON.stringify(dataObject),
+                                        success: function (data) {
+                                            $.toast({
+                                                heading: 'Satisfactorio',
+                                                text: '<br/><br/> Datos guardados correctamente.',
+                                                position: 'top-right',
+                                                loaderBg: '#ff6849',
+                                                icon: 'success',
+                                                hideAfter: 30000,
+                                                stack: 6
+                                            });
+
+                                            RefrescarGrid();
+
+                                            $('#ModalEmployees').modal('hide');
+
+                                        },
+                                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                                            notification.show({
+                                                title: "Validación",
+                                                message: textStatus + ": " + XMLHttpRequest.responseText
+                                            }, "error");
+
+                                        }
                                     });
 
-                                    RefrescarGrid();
-
-                                    $('#ModalEmployees').modal('hide');
-
-                                },
-                                error: function (XMLHttpRequest, textStatus, errorThrown) {
-
-                                    notification.show({
-                                        title: "Validación",
-                                        message: textStatus + ": " + XMLHttpRequest.responseText
-                                    }, "error");
-
                                 }
-                            });
-
-                        }
-                        else {
-                            $("#btnEmployees").prop("disabled", false);
+                                else {
+                                    $("#btnEmployees").prop("disabled", false);
+                                }
+                            }
                         }
                     }
                 }
             }
         }
     }
-    //$("#NombreEmpleado").keyup(function (e) {
-    //    if ($("#NombreEmpleado").val() == "" || $("#Identidad").val() == "" || $("#FechaNacimiento").val() == "" || $("#LugarNacimiento").val() == ""
-    //        || $("#Genero").data("kendoDropDownList").value() == 0 || $("#TipoSangre").data("kendoDropDownList").value() == 0 || $("#Correo").val() == ""
-    //        || $("#Telefono").val() == "" || $("#Extension").val() == "" || $("#RTN").val() == "" || $("#Profesion").val() == ""
-    //        || $("#IdEstado").data("kendoDropDownList").value() == 0 || $("#FechaIngreso").val() == "" || $("#IdPuesto").data("kendoDropDownList").value() == 0
-    //        || $("#IdDepartamento").data("kendoDropDownList").value() == 0 || $("#Salario").val() == "" || $("#IdCurrency").data("kendoDropDownList").value() == 0
-    //        || $("#IdCountry").data("kendoDropDownList").value() == 0 || $("#IdState").data("kendoDropDownList").value() == 0 || $("#IdCity").data("kendoDropDownList").value() == 0
-    //        || $("#Direccion").val() == "" || $("#IdBank").data("kendoDropDownList").value() == 0 || $("#CuentaBanco").val() == "" || $("#IdBranch").data("kendoDropDownList").value() == 0
-    //        || $("#IdTipoContrato").data("kendoDropDownList").value() == 0) {
-    //        $("#Foto").data("kendoUpload").disable();
-    //    }
-    //    else {
-    //        $("#Foto").data("kendoUpload").enable();
-    //    }
-    //});
-
-    //$("#Identidad").keyup(function (e) {
-    //    if ($("#NombreEmpleado").val() == "" || $("#Identidad").val() == "" || $("#FechaNacimiento").val() == "" || $("#LugarNacimiento").val() == ""
-    //        || $("#Genero").data("kendoDropDownList").value() == 0 || $("#TipoSangre").data("kendoDropDownList").value() == 0 || $("#Correo").val() == ""
-    //        || $("#Telefono").val() == "" || $("#Extension").val() == "" || $("#RTN").val() == "" || $("#Profesion").val() == ""
-    //        || $("#IdEstado").data("kendoDropDownList").value() == 0 || $("#FechaIngreso").val() == "" || $("#IdPuesto").data("kendoDropDownList").value() == 0
-    //        || $("#IdDepartamento").data("kendoDropDownList").value() == 0 || $("#Salario").val() == "" || $("#IdCurrency").data("kendoDropDownList").value() == 0
-    //        || $("#IdCountry").data("kendoDropDownList").value() == 0 || $("#IdState").data("kendoDropDownList").value() == 0 || $("#IdCity").data("kendoDropDownList").value() == 0
-    //        || $("#Direccion").val() == "" || $("#IdBank").data("kendoDropDownList").value() == 0 || $("#CuentaBanco").val() == "" || $("#IdBranch").data("kendoDropDownList").value() == 0
-    //        || $("#IdTipoContrato").data("kendoDropDownList").value() == 0) {
-    //        $("#Foto").data("kendoUpload").disable();
-    //    }
-    //    else {
-    //        $("#Foto").data("kendoUpload").enable();
-    //    }
-    //});
-
 
 
         
