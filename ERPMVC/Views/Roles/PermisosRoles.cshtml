@@ -1,0 +1,127 @@
+﻿@using ERPMVC.Models
+@{
+    ViewBag.Title = "Permisos Rol";
+}
+
+<h3 class="text-themecolor" >Permisos de Rol</h3>
+
+<div class="container">
+    
+    <div class="row">
+        <div class="col-sm">
+            <kendo-dropdownlist name="cmbRoles"
+                                option-label="Seleccionar el Rol a Modificar"
+                                datatextfield="Name"
+                                datavaluefield="Id"
+                                style="width: 100%;">
+                <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                    <transport>
+                        <read url="@Url.Action("GetRoles", "Roles")"/>
+                    </transport>
+                </datasource>
+            </kendo-dropdownlist>
+        </div>
+        <div class="col-sm">
+            <kendo-button permiso="Seguridad.Listar Permisos" name="Modificar" on-click="CargarPermisos">Modificar</kendo-button>
+            <kendo-button permiso="Seguridad.Modificar Permisos Rol" name="btnGuardar" on-click="GuardarCambios" disabled="disabled">Guardar</kendo-button>
+        </div>
+        <div class="col-sm"></div>
+    </div>
+    <div class="row">
+        <div class="col">
+            <kendo-treelist name="trlPermisos">
+                <treelist-datasource name="dataSource">
+                    <schema type="json">
+                        <treelist-model id="Id" parent-id="IdPadre" expanded="true">
+                            <fields>
+                                <field name="IdPadre" nullable="true"></field>
+                                <field name="Id" type="string"></field>
+                            </fields>
+                        </treelist-model>
+                    </schema>
+                </treelist-datasource>
+                <columns>
+                    <treelist-column field="Id" hidden="true"></treelist-column>
+                    <treelist-column header-template="<input type='checkbox' onclick='marcarTodo(event)' style='position:relative; left: 0px; opacity: 100;'/>Asignado<br>" 
+                                     template="<input type='checkbox' data-bind='checked: checked' style='left: 60px; opacity: 100;' />" editable="true" width="32"></treelist-column>
+                    <treelist-column field="Categoria" title="Categoria"></treelist-column>
+                    <treelist-column field="Nivel1" title="Nivel 1"></treelist-column>
+                    <treelist-column field="Nivel2" title="Nivel 2"></treelist-column>
+                    <treelist-column field="Nivel3" title="Nivel 3"></treelist-column>
+                </columns>
+            </kendo-treelist>
+        </div>
+    </div>
+</div>
+
+<script>
+    //var dataSource = new kendo.data.TreeListDataSource();
+    function CargarPermisos() {
+        var idRol = $("#cmbRoles").val();
+        var url = "@Url.Action("AsignacionPermisosRol" ,"Roles")";
+
+        $.ajax({
+            url: url,
+            method: 'GET',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: {idRol: idRol},
+            success: function (result) {
+                $("#trlPermisos").data('kendoTreeList').dataSource.data(
+                    result.map(x => ({Id:x.Id, checked:x.Asignado, Categoria:x.Categoria, Nivel1:x.Nivel1, Nivel2:x.Nivel2, Nivel3:x.Nivel3, IdPadre:x.IdPadre}))
+                );
+                var view = $("#trlPermisos").data('kendoTreeList').dataSource.view();
+                $("#trlPermisos").data('kendoTreeList').items().each((index, row) => { kendo.bind(row, view[index]) });
+                $("#btnGuardar").data('kendoButton').enable(true);
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+
+    marcarTodo = (event) => {
+        var view = $("#trlPermisos").data('kendoTreeList').dataSource.view();
+        var marcado = event.target.checked;
+        for (var i = 0; i < view.length; i++) {
+            view[i].set("checked", marcado);
+        }
+    }
+
+    GuardarCambios = () => {
+        var idRol = $("#cmbRoles").val();
+        var datos = $("#trlPermisos").data('kendoTreeList').dataSource._data;
+        var permisos = datos.filter(p => p.checked === true).map(p => ({ Id: p.Id, Asignado: p.chekced }));
+        var url = "@Url.Action("GuardarAsignacionesPermisoRol", "Roles")";
+        $("#btnGuardar").data('kendoButton').enable(false);
+        $.ajax({
+            url: url,
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify({ IdRol: idRol, Permisos: permisos }),
+            success: function (result) {
+                $("#btnGuardar").data('kendoButton').enable(true);
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: '<br/><br/> Datos guardados correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    showHideTransition: 'slide',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $("#btnGuardar").data('kendoButton').enable(true);
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+</script>
+
+

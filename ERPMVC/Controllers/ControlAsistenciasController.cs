@@ -47,7 +47,6 @@ namespace ERPMVC.Controllers
         }
 
 
-        
         public async Task<IActionResult> ControlAsistencia()
         {
             ViewData["ElementoConfiguracion"] = await ObtenerTiposControlAsistencias();
