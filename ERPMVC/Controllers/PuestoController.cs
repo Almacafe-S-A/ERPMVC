@@ -151,6 +151,8 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result1 = await _client.GetAsync(baseadress + "api/Puesto/GetPuestoByNombrePuesto/" + _Puesto.NombrePuesto);
                 string valorrespuesta1 = "";
+                _Puesto.FechaCreacion = DateTime.Now;
+                _Puesto.Usuariocreacion = HttpContext.Session.GetString("user");
                 _Puesto.FechaModificacion = DateTime.Now;
                 _Puesto.Usuariomodificacion = HttpContext.Session.GetString("user");
                 if (result1.IsSuccessStatusCode)
@@ -177,8 +179,8 @@ namespace ERPMVC.Controllers
                 else
                 {
                     var result = await _client.GetAsync(baseadress + "api/Puesto/GetPuestoById/" + _Puesto.IdPuesto);
-                    _PuestoP.Usuariocreacion = _Puesto.Usuariocreacion;
-                    _PuestoP.FechaCreacion = _Puesto.FechaCreacion;
+                    _Puesto.Usuariocreacion = _Puesto.Usuariocreacion;
+                    _Puesto.FechaCreacion = _Puesto.FechaCreacion;
                     var updateresult = await Update(_Puesto.IdPuesto, _PuestoP);
                 }
 
@@ -206,9 +208,8 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 _Puesto.Usuariocreacion = HttpContext.Session.GetString("user");
-                _Puesto.Usuariomodificacion = HttpContext.Session.GetString("user");
                 _Puesto.FechaCreacion = DateTime.Now;
-                _Puesto.FechaModificacion = DateTime.Now;
+
                 var result = await _client.PostAsJsonAsync(baseadress + "api/Puesto/Insert", _Puesto);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -235,8 +236,6 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _Puesto.FechaModificacion = DateTime.Now;
-                _Puesto.Usuariomodificacion = HttpContext.Session.GetString("user");
                 var result = await _client.PutAsJsonAsync(baseadress + "api/Puesto/Update", _Puesto);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
