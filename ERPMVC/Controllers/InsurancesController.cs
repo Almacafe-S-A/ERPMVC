@@ -199,16 +199,16 @@ namespace ERPMVC.Controllers
                             _InsurancesP.CreatedUser = _Insurances.CreatedUser;
                             var updateresult = await Update(_InsurancesP.InsurancesId, _InsurancesP);
                         }
-
-                        var filePath = _hostingEnvironment.WebRootPath + "/Insurances/" + _InsurancesP.InsurancesId + "_"
-                            + file.FileName.Replace(info.Extension, "") + "_" + _InsurancesP.DocumentTypeId + "_" + _InsurancesP.DocumentTypeName
+                        var filename = _InsurancesP.InsurancesId + "_"
+                            + _InsurancesP.InsurancesName + "_" + _InsurancesP.DocumentTypeId + "_" + _InsurancesP.DocumentTypeName
                             + info.Extension;
+                        var filePath = _hostingEnvironment.WebRootPath + "/Seguros/" + filename;
 
                         using (var stream = new FileStream(filePath, FileMode.Create))
                         {
                             await file.CopyToAsync(stream);
                         }
-
+                        _InsurancesP.DocumentName = filename;
                         _InsurancesP.Path = filePath;
                         var updateresult2 = await Update(_Insurances.InsurancesId, _InsurancesP);
                     }
