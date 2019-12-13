@@ -1,10 +1,18 @@
 ﻿@model ERPMVC.Models.EmployeeDocument
 
-<script src="~/admp/assets/plugins/dropify/dist/js/dropify.min.js"></script>
-
-<link rel="stylesheet" href="~/admp/assets/plugins/dropify/dist/css/dropify.min.css">
+@{
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
 
 <script>
+    function customFunction(input) {
+        debugger;
+        if (input.attr('name') === "DocumentTypeId" && input.val() === "0") {
+            return false;
+        }
+
+    }
+
     function SaveEmployeeDocument(e) {
 
         var setFechaVencimiento = null;
@@ -70,14 +78,83 @@
         grid.dataSource.read();
         grid.refresh();
     }
-    function disabledUpload() {
+    function DocumentTypeN() {
         if ($("#DocumentTypeId").data("kendoDropDownList").value() == 0) {
-            $("#files").data("kendoUpload").disable();
+            //$("#files").data("kendoUpload").disable();
+            $("#DocumentTypeName").val("");
         }
         else {
-            $("#files").data("kendoUpload").enable();
+            //$("#files").data("kendoUpload").enable();
+            var TipoDocumento = $("#DocumentTypeId").data("kendoDropDownList").text()
+            $("#DocumentTypeName").val(TipoDocumento);
         }
     }
+    var onBegin = function () {
+        //alert("Begin");
+
+    };
+
+    var onComplete = function () {
+        //alert("Complete");
+        //$('#ModalEmployees').modal('hide');
+    };
+
+    var onSuccess = function (context) {
+        //alert(context);
+        console.log(context);
+        $.toast({
+            heading: 'Satisfactorio',
+            text: '<br/><br/> Datos guardados correctamente.',
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'success',
+            hideAfter: 30000,
+            stack: 6
+        });
+
+        RefreshEmployeeDocument();
+        $('#myModalEmployeeDocumentUpload').modal('hide');
+    };
+
+    var onFailed = function (context) {
+        // alert(context);
+        console.log(context);
+        if (context.responseText = "Seleccione un Archivo") {
+            $.toast({
+                heading: 'Error',
+                text: '<br/><br/> Seleccione un Archivo',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+        }
+
+        else if (context.responseText = "Extensión de Imagen no válida") {
+            $.toast({
+                heading: 'Error',
+                text: '<br/><br/> Extensión de Imagen no válida',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+        }
+
+        else {
+            $.toast({
+                heading: 'Error',
+                text: '<br/><br/> Error al Crear el Expediente',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+        }
+    };
 </script>
 
 
@@ -87,8 +164,9 @@
         <!-- Modal content-->
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" onclick="closeEmployeeDocument();">&times;</button>
                 <h4 class="modal-title">Expediente del Empleado</h4>
+                <button type="button" class="close" onclick="closeEmployeeDocument();">&times;</button>
+
             </div>
             <div class="modal-body">
                 <div class="box">
@@ -96,91 +174,108 @@
                 </div>
 
                 <div class="row" id="validation">
-                    <div class="col-lg-12">
-                        <div class="card">
+                    <div class="container">
+                        <div class="col-lg-12">
+                            <div class="card">
 
-                            @*data-ajax-method="post"
-                                method="post"
-                                data-ajax-begin="return SaveCustomerDocument();"
-                                data-ajax="true"*@
+                                @*data-ajax-method="post"
+                                    method="post"
+                                    data-ajax-begin="return SaveCustomerDocument();"
+                                    data-ajax="true"*@
 
-                            <div class="card-body">
-                                <form id="EmployeeDocument"
-                                      data-ajax="true">
+                                <div class="card-body">
+                                    <form id="EmployeeDocument" kendo-validator="true" asp-action="SaveEmployeeDocument" asp-controller="EmployeeDocument"
+                                          data-ajax="true"
+                                          data-ajax-method="post" enctype="multipart/form-data"
+                                          data-ajax-begin="onBegin" data-ajax-complete="onComplete"
+                                          data-ajax-failure="onFailed" data-ajax-success="onSuccess">
+                                        @*<div class="form-body">*@
 
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <input type="text" name="EmployeeId" hidden="hidden" asp-for="EmployeeId" class="form-control" style="min-width:100%" />
+                                                <script>
+                                                    function GetDocumentos() {
+                                                        return { 'Id': 9 }
+                                                    }
+                                                </script>
+                                                <label asp-for="DocumentTypeId" class="control-label" style="width:100%"></label>
+                                                <kendo-dropdownlist name="DocumentTypeId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                    option-label="Seleccione el tipo de documento"
+                                                                    for="DocumentTypeId"
+                                                                    datatextfield="Nombre"
+                                                                    datavaluefield="Id"
+                                                                    auto-bind="false" data-val-required="El Tipo de Documento es requerido." validationmessage="El Tipo de Documento es requerido."
+                                                                    onchange="DocumentTypeN();"
+                                                                    style="width: 100%;">
+                                                    <datasource type="DataSourceTagHelperType.WebApi" server-filtering="true">
+                                                        <transport>
+                                                            <read url="@Url.Action("GetElementoByIdConfiguracion", "ElementoConfiguracion")" data="GetDocumentos" />
+                                                        </transport>
+                                                    </datasource>
 
-                                    <div class="row">
-                                        <div class="col-md-3">
-                                            <script>
-                                                function GetDocumentos() {
-                                                    return { 'Id': 9 }
-                                                }
-                                            </script>
-                                            <label asp-for="DocumentTypeId" class="control-label" style="width:100%"></label>
-                                            <kendo-dropdownlist name="DocumentTypeId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                option-label="Seleccion el tipo de documento"
-                                                                for="DocumentTypeId"
-                                                                datatextfield="Nombre"
-                                                                datavaluefield="Id"
-                                                                auto-bind="false"
-                                                                required
-                                                                onchange="disabledUpload();"
-                                                                style="width: 100%;">
-                                                <datasource type="DataSourceTagHelperType.WebApi" server-filtering="true">
-                                                    <transport>
-                                                        <read url="@Url.Action("GetElementoByIdConfiguracion", "ElementoConfiguracion")" data="GetDocumentos" />
-                                                    </transport>
-                                                </datasource>
-
-                                            </kendo-dropdownlist>
-                                            <span asp-validation-for="DocumentTypeId" class="text-danger"></span>
-                                        </div>
-                                        <div class="col-md-3">
-                                            <div class="form-group">
-                                                <label asp-for="FechaVencimiento" class="control-label" style="width:100%">Fecha vencimiento</label>
-                                                <kendo-datepicker name="FechaVencimiento" style="min-width: 100%;"
-                                                                  format="dd/MM/yyyy"></kendo-datepicker>
-                                                <span asp-validation-for="FechaVencimiento"></span>
+                                                </kendo-dropdownlist>
+                                                <span asp-validation-for="DocumentTypeId" class="text-danger"></span>
                                             </div>
-                                            @*<label asp-for="DocumentName" class="control-label" style="width:100%"></label>
-                                                <input type="text" class="form-control" style="min-width:100%" asp-for="DocumentName" />*@
+
+                                            <input type="text" hidden="hidden" name="DocumentTypeName" asp-for="DocumentTypeName" class="form-control" style="min-width:100%" />
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="FechaVencimiento" class="control-label" style="width:100%">Fecha vencimiento</label>
+                                                    <kendo-datepicker name="FechaVencimiento" style="min-width: 100%;"
+                                                                      format="dd/MM/yyyy"></kendo-datepicker>
+                                                    <span asp-validation-for="FechaVencimiento"></span>
+                                                </div>
+                                                @*<label asp-for="DocumentName" class="control-label" style="width:100%"></label>
+                                                    <input type="text" class="form-control" style="min-width:100%" asp-for="DocumentName" />*@
+                                            </div>
+
                                         </div>
-                                        <div class="col-md-3">
-                                        </div>
-
-                                    </div>
 
 
 
-                                    @*<div class="demo-section k-content">
+                                        @*<div class="demo-section k-content">
 
-                                        <kendo-upload drop-zone="drop-zone1" name="files" on-upload="SaveEmployeeDocument" on-success="SuccessUpload">
-                                            <async save-url="@Url.Action("SaveEmployeeDocument","EmployeeDocument")"/>
-                                            <validation allowed-extensions='@new string[] { ".pdf",".jpg",".jpeg",".png",".txt" }' max-file-size="10485760" />
-                                        </kendo-upload>
+                                            <kendo-upload drop-zone="drop-zone1" name="files" on-upload="SaveEmployeeDocument" on-success="SuccessUpload">
+                                                <async save-url="@Url.Action("SaveEmployeeDocument","EmployeeDocument")"/>
+                                                <validation allowed-extensions='@new string[] { ".pdf",".jpg",".jpeg",".png",".txt" }' max-file-size="10485760" />
+                                            </kendo-upload>
 
-                                        @*<p style="padding-top: 1em; text-align: right">
-                                                <kendo-button type="submit" name="submit">Submit</kendo-button>
-                                            </p>*@
-                                    @*</div>*@
-                                    <div class="col-md-4" hidden>
-                                        <div class="form-group">
-                                            @(Html.Kendo().Upload()
-                                                                .Name("files")
+                                            @*<p style="padding-top: 1em; text-align: right">
+                                                    <kendo-button type="submit" name="submit">Submit</kendo-button>
+                                                </p>*@
+                                        @*</div>*@
+                                        <div class="row">
+                                            <div class="col-md-4" hidden>
+                                                <div class="form-group">
+                                                    @(Html.Kendo().Upload()
+                                                                .Name("file")
                                                                 .HtmlAttributes(new { aria_label = "Foto Empleado" })
-                                            )
+                                                    )
+                                                </div>
+                                            </div>
+                                            <div class="col-ms-4 col-md-4">
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <h4 class="card-title">Documento Empleado</h4>
+                                                        <input type="file" id="Archivo" asp-for="Path" name="Archivo" class="dropify" data-max-file-size="2M" accept=".jpg,.jpeg,.png,.gif,.pdf,.txt" />
+                                                    </div>
+                                                </div>
+
+                                            </div>
+
                                         </div>
-                                    </div>
-                                    <div class="col-sm-4 col-md-4">
-                                        <div class="card">
-                                            <div class="card-body">
-                                                <h4 class="card-title">Documento Empleado</h4>
-                                                <input type="file" asp-for="Path" id="file" name="Path" class="dropify" data-max-file-size="2M" accept=".jpg,.jpeg,.png,.gif,.pdf,.txt" />
+                                        <div class="row">
+                                            <div class="col-sm-11 col-md-11">
+                                                @*<div class="form-group">*@
+                                                <button id="btnEmployeeDocument" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                                @*</div>*@
                                             </div>
                                         </div>
-
-                                    </div>
-                                </form>
+                                        @*</div>*@
+                                    </form>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -190,3 +285,70 @@
         </div>
     </div>
 </div>
+<script>
+    $(document).ready(function () {
+        var Id = $("#IdEmpleado").val();
+        $("#EmployeeId").val(Id);
+
+
+        $("#btnEmployeeDocument").click(function (event) {
+            debugger;
+            if ($("#DocumentTypeId").data("kendoDropDownList").value() == 0) {
+                $.toast({
+                    heading: 'Error',
+                    text: '<br/><br/> Seleccione el Tipo de Documento',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 30000,
+                    stack: 6
+                });
+
+                return false;
+            }
+            else {
+                return true;
+            }
+        });
+
+        // Basic
+        $('.dropify-std').dropify();
+
+        // Translated
+        $('.dropify').dropify({
+            messages: {
+                default: 'Arrastre un archivo de Imagen o click para cargar archivo',
+                replace: 'Click para Reemplazar',
+                remove: 'Quitar',
+                error: 'Error'
+
+            }
+        });
+
+        // Used events
+        var drEvent = $('#input-file-events').dropify();
+
+        drEvent.on('dropify.beforeClear', function (event, element) {
+            return confirm("Esta seguro que desea eliminar el archivo \"" + element.file.name + "\" ?");
+        });
+
+        drEvent.on('dropify.afterClear', function (event, element) {
+            alert('Archivo eliminado');
+        });
+
+        drEvent.on('dropify.errors', function (event, element) {
+            console.log('Has Errors');
+        });
+
+        var drDestroy = $('#input-file-to-destroy').dropify();
+        drDestroy = drDestroy.data('dropify')
+        $('#toggleDropify').on('click', function (e) {
+            e.preventDefault();
+            if (drDestroy.isDropified()) {
+                drDestroy.destroy();
+            } else {
+                drDestroy.init();
+            }
+        })
+    });
+</script>
