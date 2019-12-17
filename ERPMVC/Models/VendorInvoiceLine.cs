@@ -16,7 +16,7 @@ namespace ERPMVC.Models
         public int VendorInvoiceId { get; set; }
         [Display(Name = "Factura Proveedor")]
         public VendorInvoice VendorInvoice { get; set; }
-        [Display(Name = "Producto Ítem")]
+        [Display(Name = "Producto Item")]
         public Int64 ProductId { get; set; }
 
         [Display(Name = "Nombre producto")]
@@ -48,9 +48,7 @@ namespace ERPMVC.Models
         public double TaxPercentage { get; set; }
         [Display(Name = "Código Impuesto")]
         public string TaxCode { get; set; }
-        public Int64? TaxId { get; set; }
-        [ForeignKey("TaxId")]
-        public virtual Tax Tax { get; set; }
+
         [Display(Name = "Monto Impuesto")]
         public double TaxAmount { get; set; }
         public double Total { get; set; }
