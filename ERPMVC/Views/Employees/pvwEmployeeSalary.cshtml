@@ -27,15 +27,14 @@ function GetIdEmployees() {
                                     //   command.Custom("Ver detalles").Click("Detalles");
                                     command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText("Actualizar").CancelText("Cancelar").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "" });
                                     //command.Destroy().Text("Eliminar");
-                                }).Width(150);
+                                }).Title("Acciones").Width(85);
                                 columns.Bound(p => p.EmployeeSalaryId).Width(100).Visible(false);
                                 columns.Bound(p => p.IdEmpleado).Title("Empleado").Width(150).Visible(false);
                                 columns.Bound(p => p.QtySalary).Title("Salario").Width(150).EditorTemplateName("EmployeeSalary");
                                 //columns.Bound(p => p.QtySalary).Format("{0:n2}").Title("Salario").Width(150);
-                                columns.Bound(p => p.DayApplication).Title("Dia de Aplicacion").Format("{0:dd/MM/yyyy HH:mm}").Width(190);
-                                columns.Bound(p => p.IdEstado).ClientTemplate("#if (IdEstado =='1') {#Activo#} else {#Inactivo#} #").Width(150);
-                                columns.Bound(p => p.CreatedDate).Title("Fecha creacion").Format("{0:dd/MM/yyyy HH:mm}").Width(150).Sortable(false);
-
+                                columns.Bound(p => p.DayApplication).Title("Dia de Aplicación").Format("{0:dd/MM/yyyy HH:mm}").Width(190);
+                                columns.Bound(p => p.IdEstado).ClientTemplate("#if (IdEstado =='1') {#Activo#} else {#Inactivo#} #").Width(150).Title("Estado");
+                                columns.Bound(p => p.CreatedDate).Title("Fecha creación").Format("{0:dd/MM/yyyy HH:mm}").Width(150);
 
                             })
                                 .Filterable(f => f.Operators(o => o.ForString(s => s
@@ -108,6 +107,7 @@ function GetIdEmployees() {
                 model.Field(p => p.IdEstado).Editable(false).DefaultValue("1");
                 model.Field(p => p.CreatedDate).Editable(false);
             })
+            .Sort(s => s.Add(m => m.CreatedDate).Descending())
             .Events(events => events.Error("error_handler"))
             .Read(read => read.Action("GetEmployeeSalaryByIdEmployees", "EmployeeSalary").Data("GetIdEmployees()"))
             .Create(create => create.Action("PostEmployeeSalary", "EmployeeSalary").Type(HttpVerbs.Post).Data("GetData"))
@@ -195,6 +195,7 @@ function GetIdEmployees() {
 
     function onSave(data) {
         var QtySalary = $("#QtySalary").val();
+        var DayApplication = $("#DayApplication").getKendoDateTimePicker().value().toJSON();
         //e.preventDefault();
         //var element = e.target || e.srcElement;
         //var data = $("#gridEmployeeSalary").data("kendoGrid").dataItem($(element).closest("tr"));
@@ -202,6 +203,8 @@ function GetIdEmployees() {
         if (data.model.EmployeeSalaryId == 0 || data.model.EmployeeSalaryId == null && data.model.IdEmpleado == 0) {
             //$("#Salario").data('kendoNumericTextBox').value(QtySalary);
             $("#Salario").val(QtySalary);
+            $("#QtySalaryFrm").val(QtySalary);
+            $("#DayApplicationFrm").val(DayApplication);
         }
         else if (data.model.EmployeeSalaryId == 0 || data.model.EmployeeSalaryId == null && data.model.IdEmpleado > 0){
             $("#Salario").val(QtySalary);
@@ -209,6 +212,8 @@ function GetIdEmployees() {
         if (data.model.IdEstado == 1 && data.model.IdEmpleado == 0) {
             //$("#Salario").data('kendoNumericTextBox').value(QtySalary);
             $("#Salario").val(QtySalary);
+            $("#QtySalaryFrm").val(QtySalary);
+            $("#DayApplicationFrm").val(DayApplication);
         }
         else if (data.model.IdEstado == 1 && data.model.IdEmpleado > 0){
             $("#Salario").val(QtySalary);
@@ -218,4 +223,22 @@ function GetIdEmployees() {
     function onEdit(e) {
         //console.log("Editado");
     }
+</script>
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridEmployeeSalary").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridEmployeeSalary").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-add", "Agregar un nuevo registro");
+    setRowButtonTooltip(".k-grid-edit", "Editar registro");
 </script>

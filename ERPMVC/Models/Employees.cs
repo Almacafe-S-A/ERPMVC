@@ -46,7 +46,7 @@ namespace ERPMVC.Models
         [Display(Name = "Dirección")]
         public string Direccion { get; set; }
         [Required]
-        [Display(Name = "Genero")]
+        [Display(Name = "Género")]
         public string Genero { get; set; }
         [Required]
         [Display(Name = "Estado")]
@@ -84,7 +84,7 @@ namespace ERPMVC.Models
         public DateTime? FechaFinContrato { get; set; }
         [Required]
         [Phone]
-        [Display(Name = "Telefono")]
+        [Display(Name = "Teléfono")]
         public string Telefono { get; set; }
         [Display(Name = "Extensión")]
         public int Extension { get; set; }
@@ -110,11 +110,11 @@ namespace ERPMVC.Models
         public string TipoSangre { get; set; }
         [Display(Name = "Nombre del Contacto de Emergencia")]
         public string NombreContacto { get; set; }
-        [Display(Name = "Telefono")]
+        [Display(Name = "Teléfono")]
         public string TelefonoContacto { get; set; }
         public int IdBranch { get; set; }
         public string RTN { get; set; }
-        [Display(Name = "Tipo Plantilla")]
+        [Display(Name = "Tipo Planilla")]
         public long? IdTipoPlanilla { get; set; }
         [ForeignKey("IdTipoPlanilla")]
         public TipoPlanillas TipoPlanilla { get; set; }

@@ -10,6 +10,8 @@ namespace ERPMVC.DTO
     public class EmployeesDTO : Employees
     {
         public List<Employees> _Employees { get; set; }
+        public decimal QtySalary { get; set; }
+        public DateTime DayApplication { get; set; }
 
         public int editar { get; set; } = 1;
 

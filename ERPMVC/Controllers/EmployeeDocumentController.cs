@@ -184,9 +184,9 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<EmployeeDocument>> SaveEmployeeDocument(IEnumerable<IFormFile> files, EmployeeDocumentDTO _EmployeeDocument)
+        public async Task<ActionResult<EmployeeDocument>> SaveEmployeeDocument(IEnumerable<IFormFile> Archivo, EmployeeDocumentDTO _EmployeeDocumentP)
         {
-
+            EmployeeDocument _EmployeeDocument = _EmployeeDocumentP;
             try
             {
 
@@ -194,64 +194,68 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/EmployeeDocument/GetEmployeeDocumentById/" + _EmployeeDocument.EmployeeDocumentId);
+                var result = await _client.GetAsync(baseadress + "api/EmployeeDocument/GetEmployeeDocumentById/" + _EmployeeDocumentP.EmployeeDocumentId);
                 string valorrespuesta = "";
 
-                foreach (var file in files)
+                IFormFile file = Archivo.FirstOrDefault();
+                if (file != null)
                 {
-
-
                     FileInfo info = new FileInfo(file.FileName);
                     if (info.Extension.Equals(".pdf") || info.Extension.Equals(".jpg") || info.Extension.Equals(".jpeg")
                         || info.Extension.Equals(".png")
-                       || info.Extension.Equals(".xls") || info.Extension.Equals(".xlsx"))
+                       || info.Extension.Equals(".txt") || info.Extension.Equals(".gif"))
                     {
-
-                        _EmployeeDocument.FechaModificacion = DateTime.Now;
-                        _EmployeeDocument.UsuarioModificacion = HttpContext.Session.GetString("user");
+                        _EmployeeDocumentP.FechaModificacion = DateTime.Now;
+                        _EmployeeDocumentP.UsuarioModificacion = HttpContext.Session.GetString("user");
                         if (result.IsSuccessStatusCode)
                         {
 
                             valorrespuesta = await (result.Content.ReadAsStringAsync());
-                            _listEmployeeDocument = JsonConvert.DeserializeObject<EmployeeDocument>(valorrespuesta);
+                            _EmployeeDocument = JsonConvert.DeserializeObject<EmployeeDocument>(valorrespuesta);
                         }
 
-                        if (_listEmployeeDocument == null) { _listEmployeeDocument = new Models.EmployeeDocument(); }
-                        if (_listEmployeeDocument.EmployeeDocumentId == 0)
+                        if (_EmployeeDocument == null) { _EmployeeDocument = new Models.EmployeeDocument(); }
+                        if (_EmployeeDocumentP.EmployeeDocumentId == 0)
                         {
-                            _EmployeeDocument.FechaCreacion = DateTime.Now;
-                            _EmployeeDocument.DocumentName = file.FileName;
-                            _EmployeeDocument.UsuarioCreacion = HttpContext.Session.GetString("user");
-                            var insertresult = await Insert(_EmployeeDocument);
+                            _EmployeeDocumentP.FechaCreacion = DateTime.Now;
+                            _EmployeeDocumentP.FechaIngreso = DateTime.Now;
+                            _EmployeeDocumentP.DocumentName = file.FileName;
+                            _EmployeeDocumentP.UsuarioCreacion = HttpContext.Session.GetString("user");
+                            var insertresult = await Insert(_EmployeeDocumentP);
                             var value = (insertresult.Result as ObjectResult).Value;
-                            _EmployeeDocument = ((EmployeeDocumentDTO)(value));
+                            _EmployeeDocumentP = ((EmployeeDocumentDTO)(value));
                         }
                         else
                         {
-                            _EmployeeDocument.DocumentName = file.FileName;
-                            _EmployeeDocument.FechaCreacion = _listEmployeeDocument.FechaCreacion;
-                            _EmployeeDocument.UsuarioCreacion = _listEmployeeDocument.UsuarioCreacion;
-                            var updateresult = await Update(_EmployeeDocument.EmployeeDocumentId, _EmployeeDocument);
+                            _EmployeeDocumentP.DocumentName = file.FileName;
+                            _EmployeeDocumentP.FechaCreacion = _EmployeeDocument.FechaCreacion;
+                            _EmployeeDocumentP.UsuarioCreacion = _EmployeeDocument.UsuarioCreacion;
+                            var updateresult = await Update(_EmployeeDocumentP.EmployeeDocumentId, _EmployeeDocumentP);
                         }
 
-
-
-                        var filePath = _hostingEnvironment.WebRootPath + "/EmployeeDocuments/" + _EmployeeDocument.EmployeeDocumentId + "_"
-                            + file.FileName.Replace(info.Extension, "") + "_" + _EmployeeDocument.DocumentTypeId + "_" + _EmployeeDocument.DocumentTypeName
+                        var filename = _EmployeeDocumentP.EmployeeDocumentId + "_"
+                            + file.FileName.Replace(info.Extension, "") + "_" + _EmployeeDocumentP.DocumentTypeId + "_" + _EmployeeDocumentP.DocumentTypeName
                             + info.Extension;
+
+                        var filePath = _hostingEnvironment.WebRootPath + "/EmployeeDocuments/" + filename;
 
                         using (var stream = new FileStream(filePath, FileMode.Create))
                         {
                             await file.CopyToAsync(stream);
-                            // MemoryStream mstream = new MemoryStream();
-                            //mstream.WriteTo(stream);
                         }
-
-                        _EmployeeDocument.Path = filePath;
-                        var updateresult2 = await Update(_EmployeeDocument.EmployeeDocumentId, _EmployeeDocument);
+                        _EmployeeDocumentP.DocumentName = filename;
+                        _EmployeeDocumentP.Path = filePath;
+                        var updateresult2 = await Update(_EmployeeDocument.EmployeeDocumentId, _EmployeeDocumentP);
+                    }
+                    else
+                    {
+                        return await Task.Run(() => BadRequest("Extensión de Imagen no válida"));
                     }
                 }
-
+                else
+                {
+                    return await Task.Run(() => BadRequest("Seleccione un Archivo"));
+                }
             }
             catch (Exception ex)
             {
@@ -330,6 +334,11 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                if (System.IO.File.Exists(_EmployeeDocument.Path))
+                {
+                    System.IO.File.Delete(_EmployeeDocument.Path);
+                }
 
                 var result = await _client.PostAsJsonAsync(baseadress + "api/EmployeeDocument/Delete", _EmployeeDocument);
                 string valorrespuesta = "";
