@@ -177,6 +177,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
+                    _EmployeesP.Foto = _Employees.Foto;
                     _EmployeesP.Usuariocreacion = _Employees.Usuariocreacion;
                     _EmployeesP.FechaCreacion = _Employees.FechaCreacion;
                     _EmployeesP.FechaModificacion = DateTime.Now;
