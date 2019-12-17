@@ -34,6 +34,17 @@ namespace ERPMVC.Controllers
         {
             return View();
         }
+
+        public IActionResult pvwAddCheck()
+        {
+            return View();
+        }
+
+
+        public IActionResult pvwCheckList()
+        {
+            return View();
+        }
         public async Task<JsonResult> GetCheckAccountById(Int64 CheckAccountId)
         {
             CheckAccount _CheckAccountP = new CheckAccount();

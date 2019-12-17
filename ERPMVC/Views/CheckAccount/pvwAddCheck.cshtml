@@ -1,0 +1,231 @@
+﻿@model ERPMVC.DTO.CheckAccountDTO
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+    {"required","Valor requerido" }
+};
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<script>
+
+    function customFunction(input) {
+
+        if (input.attr('name') === "BranchId" && input.val() === "0") {
+            return false;
+        }
+
+    }
+
+</script>
+
+
+
+<div id="ModalCheckAccount" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Bancos</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmCheckAccount" kendo-validator="true" kendo-messages="messages"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveCheckAccount"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <h3 class="card-title">Chequera</h3>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="CheckAccountId" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="CheckAccountId" name="CheckAccountId" class="form-control" disabled="disabled" style="width:100%" />
+                                                    <span asp-validation-for="CheckAccountId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-7">
+                                                <div class="form-group">
+                                                    <label asp-for="BankId" class="control-label"></label>
+                                                    <kendo-dropdownlist name="BankId"
+                                                                        for="@Model.BankId"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione el banco"
+                                                                        datatextfield="BankName"
+                                                                        datavaluefield="BankId"
+                                                                        required
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetBank", "Bank")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="AssociatedAccountNumber" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="AssociatedAccountNumber" name="AssociatedAccountNumber" required class="form-control" autocomplete="off" maxlength="50" style="width:100%" onKeyPress="return soloNumeros(event)" />
+                                                    <span asp-validation-for="AssociatedAccountNumber" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="CheckAccountNo" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="CheckAccountNo" name="CheckAccountNo" class="form-control" required autocomplete="off" style="width:100%" maxlength="50" onKeyPress="return soloNumeros(event)" />
+                                                    <span asp-validation-for="CheckAccountNo" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="NoInicial" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="NoInicial" name="NoInicial" class="form-control" required autocomplete="off" style="width:100%" maxlength="35" onKeyPress="return soloNumeros(event)" />
+                                                    <span asp-validation-for="NoInicial" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="NoFinal" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="NoFinal" name="NoFinal" class="form-control" required autocomplete="off" style="width:100%" maxlength="35" onKeyPress="return soloNumeros(event)" />
+                                                    <span asp-validation-for="NoFinal" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="FechaIngreso" class="control-label" style="width: 100%;"></label>
+                                                    <kendo-datetimepicker name="FechaIngreso"
+                                                                          style="width: 100%;"
+                                                                          format="dd/MM/yyyy hh:mm:ss"
+                                                                          time-format="hh:mm:ss"
+                                                                          data-val-required="La fecha es requerida"
+                                                                          disabled
+                                                                          value="Model.FechaIngreso" />
+                                                    <span asp-validation-for="FechaIngreso" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button id="btnCheckAccount" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    $("#NoFinal").change(function () {
+        var NoInicial = $("#NoInicial").val();
+        var NoFinal = $("#NoFinal").val();
+        if (Number(NoFinal) < Number(NoInicial)) {
+            alert("El número final tiene que ser mayor que el número inicial");
+            $("#NoFinal").val('');
+        }
+    });
+    function soloNumeros(e) {
+        var key = window.Event ? e.which : e.keyCode
+        return (key >= 48 && key <= 57)
+    }
+    function RefrescarGrid() {
+        var grid = $("#gridCheckAccount").getKendoGrid();
+        grid.dataSource.read();
+    }
+        function SaveCheckAccount(e) {
+
+            var notification = $("#notification").data("kendoNotification");
+           // e.preventDefault();
+            $("#btnCheckAccount").hide();
+            $("#btnCheckAccount").prop("disabled", true);
+
+            var displayedData = $("#gridCheckAccount").data().kendoGrid.dataSource.view();
+
+            var dataObject = {  'CheckAccountId': $("#CheckAccountId").val()===""?"0":$("#CheckAccountId").val(),
+                           'AssociatedAccountNumber': $("#AssociatedAccountNumber").val(),
+                           'CheckAccountNo': $("#CheckAccountNo").val(),
+                           'BankId': $("#BankId").val(),
+                           'BankName': $("#BankId").data("kendoDropDownList").text(),
+                           'NoInicial': $("#NoInicial").val(),
+                           'NoFinal': $("#NoFinal").val(),
+                           'FechaIngreso': $("#FechaIngreso").getKendoDateTimePicker().value().toJSON(),
+                           '_CheckAccount': displayedData
+            };
+
+            console.log(JSON.stringify(dataObject));
+            //var form = $("#frmNumeracion");
+           // form.validate();
+
+            var validator = $("#frmCheckAccount").data("kendoValidator");
+                 var status = $(".status");
+
+
+                if (validator.validate()) {
+
+                    $.ajax({
+                        url: '@Url.Action("SaveCheckAccount", "CheckAccount")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+
+                            //notification.show({
+                            //    message: "Guardado correctamente!"
+                            //}, "upload-success");
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: 'Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+
+                           RefrescarGrid();
+
+                            $('#ModalCheckAccount').modal('hide');
+
+
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                            notification.show({
+                                title: "Validacion",
+                                message: textStatus + ": " + XMLHttpRequest.responseText
+                            }, "error");
+
+                        }
+                    });
+
+                }
+                else {
+                    status.text("Oops! There is invalid data in the form.")
+                        .removeClass("valid")
+                        .addClass("invalid");
+                }
+
+
+            $("#btnCheckAccount").show();
+            $("#btnCheckAccount").prop("disabled", false);
+    }
+</script>
