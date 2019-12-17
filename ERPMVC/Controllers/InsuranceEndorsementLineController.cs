@@ -149,22 +149,15 @@ namespace ERPMVC.Controllers
                         }
 
                         HttpContext.Session.SetString("listadoproductosInsuranceEndorsement", JsonConvert.SerializeObject(__InvoiceLineList).ToString());
-
                     }
                 }
-
-
-
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
-
             return __InvoiceLineList.ToDataSourceResult(request);
-
         }
 
 
@@ -301,22 +294,34 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _InvoiceLine }, Total = 1 });
         }
 
-        [HttpDelete("_InvoiceLine")]
+        //[HttpDelete("_InvoiceLine")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<InsuranceEndorsementLine>> Delete([FromBody]InsuranceEndorsementLine _InvoiceLine)
         {
+            List<InsuranceEndorsementLine> _journalentryLIST = new List<InsuranceEndorsementLine>();
             try
             {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                _journalentryLIST =
+                JsonConvert.DeserializeObject<List<InsuranceEndorsementLine>>(HttpContext.Session.GetString("listadoproductosInsuranceEndorsement"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/InsuranceEndorsementLine/Delete", _InvoiceLine);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
+                if (_journalentryLIST != null)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _InvoiceLine = JsonConvert.DeserializeObject<InsuranceEndorsementLine>(valorrespuesta);
+                    _journalentryLIST = _journalentryLIST
+                          .Where(q => q.InsuranceEndorsementLineId != _InvoiceLine.InsuranceEndorsementLineId)
+                          .ToList();
+                    HttpContext.Session.SetString("listadoproductosInsuranceEndorsement", JsonConvert.SerializeObject(_journalentryLIST));
                 }
+                //string baseadress = config.Value.urlbase;
+                //HttpClient _client = new HttpClient();
+                //_client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                //var result = await _client.PostAsJsonAsync(baseadress + "api/InsuranceEndorsementLine/Delete", _InvoiceLine);
+                //string valorrespuesta = "";
+                //if (result.IsSuccessStatusCode)
+                //{
+                //    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                //    _InvoiceLine = JsonConvert.DeserializeObject<InsuranceEndorsementLine>(valorrespuesta);
+                //}
 
             }
             catch (Exception ex)
@@ -324,10 +329,8 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error: {ex.Message}");
             }
-
-
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _InvoiceLine }, Total = 1 });
+            return await Task.Run(() => Ok(_journalentryLIST));
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _InvoiceLine }, Total = 1 });
         }
 
     }
