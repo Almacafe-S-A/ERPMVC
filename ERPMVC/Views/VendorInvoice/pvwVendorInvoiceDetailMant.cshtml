@@ -40,26 +40,21 @@
             totaldescuento = totaldescuento + t["DiscountAmount"];
             totalmonto = totalmonto + t["Amount"];
 
-            if (t["TaxCode"] == "I.S.V" ) {
+            if (t["TaxCode"] == "1" ) {
                 TotalGravado = TotalGravado + (t["Total"] - t["TaxAmount"]);
                 totalimpuesto = totalimpuesto + t["TaxAmount"];
             }
 
-            if (t["TaxCode"] == "I.S.C") {
-                TotalGravado = TotalGravado + (t["Total"] - t["TaxAmount"]);
-                totalimpuesto = totalimpuesto + t["TaxAmount"];
-            }
-
-            if (t["TaxCode"] == "I.V.A") {
+            if (t["TaxCode"] == "3") {
                 TotalGravado18 = TotalGravado18 + (t["Total"] - t["TaxAmount"]);
                 totalimpuesto18 = totalimpuesto18 + t["TaxAmount"];
             }
 
-            if (t["TaxCode"] == "EXE") {
+             if (t["TaxCode"] == "4") {
                  TotalExento = TotalExento + t["Total"];
             }
 
-            if (t["TaxCode"] == "EXO") {
+            if (t["TaxCode"] == "5") {
                 TotalExonerado = TotalExonerado + t["Total"];
             }
 
@@ -124,8 +119,7 @@
 
     function GetPercentage()
     {
-        debugger
-        if ($("#TaxCode").val() != null && $("#TaxCode").val() != undefined && $("#TaxCode").val() != "") {
+        if ($("#TaxCode").val() != null) {
             var dataObject = { TaxId: $("#TaxCode").val() };
             $.ajax({
                 url: '@Url.Action("GetTaxById","Tax")',
@@ -142,10 +136,6 @@
                     alert(textStatus + ": " + XMLHttpRequest.responseText);
                 }
             });
-        }
-        else {
-            setearvalor("TaxPercentage", 0);
-            CalcularTotal();
         }
 
     }
@@ -227,8 +217,8 @@
         <!-- Modal content-->
         <div class="modal-content">
             <div class="modal-header">
+                <button type="button" class="close" onclick="closesaleorderline();">&times;</button>
                 <h4 class="modal-title">Detalle de Factura</h4>
-                <button type="button" class="close" onclick="closesaleorderline();">&times;                             </button>
             </div>
             <div class="modal-body">
 
@@ -282,7 +272,7 @@
                                                                         option-label="Seleccione la cuenta"
                                                                         datatextfield="AccountName"
                                                                         datavaluefield="AccountId"
-                                                                        data-val-required="La Cuenta es requerida."
+                                                                        required
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
                                                             <transport>
@@ -299,7 +289,7 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Description" class="control-label" style="width:100%"></label>
-                                                    <input type="text" id="DescriptionDetail" asp-for="Description" class="form-control" style="min-width:100%" data-val-required="La Dirección es requerida." />
+                                                    <input type="text" id="DescriptionDetail" asp-for="Description" class="form-control" style="min-width:100%" required />
 
                                                     <span asp-validation-for="Description" class="text-danger"></span>
                                                 </div>
@@ -317,7 +307,7 @@
                                                                         datatextfield="UnitOfMeasureName"
                                                                         datavaluefield="UnitOfMeasureId"
                                                                         auto-bind="true"
-                                                                        data-val-required="La Unidad de Medida es requerida."
+                                                                        required
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi">
                                                             <transport>
@@ -336,7 +326,7 @@
                                                                           format="n2"
                                                                           min="0"
                                                                           step="1"
-                                                                          data-val-required="La Cantidad es requerida."
+                                                                          required
                                                                           maxlength="9"
                                                                           onchange="CalcularTotal();"
                                                                           style="width:100%"
@@ -353,7 +343,7 @@
                                                                           format="n2"
                                                                           min="0"
                                                                           step="1"
-                                                                          data-val-required="El Precio es requerido."
+                                                                          required
                                                                           maxlength="20"
                                                                           onchange="CalcularTotal();"
                                                                           style="width:100%"
@@ -377,7 +367,7 @@
                                                                           id="AmountLine"
                                                                           spinners="false"
                                                                           min="0"
-                                                                          data-val-required="El Monto es requerido."
+                                                                          required
                                                                           disabled
                                                                           step="1"
                                                                           style="width:100%"
@@ -394,7 +384,7 @@
                                                                           min="0"
                                                                           decimals="2"
                                                                           max="100"
-                                                                          maxlength="3" data-val-required="El Porcentaje Descuento es requerido."
+                                                                          maxlength="3"
                                                                           onchange="CalcularTotal();"
                                                                           style="width:100%"
                                                                           value="Model.DiscountPercentage"/>
@@ -412,7 +402,7 @@
                                                                           min="0"
                                                                           max="999999999"
                                                                           step="1"
-                                                                          readonly data-val-required="El Monto de Descuento es requerido."
+                                                                          readonly
                                                                           disabled
                                                                           style="width:100%"
                                                                           value="Model.DiscountAmount" />
@@ -434,7 +424,7 @@
                                                                           format="n2"
                                                                           min="0"
                                                                           step="1"
-                                                                          data-val-required="El Subtotal es requerido."
+                                                                          required
                                                                           disabled
                                                                           style="width:100%"
                                                                           value="Model.SubTotal" />
@@ -444,12 +434,12 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="TaxCode" class="control-label" style="width:100%"></label>
-                                                    <kendo-dropdownlist name="TaxId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        for="TaxId" id="TaxCode"
+                                                    <kendo-dropdownlist name="TaxCode" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        for="TaxCode"
                                                                         option-label="Seleccione el Impuesto"
                                                                         datatextfield="TaxCode"
                                                                         datavaluefield="TaxId"
-                                                                        data-val-required="El Impuesto es requerido."
+                                                                        required
                                                                         onchange="GetPercentage();"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi">
@@ -470,7 +460,7 @@
                                                                           min="0"
                                                                           spinners="false"
                                                                           decimals="2"
-                                                                          data-val-required="El Porcentaje de Impuesto es requerido."
+                                                                          required
                                                                           disabled
                                                                           max="100"
                                                                           maxlength="3"
@@ -493,7 +483,7 @@
                                                                           min="0"
                                                                           step="1"
                                                                           spinners="false"
-                                                                          disabled data-val-required="El Monto de Impuesto es requerido."
+                                                                          disabled
                                                                           style="width:100%"
                                                                           value="Model.TaxAmount" />
                                                     <span asp-validation-for="TaxAmount" class="text-danger" style="width:100%"></span>
@@ -506,7 +496,7 @@
                                                                           format="n2"
                                                                           min="0"
                                                                           disabled
-                                                                          data-val-required="El Total es requerido."
+                                                                          required
                                                                           id="TotalLine"
                                                                           step="1"
                                                                           style="width:100%"
@@ -521,7 +511,7 @@
                                             <div class="row">
                                                 @if (Model.VendorInvoiceId == 0)
                                                 {
-                                                    <button id="btnActualizarCotizacionLinea" type="submit" class="form-control btn-miboton "> Guardar </button>
+                                                    <button id="btnActualizarCotizacionLinea" type="submit" class="form-control">Actualizar</button>
                                                 }
                                             </div>
                                 </form>
