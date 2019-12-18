@@ -106,6 +106,7 @@ namespace ERPMVC.Models
         [Required]
         [Display(Name = "Departamento")]
         public long? IdState { get; set; }
+        [Required]
         [Display(Name = "Tipo de Sangre")]
         public string TipoSangre { get; set; }
         [Display(Name = "Nombre del Contacto de Emergencia")]
