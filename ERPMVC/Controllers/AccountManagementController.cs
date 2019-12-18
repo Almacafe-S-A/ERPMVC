@@ -127,6 +127,39 @@ namespace ERPMVC.Controllers
             return _AccountManagement.ToDataSourceResult(request);
 
         }
+
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetAccountManagementByBankId([DataSourceRequest]DataSourceRequest request , int Bankid)
+        {
+            List<AccountManagement> _AccountManagement = new List<AccountManagement>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/AccountManagement/GetAccountManagementByBankId/"+ Bankid);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _AccountManagement = JsonConvert.DeserializeObject<List<AccountManagement>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _AccountManagement.ToDataSourceResult(request);
+
+        }
+
         [HttpGet("[controller]/[action]")]
         public async Task<JsonResult> GetJson([DataSourceRequest]DataSourceRequest request)
         {

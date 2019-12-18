@@ -172,6 +172,8 @@ namespace ERPMVC.Controllers
 
         }
 
+
+
         [HttpGet("[controller]/[action]")]
         public async Task<JsonResult> GetJson([DataSourceRequest]DataSourceRequest request)
         {
@@ -201,6 +203,37 @@ namespace ERPMVC.Controllers
 
 
             return Json(_CheckAccount.ToDataSourceResult(request));
+
+        }
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetCheckAccountLinesLinesByCheckAccountLinesId([DataSourceRequest]DataSourceRequest request , int id)
+        {
+            List<CheckAccountLines> _CheckAccountLines = new List<CheckAccountLines>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CheckAccountLines/GetCheckAccountLines");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CheckAccountLines = JsonConvert.DeserializeObject<List<CheckAccountLines>>(valorrespuesta);
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _CheckAccountLines.ToDataSourceResult(request);
 
         }
 

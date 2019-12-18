@@ -156,6 +156,7 @@
                             .Pageable()
                             .Filterable()
                             .Scrollable()
+                            .ClientDetailTemplateId("")
                             .Pdf(pdf => pdf.FileName("CheckAccountReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                             + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
                             .ProxyURL(Url.Action("Export", "Home")).AllPages())
@@ -191,8 +192,52 @@
 )
 
 
+<script id="GridCheckAccountLines"  type="text/kendo-tmpl">
+     @(Html.Kendo().Grid<ERPMVC.Models.CheckAccountLines>()
+                    .Name("gridU_#=Id#")
+                    .Columns(columns =>
+                    {
+                        columns.Bound(o => o.Id).Title("ID").Width(80);
+                        columns.Bound(o => o.CheckNumber).Title("Numero").Width(80);
+                        columns.Bound(o => o.Date).Title("Fecha").Width(80);
+                        columns.Bound(o => o.PaytoOrderOf).Title("A Nombre").Width(80);
+                        //columns.Command(command =>
+                        //{
+                        //    command.Destroy().Text(" ").IconClass("fa fa-trash");
+                        //}).Width(250);
+                    })
+                    .DataSource(dataSource => dataSource
+                       .WebApi()
+                       .PageSize(10)
+                       .Read(read => read.Action("GetCheckAccountLinesByCheckAccountId", "CheckAccount", new { CheckAccountId = "#=Id#" }))
+                       //.Destroy(destroy => destroy.Action("Delete", "UserRol", new { RoleId = "{0}", UserId = "#=Id#" }))
+                       )
 
-<div id="CheckList">
+                   .Pageable()
+                   .ToolBar(tools =>
+                            {
+                                // tools.Create();
+                                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                   .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCheckAccountLine()" });
+                                tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                                tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                            })
+                   .Sortable()
+                   .ToClientTemplate())
+
+</script>
+
+
+<script>
+    function AddCheckAccountLine() {
+
+    }
+</script>
+
+@*<div id="CheckList">
     @await Html.PartialAsync("pvwCheckList" ,new ERPMVC.Models.CheckAccount { CheckAccountId = 0})
 </div>
 
@@ -200,7 +245,7 @@
     @await Html.PartialAsync("pvwAddCheck" , new ERPMVC.Models.CheckAccountLines { CheckAccountId = 0 , Id = 0 })
 
 </div>
-
+    *@
 <div id="NumCheckAccount">
     @await Html.PartialAsync("pvwAddCheckAccount", new ERPMVC.DTO.CheckAccountDTO { CheckAccountId = 0, FechaIngreso = DateTime.Now })
 </div>
