@@ -121,6 +121,8 @@ namespace ERPMVC.Controllers
             Employees _Employees = new Employees();
             try
             {
+                _EmployeesP.Genero = _EmployeesP.GeneroName;
+                _EmployeesP.TipoSangre = _EmployeesP.TipoSangreName;
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));

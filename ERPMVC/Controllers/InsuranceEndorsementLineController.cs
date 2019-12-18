@@ -114,6 +114,7 @@ namespace ERPMVC.Controllers
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         __InvoiceLineList = JsonConvert.DeserializeObject<List<InsuranceEndorsementLine>>(valorrespuesta);
+                        __InvoiceLineList = __InvoiceLineList.OrderByDescending(q => q.InsuranceEndorsementLineId).ToList();
                         HttpContext.Session.SetString("listadoproductosInsuranceEndorsement", JsonConvert.SerializeObject(__InvoiceLineList).ToString());
                     }
                 }
@@ -130,11 +131,11 @@ namespace ERPMVC.Controllers
                     if (_InvoiceLinep.InsuranceEndorsementLineId > 0 && _existelinea.Count == 0)
                     {
                         __InvoiceLineList.Add(_InvoiceLinep);
+                        __InvoiceLineList = __InvoiceLineList.OrderByDescending(q => q.InsuranceEndorsementLineId).ToList();
                         HttpContext.Session.SetString("listadoproductosInsuranceEndorsement", JsonConvert.SerializeObject(__InvoiceLineList).ToString());
                     }
                     else
                     {
-
                         var obj = __InvoiceLineList.FirstOrDefault(x => x.InsuranceEndorsementLineId == _InvoiceLinep.InsuranceEndorsementLineId);
                         if (obj != null)
                         {
@@ -147,7 +148,7 @@ namespace ERPMVC.Controllers
 
 
                         }
-
+                        __InvoiceLineList = __InvoiceLineList.OrderByDescending(q => q.InsuranceEndorsementLineId).ToList();
                         HttpContext.Session.SetString("listadoproductosInsuranceEndorsement", JsonConvert.SerializeObject(__InvoiceLineList).ToString());
                     }
                 }
