@@ -75,6 +75,36 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpPost]
+        public async Task<ActionResult> GetBlackListByRTN([FromBody]BlackListCustomers _BlackListp)
+        {
+            BlackListCustomers _BlackList = new BlackListCustomers();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/BlackListCustomers/GetBlackListByRTN", _BlackListp);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _BlackList = JsonConvert.DeserializeObject<BlackListCustomers>(valorrespuesta);
+                }
+                if (_BlackList == null)
+                {
+                    _BlackList = new BlackListCustomers();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(_BlackList);
+        }
+
+
         [HttpGet("[action]")]
         public async Task<DataSourceResult> GetBlackListByParams([DataSourceRequest]DataSourceRequest request, BlackListCustomers BlackListCustomersP)
         {
