@@ -67,28 +67,28 @@ namespace ERPMVC.Controllers
                     _CompanyInfo = new CompanyInfoDTO();
                 }
 
-                string[] separar;
-                string[] separar1;
-                if (_CompanyInfo.image != null)
-                {
-                    if (_CompanyInfo.image != "Imagen")
-                    {
-                        separar = _CompanyInfo.image.Split("/");
-                        separar1 = separar[2].Split(".");
-                        ViewData["Nombreimg"] = separar1[0].ToString();
-                        ViewData["Extensionimg"] = "." + separar1[1].ToString();
-                    }
-                    else
-                    {
-                        ViewData["Nombreimg"] = "";
-                        ViewData["Extensionimg"] = "";
-                    }
-                }
-                else
-                {
-                        ViewData["Nombreimg"] = "";
-                        ViewData["Extensionimg"] = "";
-                }              
+                //string[] separar;
+                //string[] separar1;
+                //if (_CompanyInfo.image != null)
+                //{
+                //    if (_CompanyInfo.image != "Imagen")
+                //    {
+                //        separar = _CompanyInfo.image.Split("/");
+                //        separar1 = separar[2].Split(".");
+                //        ViewData["Nombreimg"] = separar1[0].ToString();
+                //        ViewData["Extensionimg"] = "." + separar1[1].ToString();
+                //    }
+                //    else
+                //    {
+                //        ViewData["Nombreimg"] = "";
+                //        ViewData["Extensionimg"] = "";
+                //    }
+                //}
+                //else
+                //{
+                //        ViewData["Nombreimg"] = "";
+                //        ViewData["Extensionimg"] = "";
+                //}              
             }
             catch (Exception ex)
             {
@@ -326,7 +326,12 @@ namespace ERPMVC.Controllers
                     _CompanyInfoS.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_CompanyInfoS);
                     //var value = (insertresult.Result as ObjectResult).Value;
-                    //_CompanyInfoS = ((CompanyInfoDTO)(value));
+                    if (insertresult!=null)
+                    {
+                        CompanyInfo comp = (CompanyInfo)insertresult.Value;
+                        _CompanyInfoS.CompanyInfoId = comp.CompanyInfoId;
+                    }
+                   
                 }
                 else
                 {
@@ -400,7 +405,7 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-            return Ok(_CompanyInfo);
+            return _CompanyInfo;
             // return new ObjectResult(new DataSourceResult { Data = new[] { _CompanyInfo }, Total = 1 });
         }
 
