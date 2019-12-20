@@ -41,7 +41,7 @@
                                       data-ajax-begin="SaveBlackListCustomers"
                                       class="validation-wizard wizard-circle">
                                     <div class="form-body">
-                                        <h3 class="card-title">Información Mediática</h3>
+                                       @* <h3 class="card-title">Información Mediática</h3>*@
                                         <hr>
                                         <div class="row">
                                             <div class="col-md-4">
@@ -277,6 +277,46 @@
 
 
 <script>
+    $("#RTN").on("change", function () {
+        var RTN1 = $("#RTN").val();
+        if (RTN1 != "") {
+            debugger;
+            var dataObjectConfiguration = {
+                RTN: RTN1
+            };
+               $.ajax({
+                          url: '@Url.Action("GetBlackListByRTN", "BlackListCustomers")',
+                          method: 'POST',
+                          datatype: "json",
+                          contentType: 'application/json',
+                          async: false,
+                          data: JSON.stringify(dataObjectConfiguration),
+                          success: function (result) {
+                          if (result.BlackListId != 0) {
+                          $("#RTN").val('');
+                          $.toast({
+                          heading: 'Error',
+                          text: '<br/><br/>' + ' El RTN ingresado ya existe.',
+                          position: 'top-right',
+                          showHideTransition: 'fade',
+                          loaderBg: '#ff6849',
+                          icon: 'error',
+                          hideAfter: 30000,
+                          stack: 6
+                          });
+                        }
+                      },
+                      error: function (XMLHttpRequest, textStatus, errorThrown) {
+                      notification.show({
+                      title: "Validación",
+                      message: textStatus + ": " + XMLHttpRequest.responseText
+                     }, "error");
+                  }
+               });
+        }
+    });
+
+
     function soloNumeros(e) {
         var key = window.Event ? e.which : e.keyCode
         return (key >= 48 && key <= 57)
@@ -286,7 +326,6 @@
 
         var grid = $("#gridBlackListCustomers").getKendoGrid();
         grid.dataSource.read();
-
     }
 
     function SaveBlackListCustomers(e) {

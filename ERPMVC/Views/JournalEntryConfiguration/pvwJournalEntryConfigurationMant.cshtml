@@ -3,31 +3,6 @@
 <script>
     function AddJournalEntryConfigurationLine() {
         debugger;
-        var debit = $("#DebitCreditId").val();   
-        var cost = $("#CostCenterId").val();  
-        var subproduct = $("#SubProductId").val(); 
-        if (debit == "") {
-            $("#spanDebit").show();
-            return false;
-        }
-        else {
-            $("#spanDebit").hide();
-        }
-
-        if (cost == "") {
-            $("#spancostcenter").show();
-            return false;
-        }
-        else {
-            $("#spancostcenter").hide();
-        } 
-        if (subproduct == "") {
-            $("#spansubproduct").show();
-            return false;
-        }
-        else {
-            $("#spansubproduct").hide();
-        } 
         var notification = $("#notification").data("kendoNotification");
         if ($("#AccountId").val() > 0) {
             try {
@@ -43,33 +18,23 @@
                 title: "Validación",
                 message: "Seleccione la cuenta!"
             }, "error");
-            return false;         
+
+            return false;
         }
+
         return true;
     }
-    completedorderlinemant = function (xhr) {     
+
+    completedorderlinemant = function (xhr) {
         closeJournalEntryConfigurationLine();
     };
+
+
+
 
     function closeJournalEntryConfigurationLine() {
         $("#ModalJournalEntryConfigurationLine").modal('hide');
     }
-
-
-    $("#AccountId").on("change", function () {
-        var displayedData = $("#gridJournalEntryConfigurationLine").data().kendoGrid.dataSource.data();
-        var cuenta = $("#AccountId").val();
-        for (i = 0; i < displayedData.length; i++) {
-            if (Number(displayedData[i].AccountId) == Number(cuenta)) {
-                alert("Ya se agrego  está cuenta")
-                $("#AccountId").data("kendoDropDownList").value('');
-                return;
-            }
-        };
-    });
-
-    
-
 </script>
 
 <div id="ModalJournalEntryConfigurationLine" class="modal fade" style="min-width:100%" role="dialog">
@@ -78,182 +43,147 @@
         <!-- Modal content-->
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Información configuración Asientos Automáticos</h4>
                 <button type="button" class="close" onclick="closeJournalEntryConfigurationLine();">&times;</button>
+                <h4 class="modal-title">Información Configuración asientos automaticos</h4>
             </div>
             <div class="modal-body">
 
                 @{
                     var messages1 = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
-                                                                                                                    {"required","Valor requerido" }
-                                                                                                                 };
+                                                                            {"required","Valor requerido" }
+                                                                         };
                     var rules1 = new Dictionary<string, string>() { { "custom", "customFunction" } };
                 }
-
-                <div class="row" id="validation">
-                    <div class="col-lg-12">
-                        <div class="card">
-                            <div class="card-body">
-                                <form id="frmJournalEntryConfiguration"
-                                      kendo-validator="true" kendo-messages="messages1" kendo-rules="rules1"
-                                      data-ajax-method="post"
-                                      data-ajax-loading="#loading"
-                                      data-ajax-complete="completedorderlinemant"
-                                      data-ajax-begin="AddJournalEntryConfigurationLine"
-                                      data-ajax="true"
-                                      method="post" class="validation-wizard wizard-circle">
-                                    <div class="form-body">
-                                        <div class="row">
-                                            <div class="col-md-12">
-                                                <div class="form-group">
-                                                    <label asp-for="JournalEntryConfigurationLineId" class="control-label" style="width:100%"></label>
-                                                    <input type="number" asp-for="JournalEntryConfigurationLineId" readonly="readonly" style="min-width:100%" class="form-control" disabled />
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div class="row">
-                                            <div class="col-md-4">
-                                                <label asp-for="AccountId" class="control-label" style="width:100%"></label>
-                                                <kendo-dropdownlist name="AccountId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                    for="AccountId"
-                                                                    option-label="Seleccione Cuenta"
-                                                                    datatextfield="AccountName"
-                                                                    datavaluefield="AccountId"
-                                                                    style="width: 100%;">
-                                                    <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999999">
-                                                        <transport>
-                                                            <read url="@Url.Action("GetAccount", "Accounting")" />
-                                                        </transport>
-                                                    </datasource>
-                                                </kendo-dropdownlist>
-                                                <span asp-validation-for="AccountId" class="text-danger"></span>
-                                            </div>
-                                            <div class="col-md-4">
-                                                <script>
-                                                    function GrupoConfiguracionJournalEntry() {
-                                                        return { 'Id': 21 };
-                                                    }
-                                                </script>
-                                                <label asp-for="DebitCredit" class="control-label" style="width:100%"></label>
-                                                <kendo-dropdownlist name="DebitCreditId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                    for="DebitCreditId"
-                                                                    option-label="Seleccione Débito/Crédito"
-                                                                    datatextfield="Nombre"
-                                                                    datavaluefield="Id"  onchange="validar()"
-                                                                    style="width: 100%;">
-                                                    <datasource type="DataSourceTagHelperType.WebApi">
-                                                        <transport>
-                                                            <read url="@Url.Action("GetElementoByIdConfiguracion", "ElementoConfiguracion")" data="GrupoConfiguracionJournalEntry" />
-
-                                                        </transport>
-                                                    </datasource>
-                                                </kendo-dropdownlist>
-                                                <span asp-validation-for="DebitCredit" class="text-danger"></span>
-                                                <span id="spanDebit" class="text-danger">Indicador Débito/Crédito es requerido</span>
-                                            </div>
-
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label asp-for="CostCenterId" class="control-label" style="width:100%">Centro de Costos</label>
-                                                    <kendo-dropdownlist name="CostCenterId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        for="CostCenterId"
-                                                                        option-label="Seleccione los Centros de Costo"
-                                                                        datatextfield="CostCenterName"
-                                                                        datavaluefield="CostCenterId" onchange="validar()"
-                                                                        style="width: 100%;">
-                                                        <datasource type="DataSourceTagHelperType.WebApi">
-                                                            <transport>
-                                                                <read url="@Url.Action("GetCostCenter", "CostCenter")" />
-                                                            </transport>
-                                                        </datasource>
-                                                    </kendo-dropdownlist>
-                                                    <span asp-validation-for="CostCenterId" class="text-danger"></span>
-                                                    <span id="spancostcenter" class="text-danger">Centro de Costos es requerido</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label asp-for="SubProductId" class="control-label" style="width:100%"></label>
-                                                    <script>
-
-                                                        function GetProductIdS() {
-                                                            return { 'ProductId': $("#ProductId").val() }
-                                                        }
-
-                                                    </script>
-
-                                                    <kendo-dropdownlist name="SubProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        option-label="Seleccione el SubProducto"
-                                                                        for="SubProductId"
-                                                                        datatextfield="ProductName"
-                                                                        datavaluefield="SubproductId" onchange="validar()"
-                                                                        auto-bind="true"
-                                                                        style="width: 100%;">
-                                                        <datasource type="DataSourceTagHelperType.WebApi">
-                                                            <transport>
-                                                                <read url="@Url.Action("GetSubProductByProductIdRelation", "ProductRelation")" data="GetProductIdS" />
-                                                            </transport>
-                                                        </datasource>
-                                                    </kendo-dropdownlist>
-                                                    <span asp-validation-for="SubProductId" class="text-danger"></span>
-                                                    <span id="spansubproduct" class="text-danger">Centro de Costos es requerido</span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <br /><br />
-
-                                        <div class="row">
-                                            <button id="btnActualizarJournalEntryConfiguration" type="submit" class="form-control btn-miboton">Actualizar</button>
-                                        </div>
-                                    </div>
-                                </form>
+                <form id="frmJournalEntryConfiguration"
+                      kendo-validator="true" kendo-messages="messages1" kendo-rules="rules1"
+                      data-ajax-method="post"
+                      data-ajax-loading="#loading"
+                      data-ajax-complete="completedorderlinemant"
+                      data-ajax-begin="return AddJournalEntryConfigurationLine();"
+                      data-ajax="true"
+                      method="post" class="validation-wizard wizard-circle">
+                    <div class="form-body">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label asp-for="JournalEntryConfigurationLineId" class="control-label" style="width:100%"></label>
+                                    <input type="number" asp-for="JournalEntryConfigurationLineId" readonly="readonly" style="min-width:100%" class="form-control" disabled />
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </div>
+                        <div class="row">
+                            <div class="col-md-4">
+
+                                <label asp-for="AccountId" class="control-label" style="width:100%"></label>
+                                <kendo-dropdownlist name="AccountId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                    for="AccountId"
+                                                    option-label="Seleccione si es débito o crédito"
+                                                    datatextfield="AccountName"
+                                                    datavaluefield="AccountId"
+                                                    required
+                                                    style="width: 100%;">
+                                    <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999999">
+                                        <transport>
+                                            <read url="@Url.Action("GetAccount", "Accounting")" />
+
+                                        </transport>
+                                    </datasource>
+                                </kendo-dropdownlist>
+                                <span asp-validation-for="AccountId" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <script>
+                                    function GrupoConfiguracionJournalEntry() {
+                                        return { 'Id': 21 };
+                                    }
+                                </script>
+                                <label asp-for="DebitCredit" class="control-label" style="width:100%"></label>
+                                <kendo-dropdownlist name="DebitCreditId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                    for="DebitCreditId"
+                                                    option-label="Seleccione si es débito o crédito"
+                                                    datatextfield="Nombre"
+                                                    datavaluefield="Id"
+                                                    required
+                                                    style="width: 100%;">
+                                    <datasource type="DataSourceTagHelperType.WebApi">
+                                        <transport>
+                                            <read url="@Url.Action("GetElementoByIdConfiguracion", "ElementoConfiguracion")" data="GrupoConfiguracionJournalEntry" />
+
+                                        </transport>
+                                    </datasource>
+                                </kendo-dropdownlist>
+                                <span asp-validation-for="DebitCredit" class="text-danger"></span>
+                            </div>
+                          
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="CostCenterId" class="control-label" style="width:100%"></label>
+                                        <kendo-dropdownlist name="CostCenterId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                            for="CostCenterId"
+                                                            option-label="Seleccione los centros de costo"
+                                                            datatextfield="CostCenterName"
+                                                            datavaluefield="CostCenterId"
+                                                            required
+                                                            style="width: 100%;">
+                                            <datasource type="DataSourceTagHelperType.WebApi">
+                                                <transport>
+                                                    <read url="@Url.Action("GetCostCenter", "CostCenter")" />
+                                                </transport>
+                                            </datasource>
+                                        </kendo-dropdownlist>
+                                        <span asp-validation-for="CostCenterId" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                           
+                            
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-4">
+
+                                <div class="form-group">
+                                    <label asp-for="SubProductId" class="control-label" style="width:100%"></label>
+                                    <script>                                       
+
+                                        function GetProductIdS() {
+                                            return { 'ProductId': $("#ProductId").val() }
+                                        }
+
+                                    </script>
+                                   
+                                    <kendo-dropdownlist name="SubProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                        option-label="Seleccione el subproducto"
+                                                        for="SubProductId"
+                                                        datatextfield="ProductName"
+                                                        datavaluefield="SubproductId"
+                                                        auto-bind="true"                                                       
+                                                        required
+                                                        style="width: 100%;">
+                                        <datasource type="DataSourceTagHelperType.WebApi">
+                                            <transport>
+                                                <read url="@Url.Action("GetSubProductByProductIdRelation", "ProductRelation")" data="GetProductIdS" />
+                                            </transport>
+                                        </datasource>
+
+                                    </kendo-dropdownlist>
+                                    <span asp-validation-for="SubProductId" class="text-danger"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <br/><br/>
+
+                        <div class="row">
+                            <button id="btnActualizarJournalEntryConfiguration" type="submit" class="form-control">Actualizar</button>
+                        </div>
+
+
+                        </div>
+                </form>
+
+
             </div>
         </div>
     </div>
-</div>
-
-<script>
-    $(document).ready(function () {
-        $("#spanDebit").hide();
-        $("#spancostcenter").hide();
-        $("#spansubproduct").hide();
-    })
-
-    function validar() {
-        var debit = $("#DebitCreditId").val();  
-        var cost = $("#CostCenterId").val();  
-        var subproduct = $("#SubProductId").val();  
-        
-        if (debit == "") {
-            $("#spanDebit").show();
-            return false;
-        }
-        else {
-            $("#spanDebit").hide();
-        } 
-
-        if (cost == "") {
-            $("#spancostcenter").show();
-            return false;
-        }
-        else {
-            $("#spancostcenter").hide();
-        } 
-        if (subproduct == "") {
-            $("#spansubproduct").show();
-            return false;
-        }
-        else {
-            $("#spansubproduct").hide();
-        } 
-    }
-</script>
-
+ </div>

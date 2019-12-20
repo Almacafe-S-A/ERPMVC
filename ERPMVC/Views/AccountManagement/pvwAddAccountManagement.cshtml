@@ -56,15 +56,11 @@
                                                     <kendo-datepicker name="OpeningDate"
                                                                       value="Model.OpeningDate"
                                                                       format="dd/MM/yyyy"
+                                                                      max="@DateTime.Now"
                                                                       style="width:100%;"
                                                                       data-val-required="La fecha es requerida" />
                                                     <span asp-validation-for="OpeningDate" class="text-danger"></span>
                                                 </div>
-                                                <script>
-                                                    $(document).ready(function () {
-                                                        $("#dateinput").kendoDateInput();
-                                                    });
-                                                </script>
                                             </div>
 
                                             <div class="col-md-4">
@@ -214,38 +210,39 @@
         grid.dataSource.read();
     }
     function SaveAccountManagement(e) {
+        if (confirm('Esta seguro que desea agregar la fila?')) {
             var notification = $("#notification").data("kendoNotification");
-           // e.preventDefault();
+            // e.preventDefault();
             $("#btnAccountManagement").hide();
             $("#btnAccountManagement").prop("disabled", true);
 
-        var displayedData = $("#gridAccountManagement").data().kendoGrid.dataSource.view();
-        var _OpeningDate = $("#OpeningDate").getKendoDatePicker().value().toJSON()
+            var displayedData = $("#gridAccountManagement").data().kendoGrid.dataSource.view();
+            var _OpeningDate = $("#OpeningDate").getKendoDatePicker().value().toJSON()
 
-        var dataObject = {
-            'AccountManagementId': $("#AccountManagementId").val() === "" ? "0" : $("#AccountManagementId").val(),
-            'OpeningDate': _OpeningDate,
-            'AccountType': $("#AccountType").val(),
-            'AccountNumber': $("#AccountNumber").val(),
-            'BankId': $("#BankId").val(),
-            'BankName': $("#BankId").data("kendoDropDownList").text(),
-            'CurrencyId': $("#CurrencyId").val(),
-            'CurrencyName': $("#CurrencyId").data("kendoDropDownList").text(),
-            'Description': $("#Description").val(),   
-            'Status': $("#Status").val(),
-            '_AccountManagement': displayedData
+            var dataObject = {
+                'AccountManagementId': $("#AccountManagementId").val() === "" ? "0" : $("#AccountManagementId").val(),
+                'OpeningDate': _OpeningDate,
+                'AccountType': $("#AccountType").val(),
+                'AccountNumber': $("#AccountNumber").val(),
+                'BankId': $("#BankId").val(),
+                'BankName': $("#BankId").data("kendoDropDownList").text(),
+                'CurrencyId': $("#CurrencyId").val(),
+                'CurrencyName': $("#CurrencyId").data("kendoDropDownList").text(),
+                'Description': $("#Description").val(),
+                'Status': $("#Status").val(),
+                '_AccountManagement': displayedData
             };
 
             console.log(JSON.stringify(dataObject));
             //var form = $("#frmNumeracion");
-           // form.validate();
+            // form.validate();
 
             var validator = $("#frmAccountManagement").data("kendoValidator");
-                 var status = $(".status");
+            var status = $(".status");
 
 
-        if (validator.validate()) {
-            if ($('#AccountTypeAlert').is(':hidden')) {
+            if (validator.validate()) {
+                if ($('#AccountTypeAlert').is(':hidden')) {
                     $.ajax({
                         url: '@Url.Action("SaveAccountManagement", "AccountManagement")',
                         method: 'POST',
@@ -268,7 +265,7 @@
                                 stack: 6
                             });
 
-                           RefrescarGrid();
+                            RefrescarGrid();
 
                             $('#ModalAccountManagement').modal('hide');
 
@@ -283,49 +280,23 @@
 
                         }
                     });
-            }
-            else {
-                notification.show({
-                    title: "Validación",
-                    message: "No se puede duplicar el Tipo de Cuenta!"
-                }, "error");
-            }
                 }
                 else {
-                    status.text("Oops! There is invalid data in the form.")
-                        .removeClass("valid")
-                        .addClass("invalid");
-                }
-
-
-        $("#btnAccountManagement").show();
-        $("#btnAccountManagement").prop("disabled", false);
-    }
-
-    $("#AccountType").change(function (e) {
-        var Id = $("#AccountManagementId").val();
-        var AccountType1 = $("#AccountType").data("kendoDropDownList").text();
-        var displayedData = $("#gridAccountManagement").data().kendoGrid.dataSource.view();
-        var AccountTypeExisten = "";
-
-        if (displayedData.length > 0) {
-            for (var i = 0; i < displayedData.length; i++) {
-                AccountTypeExisten = displayedData[i]
-
-                debugger;
-
-                if (AccountTypeExisten.AccountType != AccountType1) {
-                    $("#AccountTypeAlert").prop("hidden", true);
-                    debugger;
-                }
-                if (AccountTypeExisten.AccountType == AccountType1 && AccountTypeExisten.AccountManagementId != Id) {
-                    $("#AccountTypeAlert").prop("hidden", false);
-
-                    break;
+                    notification.show({
+                        title: "Validación",
+                        message: "No se puede duplicar el Tipo de Cuenta!"
+                    }, "error");
                 }
             }
+            else {
+                status.text("Oops! There is invalid data in the form.")
+                    .removeClass("valid")
+                    .addClass("invalid");
+            }
+
+
+            $("#btnAccountManagement").show();
+            $("#btnAccountManagement").prop("disabled", false);
         }
-    });
-
-
+    }
 </script>

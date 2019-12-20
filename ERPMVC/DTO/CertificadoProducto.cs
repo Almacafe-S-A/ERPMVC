@@ -8,7 +8,7 @@ namespace ERPMVC.DTO
 {
     public class CertificadoProducto
     {
-        [Display(Name = "Certificado Deposito")]
+        [Display(Name = "Certificado Depósito")]
         public Int64 IdCD { get; set; }
 
         [Display(Name = "Producto")]

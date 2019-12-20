@@ -309,36 +309,57 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _InvoiceLine }, Total = 1 });
         }
 
-        [HttpDelete("VendorInvoiceLineId")]
-        public async Task<ActionResult<VendorInvoiceLine>> Delete([FromBody]VendorInvoiceLine _InvoiceLine)
+        //[HttpDelete("VendorInvoiceLineId")]
+        //public async Task<ActionResult<VendorInvoiceLine>> Delete([FromBody]VendorInvoiceLine _InvoiceLine)
+        //{
+        //    try
+        //    {
+        //        string baseadress = config.Value.urlbase;
+        //        HttpClient _client = new HttpClient();
+        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+        //        var result = await _client.PostAsJsonAsync(baseadress + "api/VendorInvoiceLine/Delete", _InvoiceLine);
+        //        string valorrespuesta = "";
+        //        if (result.IsSuccessStatusCode)
+        //        {
+        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
+        //            _InvoiceLine = JsonConvert.DeserializeObject<VendorInvoiceLine>(valorrespuesta);
+        //        }
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+        //        return BadRequest($"Ocurrio un error: {ex.Message}");
+        //    }
+
+
+
+        //    return new ObjectResult(new DataSourceResult { Data = new[] { _InvoiceLine }, Total = 1 });
+        //}
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<VendorInvoiceLine>> Delete([FromBody]VendorInvoiceLine _VendorInvoiceLine)
         {
+            List<VendorInvoiceLine> _vendorinvoiceLIST = new List<VendorInvoiceLine>();
             try
             {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                _vendorinvoiceLIST = JsonConvert.DeserializeObject<List<VendorInvoiceLine>>(HttpContext.Session.GetString("listadoproductosVendorInvoice"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/VendorInvoiceLine/Delete", _InvoiceLine);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
+                if (_vendorinvoiceLIST != null)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _InvoiceLine = JsonConvert.DeserializeObject<VendorInvoiceLine>(valorrespuesta);
+                    var item = _vendorinvoiceLIST.Find(c => c.VendorInvoiceLineId == _VendorInvoiceLine.VendorInvoiceLineId);
+                    _vendorinvoiceLIST.Remove(item);
+                    HttpContext.Session.SetString("listadoproductosVendorInvoice", JsonConvert.SerializeObject(_vendorinvoiceLIST));
                 }
-
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error: {ex.Message}");
+                return await Task.Run(() => BadRequest($"Ocurrio un error{ex.Message}"));
             }
-
-
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _InvoiceLine }, Total = 1 });
+            return await Task.Run(() => Ok(_VendorInvoiceLine));
         }
-
-
 
 
 
