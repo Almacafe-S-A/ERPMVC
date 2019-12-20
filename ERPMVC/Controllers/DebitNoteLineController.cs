@@ -347,15 +347,18 @@ namespace ERPMVC.Controllers
 
                 if (_debitnoteLIST != null)
                 {
-                    _debitnoteLIST = _debitnoteLIST
-                          .Where(q => q.DebitNoteLineId != _DebitNoteLine.DebitNoteLineId)
-                           .Where(q => q.Quantity != _DebitNoteLine.Quantity)
-                           .Where(q => q.Amount != _DebitNoteLine.Amount)
-                           .Where(q => q.Total != _DebitNoteLine.Total)
-                           .Where(q => q.Price != _DebitNoteLine.Price)
-                            .Where(q => q.AccountName != _DebitNoteLine.AccountName)
-                        .Where(q => q.Description != _DebitNoteLine.Description)
-                          .ToList();
+                    //_debitnoteLIST = _debitnoteLIST
+                    //      .Where(q => q.DebitNoteLineId != _DebitNoteLine.DebitNoteLineId)
+                    //       .Where(q => q.Quantity != _DebitNoteLine.Quantity)
+                    //       .Where(q => q.Amount != _DebitNoteLine.Amount)
+                    //       .Where(q => q.Total != _DebitNoteLine.Total)
+                    //       .Where(q => q.Price != _DebitNoteLine.Price)
+                    //        .Where(q => q.AccountName != _DebitNoteLine.AccountName)
+                    //    .Where(q => q.Description != _DebitNoteLine.Description)
+                    //      .ToList();
+
+                    var item = _debitnoteLIST.Find(c => c.DebitNoteLineId == _DebitNoteLine.DebitNoteLineId);
+                    _debitnoteLIST.Remove(item);
 
                     HttpContext.Session.SetString("listadoproductosdebitnote", JsonConvert.SerializeObject(_debitnoteLIST));
                 }

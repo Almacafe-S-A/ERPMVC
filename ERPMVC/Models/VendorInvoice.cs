@@ -13,7 +13,7 @@ namespace ERPMVC.Models
         public int VendorInvoiceId { get; set; }
         [Display(Name = "Nombre")]
         public string VendorInvoiceName { get; set; }
-        [Display(Name = "Envío")]
+        [Display(Name = "Envio")]
         public int ShipmentId { get; set; }
         [Display(Name = "Orden de Compra")]
         public int? PurchaseOrderId { get; set; }
@@ -33,38 +33,38 @@ namespace ERPMVC.Models
         public string Sucursal { get; set; }
 
 
-        [Display(Name = "Número de Factura")]
+        [Display(Name = "Numero de Factura")]
         public string TipoDocumento { get; set; }
 
-        [Display(Name = "Número de Factura")]
+        [Display(Name = "Numero de Factura")]
         public int NumeroDEI { get; set; }
 
-        [Display(Name = "Número de Inicio")]
+        [Display(Name = "Numero de inicio")]
         public string NoInicio { get; set; }
 
-        [Display(Name = "Número Fin")]
+        [Display(Name = "Numero fin")]
         public string NoFin { get; set; }
 
-        [Display(Name = "Fecha Límite")]
+        [Display(Name = "Fecha Limite")]
         public DateTime FechaLimiteEmision { get; set; }
 
-        [Display(Name = "Número de Factura")]
+        [Display(Name = "Numero de Factura")]
         public string CAI { get; set; }
 
-        [Display(Name = "Número de orden de compra exenta")]
+        [Display(Name = "Numero de orden de compra exenta")]
         public string NoOCExenta { get; set; }
 
-        [Display(Name = "Número de constancia de registro de exoneración")]
+        [Display(Name = "Numero de constancia de registro de exoneracion")]
         public string NoConstanciadeRegistro { get; set; }
 
-        [Display(Name = "Número de registro de la SAG")]
+        [Display(Name = "Numero de registro de la SAG")]
         public string NoSAG { get; set; }
 
         [Display(Name = "RTN")]
         public string RTN { get; set; }
 
         [DataType(DataType.PhoneNumber)]
-        [Display(Name = "Teléfono")]
+        [Display(Name = "Telefono")]
         public string Tefono { get; set; }
 
         [Display(Name = "Correo")]
@@ -73,7 +73,7 @@ namespace ERPMVC.Models
         [DataType(DataType.EmailAddress)]
         public string Correo { get; set; }
 
-        [Display(Name = "Dirección")]
+        [Display(Name = "Direccion")]
         public string Direccion { get; set; }
 
         [Display(Name = "Sucursal")]
@@ -103,12 +103,12 @@ namespace ERPMVC.Models
         [Display(Name = "Moneda tasa")]
         public double Currency { get; set; }
 
-        [Display(Name = "Número de referencia del Proveedor")]
+        [Display(Name = "Numero de referencia del Proveedor")]
         public string VendorRefNumber { get; set; }
         [Display(Name = "Tipo de ventas")]
         public int SalesTypeId { get; set; }
 
-        [Display(Name = "Observación")]
+        [Display(Name = "Observacion")]
         public string Remarks { get; set; }
 
         [Display(Name = "Monto")]
