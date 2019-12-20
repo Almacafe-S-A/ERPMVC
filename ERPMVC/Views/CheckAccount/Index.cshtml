@@ -48,6 +48,40 @@
 
     }
 
+    function AddCheck(e) {
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            CheckAccountId: dataItem.CheckAccountId,
+            id: 0
+        };
+
+        $('#ModalCheck').find(':input').not(':submit').val('');
+        //$('#ModalCheckAccount').modal('show');
+        $("#CheckAccountId").val('0');
+        
+         $.ajax({
+                url: '@Url.Action("pvwAddCheck", "CheckAccount")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumCheck").html('');
+                    $("#NumCheck").html(result);
+
+
+                    //$("#btnBlackListCustomers").hide();
+                    $('#ModalCheck').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+
+    }
+
+
 
          function EditCheckAccount(e) {
              e.preventDefault();
@@ -88,12 +122,11 @@
                             .Name("gridCheckAccount")
                             .Columns(columns =>
                             {
-
                                 columns.Command(command =>
                                 {
-                                    //command.Custom("Ver detalles").Click("Detalles");
+                                    command.Custom("EmitirCheque").Text(" ").IconClass("fa fa-plus").Click("AddCheck");
                                     command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCheckAccount");
-                                    command.Destroy().IconClass("fa fa-trash").Text(" ");
+                                    //command.Destroy().IconClass("fa fa-trash").Text(" ");
                                 }).Width(250);
 
                                 columns.Bound(p => p.CheckAccountId).Width(100);
@@ -102,12 +135,6 @@
                                 columns.Bound(p => p.AssociatedAccountNumber).Width(150);
                                 columns.Bound(p => p.NoInicial).Width(150);
                                 columns.Bound(p => p.NoFinal).Width(150);
-
-
-
-
-
-
                             })
                                 .Filterable(f => f.Operators(o => o.ForString(s => s
                                                        .Clear()
@@ -233,20 +260,31 @@
 
 
 <script>
-    function AddCheckAccountLine() {
-
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridCheckAccount").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
     }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridCheckAccount").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar");
+    setRowButtonTooltip(".k-grid-EmitirCheque", "Emitir Cheque");
 </script>
 
-@*<div id="CheckList">
-    @await Html.PartialAsync("pvwCheckList" ,new ERPMVC.Models.CheckAccount { CheckAccountId = 0})
-</div>
 
-<div id="AddCheck">
+
+<div id="NumCheck">
     @await Html.PartialAsync("pvwAddCheck" , new ERPMVC.Models.CheckAccountLines { CheckAccountId = 0 , Id = 0 })
 
 </div>
-    *@
+    
 <div id="NumCheckAccount">
     @await Html.PartialAsync("pvwAddCheckAccount", new ERPMVC.DTO.CheckAccountDTO { CheckAccountId = 0, FechaIngreso = DateTime.Now })
 </div>
