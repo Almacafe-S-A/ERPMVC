@@ -348,7 +348,7 @@ namespace ERPMVC.Controllers
                 if (file != null)
                 {
                     FileInfo info = new FileInfo(file.FileName);
-                    var filename = _CompanyInfoS.CompanyInfoId + "_" + _CompanyInfoS.Company_Name + "_" + info.Extension;
+                    var filename = _CompanyInfoS.CompanyInfoId + "_" + _CompanyInfoS.Company_Name + info.Extension;
                     var filePath = _hostingEnvironment.WebRootPath + "/CompanyImages/" + filename;
                     using (var stream = new FileStream(filePath, FileMode.Create))
                     {
