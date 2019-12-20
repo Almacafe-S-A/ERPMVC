@@ -396,12 +396,12 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<CheckAccount>> SaveCheck([FromBody]CheckAccountDTO _Check)
+        public async Task<ActionResult<CheckAccount>> SaveCheck(CheckAccountLines _Check)
         {
-            CheckAccount _CheckAccount = _Check;
+            CheckAccountLines _CheckAccount = _Check;
             try
             {
-                CheckAccount _listCheckAccount = new CheckAccount();
+                CheckAccountLines _listCheckAccount = new CheckAccountLines();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -413,12 +413,12 @@ namespace ERPMVC.Controllers
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CheckAccount = JsonConvert.DeserializeObject<CheckAccount>(valorrespuesta);
+                    _CheckAccount = JsonConvert.DeserializeObject<CheckAccountLines>(valorrespuesta);
                 }
 
-                if (_CheckAccount == null) { _CheckAccount = new Models.CheckAccount(); }
+                if (_CheckAccount == null) { _CheckAccount = new Models.CheckAccountLines(); }
 
-                if (_Check.CheckAccountId == 0)
+                if (_Check.Id == 0)
                 {
                     _Check.FechaCreacion = DateTime.Now;
                     _Check.UsuarioCreacion = HttpContext.Session.GetString("user");
@@ -428,7 +428,7 @@ namespace ERPMVC.Controllers
                 {
                     _Check.UsuarioCreacion = _CheckAccount.UsuarioCreacion;
                     _Check.FechaCreacion = _CheckAccount.FechaCreacion;
-                    var updateresult = await Update(_CheckAccount.CheckAccountId, _Check);
+                    //var updateresult = await Update(_CheckAccount.CheckAccountId, _Check);
                 }
 
             }
@@ -444,7 +444,7 @@ namespace ERPMVC.Controllers
         // POST: CheckAccount/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<CheckAccount>> InsertCheck(CheckAccount _CheckAccount)
+        public async Task<ActionResult<CheckAccount>> InsertCheck(CheckAccountLines _CheckAccount)
         {
             try
             {
@@ -460,7 +460,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CheckAccount = JsonConvert.DeserializeObject<CheckAccount>(valorrespuesta);
+                    _CheckAccount = JsonConvert.DeserializeObject<CheckAccountLines>(valorrespuesta);
                 }
 
             }
