@@ -13,10 +13,11 @@ namespace ERPMVC.Models
         public int BranchId { get; set; }
 
         [Display(Name = "Habilitado")]
+        [DataType("Boolean")]
         public bool? IsEnabled { get; set; }
 
-        //[DataType(DataType.Password)]
-        [UIHint("Password")]
+        [DataType("Password")]
+        //[UIHint("Password")]
         public override string PasswordHash { get; set; }
 
         public DateTime LastPasswordChangedDate { get; set; }
