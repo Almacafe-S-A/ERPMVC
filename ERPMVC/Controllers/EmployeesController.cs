@@ -121,49 +121,91 @@ namespace ERPMVC.Controllers
             Employees _Employees = new Employees();
             try
             {
+                _EmployeesP.Genero = _EmployeesP.GeneroName;
+                _EmployeesP.TipoSangre = _EmployeesP.TipoSangreName;
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/Employees/GetEmployeesById/" + _EmployeesP.IdEmpleado);
                 string valorrespuesta = "";
-                _EmployeesP.FechaModificacion = DateTime.Now;
-                _EmployeesP.Usuariomodificacion = HttpContext.Session.GetString("user");
+                
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Employees = JsonConvert.DeserializeObject<EmployeesDTO>(valorrespuesta);
                 }
-                IFormFile file = files.FirstOrDefault();
-                if (file != null)
-                {
-                    FileInfo info = new FileInfo(file.FileName);   
-                    string filename = _EmployeesP.IdEmpleado + "_" +  _EmployeesP.NombreEmpleado.Trim(' ') + info.Extension;
-                    _EmployeesP.Foto = filename;
-                    var filePath = _hostingEnvironment.WebRootPath + "/images/emp/" + filename ;
-
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        await file.CopyToAsync(stream);
-                    }
-                }
+                
                 if (_Employees == null) { _Employees = new Models.Employees(); }
 
                 if (_EmployeesP.IdEmpleado == 0)
                 {
                     _EmployeesP.FechaCreacion = DateTime.Now;
                     _EmployeesP.Usuariocreacion = HttpContext.Session.GetString("user");
+                    if (_EmployeesP.QtySalary > 0) {
+                        EmployeeSalaryDTO _Salary = new EmployeeSalaryDTO();
+                        _Salary.QtySalary = _EmployeesP.QtySalary;
+                        _Salary.DayApplication = _EmployeesP.DayApplication;
+                        _Salary.CreatedUser = HttpContext.Session.GetString("user");
+                        _Salary.CreatedDate = DateTime.Now;
+                        _Salary.IdFrequency = 0;
+                        _Salary.ModifiedDate = DateTime.Now;
+                        _Salary.ModifiedUser = HttpContext.Session.GetString("user");
+                        _Salary.IdEstado = 1;
+
+                        _EmployeesP._EmployeeSalary.Add(_Salary);
+                    }
+
                     var insertresult = await Insert(_EmployeesP);
+                    var value = (insertresult.Result as ObjectResult).Value;
+                    EmployeesDTO resultado = ((EmployeesDTO)(value));
+
+                    IFormFile file = files.FirstOrDefault();
+                    if (file != null)
+                    {
+                        FileInfo info = new FileInfo(file.FileName);
+                        string filename = resultado.IdEmpleado + "_" + _EmployeesP.NombreEmpleado.Trim(' ') + info.Extension;
+                        _EmployeesP.Foto = filename;
+                        var filePath = _hostingEnvironment.WebRootPath + "/images/emp/" + filename;
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+
+                        _EmployeesP.IdEmpleado = resultado.IdEmpleado;
+                        var updateresult1 = await Update(_EmployeesP);
+
+                    }
                 }
                 else
                 {
+                    _EmployeesP.Foto = _Employees.Foto;
                     _EmployeesP.Usuariocreacion = _Employees.Usuariocreacion;
                     _EmployeesP.FechaCreacion = _Employees.FechaCreacion;
-                    var updateresult = await Update( _EmployeesP);
+                    _EmployeesP.FechaModificacion = DateTime.Now;
+                    _EmployeesP.Usuariomodificacion = HttpContext.Session.GetString("user");
+                    
+                    IFormFile file = files.FirstOrDefault();
+                    if (file != null)
+                    {
+                        if (System.IO.File.Exists(_hostingEnvironment.WebRootPath + "/images/emp/" + _EmployeesP.Foto))
+                        {
+                            System.IO.File.Delete(_hostingEnvironment.WebRootPath + "/images/emp/" + _EmployeesP.Foto);
+                        }
+
+                        FileInfo info = new FileInfo(file.FileName);
+                        string filename = _EmployeesP.IdEmpleado + "_" + _EmployeesP.NombreEmpleado.Trim(' ') + info.Extension;
+                        _EmployeesP.Foto = filename;
+                        var filePath = _hostingEnvironment.WebRootPath + "/images/emp/" + filename;
+
+                        using (var stream = new FileStream(filePath, FileMode.Create))
+                        {
+                            await file.CopyToAsync(stream);
+                        }
+                    }
+
+                    var updateresult = await Update(_EmployeesP);
                 }
-                
-
-
-
             }
             catch (Exception ex)
             {
@@ -171,8 +213,6 @@ namespace ERPMVC.Controllers
                 throw ex;
 
             }
-
-
             return Json(_EmployeesP);
         }
 

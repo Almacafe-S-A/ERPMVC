@@ -339,38 +339,56 @@ namespace ERPMVC.Controllers
             //return new ObjectResult(new DataSourceResult { Data = new[] { _CreditNoteLine }, Total = 1 });
         }
 
-        [HttpDelete("CreditNoteLineId")]
+        //[HttpDelete("CreditNoteLineId")]
+        //public async Task<ActionResult<CreditNoteLine>> Delete([FromBody]CreditNoteLine _CreditNoteLine)
+        //{
+        //    try
+        //    {
+        //        string baseadress = config.Value.urlbase;
+        //        HttpClient _client = new HttpClient();
+        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+        //        var result = await _client.PostAsJsonAsync(baseadress + "api/CreditNoteLine/Delete", _CreditNoteLine);
+        //        string valorrespuesta = "";
+        //        if (result.IsSuccessStatusCode)
+        //        {
+        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
+        //            _CreditNoteLine = JsonConvert.DeserializeObject<CreditNoteLine>(valorrespuesta);
+        //        }
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+        //        return BadRequest($"Ocurrio un error: {ex.Message}");
+        //    }
+
+
+
+        //    return new ObjectResult(new DataSourceResult { Data = new[] { _CreditNoteLine }, Total = 1 });
+        //}
+
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<CreditNoteLine>> Delete([FromBody]CreditNoteLine _CreditNoteLine)
         {
+            List<CreditNoteLine> _creditnoteLIST = new List<CreditNoteLine>();
             try
             {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                _creditnoteLIST = JsonConvert.DeserializeObject<List<CreditNoteLine>>(HttpContext.Session.GetString("listadoproductosCreditNote"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/CreditNoteLine/Delete", _CreditNoteLine);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
+                if (_creditnoteLIST != null)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CreditNoteLine = JsonConvert.DeserializeObject<CreditNoteLine>(valorrespuesta);
+                    var item = _creditnoteLIST.Find(c => c.CreditNoteLineId == _CreditNoteLine.CreditNoteLineId);
+                    _creditnoteLIST.Remove(item);
+                    HttpContext.Session.SetString("listadoproductosCreditNote", JsonConvert.SerializeObject(_creditnoteLIST));
                 }
-
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error: {ex.Message}");
+                return await Task.Run(() => BadRequest($"Ocurrio un error{ex.Message}"));
             }
-
-
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _CreditNoteLine }, Total = 1 });
+            return await Task.Run(() => Ok(_CreditNoteLine));
         }
-
-
-
-
-
     }
 }
