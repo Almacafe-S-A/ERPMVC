@@ -146,9 +146,10 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                if(_GrupoConfiguracion.IdConfiguracion == 0)
-                { 
-                    var result = await _client.GetAsync(baseadress + "api/GrupoConfiguracion/GetGrupoConfiguracionById/" + _GrupoConfiguracion.IdConfiguracion);
+               
+                   // var result = await _client.GetAsync(baseadress + "api/GrupoConfiguracion/GetGrupoConfiguracionById/" + _GrupoConfiguracion.IdConfiguracion);
+                    var result = await _client.GetAsync(baseadress + "api/GrupoConfiguracion/GetConfiguracionByName/" + _GrupoConfiguracion.Nombreconfiguracion);
+                   
                     string valorrespuesta = "";
                     _GrupoConfiguracion.FechaModificacion = DateTime.Now;
                     _GrupoConfiguracion.UsuarioModificacion = HttpContext.Session.GetString("user");
@@ -159,7 +160,14 @@ namespace ERPMVC.Controllers
                     }
 
                     if (_GrupoConfiguracion == null) { _GrupoConfiguracion = new Models.GrupoConfiguracion(); }
-                }
+                    if (_GrupoConfiguracion.IdConfiguracion > 0)
+                    {
+                    if (_GrupoConfiguracion.IdConfiguracion != _GrupoConfiguracionS.IdConfiguracion)
+                    {
+                        return await Task.Run(() => BadRequest($"Ya existe un grupo configuración registrado con ese nombre."));
+                    }                      
+                    }
+                
                 if (_GrupoConfiguracionS.IdConfiguracion == 0)
                 {
                     _GrupoConfiguracionS.FechaCreacion = DateTime.Now;
