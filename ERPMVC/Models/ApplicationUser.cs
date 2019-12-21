@@ -15,7 +15,8 @@ namespace ERPMVC.Models
         [Display(Name = "Habilitado")]
         public bool? IsEnabled { get; set; }
 
-        [DataType(DataType.Password)]
+        //[DataType(DataType.Password)]
+        [UIHint("Password")]
         public override string PasswordHash { get; set; }
 
         public DateTime LastPasswordChangedDate { get; set; }
