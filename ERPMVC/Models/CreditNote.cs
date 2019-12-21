@@ -17,7 +17,7 @@ namespace ERPMVC.Models
         [Display(Name = "Envío")]
         public int ShipmentId { get; set; }
 
-        [Display(Name = "Numero de Factura")]
+        [Display(Name = "Número de Factura")]
         public int NumeroDEI { get; set; }
 
         [Display(Name = "Fiscal")]
@@ -78,7 +78,7 @@ namespace ERPMVC.Models
         [Display(Name = "RTN")]
         public string RTN { get; set; }
 
-        [Display(Name = "Telefono")]
+        [Display(Name = "Teléfono")]
         public string Tefono { get; set; }
 
         [EmailAddress]
@@ -87,7 +87,7 @@ namespace ERPMVC.Models
         [Display(Name = "Correo")]
         public string Correo { get; set; }
 
-        [Display(Name = "Direccion")]
+        [Display(Name = "Dirección")]
         public string Direccion { get; set; }
 
         [Display(Name = "Sucursal")]
