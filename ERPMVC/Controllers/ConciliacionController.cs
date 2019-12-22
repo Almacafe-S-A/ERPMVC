@@ -58,33 +58,26 @@ namespace ERPMVC.Controllers
         [HttpGet("[action]")]
         public async Task<DataSourceResult> GetConciliacion([DataSourceRequest]DataSourceRequest request)
         {
-            List<Conciliacion> _Conciliacion = new List<Conciliacion>();
-
-
+            List<ConciliacionDTO> _Conciliacion = new List<ConciliacionDTO>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Conciliacion/GetConciliacion");
+                var result = await _client.GetAsync(baseadress + "api/Conciliacion/GetConciliacionConCuenta");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Conciliacion = JsonConvert.DeserializeObject<List<Conciliacion>>(valorrespuesta);
-
+                    _Conciliacion = JsonConvert.DeserializeObject<List<ConciliacionDTO>>(valorrespuesta);
                 }
-
-
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
-
             return _Conciliacion.ToDataSourceResult(request);
 
         }
@@ -190,43 +183,6 @@ namespace ERPMVC.Controllers
 
         }
 
-
-
-       
-
-        public async Task<ActionResult> Submit(IEnumerable<IFormFile> files, ConciliacionDTO _Conciliaciontp)
-        {
-            Int64 AccountId = _Conciliaciontp.AccountId;
-            
-
-
-            // Task<IActionResult> resultadoProcesoConciliacion  = new Task<IActionResult>;
-            //
-            //var resultadoProcesoConciliacion="";
-            
-
-            if (files != null)
-            {
-
-                Conciliacion resultadoProcesoConciliacion = await ProcesoConciliacion(files, _Conciliaciontp);
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/JournalEntry/GetJournalEntry");
-
-
-                ViewBag.resultado = resultadoProcesoConciliacion;
-
-                ViewData["resultado"] = resultadoProcesoConciliacion;
-                //TempData['resultado'] = resultadoProcesoConciliacion;
-                return View("Result",resultadoProcesoConciliacion);
-            }
-
-            return View("Result");
-
-
-
-        }
         public async Task<ActionResult> DetailsConciliation(Int64 ConciliacionId)
         {
             Conciliacion _ConciliacionP = new Conciliacion();
@@ -291,7 +247,7 @@ namespace ERPMVC.Controllers
             return Json(_CheckAccountP);
         }
         //IEnumerable<IFormFile>
-        private async Task<ConciliacionDTO> ProcesoConciliacion(IEnumerable<IFormFile> files, ConciliacionDTO _ConciliacionP)
+        /*private async Task<ConciliacionDTO> ProcesoConciliacion(IEnumerable<IFormFile> files, ConciliacionDTO _ConciliacionP)
         {
             List<string> fileInfo = new List<string>();
             //Aigno la conciliacion para crearla
@@ -389,82 +345,19 @@ namespace ERPMVC.Controllers
                 _NewConciliacionP.SaldoConciliado = 0;
                 
 
-                /*
-                */
-
-                //foreach (var item in _JournalEntry)
-                //{
-                //    //double verificaicon = item.TotalCredit;
-
-                //    //string verificacion = item;
-                //    Debit = item.Debit;
-                //    Credit = item.Credit;
-                //    //Console.WriteLine("Amount is {0} and type is {1}");
-                //    Saldo = Convert.ToDouble(worksheet.Range["D8"].Number);
-
-                //}
-
-                // Saldo = Convert.ToDouble(worksheet.Range["D"+(rowCount - 1).ToString()].Number);
-
-
-
-
-                //for (int i = 1; i <= rowCount; i++)
-                //{
-                //    string rango = worksheet.Range["D" + i.ToString()].Number;
-
-
-
-                //}
-
-
-                //=================================================================
-
-                //Set Text in cell A3.
-                //worksheet.Range["A3"].Text;
-
-                // string variable = worksheet.Range["A"+"3"].Text;
-
-                //Defining the ContentType for excel file.
-                // string ContentType = "Application/msexcel";
-
-                //Define the file name.
-                //string fileoutput = "Output.xlsx";
-
-                //Creating stream object.
-                //MemoryStream newstream = new MemoryStream();
-
-                //Saving the workbook to stream in XLSX format
-                // workbook.SaveAs(newstream);
-
-                //newstream.Position = 0;
-
-                //Closing the workbook.
+                
                  workbook.Close();
 
-                //Dispose the Excel engine
+                
                 excelEngine.Dispose();
 
-                //Creates a FileContentResult object by using the file contents, content type, and file name.
-                //return File(newstream, ContentType, fileoutput);
+                
 
             }
-
-
-
-            //return Ok(new { 1, Credit });
-
-            //return new ObjectResult(new DataSourceResult { Data = new[] { Credit }, Total = 1 });
-
-            //return Json(new { foo = "bar", baz = "Blech" });
-
-            //double saldito=23.3;
-            //var resultado = new OkObjectResult(new { message = saldito, currentDate = DateTime.Now });
-            //return resultado;
             return _NewConciliacionP;
 
 
-        }
+        }*/
 
 
         
