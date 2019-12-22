@@ -280,6 +280,33 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> GetporGrupoEstado([DataSourceRequest]DataSourceRequest request, int GrupoId)
+        {
+            List<Estados> _clientes = new List<Estados>();
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Estados/GetEstadosByGrupo/" + GrupoId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _clientes = JsonConvert.DeserializeObject<List<Estados>>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_clientes.ToDataSourceResult(request));
+        }
+
 
         /// <summary>
         /// Obtiene los estados por grupo de cotizacion
