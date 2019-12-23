@@ -164,6 +164,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Alert = JsonConvert.DeserializeObject<List<Alert>>(valorrespuesta);
+                    _Alert = _Alert.OrderByDescending(o => o.AlertId).ToList();
 
                 }
 

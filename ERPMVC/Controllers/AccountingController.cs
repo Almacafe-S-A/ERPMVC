@@ -544,18 +544,15 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _customers = JsonConvert.DeserializeObject<List<Accounting>>(valorrespuesta);
-                    _customers = (from c in _customers
-                                  select new Accounting
-                                   {
-                                       AccountId = c.AccountId,
-                                       AccountName = c.AccountCode + "--" + c.AccountName,
-                                       AccountCode = c.AccountCode,
-                                       Description = c.Description,
-                                       Estado = c.Estado,
-                                       IdEstado = c.IdEstado,
-                                   }
-                                  ).ToList();
-
+                    _customers = _customers.Select(c => new Accounting
+                                                        {
+                                                            AccountId = c.AccountId,
+                                                            AccountName = c.AccountCode + "--" + c.AccountName,
+                                                            AccountCode = c.AccountCode,
+                                                            Description = c.Description,
+                                                            Estado = c.Estado,
+                                                            IdEstado = c.IdEstado,
+                                                        }).ToList();
                 }
             }
             catch (Exception ex)
@@ -938,6 +935,31 @@ namespace ERPMVC.Controllers
 
             return Ok(_accdto);
            // return new ObjectResult(new DataSourceResult { Data = new[] { _Account }, Total = 1 });
+        }
+
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetCuentasDiariasPatron([DataSourceRequest]DataSourceRequest request, [FromQuery(Name = "Patron")] string patron)
+        {
+            try
+            {
+                List<Accounting> cuentas = new List<Accounting>();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/Accounting/GetCuentasDiariasPatron?Patron={patron}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    cuentas = JsonConvert.DeserializeObject<List<Accounting>>(valorrespuesta);
+                }
+                return cuentas.ToDataSourceResult(request);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex}");
+                throw ex;
+            }
         }
        
     }
