@@ -9,37 +9,33 @@ namespace ERPMVC.Models
 {
     public class Conciliacion
     {
-        [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Display(Name = "Id de Conciliacion")]
+        [Display(Name = "Id")]
         public int ConciliacionId { get; set; }
 
-        [ForeignKey("IdBanco")]
-        [Display(Name = "Id de Banco")]
         public Int64 BankId { get; set; }
 
-        [ForeignKey("AccountId")]
-        [Display(Name = "Numero de cuenta Contable")]
+        [Display(Name = "Id")]
         public Int64 AccountId { get; set; }
 
         [Required]
-        [Display(Name = "Nombre del Banco")]
+        [Display(Name = "BankName")]
         public string BankName { get; set; }
+
         [Display(Name = "Cuenta Bancaria")]
         public Int64 CheckAccountId { get; set; }
+
+        [Required]
+        [Display(Name = "FechaConciliacion")]
+        public DateTime FechaConciliacion { get; set; }
+
         [Display(Name = "Fecha Inicio")]
         public DateTime DateBeginReconciled { get; set; }
         [Display(Name = "Fecha Fin")]
         public DateTime DateEndReconciled { get; set; }
 
         [Required]
-        [Display(Name = "Fecha de Conciliacion")]
-        public DateTime FechaConciliacion { get; set; }
-
-        [Required]
-        [Display(Name = "Saldo Conciliado")]
+        [Display(Name = "SaldoConciliado")]
         public Double SaldoConciliado { get; set; }
-
-        
 
         [Required]
         [Display(Name = "FechaCreacion")]
@@ -56,6 +52,14 @@ namespace ERPMVC.Models
         [Required]
         [Display(Name = "UsuarioModificacion")]
         public string UsuarioModificacion { get; set; }
+
+        [Required]
+        [Display(Name = "Saldo en Estado de Cuenta de Banco")]
+        public decimal SaldoBanco { get; set; }
+
+        [Required]
+        [Display(Name = "Saldo en Libro Mayor de Banco")]
+        public decimal SaldoLibro { get; set; }
 
         public List<ConciliacionLinea> ConciliacionLinea { get; set; }
 
