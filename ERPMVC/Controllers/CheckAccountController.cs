@@ -287,7 +287,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<CheckAccount>> SaveCheckAccount([FromBody]CheckAccountDTO _CheckAccountS)
+        public async Task<ActionResult<CheckAccount>> SaveCheckAccount(CheckAccountDTO _CheckAccountS)
         {
             CheckAccount _CheckAccount = _CheckAccountS;
             try
