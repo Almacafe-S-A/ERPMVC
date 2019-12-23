@@ -10,8 +10,10 @@ namespace ERPMVC.Models
     public class ElementoConfiguracion
     {
         [Key]
-        public long Id { get; set; } 
+        public long Id { get; set; }
+        [Display(Name = "Nombre")]
         public string Nombre { get; set; }
+
         [Display(Name = "Descripción")]
         public string Descripcion { get; set; }
 

@@ -36,7 +36,6 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-       // 
         public async Task<IActionResult> InsurancesCertificate()
         {
             ViewData["Insurances"] = await ObtenerInsurances();

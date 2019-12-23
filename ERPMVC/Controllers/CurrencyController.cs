@@ -55,7 +55,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Currency = JsonConvert.DeserializeObject<List<Currency>>(valorrespuesta);
-                    _Currency = _Currency.Where(q => q.Estado == "Activo").ToList();
+                    //_Currency = _Currency.Where(q => q.Estado == "Activo").ToList();
 
                 }
 
@@ -104,9 +104,11 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult<Currency>> SaveCurrency([FromBody]CurrencyDTO _CurrencyS)
         {
 
+           
             Currency _Currency = _CurrencyS;
             try
             {
+                CurrencyDTO _listCurrency = new CurrencyDTO();
                 // DTO_NumeracionSAR _liNumeracionSAR = new DTO_NumeracionSAR();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
@@ -119,19 +121,63 @@ namespace ERPMVC.Controllers
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Currency = JsonConvert.DeserializeObject<CurrencyDTO>(valorrespuesta);
+                    _listCurrency = JsonConvert.DeserializeObject<CurrencyDTO>(valorrespuesta);
                 }
 
-                if (_Currency == null) { _Currency = new Models.Currency(); }
+                if (_listCurrency == null) { _listCurrency = new CurrencyDTO(); }
 
-                if (_CurrencyS.CurrencyId == 0)
+                if (_listCurrency.CurrencyId == 0)
                 {
                     _Currency.FechaCreacion = DateTime.Now;
                     _Currency.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    CurrencyDTO _CurrencyDuplicated = new CurrencyDTO();
+                    //string baseadress = config.Value.urlbase;
+                    HttpClient _client2 = new HttpClient();
+                    _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var resultado = await _client.GetAsync(baseadress + "api/Currency/GetCurrencyByCurrencyName/" + _Currency.CurrencyName);
+                    string valorrespuesta2 = "";
+                    if (resultado.IsSuccessStatusCode)
+                    {
+                        valorrespuesta2 = await (resultado.Content.ReadAsStringAsync());
+                        _CurrencyDuplicated = JsonConvert.DeserializeObject<CurrencyDTO>(valorrespuesta2);
+
+                    }
+
+                    if (_CurrencyDuplicated != null)
+                    {
+
+                        string error = await result.Content.ReadAsStringAsync();
+                        return await Task.Run(() => BadRequest($"El nombre de la moneda ya esta ingresado."));
+                      
+                    }
+
                     var insertresult = await Insert(_CurrencyS);
                 }
                 else
                 {
+                    CurrencyDTO _CurrencyDuplicated = new CurrencyDTO();
+                    //string baseadress = config.Value.urlbase;
+                    HttpClient _client2 = new HttpClient();
+                    _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var resultado = await _client.GetAsync(baseadress + "api/Currency/GetCurrencyByCurrencyName/" + _Currency.CurrencyName);
+                    string valorrespuesta2 = "";
+
+                    if (resultado.IsSuccessStatusCode)
+                    {
+                        valorrespuesta2 = await (resultado.Content.ReadAsStringAsync());
+                        _CurrencyDuplicated = JsonConvert.DeserializeObject<CurrencyDTO>(valorrespuesta2);
+
+                    }
+                    if (_CurrencyDuplicated != null)
+                    {
+                        if (_CurrencyDuplicated.CurrencyId != _Currency.CurrencyId)
+                      
+                        {
+                            string error = await result.Content.ReadAsStringAsync();
+                            return await Task.Run(() => BadRequest($"El nombre de la moneda ya esta ingresado..."));
+                        }
+                       
+                    }
                     _CurrencyS.UsuarioCreacion = _Currency.UsuarioCreacion;
                     _CurrencyS.FechaCreacion = _Currency.FechaCreacion;
                     var updateresult = await Update(_Currency.CurrencyId, _CurrencyS);
@@ -245,8 +291,8 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpDelete("CurrencyId")]
-        public async Task<ActionResult<Currency>> Delete(Int64 CurrencyId, Currency _Currencyp)
+        [HttpPost("CurrencyId")]
+        public async Task<ActionResult<Currency>> Delete([FromBody]CurrencyDTO _Currencyp)
         {
             Currency _Currency = _Currencyp;
             try
@@ -263,10 +309,16 @@ namespace ERPMVC.Controllers
                     _Currency = JsonConvert.DeserializeObject<Currency>(valorrespuesta);
                 }
 
+                else 
+                {
+                    return BadRequest("No se puede eliminar la moneda porque ya esta siendo usada");
+                }
+
             }
             catch (Exception ex)
             {
                 return BadRequest($"Ocurrio un error{ex.Message}");
+                throw ex;
             }
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _Currency }, Total = 1 });

@@ -25,8 +25,9 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" name="btnprueba" class="close" data-dismiss="modal" >&times;</button>
                 <h4 class="modal-title">Bancos</h4>
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal" >&times;</button>
+                
             </div>
             <div class="modal-body">
                 <div class="row" id="validation">
@@ -44,7 +45,7 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="AccountManagementId" class=" control-label" style="width:100%">Id Cuenta</label>
-                                                    <input type="text" asp-for="AccountManagementId" name="AccountManagementId" class="form-control" disabled="disabled" style="width:100%" />
+                                                    <input type="text" asp-for="AccountManagementId" name="AccountManagementId" class="form-control" disabled="disabled" style="min-width:100%" />
                                                     <span asp-validation-for="AccountManagementId" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -55,23 +56,11 @@
                                                     <kendo-datepicker name="OpeningDate"
                                                                       value="Model.OpeningDate"
                                                                       format="dd/MM/yyyy"
+                                                                      max="@DateTime.Now"
                                                                       style="width:100%;"
                                                                       data-val-required="La fecha es requerida" />
                                                     <span asp-validation-for="OpeningDate" class="text-danger"></span>
                                                 </div>
-                                                <script>
-                                                    $(document).ready(function () {
-                                                        $("#dateinput").kendoDateInput();
-                                                    });
-                                                </script>
-                                                @*<div class="form-group">
-                    <label asp-for="OpeningDate" class="control-label" style="width:100%">Fecha Apertura</label>
-                    <kendo-datepicker name="OpeningDate"
-                                      format="dd/MM/yyyy"
-                                      style="width:100%;"
-                                      value="Model.OpeningDate"
-                                      data-val-required="La fecha es requerida" />
-                </div>*@
                                             </div>
 
                                             <div class="col-md-4">
@@ -117,16 +106,19 @@
                                                             </transport>
                                                         </datasource>
                                                     </kendo-dropdownlist>
+
+                                                    <span id="AccountTypeAlert" hidden="hidden" class="text-danger"><span role="alert" class="k-icon k-i-warning"></span>Este Tipo de Cuenta ya Existe!</span>
+
                                                 </div>
                                             </div>
 
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="AccountNumber" class=" control-label" style="width:100%"></label>
-                                                    <input type="text" asp-for="AccountNumber" name="AccountNumber" data-val-required="El Numero de Cuenta es requerido" class="form-control" autocomplete="off" maxlength="30" style="width:100%" onKeyPress="return soloNumeros(event)" />
-
+                                                    <input type="text" asp-for="AccountNumber" name="AccountNumber" data-val-required="El Numero de Cuenta es requerido" class="form-control" autocomplete="off" maxlength="30" style="min-width:100%" onKeyPress="return soloNumeros(event)" />
+                                                    <span asp-validation-for="AccountNumber" class="text-danger"></span>
                                                 </div>
-                                                <span asp-validation-for="AccountNumber" class="text-danger"></span>
+                                                
                                             </div>
 
                                             <div class="col-md-4">
@@ -218,39 +210,39 @@
         grid.dataSource.read();
     }
     function SaveAccountManagement(e) {
-
+        if (confirm('Esta seguro de guardar los cambios?')) {
             var notification = $("#notification").data("kendoNotification");
-           // e.preventDefault();
+            // e.preventDefault();
             $("#btnAccountManagement").hide();
             $("#btnAccountManagement").prop("disabled", true);
 
-        var displayedData = $("#gridAccountManagement").data().kendoGrid.dataSource.view();
-        var _OpeningDate = $("#OpeningDate").getKendoDatePicker().value().toJSON()
+            var displayedData = $("#gridAccountManagement").data().kendoGrid.dataSource.view();
+            var _OpeningDate = $("#OpeningDate").getKendoDatePicker().value().toJSON()
 
-        var dataObject = {
-            'AccountManagementId': $("#AccountManagementId").val() === "" ? "0" : $("#AccountManagementId").val(),
-            'OpeningDate': _OpeningDate,
-            'AccountType': $("#AccountType").val(),
-            'AccountNumber': $("#AccountNumber").val(),
-            'BankId': $("#BankId").val(),
-            'BankName': $("#BankId").data("kendoDropDownList").text(),
-            'CurrencyId': $("#CurrencyId").val(),
-            'CurrencyName': $("#CurrencyId").data("kendoDropDownList").text(),
-            'Description': $("#Description").val(),   
-            'Status': $("#Status").val(),
-            '_AccountManagement': displayedData
+            var dataObject = {
+                'AccountManagementId': $("#AccountManagementId").val() === "" ? "0" : $("#AccountManagementId").val(),
+                'OpeningDate': _OpeningDate,
+                'AccountType': $("#AccountType").val(),
+                'AccountNumber': $("#AccountNumber").val(),
+                'BankId': $("#BankId").val(),
+                'BankName': $("#BankId").data("kendoDropDownList").text(),
+                'CurrencyId': $("#CurrencyId").val(),
+                'CurrencyName': $("#CurrencyId").data("kendoDropDownList").text(),
+                'Description': $("#Description").val(),
+                'Status': $("#Status").val(),
+                '_AccountManagement': displayedData
             };
 
             console.log(JSON.stringify(dataObject));
             //var form = $("#frmNumeracion");
-           // form.validate();
+            // form.validate();
 
             var validator = $("#frmAccountManagement").data("kendoValidator");
-                 var status = $(".status");
+            var status = $(".status");
 
 
-                if (validator.validate()) {
-
+            if (validator.validate()) {
+                if ($('#AccountTypeAlert').is(':hidden')) {
                     $.ajax({
                         url: '@Url.Action("SaveAccountManagement", "AccountManagement")',
                         method: 'POST',
@@ -273,7 +265,7 @@
                                 stack: 6
                             });
 
-                           RefrescarGrid();
+                            RefrescarGrid();
 
                             $('#ModalAccountManagement').modal('hide');
 
@@ -288,16 +280,23 @@
 
                         }
                     });
-
                 }
                 else {
-                    status.text("Oops! There is invalid data in the form.")
-                        .removeClass("valid")
-                        .addClass("invalid");
+                    notification.show({
+                        title: "Validación",
+                        message: "No se puede duplicar el Tipo de Cuenta!"
+                    }, "error");
                 }
+            }
+            else {
+                status.text("Oops! There is invalid data in the form.")
+                    .removeClass("valid")
+                    .addClass("invalid");
+            }
 
 
-        $("#btnAccountManagement").show();
-        $("#btnAccountManagement").prop("disabled", false);
+            $("#btnAccountManagement").show();
+            $("#btnAccountManagement").prop("disabled", false);
+        }
     }
 </script>
