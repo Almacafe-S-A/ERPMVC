@@ -14,4 +14,9 @@ namespace ERPMVC.DTO
 
         public string token { get; set; }
     }
+
+    public class JournalEntryLineConciliacionDTO : JournalEntryLine
+    {
+        public DateTime FechaTransaccion { get; set; }
+    }
 }

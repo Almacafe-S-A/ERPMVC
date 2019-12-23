@@ -936,6 +936,31 @@ namespace ERPMVC.Controllers
             return Ok(_accdto);
            // return new ObjectResult(new DataSourceResult { Data = new[] { _Account }, Total = 1 });
         }
+
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetCuentasDiariasPatron([DataSourceRequest]DataSourceRequest request, [FromQuery(Name = "Patron")] string patron)
+        {
+            try
+            {
+                List<Accounting> cuentas = new List<Accounting>();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/Accounting/GetCuentasDiariasPatron?Patron={patron}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    cuentas = JsonConvert.DeserializeObject<List<Accounting>>(valorrespuesta);
+                }
+                return cuentas.ToDataSourceResult(request);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex}");
+                throw ex;
+            }
+        }
        
     }
 }

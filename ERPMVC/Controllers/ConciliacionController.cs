@@ -518,125 +518,38 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<Conciliacion>> SaveConciliacion([FromBody]ConciliacionDTO _ConciliacionDTO)
+        public async Task<ActionResult<Conciliacion>> SaveConciliacion([FromBody]dynamic _ConciliacionDTO)
         {
-
             try
-            {
-               // var Conciliacionvar = await Submit(files, _ConciliacionDTO);
-
-                Conciliacion _listConciliacion = _ConciliacionDTO;
+            {  
+                Conciliacion conciliacion = JsonConvert.DeserializeObject<Conciliacion>(_ConciliacionDTO.ToString());
+                conciliacion.FechaCreacion = DateTime.Now;
+                conciliacion.FechaModificacion = DateTime.Now;
+                conciliacion.UsuarioCreacion = HttpContext.Session.GetString("user");
+                conciliacion.UsuarioModificacion = HttpContext.Session.GetString("user");
+                foreach (var linea in conciliacion.ConciliacionLinea)
+                {
+                    linea.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    linea.UsuarioModificacion = HttpContext.Session.GetString("user");
+                }
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Conciliacion/GetConciliacionById/" + _ConciliacionDTO.ConciliacionId);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Conciliacion/Insert", conciliacion);
                 string valorrespuesta = "";
-
-                //foreach (var file in files)
-                //{
-
-
-                   // FileInfo info = new FileInfo(file.FileName);
-                    //if (
-                     //   info.Extension.Equals(".xls") || info.Extension.Equals(".xlsx"))
-                    //{
-
-                        _ConciliacionDTO.FechaModificacion = DateTime.Now;
-                        _ConciliacionDTO.UsuarioModificacion = HttpContext.Session.GetString("user");
-                        if (result.IsSuccessStatusCode)
-                        {
-
-                            valorrespuesta = await (result.Content.ReadAsStringAsync());
-                            _listConciliacion = JsonConvert.DeserializeObject<Conciliacion>(valorrespuesta);
-                        }
-
-                        if (_listConciliacion == null) { _listConciliacion = new Models.Conciliacion(); }
-                        if (_listConciliacion.ConciliacionId == 0)
-                        {
-                    if (_ConciliacionDTO.DateBeginReconciled >= _ConciliacionDTO.DateEndReconciled)
-                    {
-                        string error = await result.Content.ReadAsStringAsync();
-                        return await Task.Run(() => BadRequest($"La fecha de fin debe ser mayor a la fecha de inicio..."));
-
-                    }
-                    //  ConciliacionDTO NuevaConciliacion = await ProcesoConciliacion(files, _ConciliacionDTO);
-                    //                         NuevaConciliacion = ((Conciliacion)Conciliacionvar.va);
-
-
-
-                    //NuevaConciliacion.FechaCreacion = DateTime.Now;
-                    // NuevaConciliacion.UsuarioCreacion = HttpContext.Session.GetString("user");
-
-                    //var insertresult = await Insert(NuevaConciliacion);
-                    _ConciliacionDTO.FechaCreacion = DateTime.Now;
-                    _ConciliacionDTO.UsuarioCreacion = HttpContext.Session.GetString("user");
-
-                    ConciliacionDTO _ConciliacionDuplicated = new ConciliacionDTO();
-                    //string baseadress = config.Value.urlbase;
-                    HttpClient _client2 = new HttpClient();
-                    _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var resultado = await _client.PostAsJsonAsync(baseadress + "api/Conciliacion/GetConciliacionByDate" , _ConciliacionDTO);
-                    string valorrespuesta2 = "";
-
-                    if (resultado.IsSuccessStatusCode)
-                    {
-                        valorrespuesta2 = await (resultado.Content.ReadAsStringAsync());
-                        _ConciliacionDuplicated = JsonConvert.DeserializeObject<ConciliacionDTO>(valorrespuesta2);
-
-                    }
-                    if (_ConciliacionDuplicated != null)
-                    {
-
-                       
-                        string error = await result.Content.ReadAsStringAsync();
-                        return await Task.Run(() => BadRequest($"El rango de fechas ya esta ingresado..."));
-
-                                            }
-                    
-                    // var insertresult = await Insert(_CostCenter);
-                    //}
-                    var insertresult = await Insert(_ConciliacionDTO);
-                        var value = ((ConciliacionDTO)insertresult.Value);
-                           
-
-                            _ConciliacionDTO = value;
-                        }
-                        else
-                        {
-                    _ConciliacionDTO.FechaCreacion = _listConciliacion.FechaCreacion;
-                    _ConciliacionDTO.UsuarioCreacion = _listConciliacion.UsuarioCreacion;
-
-                    var updateresult = await Update(_ConciliacionDTO.ConciliacionId, _ConciliacionDTO);
-                        }
-
-
-
-                     /*   var filePath = _hostingEnvironment.WebRootPath + "/Conciliacion/" + _ConciliacionDTO.ConciliacionId + "_"
-                            + file.FileName.Replace(info.Extension, "") + "_"  + file.FileName
-                            + info.Extension;
-
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            await file.CopyToAsync(stream);
-                            // MemoryStream mstream = new MemoryStream();
-                            //mstream.WriteTo(stream);
-                        }
-                        */
-                        //_ConciliacionDTO.Path = filePath;
-                        // var updateresult2 = await Update(_ConciliacionDTO.ConciliacionId, _InsurancesDTO);
-                    //}
-                //}
-
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    conciliacion = JsonConvert.DeserializeObject<Conciliacion>(valorrespuesta);
+                }
+                return new ObjectResult(new DataSourceResult { Data = new[] { conciliacion }, Total = 1 });
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _ConciliacionDTO }, Total = 1 });
-            //return Json(_ConciliacionDTO);
-
+            
         }
 
     }

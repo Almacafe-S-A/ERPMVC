@@ -134,7 +134,6 @@ namespace ERPMVC.Controllers
             List<AccountManagement> _AccountManagement = new List<AccountManagement>();
             try
             {
-
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -144,10 +143,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _AccountManagement = JsonConvert.DeserializeObject<List<AccountManagement>>(valorrespuesta);
-
                 }
-
-
             }
             catch (Exception ex)
             {
