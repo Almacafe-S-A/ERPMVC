@@ -212,5 +212,41 @@ namespace ERPMVC.Controllers
             }
             return new ObjectResult(new DataSourceResult { Data = new[] { _GarantiaBancaria }, Total = 1 });
         }
+
+        //--------------------------------------------------------------------------------------
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> ValidacionTipoMoneda([FromBody]GarantiaBancaria _GarantiaBancariaP)
+        {
+            ExchangeRate _ExchangeRate = new ExchangeRate();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                _ExchangeRate.CurrencyId = _GarantiaBancariaP.CurrencyId;
+                _ExchangeRate.DayofRate = DateTime.Now;
+                _ExchangeRate.ExchangeRateValue = 0;
+                _ExchangeRate.ExchangeRateId = 0;
+                _ExchangeRate.CreatedDate = DateTime.Now;
+                _ExchangeRate.ModifiedDate = DateTime.Now;
+                _ExchangeRate.CreatedUser = HttpContext.Session.GetString("user");
+                _ExchangeRate.ModifiedUser = HttpContext.Session.GetString("user");
+
+                var result = await _client.PostAsJsonAsync(baseadress + "api/ExchangeRate/GetExchangeRateByFecha", _ExchangeRate);  
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _ExchangeRate = JsonConvert.DeserializeObject<ExchangeRate>(valorrespuesta);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return await Task.Run(() => Ok(_ExchangeRate));
+        }
     }
 }
