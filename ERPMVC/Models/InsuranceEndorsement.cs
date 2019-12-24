@@ -41,6 +41,10 @@ namespace ERPMVC.Models
         public double TotalCertificateBalalnce { get; set; }
 
         public double TotalAssuredDifernce { get; set; }
+
+        public Int64 EstadoId { get; set; }
+        [ForeignKey("EstadoId")]
+        public Estados Estados { get; set; }
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
