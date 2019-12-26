@@ -63,6 +63,17 @@ $(".validation-wizard").steps({
     , onFinished: function (event, currentIndex) {
         var form = $(this);
         form.submit();
+        $("#validation").show();
+        $("#wizard-asociarcertificados").hide();
+        //$.toast({
+        //    heading: 'Satisfactorio',
+        //    text: '<br/><br/>Datos Asociados correctamente.',
+        //    position: 'top-right',
+        //    loaderBg: '#ff6849',
+        //    icon: 'success',
+        //    hideAfter: 3000,
+        //    stack: 6
+        //});
        //  swal("Form Submitted!", "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed lorem erat eleifend ex semper, lobortis purus sed.");
     }
 }), $(".validation-wizard").validate({
