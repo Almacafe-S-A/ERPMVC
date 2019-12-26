@@ -1,5 +1,11 @@
 ﻿@model ERPMVC.DTO.GarantiaBancariaDTO
 
+<style>
+    .readonly {
+        pointer-events: none;
+    }
+</style>
+
 <div id="ModalGarantiaBancaria" class="modal fade" role="dialog">
     <!-- Modal content-->
     <div class="modal-dialog modal-lg">
@@ -45,7 +51,6 @@
                                                                           format="dd/MM/yyyy"
                                                                           data-val-required="La Fecha Inicio de Vigencia es requerida." min="@DateTime.Now" onchange="setMinFechaFinal()"
                                                                           value="@Model.FechaInicioVigencia"/>
-                                                    @*<input asp-for="FechaInicioVigencia" name="FechaInicioVigencia"/>*@
                                                     <span asp-validation-for="FechaInicioVigencia" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -70,7 +75,6 @@
                                                                           data-val-required="La Fecha Final de Vigencia es requerida."
                                                                           value="null" />
                                                     }
-                                                    @*<input asp-for="FechaFianlVigencia" name="FechaFianlVigencia"/>*@
                                                     <span asp-validation-for="FechaFianlVigencia" class="text-danger"></span>
 
                                                 </div>
@@ -79,7 +83,7 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="NumeroCertificado" class=" control-label" style="min-width:100%"></label>
-                                                    <input type="number" min="0" max="30" asp-for="NumeroCertificado" name="NumeroCertificado" required data-required-msg="El Número de Certificado es requerido." data-min-msg="El Número de Certificado no puede ser negativo." data-max-msg="El Número de Certificado no puede ser mayor de 30." class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <input type="text" maxlength="30" asp-for="NumeroCertificado" name="NumeroCertificado" disabled required data-required-msg="El Número de Certificado es requerido." class="form-control" autocomplete="off" style="min-width:100%" />
                                                     <span asp-validation-for="NumeroCertificado" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -108,12 +112,12 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Monto" class=" control-label" style="min-width:100%"></label>
-                                                    <kendo-numerictextbox name="Monto"
+                                                    <kendo-numerictextbox name="Monto" 
                                                                           format="n2" spinners="false"
                                                                           min="0" data-val-required="El Monto es requerido." data-min-msg="El Monto no puede ser negativo."
                                                                           style="width: 100%;text-align:right;padding-right: 3px"
-                                                                          max="999999999"
-                                                                          step="1"
+                                                                          max="999999999" 
+                                                                          step="1" onchange="TypeCurrencyValidation();"
                                                                           value="Model.Monto"/>
                                                     <span asp-validation-for="Monto" class="text-danger"></span>
                                                 </div>
@@ -128,7 +132,7 @@
                                                                         option-label="Seleccione la Moneda!"
                                                                         datatextfield="CurrencyName"
                                                                         datavaluefield="CurrencyId"
-                                                                        style="width: 100%;">
+                                                                        style="width: 100%;" onchange="TypeCurrencyValidation();">
                                                         <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
                                                             <transport>
                                                                 <read url="@Url.Action("GetCurrency", "Currency")" />
@@ -141,8 +145,8 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Ajuste" class=" control-label" style="min-width:100%"></label>
-                                                    <kendo-numerictextbox name="Ajuste"
-                                                                          format="n2" spinners="false"
+                                                    <kendo-numerictextbox name="Ajuste" class="readonly"
+                                                                          format="n2" spinners="false" tabindex="-1"
                                                                           min="0" data-val-required="El Ajuste es requerido." data-min-msg="El Ajuste no puede ser negativo."
                                                                           style="width: 100%;text-align:right;padding-right: 3px"
                                                                           max="999999999"
@@ -191,7 +195,7 @@
 
 <script>
     $(document).ready(function () {
-        
+
     });
 
     function SaveGarantiaBancaria() {
@@ -280,6 +284,56 @@
                     $("#FechaFianlVigencia").val(null);
                 }
             }
+        }
+    }
+
+    function TypeCurrencyValidation() {
+        var Currency = $("#CurrencyId").val();
+        var Amount = $("#Monto").val();
+        if (Currency > 0 && Amount > 0) {
+            var CurrencyName = $("#CurrencyId").data("kendoDropDownList").text();
+            if (CurrencyName == "Dolar" || CurrencyName == "Dolares americanos") {
+                var dataObject = { CurrencyId: Currency };
+                $.ajax({
+                    url: '@Url.Action("ValidacionTipoMoneda", "GarantiaBancaria")',
+                    method: 'POST',
+                    datatype: "json",
+                    contentType: 'application/json',
+                    async: false,
+                    data: JSON.stringify(dataObject),
+                    success: function (data) {
+                        if (data != undefined) {
+                            var TasaDeCambio = 0, Ajuste = 0, Monto = 0;
+                            TasaDeCambio = data.ExchangeRateValue;
+                            Monto = $("#Monto").val();
+                            Ajuste = Number(Monto) * Number(TasaDeCambio);
+                            $("#Ajuste").data("kendoNumericTextBox").value(Ajuste);
+                        }
+                        else {
+                            $.toast({
+                                heading: 'Error',
+                                text: '<br/><br/> No se encontro la tasa de cambio de dolar de hoy, porfavor Ingrese la Tasa de Cambio primero',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'error',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+                            $("#Ajuste").data("kendoNumericTextBox").value(null);
+                        }
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        alert(textStatus + ": " + XMLHttpRequest.responseText);
+                    }
+                });
+            }
+            else {
+                $("#Ajuste").data("kendoNumericTextBox").value(0);
+                $("#Ajuste_validationMessage").prop("hidden", true);
+            }
+        }
+        else {
+            $("#Ajuste").data("kendoNumericTextBox").value();
         }
     }
 </script>
