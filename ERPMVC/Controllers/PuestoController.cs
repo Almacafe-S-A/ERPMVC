@@ -174,16 +174,12 @@ namespace ERPMVC.Controllers
             try
             {
                 Puesto _listPuesto = new Puesto();
-                // DTO_NumeracionSAR _liNumeracionSAR = new DTO_NumeracionSAR();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result1 = await _client.GetAsync(baseadress + "api/Puesto/GetPuestoByNombrePuesto/" + _Puesto.NombrePuesto);
+                var result1 = await _client.GetAsync(baseadress + "api/Puesto/GetPuestoByNombrePuesto/" + _Puesto.NombrePuesto+"/"+_Puesto.NombreDepartamento);
                 string valorrespuesta1 = "";
-                //_Puesto.FechaCreacion = DateTime.Now;
-                //_Puesto.Usuariocreacion = HttpContext.Session.GetString("user");
-                //_Puesto.FechaModificacion = DateTime.Now;
-                //_Puesto.Usuariomodificacion = HttpContext.Session.GetString("user");
+
                 if (result1.IsSuccessStatusCode)
                 {
                     valorrespuesta1 = await (result1.Content.ReadAsStringAsync());
