@@ -1,0 +1,173 @@
+﻿@model ERPMVC.Models.CheckAccountLines
+@{ Layout = null;
+    var messages1 = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+    {"required","Valor requerido" }
+};
+    
+}
+
+
+
+
+<div id="ModalCheck" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+                <h4 class="modal-title">Nuevo Cheque</h4>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmCheckAccount" kendo-validator="true" kendo-messages="messages1" asp-controller="CheckAccount" asp-action="SaveCheck"
+                                      data-ajax="true"
+                                      data-ajax-method="post" enctype="multipart/form-data"
+                                      data-ajax-begin="onBegin" data-ajax-complete="onComplete"
+                                      data-ajax-failure="onFailed" data-ajax-success="onSuccess"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="CheckAccountId" class=" control-label" style="min-width:100%">Id Chequera</label>
+                                                    <input type="text" asp-for="CheckAccountId" name="CheckAccountId" class="form-control" readonly style="min-width:100%" />
+                                                    <span asp-validation-for="CheckAccountId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4" hidden>
+                                                <div class="form-group">
+                                                    <label asp-for="Id" class=" control-label" style="min-width:100%"></label>
+                                                    <input type="text" asp-for="Id" name="Id" class="form-control" readonly style="min-width:100%" />
+                                                    <span asp-validation-for="Id" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="CheckNumber" class=" control-label" style="min-width:100%">Número de Cheque</label>
+                                                    <input type="text" asp-for="CheckNumber" name="CheckNumber" class="form-control" style="min-width:100%" required/>
+                                                    <span asp-validation-for="CheckNumber" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Date" class=" control-label" style="min-width:100%">Fecha</label>
+                                                    
+                                                    <kendo-datetimepicker name="Date" for="Date"
+                                                                          style="min-width:100%"
+                                                                          format="dd/MM/yyyy hh:mm:ss"
+                                                                          time-format="hh:mm:ss"
+                                                                          data-val-required="La fecha es requerida" required
+                                                                          readonly
+                                                                          value="Model.Date" />
+                                                    <span asp-validation-for="Date" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                        <div class="row">
+                                            
+                                            <div class="col-md-8">
+                                                <div class="form-group">
+                                                    <label asp-for="PaytoOrderOf" class=" control-label" style="min-width:100%">Pagar a la Orden de</label>
+                                                    <input type="text" asp-for="PaytoOrderOf" name="PaytoOrderOf" class="form-control" style="min-width:100%" required />
+                                                    <span asp-validation-for="PaytoOrderOf" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Ammount" class=" control-label" style="min-width:100%">Monto</label>
+                                                    <input type="text" asp-for="Ammount" name="Ammount" onKeyPress="return soloNumeros(event)" class="form-control" style="min-width:100%" required/>
+                                                    <span asp-validation-for="Ammount" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+
+
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-8">
+                                                <div class="form-group">
+                                                    <label asp-for="Place" class=" control-label" style="min-width:100%">Lugar</label>
+                                                    <input type="text" asp-for="Place" name="Date" class="form-control" style="min-width:100%" required/>
+                                                    <span asp-validation-for="Place" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            
+
+                                        </div>
+
+                                        <div class="modal-footer">
+                                            <div class="col-md-12">
+                                                <button id="btnCheckAccount" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    var onBegin = function () {
+        //alert("Begin");
+
+    };
+
+    var onComplete = function () {
+        //alert("Complete");
+        //$('#ModalEmployees').modal('hide');
+    };
+
+    var onSuccess = function (context) {
+        //alert(context);
+        console.log(context);
+        $.toast({
+            heading: 'Satisfactorio',
+            text: '<br/><br/> Datos guardados correctamente.',
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'success',
+            hideAfter: 30000,
+            stack: 6
+        });
+
+        RefrescarGrid();
+        $('#frmCheckAccount').modal('hide');
+        $('#ModalCheck').modal('hide');
+    };
+
+    var onFailed = function (context) {
+        // alert(context);
+        console.log(context);
+        $.toast({
+            heading: 'Error',
+            text: '<br/><br/> Error al Guardar',
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'error',
+            hideAfter: 30000,
+            stack: 6
+        });
+    };
+    function soloNumeros(e) {
+        var key = window.Event ? e.which : e.keyCode
+        return (key >= 48 && key <= 57)
+    }
+
+    function RefrescarGrid() {
+        var grid = $("#gridCheckAccount").getKendoGrid();
+        grid.dataSource.read();
+    }
+    
+        
+</script>

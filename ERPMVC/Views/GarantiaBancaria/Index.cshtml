@@ -1,0 +1,209 @@
+﻿
+@{
+    ViewData["Title"] = "Garantías Bancarias";
+}
+
+<h3 class="text-themecolor">Garantías Bancarias</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.GarantiaBancaria>()
+            .Name("gridGarantiasBancarias")
+            .Columns(columns =>
+            {
+                columns.Command(command =>
+                {
+                    command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditGarantiaBancaria");
+                    command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("DeleteGarantiaBancaria");
+                }).Width(125).Title("Acciones");
+                columns.Bound(p => p.Id).Width(100);
+                columns.Bound(p => p.strign).Width(250);
+                columns.Bound(p => p.FechaInicioVigencia).Title("Fecha Inicio de Vigencia").Format("{0:dd/MM/yyyy}").Width(300);
+                columns.Bound(p => p.FechaFianlVigencia).Title("Fecha Final de Vigencia").Format("{0:dd/MM/yyyy}").Width(300);
+                columns.Bound(p => p.NumeroCertificado).Title("Número de Certificado").Width(250);
+                columns.Bound(p => p.CostCenter.CostCenterName).Title("Centro de Costo").Width(250);
+                columns.Bound(p => p.Monto).Title("Monto").Width(170);
+                columns.Bound(p => p.Currency.CurrencyName).Title("Moneda").Width(200);
+                columns.Bound(p => p.Ajuste).Title("Ajuste").Width(170);
+                columns.Bound(p => p.Estado.NombreEstado).Title("Estado").Width(170);
+            })
+            .Filterable(f => f.Operators(o => o.ForString(s => s
+                .Clear()
+                .Contains("Contiene")
+                .DoesNotContain("No contiene")
+                .EndsWith("Termina con")
+                .IsEqualTo("Es igual a")
+                .IsNotEqualTo("No es igual a")
+                .IsNull("Es nulo")
+                .StartsWith("Inicia con"))
+            .ForNumber(n => n
+                .Clear()
+                .IsEqualTo("Es igual a")
+                .IsGreaterThan("Es mayor que")
+                .IsLessThan("Es menor que")
+                .IsNull("Es nulo")
+                .IsLessThanOrEqualTo("Es menor o igual que")
+                .IsGreaterThanOrEqualTo("Es mayor o igual que"))
+            .ForDate(d => d
+                .Clear()
+                .IsEqualTo("Es igual que")
+                .IsGreaterThan("Es mayor que")
+                .IsLessThan("Es menor que")
+                .IsLessThanOrEqualTo("Es menor o igual que")
+                .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                .IsNotEqualTo("No es igual que"))
+            ))
+            .ToolBar(tools =>
+            {
+                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddGarantiaBancaria()" });
+                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+            })
+            .Editable(e => e.Mode(GridEditMode.PopUp))
+            .Sortable()
+            .Pageable(s => s
+                .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+                .Empty("No hay datos."))
+            )
+            .Filterable()
+            .Scrollable()
+            .Pdf(pdf => pdf.FileName("GarantíasBancariasReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+            .ProxyURL(Url.Action("Export", "Home")).AllPages())
+            .Excel(excel => excel.FileName("GarantíasBancariasReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+            .DataSource(dataSource =>
+            dataSource
+            .WebApi()
+            .ServerOperation(true)
+            .Model(model =>
+            {
+                model.Id(p => p.Id);
+                model.Field(p => p.Id).Editable(false);
+            })
+            .Sort(s => s.Add(m => m.FechaCreacion).Descending())
+            .Events(events => events.Error("error_handler"))
+            .Read(read => read.Action("Get", "GarantiaBancaria"))
+            //.Create(create => create.Action("Insert", "City").Type(HttpVerbs.Post))
+            //.Update(update => update.Action("Update", "City").Type(HttpVerbs.Post))
+            //.Destroy(destroy => destroy.Action("Delete", "City").Type(HttpVerbs.Post))
+            )
+            .Events(e =>
+            {
+                e.Save("onsave");
+            })
+)
+
+<div id="numGarantiaBancaria">
+    @await Html.PartialAsync("pvwAddGarantiaBancaria", new ERPMVC.DTO.GarantiaBancariaDTO { Id = 0, FechaInicioVigencia = DateTime.Now })
+</div>
+
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridGarantiasBancarias").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridGarantiasBancarias").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar Garantía Bancaria");
+    setRowButtonTooltip(".k-grid-Editar", "Editar Garantía Bancaria");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar Garantía Bancaria");
+
+    function AddGarantiaBancaria() {
+        $('#ModalGarantiaBancaria').find(':input').not(':submit').val('');
+        var validator = $("#frmGarantiaBancaria").data("kendoValidator");
+        validator.hideMessages();
+
+        var displayedData = $("#gridGarantiasBancarias").data().kendoGrid.dataSource.view();
+        debugger;
+        if (displayedData.length > 0) {
+            debugger;
+            var Correlativo = displayedData[0].NumeroCertificado;
+            Correlativo = Number(Correlativo) + 1;
+            $("#NumeroCertificado").val(Correlativo);
+        }
+        else {
+            debugger;
+            $("#NumeroCertificado").val(1);
+        }
+        
+        $("#CostCenterId").data("kendoDropDownList").value(0);
+        $("#CurrencyId").data("kendoDropDownList").value(0);
+        $("#IdEstado").data("kendoDropDownList").value(0);
+        var d = new Date();
+        var strDate = d.getDate() + "/" + (d.getMonth() + 1) + "/" + d.getFullYear(); 
+        $("#FechaInicioVigencia").val(strDate);
+        var DateNow = (d.getDate() + 1) + "/" + (d.getMonth() + 1) + "/" + d.getFullYear();
+        $("#FechaFianlVigencia").kendoDatePicker("min", DateNow)
+        $("#Id").val('0');
+        $('#ModalGarantiaBancaria').modal('show');
+    }
+    function EditGarantiaBancaria(e) {
+        //console.log("EditGarantiaBancaria");
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            Id: dataItem.Id,
+            editar : 1
+        };
+        $.ajax({
+            url: '@Url.Action("pvwAddGarantiaBancaria", "GarantiaBancaria")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#numGarantiaBancaria").html('');
+                $("#numGarantiaBancaria").html(result);
+                
+                $('#ModalGarantiaBancaria').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+    function DeleteGarantiaBancaria(e) {
+        //console.log("DeleteGarantiaBancaria");
+        if (confirm('¿Esta seguro que desea eliminar este registro?')) {
+            e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                Id: dataItem.Id
+            };
+            debugger;
+            $.ajax({
+                url: '@Url.Action("Delete", "GarantiaBancaria")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    debugger;
+                    RefrescarGrid();
+                
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+        }
+    }
+    function onsave() {
+        console.log("onsave");
+    }
+
+    function RefrescarGrid() {
+        var grid = $("#gridGarantiasBancarias").getKendoGrid();
+        grid.dataSource.read();
+    }
+</script>

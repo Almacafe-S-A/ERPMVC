@@ -36,7 +36,36 @@ namespace ERPMVC.Controllers
         {
             return View();
         }
+        public async Task<JsonResult> GetPuestoById(Int64 PuestoId)
+        {
+            Puesto _PuestoP = new Puesto();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Puesto/GetPuestoById/" + PuestoId);
+                string valorrespuesta = "";
+                _PuestoP.FechaCreacion = DateTime.Now;
+                _PuestoP.Usuariocreacion = HttpContext.Session.GetString("user");
+                if (result.IsSuccessStatusCode)
+                {
 
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _PuestoP = JsonConvert.DeserializeObject<Puesto>(valorrespuesta);
+                }
+
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_PuestoP);
+        }
         [HttpGet]
         public async Task<JsonResult> Get([DataSourceRequest]DataSourceRequest request)
         {
@@ -121,7 +150,7 @@ namespace ERPMVC.Controllers
 
                 if (_Puesto == null)
                 {
-                    _Puesto = new PuestoDTO();
+                    _Puesto = new PuestoDTO { FechaCreacion = DateTime.Now};
                 }
             }
             catch (Exception ex)
@@ -145,14 +174,12 @@ namespace ERPMVC.Controllers
             try
             {
                 Puesto _listPuesto = new Puesto();
-                // DTO_NumeracionSAR _liNumeracionSAR = new DTO_NumeracionSAR();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result1 = await _client.GetAsync(baseadress + "api/Puesto/GetPuestoByNombrePuesto/" + _Puesto.NombrePuesto);
+                var result1 = await _client.GetAsync(baseadress + "api/Puesto/GetPuestoByNombrePuesto/" + _Puesto.NombrePuesto+"/"+_Puesto.NombreDepartamento);
                 string valorrespuesta1 = "";
-                _Puesto.FechaModificacion = DateTime.Now;
-                _Puesto.Usuariomodificacion = HttpContext.Session.GetString("user");
+
                 if (result1.IsSuccessStatusCode)
                 {
                     valorrespuesta1 = await (result1.Content.ReadAsStringAsync());
@@ -176,9 +203,17 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    var result = await _client.GetAsync(baseadress + "api/Puesto/GetPuestoById/" + _Puesto.IdPuesto);
-                    _PuestoP.Usuariocreacion = _Puesto.Usuariocreacion;
+                    var result = await _client.GetAsync(baseadress + "api/Puesto/GetPuestoById/" + _PuestoP.IdPuesto);
+                    string valorrespuesta = "";
+                    if (result1.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _Puesto = JsonConvert.DeserializeObject<PuestoDTO>(valorrespuesta);
+                    }
                     _PuestoP.FechaCreacion = _Puesto.FechaCreacion;
+                    _PuestoP.Usuariocreacion = _Puesto.Usuariocreacion;
+                    _Puesto.Usuariomodificacion = _Puesto.Usuariomodificacion;
+                    _Puesto.FechaModificacion = _Puesto.FechaModificacion;
                     var updateresult = await Update(_Puesto.IdPuesto, _PuestoP);
                 }
 
@@ -209,6 +244,7 @@ namespace ERPMVC.Controllers
                 _Puesto.Usuariomodificacion = HttpContext.Session.GetString("user");
                 _Puesto.FechaCreacion = DateTime.Now;
                 _Puesto.FechaModificacion = DateTime.Now;
+
                 var result = await _client.PostAsJsonAsync(baseadress + "api/Puesto/Insert", _Puesto);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)

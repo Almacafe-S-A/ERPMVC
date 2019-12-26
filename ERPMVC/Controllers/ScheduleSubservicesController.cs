@@ -87,7 +87,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ScheduleSubservices = JsonConvert.DeserializeObject<List<ScheduleSubservices>>(valorrespuesta);
-
+                    _ScheduleSubservices = _ScheduleSubservices.OrderByDescending(q => q.ScheduleSubservicesId).ToList();
                 }
 
 

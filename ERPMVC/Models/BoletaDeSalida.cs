@@ -14,9 +14,11 @@ namespace ERPMVC.Models
         public Int64 BoletaDeSalidaId { get; set; }
 
         [Display(Name = "C/E No.")]
+        [Required(AllowEmptyStrings = false, ErrorMessage = "El campo {0} es requerido")]
         public Int64 GoodsDeliveredId { get; set; }
 
         [Display(Name = "A/R No.")]
+        [Required(AllowEmptyStrings = false, ErrorMessage = "El campo {0} es requerido")]
         public Int64 GoodsDeliveryAuthorizationId { get; set; }
 
         [Display(Name = "R/M No.")]
@@ -65,6 +67,7 @@ namespace ERPMVC.Models
         public string UnitOfMeasureName { get; set; }
 
         [Display(Name = "Boleta de peso")]
+        [Required(AllowEmptyStrings = false, ErrorMessage = "El campo {0} es requerido")]
         public Int64 WeightBallot { get; set; }
 
 

@@ -578,6 +578,32 @@ namespace ERPMVC.Controllers
             return await Task.Run(() => Json(_journalentry));
         }
 
+        [HttpGet("[action]")]
+        public async Task<ActionResult> GetLineasAsientoContableCuentaRangoFechas ([FromQuery(Name = "Cuenta")] Int64 cuenta, [FromQuery(Name = "Desde")] DateTime desde,
+            [FromQuery(Name="Hasta")] DateTime hasta)
+        {
+            try
+            {
+                List<JournalEntryLineConciliacionDTO> asientos = new List<JournalEntryLineConciliacionDTO>();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/JournalEntry/GetLineasAsientoContableCuentaRangoFechas?CodigoCuenta={cuenta}&FechaInicial={desde.ToString("yyyy-MM-dd")}&FechaFinal={hasta.ToString("yyyy-MM-dd")}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    asientos = JsonConvert.DeserializeObject<List<JournalEntryLineConciliacionDTO>>(valorrespuesta);
+                }
+
+                return await Task.Run(() => Json(asientos));
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+        }
 
     }
 }

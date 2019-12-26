@@ -127,6 +127,35 @@ namespace ERPMVC.Controllers
             return _AccountManagement.ToDataSourceResult(request);
 
         }
+
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetAccountManagementByBankId([DataSourceRequest]DataSourceRequest request , int Bankid)
+        {
+            List<AccountManagement> _AccountManagement = new List<AccountManagement>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/AccountManagement/GetAccountManagementByBankId/"+ Bankid);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _AccountManagement = JsonConvert.DeserializeObject<List<AccountManagement>>(valorrespuesta);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _AccountManagement.ToDataSourceResult(request);
+
+        }
+
         [HttpGet("[controller]/[action]")]
         public async Task<JsonResult> GetJson([DataSourceRequest]DataSourceRequest request)
         {
@@ -168,29 +197,38 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/AccountManagement/GetSAccountManagementById/" + _AccountManagement.AccountManagementId);
-                string valorrespuesta = "";
-                _AccountManagement.FechaModificacion = DateTime.Now;
-                _AccountManagement.UsuarioModificacion = HttpContext.Session.GetString("user");
-                if (result.IsSuccessStatusCode)
-                {
+                var result1 = await _client.GetAsync(baseadress + "api/AccountManagement/GetSAccountManagementByAccountTypeAccountNumber/" + _AccountManagement.AccountNumber);
+                string valorrespuesta1 = "";
+                _AccountManagement.FechaCreacion = DateTime.Now;
+                _AccountManagement.UsuarioCreacion = HttpContext.Session.GetString("user");
 
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _AccountManagement = JsonConvert.DeserializeObject<AccountManagement>(valorrespuesta);
+                if (result1.IsSuccessStatusCode)
+                {
+                    valorrespuesta1 = await (result1.Content.ReadAsStringAsync());
+                    _AccountManagement = JsonConvert.DeserializeObject<AccountManagementDTO>(valorrespuesta1);
                 }
 
                 if (_AccountManagement == null) { _AccountManagement = new Models.AccountManagement(); }
 
+                if (_AccountManagement.AccountManagementId > 0)
+                {
+                    if (_AccountManagement.AccountManagementId != _AccountManagementS.AccountManagementId)
+                        return await Task.Run(() => BadRequest($"Ya existe un registro con el mismo Número de Cuenta."));
+                }
+
+
                 if (_AccountManagementS.AccountManagementId == 0)
                 {
-                    _AccountManagementS.FechaCreacion = DateTime.Now;
-                    _AccountManagementS.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    _AccountManagement.FechaCreacion = DateTime.Now;
+                    _AccountManagement.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_AccountManagementS);
                 }
                 else
                 {
-                    _AccountManagementS.UsuarioCreacion = _AccountManagement.UsuarioCreacion;
+                    var result = await _client.GetAsync(baseadress + "api/AccountManagement/GetSAccountManagementById/" + _AccountManagement.AccountManagementId);
                     _AccountManagementS.FechaCreacion = _AccountManagement.FechaCreacion;
+                    _AccountManagementS.UsuarioCreacion = _AccountManagement.UsuarioCreacion;
+                    
                     var updateresult = await Update(_AccountManagement.AccountManagementId, _AccountManagementS);
                 }
 
@@ -201,7 +239,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_AccountManagementS);
+            return Json(_AccountManagement);
         }
         // POST: AccountManagement/Insert
         [HttpPost]
@@ -214,9 +252,9 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _AccountManagement.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _AccountManagement.UsuarioModificacion = HttpContext.Session.GetString("user");
-                _AccountManagement.FechaModificacion = DateTime.Now;
+                //_AccountManagement.UsuarioCreacion = HttpContext.Session.GetString("user");
+                //_AccountManagement.UsuarioModificacion = HttpContext.Session.GetString("user");
+                //_AccountManagement.FechaModificacion = DateTime.Now;
                 var result = await _client.PostAsJsonAsync(baseadress + "api/AccountManagement/Insert", _AccountManagement);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -241,7 +279,9 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-
+                //_AccountManagement.FechaModificacion = DateTime.Now;
+                //_AccountManagement.UsuarioModificacion = HttpContext.Session.GetString("user");
+                
                 var result = await _client.PutAsJsonAsync(baseadress + "api/AccountManagement/Update", _AccountManagement);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
