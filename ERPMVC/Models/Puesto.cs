@@ -14,7 +14,7 @@ namespace ERPMVC.Models
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public long IdPuesto { get; set; }
-        [Display(Name = "Nombre de puesto")]
+        [Display(Name = "Nombre del puesto")]
         public string NombrePuesto { get; set; }
         [Display(Name = "Departamento")]
         [Required(AllowEmptyStrings = false, ErrorMessage = "*El campo {0} es requerido")]
