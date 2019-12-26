@@ -125,6 +125,7 @@ namespace ERPMVC.Controllers
                         {
                             valorrespuesta = await (result.Content.ReadAsStringAsync());
                             qJournalEntryConfigurationLine = JsonConvert.DeserializeObject<JournalEntryConfigurationLine>(valorrespuesta);
+                            _JournalEntryConfigurationLinelist = _JournalEntryConfigurationLinelist.OrderByDescending(q => q.JournalEntryConfigurationLineId).ToList();
 
                         }
 
@@ -163,7 +164,7 @@ namespace ERPMVC.Controllers
                             }
 
                         }
-
+                        _JournalEntryConfigurationLinelist = _JournalEntryConfigurationLinelist.OrderByDescending(q => q.JournalEntryConfigurationLineId).ToList();
                         HttpContext.Session.SetString("JournalEntryConfigurationLine", JsonConvert.SerializeObject(_JournalEntryConfigurationLinelist).ToString());
                     }
                 }
@@ -182,6 +183,7 @@ namespace ERPMVC.Controllers
                     if (_JournalEntryConfigurationLine.JournalEntryConfigurationLineId > 0 && _existelinea.Count == 0)
                     {
                         _JournalEntryConfigurationLinelist.Add(_JournalEntryConfigurationLine);
+                        _JournalEntryConfigurationLinelist = _JournalEntryConfigurationLinelist.OrderByDescending(q => q.JournalEntryConfigurationLineId).ToList();
                         HttpContext.Session.SetString("JournalEntryConfigurationLine", JsonConvert.SerializeObject(_JournalEntryConfigurationLinelist).ToString());
                     }
                     else
@@ -197,7 +199,7 @@ namespace ERPMVC.Controllers
                             obj.SubProductId = _JournalEntryConfigurationLine.SubProductId;
                             obj.SubProductName = _JournalEntryConfigurationLine.SubProductName;
                         }
-
+                        _JournalEntryConfigurationLinelist = _JournalEntryConfigurationLinelist.OrderByDescending(q => q.JournalEntryConfigurationLineId).ToList();
                         HttpContext.Session.SetString("JournalEntryConfigurationLine", JsonConvert.SerializeObject(_JournalEntryConfigurationLinelist).ToString());
 
                     }
