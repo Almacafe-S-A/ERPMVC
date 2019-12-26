@@ -145,9 +145,10 @@ namespace ERPMVC.Controllers
        
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult> pvwAddConciliacion([FromBody]Conciliacion _Conciliaciontp)
+        public async Task<ActionResult> pvwAddConciliacion([FromBody]ConciliacionDTO _Conciliaciontp)
         {
-            ConciliacionDTO _Conciliacion = new ConciliacionDTO();
+            ConciliacionDTO _Conciliacion=null;
+            List<MotivoConciliacion> motivos = new List<MotivoConciliacion>();
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -158,8 +159,11 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Conciliacion = JsonConvert.DeserializeObject<ConciliacionDTO>(valorrespuesta);
-
+                    if (!string.IsNullOrEmpty(valorrespuesta))
+                    {
+                        _Conciliacion = JsonConvert.DeserializeObject<ConciliacionDTO>(valorrespuesta);
+                        _Conciliacion.Editar = _Conciliaciontp.Editar;
+                    }
                 }
 
                 if (_Conciliacion == null)
@@ -168,6 +172,19 @@ namespace ERPMVC.Controllers
                     _Conciliacion.DateBeginReconciled = DateTime.Now;
                     _Conciliacion.DateEndReconciled = DateTime.Now;
                     _Conciliacion.FechaConciliacion = DateTime.Now;
+                    _Conciliacion.Editar = 1;
+                }
+
+                
+                result = await _client.GetAsync(baseadress + "api/MotivoConciliacion/GetMotivosConciliacion");
+                valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    if (!string.IsNullOrEmpty(valorrespuesta))
+                    {
+                        motivos = JsonConvert.DeserializeObject<List<MotivoConciliacion>>(valorrespuesta);
+                    }
                 }
 
             }
@@ -178,7 +195,7 @@ namespace ERPMVC.Controllers
             }
 
 
-
+            ViewData["motivos"] = motivos;
             return PartialView(_Conciliacion);
 
         }
@@ -535,7 +552,16 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Conciliacion/Insert", conciliacion);
+                HttpResponseMessage result = null;
+                if (conciliacion.ConciliacionId == 0)
+                {
+                    result = await _client.PostAsJsonAsync(baseadress + "api/Conciliacion/Insert", conciliacion);
+                }
+                else
+                {
+                    result = await _client.PutAsJsonAsync(baseadress + "api/Conciliacion/Update", conciliacion);
+                }
+                 
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {

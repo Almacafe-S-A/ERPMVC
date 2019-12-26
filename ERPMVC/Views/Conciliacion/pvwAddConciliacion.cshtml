@@ -5,7 +5,203 @@
     Layout = null;
     var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." } };
     var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+
 }
+
+<script>
+    function BancoSeleccion() {
+        return {
+            BankId: $("#BankId").val()
+        };
+    }    
+
+    function IniciarConciliacion(e) {
+        var validador = $("#mdlCuerpo").kendoValidator().data("kendoValidator");
+        if (validador.validate()) {
+            $("#btnIniciar").data("kendoButton").enable(false);
+            $("#btnCancelar").data("kendoButton").enable(true);
+            $("#btnGuardar").data("kendoButton").enable(true);
+            $("#DateBeginReconciled").data("kendoDatePicker").enable(false);
+            $("#DateEndReconciled").data("kendoDatePicker").enable(false);
+            $("#btnAgregarLineaLibro").click(AgregarLineaLibro);
+            $("#btnAgregarLineaBanco").click(AgregarLineaBanco);
+            $("#grdFaltaLibro").getKendoGrid().options.editable = true;
+            $("#grdSaldoBanco").getKendoGrid().options.editable = true;
+            $("#BankId").data("kendoDropDownList").enable(false);
+            $("#AccountId").data("kendoDropDownList").enable(false);
+            $("#CheckAccountId").data("kendoDropDownList").enable(false);
+            if (@Model.ConciliacionId !== 0 && @Model.Editar === 1) {
+                SaldoLibro(false);
+            } else {
+                SaldoLibro(true);
+            }
+            
+        }
+    }
+
+    function CancelarConciliacion(e) {
+        $("#btnIniciar").data("kendoButton").enable(true);
+        $("#btnCancelar").data("kendoButton").enable(false);
+        $("#DateBeginReconciled").data("kendoDatePicker").enable(true);
+        $("#DateEndReconciled").data("kendoDatePicker").enable(true);
+        $("#btnAgregarLineaLibro").unbind();
+        $("#btnAgregarLineaBanco").unbind();
+        $("#BankId").data("kendoDropDownList").enable(true);
+        $("#AccountId").data("kendoDropDownList").enable(true);
+        $("#CheckAccountId").data("kendoDropDownList").enable(true);
+    }
+
+    function GuardarConciliacion() {
+        var saldoLbro = $("#SaldoLibro").val();
+        var saldoBnco = $("#SaldoBanco").val();
+        var now = new Date();
+        if (saldoLbro !== saldoBnco) {
+            alert('Conciliacion no esta cuadrada');
+        } else {
+            var lineas = [];
+            var lineasSaldo = $("#grdSaldoLibro").getKendoGrid().dataSource.data();
+            var lineasFaltantes = $("#grdFaltaLibro").getKendoGrid().dataSource.data();
+            var lineasBanco = $("#grdSaldoBanco").getKendoGrid().dataSource.data();
+            //debugger;
+            lineasSaldo.forEach(r => {
+                var registro = {
+                    ConciliacionLineaId: r.ConciliacionLineaId,
+                    MotivoId: null,
+                    ConciliacionId: @Model.ConciliacionId,
+                    Credit: r.Credit,
+                    Debit: r.Debit,
+                    ReferenciaBancaria: '',
+                    CurrencyId: 1,
+                    TransDate: r.TransDate,
+                    ReferenceTrans: 'ASIENTO CONTABLE',
+                    JournalEntryId: r.JournalEntryId,
+                    JournalEntryLineId: r.JournalEntryLineId,
+                    VoucherTypeId: 0,
+                    Reconciled: r.LineaConciliacion !== 0 ? 1 : 0,
+                    ChecknumberId: 0,
+                    MonedaName: 'Lempira',
+                    FechaCreacion: now,
+                    FechaModificacion: now,
+                    UsuarioCreacion: '',
+                    UsuarioModificacion: ''
+                };
+                lineas.push(registro);
+            });
+
+            if (!removerPrimeraLineaFaltaLibro) {
+                lineasFaltantes.forEach(r => {
+                    if (r.TransDate === null) {
+                        alert('Fecha de Transacción no puede estar vacia');
+                        return;
+                    }
+                    var registro = {
+                        ConciliacionLineaId: r.ConciliacionLineaId,
+                        MotivoId: null,
+                        ConciliacionId: @Model.ConciliacionId,
+                        Credit: r.Credit,
+                        Debit: r.Debit,
+                        ReferenciaBancaria: '',
+                        CurrencyId: 1,
+                        TransDate: r.TransDate,
+                        ReferenceTrans: 'ASIENTO CONTABLE',
+                        JournalEntryId: null,
+                        JournalEntryLineId: null,
+                        VoucherTypeId: 0,
+                        Reconciled: r.LineaConciliacion !== 0 ? 1 : 0,
+                        ChecknumberId: 0,
+                        MonedaName: 'Lempira',
+                        FechaCreacion: now,
+                        FechaModificacion: now,
+                        UsuarioCreacion: '',
+                        UsuarioModificacion: ''
+                    };
+                    lineas.push(registro);
+                });
+            }
+
+            if (!removerPrimeraLineaBanco) {
+                lineasBanco.forEach(r => {
+                    if (r.TransDate === null) {
+                        alert('Fecha de Transacción no puede estar vacia');
+                        return;
+                    }
+                    var registro = {
+                        ConciliacionLineaId: r.ConciliacionLineaId,
+                        MotivoId: r.Motivo.MotivoId,
+                        ConciliacionId: @Model.ConciliacionId,
+                        Credit: r.Credit,
+                        Debit: r.Debit,
+                        ReferenciaBancaria: r.Referencia,
+                        CurrencyId: 1,
+                        TransDate: r.TransDate,
+                        ReferenceTrans: r.Referencia,
+                        JournalEntryId: null,
+                        JournalEntryLineId: null,
+                        VoucherTypeId: 0,
+                        Reconciled: 0,
+                        ChecknumberId: r.Cheque,
+                        MonedaName: 'Lempira',
+                        FechaCreacion: now,
+                        FechaModificacion: now,
+                        UsuarioCreacion: '',
+                        UsuarioModificacion: ''
+                    };
+                    lineas.push(registro);
+                });
+            }
+
+            var conciliacion = {
+                ConciliacionId: @Model.ConciliacionId,
+                BankId: $("#BankId").val(),
+                AccountId: $("#AccountId").val(),
+                BankName: $("#BankId").data("kendoDropDownList").text(),
+                CheckAccountId: $("#CheckAccountId").val(),
+                FechaConciliacion: $("#FechaConciliacion").data("kendoDatePicker").value(),
+                DateBeginReconciled: $("#DateBeginReconciled").data("kendoDatePicker").value(),
+                DateEndReconciled: $("#DateEndReconciled").data("kendoDatePicker").value(),
+                SaldoConciliado: $("#SaldoConciliado").val(),
+                FechaCreacion: now,
+                FechaModificacion: now,
+                UsuarioCreacion: '',
+                UsuarioModificacion:'',
+                SaldoBanco: $("#SaldoBanco").val(),
+                SaldoLibro: $("#SaldoLibro").val(),
+                SaldoConciliado: $("#SaldoConciliado").val(),
+                ConciliacionLinea: lineas
+            };
+            //debugger;
+            $.ajax({
+                url: '@Url.Action("SaveConciliacion", "Conciliacion")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(conciliacion),
+                success: function (data) {
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: '<br/><br/>Datos guardados correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 3000,
+                        stack: 6
+                    });
+                    window.RefreshConciliacion();
+                    $("#myModalConciliacionUpload").modal('hide');
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    notification.show({
+                        title: "Validacion",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+                }
+            });
+
+        }
+    }
+</script>
 
 <div id="myModalConciliacionUpload" class="modal fade" role="dialog">
     <div class="modal-dialog modal-lg">
@@ -61,23 +257,45 @@
                 </div>
                 <div class="col">
                     <label for="CheckAccountId">Cuenta Banco:</label>
-                    <kendo-dropdownlist name="CheckAccountId"
-                                        for="@Model.CheckAccountId"
-                                        filter="Kendo.Mvc.UI.FilterType.Contains"
-                                        option-label="Seleccioné una cuenta de banco"
-                                        datatextfield="CodigoNombre"
-                                        datavaluefield="AccountManagementId"
-                                        cascade-from="BankId"
-                                        auto-bind="false"
-                                        required
-                                        validationMessage="Seleccione la cuenta de Banco"
-                                        style="width: 100%">
-                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
-                            <transport>
-                                <read url="@Url.Action("GetAccountManagementByBankId","AccountManagement")" data="BancoSeleccion" />
-                            </transport>
-                        </datasource>
-                    </kendo-dropdownlist>
+                    @if (Model.Editar == 1)
+                    {
+                        <kendo-dropdownlist name="CheckAccountId"
+                                            for="@Model.CheckAccountId"
+                                            filter="Kendo.Mvc.UI.FilterType.Contains"
+                                            option-label="Seleccioné una cuenta de banco"
+                                            datatextfield="CodigoNombre"
+                                            datavaluefield="AccountManagementId"
+                                            cascade-from="BankId"
+                                            auto-bind="false"
+                                            required
+                                            validationMessage="Seleccione la cuenta de Banco"
+                                            style="width: 100%">
+                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                <transport>
+                                    <read url="@Url.Action("GetAccountManagementByBankId","AccountManagement")" data="BancoSeleccion" />
+                                </transport>
+                            </datasource>
+                        </kendo-dropdownlist>
+                    }
+                    else
+                    {
+                        <kendo-dropdownlist name="CheckAccountId"
+                                            for="@Model.CheckAccountId"
+                                            filter="Kendo.Mvc.UI.FilterType.Contains"
+                                            option-label="Seleccioné una cuenta de banco"
+                                            datatextfield="CodigoNombre"
+                                            datavaluefield="AccountManagementId"
+                                            required
+                                            validationMessage="Seleccione la cuenta de Banco"
+                                            style="width: 100%">
+                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                <transport>
+                                    <read url="@Url.Action("GetAccountManagementByBankId","AccountManagement")" data="BancoSeleccion" />
+                                </transport>
+                            </datasource>
+                        </kendo-dropdownlist>
+                    }
+                    
                 </div>
             </div>
             <div class="row">
@@ -142,35 +360,7 @@
                 <div class="col">
                     <div class="row">
                         <div class="col">
-                            <kendo-grid name="grdSaldoLibro" height="400" on-edit="EditadoSaldoLibro">
-                                <datasource type="DataSourceTagHelperType.Custom">
-                                    <transport>
-                                        <read data="SaldoLibro" />
-                                    </transport>
-                                    <schema>
-                                        <model id="LineaId">
-                                            <fields>
-                                                <field name="LineaId" type="number" editable="false" />
-                                                <field name="TransDate" type="date" editable="false" />
-                                                <field name="Monto" type="number" editable="false" />
-                                                <field name="Credit" type="number" editable="false" />
-                                                <field name="Debit" type="number" editable="false" />
-                                                <field name="LineaConciliacion" type="number" />
-                                            </fields>
-                                        </model>
-                                    </schema>
-                                </datasource>
-                                <columns>
-                                    <column title="No." field="LineaId" width="80"></column>
-                                    <column title="Fecha Transacción" field="TransDate" format="{0:dd/MM/yyyy HH:mm:ss}" width="200" />
-                                    <column title="Crédito" field="Credit" width="100" />
-                                    <column title="Débito" field="Debit" width="100" />
-                                    <column title="Monto" field="Monto" width="100" />
-                                    <column title="Conciliar con" field="LineaConciliacion" width="50" />
-                                </columns>
-                                <editable enabled="true" />
-                                <scrollable enabled="true" />
-                            </kendo-grid>
+                            <div id="grdSaldoLibro"></div>
                         </div>
                     </div>
                     <div class="row">
@@ -180,83 +370,18 @@
                     </div>
                     <div class="row">
                         <div class="col">
-                            <kendo-grid name="grdFaltaLibro" height="400" on-edit="CampoEditadoFaltaLibro">
-                                <datasource type="DataSourceTagHelperType.Custom">
-                                    <transport>
-                                        <read data="FaltaLibro" />
-                                    </transport>
-                                    <schema>
-                                        <model id="FaltaLibroModelo">
-                                            <fields>
-                                                <field name="LineaId" type="number" editable="false" />
-                                                <field name="TransDate" type="date" />
-                                                <field name="Monto" type="number" />
-                                                <field name="Credit" type="number" />
-                                                <field name="Debit" type="number" />
-                                                <field name="LineaConciliacion" type="number" />
-                                            </fields>
-                                        </model>
-                                    </schema>
-                                </datasource>
-                                <columns>
-                                    <column title="No." field="LineaId" width="80"></column>
-                                    <column title="Fecha Transacción" field="TransDate" format="{0:dd/MM/yyyy HH:mm:ss}" width="200" />
-                                    <column title="Crédito" field="Credit" width="100" />
-                                    <column title="Débito" field="Debit" width="100" />
-                                    <column title="Monto" field="Monto" width="100" />
-                                    <column title="Conciliar con" field="LineaConciliacion" width="50" />
-                                </columns>
-                                <toolbar>
-                                    <toolbar-button template="PlantillaAgregarLineaLibro" />
-                                </toolbar>
-                                <editable enabled="true" />
-                                <scrollable enabled="true" />
-                            </kendo-grid>
+                            <div id="grdFaltaLibro"></div>
                         </div>
                     </div>
                 </div>
                 <div class="col">
-                    <kendo-grid name="grdSaldoBanco" height="830" on-edit="EditadoSaldoBanco">
-                        <datasource type="DataSourceTagHelperType.Custom">
-                            <transport>
-                                <read data="SaldoBancoInicial" />
-                            </transport>
-                            <schema>
-                                <model id="EstadoBanco">
-                                    <fields>
-                                        <field name="LineaId" type="number" editable="false" />
-                                        <field name="TransDate" type="date"  />
-                                        <field name="Referencia" />
-                                        <field name="Motivo" />
-                                        <field name="Monto" type="number" />
-                                        <field name="Credit" type="number" />
-                                        <field name="Debit" type="number" />
-                                        <field name="Cheque" />
-                                    </fields>
-                                </model>
-                            </schema>
-                        </datasource>
-                        <columns>
-                            <column title="No." field="LineaId" width="80"></column>
-                            <column title="Fecha Transacción" field="TransDate" format="{0:dd/MM/yyyy HH:mm:ss}" required width="200" />
-                            <column title="Referencia Banco" field="Referencia" width="100" />
-                            <column title="Motivo" field="Motivo" width="200" editor="motivoDropDownEditor" template="#= (typeof Motivo ==='undefined')?'':Motivo.Nombre #" />
-                            <column title="Crédito" field="Credit" width="100" />
-                            <column title="Débito" field="Debit" width="100" />
-                            <column title="Monto" field="Monto" width="100" />
-                            <column title="No. Cheque" field="Cheque" width="100" />
-                        </columns>
-                        <toolbar>
-                            <toolbar-button template="PlantillaAgregarLineaBanco" />
-                        </toolbar>
-                        <editable enabled="true" />
-                        <scrollable enabled="true" />
-                    </kendo-grid>
+                    <div id="grdSaldoBanco"></div>
                 </div>
             </div>
             <div class="row">
                 <div class="col">
                     <kendo-button name="btnGuardar" on-click="GuardarConciliacion" enable="false" style="width: 100%;">Guardar Conciliación</kendo-button>
+                    @*<kendo-button name="btnRefrescar" on-click="InicializarVentana"  style="width: 100%;">Refrescar</kendo-button>*@
                 </div>
             </div>
 
@@ -266,46 +391,24 @@
     </div>
 </div>
 <script>
+
     var montoConciliado = 0;
-    $(document).ready(function () {
-       
-    });
-    function closeConciliacionBancaria() {
-        window.RefreshConciliacion();
-        $("#myModalConciliacionUpload").modal('hide');
-    }
-
-    function BancoSeleccion() {
-        return {
-            BankId: $("#BankId").val()
-        };
-    }
-
-    function IniciarConciliacion(e) {
-        var validador = $("#mdlCuerpo").kendoValidator().data("kendoValidator");
-        if (validador.validate()) {
-            $("#btnIniciar").data("kendoButton").enable(false);
-            $("#btnCancelar").data("kendoButton").enable(true);
-            $("#btnGuardar").data("kendoButton").enable(true);
-            $("#DateBeginReconciled").data("kendoDatePicker").enable(false);
-            $("#DateEndReconciled").data("kendoDatePicker").enable(false);
-            $("#btnAgregarLineaLibro").click(AgregarLineaLibro);
-            $("#btnAgregarLineaBanco").click(AgregarLineaBanco);
-            SaldoLibro(true);
-        } 
-    }
-
-    function CancelarConciliacion(e) {
-        $("#btnIniciar").data("kendoButton").enable(true);
-        $("#btnCancelar").data("kendoButton").enable(false);
-        $("#DateBeginReconciled").data("kendoDatePicker").enable(true);
-        $("#DateEndReconciled").data("kendoDatePicker").enable(true);
-        $("#btnAgregarLineaLibro").unbind();
-        $("#btnAgregarLineaBanco").unbind();
-    }
-
     var datosLibro = [];
     var linea = 1;
+    var lineaBanco = 1;
+    var removerPrimeraLineaBanco = true;
+    var removerPrimeraLineaFaltaLibro = true;
+
+    $(document).ready(function () {
+        linea = 1;
+        lineaBanco = 1;
+        removerPrimeraLineaBanco = true;
+        removerPrimeraLineaFaltaLibro = true;
+        InicializarVentana();
+    });
+    
+    
+
     function SaldoLibro(e) {
         if (e === true) {
             var codigoCuenta = $("#AccountId").val();
@@ -327,7 +430,8 @@
                         Monto: Math.abs(r.Credit - r.Debit),
                         LineaConciliacion: 0,
                         JournalEntryId: r.JournalEntryId,
-                        JournalEntryLineId: r.JournalEntryLineId
+                        JournalEntryLineId: r.JournalEntryLineId,
+                        ConciliacionLineaId: 0
                     }));
                     //debugger;
                     $("#grdSaldoLibro").getKendoGrid().dataSource.data(datosLibro);
@@ -338,16 +442,232 @@
                 }
             });
         } else {
-            //debugger;
             return datosLibro;
         }
-        
     }
 
     var datosBanco = [];
     function SaldoBancoInicial() {
+        //debugger;
         return datosBanco;
     }
+
+    var datosFaltantesLibro = [];
+    function FaltaLibro(e) {
+        //debugger;
+        return datosFaltantesLibro;
+    }
+
+    function InicializarVentana(e) {
+        
+        $("#grdSaldoLibro").kendoGrid({
+            dataSource: {
+                data: window.datosLibros,
+                schema: {
+                    model: {
+                        fields: {
+                            LineaId: { name: "LineaId", type: "number" , editable:false },
+                            TransDate: { name: "TransDate", type: "date", editable: false },
+                            Monto: { name: "Monto", type: "number", editable: false },
+                            Credit: { name: "Credit", type: "number", editable: false },
+                            Debit: { name: "Debit", type: "number", editable: false },
+                            LineaConciliacion: { name: "LineaConciliacion", type: "number", editable: @Model.Editar=== 1 ? true : false },
+                            ConciliacionLineaId: { name: "ConciliacionLineaId", type: "number" }
+                        }
+                    }
+                }
+            },
+            columns: [
+                { field: "LineaId", title: "No.", width: 80 },
+                { field: "TransDate", title: "Fecha Transacción", width: 200, format: "{0:dd/MM/yyyy HH:mm:ss}" },
+                { field: "Credit", title: "Crédito", width: 100 },
+                { field: "Debit", title: "Débito", width: 100 },
+                { field: "Monto", title: "Monto", width: 100 },
+                { field: "LineaConciliacion", title: "Conciliar con", width: 50 },
+                { field: "ConciliacionLineaId", hidden: true }
+            ],
+            height: 400,
+            scrollable: true,
+            editable: true,
+            edit: EditadoSaldoLibro
+        });
+
+        $("#grdSaldoBanco").kendoGrid({
+            dataSource: {
+                data: window.datosBanco,
+                schema: {
+                    model: {
+                        fields: {
+                            LineaId: { name: "LineaId", type: "number", editable: false },
+                            TransDate: { name: "TransDate", type: "date", editable: @Model.Editar===1?true:false },
+                            Referencia: { name: "Referencia", editable: @Model.Editar===1?true:false},
+                            Motivo: {name:"Motivo", editable: @Model.Editar===1?true:false},
+                            Monto: { name: "Monto", type: "number", editable: @Model.Editar===1?true:false },
+                            Credit: { name: "Credit", type: "number", editable: @Model.Editar===1?true:false },
+                            Debit: { name: "Debit", type: "number", editable: @Model.Editar===1?true:false },
+                            Cheque: { name: "Cheque", editable: @Model.Editar=== 1 ? true : false },
+                            ConciliacionLineaId: { name: "ConciliacionLineaId", type: "number" }
+                        }
+                    }
+                }
+            },
+            columns: [
+                { field: "LineaId", title: "No.", width: 80 },
+                { field: "TransDate", title: "Fecha Transacción", width: 200, format: "{0:dd/MM/yyyy HH:mm:ss}" },
+                { field: "Referencia", title: "Referencia Banco", width: 100 },
+                { field: "Motivo", title: "Motivo", width: 200, editor: motivoDropDownEditor, template:"#= (typeof Motivo ==='undefined')?'':Motivo.Nombre #"},
+                { field: "Credit", title: "Crédito", width: 100 },
+                { field: "Debit", title: "Débito", width: 100 },
+                { field: "Monto", title: "Monto", width: 100 },
+                { field: "Cheque", title: "No. Cheque", width: 100 },
+                { field: "ConciliacionLineaId", hidden: true }
+            ],
+            toolbar: [
+                {template:PlantillaAgregarLineaBanco}
+                ],
+            height: 830,
+            scrollable: true,
+            editable: true,
+            edit:EditadoSaldoBanco
+        });
+
+        $("#grdFaltaLibro").kendoGrid({
+            dataSource: {
+                data: window.datosFaltantesLibro,
+                schema: {
+                    model: {
+                        fields: {
+                            LineaId: { name: "LineaId", type: "number", editable: false },
+                            TransDate: { name: "TransDate", type: "date", editable: @Model.Editar===1?true:false},
+                            Monto: { name: "Monto", type: "number", editable: @Model.Editar===1?true:false},
+                            Credit: { name: "Credit", type: "number", editable: @Model.Editar===1?true:false},
+                            Debit: { name: "Debit", type: "number", editable: @Model.Editar===1?true:false},
+                            LineaConciliacion: { name: "LineaConciliacion", type: "number", editable: @Model.Editar=== 1 ? true : false },
+                            ConciliacionLineaId: { name: "ConciliacionLineaId", type: "number" }
+                        }
+                    }
+                }
+            },
+            columns: [
+                { field: "LineaId", title: "No.", width: 80 },
+                { field: "TransDate", title: "Fecha Transacción", width: 200, format: "{0:dd/MM/yyyy HH:mm:ss}" },
+                { field: "Credit", title: "Crédito", width: 100 },
+                { field: "Debit", title: "Débito", width: 100 },
+                { field: "Monto", title: "Monto", width: 100 },
+                { field: "LineaConciliacion", title: "Conciliar con", width: 50 },
+                { field: "ConciliacionLineaId", hidden: true }
+            ],
+            toolbar: [
+                {template:PlantillaAgregarLineaLibro}
+            ],
+            height: 400,
+            scrollable: true,
+            editable: true,
+            edit:CampoEditadoFaltaLibro
+        });
+
+        if (@Model.ConciliacionId !== 0) {
+            $("#BankId").val(@Model.BankId);
+            $("#AccountId").val(@Model.AccountId);
+            $("#CheckAccountId").val(@Model.CheckAccountId);
+            if (@Model.Editar === 0) {
+                $("#BankId").data("kendoDropDownList").enable(false);
+                $("#AccountId").data("kendoDropDownList").enable(false);
+                $("#CheckAccountId").data("kendoDropDownList").enable(false);
+                $("#DateBeginReconciled").data("kendoDatePicker").readonly();
+                $("#DateEndReconciled").data("kendoDatePicker").readonly();
+                $("#btnIniciar").data("kendoButton").enable(false);
+                $("#btnCancelar").data("kendoButton").enable(false);
+                $("#btnGuardar").data("kendoButton").enable(false);
+                $("#grdSaldoLibro").getKendoGrid().options.editable = false;
+                $("#grdFaltaLibro").getKendoGrid().options.editable = false;
+                $("#grdSaldoBanco").getKendoGrid().options.editable = false;
+            } else if(@Model.Editar === 1) {
+                $("#BankId").data("kendoDropDownList").enable(true);
+                $("#AccountId").data("kendoDropDownList").enable(true);
+                $("#CheckAccountId").data("kendoDropDownList").enable(true);
+                $("#DateBeginReconciled").data("kendoDatePicker").readonly(false);
+                $("#DateEndReconciled").data("kendoDatePicker").readonly(false);
+                $("#btnIniciar").data("kendoButton").enable(true);
+                $("#btnIniciar").text("Continuar Conciliacion");
+                $("#btnCancelar").data("kendoButton").enable(false);
+                $("#btnGuardar").data("kendoButton").enable(false);
+                $("#grdSaldoLibro").getKendoGrid().options.editable = false;
+                $("#grdFaltaLibro").getKendoGrid().options.editable = false;
+                $("#grdSaldoBanco").getKendoGrid().options.editable = false;
+                $("#grdSaldoBanco").getKendoGrid().editable = false;
+            }
+
+            datosLibro = [];
+            datosFaltantesLibro = [];
+            datosBanco = [];
+            
+            var lineas = JSON.parse('@Html.Raw(Json.Serialize(@Model.ConciliacionLinea))');
+            var motivos = JSON.parse('@Html.Raw(Json.Serialize(@ViewData["motivos"]))');
+            
+            lineas.forEach(r => {
+                if (r.JournalEntryId !== null && r.JournalEntryId !== 0) {                    
+                    var regLibro = {
+                        LineaId: window.linea++,
+                        TransDate: kendo.parseDate(r.TransDate, "yyyy-MM-dd'T'HH:mm:ss"),
+                        Credit: r.Credit,
+                        Debit: r.Debit,
+                        Monto: Math.abs(r.Credit - r.Debit),
+                        LineaConciliacion: 0,
+                        JournalEntryId: r.JournalEntryId,
+                        JournalEntryLineId: r.JournalEntryLineId,
+                        ConciliacionLineaId: r.ConciliacionLineaId
+                    };
+                    datosLibro.push(regLibro);
+                } else if (r.MotivoId !== null && r.MotivoId !== 0) {                    
+                    var regBanco = {
+                        LineaId: lineaBanco++,
+                        TransDate: kendo.parseDate(r.TransDate, "yyyy-MM-dd'T'HH:mm:ss"),
+                        Referencia: r.ReferenciaBancaria,
+                        Motivo: { MotivoId: r.MotivoId, Nombre: motivos.find(m=>m.MotivoId === r.MotivoId).Nombre },
+                        Credit: r.Credit,
+                        Debit: r.Debit,
+                        Monto: Math.abs(r.Credit - r.Debit),
+                        Cheque: r.CheknumberId,
+                        ConciliacionLineaId: r.ConciliacionLineaId
+                    };
+                    datosBanco.push(regBanco);
+                } else {
+                    
+                    var regFaltante = {
+                        LineaId: linea++,
+                        TransDate: kendo.parseDate(r.TransDate, "yyyy-MM-dd'T'HH:mm:ss"),
+                        Credit: r.Credit,
+                        Debit: r.Debit,
+                        Monto: Math.abs(r.Credit - r.Debit),
+                        LineaConciliacion: 0,
+                        ConciliacionLineaId: r.ConciliacionLineaId
+                    };
+                    datosFaltantesLibro.push(regFaltante);
+                }
+            });
+            if (datosFaltantesLibro.length > 0) {
+                removerPrimeraLineaFaltaLibro = false;
+            }
+            if (datosBanco.length > 0) {
+                removerPrimeraLineaBanco = false;
+            }
+            $("#grdSaldoLibro").getKendoGrid().dataSource.data(datosLibro);
+            $("#grdFaltaLibro").getKendoGrid().dataSource.data(datosFaltantesLibro);
+            $("#grdSaldoBanco").getKendoGrid().dataSource.data(datosBanco);
+        }
+        
+    }
+
+    function closeConciliacionBancaria() {
+        window.RefreshConciliacion();
+        $("#myModalConciliacionUpload").modal('hide');
+    }
+
+    
+
+    
+
 
     function PlantillaAgregarLineaLibro(e) {
         var plantilla =
@@ -361,8 +681,7 @@
         return plantilla;
     }
 
-    var lineaBanco = 1;
-    var removerPrimeraLineaBanco = true;
+    
     function AgregarLineaBanco(e) {
         if (removerPrimeraLineaBanco) {
             var datos = [{
@@ -373,7 +692,8 @@
                 Credit: 0,
                 Debit: 0,
                 Monto: 0,
-                Cheque: ""
+                Cheque: "",
+                ConciliacionLineaId: 0
             }];
             $("#grdSaldoBanco").getKendoGrid().dataSource.data(datos);
             removerPrimeraLineaBanco = false;
@@ -386,12 +706,13 @@
                 Credit: 0,
                 Debit: 0,
                 Monto: 0,
-                Cheque: ""
+                Cheque: "",
+                ConciliacionLineaId: 0
             });
         }
     }
 
-    var removerPrimeraLineaFaltaLibro = true;
+    
     function AgregarLineaLibro() {
         if (removerPrimeraLineaFaltaLibro) {
             var datos = [{
@@ -400,7 +721,8 @@
                 Credit: 0,
                 Debit: 0,
                 Monto: 0,
-                LineaConciliacion: 0
+                LineaConciliacion: 0,
+                ConciliacionLineaId: 0
             }];
             $("#grdFaltaLibro").getKendoGrid().dataSource.data(datos);
             removerPrimeraLineaFaltaLibro = false;
@@ -411,15 +733,12 @@
                 Credit: 0,
                 Debit: 0,
                 Monto: 0,
-                LineaConciliacion: 0
+                LineaConciliacion: 0,
+                ConciliacionLineaId: 0
             });
         }
     }
 
-    var datosFaltantesLibro = [];
-    function FaltaLibro(e) {
-        return datosFaltantesLibro;
-    }
 
     function CampoEditadoFaltaLibro(e) {
         $("[name='Credit']", e.container).blur(function () {
@@ -555,155 +874,7 @@
         $("#SaldoLibro").val(Math.abs(creditos-debitos));
     }
 
-    function GuardarConciliacion() {
-        var saldoLbro = $("#SaldoLibro").val();
-        var saldoBnco = $("#SaldoBanco").val();
-        var now = new Date();
-        if (saldoLbro !== saldoBnco) {
-            alert('Conciliacion no esta cuadrada');
-        } else {
-            var lineas = [];
-            var lineasSaldo = $("#grdSaldoLibro").getKendoGrid().dataSource.data();
-            var lineasFaltantes = $("#grdFaltaLibro").getKendoGrid().dataSource.data();
-            var lineasBanco = $("#grdSaldoBanco").getKendoGrid().dataSource.data();
-
-            lineasSaldo.forEach(r => {
-                var registro = {
-                    ConciliacionLineaId: 0,
-                    MotivoId: 0,
-                    ConciliacionId: 0,
-                    Credit: r.Credit,
-                    Debit: r.Debit,
-                    ReferenciaBancaria: '',
-                    CurrencyId: 1,
-                    TransDate: r.TransDate,
-                    ReferenceTrans: 'ASIENTO CONTABLE',
-                    JournalEntryId: r.JournalEntryId,
-                    JournalEntryLineId: r.JournalEntryLineId,
-                    VoucherTypeId: 0,
-                    Reconciled: r.LineaConciliacion !== 0 ? 1 : 0,
-                    ChecknumberId: 0,
-                    MonedaName: 'Lempira',
-                    FechaCreacion: now,
-                    FechaModificacion: now,
-                    UsuarioCreacion: '',
-                    UsuarioModificacion: ''
-                };
-                lineas.push(registro);
-            });
-
-            if (!removerPrimeraLineaFaltaLibro) {
-                lineasFaltantes.forEach(r => {
-                    if (r.TransDate === null) {
-                        alert('Fecha de Transacción no puede estar vacia');
-                        return;
-                    }
-                    var registro = {
-                        ConciliacionLineaId: 0,
-                        MotivoId: 0,
-                        ConciliacionId: 0,
-                        Credit: r.Credit,
-                        Debit: r.Debit,
-                        ReferenciaBancaria: '',
-                        CurrencyId: 1,
-                        TransDate: r.TransDate,
-                        ReferenceTrans: 'ASIENTO CONTABLE',
-                        JournalEntryId: r.JournalEntryId,
-                        JournalEntryLineId: r.JournalEntryLineId,
-                        VoucherTypeId: 0,
-                        Reconciled: r.LineaConciliacion !== 0 ? 1 : 0,
-                        ChecknumberId: 0,
-                        MonedaName: 'Lempira',
-                        FechaCreacion: now,
-                        FechaModificacion: now,
-                        UsuarioCreacion: '',
-                        UsuarioModificacion: ''
-                    };
-                    lineas.push(registro);
-                });
-            }
-
-            if (!removerPrimeraLineaBanco) {
-                lineasBanco.forEach(r => {
-                    if (r.TransDate === null) {
-                        alert('Fecha de Transacción no puede estar vacia');
-                        return;
-                    }
-                    var registro = {
-                        ConciliacionLineaId: 0,
-                        MotivoId: r.Motivo.MotivoId,
-                        ConciliacionId: 0,
-                        Credit: r.Credit,
-                        Debit: r.Debit,
-                        ReferenciaBancaria: r.Referencia,
-                        CurrencyId: 1,
-                        TransDate: r.TransDate,
-                        ReferenceTrans: r.Referencia,
-                        JournalEntryId: 0,
-                        JournalEntryLineId: 0,
-                        VoucherTypeId: 0,
-                        Reconciled: 0,
-                        ChecknumberId: r.Cheque,
-                        MonedaName: 'Lempira',
-                        FechaCreacion: now,
-                        FechaModificacion: now,
-                        UsuarioCreacion: '',
-                        UsuarioModificacion: ''
-                    };
-                    lineas.push(registro);
-                });
-            }
-
-            var conciliacion = {
-                ConciliacionId: 0,
-                BankId: $("#BankId").val(),
-                AccountId: $("#AccountId").val(),
-                BankName: $("#BankId").data("kendoDropDownList").text(),
-                CheckAccountId: $("#CheckAccountId").val(),
-                FechaConciliacion: $("#FechaConciliacion").data("kendoDatePicker").value(),
-                DateBeginReconciled: $("#DateBeginReconciled").data("kendoDatePicker").value(),
-                DateEndReconciled: $("#DateEndReconciled").data("kendoDatePicker").value(),
-                SaldoConciliado: $("#SaldoConciliado").val(),
-                FechaCreacion: now,
-                FechaModificacion: now,
-                UsuarioCreacion: '',
-                UsuarioModificacion:'',
-                SaldoBanco: $("#SaldoBanco").val(),
-                SaldoLibro: $("#SaldoLibro").val(),
-                ConciliacionLinea: lineas
-            };
-
-            $.ajax({
-                url: '@Url.Action("SaveConciliacion", "Conciliacion")',
-                method: 'POST',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: JSON.stringify(conciliacion),
-                success: function (data) {
-                    $.toast({
-                        heading: 'Satisfactorio',
-                        text: '<br/><br/>Datos guardados correctamente.',
-                        position: 'top-right',
-                        loaderBg: '#ff6849',
-                        icon: 'success',
-                        hideAfter: 3000,
-                        stack: 6
-                    });
-                    window.RefreshConciliacion();
-                    $("#myModalConciliacionUpload").modal('hide');
-
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    notification.show({
-                        title: "Validacion",
-                        message: textStatus + ": " + XMLHttpRequest.responseText
-                    }, "error");
-                }
-            });
-
-        }
-    }
+    
 
     function motivoDropDownEditor(container, options) {
         $('<input name="' + options.field + '"/>')
@@ -740,4 +911,6 @@
     function PlantillaMotivo(e) {
         console.log(e);
     }
+        
+    
 </script>

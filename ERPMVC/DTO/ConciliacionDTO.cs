@@ -13,5 +13,6 @@ namespace ERPMVC.DTO
         }
 
         public string NombreCuenta { get; set; }
+        public int Editar { get; set; }
     }
 }
