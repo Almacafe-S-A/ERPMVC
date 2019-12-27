@@ -118,7 +118,10 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CostCenter = JsonConvert.DeserializeObject<List<CostCenter>>(valorrespuesta);
-
+                    if (_CostCenter.Count > 0)
+                    {
+                        _CostCenter = _CostCenter.Where(q => q.Estado == "Activo").ToList();
+                    }
                 }
 
 
