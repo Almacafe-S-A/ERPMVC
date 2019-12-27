@@ -86,6 +86,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Currency = JsonConvert.DeserializeObject<List<Currency>>(valorrespuesta);
+                    _Currency = _Currency.Where(q => q.Estado == "Activo").ToList();
                 }
 
             }
