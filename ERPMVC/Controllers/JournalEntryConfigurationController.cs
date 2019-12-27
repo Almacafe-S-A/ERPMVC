@@ -77,7 +77,6 @@ namespace ERPMVC.Controllers
             List<JournalEntryConfiguration> _JournalEntryConfiguration = new List<JournalEntryConfiguration>();
             try
             {
-
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -87,10 +86,8 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _JournalEntryConfiguration = JsonConvert.DeserializeObject<List<JournalEntryConfiguration>>(valorrespuesta);
-
+                    _JournalEntryConfiguration = _JournalEntryConfiguration.OrderByDescending(q => q.JournalEntryConfigurationId).ToList();
                 }
-
-
             }
             catch (Exception ex)
             {
