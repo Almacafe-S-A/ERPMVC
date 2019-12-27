@@ -356,38 +356,40 @@ namespace ERPMVC.Controllers
             //return new ObjectResult(new DataSourceResult { Data = new[] { _JournalEntryConfigurationLine }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
+        //[HttpDelete("_JournalEntryConfigurationLine")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<JournalEntryConfigurationLine>> Delete([FromBody]JournalEntryConfigurationLine _JournalEntryConfigurationLine)
         {
+            List<JournalEntryConfigurationLine> _journalLIST = new List<JournalEntryConfigurationLine>();
             try
             {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                _journalLIST =
+                JsonConvert.DeserializeObject<List<JournalEntryConfigurationLine>>(HttpContext.Session.GetString("JournalEntryConfigurationLine"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/JournalEntryConfigurationLine/Delete", _JournalEntryConfigurationLine);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
+                if (_journalLIST != null)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _JournalEntryConfigurationLine = JsonConvert.DeserializeObject<JournalEntryConfigurationLine>(valorrespuesta);
+                    _journalLIST = _journalLIST.Where(q => q.JournalEntryConfigurationLineId != _JournalEntryConfigurationLine.JournalEntryConfigurationLineId).ToList();
+                    HttpContext.Session.SetString("JournalEntryConfigurationLine", JsonConvert.SerializeObject(_journalLIST));
                 }
-
+                //string baseadress = config.Value.urlbase;
+                //HttpClient _client = new HttpClient();
+                //_client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                //var result = await _client.PostAsJsonAsync(baseadress + "api/JournalEntryConfigurationLine/Delete", _JournalEntryConfigurationLine);
+                //string valorrespuesta = "";
+                //if (result.IsSuccessStatusCode)
+                //{
+                //    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                //    _JournalEntryConfigurationLine = JsonConvert.DeserializeObject<JournalEntryConfigurationLine>(valorrespuesta);
+                //}
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error: {ex.Message}");
             }
-
-
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _JournalEntryConfigurationLine }, Total = 1 });
+            return await Task.Run(() => Ok(_journalLIST));
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _journalentryLIST }, Total = 1 });
         }
-
-
-
-
 
     }
 }
