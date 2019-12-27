@@ -33,6 +33,8 @@ namespace ERPMVC.Models
 
         [Display(Name = "Número Final")]
         public string NoFinal { get; set; }
+
+        public int NumeroActual { get; set; }
         [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy}")]
         [Display(Name = "Fecha de ingreso")]
         public DateTime FechaIngreso { get; set; }

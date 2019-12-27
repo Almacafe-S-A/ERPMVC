@@ -442,7 +442,8 @@ namespace ERPMVC.Controllers
                 }
 
                 if (_CheckAccount == null) { _CheckAccount = new Models.CheckAccountLines(); }
-
+                _Check.IdEstado = 1;
+                _Check.Estado = "Activo";
                 if (_Check.Id == 0)
                 {
                     _Check.FechaCreacion = DateTime.Now;
