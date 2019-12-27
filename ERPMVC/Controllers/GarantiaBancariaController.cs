@@ -248,5 +248,13 @@ namespace ERPMVC.Controllers
             }
             return await Task.Run(() => Ok(_ExchangeRate));
         }
+
+        //--------------------------------------------------------------------------------------
+
+        public async Task<IActionResult> SFGarantiasBancarias()
+        {
+            return await Task.Run(() => View());
+
+        }
     }
 }
