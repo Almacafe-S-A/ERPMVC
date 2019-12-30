@@ -337,7 +337,34 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpPost]
+        public async Task<ActionResult<Insurances>> DeleteInsuranceDocument(Int64 Id, [FromBody]Insurances _InsurancesP)
+        {
+            Insurances _Insurances = _InsurancesP;
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
 
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Insurances/Delete", _Insurances);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Insurances = JsonConvert.DeserializeObject<Insurances>(valorrespuesta);
+                    if (System.IO.File.Exists(_Insurances.Path))
+                    {
+                        System.IO.File.Delete(_Insurances.Path);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+            return new ObjectResult(new DataSourceResult { Data = new[] { _Insurances }, Total = 1 });
+        }
 
 
     }

@@ -118,16 +118,22 @@
                     {
                         columns.Command(command =>
                         {
-                        //command.Custom("Ver detalles").Click("Detalles");
-                        //command.Custom("Editar").Click("EditTypeAccount");
-                        command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditInsurances");
-                        }).Title("Acciones").Width(30);
+                            //command.Custom("Ver detalles").Click("Detalles");
+                            //command.Custom("Editar").Click("EditTypeAccount");
+                            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditInsurances");
+                            command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("DeleteInsurances");
+
+                        }).Title("Acciones").Width(75);
                         columns.Bound(p => p.InsurancesId).Title("Código").Width(50);
-                        columns.Bound(p => p.InsurancesName).Title("Nombre").Width(200);
+                        columns.Bound(p => p.InsurancesName).Title("Nombre").Width(225);
+                        columns.Bound(p => p.Path).Title("Archivo").ClientTemplate("#if (Path != null) {#Si#} else {#No#} #").Width(75);
                         columns.Bound(p => p.DocumentTypeId).Hidden();
                         columns.Bound(p => p.CreatedDate).Title("Fecha Creación").Format("{0:dd/MM/yyyy HH:mm:ss}").Width(100).Hidden();
+                        columns.Bound(p => p.CreatedUser).Title("Usuario Creación").Width(100).Hidden();
+                        columns.Bound(p => p.ModifiedUser).Title("Usuario Modifico").Width(100).Hidden();
+                        columns.Bound(p => p.ModifiedDate).Title("Fecha Modifico").Format("{0:dd/MM/yyyy HH:mm:ss}").Width(100).Hidden();
                     })
-                    
+
                         .Filterable(f => f.Operators(o => o.ForString(s => s
                                                 .Clear()
                                                 .Contains("Contiene")
@@ -161,9 +167,9 @@
                                         ))
                     .ToolBar(tools =>
                     {
-            // tools.Create();
-            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddInsurances();" });
+                        // tools.Create();
+                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddInsurances();" });
                         tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
                         tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
 
@@ -172,7 +178,10 @@
                     })
                     .Editable(e => e.Mode(GridEditMode.PopUp))
                     .Sortable()
-                    .Pageable()
+                    .Pageable(s => s
+                        .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+                        .Empty("No hay datos."))
+                    )
                     .Filterable()
                     .Scrollable()
                     .Pdf(pdf => pdf.FileName("DocumentosAseguradorasReporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
@@ -202,9 +211,9 @@
                     )
                         .Events(e =>
                         {
-                //  e.Save("onsave");
+                            //  e.Save("onsave");
 
-            })
+                        })
 )
 
 <div id="InsurancesDocument">
@@ -234,4 +243,37 @@
     //setRowButtonTooltip(".k-grid-GenerarFactura", "Generar una factura fiscal!");
     //setRowButtonTooltip(".k-grid-Imprimir", "Imprimir");
     setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
+
+    function DeleteInsurances(e) {
+        if (confirm('¿Esta seguro que desea eliminar este registro?')) {
+            e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                InsurancesId: dataItem.InsurancesId,
+                DocumentTypeId: dataItem.DocumentTypeId,
+                CreatedDate: dataItem.CreatedDate,
+                CreatedUser: dataItem.CreatedUser,
+                ModifiedUser: dataItem.ModifiedUser,
+                ModifiedDate: dataItem.ModifiedDate
+            };
+            debugger;
+            $.ajax({
+                url: '@Url.Action("DeleteInsuranceDocument", "Insurances")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    debugger;
+                    RefrescarGrid();
+                
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+        }
+    }
 </script>
