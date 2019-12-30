@@ -95,7 +95,7 @@ namespace ERPMVC.Controllers
             var urlBase = Configuration.GetSection("AppSettings").GetSection("urlbase").Value;
             HttpClient cliente = new HttpClient();
             cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-            var resultado = await cliente.GetAsync(urlBase + "api/Reportes/CadenaConexionBD");
+            var resultado =  await cliente.GetAsync(urlBase + "api/Reportes/CadenaConexionBD");
             if (resultado.IsSuccessStatusCode)
             {
                 var cadena = await resultado.Content.ReadAsStringAsync();
