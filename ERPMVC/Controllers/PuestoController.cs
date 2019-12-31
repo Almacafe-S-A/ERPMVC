@@ -66,6 +66,35 @@ namespace ERPMVC.Controllers
 
             return Json(_PuestoP);
         }
+
+        public async Task<JsonResult> GetPuestoByIdDepartamento([DataSourceRequest]DataSourceRequest request, Int64 IdDepartamento)
+        {
+            List<Puesto> _PuestoP = new List<Puesto>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Puesto/GetPuestoByIdDepartamento/" + IdDepartamento);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _PuestoP = JsonConvert.DeserializeObject<List<Puesto>>(valorrespuesta);
+                    _PuestoP = _PuestoP.Where(q => q.Estado == "Activo").ToList();
+                }
+
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_PuestoP.ToDataSourceResult(request));
+        }
         [HttpGet]
         public async Task<JsonResult> Get([DataSourceRequest]DataSourceRequest request)
         {
@@ -83,6 +112,38 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _cais = JsonConvert.DeserializeObject<List<Puesto>>(valorrespuesta);
 
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return Json(_cais.ToDataSourceResult(request));
+
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> GetPuestos([DataSourceRequest]DataSourceRequest request)
+        {
+            List<Puesto> _cais = new List<Puesto>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Puesto/GetPuesto");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _cais = JsonConvert.DeserializeObject<List<Puesto>>(valorrespuesta);
+                    _cais = _cais.Where(q => q.Estado == "Activo").ToList();
                 }
 
 
