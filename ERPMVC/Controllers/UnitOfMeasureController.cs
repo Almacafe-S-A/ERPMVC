@@ -334,7 +334,7 @@ namespace ERPMVC.Controllers
             //  return new ObjectResult(new DataSourceResult { Data = new[] { _UnitOfMeasure }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<UnitOfMeasure>> Delete([FromBody]UnitOfMeasure _UnitOfMeasure)
         {
             try

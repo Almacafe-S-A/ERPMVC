@@ -96,6 +96,40 @@
     }
 
 
+      function Delete(e) {
+        e.preventDefault();
+        if (confirm('Esta seguro que desea eliminar la fila?')) {
+            var notification = $("#notification").data("kendoNotification");
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            $.ajax({
+                url: '@Url.Action("Delete", "UnitOfMeasure")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataItem),
+                success: function (data) {
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    //notification.show({
+                    //    title: "Validación",
+                    //    message: textStatus + ": " + XMLHttpRequest.responseText
+                    //}, "error");
+                    $.toast({
+                        heading: 'Validación',
+                        text: '<br/><br/>' + errorThrown,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                }
+            });
+           var grid = $("#gridUoM").data("kendoGrid");
+            grid.dataSource.remove(dataItem);
+        }
+    }
 
     function RefrescarGrid() {
         var grid = $("#gridUnitOfMeasure").getKendoGrid();
@@ -105,8 +139,6 @@
 </script>
 
 <h3 class="text-themecolor">Unidades de Medida</h3>
-
-
 @(Html.Kendo().Grid<ERPMVC.Models.UnitOfMeasure>()
                       .Name("gridUoM")
                       .Columns(columns =>
@@ -115,7 +147,7 @@
                           {
                               //command.Custom("Ver detalles").Click("Detalles");
                               command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditUoM");
-                              command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                              command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
                           }).Title("Acciones").Width(150);
                           columns.Bound(p => p.UnitOfMeasureId).Title("Id").Width(100);
                           columns.Bound(p => p.UnitOfMeasureName).Title("Nombre unidad de medida").Width(250);
@@ -184,7 +216,7 @@
                             .Read(read => read.Action("GetUnitOfMeasure", "UnitOfMeasure"))
                             .Create(create => create.Action("Insert", "UnitOfMeasure"))
                             .Update(update => update.Action("Update", "UnitOfMeasure", new { id = "{0}" }))
-                            .Destroy(destroy => destroy.Action("Delete", "UnitOfMeasure", new { id = "{0}" }))
+                      //.Destroy(destroy => destroy.Action("Delete", "UnitOfMeasure", new { id = "{0}" }))
                       )
 )
 
@@ -207,7 +239,7 @@
         });
     }
 
-    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
     setRowButtonTooltip(".k-grid-Editar", "Editar registro");
     setRowButtonTooltip(".k-grid-Agregar", "Agregar nuevo registro");
 </script>
