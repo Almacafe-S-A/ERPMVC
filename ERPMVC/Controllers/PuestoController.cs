@@ -354,22 +354,39 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult<Puesto>> Delete(Int64 Id,[FromBody]Puesto _PuestoP)
+        public async Task<ActionResult<Puesto>> Delete([FromBody] Puesto _PuestoP)
         {
             Puesto _Puesto = _PuestoP;
+            List<Employees> _Employees = new List<Employees>();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Puesto/Delete", _Puesto);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
+                var result1 = await _client.GetAsync(baseadress + "api/Puesto/ValidationDelete/" + _Puesto.IdPuesto);
+                string valorrespuesta1 = "";
+
+                if (result1.IsSuccessStatusCode)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Puesto = JsonConvert.DeserializeObject<Puesto>(valorrespuesta);
+
+                    valorrespuesta1 = await (result1.Content.ReadAsStringAsync());
                 }
+                if (valorrespuesta1 == "0")
+                {
+                    var result = await _client.PostAsJsonAsync(baseadress + "api/Puesto/Delete", _Puesto);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _Puesto = JsonConvert.DeserializeObject<Puesto>(valorrespuesta);
+                    }
+                }
+                else
+                {
+                    return await Task.Run(() => BadRequest("Este registro tiene referencia a otros datos,No se puede Eliminar"));
+                }
+
 
             }
             catch (Exception ex)
