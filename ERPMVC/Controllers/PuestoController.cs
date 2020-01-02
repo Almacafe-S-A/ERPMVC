@@ -252,7 +252,7 @@ namespace ERPMVC.Controllers
                 if (_Puesto.IdPuesto > 0)
                 {
                     if (_Puesto.IdPuesto != _PuestoP.IdPuesto)
-                        return await Task.Run(() => BadRequest($"Ya existe un Puesto registrado con ese nombre."));
+                        return await Task.Run(() => BadRequest($"Ya existe un Puesto registrado para este Departamento con el mismo Nombre."));
                 }
 
 
