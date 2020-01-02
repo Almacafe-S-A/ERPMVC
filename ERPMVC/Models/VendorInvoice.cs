@@ -89,7 +89,7 @@ namespace ERPMVC.Models
         public string VendorName { get; set; }
         
 
-        [Display(Name = "Fecha factura")]
+        [Display(Name = "Fecha Factura")]
         public DateTime OrderDate { get; set; }
         [Display(Name = "Fecha Recibido")]
         public DateTime ReceivedDate { get; set; }
@@ -100,7 +100,7 @@ namespace ERPMVC.Models
         [Display(Name = "Moneda")]
         public string CurrencyName { get; set; }
 
-        [Display(Name = "Moneda tasa")]
+        [Display(Name = "Moneda Tasa")]
         public double Currency { get; set; }
 
         [Display(Name = "Número de referencia del Proveedor")]
@@ -128,10 +128,10 @@ namespace ERPMVC.Models
         [Display(Name = "Flete")]
         public double Freight { get; set; }
 
-        [Display(Name = "Total exento")]
+        [Display(Name = "Total Exento")]
         public double TotalExento { get; set; }
 
-        [Display(Name = "Total exonerado")]
+        [Display(Name = "Total Exonerado")]
         public double TotalExonerado { get; set; }
         [Display(Name = "Total Gravado")]
         public double TotalGravado { get; set; }

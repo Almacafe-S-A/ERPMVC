@@ -17,7 +17,7 @@ namespace ERPMVC.Models
 
         [Display(Name = "Estado")]
         public long? IdEstado { get; set; }
-
+        public string Estado { get; set; }
         public string Usuariocreacion { get; set; }
         public string Usuariomodificacion { get; set; }
         public DateTime? FechaCreacion { get; set; }

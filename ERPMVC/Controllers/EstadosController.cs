@@ -281,7 +281,9 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet("[controller]/[action]")]
-        public async Task<ActionResult> GetGrupoEstadoActivoFijo([DataSourceRequest]DataSourceRequest request)
+
+        public async Task<ActionResult> GetporGrupoEstado([DataSourceRequest]DataSourceRequest request, int GrupoId)
+
         {
             List<Estados> _clientes = new List<Estados>();
             try
@@ -289,7 +291,9 @@ namespace ERPMVC.Controllers
                 string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/estados/GetEstadosByGrupo/" + 6);
+
+                var result = await _client.GetAsync(baseadress + "api/Estados/GetEstadosByGrupo/" + GrupoId);
+
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {

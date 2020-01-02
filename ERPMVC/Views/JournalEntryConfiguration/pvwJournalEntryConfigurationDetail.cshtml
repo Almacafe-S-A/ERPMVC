@@ -120,16 +120,12 @@
 
 
     function EditCotizacionDetalle(e) {
-
         e.preventDefault();
         var notification = $("#notification").data("kendoNotification");
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-
+      // var codigoimpuesto = 0;
       //  var subproducto = 0;
-        var dataObject = { 'JournalEntryConfigurationLineId': dataItem.JournalEntryConfigurationLineId };
-
-       // var codigoimpuesto = 0;
-
+        var dataObject = { 'JournalEntryConfigurationLineId': dataItem.JournalEntryConfigurationLineId };     
         if (dataItem.JournalEntryConfigurationId > 0) {
             $.ajax({
                 url: '@Url.Action("pvwJournalEntryConfigurationLine", "JournalEntryConfigurationLine")',
@@ -165,48 +161,41 @@
             $("#btnActualizarJournalEntryConfiguration").prop("disabled", false);
         }
         $('#ModalJournalEntryConfigurationLine').modal('show');
-
     }
 
 
     function Delete(e) {
-
         e.preventDefault();
         if (confirm('Esta seguro que desea eliminar la fila?')) {
             var notification = $("#notification").data("kendoNotification");
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
 
+            var grid = $("#gridJournalEntryConfigurationLine").data("kendoGrid");
+            var datasource = grid.dataSource;
+            datasource.remove(dataItem);
             $.ajax({
                 url: '@Url.Action("Delete", "JournalEntryConfigurationLine")',
                 method: 'POST',
                 datatype: "json",
+                datatype: "json",
                 contentType: 'application/json',
                 async: false,
                 data: JSON.stringify(dataItem),
-                success: function (data) {
-                    //$("#ControlPalletsLineMant").html('');
-                    //$("#ControlPalletsLineMant").html(data);
-                    //var txt = $(data);
-                    //var found = $("#SubProductId", txt);
-                    //subproducto = $(found).val();
+                success: function (data) {                   
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
-
-                    //  $("#btngenerarfactura").show();
                     notification.show({
                         title: "Validación",
                         message: textStatus + ": " + XMLHttpRequest.responseText
                     }, "error");
-
                 }
             });
 
-            var grid = $("#gridJournalEntryConfigurationLine").data("kendoGrid");
+            //datasource.read();
             grid.dataSource.remove(dataItem);
-            //Sync it with the grid
-            //grid.dataSource.sync();
+            //CalcularTotalDocumento();
         }
-    } 
+    }
 </script>
 
 
@@ -221,9 +210,9 @@
                                                       columns.Command(command =>
                                                       {
                                                           command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCotizacionDetalle");
-                                                          if (Model.editar == 1)
+                                                          if (Model.JournalEntryConfigurationId == 0)
                                                           {
-                                                              //command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+                                                              command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
                                                           }
                                                           // command.Custom("Imprimir").Click("ImprimirCotizacion");
                                                           //  command.Edit(); command.Destroy();
@@ -341,6 +330,6 @@
         });
     }
     setRowButtonTooltip(".k-grid-Editar", "Editar registro");
-     setRowButtonTooltip(".k-grid-Eliminar", "Eliminar");
+     setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
     setRowButtonTooltip(".k-grid-Agregar", "Agregar nuevo registro");
 </script>

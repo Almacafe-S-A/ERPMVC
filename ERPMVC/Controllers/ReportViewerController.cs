@@ -32,6 +32,7 @@ namespace ERPMVC.Controllers
         private readonly IOptions<MyConfig> _config;
         private readonly IMapper mapper;
         private readonly ILogger _logger;
+        public string ArchivoReporte { get; set; }
 
         public string DefaultParam = null;
         public ReportViewerController(IMemoryCache memoryCache, IHostingEnvironment hostingEnvironment
@@ -44,6 +45,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
             this._config = config;
             Configuration = configuration;
+            ArchivoReporte = "";
         }
 
         public ActionResult Index()
@@ -93,22 +95,14 @@ namespace ERPMVC.Controllers
         public async void OnInitReportOptions(ReportViewerOptions reportOption)
         {
             var urlBase = Configuration.GetSection("AppSettings").GetSection("urlbase").Value;
-            HttpClient cliente = new HttpClient();
-            cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-            var resultado = await cliente.GetAsync(urlBase + "api/Reportes/CadenaConexionBD");
-            if (resultado.IsSuccessStatusCode)
-            {
-                var cadena = await resultado.Content.ReadAsStringAsync();
-                Syncfusion.Report.DataSourceCredentials dsc = new Syncfusion.Report.DataSourceCredentials();
-                dsc.ConnectionString = cadena;
-                dsc.Name = "ERP";
-                string basePath = _hostingEnvironment.WebRootPath;
-                FileStream inputStream = new FileStream(basePath + reportOption.ReportModel.ReportPath, FileMode.Open, FileAccess.Read);
-                reportOption.ReportModel.Stream = inputStream;
-                reportOption.ReportModel.EmbedImageData = true;
-                reportOption.ReportModel.DataSourceCredentials.Add(dsc);
-            }
-            
+            Syncfusion.Report.DataSourceCredentials dsc = new Syncfusion.Report.DataSourceCredentials();
+            dsc.ConnectionString = Utils.ConexionReportes;
+            dsc.Name = "ERP";
+            string basePath = _hostingEnvironment.WebRootPath;
+            FileStream inputStream = new FileStream(basePath + reportOption.ReportModel.ReportPath, FileMode.Open, FileAccess.Read);
+            reportOption.ReportModel.Stream = inputStream;
+            reportOption.ReportModel.DataSourceCredentials.Add(dsc);
+            reportOption.ReportModel.EmbedImageData = true;
         }
 
         public  void OnReportLoaded(ReportViewerOptions reportOption)
@@ -116,8 +110,7 @@ namespace ERPMVC.Controllers
         }
     }
 
-
-    public class SalesOrderQ
+    /*public class SalesOrderQ
     {
 
        
@@ -183,5 +176,5 @@ namespace ERPMVC.Controllers
 
             return _SalesOrderLine;
         }
-    }
+    }*/
 }

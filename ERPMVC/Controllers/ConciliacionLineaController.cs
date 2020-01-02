@@ -99,8 +99,8 @@ namespace ERPMVC.Controllers
                             //obj.Description = _ConciliacionLineap.Description;
                             obj.Credit = _ConciliacionLineap.Credit;
                             obj.Debit = _ConciliacionLineap.Debit;
-                            obj.AccountId = _ConciliacionLineap.AccountId;
-                            obj.AccountName = _ConciliacionLineap.AccountName;
+                            //obj.AccountId = _ConciliacionLineap.AccountId;
+                            //obj.AccountName = _ConciliacionLineap.AccountName;
                             obj.JournalEntryId = _ConciliacionLineap.JournalEntryId;
                             //obj.Num = _JournalEntryLinep.Num;
                             

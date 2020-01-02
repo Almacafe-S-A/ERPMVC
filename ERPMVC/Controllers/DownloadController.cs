@@ -39,8 +39,25 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpPost]
+        public async Task<IActionResult> DownloadFile([FromBody]Miarchivo _Miarchivo)
+        {
+            var path = _Miarchivo.tpath;
+            var memory = new MemoryStream();
+            using (var stream = new FileStream(path, FileMode.Open))
+            {
+                await stream.CopyToAsync(memory);
+            }
+
+            memory.Position = 0;
+            var ext = Path.GetExtension(path).ToLowerInvariant();
+            return File(memory, System.Net.Mime.MediaTypeNames.Application.Octet, Path.GetFileName(path));
+        }
+
 
     }
+
+    
 
     public class Miarchivo
     {

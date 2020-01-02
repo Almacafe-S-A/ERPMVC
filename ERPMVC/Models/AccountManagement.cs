@@ -48,5 +48,7 @@ namespace ERPMVC.Models
 
         [Display(Name = "Usuario de modificación")]
         public string UsuarioModificacion { get; set; }
+
+        public string CodigoNombre => $"{AccountNumber} - {Description}";
     }
 }

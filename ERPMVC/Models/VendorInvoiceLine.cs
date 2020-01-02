@@ -48,6 +48,7 @@ namespace ERPMVC.Models
         public double TaxPercentage { get; set; }
         [Display(Name = "Código Impuesto")]
         public string TaxCode { get; set; }
+        [Display(Name = "Id Impuesto")]
         public Int64? TaxId { get; set; }
         [ForeignKey("TaxId")]
         public virtual Tax Tax { get; set; }

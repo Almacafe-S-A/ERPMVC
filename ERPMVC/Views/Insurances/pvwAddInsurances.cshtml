@@ -107,15 +107,51 @@
     var onFailed = function (context) {
         // alert(context);
         console.log(context);
-        $.toast({
-            heading: 'Error',
-            text: '<br/><br/> Error al Crear la Aseguradora',
-            position: 'top-right',
-            loaderBg: '#ff6849',
-            icon: 'error',
-            hideAfter: 30000,
-            stack: 6
-        });
+        if (context.responseText == "Ya existe una Aseguradora registrada con ese nombre.") {
+            $.toast({
+                heading: 'Error',
+                text: '<br/><br/> Ya existe una Aseguradora registrada con ese nombre.',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+        }
+        else if (context.responseText == "Seleccione una Imagen.") {
+            $.toast({
+                heading: 'Error',
+                text: '<br/><br/> Seleccione una Imagen.',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+        }
+        else if (context.responseText == "Extensión de Imagen no válida.") {
+            $.toast({
+                heading: 'Error',
+                text: '<br/><br/> Extensión de Imagen no válida.',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+        }
+            
+        else {
+            $.toast({
+                heading: 'Error',
+                text: '<br/><br/> Error al Crear la Aseguradora.',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+        }
     };
 </script>
 
@@ -126,8 +162,9 @@
         <!-- Modal content-->
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" onclick="closeInsurancesDocument();">&times;</button>
                 <h4 class="modal-title">Aseguradora</h4>
+                <button type="button" class="close" onclick="closeInsurancesDocument();">&times;</button>
+                
             </div>
             <div class="modal-body">
                 <div class="box">
@@ -151,28 +188,20 @@
                                       data-ajax-failure="onFailed" data-ajax-success="onSuccess">
 
                                     <div class="row">
-                                        <div class="col-md-5">
+                                        <div class="col-md-4" hidden="hidden">
                                             <input type="text" name="InsurancesId" hidden="hidden" asp-for="InsurancesId" class="form-control" style="min-width:100%" />
-
-                                            <script>
-                                                function GetDocumentos() {
-                                                    return { 'Id': 19 }
-                                                }
-                                            </script>
-
                                             <label asp-for="DocumentTypeId" class="control-label" style="width:100%"></label>
                                             <kendo-dropdownlist name="DocumentTypeId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                option-label="Seleccionar tipo de documento"
                                                                 for="DocumentTypeId"
                                                                 datatextfield="Nombre"
                                                                 datavaluefield="Id"
-                                                                auto-bind="false"
+                                                                auto-bind="true"
                                                                 onchange="DocumentTypeN();"
-                                                                required
+                                                                data-val-required="El Tipo de Documento es requerido."
                                                                 style="width: 100%;">
                                                 <datasource type="DataSourceTagHelperType.WebApi" server-filtering="true">
                                                     <transport>
-                                                        <read url="@Url.Action("GetElementoByIdConfiguracion", "ElementoConfiguracion")" data="GetDocumentos" />
+                                                        <read url="@Url.Action("GetElementoByIdConfiguracion", "ElementoConfiguracion", new {Id = 19 })" />
                                                     </transport>
                                                 </datasource>
 
@@ -182,20 +211,15 @@
 
                                         <input type="text" hidden="hidden" name="DocumentTypeName" asp-for="DocumentTypeName" class="form-control" style="min-width:100%" />
 
-                                        <div class="col-md-5">
+                                        <div class="col-md-4">
                                             <label asp-for="InsurancesName" class="control-label" style="width:100%"></label>
-                                            <input type="text" name="InsurancesName" class="form-control" style="min-width:100%" asp-for="InsurancesName" />
+                                            <input type="text" name="InsurancesName" data-val-required="El Nombre de la Aseguradora es requerido." class="form-control" style="min-width:100%" asp-for="InsurancesName" />
                                         </div>
-                                    </div>
-                                    <div class="row">
-
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-5" hidden>
+                                        <div class="col-md-4" hidden>
                                             <div class="form-group">
                                                 @(Html.Kendo().Upload()
-                                                                    .Name("file")
-                                                                    .HtmlAttributes(new { aria_label = "Foto Empleado" })
+                                                                            .Name("file")
+                                                                            .HtmlAttributes(new { aria_label = "Foto Empleado" })
                                                 )
                                             </div>
                                         </div>
@@ -203,9 +227,9 @@
                                             <div class="card">
                                                 <div class="card-body">
                                                     <h4 class="card-title">Imagen de Aseguradora</h4>
-                                                    @if (Model.DocumentName != null)
+                                                    @if (Model.Path != null)
                                                     {
-                                                        <input type="file" id="files" asp-for="Path" name="files" class="dropify" data-max-file-size="2M" accept=".jpg,.jpeg,.png,.gif" data-default-file="..\Seguros\@Model.DocumentName" />
+                                                        <input type="file" id="files" asp-for="Path" name="files" class="dropify" data-max-file-size="2M" accept=".jpg,.jpeg,.png,.gif" data-default-file="../Insurances/@Model.Path.Split("/").Last()" />
                                                     }
                                                     else
                                                     {
@@ -216,7 +240,8 @@
 
                                         </div>
                                     </div>
-                                    <div class="row">
+                                    
+                                    <div class="modal-footer">
                                         <div class="col-md-12">
                                             <button id="btnInsuranceDocument" class="form-control btn-miboton" type="submit"> Guardar </button>
                                         </div>
@@ -232,6 +257,26 @@
 </div>
 <script>
     $(document).ready(function () {
+        $("#btnInsuranceDocument").click(function (event) {
+            debugger;
+            if ($("#DocumentTypeId").data("kendoDropDownList").value() == 0) {
+                $.toast({
+                    heading: 'Error',
+                    text: '<br/><br/> Seleccione el Tipo de Documento',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 30000,
+                    stack: 6
+                });
+
+                return false;
+            }
+            else {
+                return true;
+            }
+        });
+
         // Basic
         $('.dropify-std').dropify();
 
@@ -272,4 +317,18 @@
             }
         })
     });
+
+    function noespaciosincio(e) {
+        var valor = e.value.replace(/^ */, '');
+        e.value = valor;
+    }
+    document.getElementById("btnInsuranceDocument").onclick = function () {
+        var txtObj = document.getElementById("InsurancesName");
+
+
+
+        txtObj.value = txtObj.value.replace(/^\s+/, ""); //Left trim
+        txtObj.value = txtObj.value.replace(/\s+$/, ""); //Right trim
+
+    };
 </script>

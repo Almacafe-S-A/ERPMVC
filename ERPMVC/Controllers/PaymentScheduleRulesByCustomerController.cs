@@ -118,7 +118,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _PaymentScheduleRulesByCustomer = JsonConvert.DeserializeObject<List<PaymentScheduleRulesByCustomer>>(valorrespuesta);
-
+                    _PaymentScheduleRulesByCustomer = _PaymentScheduleRulesByCustomer.OrderByDescending(q => q.PaymentScheduleRulesByCustomerId).ToList();
                 }
 
 

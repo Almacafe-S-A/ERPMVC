@@ -67,28 +67,28 @@ namespace ERPMVC.Controllers
                     _CompanyInfo = new CompanyInfoDTO();
                 }
 
-                string[] separar;
-                string[] separar1;
-                if (_CompanyInfo.image != null)
-                {
-                    if (_CompanyInfo.image != "Imagen")
-                    {
-                        separar = _CompanyInfo.image.Split("/");
-                        separar1 = separar[2].Split(".");
-                        ViewData["Nombreimg"] = separar1[0].ToString();
-                        ViewData["Extensionimg"] = "." + separar1[1].ToString();
-                    }
-                    else
-                    {
-                        ViewData["Nombreimg"] = "";
-                        ViewData["Extensionimg"] = "";
-                    }
-                }
-                else
-                {
-                        ViewData["Nombreimg"] = "";
-                        ViewData["Extensionimg"] = "";
-                }              
+                //string[] separar;
+                //string[] separar1;
+                //if (_CompanyInfo.image != null)
+                //{
+                //    if (_CompanyInfo.image != "Imagen")
+                //    {
+                //        separar = _CompanyInfo.image.Split("/");
+                //        separar1 = separar[2].Split(".");
+                //        ViewData["Nombreimg"] = separar1[0].ToString();
+                //        ViewData["Extensionimg"] = "." + separar1[1].ToString();
+                //    }
+                //    else
+                //    {
+                //        ViewData["Nombreimg"] = "";
+                //        ViewData["Extensionimg"] = "";
+                //    }
+                //}
+                //else
+                //{
+                //        ViewData["Nombreimg"] = "";
+                //        ViewData["Extensionimg"] = "";
+                //}              
             }
             catch (Exception ex)
             {
@@ -250,7 +250,7 @@ namespace ERPMVC.Controllers
                             //mstream.WriteTo(stream);
                         }
                         //HttpContext.Session.SetString("Nombre", filePath);
-                        HttpContext.Session.SetString("NombreURL", filePathName);
+                       // HttpContext.Session.SetString("NombreURL", filePathName);
                     }
                 }
             }
@@ -296,23 +296,26 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<CompanyInfo>> SaveCompanyInfo([FromBody]CompanyInfoDTO _CompanyInfoS)
+        public async Task<ActionResult<CompanyInfoDTO>> SaveCompanyInfo(IEnumerable<IFormFile> files, CompanyInfoDTO _CompanyInfoS)
         {
             CompanyInfo _CompanyInfo = _CompanyInfoS;
             try
             {
-                CompanyInfo _listCompanyInfo= new CompanyInfo();
+                
+
+                CompanyInfo _listCompanyInfo = new CompanyInfo();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/CompanyInfo/GetCompanyInfoById/" + _CompanyInfo.CompanyInfoId);
-                string valorrespuesta = "";
-                _CompanyInfo.image = HttpContext.Session.GetString("NombreURL");
+                string valorrespuesta = "";            
                 _CompanyInfo.FechaModificacion = DateTime.Now;
                 _CompanyInfo.UsuarioModificacion = HttpContext.Session.GetString("user");
-                if (result.IsSuccessStatusCode)
+                IFormFile file = files.FirstOrDefault();
+                if (file != null)
                 {
-
+                    if (result.IsSuccessStatusCode)
+                {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CompanyInfo = JsonConvert.DeserializeObject<CompanyInfo>(valorrespuesta);
                 }
@@ -321,17 +324,56 @@ namespace ERPMVC.Controllers
 
                 if (_CompanyInfoS.CompanyInfoId == 0)
                 {
+                    //_CompanyInfoS.image = file.FileName;
                     _CompanyInfoS.FechaCreacion = DateTime.Now;
                     _CompanyInfoS.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_CompanyInfoS);
+                    //var value = (insertresult.Result as ObjectResult).Value;
+                    if (insertresult!=null)
+                    {
+                        CompanyInfo comp = (CompanyInfo)insertresult.Value;
+                        _CompanyInfoS.CompanyInfoId = comp.CompanyInfoId;
+                    }
+                   
                 }
                 else
                 {
+                    if (System.IO.File.Exists(_CompanyInfo.image))
+                    {
+                        System.IO.File.Delete(_CompanyInfo.image);
+                    }
+                    //_CompanyInfoS.image = file.FileName;
                     _CompanyInfoS.UsuarioCreacion = _CompanyInfo.UsuarioCreacion;
                     _CompanyInfoS.FechaCreacion = _CompanyInfo.FechaCreacion;
                     var updateresult = await Update(_CompanyInfo.CompanyInfoId, _CompanyInfoS);
                 }
-
+              
+                
+                    FileInfo info = new FileInfo(file.FileName);
+                    var filename = _CompanyInfoS.CompanyInfoId + "_" + _CompanyInfoS.Company_Name + info.Extension;
+                    var filePath = _hostingEnvironment.WebRootPath + "/CompanyImages/" + filename;
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+                    _CompanyInfoS.image = filename;
+                    var updateresult2 = await Update(_CompanyInfo.CompanyInfoId, _CompanyInfoS);
+                    ////if (info.extension.equals(".jpeg") || info.extension.equals(".jpg")
+                    ////    || info.extension.equals(".png") || info.extension.equals(".gif")|| info.extension.equals(".jpeg") || info.extension.equals(".jpg")
+                    ////    || info.extension.equals(".gif")
+                    ////    )
+                    ////{
+                    //                      //}
+                    ////else
+                    ////{
+                    ////    return await task.run(() => badrequest("extensión de imagen no permitida"));
+                    ////}
+                }
+                else
+                {
+                    return await Task.Run(() => BadRequest("Seleccione una Imagen"));
+                }
+                //  _CompanyInfo.image = HttpContext.Session.GetString("NombreURL");
             }
             catch (Exception ex)
             {
@@ -339,7 +381,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_CompanyInfo);
+            return Json(_CompanyInfoS);
         }
 
         // POST: CompanyInfo/Insert
@@ -369,7 +411,7 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-            return Ok(_CompanyInfo);
+            return _CompanyInfo;
             // return new ObjectResult(new DataSourceResult { Data = new[] { _CompanyInfo }, Total = 1 });
         }
 

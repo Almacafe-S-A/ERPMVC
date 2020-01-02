@@ -1,4 +1,4 @@
-﻿
+﻿@using Kendo.Mvc.UI
 <h3 class="text-themecolor">Expediente del Empleado</h3>
 <script>
     function GetEmployeesId() {
@@ -44,7 +44,7 @@
             success: function (result) {
                 $("#EmployeeDocument").html('');
                 $("#EmployeeDocument").html(result);
-                $("#files").data("kendoUpload").disable();
+                $("#file").data("kendoUpload").disable();
                 $('#myModalEmployeeDocumentUpload').modal('show');
             },
              error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -125,24 +125,22 @@
     }
 
     function RefreshEmployeeDocument() {
-
-        $("#gridEmployeeDocument").getKendoGrid().dataSource.read();
-
-
+        var grid = $("#gridEmployeeDocument").getKendoGrid()
+            grid.dataSource.read();
     }
 
     function ImprimirEmployeeDocumento(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         debugger;
-        
+
         var ext = dataItem.DocumentName.substr(dataItem.DocumentName.lastIndexOf('.') + 1);
         console.log(ext);
         if (ext!='pdf') {
             alert("Solo se pueden imprimir documentos de tipo PDF");
             return;
         }
-           
+
         var url = '@Url.Action("SFEmployeeDocument", "EmployeeDocument")/' + dataItem.EmployeeDocumentId;
            var win = window.open(url, '_blank');
            win.focus();
@@ -150,103 +148,129 @@
 </script>
 
 @(Html.Kendo().Grid<ERPMVC.Models.EmployeeDocument>()
-                              .Name("gridEmployeeDocument")
-                              .Columns(columns =>
-                              {
-                                  columns.Command(command =>
+                                  .Name("gridEmployeeDocument")
+                                  .Columns(columns =>
                                   {
-                                      //command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditEmployeeDocument");
-                                      command.Custom("Descargar").Text(" ").IconClass("fa fa-download").Click("Descargar");
-                                      command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirEmployeeDocumento");
-                                      //command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirDocumento");
-                                      // command.Custom("Ver detalles").Click("Detalles");
-                                      command.Destroy().Text("Eliminar");
-                                      // command.Edit(); command.Destroy();
-                                  }).Width(200);
-                                  columns.Bound(p => p.EmployeeDocumentId).Width(100);
-                                  columns.Bound(p => p.EmployeeId).Visible(false).Width(100);
-                                  columns.Bound(p => p.DocumentName).Width(350);
-                                  //columns.Bound(p => p.DocumentTypeId).Width(100);
-                                  columns.Bound(p => p.DocumentTypeName).Width(200);
-                                  columns.Bound(p => p.Path).Visible(false).Width(100);
-                                  columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy}").Width(250);
-                                  columns.Bound(p => p.FechaVencimiento).Format("{0:dd/MM/yyyy}").Width(250);
+                                      columns.Command(command =>
+                                      {
+                              //command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditEmployeeDocument");
+                              command.Custom("Descargar").Text(" ").IconClass("fa fa-download").Click("Descargar");
+                                          command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirEmployeeDocumento");
+                              //command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirDocumento");
+                              // command.Custom("Ver detalles").Click("Detalles");
+                              command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                              // command.Edit(); command.Destroy();
+                          }).Title("Acciones").Width(125);
+                                      columns.Bound(p => p.EmployeeDocumentId).Width(100);
+                                      columns.Bound(p => p.EmployeeId).Visible(false).Width(100);
+                                      columns.Bound(p => p.DocumentName).Width(350);
+                          //columns.Bound(p => p.DocumentTypeId).Width(100);
+                          columns.Bound(p => p.DocumentTypeName).Width(200);
+                                      columns.Bound(p => p.Path).Visible(false).Width(100);
+                                      columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy}").Width(250);
+                                      columns.Bound(p => p.FechaVencimiento).Format("{0:dd/MM/yyyy}").Width(250);
 
-                              })
-                                  .Filterable(f => f.Operators(o => o.ForString(s => s
+                                  })
+                                      .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                           .Clear()
+                                                           .Contains("Contiene")
+                                                           .DoesNotContain("No contiene")
+                                                           .EndsWith("Termina con")
+                                                           .IsEqualTo("Es igual a")
+                                                           .IsNotEqualTo("No es igual a")
+                                                           .IsNull("Es nulo")
+                                                           .StartsWith("Inicia con")
+
+
+                                                     )
+                                                     .ForNumber(n => n
                                                        .Clear()
-                                                       .Contains("Contiene")
-                                                       .DoesNotContain("No contiene")
-                                                       .EndsWith("Termina con")
                                                        .IsEqualTo("Es igual a")
-                                                       .IsNotEqualTo("No es igual a")
+                                                       .IsGreaterThan("Es mayor que")
+                                                       .IsLessThan("Es menor que")
                                                        .IsNull("Es nulo")
-                                                       .StartsWith("Inicia con")
+                                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                     )
+                                                     .ForDate(d => d
+                                                     .Clear()
+                                                     .IsEqualTo("Es igual que")
+                                                     .IsGreaterThan("Es mayor que")
+                                                     .IsLessThan("Es menor que")
+                                                     .IsLessThanOrEqualTo("Es menor o igual que")
+                                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                     .IsNotEqualTo("No es igual que")
+                                                      )
+                                                   ))
+                                  .ToolBar(tools =>
+                                  {
+                          //tools.Create();
+                          tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddEmployeeArea();" });
+
+                                      tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                      tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
 
 
-                                                 )
-                                                 .ForNumber(n => n
-                                                   .Clear()
-                                                   .IsEqualTo("Es igual a")
-                                                   .IsGreaterThan("Es mayor que")
-                                                   .IsLessThan("Es menor que")
-                                                   .IsNull("Es nulo")
-                                                   .IsLessThanOrEqualTo("Es menor o igual que")
-                                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                 )
-                                                 .ForDate(d => d
-                                                 .Clear()
-                                                 .IsEqualTo("Es igual que")
-                                                 .IsGreaterThan("Es mayor que")
-                                                 .IsLessThan("Es menor que")
-                                                 .IsLessThanOrEqualTo("Es menor o igual que")
-                                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                 .IsNotEqualTo("No es igual que")
-                                                  )
-                                               ))
-                              .ToolBar(tools =>
-                              {
-                                  //tools.Create();
-                                  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddEmployeeArea();" });
-
-                                  tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                  tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-                              })
-                              .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
-                              .Sortable()
-                              .Pageable()
-                              .Filterable()
-                              .Scrollable()
-                              .Pdf(pdf => pdf.FileName("EmployeeDocumentReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                               + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                               .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                 .Excel(excel => excel.FileName("EmployeeDocumentReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                               + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                               .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                              .DataSource(dataSource =>
-                                  dataSource
-                                    .WebApi()
-                                    .ServerOperation(true)
-                                    .Model(model =>
+                                  })
+                                  .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                                  .Sortable()
+                                  .Pageable(s => s
+                                  .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+                                  .Empty("No hay datos."))
+                                  )
+                                  .Filterable()
+                                  .Scrollable()
+                                  .Pdf(pdf => pdf.FileName("EmployeeDocumentReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                   + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                   .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                     .Excel(excel => excel.FileName("EmployeeDocumentReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                   + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                   .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                  .DataSource(dataSource =>
+                                      dataSource
+                                        .WebApi()
+                                        .ServerOperation(true)
+                                        .Model(model =>
+                                        {
+                                            model.Id(p => p.EmployeeDocumentId);
+                                            model.Field(p => p.EmployeeId).Editable(false);
+                                        })
+                                        .Sort(s => s.Add(m => m.FechaCreacion).Descending())
+                                        .Events(events => events.Error("error_handler"))
+                                        .Read(read => read.Action("GetDocumentByEmployeeId", "EmployeeDocument").Data("GetEmployeesId"))
+                                        .Create(create => create.Action("Insert", "EmployeeDocument"))
+                                        .Update(update => update.Action("Update", "EmployeeDocument", new { id = "{0}" }))
+                                        .Destroy(destroy => destroy.Action("Delete", "EmployeeDocument", new { id = "{0}" }).Type(HttpVerbs.Post))
+                                  )
+                                    .Events(e =>
                                     {
-                                        model.Id(p => p.EmployeeDocumentId);
-                                        model.Field(p => p.EmployeeId).Editable(false);
-                                    })
-                                    .Events(events => events.Error("error_handler"))
-                                    .Read(read => read.Action("GetDocumentByEmployeeId", "EmployeeDocument").Data("GetEmployeesId"))
-                                    .Create(create => create.Action("Insert", "EmployeeDocument"))
-                                    .Update(update => update.Action("Update", "EmployeeDocument", new { id = "{0}" }))
-                                    .Destroy(destroy => destroy.Action("Delete", "EmployeeDocument", new { id = "{0}" }).Type(HttpVerbs.Post))
-                              )
-                                .Events(e =>
-                                {
-                                    //e.Save("onsave");
-                                })
+                            //e.Save("onsave");
+                        })
 )
 
 <div id="EmployeeDocument">
     @await Html.PartialAsync("pvwEmployeeDocumentUpload", new ERPMVC.Models.EmployeeDocument { EmployeeDocumentId = 0, DocumentName = "" })
 </div>
+
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridEmployeeDocument").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridEmployeeDocument").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar un nuevo registro");
+    //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar documento");
+    setRowButtonTooltip(".k-grid-Descargar", "Descargar documento");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir documento");
+</script>
