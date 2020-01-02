@@ -165,6 +165,36 @@ namespace ERPMVC.Controllers
             return Json(_Company);
         }
 
+
+        [HttpPost]
+        public async Task<ActionResult> GetCompanyByRTNMANAGER([FromBody]CompanyInfo _Companyp)
+        {
+            CompanyInfo _Company = new CompanyInfo();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/CompanyInfo/GetCompanyByRTNMANAGER", _Companyp);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Company = JsonConvert.DeserializeObject<CompanyInfo>(valorrespuesta);
+                }
+                if (_Company == null)
+                {
+                    _Company = new CompanyInfo();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(_Company);
+        }
+
         //[HttpPost("[action]")]
         //public async Task<ActionResult<CompanyInfo>> SaveCompanyInfo([FromBody]CompanyInfoDTO _CompanyInfo)
         //{
