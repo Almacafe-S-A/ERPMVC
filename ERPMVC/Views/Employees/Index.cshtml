@@ -133,6 +133,38 @@
             });
     }
 
+    function DeleteEmployees(e) {
+        if (confirm('¿Esta seguro que desea eliminar este registro?')) {
+            e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                IdEmpleado: dataItem.IdEmpleado,
+                //IdPuesto: 0,
+                IdEstado: 0,
+                IdCity: 0,
+                IdState: 0,
+                IdCountry: 0,
+                IdCurrency: 0,
+                IdBank: 0,
+            };
+
+            $.ajax({
+                url: '@Url.Action("Delete", "Employees")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    RefrescarGrid();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+        }
+    }
+
     function RefrescarGrid() {
 
         var grid = $("#gridEmployees").getKendoGrid();
@@ -163,15 +195,18 @@
                             //command.Custom("Ver detalles").Click("Detalles");
                             command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("Editar");
                             //command.Destroy();
-                            command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                            command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("DeleteEmployees");
+                            //command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
 
                         }).Width(120).Title("Acciones");
                         columns.Bound(p => p.IdEmpleado).Width(100);
                         columns.Bound(p => p.NombreEmpleado).Width(250).Title("Nombre Empleado");
-                        columns.Bound(p => p.Correo).Width(250);
+                        //columns.Bound(p => p.Correo).Width(250);
                         columns.Bound(p => p.Puesto.NombrePuesto).Width(250).Title("Nombre de Puesto");
                         columns.Bound(p => p.Genero).Width(150).Title("Género");
-
+                        columns.Bound(p => p.TelefonoContacto).Width(250).Title("Contacto Emergencia");
+                        columns.Bound(p => p.FechaIngreso).Title("Fecha Ingreso").Format("{0:dd/MM/yyyy HH:mm}").Width(200);
+                        columns.Bound(p => p.IdEstado).ClientTemplate("#if (IdEstado == '1') {#Activo#} else {#Inactivo#} #").Width(150).Title("Estado");
 
                     })
 
@@ -250,6 +285,6 @@
 
     setToolbarTooltip(".k-grid-Agregar", "Agregar un nuevo registro");
     //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
-    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
     setRowButtonTooltip(".k-grid-Editar", "Editar registro");
 </script>

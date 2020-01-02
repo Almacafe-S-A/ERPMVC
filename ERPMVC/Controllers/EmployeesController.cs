@@ -281,7 +281,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult<Employees>> Delete(Employees _Employeesp)
+        public async Task<ActionResult<Employees>> Delete([FromBody]Employees _Employeesp)
         {
             Employees _Employees = _Employeesp;
             try
