@@ -159,10 +159,14 @@ namespace ERPMVC
             
 
             services.AddKendo();
-
+            
+            
+        
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
             services.AddScoped<IAuthorizationHandler, HasScopeHandler>();
+            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("es-HN", false);
+            CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("es-HN", false);
         }
 
         private async Task<int> GetQuantityFailedRequest()
