@@ -63,7 +63,7 @@ $(".validation-wizard").steps({
     , onFinished: function (event, currentIndex) {
         var form = $(this);
         form.submit();
-        $("#validation").show();
+        $("#formulario").show();
         $("#wizard-asociarcertificados").hide();
         //$.toast({
         //    heading: 'Satisfactorio',
