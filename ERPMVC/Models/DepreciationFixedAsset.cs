@@ -55,7 +55,7 @@ namespace ERPMVC.Models
         [Display(Name = "Diciembre")]
         public double December { get; set; }
 
-        [Display(Name = "Depreciado")]
+        [Display(Name = "Total Depreciado")]
         public double TotalDepreciated { get; set; }
 
 
