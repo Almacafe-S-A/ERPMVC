@@ -100,6 +100,15 @@ namespace ERPMVC.Controllers
 
                         await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
+                        HttpClient cliente = new HttpClient();
+                        cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + _userToken.Token);
+                        var resultado = await cliente.GetAsync(baseadress + "api/Reportes/CadenaConexionBD");
+                        if (resultado.IsSuccessStatusCode)
+                        {
+                            var cadena = await resultado.Content.ReadAsStringAsync();
+                            Utils.ConexionReportes = cadena;
+                        }
+
                         return RedirectToAction("Index", "Home");
 
                     }

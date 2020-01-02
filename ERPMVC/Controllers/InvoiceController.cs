@@ -54,7 +54,14 @@ namespace ERPMVC.Controllers
 
                 if (_Invoice == null)
                 {
-                    _Invoice = new InvoiceDTO { OrderDate = DateTime.Now, DeliveryDate = DateTime.Now, ExpirationDate = DateTime.Now.AddDays(30), editar = 1 };
+                    _Invoice = new InvoiceDTO
+                    { OrderDate = DateTime.Now,
+                        DeliveryDate = DateTime.Now,
+                        ExpirationDate = DateTime.Now.AddDays(30),
+                        BranchId = Convert.ToInt32(HttpContext.Session.GetString("BranchId")),
+                        editar = 1
+                    };
+
                 }
                 else
                 {
