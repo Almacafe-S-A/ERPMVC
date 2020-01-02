@@ -211,7 +211,7 @@ namespace ERPMVC.Controllers
 
                 if (_Puesto == null)
                 {
-                    _Puesto = new PuestoDTO { FechaCreacion = DateTime.Now};
+                    _Puesto = new PuestoDTO { FechaCreacion = DateTime.Now };
                 }
             }
             catch (Exception ex)
@@ -238,7 +238,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result1 = await _client.GetAsync(baseadress + "api/Puesto/GetPuestoByNombrePuesto/" + _Puesto.NombrePuesto+"/"+_Puesto.NombreDepartamento);
+                var result1 = await _client.GetAsync(baseadress + "api/Puesto/GetPuestoByNombrePuesto/" + _Puesto.NombrePuesto + "/" + _Puesto.NombreDepartamento);
                 string valorrespuesta1 = "";
 
                 if (result1.IsSuccessStatusCode)
@@ -354,7 +354,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult<Puesto>> Delete(Int64 Id, Puesto _PuestoP)
+        public async Task<ActionResult<Puesto>> Delete(Int64 Id,[FromBody]Puesto _PuestoP)
         {
             Puesto _Puesto = _PuestoP;
             try
