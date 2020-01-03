@@ -160,13 +160,10 @@ namespace ERPMVC
 
             services.AddKendo();
             
-            
         
             services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
             services.AddSingleton<IAuthorizationPolicyProvider, AuthorizationPolicyProvider>();
             services.AddScoped<IAuthorizationHandler, HasScopeHandler>();
-            CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("es-HN", false);
-            CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("es-HN", false);
         }
 
         private async Task<int> GetQuantityFailedRequest()
@@ -246,7 +243,29 @@ namespace ERPMVC
           
 
             app.UseAuthentication();
-          
+            var defaultDateCulture = "es-ES";
+            var ci = new CultureInfo(defaultDateCulture);
+            ci.NumberFormat.NumberDecimalSeparator = ".";
+            ci.NumberFormat.CurrencyDecimalSeparator = ".";
+            ci.NumberFormat.CurrencySymbol = "L";
+
+            // Configure the Localization middleware
+            app.UseRequestLocalization(new RequestLocalizationOptions
+            {
+                DefaultRequestCulture = new RequestCulture(ci),
+                SupportedCultures = new List<CultureInfo>
+    {
+        ci,
+    },
+                SupportedUICultures = new List<CultureInfo>
+    {
+        ci,
+    }
+            });
+
+            //CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("es-HN", false);
+            //CultureInfo.DefaultThreadCurrentUICulture = new CultureInfo("es-HN", false);
+
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
