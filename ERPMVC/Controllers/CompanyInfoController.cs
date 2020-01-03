@@ -330,9 +330,7 @@ namespace ERPMVC.Controllers
         {
             CompanyInfo _CompanyInfo = _CompanyInfoS;
             try
-            {
-                
-
+            {               
                 CompanyInfo _listCompanyInfo = new CompanyInfo();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
@@ -345,61 +343,54 @@ namespace ERPMVC.Controllers
                 
                     if (result.IsSuccessStatusCode)
                     {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CompanyInfo = JsonConvert.DeserializeObject<CompanyInfo>(valorrespuesta);
+                      valorrespuesta = await (result.Content.ReadAsStringAsync());
+                      _CompanyInfo = JsonConvert.DeserializeObject<CompanyInfo>(valorrespuesta);
                     }
 
-                if (_CompanyInfo == null) { _CompanyInfo = new Models.CompanyInfo(); }
-
-                if (_CompanyInfoS.CompanyInfoId == 0)
-                {
-                    //_CompanyInfoS.image = file.FileName;
-                    _CompanyInfoS.FechaCreacion = DateTime.Now;
-                    _CompanyInfoS.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_CompanyInfoS);
-                    //var value = (insertresult.Result as ObjectResult).Value;
-                    if (insertresult!=null)
+                   if (_CompanyInfo == null) { _CompanyInfo = new Models.CompanyInfo(); }
+               
+                    if (_CompanyInfoS.CompanyInfoId == 0)
                     {
-                        CompanyInfo comp = (CompanyInfo)insertresult.Value;
-                        _CompanyInfoS.CompanyInfoId = comp.CompanyInfoId;
+                        if (file != null)
+                        {
+                            _CompanyInfoS.FechaCreacion = DateTime.Now;
+                            _CompanyInfoS.UsuarioCreacion = HttpContext.Session.GetString("user");
+                            var insertresult = await Insert(_CompanyInfoS);
+                            if (insertresult != null)
+                            {
+                                CompanyInfo comp = (CompanyInfo)insertresult.Value;
+                                _CompanyInfoS.CompanyInfoId = comp.CompanyInfoId;
+                            }
+                        }
+                        else
+                        {
+                            return await Task.Run(() => BadRequest($"Seleccione una Imagen."));
+                        }
                     }
-                   
-                }
-                else
-                {
-                    if (System.IO.File.Exists(_CompanyInfo.image))
+                    else
                     {
-                        System.IO.File.Delete(_CompanyInfo.image);
+                        if (System.IO.File.Exists(_CompanyInfo.image))
+                        {
+                            System.IO.File.Delete(_CompanyInfo.image);
+                        }
+                        //_CompanyInfoS.image = file.FileName;
+                        _CompanyInfoS.UsuarioCreacion = _CompanyInfo.UsuarioCreacion;
+                        _CompanyInfoS.FechaCreacion = _CompanyInfo.FechaCreacion;
+                        var updateresult = await Update(_CompanyInfo.CompanyInfoId, _CompanyInfoS);
                     }
-                    //_CompanyInfoS.image = file.FileName;
-                    _CompanyInfoS.UsuarioCreacion = _CompanyInfo.UsuarioCreacion;
-                    _CompanyInfoS.FechaCreacion = _CompanyInfo.FechaCreacion;
-                    var updateresult = await Update(_CompanyInfo.CompanyInfoId, _CompanyInfoS);
-                }
 
-                if (file != null)
-                {
-                    FileInfo info = new FileInfo(file.FileName);
-                    var filename = _CompanyInfoS.CompanyInfoId + "_" + _CompanyInfoS.Company_Name + info.Extension;
-                    var filePath = _hostingEnvironment.WebRootPath + "/CompanyImages/" + filename;
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
+                   if (file != null)
+                   {
+                     FileInfo info = new FileInfo(file.FileName);
+                     var filename = _CompanyInfoS.CompanyInfoId + "_" + _CompanyInfoS.Company_Name + info.Extension;
+                     var filePath = _hostingEnvironment.WebRootPath + "/CompanyImages/" + filename;
+                     using (var stream = new FileStream(filePath, FileMode.Create))
+                     {
                         await file.CopyToAsync(stream);
-                    }
-                    _CompanyInfoS.image = filename;
-                    var updateresult2 = await Update(_CompanyInfo.CompanyInfoId, _CompanyInfoS);
-                    ////if (info.extension.equals(".jpeg") || info.extension.equals(".jpg")
-                    ////    || info.extension.equals(".png") || info.extension.equals(".gif")|| info.extension.equals(".jpeg") || info.extension.equals(".jpg")
-                    ////    || info.extension.equals(".gif")
-                    ////    )
-                    ////{
-                    //                      //}
-                    ////else
-                    ////{
-                    ////    return await task.run(() => badrequest("extensión de imagen no permitida"));
-                    ////}
-                }
-                //  _CompanyInfo.image = HttpContext.Session.GetString("NombreURL");
+                     }
+                     _CompanyInfoS.image = filename;
+                     var updateresult2 = await Update(_CompanyInfo.CompanyInfoId, _CompanyInfoS);
+                   }              
             }
             catch (Exception ex)
             {
