@@ -342,13 +342,12 @@ namespace ERPMVC.Controllers
                 _CompanyInfo.FechaModificacion = DateTime.Now;
                 _CompanyInfo.UsuarioModificacion = HttpContext.Session.GetString("user");
                 IFormFile file = files.FirstOrDefault();
-                if (file != null)
-                {
+                
                     if (result.IsSuccessStatusCode)
-                {
+                    {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CompanyInfo = JsonConvert.DeserializeObject<CompanyInfo>(valorrespuesta);
-                }
+                    }
 
                 if (_CompanyInfo == null) { _CompanyInfo = new Models.CompanyInfo(); }
 
@@ -377,8 +376,9 @@ namespace ERPMVC.Controllers
                     _CompanyInfoS.FechaCreacion = _CompanyInfo.FechaCreacion;
                     var updateresult = await Update(_CompanyInfo.CompanyInfoId, _CompanyInfoS);
                 }
-              
-                
+
+                if (file != null)
+                {
                     FileInfo info = new FileInfo(file.FileName);
                     var filename = _CompanyInfoS.CompanyInfoId + "_" + _CompanyInfoS.Company_Name + info.Extension;
                     var filePath = _hostingEnvironment.WebRootPath + "/CompanyImages/" + filename;
@@ -398,10 +398,6 @@ namespace ERPMVC.Controllers
                     ////{
                     ////    return await task.run(() => badrequest("extensión de imagen no permitida"));
                     ////}
-                }
-                else
-                {
-                    return await Task.Run(() => BadRequest("Seleccione una Imagen"));
                 }
                 //  _CompanyInfo.image = HttpContext.Session.GetString("NombreURL");
             }
