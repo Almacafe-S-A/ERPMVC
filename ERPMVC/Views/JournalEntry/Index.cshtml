@@ -250,18 +250,33 @@
     }
 
     function Imprimir(e, id) {
-       // debugger;
+        debugger;
         var dataItem;
+        
         if (e != null) {
-            e.preventDefault();
-            dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataItemEstado = this.dataItem($(e.currentTarget).closest("tr"));
+            if (dataItemEstado.EstadoId != 5) {
+                e.preventDefault();
+                dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+                var url = '@Url.Action("SFAsientoContable", "JournalEntry")/' + dataItem.JournalEntryId;
+                var win = window.open(url, '_blank');
+                win.focus();
+            }
+            else {
+                alert("Este Asiento Contable debe ser Aprobado primero para generar el reporte.")
+            }
         }
         else {
-            dataItem = { JournalEntryId: $("#JournalEntryId").val() };
+            if ($("#EstadoId").val() != 5) {
+                dataItem = { JournalEntryId: $("#JournalEntryId").val() };
+                var url = '@Url.Action("SFAsientoContable", "JournalEntry")/' + dataItem.JournalEntryId;
+                var win = window.open(url, '_blank');
+                win.focus();
+            }
+            else {
+                alert("Este Asiento Contable debe ser Aprobado primero para generar el reporte.")
+            }
         }
-        var url = '@Url.Action("SFAsientoContable", "JournalEntry")/' + dataItem.JournalEntryId;
-           var win = window.open(url, '_blank');
-           win.focus();
     }
 </script>
 
@@ -294,11 +309,12 @@
                                                 }
 
                                                 //  command.Destroy();
-                                            }).Width(200);
+                                            }).Title("Acciones").Width(125);
 
                                             columns.Bound(p => p.JournalEntryId).Title("Id Asiento Contable").Width(150);
                                             columns.Bound(p => p.DatePosted).Title("Fecha de  Transacción").Format("{0:dd/MM/yyyy}").Width(250);
-                                            columns.Bound(p => p.PartyId).Title("Beneficiario").Width(150);
+                                            columns.Bound(p => p.PartyId).Width(150).Hidden(true);
+                                            columns.Bound(p => p.PartyName).Title("Beneficiario").Width(150);
                                             columns.Bound(p => p.TotalDebit).Width(200).Format("{0:N2}");
                                             columns.Bound(p => p.TotalCredit).Width(200).Format("{0:N2}");
                                             columns.Bound(p => p.Memo).Title("Sinopsis").Width(350);
@@ -349,13 +365,16 @@
                                         .Editable(e => e.Mode(GridEditMode.PopUp))
                                         .Sortable()
                                         .AutoBind(true)
-                                        .Pageable()
+                                        .Pageable(s => s
+                                            .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+                                            .Empty("No hay datos."))
+                                        )
                                         .Filterable()
                                         .Scrollable()
-                                        .Pdf(pdf => pdf.FileName("JournalEntryReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                        .Pdf(pdf => pdf.FileName("AsientoContableReporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                                         + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
                                         .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                        .Excel(excel => excel.FileName("JournalEntryReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                        .Excel(excel => excel.FileName("AsientoContableReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                                         + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
                                         .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
                                         .Events(e => e.DataBound("dataBound"))
@@ -376,6 +395,7 @@
                                             model.Field(p => p.EstadoId).Editable(true);
 
                                         })
+                                        .Sort(s => s.Add(m => m.CreatedDate).Descending())
                                         .Events(events => events.Error("error_handler"))
                                         .Read(read => read.Action("GetJournalEntryAsientos", "JournalEntry"))
                                         .Create(create => create.Action("Insert", "JournalEntry"))
@@ -410,6 +430,9 @@
                 content: btn_tooltip
             });
         }
+        setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+        setToolbarTooltip(".k-grid-Editar", "Ver Detalle");
+        setToolbarTooltip(".k-grid-Imprimir", "Imprimir");
         setRowButtonTooltip(".k-grid-Aprobar", "Aprobar Asiento");
         setRowButtonTooltip(".k-grid-Rechazar", "Rechazar Asiento");
     </script>
