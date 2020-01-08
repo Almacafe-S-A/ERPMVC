@@ -9,11 +9,10 @@
            // e.model.StartTime = e.model.StartTime.toJSON();
         } catch (e) {
 
-        }
-       
-        
+        }      
     }
 
+  
     function addRowD() {
         $('.k-grid-add').trigger('click');
         var notification = $("#notification").data("kendoNotification");
@@ -23,7 +22,7 @@
                 let grid = $("#gridPaymentScheduleRulesByCustomer").data("kendoGrid");
                 var today = new Date();
                 let fechaactual = String(today.getDate()).padStart(2, '0') + "/" + String(today.getMonth() + 1).padStart(2, '0') + "/" + today.getFullYear();
-                grid.dataSource.insert({ PaymentScheduleRulesByCustomerId: 0, ScheduleSubservicesId: $("#ScheduleSubservicesId").val(), CustomerId: $("#CustomerIdSeleccion").val(), CustomerName: "Seleccione el cliente registro no guardado" });
+                grid.dataSource.insert({ PaymentScheduleRulesByCustomerId: 0, ScheduleSubservicesId: $("#ScheduleSubservicesId").val(), CustomerId: $("#CustomerIdSeleccion").val(), CustomerName: $("#CustomerIdSeleccion").data("kendoDropDownList").text(),  });
             }
             else {
                 //notification.show({
@@ -61,7 +60,36 @@
     function dataScheduleSubservicesId() {
         return { ScheduleSubservicesId: $("#ScheduleSubservicesId").val() }
     }
-   
+
+
+     function Delete(e) {
+        e.preventDefault();
+        if (confirm('Esta seguro que desea eliminar la fila?')) {
+            var notification = $("#notification").data("kendoNotification");
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+            var grid = $("#gridPaymentScheduleRulesByCustomer").data("kendoGrid");
+            var datasource = grid.dataSource;
+            datasource.remove(dataItem);
+            $.ajax({
+                url: '@Url.Action("Delete", "PaymentScheduleRulesByCustomer")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataItem),
+                success: function (data) {                   
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+                }
+            });
+            grid.dataSource.remove(dataItem);
+        }
+    }
 </script>
 
  <h3 class="text-themecolor">Detalle de clientes a los que se aplica la regla </h3>
@@ -74,11 +102,13 @@
            {
 
                //command.Custom("Editar").Click("Editar");
-               command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText("Actualizar").CancelText("Cancelar"); ;
+               command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText("Actualizar").CancelText("Cancelar");
+               command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+
                //command.Destroy().Text("Eliminar");
 
            }).Title("Acciones").Width(100);
-           columns.Bound(p => p.PaymentScheduleRulesByCustomerId).Width(100);
+           columns.Bound(p => p.PaymentScheduleRulesByCustomerId).Hidden(true).Width(100);
            columns.Bound(p => p.ScheduleSubservicesId).Width(125);
            columns.Bound(p => p.CustomerId).EditorTemplateName("Customer").Width(135);
            columns.Bound(p => p.CustomerName).Title("Nombre Cliente").Width(120);
@@ -99,10 +129,10 @@
        .Pageable()
        .Filterable()
        .Scrollable()
-       .Pdf(pdf => pdf.FileName("PaymentScheduleRulesByCustomerReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+       .Pdf(pdf => pdf.FileName("CobrosdeSudserviciosReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
        .ProxyURL(Url.Action("Export", "Home")).AllPages())
-       .Excel(excel => excel.FileName("PaymentScheduleRulesByCustomerReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+       .Excel(excel => excel.FileName("CobrosdeSudserviciosReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
        .DataSource(dataSource =>
