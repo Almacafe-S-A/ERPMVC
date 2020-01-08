@@ -148,7 +148,8 @@ namespace ERPMVC.Controllers
                         _so = JsonConvert.DeserializeObject<JournalEntryDTO>(valorrespuesta);
                         _so.EstadoId = 6;
                         _so.EstadoName = "Aprobado";
-
+                        _so.ApprovedBy = HttpContext.Session.GetString("user");
+                        _so.ApprovedDate = DateTime.Now;
                         var resultsalesorder = await Update(_so.JournalEntryId, _so);
 
                         var value = (resultsalesorder.Result as ObjectResult).Value;
