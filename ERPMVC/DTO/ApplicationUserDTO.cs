@@ -10,6 +10,7 @@ namespace ERPMVC.DTO
 
     public class ApplicationUserDTO : ApplicationUser
     {
+        [Display(Name = "Cambiar")]
         [DataType("Boolean")]
         public bool? cambiarpassword { get; set; }
     }
