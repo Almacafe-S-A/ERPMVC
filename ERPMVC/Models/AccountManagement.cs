@@ -15,7 +15,6 @@ namespace ERPMVC.Models
         [Required]
         [Display(Name = "Fecha de apertura")]
         public DateTime OpeningDate { get; set; }
-        [Required]
         [Display(Name = "Tipo de cuenta")]
         public string AccountType { get; set; }
 
