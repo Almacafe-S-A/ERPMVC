@@ -56,7 +56,7 @@
                                                                       value="Model.OpeningDate"
                                                                       format="dd/MM/yyyy"
                                                                       max="@DateTime.Now"
-                                                                      style="min-width:100%;"
+                                                                      style="min-width:420px;"
                                                                       data-val-required="La fecha es requerida" />
                                                     <span asp-validation-for="OpeningDate" class="text-danger"></span>
                                                 </div>
@@ -214,7 +214,8 @@
         grid.dataSource.read();
     }
     function SaveAccountManagement(e) {
-        if (confirm('Esta seguro de guardar los cambios?')) {
+        if ($("#AccountManagementId").val() == 0) {
+
             var notification = $("#notification").data("kendoNotification");
             // e.preventDefault();
             $("#btnAccountManagement").hide();
@@ -246,6 +247,91 @@
 
 
             if (validator.validate()) {
+
+                $.ajax({
+                    url: '@Url.Action("SaveAccountManagement", "AccountManagement")',
+                    method: 'POST',
+                    datatype: "json",
+                    contentType: 'application/json',
+                    async: false,
+                    data: JSON.stringify(dataObject),
+                    success: function (data) {
+
+                        //notification.show({
+                        //    message: "Guardado correctamente!"
+                        //}, "upload-success");
+                        $.toast({
+                            heading: 'Satisfactorio',
+                            text: '<br/><br/>Datos guardados correctamente.',
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'success',
+                            hideAfter: 3000,
+                            stack: 6
+                        });
+
+                        RefrescarGrid();
+
+                        $('#ModalAccountManagement').modal('hide');
+
+
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                        notification.show({
+                            title: "Validacion",
+                            message: textStatus + ": " + XMLHttpRequest.responseText
+                        }, "error");
+
+                    }
+                });
+               
+
+            }  
+            else {
+                status.text("Oops! There is invalid data in the form.")
+                    .removeClass("valid")
+                    .addClass("invalid");
+                $("#btnAccountManagement").show();
+                $("#btnAccountManagement").prop("disabled", false);
+            }
+             
+
+        }
+        
+        else {
+            if (confirm('Esta seguro de guardar los cambios?')) {
+                var notification = $("#notification").data("kendoNotification");
+                // e.preventDefault();
+                $("#btnAccountManagement").hide();
+                $("#btnAccountManagement").prop("disabled", true);
+
+                var displayedData = $("#gridAccountManagement").data().kendoGrid.dataSource.view();
+                var _OpeningDate = $("#OpeningDate").getKendoDatePicker().value().toJSON()
+
+                var dataObject = {
+                    'AccountManagementId': $("#AccountManagementId").val() === "" ? "0" : $("#AccountManagementId").val(),
+                    'OpeningDate': _OpeningDate,
+                    'AccountType': $("#AccountType").val(),
+                    'AccountNumber': $("#AccountNumber").val(),
+                    'BankId': $("#BankId").val(),
+                    'BankName': $("#BankId").data("kendoDropDownList").text(),
+                    'CurrencyId': $("#CurrencyId").val(),
+                    'CurrencyName': $("#CurrencyId").data("kendoDropDownList").text(),
+                    'Description': $("#Description").val(),
+                    'Status': $("#Status").val(),
+                    '_AccountManagement': displayedData
+                };
+
+                console.log(JSON.stringify(dataObject));
+                //var form = $("#frmNumeracion");
+                // form.validate();
+
+                var validator = $("#frmAccountManagement").data("kendoValidator");
+                var status = $(".status");
+
+
+                if (validator.validate()) {
 
                     $.ajax({
                         url: '@Url.Action("SaveAccountManagement", "AccountManagement")',
@@ -284,18 +370,20 @@
 
                         }
                     });
-                
-          
-            }
-            else {
-                status.text("Oops! There is invalid data in the form.")
-                    .removeClass("valid")
-                    .addClass("invalid");
-            }
 
 
-            $("#btnAccountManagement").show();
-            $("#btnAccountManagement").prop("disabled", false);
+                }
+                else {
+                    status.text("Oops! There is invalid data in the form.")
+                        .removeClass("valid")
+                        .addClass("invalid");
+                }
+
+
+                $("#btnAccountManagement").show();
+                $("#btnAccountManagement").prop("disabled", false);
+            }
         }
+        
     }
 </script>
