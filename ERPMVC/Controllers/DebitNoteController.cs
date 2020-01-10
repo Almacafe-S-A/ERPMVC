@@ -301,6 +301,37 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpPost("[action]")]
+        public async Task<ActionResult> ValidacionCAI([FromBody]DebitNote debitNote)
+        {
+            List<NumeracionSAR> _NumeracionSAR = new List<NumeracionSAR>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/NumeracionSAR/GetNumeracion");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _NumeracionSAR = JsonConvert.DeserializeObject<List<NumeracionSAR>>(valorrespuesta);
+                    _NumeracionSAR = _NumeracionSAR.Where(q => q.BranchId == debitNote.BranchId)
+                                                   .Where(q => q.IdPuntoEmision == debitNote.IdPuntoEmision)
+                                                   .Where(q => q.Estado == "Activo").ToList();
 
+                    if (_NumeracionSAR.Count == 0)
+                    {
+                        return BadRequest("No exíste un CAI activo para el punto de emisión");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return await Task.Run(() => Ok(_NumeracionSAR));
+        }
     }
 }
