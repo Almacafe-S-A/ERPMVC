@@ -8,6 +8,7 @@ using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -256,10 +257,13 @@ namespace ERPMVC.Controllers
                     string datosUsuario = await (result.Content.ReadAsStringAsync());
                     /*if (!await IsPasswordHistory(JsonConvert.DeserializeObject<ApplicationUser>(datosUsuario).Id.ToString(),password))
                     {*/
-                        result = await _client.PostAsJsonAsync(baseadress + "api/Cuenta/CambiarPassword", _cambio);
+                        result = await _client.PostAsJsonAsync(baseadress + "api/Usuario/ChangePassword", _cambio);
                         if (result.IsSuccessStatusCode)
                         {
-                            return new ObjectResult(new DataSourceResult { Data = "", Total = 1 });
+                            //return new ObjectResult(new DataSourceResult { Data = "", Total = 1 });
+                            await HttpContext.SignOutAsync();
+                            HttpContext.Session.Clear();
+                            return await Task.Run(() => RedirectToAction(nameof(HomeController.Index), "Home"));
                         }
                         else
                         {   
@@ -282,6 +286,7 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return await Task.Run(() => BadRequest($"Ocurrio un error no manejado en el sistema "));
             }
+            
         }
 
         [HttpPut("PutUsuario")]
@@ -325,7 +330,7 @@ namespace ERPMVC.Controllers
                 return await Task.Run(() => BadRequest($"Ocurrio un error{ex.Message}"));
             }
 
-
+            
             _usuario.PasswordHash = "**********************";
             return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
 
