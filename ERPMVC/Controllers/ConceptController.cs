@@ -100,7 +100,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Concept/GetConceptById/" + _Concept.ConceptId);
+                var result = await _client.GetAsync(baseadress + "api/Concept/GetConceptByConceptValues/" + _Concept.ConceptName + "/" + _Concept.Calculation + "/" + _Concept.Value + "/" + _Concept.TypeId);
                 string valorrespuesta = "";
                 _Concept.FechaModificacion = DateTime.Now;
                 _Concept.UsuarioModificacion = HttpContext.Session.GetString("user");
@@ -111,7 +111,10 @@ namespace ERPMVC.Controllers
                 }
 
                 if (_Concept == null) { _Concept = new Models.Concept(); }
-
+                if (_Concept.ConceptId > 0)
+                {
+                    return await Task.Run(() => BadRequest($"Ya existe un concepto registrado con los mismos valores."));
+                }
                 if (_ConceptP.ConceptId == 0)
                 {
                     _Concept.FechaCreacion = DateTime.Now;
