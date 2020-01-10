@@ -240,6 +240,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[controller]/[action]")]
+        [AllowAnonymous]
         public async Task<ActionResult<ApplicationUser>> ChangePassword([FromBody]CambiarPassDTO _cambio)
         {
             try
@@ -255,7 +256,7 @@ namespace ERPMVC.Controllers
                     string datosUsuario = await (result.Content.ReadAsStringAsync());
                     /*if (!await IsPasswordHistory(JsonConvert.DeserializeObject<ApplicationUser>(datosUsuario).Id.ToString(),password))
                     {*/
-                        result = await _client.PostAsJsonAsync(baseadress + "api/Usuario/ChangePassword", _cambio);
+                        result = await _client.PostAsJsonAsync(baseadress + "api/Cuenta/CambiarPassword", _cambio);
                         if (result.IsSuccessStatusCode)
                         {
                             return new ObjectResult(new DataSourceResult { Data = "", Total = 1 });
@@ -310,7 +311,7 @@ namespace ERPMVC.Controllers
                     string error = await result.Content.ReadAsStringAsync();
                     return this.Json(new DataSourceResult
                     {
-                        Errors = $"Ocurrio un error:{error} El password debe tener mayusculas y minusculas!"
+                        Errors = $"Error: El password debe cumplir con los requisitos minimos (Longitud 8, Mayúsculas, minúsculas, 1 carater especial y caracteres númericos)!"
                     });
                     // return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
                     //return await Task.Run(() => BadRequest($"Ocurrio un error{result.Content.ReadAsStringAsync()}"));
