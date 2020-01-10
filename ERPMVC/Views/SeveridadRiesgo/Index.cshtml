@@ -76,13 +76,16 @@
                                             })
                                             .Editable(e => e.Mode(GridEditMode.PopUp))
                                             .Sortable()
-                                            .Pageable()
+                                            .Pageable(s => s
+                                                .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+                                                .Empty("No hay datos."))
+                                            )
                                             .Filterable()
                                             .Scrollable()
-                                            .Pdf(pdf => pdf.FileName("SeveridadRiesgoReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                            .Pdf(pdf => pdf.FileName("SeveridadRiesgoReporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                                             + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
                                             .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                                .Excel(excel => excel.FileName("SeveridadRiesgoReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                .Excel(excel => excel.FileName("SeveridadRiesgoReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                                             + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
                                             .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
                                             .DataSource(dataSource =>
@@ -97,6 +100,7 @@
                                                     model.Field(p => p.Probabilidad).Editable(true);
                                                     model.Field(p => p.Nivel).Editable(false);
                                                 })
+                                                .Sort(s => s.Add(m => m.FechaCreacion).Descending())
                                                 .Events(events => events.Error("error_handler"))
                                                 .Read(read => read.Action("GetSeveridadRiesgo", "SeveridadRiesgo"))
                                             //.Create(create => create.Action("PostSeveridadRiesgo", "SeveridadRiesgo"))
@@ -113,6 +117,23 @@
     $(document).ready(function () {
         $("#NivelAlert").prop("hidden", true);
     });
+    
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridSeveridadRiesgo").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridSeveridadRiesgo").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
 
     function AlertClose() {
         $("#msj_failed").prop("hidden", true);
@@ -147,50 +168,28 @@
                     if (displayedData.Data[Bajo] != undefined && displayedData.Data[Medio] != undefined) {
                         var BrechaInferior = displayedData.Data[Bajo].RangoSuperiorSeveridad - displayedData.Data[Medio].RangoInferiorSeveridad
                         BrechaInferior = Math.round(BrechaInferior * 100) / 100;
+
+                        var BrechaLimiteInferior = displayedData.Data[Bajo].LimeteCalidadSuperir - displayedData.Data[Medio].LimiteCalidadInferior
+                        BrechaLimiteInferior = Math.round(BrechaLimiteInferior * 100) / 100;
                     }
                     if (displayedData.Data[Medio] != undefined && displayedData.Data[Alto] != undefined) {
                         var BrechaIntermedia = Number(displayedData.Data[Medio].RangoSuperiorSeveridad) - Number(displayedData.Data[Alto].RangoInferiorSeveridad)
                         BrechaIntermedia = Math.round(BrechaIntermedia * 100) / 100;
+
+                        var BrechaLimiteIntermedio = displayedData.Data[Medio].LimeteCalidadSuperir - displayedData.Data[Alto].LimiteCalidadInferior
+                        BrechaLimiteIntermedio = Math.round(BrechaLimiteIntermedio * 100) / 100;
                     }
                     if (displayedData.Data[Alto] != undefined && displayedData.Data[MuyAlto] != undefined) {
                         var BrechaSuperior = Number(displayedData.Data[Alto].RangoSuperiorSeveridad) - Number(displayedData.Data[MuyAlto].RangoInferiorSeveridad)
                         BrechaSuperior = Math.round(BrechaSuperior * 100) / 100;
+
+                        var BrechaLimiteSuperior = displayedData.Data[Alto].LimeteCalidadSuperir - displayedData.Data[MuyAlto].LimiteCalidadInferior
+                        BrechaLimiteSuperior = Math.round(BrechaLimiteSuperior * 100) / 100;
                     }
+
                     if (BrechaInferior != undefined) {
                         if (BrechaInferior == -0.01) {
                             $("#msj_failed").prop("hidden", true);
-                            if (BrechaIntermedia != undefined) {
-                                if (BrechaIntermedia == -0.01) {
-                                    $("#msj_failed").prop("hidden", true);
-                                    if (BrechaSuperior != undefined) {
-                                        if (BrechaSuperior == -0.01) {
-                                            $("#msj_failed").prop("hidden", true);
-                                        }
-                                        else {
-                                            $("#msj_failed").prop("hidden", false);
-                                            var NivelAnterior = displayedData.Data[Alto].Nivel;
-                                            var NivelPosterior = displayedData.Data[MuyAlto].Nivel;
-                                            var RangoSuperiorAnterior = displayedData.Data[Bajo].RangoSuperiorSeveridad;
-                                            var RangoInferiorPosterior = displayedData.Data[Medio].RangoInferiorSeveridad;
-                                            localStorage.setItem("NivelAnterior", NivelAnterior);
-                                            localStorage.setItem("NivelPosterior", NivelPosterior);
-                                            localStorage.setItem("RangoSuperiorAnterior", RangoSuperiorAnterior);
-                                            localStorage.setItem("RangoInferiorPosterior", RangoInferiorPosterior);
-                                        }
-                                    }
-                                }
-                                else {
-                                    $("#msj_failed").prop("hidden", false);
-                                    var NivelAnterior = displayedData.Data[Medio].Nivel;
-                                    var NivelPosterior = displayedData.Data[Alto].Nivel;
-                                    var RangoSuperiorAnterior = displayedData.Data[Bajo].RangoSuperiorSeveridad;
-                                    var RangoInferiorPosterior = displayedData.Data[Medio].RangoInferiorSeveridad;
-                                    localStorage.setItem("NivelAnterior", NivelAnterior);
-                                    localStorage.setItem("NivelPosterior", NivelPosterior);
-                                    localStorage.setItem("RangoSuperiorAnterior", RangoSuperiorAnterior);
-                                    localStorage.setItem("RangoInferiorPosterior", RangoInferiorPosterior);
-                                }
-                            }
                         }
                         else {
                             $("#msj_failed").prop("hidden", false);
@@ -198,6 +197,38 @@
                             var NivelPosterior = displayedData.Data[Medio].Nivel;
                             var RangoSuperiorAnterior = displayedData.Data[Bajo].RangoSuperiorSeveridad;
                             var RangoInferiorPosterior = displayedData.Data[Medio].RangoInferiorSeveridad;
+                            localStorage.setItem("NivelAnterior", NivelAnterior);
+                            localStorage.setItem("NivelPosterior", NivelPosterior);
+                            localStorage.setItem("RangoSuperiorAnterior", RangoSuperiorAnterior);
+                            localStorage.setItem("RangoInferiorPosterior", RangoInferiorPosterior);
+                        }
+                    }
+                    if (BrechaIntermedia != undefined) {
+                        if (BrechaIntermedia == -0.01) {
+                            $("#msj_failed").prop("hidden", true);
+                        }
+                        else {
+                            $("#msj_failed").prop("hidden", false);
+                            var NivelAnterior = displayedData.Data[Medio].Nivel;
+                            var NivelPosterior = displayedData.Data[Alto].Nivel;
+                            var RangoSuperiorAnterior = displayedData.Data[Medio].RangoSuperiorSeveridad;
+                            var RangoInferiorPosterior = displayedData.Data[Alto].RangoInferiorSeveridad;
+                            localStorage.setItem("NivelAnterior", NivelAnterior);
+                            localStorage.setItem("NivelPosterior", NivelPosterior);
+                            localStorage.setItem("RangoSuperiorAnterior", RangoSuperiorAnterior);
+                            localStorage.setItem("RangoInferiorPosterior", RangoInferiorPosterior);
+                        }
+                    }
+                    if (BrechaSuperior != undefined) {
+                        if (BrechaSuperior == -0.01) {
+                            $("#msj_failed").prop("hidden", true);
+                        }
+                        else {
+                            $("#msj_failed").prop("hidden", false);
+                            var NivelAnterior = displayedData.Data[Alto].Nivel;
+                            var NivelPosterior = displayedData.Data[MuyAlto].Nivel;
+                            var RangoSuperiorAnterior = displayedData.Data[Alto].RangoSuperiorSeveridad;
+                            var RangoInferiorPosterior = displayedData.Data[MuyAlto].RangoInferiorSeveridad;
                             localStorage.setItem("NivelAnterior", NivelAnterior);
                             localStorage.setItem("NivelPosterior", NivelPosterior);
                             localStorage.setItem("RangoSuperiorAnterior", RangoSuperiorAnterior);
@@ -226,6 +257,80 @@
                     }
                     else {
                         $('#msj_failed').prop("hidden", true);
+                    }
+
+                    if ($('#MensajeBrecha').is(':hidden')) {
+                        if (BrechaLimiteInferior != undefined) {
+                            if (BrechaLimiteInferior == -1) {
+                                $("#msj_failed").prop("hidden", true);
+                            }
+                            else {
+                                $("#msj_failed").prop("hidden", false);
+                                var NivelAnterior = displayedData.Data[Bajo].Nivel;
+                                var NivelPosterior = displayedData.Data[Medio].Nivel;
+                                var LimeteCalidadSuperirAnterior = displayedData.Data[Bajo].LimeteCalidadSuperir;
+                                var LimiteCalidadInferiorPosterior = displayedData.Data[Medio].LimiteCalidadInferior;
+                                localStorage.setItem("NivelAnterior", NivelAnterior);
+                                localStorage.setItem("NivelPosterior", NivelPosterior);
+                                localStorage.setItem("LimeteCalidadSuperirAnterior", LimeteCalidadSuperirAnterior);
+                                localStorage.setItem("LimiteCalidadInferiorPosterior", LimiteCalidadInferiorPosterior);
+                            }
+                        }
+                        if (BrechaLimiteIntermedio != undefined) {
+                            if (BrechaLimiteIntermedio == -1) {
+                                $("#msj_failed").prop("hidden", true);
+                            }
+                            else {
+                                $("#msj_failed").prop("hidden", false);
+                                var NivelAnterior = displayedData.Data[Medio].Nivel;
+                                var NivelPosterior = displayedData.Data[Alto].Nivel;
+                                var LimeteCalidadSuperirAnterior = displayedData.Data[Medio].LimeteCalidadSuperir;
+                                var LimiteCalidadInferiorPosterior = displayedData.Data[Alto].LimiteCalidadInferior;
+                                localStorage.setItem("NivelAnterior", NivelAnterior);
+                                localStorage.setItem("NivelPosterior", NivelPosterior);
+                                localStorage.setItem("LimeteCalidadSuperirAnterior", LimeteCalidadSuperirAnterior);
+                                localStorage.setItem("LimiteCalidadInferiorPosterior", LimiteCalidadInferiorPosterior);
+                            }
+                        }
+                        if (BrechaLimiteSuperior != undefined) {
+                            if (BrechaLimiteSuperior == -1) {
+                                $("#msj_failed").prop("hidden", true);
+                            }
+                            else {
+                                $("#msj_failed").prop("hidden", false);
+                                var NivelAnterior = displayedData.Data[Alto].Nivel;
+                                var NivelPosterior = displayedData.Data[MuyAlto].Nivel;
+                                var LimeteCalidadSuperirAnterior = displayedData.Data[Alto].LimeteCalidadSuperir;
+                                var LimiteCalidadInferiorPosterior = displayedData.Data[MuyAlto].LimiteCalidadInferior;
+                                localStorage.setItem("NivelAnterior", NivelAnterior);
+                                localStorage.setItem("NivelPosterior", NivelPosterior);
+                                localStorage.setItem("LimeteCalidadSuperirAnterior", LimeteCalidadSuperirAnterior);
+                                localStorage.setItem("LimiteCalidadInferiorPosterior", LimiteCalidadInferiorPosterior);
+                            }
+                        }
+                        if (localStorage.getItem("NivelAnterior")) {
+                            $('#msj_failed').prop("hidden", false);
+                            var NivelAnterior = localStorage.getItem("NivelAnterior")
+                            var NivelPosterior = localStorage.getItem("NivelPosterior")
+                            var LimeteCalidadSuperirAnterior = localStorage.getItem("LimeteCalidadSuperirAnterior")
+                            var LimiteCalidadInferiorPosterior = localStorage.getItem("LimiteCalidadInferiorPosterior")
+                            var MensajeLimite = LimeteCalidadSuperirAnterior - LimiteCalidadInferiorPosterior
+                            MensajeLimite = Math.round(MensajeLimite * 100) / 100;
+                            console.log("MensajeLimite", MensajeLimite)
+                            if (MensajeLimite < -1) {
+                                $('#MensajeBrecha').text(" Exísten brechas entre los límites de los siguientes niveles: " + NivelAnterior + " y " + NivelPosterior + ".");
+                            }
+                            else if (MensajeLimite == 0) {
+                                $('#MensajeBrecha').text(" Exísten valores iguales entre los límites de los siguientes niveles: " + NivelAnterior + " y " + NivelPosterior + ".");
+                            }
+                            else if (MensajeLimite > -1) {
+                                $('#MensajeBrecha').text(" Exísten límites Intercalados en los siguientes niveles: " + NivelAnterior + " y " + NivelPosterior + ".");
+                            }
+                            localStorage.clear();
+                        }
+                        else {
+                            $('#msj_failed').prop("hidden", true);
+                        }
                     }
                 }
             },

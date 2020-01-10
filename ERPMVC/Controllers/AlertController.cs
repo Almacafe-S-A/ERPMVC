@@ -164,6 +164,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Alert = JsonConvert.DeserializeObject<List<Alert>>(valorrespuesta);
+                    _Alert = _Alert.OrderByDescending(o => o.AlertId).ToList();
 
                 }
 
@@ -180,8 +181,8 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult<Alert>> SaveAlert([FromBody]Alert _Alert)
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<Alert>> SaveAlert(AlertDTO _Alert)
         {
 
             try

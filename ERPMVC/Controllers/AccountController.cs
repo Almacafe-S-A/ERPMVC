@@ -1,18 +1,24 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
+using System.Security.Principal;
+using System.Text;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
 
 namespace ERPMVC.Controllers
@@ -21,22 +27,17 @@ namespace ERPMVC.Controllers
     {
         private readonly ILogger _logger;
         private readonly IOptions<MyConfig> config;
-        private readonly UserManager<ApplicationUser> _userManager;
-        private readonly SignInManager<ApplicationUser> _signInManager;
-
-
+        private readonly IConfiguration configuration;
 
         public AccountController(
-        UserManager<ApplicationUser> userManager,
-        SignInManager<ApplicationUser> signInManager,
             ILogger<HomeController> logger,
-            IOptions<MyConfig> config
+            IOptions<MyConfig> config,
+            IConfiguration  iConfig
                )
         {
-            this._userManager = userManager;
-            this._signInManager = signInManager;
             this._logger = logger;
             this.config = config;
+            this.configuration = iConfig;
         }
 
 
@@ -45,30 +46,27 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-     
+        public async Task<ActionResult> ChangePassword()
+        {
+            return await Task.Run(() => View());
+        }
+
+
         [HttpPost]
         [AllowAnonymous]
-        //[ValidateAntiForgeryToken]
         public async Task<ActionResult> Login(LoginViewModel model, string returnUrl = null)
         {
             List<MessageClassUtil> _message = new List<MessageClassUtil>();
             try
             {
-
-                var result = await _signInManager.PasswordSignInAsync(model.Email, model.Password, model.RememberMe, lockoutOnFailure: true);
-
-                var res = HttpContext.User.Identity.IsAuthenticated;
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-                var resultlogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = model.Email, Password = model.Password });
-                if (result.Succeeded)
+                var resultLogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = model.Email, Password = model.Password });
+                
+                if (resultLogin.IsSuccessStatusCode)
                 {
-                 
-                 
-
-                    string webtoken = await (resultlogin.Content.ReadAsStringAsync());
+                    string webtoken = await (resultLogin.Content.ReadAsStringAsync());
                     UserToken _userToken = JsonConvert.DeserializeObject<UserToken>(webtoken);
-
 
                     if (_userToken.LastPasswordChangedDate != null)
                     {
@@ -83,8 +81,6 @@ namespace ERPMVC.Controllers
                         }
                     }
 
-
-
                     if (_userToken.IsEnabled.Value)
                     {
                         HttpContext.Session.SetString("token", _userToken.Token);
@@ -92,7 +88,29 @@ namespace ERPMVC.Controllers
                         HttpContext.Session.SetString("user", model.Email);
                         HttpContext.Session.SetString("BranchId", _userToken.BranchId.ToString());
 
+                        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:key"]));
+                        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+                        JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
+                        JwtSecurityToken secToken = handler.ReadJwtToken(_userToken.Token);
+                        
+                        var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
+                        identity.AddClaims(secToken.Claims);
+                        var principal = new ClaimsPrincipal(identity);
+
+                        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+
+                        HttpClient cliente = new HttpClient();
+                        cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + _userToken.Token);
+                        var resultado = await cliente.GetAsync(baseadress + "api/Reportes/CadenaConexionBD");
+                        if (resultado.IsSuccessStatusCode)
+                        {
+                            var cadena = await resultado.Content.ReadAsStringAsync();
+                            Utils.ConexionReportes = cadena;
+                        }
+
                         return RedirectToAction("Index", "Home");
+
                     }
                     else
                     {
@@ -123,36 +141,23 @@ namespace ERPMVC.Controllers
 
 
         }
-
-        public async  Task<ActionResult> ChangePassword()
-        {
-            try
-            {
-
-            }
-            catch (Exception ex)
-            {
-
-                throw ex;
-            }
-
-            return await Task.Run(()=> View());
-        }
-
-
-
-
+        
 
         [HttpGet]
         // [ValidateAntiForgeryToken]
         public async Task<IActionResult> Logout()
         {
+            await HttpContext.SignOutAsync();
             HttpContext.Session.Clear();
-            //  await _signInManager.SignOutAsync();                 
-            //  _logger.LogInformation($"User signed out");
             return await Task.Run(() => RedirectToAction(nameof(HomeController.Index), "Home"));
         }
 
+        [HttpGet("[controller]/[action]")]
+        public IActionResult Permisos()
+        {
+            var claims = User.Claims.Select(claim => new { claim.Type, claim.Value }).ToArray();
+            return Json(claims);
+        }
 
 
     }

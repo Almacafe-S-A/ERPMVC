@@ -22,7 +22,9 @@
 
 
     function AddDependientes() {
-
+        var validator = $("#frmDependientes").data("kendoValidator");
+        validator.hideMessages();
+        $("#TelefonoDependientesAlert").hide(); 
         $('#ModalDependientes').find(':input').not(':submit').val('');
         $('#ModalDependientes').modal('show');
         $("#IdDependientes").val('0');
@@ -80,20 +82,15 @@
                         columns.Command(command =>
                         {
                             //command.Custom("Ver detalles").Click("Detalles");
-                            command.Custom("Editar").IconClass("fa fa-edit").Click("EditDependientes");
-                            command.Destroy().Text("Eliminar");
-                        }).Width(250);
-                        columns.Bound(p => p.IdDependientes).Width(200);
-                        columns.Bound(p => p.NombreDependientes).Width(220);
-                        columns.Bound(p => p.Parentezco).Width(170);
+                            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditDependientes");
+                            command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                        }).Width(125).Title("Acciones");
+                        columns.Bound(p => p.IdDependientes).Width(100);
+                        columns.Bound(p => p.NombreDependientes).Width(290);
+                        columns.Bound(p => p.Parentezco).Width(250).Title("Parentesco");
                         columns.Bound(p => p.TelefonoDependientes).Width(200);
-                        columns.Bound(p => p.DireccionDependientes).Width(200);
-                        columns.Bound(p => p.IdEmpleado).Width(180);
-
-                        //columns.Bound(p => p.UsuarioCreacion).Width(170);
-                        //columns.Bound(p => p.UsuarioModificacion).Width(190);
-
-
+                        columns.Bound(p => p.DireccionDependientes).Width(250);
+                        columns.Bound(p => p.IdEmpleado).Width(180).Visible(false);
                     })
                         .Filterable(f => f.Operators(o => o.ForString(s => s
                                                    .Clear()
@@ -141,7 +138,10 @@
                     })
                     .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
                     .Sortable()
-                    .Pageable()
+                    .Pageable(s => s
+                    .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+                    .Empty("No hay datos."))
+                    )
                     .Filterable()
                     .Scrollable()
                     .Pdf(pdf => pdf.FileName("DependientesReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
@@ -162,6 +162,7 @@
 
 
                     })
+                    .Sort(s => s.Add(m => m.FechaCreacion).Descending())
                     .Events(events => events.Error("error_handler"))
                     .Read(read => read.Action("GetDependientesByEmployeeId", "Dependientes").Data("GetEmployeesId()"))
                     .Create(create => create.Action("Insert", "Dependientes").Type(HttpVerbs.Post))
@@ -180,4 +181,23 @@
     @await Html.PartialAsync("pvwAddDependientes", new ERPMVC.DTO.DependientesDTO { IdDependientes = 0 })
 </div>
 
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridDependientes").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
 
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridDependientes").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar un nuevo registro");
+    //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+</script>

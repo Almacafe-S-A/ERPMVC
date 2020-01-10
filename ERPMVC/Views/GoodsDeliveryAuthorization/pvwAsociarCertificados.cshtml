@@ -1,5 +1,5 @@
 ﻿
-<script src="~/admp/assets/plugins/wizard/stepsGoodsDeliveryAuthorization.js"></script>
+
 
 <script>
 
@@ -126,7 +126,8 @@
                             , WarehouseName: data[j].WarehouseName
                             , SubProductId: data[j]._CertificadoLine[i].SubProductId
                             , SubProductName: data[j]._CertificadoLine[i].SubProductName
-                            , Quantity: data[j]._CertificadoLine[i].Quantity
+                            //, Quantity: data[j]._CertificadoLine[i].Quantity
+                            , Quantity : 0
                             , Price: data[j]._CertificadoLine[i].Price
                             , valorcertificado: data[j].Total
                         };
@@ -223,7 +224,7 @@
     <div class="col-12">
         <div class="card wizard-content">
             <div class="card-body">
-                <h4 class="card-title">Asociar certificados de deposito a Autorización</h4>
+                <h4 class="card-title">Asociar certificados de depósito a Autorización</h4>
                 <h6 class="card-subtitle">Solo seleccionar 8 productos</h6>
                 <form action="#" class="validation-wizard wizard-circle"
                       data-ajax="true"
@@ -243,6 +244,27 @@
                                             hcustom = $("#CustomerIdAsociarRecibo").val();
                                             $("#SubProductId").data("kendoDropDownList").dataSource.read();
                                         }
+
+                                        function setToolbarTooltip(btn_cl, btn_tooltip) {
+                                            $("#gridCertificadoProducto").kendoTooltip({
+                                                filter: btn_cl,
+                                                content: btn_tooltip
+                                            });
+                                        }
+
+
+
+                                        function setRowButtonTooltip(btn_cl, btn_tooltip) {
+                                            $("#gridCertificadoProducto").kendoTooltip({
+                                                filter: btn_cl,
+                                                content: btn_tooltip
+                                            });
+                                        }
+
+
+
+                                       
+                                        setRowButtonTooltip(".k-grid-delete", "Eliminar");
 
                                     </script>
 
@@ -273,6 +295,7 @@
                     <!-- Step 2 -->
                     <h6>Seleccione los certificados de deposito</h6>
                     <section>
+                        
                         <div class="row">
                             <div class="col-md-8">
                                 <div class="form-group">
@@ -309,11 +332,13 @@
 
                                               if ($("#cbxBuscarCertificadosDeposito").val() > 0) {
                                                   $("#ProductosCD").data("kendoMultiSelect").dataSource.read();
+                                                  $("#optional").data("kendoListBox").dataSource.read();
                                                   LlenarRecibo();
                                               }
                                           }
 
                                         function AddRecibos() {
+                                            debugger;
                                             if ($("#cbxBuscarCertificadosDeposito").val() !== '')
                                             {
                                                 var existe = false;
@@ -324,6 +349,7 @@
                                                     }
                                                 });
                                                 var productoscd = $("#ProductosCD").val();
+
                                                 console.log(productoscd);
                                                 if (productoscd == null) {
                                                     $("#alertamsj").css('display', 'block');
@@ -447,11 +473,12 @@
                                     </script>
                                     <label id="SubProducto" class="control-label" style="width:100%">Productos</label>
 
-                                    <kendo-multiselect name="ProductosCD" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                    <kendo-multiselect  name="ProductosCD" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                        option-label="Seleccione el/los Producto(s)"
                                                        datatextfield="SubProductName"
                                                        datavaluefield="SubProductId"
                                                        required
+                                                       placeholder="Seleccione el/los Producto(s)"
                                                        style="width: 100%;">
                                         <datasource type="DataSourceTagHelperType.WebApi" page-size="999999999">
                                             <transport>
@@ -463,122 +490,116 @@
                                 </div>
                             </div>
                         </div>
+                  
 
-                        @await Html.PartialAsync("pvwCertificadoDepositoRead")
+                        <div hidden>
+                             @await Html.PartialAsync("pvwCertificadoDepositoRead")
+                        </div>
+                        <div class="row">
+                            @(Html.Kendo().Grid<ERPMVC.DTO.CertificadoProducto>()
+                                                                   .Name("gridCertificadoProducto")
+                                                                   .Columns(columns =>
+                                                                   {
+                                                                       columns.Command(command =>
+                                                                       {
+                                                                                       //command.Edit().Text("Editar");
+                                                                                       command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                                                                       }).Width(100);
+                                                                       columns.Bound(p => p.IdCD).Width(140);
+                                                                       columns.Bound(p => p.ProductId).Width(140);
 
+                                                                   })
+                                                                       .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                                 .Clear()
+                                                                        .Contains("Contiene")
+                                                                        .DoesNotContain("No contiene")
+                                                                        .EndsWith("Termina con")
+                                                                        .IsEqualTo("Es igual a")
+                                                                        .IsNotEqualTo("No es igual a")
+                                                                        .IsNull("Es nulo")
+                                                                        .StartsWith("Inicia con")
+
+
+                                                                  )
+                                                                  .ForNumber(n => n
+                                                                    .Clear()
+                                                                    .IsEqualTo("Es igual a")
+                                                                    .IsGreaterThan("Es mayor que")
+                                                                    .IsLessThan("Es menor que")
+                                                                    .IsNull("Es nulo")
+                                                                    .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                    .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                  )
+                                                                  .ForDate(d => d
+                                                                  .Clear()
+                                                                  .IsEqualTo("Es igual que")
+                                                                  .IsGreaterThan("Es mayor que")
+                                                                  .IsLessThan("Es menor que")
+                                                                  .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                  .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                  .IsNotEqualTo("No es igual que")
+                                                                   )
+                                                                ))
+                                                                .ToolBar(tools =>
+                                                                {
+                                                                                //tools.Create();
+                                                                                //                 tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                //.HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerCondition();" });
+                                                                                //     tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                                                //     tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+                                                                            })
+                                                                   .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                                                                   .Sortable()
+                                                                   .Pageable()
+                                                                   .Filterable()
+                                                                   .Scrollable(scrollable => scrollable.Virtual(true))
+                                                                   .HtmlAttributes(new { style = "height:250px;" })
+                                                                   .Pdf(pdf => pdf.FileName("CertificadoProductoReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                   + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                                                   .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                                                       .Excel(excel => excel.FileName("CertificadoProductoReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                   + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                                                   .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                                                   //.Events(e => e.DataBound("dataBoundCustomerConditions"))
+                                                                   .DataSource(dataSource =>
+                                                                       dataSource
+                                                                       .WebApi()
+
+                                                                       .ServerOperation(true)
+                                                                       .Model(model =>
+                                                                       {
+                                                                           model.Id(p => p.Id);
+                                                                           model.Field(p => p.IdCD).Editable(false);
+                                                                           model.Field(p => p.ProductId).Editable(true);
+
+
+                                                                       })
+                                                                       .Events(events => events.Error("error_handler"))
+                                                                   //  .Read(read => read.Action("Get", "GoodsDeliveryAuthorization").Type(HttpVerbs.Get))   //.Data("filterdatacc"))
+                                                                   // .Create(create => create.Action("Insert", "GoodsDeliveryAuthorization").Type(HttpVerbs.Post))
+                                                                   //.Update(update => update.Action("Update", "GoodsDeliveryAuthorization", new { id = "{0}" }))
+                                                                   // .Destroy(destroy => destroy.Action("Delete", "GoodsDeliveryAuthorization").Type(HttpVerbs.Post))
+
+                                                                   )
+                                                                   .Events(e =>
+                                                                   {
+                                                                                   // e.Save("onsave");
+
+                                                                               })
+                            )
+
+                        </div>
+                        <div class="form-group" hidden>
+                                    <label for="wintType1">Certificados Asociados :</label>
+                                    <select class="custom-select form-control required" id="ddlRecibosAsociados" data-placeholder="Type to search cities" name="wintType1"></select>
+                                </div>
                
                         
 
                     </section>
-                    <!-- Step 3 -->
-                    <h6>Recibos Asociados</h6>
-                    <section>
-                        <div class="row">
-                            <div class="col-md-6">
-
-                                <div class="form-group">
-                                    <label for="wintType1">Certificados Asociados :</label>
-                                    <select class="custom-select form-control required" id="ddlRecibosAsociados" data-placeholder="Type to search cities" name="wintType1"></select>
-                                </div>
-
-                            </div>
-                        </div>
-                        <div class="row">
-                            @(Html.Kendo().Grid<ERPMVC.DTO.CertificadoProducto>()
-                                                           .Name("gridCertificadoProducto")
-                                                           .Columns(columns =>
-                                                           {
-                                                               columns.Command(command =>
-                                                               {
-                                                                   //command.Edit().Text("Editar");
-                                                                   command.Destroy().Text("Eliminar");
-                                                               }).Width(250);
-                                                               columns.Bound(p => p.IdCD).Width(140);
-                                                               columns.Bound(p => p.ProductId).Width(140);
-
-                                                           })
-                                                               .Filterable(f => f.Operators(o => o.ForString(s => s
-                                                         .Clear()
-                                                                .Contains("Contiene")
-                                                                .DoesNotContain("No contiene")
-                                                                .EndsWith("Termina con")
-                                                                .IsEqualTo("Es igual a")
-                                                                .IsNotEqualTo("No es igual a")
-                                                                .IsNull("Es nulo")
-                                                                .StartsWith("Inicia con")
-
-
-                                                          )
-                                                          .ForNumber(n => n
-                                                            .Clear()
-                                                            .IsEqualTo("Es igual a")
-                                                            .IsGreaterThan("Es mayor que")
-                                                            .IsLessThan("Es menor que")
-                                                            .IsNull("Es nulo")
-                                                            .IsLessThanOrEqualTo("Es menor o igual que")
-                                                            .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                          )
-                                                          .ForDate(d => d
-                                                          .Clear()
-                                                          .IsEqualTo("Es igual que")
-                                                          .IsGreaterThan("Es mayor que")
-                                                          .IsLessThan("Es menor que")
-                                                          .IsLessThanOrEqualTo("Es menor o igual que")
-                                                          .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                          .IsNotEqualTo("No es igual que")
-                                                           )
-                                                        ))
-                                                        .ToolBar(tools =>
-                                                        {
-                                                            //tools.Create();
-                                                            //                 tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                            //.HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerCondition();" });
-                                                            //     tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                                            //     tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-                                                        })
-                                                           .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
-                                                           .Sortable()
-                                                           .Pageable()
-                                                           .Filterable()
-                                                           .Scrollable()
-                                                           .Pdf(pdf => pdf.FileName("CertificadoProductoReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                                           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                                           .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                                               .Excel(excel => excel.FileName("CertificadoProductoReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                                           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                                           .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                                           //.Events(e => e.DataBound("dataBoundCustomerConditions"))
-                                                           .DataSource(dataSource =>
-                                                               dataSource
-                                                               .WebApi()
-
-                                                               .ServerOperation(true)
-                                                               .Model(model =>
-                                                               {
-                                                                   model.Id(p => p.Id);
-                                                                   model.Field(p => p.IdCD).Editable(false);
-                                                                   model.Field(p => p.ProductId).Editable(true);
-
-
-                                                               })
-                                                               .Events(events => events.Error("error_handler"))
-                                                           //  .Read(read => read.Action("Get", "GoodsDeliveryAuthorization").Type(HttpVerbs.Get))   //.Data("filterdatacc"))
-                                                           // .Create(create => create.Action("Insert", "GoodsDeliveryAuthorization").Type(HttpVerbs.Post))
-                                                           //.Update(update => update.Action("Update", "GoodsDeliveryAuthorization", new { id = "{0}" }))
-                                                           // .Destroy(destroy => destroy.Action("Delete", "GoodsDeliveryAuthorization").Type(HttpVerbs.Post))
-
-                                                           )
-                                                           .Events(e =>
-                                                           {
-                                                               // e.Save("onsave");
-
-                                                           })
-                            )
-
-                        </div>
-                    </section>
+                    
 
                 </form>
             </div>

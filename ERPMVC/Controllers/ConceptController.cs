@@ -80,6 +80,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Concept = JsonConvert.DeserializeObject<List<Concept>>(valorrespuesta);
+                    _Concept = _Concept.OrderByDescending(q => q.ConceptId).ToList();
                 }
             }
             catch (Exception ex)

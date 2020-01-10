@@ -1,11 +1,13 @@
 ﻿@using Kendo.Mvc.UI
 
 @{
-    ViewData["Title"] = "Currency";
+    ViewData["Title"] = "Moneda";
 
 }
 
 <script>
+
+   
 
     function onsave(e) {
         //   console.log(new Date(e.model.FechaRecepcion).toISOString());
@@ -22,6 +24,7 @@
          $('#ModalCurrency').find(':input').not(':submit').val('');
          $('#ModalCurrency').modal('show');
          $("#CurrencyId").val('0');
+         $("#IdEstado").data("kendoDropDownList").value(0);
 
          var validator = $("#frmCurrency").data("kendoValidator");
          validator.hideMessages();
@@ -31,7 +34,8 @@
     }
 
     
-         function EditCurrency(e) {
+    function EditCurrency(e) {
+        debugger;
              e.preventDefault();
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
             var dataObject = {
@@ -67,6 +71,60 @@
     }
 
 
+    function Delete(e) {
+        debugger;
+ 
+
+      
+        if (confirm('Esta seguro que desea eliminar la fila?')) {
+            var notification = $("#notification").data("kendoNotification");
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+
+            var dataObject = {
+                CurrencyId: dataItem.CurrencyId
+            }
+
+            debugger;
+            $.ajax({
+                url: '@Url.Action("Delete", "Currency")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    $.toast({
+                    heading: 'Satisfactorio',
+                    text: '<br/><br/>Se elimino correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                    debugger;
+                    console.log(data)
+                },
+                
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+
+ 
+
+                }
+            });
+        }
+
+        var grid = $("#gridCurrency").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+   
+
 </script>
 
 <h3 class="text-themecolor">Moneda</h3>
@@ -81,14 +139,15 @@
                 columns.Command(command =>
                 {
                     //command.Custom("Ver detalles").Click("Detalles");
-                    command.Custom("Editar").Click("EditCurrency");
-                    command.Destroy().Text("Eliminar");
-                }).Width(250);
+                    command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCurrency");
+                    command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+                }).Title("Acciones").Width(250);
                 columns.Bound(p => p.CurrencyId).Width(150);
                 columns.Bound(p => p.CurrencyName).Width(170);
-                columns.Bound(p => p.CurrencyCode).Width(170);
+                columns.Bound(p => p.CurrencyCode).Width(190);
                 columns.Bound(p => p.Description).Width(200);
                 columns.Bound(p => p.Estado).Width(150);
+                columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy HH:mm:ss}").Width(100).Hidden();
 
                 //columns.Bound(p => p.UsuarioCreacion).Width(170);
                 //columns.Bound(p => p.UsuarioModificacion).Width(190);
@@ -114,10 +173,10 @@
             .Pageable()
             .Filterable()
             .Scrollable()
-            .Pdf(pdf => pdf.FileName("CurrencyReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+            .Pdf(pdf => pdf.FileName("ReporteMoneda_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
             + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
             .ProxyURL(Url.Action("Export", "Home")).AllPages())
-            .Excel(excel => excel.FileName("CurrencyReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+            .Excel(excel => excel.FileName("ReporteMoneda_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
             + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
             .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
             .DataSource(dataSource =>
@@ -132,6 +191,7 @@
 
 
             })
+            .Sort(s => s.Add(m => m.FechaCreacion).Descending())
             .Events(events => events.Error("error_handler"))
             .Read(read => read.Action("Get", "Currency"))
             .Create(create => create.Action("Insert", "Currency").Type(HttpVerbs.Post))
@@ -145,6 +205,32 @@
 
             })
 )
+
+<script>
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridCurrency").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridCurrency").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar un nuevo registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
+
+</script>
 
 <div id="numCurrency">
     @await Html.PartialAsync("pvwAddCurrency", new ERPMVC.DTO.CurrencyDTO { CurrencyId = 0 })

@@ -57,7 +57,7 @@ namespace ERPMVC.Controllers
 
                 if (_ElementoConfiguracion == null)
                 {
-                    _ElementoConfiguracion = new ElementoConfiguracionDTO();
+                    _ElementoConfiguracion = new ElementoConfiguracionDTO { FechaCreacion = DateTime.Now };
                 }
             }
             catch (Exception ex)
@@ -184,47 +184,53 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult<ElementoConfiguracion>> SaveElementoConfiguracion([FromBody]ElementoConfiguracionDTO _ElementoConfiguracionS)
         {
             ElementoConfiguracion _ElementoConfiguracion = _ElementoConfiguracionS;
-            
+
             try
             {
                 ElementoConfiguracion _listElementoConfiguracion = new ElementoConfiguracion();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ElementoConfiguracion/GetElementoConfiguracionById/" + _ElementoConfiguracion.Id);
-                string valorrespuesta = "";
-                _ElementoConfiguracion.FechaModificacion = DateTime.Now;
-                _ElementoConfiguracion.UsuarioModificacion = HttpContext.Session.GetString("user");
-                
-                if (result.IsSuccessStatusCode)
+                var result1 = await _client.GetAsync(baseadress + "api/ElementoConfiguracion/GetElemntoConfiguracionByNombre/" + _ElementoConfiguracion.Nombre + "/" + _ElementoConfiguracion.Idconfiguracion);
+                string valorrespuesta1 = "";
+
+                if (result1.IsSuccessStatusCode)
                 {
 
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ElementoConfiguracion = JsonConvert.DeserializeObject<ElementoConfiguracionDTO>(valorrespuesta);
+                    valorrespuesta1 = await (result1.Content.ReadAsStringAsync());
+                    _ElementoConfiguracion = JsonConvert.DeserializeObject<ElementoConfiguracionDTO>(valorrespuesta1);
                 }
 
                 if (_ElementoConfiguracion == null) { _ElementoConfiguracion = new Models.ElementoConfiguracion(); }
+
+                if (_ElementoConfiguracion.Id > 0)
+                {
+                    if (_ElementoConfiguracion.Id != _ElementoConfiguracionS.Id)
+                        return await Task.Run(() => BadRequest($"Ya existe un Elemento registrado con ese nombre."));
+                }
 
                 if (_ElementoConfiguracionS.Id == 0)
                 {
                     _ElementoConfiguracionS.FechaCreacion = DateTime.Now;
                     _ElementoConfiguracionS.UsuarioCreacion = HttpContext.Session.GetString("user");
-
-                    //if (_ElementoConfiguracionS.Estado == "Activo")
-                    //{
-                    //    _ElementoConfiguracionS.Estado = "A";
-                    //}
-                    //else {
-                    //    _ElementoConfiguracionS.Estado = "I";
-
-                    //}
-                    
                     var insertresult = await Insert(_ElementoConfiguracionS);
                 }
                 else
                 {
-                    _ElementoConfiguracionS.UsuarioCreacion = _ElementoConfiguracion.UsuarioCreacion;
-                    _ElementoConfiguracionS.FechaCreacion = _ElementoConfiguracion.FechaCreacion;
+                    //_ElementoConfiguracionS.UsuarioCreacion = _ElementoConfiguracion.UsuarioCreacion;
+                    //_ElementoConfiguracionS.FechaCreacion = _ElementoConfiguracion.FechaCreacion;
+                    //var updateresult = await Update(_ElementoConfiguracion.Id, _ElementoConfiguracionS);
+                    var result = await _client.GetAsync(baseadress + "api/ElementoConfiguracion/GetElementoConfiguracionById/" + _ElementoConfiguracionS.Id);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _ElementoConfiguracion = JsonConvert.DeserializeObject<ElementoConfiguracionDTO>(valorrespuesta);
+                    }
+                    _ElementoConfiguracion.FechaCreacion = _ElementoConfiguracionS.FechaCreacion;
+                    _ElementoConfiguracion.UsuarioCreacion = _ElementoConfiguracionS.UsuarioCreacion;
+                    _ElementoConfiguracion.UsuarioModificacion = _ElementoConfiguracionS.UsuarioModificacion;
+                    _ElementoConfiguracion.FechaModificacion = _ElementoConfiguracionS.FechaModificacion;
                     var updateresult = await Update(_ElementoConfiguracion.Id, _ElementoConfiguracionS);
                 }
 

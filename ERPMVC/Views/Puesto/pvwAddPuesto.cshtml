@@ -27,8 +27,9 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
                 <h4 class="modal-title">Puesto</h4>
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+
             </div>
             <div class="modal-body">
                 <div class="row" id="validation">
@@ -62,6 +63,7 @@
                                                                         option-label="Seleccionar Departamento"
                                                                         datatextfield="NombreDepartamento"
                                                                         datavaluefield="IdDepartamento"
+                                                                        data-val-required="El Departamento es requerido"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
                                                             <transport>
@@ -81,8 +83,8 @@
                                                 </div>
                                             </div>
 
-                                            <div class="row">
-                                                <div class="col-md-12">
+                                            
+                                                <div class="col-md-4">
                                                     <div class="form-group">
                                                         <label asp-for="IdEstado" class="control-label">Estado</label>
                                                         <kendo-dropdownlist name="IdEstado"
@@ -91,7 +93,8 @@
                                                                             option-label="Seleccionar Estado"
                                                                             datatextfield="NombreEstado"
                                                                             datavaluefield="IdEstado"
-                                                                            style="width: 100%;">
+                                                                            data-val-required="El Estado es requerido"
+                                                                            style="min-width: 100%;">
                                                             <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
                                                                 <transport>
                                                                     <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
@@ -100,13 +103,14 @@
                                                         </kendo-dropdownlist>
                                                     </div>
                                                 </div>
-                                            </div>
+                                            
 
 
                                         </div>
                                         <div class="row">
                                             <div class="col-md-12">
-                                                <button id="btnPuesto" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                                <button id="btnPuesto" class="form-control btn-miboton" type="submit" onclick="SavePuesto(this);"> Guardar </button>
+                                               
                                             </div>
                                         </div>
                                     </div>
@@ -122,13 +126,49 @@
 
 
 <script>
-        function SavePuesto(e) {
+
+    function noespaciosincio(e) {
+        var valor = e.value.replace(/^ */, '');
+        e.value = valor;
+    }
+    document.getElementById("btnPuesto").onclick = function () {
+        var txtObj = document.getElementById("NombrePuesto");
+
+        txtObj.value = txtObj.value.replace(/^\s+/, ""); //Left trim
+        txtObj.value = txtObj.value.replace(/\s+$/, ""); //Right trim
+        
+    };
+    function soloLetras(e) {
+        key = e.keyCode || e.which;
+        tecla = String.fromCharCode(key).toLowerCase();
+        letras = " áéíóúabcdefghijklmnñopqrstuvwxyz";
+        especiales = "8-37-39-46";
+
+
+
+        tecla_especial = false
+        for (var i in especiales) {
+            if (key == especiales[i]) {
+                tecla_especial = true;
+                break;
+            }
+        }
+
+
+
+        if (letras.indexOf(tecla) == -1 && !tecla_especial) {
+            return false;
+        }
+    }
+
+
+    function SavePuesto(e) {
 
             var notification = $("#notification").data("kendoNotification");
-           // e.preventDefault();
-            $("#btnPuesto").hide();
-            $("#btnPuesto").prop("disabled", true);
 
+        $("#btnPuesto").show();
+        $("#btnPuesto").prop("disabled", true);
+            
             var displayedData = $("#gridPuesto").data().kendoGrid.dataSource.view();
 
             var dataObject = {
@@ -146,12 +186,12 @@
                 '_PuestoP': displayedData
             };
 
-           // console.log(JSON.stringify(dataObject));
-            //var form = $("#frmNumeracion");
-           // form.validate();
+            console.log(JSON.stringify(dataObject));
+            var form = $("#frmPuesto");
+            form.validate();
 
             var validator = $("#frmPuesto").data("kendoValidator");
-            //var status = $(".status");
+            var status = $(".status");
 
                 if (validator.validate()) {
 
@@ -186,6 +226,7 @@
                         },
                         error: function (XMLHttpRequest, textStatus, errorThrown) {
                             console.log('VERIFICAR')
+                            
 
                             notification.show({
                                 title: "Validación",
@@ -200,32 +241,13 @@
                     status.text("Oops! There is invalid data in the form.")
                         .removeClass("valid")
                         .addClass("invalid");
+
+
+                    $("#btnPuesto").show();
+                    $("#btnPuesto").prop("disabled", false);  
                 }
-            
+        
 
-            $("#btnPuesto").show();
-            $("#btnPuesto").prop("disabled", false);
     }
-    function soloLetras(e) {
-        key = e.keyCode || e.which;
-        tecla = String.fromCharCode(key).toLowerCase();
-        letras = " áéíóúabcdefghijklmnñopqrstuvwxyz";
-        especiales = "8-37-39-46";
 
-
-
-        tecla_especial = false
-        for (var i in especiales) {
-            if (key == especiales[i]) {
-                tecla_especial = true;
-                break;
-            }
-        }
-
-
-
-        if (letras.indexOf(tecla) == -1 && !tecla_especial) {
-            return false;
-        }
-    }
 </script>

@@ -101,7 +101,7 @@
 
 
     function EditGoodsDeliveryDetalle(e) {
-
+        debugger;
         e.preventDefault();
         var notification = $("#notification").data("kendoNotification");
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
@@ -110,15 +110,16 @@
             var subproducto = 0;
             var dataObject = { 'GoodsDeliveryAuthorizationLineId': dataItem.GoodsDeliveryAuthorizationLineId };
             $.ajax({
-                url: '@Url.Action("pvwGoodsDeliveredMant", "GoodsDeliveredLine")',
+                url: '@Url.Action("pvwGoodsDeliveryAuthorizationDetailMant", "GoodsDeliveryAuthorization")',
                 method: 'POST',
                 datatype: "json",
                 contentType: 'application/json',
                 async: false,
                 data: JSON.stringify(dataObject),
                 success: function (data) {
-                    $("#ControlPalletsLineMant").html('');
-                    $("#ControlPalletsLineMant").html(data);
+                    debugger;
+                    $("#GoodsDeliveredAuthorizationLineMant").html('');
+                    $("#GoodsDeliveredAuthorizationLineMant").html(data);
                     var txt = $(data);
                     var found = $("#SubProductId", txt);
                     subproducto = $(found).val();
@@ -291,6 +292,28 @@
             //grid.dataSource.sync();
         }
     }
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridGoodsDeliveredAuthorizationLine").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridGoodsDeliveredAuthorizationLine").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+
+
+    setToolbarTooltip(".k-button k-button-icontext k-grid-Agregar k-i-plus-sm", "Agregar un nuevo registro");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
 </script>
 
 
@@ -311,21 +334,21 @@
                                                           command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditGoodsDeliveryDetalle");
                                                   // command.Custom("Imprimir").Click("ImprimirCotizacion");
                                                   //  command.Edit(); command.Destroy();
-                                              }).Width(100);
+                                              }).Title("Acciones").Width(100);
 
-                                                      columns.Bound(p => p.GoodsDeliveryAuthorizationLineId).Title("Id Linea").Width(120);
-                                                      columns.Bound(p => p.GoodsDeliveryAuthorizationId).Title("Entrega de Mercaderia").Width(150);
-                                                      columns.Bound(p => p.NoCertificadoDeposito).Title("Número de certificado").Width(150);
-                                                      columns.Bound(p => p.SubProductName).Width(150);
-                                                      columns.Bound(p => p.WarehouseName).Title("Bodega").Width(150);
+                                                      columns.Bound(p => p.GoodsDeliveryAuthorizationLineId).Title("Id Línea").Width(100);
+                                                      columns.Bound(p => p.GoodsDeliveryAuthorizationId).Title("Entrega de Mercaderia").Width(195).Visible(false);
+                                                      columns.Bound(p => p.NoCertificadoDeposito).Title("Número de certificado").Width(190);
+                                                      columns.Bound(p => p.SubProductName).Width(160);
+                                                      columns.Bound(p => p.WarehouseName).Title("Bodega").Width(120).Visible(false);
                                                       columns.Bound(p => p.ValorImpuestos).Visible(false).Width(0);
                                                       columns.Bound(p => p.ValorImpuestosOriginal).Visible(false).Width(0);
                                                       columns.Bound(p => p.QuantityOriginal).Visible(false).Width(0);
-                                                      columns.Bound(p => p.UnitOfMeasureName).Title("Unidad de medida").Width(150);
-                                                      columns.Bound(p => p.Quantity).Title("Cantidad").Width(150);
+                                                      columns.Bound(p => p.UnitOfMeasureName).Title("Unidad de medida").Width(170);
+                                                      columns.Bound(p => p.Quantity).Title("Cantidad").Width(130);
                                                       columns.Bound(p => p.Price).Visible(false);
-                                                      columns.Bound(p => p.valorcertificado).Visible(true).Title("Valor certificado").Width(150);
-                                                      columns.Bound(p => p.valorfinanciado).Title("Valor financiado").Width(100);
+                                                      columns.Bound(p => p.valorcertificado).Visible(true).Title("Valor Retiro").Width(170);
+                                                      columns.Bound(p => p.valorfinanciado).Title("Valor financiado").Width(170);
                                                   })
                                                       .Filterable(f => f.Operators(o => o.ForString(s => s
                                                .Clear()
@@ -364,12 +387,7 @@
                                                       {
                                                           tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
                                                           .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddGoodsDeliveredDetalle();" });
-                                                      }
-
-                                                      tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                                      tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
+                                                      }                                                
                                                   })
                                                    .Editable(e => e.Mode(GridEditMode.PopUp))
                                                     .Sortable()
@@ -377,14 +395,6 @@
                                                     .Pageable()
                                                     .Filterable()
                                                     .Scrollable()
-                                                    // .ClientDetailTemplateId("template")
-                                                    .Pdf(pdf => pdf.FileName("ReciboMercaderiaDetalleReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                                      .Excel(excel => excel.FileName("ReciboMercaderiaDetalleReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                                    //.Events(e=>e.Save("onsave"))
                                                     .DataSource(dataSource =>
 
                                                    dataSource

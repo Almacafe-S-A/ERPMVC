@@ -208,7 +208,7 @@
                         <label id="JournalEntryLinelbl" class=" control-label" style="width:100%" hidden>Id Journal Entry Line</label>
                         <input id="JournalEntryLineId" type="text" class="form-control" style="min-width:100%" value="0" hidden />
                         <label class=" control-label" style="width:100%"></label>
-                            <button type="button" id="btnAgregarLinea" class="form-control btn-miboton" onclick="RefrescarGridLinea();">Agregar Linea</button>
+                            <button type="button" id="btnAgregarLinea" class="form-control btn-miboton" onclick="RefrescarGridLinea();">Agregar Línea</button>
                     </div>
                 </div>
             </div>
@@ -274,6 +274,13 @@
             else {
                 id = $("#JournalEntryLineId").val();
             }
+            var setCostCenterName = "";
+            if ($("#CostCenter").val() == 0) {
+                setCostCenterName = "";
+            }
+            else {
+                setCostCenterName = $("#CostCenter").data("kendoDropDownList").text()
+            }
             return {
                 'JournalEntryLineId': id,
                 'JournalEntryId': @Model.JournalEntryId,
@@ -283,7 +290,7 @@
                 'AccountName': $("#Cuenta").data("kendoDropDownList").text(),
                 'Description': $("#Descripcion").val(),
                 'CostCenterId': Number($("#CostCenter").val()),
-                'CostCenterName': $("#CostCenter").data("kendoDropDownList").text(),
+                'CostCenterName': setCostCenterName,
             }
         }
         else {
@@ -295,18 +302,18 @@
 
     
     function EliminarJournalEntry(e) {
-    
-        e.preventDefault();
-       
-        var notification = $("#notification").data("kendoNotification");
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (confirm('¿Esta seguro que desea eliminar este registro?')) {
+            e.preventDefault();
 
-        console.log(dataItem);
-        var grid = $("#gridNumeracionJournalEntryLine").data("kendoGrid");
-        var datasource = grid.dataSource;
-        datasource.remove(dataItem);
-        
-          $.ajax({
+            var notification = $("#notification").data("kendoNotification");
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+            console.log(dataItem);
+            var grid = $("#gridNumeracionJournalEntryLine").data("kendoGrid");
+            var datasource = grid.dataSource;
+            datasource.remove(dataItem);
+
+            $.ajax({
                 url: '@Url.Action("Delete", "JournalEntryLine")',
                 method: 'POST',
                 datatype: "json",
@@ -315,22 +322,23 @@
                 data: JSON.stringify(dataItem),
                 success: function (data) {
 
-                 },
-                 error: function (XMLHttpRequest, textStatus, errorThrown) {
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
 
-                  //  $("#btngenerarfactura").show();
-                  notification.show({
-                      title: "Validación",
-                      message: textStatus + ": " + XMLHttpRequest.responseText
-                  }, "error");
+                    //  $("#btngenerarfactura").show();
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
 
-              }
-          });
+                }
+            });
 
 
-        datasource.read();
-       // var grid = $("#gridGoodsReceived").getKendoGrid();
-        //grid.dataSource.read();
+            datasource.read();
+            // var grid = $("#gridGoodsReceived").getKendoGrid();
+            //grid.dataSource.read();
+        }
     }
 
     function RefrescarGridLinea() {
@@ -343,10 +351,10 @@
             $('#Cuenta').after(' <span id="Span" class="text-danger">Campos requeridos</span>');
             return false;
         }
-        else if (costo == "") {
-            $('#CostCenter').after(' <span id="Span3" class="text-danger">Campos requeridos</span>');
-            return false;
-        }
+        //else if (costo == "") {
+        //    $('#CostCenter').after(' <span id="Span3" class="text-danger">Campos requeridos</span>');
+        //    return false;
+        //}
         else if (credito == 0 && debito == 0) {
             alert("Debe de ingresar un débito o crédito.");
         }
@@ -390,9 +398,9 @@
                       //command.Edit().Text("Editar").UpdateText("Registrar").CancelText("Cancelar");
                       // command.Destroy().Text("Eliminar");
 
-                  }).Width(100);
+                  }).Title("Acciones").Width(100);
               }
-              columns.Bound(p => p.JournalEntryLineId).Title("Id Line").Width(100);
+              columns.Bound(p => p.JournalEntryLineId).Title("Id Line").Width(100).Hidden(true);
               columns.Bound(p => p.Description).Title("Descripción").Width(200);
               columns.Bound(p => p.AccountId).Hidden().Width(200);
               columns.Bound(p => p.AccountName).Width(200);
@@ -444,13 +452,16 @@
           })
           .Editable(e => e.Mode(GridEditMode.InLine))
           .Sortable()
-          .Pageable()
+          .Pageable(s => s
+          .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+          .Empty("No hay datos."))
+          )
           .Filterable()
           .Scrollable()
-          .Pdf(pdf => pdf.FileName("JournalEntryLineReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+          .Pdf(pdf => pdf.FileName("AjusteContableLíneaReporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
           .ProxyURL(Url.Action("Export", "Home")).AllPages())
-          .Excel(excel => excel.FileName("JournalEntryLineReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+          .Excel(excel => excel.FileName("AjusteContableLíneaReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
           .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
           .DataSource(dataSource => dataSource
@@ -469,6 +480,7 @@
               model.Field(p => p.Credit).Editable(true);
               model.Field(p => p.Debit).Editable(true);
           })
+          .Sort(s => s.Add(m => m.JournalEntryLineId).Descending())
           .Events(events => events.Error("error_handler"))
           .Read(read => read.Action("GetJournalEntryLine", "JournalEntryLine").Data("AgregarLinea"))
           .Create(create => create.Action("Insert", "JournalEntryLine"))
@@ -520,5 +532,21 @@
         </div>
     </div>
 </div>
+<script>
 
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridNumeracionJournalEntryLine").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridNumeracionJournalEntryLine").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+    setToolbarTooltip(".k-grid-Eliminar", "Eliminar registro");
+</script>
 

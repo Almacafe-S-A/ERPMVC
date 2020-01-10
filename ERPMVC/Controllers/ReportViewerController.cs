@@ -25,7 +25,6 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
-   // [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public class ReportViewerController : Controller , IReportController
     {
         private IMemoryCache _cache;
@@ -33,6 +32,7 @@ namespace ERPMVC.Controllers
         private readonly IOptions<MyConfig> _config;
         private readonly IMapper mapper;
         private readonly ILogger _logger;
+        public string ArchivoReporte { get; set; }
 
         public string DefaultParam = null;
         public ReportViewerController(IMemoryCache memoryCache, IHostingEnvironment hostingEnvironment
@@ -45,6 +45,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
             this._config = config;
             Configuration = configuration;
+            ArchivoReporte = "";
         }
 
         public ActionResult Index()
@@ -89,134 +90,27 @@ namespace ERPMVC.Controllers
             return ReportHelper.ProcessReport(null, this, this._cache);
         }
         public IConfiguration Configuration { get; }
-        public void OnInitReportOptions(ReportViewerOptions reportOption)
+
+        [Authorize]
+        public async void OnInitReportOptions(ReportViewerOptions reportOption)
         {
-
-            //Syncfusion.Report.DataSourceCredentials dsc = new Syncfusion.Report.DataSourceCredentials();
-            //dsc.ConnectionString = "Data Source=DESKTOP-RFQ3R0I;Initial Catalog=ERP;";//Configuration.GetConnectionString("DefaultConnection");
-            //dsc.IntegratedSecurity = false;
-            //dsc.UserId = "sa";
-            //dsc.Password = "sql20.15";
-            //dsc.Name = "DefaultConnection";
-            //if (reportOption.ReportModel.DataSourceCredentials == null)
-            //{ reportOption.ReportModel.DataSourceCredentials = new List<Syncfusion.Report.DataSourceCredentials>(); }
-            //reportOption.ReportModel.DataSourceCredentials.Add(dsc);
-            //var res = reportOption.ReportModel.DataSourceCredentials.Select(q => q.ConnectionString);
-            //reportOption.ReportModel.DataSourceCredentials.Add(new DataSourceCredentials("AdventureWorks", "sa", "sql20.14"));
-
-            //reportOption.ReportModel.DataSourceCredentials.Remove(new Syncfusion.Report.DataSourceCredentials { Name="DataSource1" });
-
-//            reportOption.ReportModel.DataSourceCredentials.Add(new Syncfusion.Report.DataSourceCredentials { ConnectionString= "Data Source=DESKTOP-RFQ3R0I;Initial Catalog=ERP;User id=sa;password=sql20.15;", UserId="sa",Password="sql20.14" });
-
+            var urlBase = Configuration.GetSection("AppSettings").GetSection("urlbase").Value;
+            Syncfusion.Report.DataSourceCredentials dsc = new Syncfusion.Report.DataSourceCredentials();
+            dsc.ConnectionString = Utils.ConexionReportes;
+            dsc.Name = "ERP";
             string basePath = _hostingEnvironment.WebRootPath;
             FileStream inputStream = new FileStream(basePath + reportOption.ReportModel.ReportPath, FileMode.Open, FileAccess.Read);
             reportOption.ReportModel.Stream = inputStream;
+            reportOption.ReportModel.DataSourceCredentials.Add(dsc);
             reportOption.ReportModel.EmbedImageData = true;
-
-
-            //reportOption.ReportModel.ProcessingMode = Syncfusion.EJ.ReportViewer.ProcessingMode.Local;
-            //reportOption.ReportModel.ProcessingMode = Syncfusion.EJ.ReportViewer.ProcessingMode.Remote;
         }
 
         public  void OnReportLoaded(ReportViewerOptions reportOption)
         {
-
-
-           
-            //Assembly assembly = typeof(ReportViewerController).GetTypeInfo().Assembly;
-            //var resourceName = "ReportSample_core.wwwroot.ReportRDL.ARIALUNI.TTF";
-
-            //if (reportOption.ReportModel.PDFOptions == null)
-            //{
-            //    reportOption.ReportModel.PDFOptions = new Syncfusion.ReportWriter.PDFOptions();
-            //}
-
-            //if (reportOption.ReportModel.PDFOptions.Fonts == null)
-            //{
-            //    reportOption.ReportModel.PDFOptions.Fonts = new Dictionary<string, Stream>(StringComparer.OrdinalIgnoreCase);
-            //}
-
-            //reportOption.ReportModel.PDFOptions.Fonts.Add("Arial", Assembly.GetExecutingAssembly().GetManifestResourceStream(resourceName));
-
-            var parameters = new List<ReportParameter>();
-            if (DefaultParam != null)
-            {
-                parameters = JsonConvert.DeserializeObject<List<ReportParameter>>(DefaultParam);
-            }
-
-            //reportOption.ReportModel.Parameters = parameters;
-            if (parameters != null && parameters.Count > 0)
-            {
-               
-                // reportOption.ReportModel.Parameters = ;
-
-                //reportOption.ReportModel.DataSources.Clear();
-                //var salesorder = SalesOrderQ.GetData(parameters[0].Values[0], _config.Value.urlbase, HttpContext.Session.GetString("token"));
-
-                //reportOption.ReportModel.DataSources.Add(new Syncfusion.Report.ReportDataSource
-                //{
-                //    Name = "SalesOrder",
-                //    Value = salesorder,
-                //});
-
-                //var salesorderline = SalesOrderQ.GetDataOrderLine(parameters[0].Values[0], _config.Value.urlbase, HttpContext.Session.GetString("token"));
-                //reportOption.ReportModel.DataSources.Add(new Syncfusion.Report.ReportDataSource
-                //{
-                //    Name = "SalesOrderLine",
-                //    Value = salesorderline,
-                //});
-
-                //CustomerConditions _cc = new CustomerConditions
-                //{
-                //    IdTipoDocumento = 12,                  
-                //    DocumentId = Convert.ToInt64(parameters[0].Values[0]),
-                //    ProductId = 0,                     
-                //    //FechaCreacion = DateTime.Now,
-                //    //FechaModificacion = DateTime.Now
-                //    //,
-                //    //ConditionId = 0,
-                //    //CustomerConditionId = 0,
-                //    //CustomerId = 0
-                //    // ,
-                //    //LogicalCondition = ">",
-                //    //UsuarioCreacion = "admin",
-                //    //UsuarioModificacion = "admin",
-                //    //CustomerConditionName = "asad"
-                //    // ,
-                //    //ValueDecimal = 0,
-                //    //ValueString = "0",
-                //    //ValueToEvaluate = "0"
-
-                //};
-                //var CustomerConditions = SalesOrderQ.GetDataCustomerConditions(_cc, _config.Value.urlbase, HttpContext.Session.GetString("token"));
-                //reportOption.ReportModel.DataSources.Add(new Syncfusion.Report.ReportDataSource
-                //{
-                //    Name = "Condiciones",
-                //    Value = CustomerConditions,
-                //});
-
-
-
-                //   reportOption.ReportModel.DataSources.Add(new ReportDataSource { Name = "StoreSales", Value = StoreSales.GetData(Convert.ToInt32(parameters[0].Values[0])) });
-            }
-            //else
-            //{
-            //    reportOption.ReportModel.DataSources.Clear();
-            //    reportOption.ReportModel.DataSources.Add(new ReportDataSource { Name = "StoreSales", Value = StoreSales.GetData(Convert.ToInt32("29825")) });
-            //}
         }
-       
-
-
-
-
-
-
-
     }
 
-
-    public class SalesOrderQ
+    /*public class SalesOrderQ
     {
 
        
@@ -282,5 +176,5 @@ namespace ERPMVC.Controllers
 
             return _SalesOrderLine;
         }
-    }
+    }*/
 }

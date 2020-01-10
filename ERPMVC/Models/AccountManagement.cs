@@ -15,16 +15,15 @@ namespace ERPMVC.Models
         [Required]
         [Display(Name = "Fecha de apertura")]
         public DateTime OpeningDate { get; set; }
-        [Required]
-        [Display(Name = "Numero de cuenta")]
+        [Display(Name = "Tipo de cuenta")]
         public string AccountType { get; set; }
 
-        [Display(Name = "Numero de cuenta")]
+        [Display(Name = "Número de cuenta")]
         public string AccountNumber { get; set; }
         [Required]
         public Int64 BankId { get; set; }
 
-        [Display(Name = "Institucion Financiera")]
+        [Display(Name = "Institución Financiera")]
         public string BankName { get; set; }
         [Required]
         public int CurrencyId { get; set; }
@@ -32,7 +31,7 @@ namespace ERPMVC.Models
         [Display(Name = "Moneda")]
         public string CurrencyName { get; set; }
 
-        [Display(Name = "Descripcion")]
+        [Display(Name = "Descripción")]
         public string Description { get; set; }
 
         public string Status { get; set; }
@@ -48,5 +47,7 @@ namespace ERPMVC.Models
 
         [Display(Name = "Usuario de modificación")]
         public string UsuarioModificacion { get; set; }
+
+        public string CodigoNombre => $"{AccountNumber} - {Description}";
     }
 }

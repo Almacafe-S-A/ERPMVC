@@ -69,7 +69,7 @@ namespace ERPMVC.Models
         [Display(Name = "Número de orden de compra exenta")]
         public string NoOCExenta { get; set; }
 
-        [Display(Name = "Número de constancia de registro de exoneracion")]
+        [Display(Name = "Número de constancia de registro de exoneración")]
         public string NoConstanciadeRegistro { get; set; }
 
         [Display(Name = "Número de registro de la SAG")]
@@ -87,7 +87,7 @@ namespace ERPMVC.Models
         [Display(Name = "Correo")]
         public string Correo { get; set; }
 
-        [Display(Name = "Direccion")]
+        [Display(Name = "Dirección")]
         public string Direccion { get; set; }
 
         [Display(Name = "Sucursal")]
@@ -125,7 +125,7 @@ namespace ERPMVC.Models
         [Display(Name = "Tipo de ventas")]
         public int SalesTypeId { get; set; }
 
-        [Display(Name = "Observacion")]
+        [Display(Name = "Observación")]
         public string Remarks { get; set; }
 
         [Display(Name = "Monto")]

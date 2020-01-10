@@ -62,11 +62,33 @@ namespace ERPMVC.Controllers
                     _CompanyInfo = JsonConvert.DeserializeObject<CompanyInfoDTO>(valorrespuesta);
 
                 }
-
                 if (_CompanyInfo == null)
                 {
                     _CompanyInfo = new CompanyInfoDTO();
                 }
+
+                //string[] separar;
+                //string[] separar1;
+                //if (_CompanyInfo.image != null)
+                //{
+                //    if (_CompanyInfo.image != "Imagen")
+                //    {
+                //        separar = _CompanyInfo.image.Split("/");
+                //        separar1 = separar[2].Split(".");
+                //        ViewData["Nombreimg"] = separar1[0].ToString();
+                //        ViewData["Extensionimg"] = "." + separar1[1].ToString();
+                //    }
+                //    else
+                //    {
+                //        ViewData["Nombreimg"] = "";
+                //        ViewData["Extensionimg"] = "";
+                //    }
+                //}
+                //else
+                //{
+                //        ViewData["Nombreimg"] = "";
+                //        ViewData["Extensionimg"] = "";
+                //}              
             }
             catch (Exception ex)
             {
@@ -97,7 +119,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CompanyInfo = JsonConvert.DeserializeObject<List<CompanyInfo>>(valorrespuesta);
-
+                    _CompanyInfo= _CompanyInfo.OrderByDescending(q => q.CompanyInfoId).ToList();
                 }
 
 
@@ -111,6 +133,66 @@ namespace ERPMVC.Controllers
 
             return _CompanyInfo.ToDataSourceResult(request);
 
+        }
+
+
+        [HttpPost]
+        public async Task<ActionResult> GetCompanyByRTN([FromBody]CompanyInfo _Companyp)
+        {
+            CompanyInfo _Company = new CompanyInfo();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/CompanyInfo/GetCompanyByRTN", _Companyp);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Company = JsonConvert.DeserializeObject<CompanyInfo>(valorrespuesta);
+                }
+                if (_Company == null)
+                {
+                    _Company = new CompanyInfo();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(_Company);
+        }
+
+
+        [HttpPost]
+        public async Task<ActionResult> GetCompanyByRTNMANAGER([FromBody]CompanyInfo _Companyp)
+        {
+            CompanyInfo _Company = new CompanyInfo();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/CompanyInfo/GetCompanyByRTNMANAGER", _Companyp);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Company = JsonConvert.DeserializeObject<CompanyInfo>(valorrespuesta);
+                }
+                if (_Company == null)
+                {
+                    _Company = new CompanyInfo();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(_Company);
         }
 
         //[HttpPost("[action]")]
@@ -168,23 +250,37 @@ namespace ERPMVC.Controllers
                     if (info.Extension.Equals(".jpg") || info.Extension.Equals(".png") || info.Extension.Equals(".jpeg")
                         || info.Extension.Equals(".JPG") || info.Extension.Equals(".PNG") || info.Extension.Equals(".JPEG"))
                     {
-                        var filePath = _hostingEnvironment.WebRootPath + "/CompanyImages/" + _CompanyInfoS.CompanyInfoId + "_"
+                        if (_CompanyInfo.CompanyInfoId != 0)
+                        {
+                            string[] separar;
+                            if (_CompanyInfoS.image != null)
+                            {
+                                if (_CompanyInfoS.image != "Imagen")
+                                {
+                                    separar = _CompanyInfoS.image.Split("/");
+                                    _CompanyInfo.image = _hostingEnvironment.WebRootPath + "/" + separar[1] + "/" + separar[2];
+                                }
+                            }
+                            if (System.IO.File.Exists(_CompanyInfo.image))
+                            {
+                                System.IO.File.Delete(_CompanyInfo.image);
+                            }
+                        }
+                        var filePath = _hostingEnvironment.WebRootPath + "/CompanyImages/"
                             + file.FileName.Replace(info.Extension, "") + "_" + _CompanyInfoS.Company_Name
                             + info.Extension;
 
-
-
-                        var filePathName = "~/CompanyImages/" + _CompanyInfoS.CompanyInfoId + "_"
+                        var filePathName = "~/CompanyImages/"
                             + file.FileName.Replace(info.Extension, "") + "_" + _CompanyInfoS.Company_Name
                             + info.Extension;
-                      using (var stream = new FileStream(filePath, FileMode.Create))
+                        using (var stream = new FileStream(filePath, FileMode.Create))
                         {
                             await file.CopyToAsync(stream);
                             // MemoryStream mstream = new MemoryStream();
                             //mstream.WriteTo(stream);
-                        }                 
+                        }
                         //HttpContext.Session.SetString("Nombre", filePath);
-                        HttpContext.Session.SetString("NombreURL", filePathName);
+                       // HttpContext.Session.SetString("NombreURL", filePathName);
                     }
                 }
             }
@@ -199,43 +295,102 @@ namespace ERPMVC.Controllers
             return Json(_CompanyInfo);
         }
 
+
+
         [HttpPost("[action]")]
-        public async Task<ActionResult<CompanyInfo>> SaveCompanyInfo([FromBody]CompanyInfoDTO _CompanyInfoS)
+        public async Task<ActionResult<CompanyInfo>> DeleteImage(CompanyInfoDTO _CompanyInfoS)
+        {
+            CompanyInfo _CompanyInfo = _CompanyInfoS;
+            _CompanyInfoS.image = HttpContext.Session.GetString("NombreURL");
+            string[] separar;
+            separar = _CompanyInfoS.image.Split("/");
+            _CompanyInfo.image = _hostingEnvironment.WebRootPath + "/" + separar[1] + "/" + separar[2];
+            try
+            {
+                if (_CompanyInfo.CompanyInfoId == 0)
+                {
+                    if (System.IO.File.Exists(_CompanyInfo.image))
+                    {
+                        System.IO.File.Delete(_CompanyInfo.image);
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return await Task.Run(() => Ok(_CompanyInfo));
+            // return Json(_CompanyInfo);
+        }
+
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<CompanyInfoDTO>> SaveCompanyInfo(IEnumerable<IFormFile> files, CompanyInfoDTO _CompanyInfoS)
         {
             CompanyInfo _CompanyInfo = _CompanyInfoS;
             try
-            {
-                CompanyInfo _listCompanyInfo= new CompanyInfo();
+            {               
+                CompanyInfo _listCompanyInfo = new CompanyInfo();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/CompanyInfo/GetCompanyInfoById/" + _CompanyInfo.CompanyInfoId);
-                string valorrespuesta = "";
-                _CompanyInfo.image = HttpContext.Session.GetString("NombreURL");
+                string valorrespuesta = "";            
                 _CompanyInfo.FechaModificacion = DateTime.Now;
                 _CompanyInfo.UsuarioModificacion = HttpContext.Session.GetString("user");
-                if (result.IsSuccessStatusCode)
-                {
+                IFormFile file = files.FirstOrDefault();
+                
+                    if (result.IsSuccessStatusCode)
+                    {
+                      valorrespuesta = await (result.Content.ReadAsStringAsync());
+                      _CompanyInfo = JsonConvert.DeserializeObject<CompanyInfo>(valorrespuesta);
+                    }
 
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CompanyInfo = JsonConvert.DeserializeObject<CompanyInfo>(valorrespuesta);
-                }
+                   if (_CompanyInfo == null) { _CompanyInfo = new Models.CompanyInfo(); }
+               
+                    if (_CompanyInfoS.CompanyInfoId == 0)
+                    {
+                        if (file != null)
+                        {
+                            _CompanyInfoS.FechaCreacion = DateTime.Now;
+                            _CompanyInfoS.UsuarioCreacion = HttpContext.Session.GetString("user");
+                            var insertresult = await Insert(_CompanyInfoS);
+                            if (insertresult != null)
+                            {
+                                CompanyInfo comp = (CompanyInfo)insertresult.Value;
+                                _CompanyInfoS.CompanyInfoId = comp.CompanyInfoId;
+                            }
+                        }
+                        else
+                        {
+                            return await Task.Run(() => BadRequest($"Seleccione una Imagen."));
+                        }
+                    }
+                    else
+                    {
+                        if (System.IO.File.Exists(_CompanyInfo.image))
+                        {
+                            System.IO.File.Delete(_CompanyInfo.image);
+                        }
+                        //_CompanyInfoS.image = file.FileName;
+                        _CompanyInfoS.UsuarioCreacion = _CompanyInfo.UsuarioCreacion;
+                        _CompanyInfoS.FechaCreacion = _CompanyInfo.FechaCreacion;
+                        var updateresult = await Update(_CompanyInfo.CompanyInfoId, _CompanyInfoS);
+                    }
 
-                if (_CompanyInfo == null) { _CompanyInfo = new Models.CompanyInfo(); }
-
-                if (_CompanyInfoS.CompanyInfoId == 0)
-                {
-                    _CompanyInfoS.FechaCreacion = DateTime.Now;
-                    _CompanyInfoS.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_CompanyInfoS);
-                }
-                else
-                {
-                    _CompanyInfoS.UsuarioCreacion = _CompanyInfo.UsuarioCreacion;
-                    _CompanyInfoS.FechaCreacion = _CompanyInfo.FechaCreacion;
-                    var updateresult = await Update(_CompanyInfo.CompanyInfoId, _CompanyInfoS);
-                }
-
+                   if (file != null)
+                   {
+                     FileInfo info = new FileInfo(file.FileName);
+                     var filename = _CompanyInfoS.CompanyInfoId + "_" + _CompanyInfoS.Company_Name + info.Extension;
+                     var filePath = _hostingEnvironment.WebRootPath + "/CompanyImages/" + filename;
+                     using (var stream = new FileStream(filePath, FileMode.Create))
+                     {
+                        await file.CopyToAsync(stream);
+                     }
+                     _CompanyInfoS.image = filename;
+                     var updateresult2 = await Update(_CompanyInfo.CompanyInfoId, _CompanyInfoS);
+                   }              
             }
             catch (Exception ex)
             {
@@ -243,7 +398,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_CompanyInfo);
+            return Json(_CompanyInfoS);
         }
 
         // POST: CompanyInfo/Insert
@@ -273,7 +428,7 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-            return Ok(_CompanyInfo);
+            return _CompanyInfo;
             // return new ObjectResult(new DataSourceResult { Data = new[] { _CompanyInfo }, Total = 1 });
         }
 

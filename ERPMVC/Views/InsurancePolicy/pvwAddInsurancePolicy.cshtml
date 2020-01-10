@@ -1,4 +1,4 @@
-﻿@model ERPMVC.DTO.InsurancePolicyDTO
+﻿@model ERPMVC.Models.InsurancePolicy
 @{ Layout = null;
     var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
    {"required","Valor requerido" }
@@ -71,8 +71,8 @@
         <!-- Modal content-->
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" onclick="closeInsurancePolicy();">&times;</button>
                 <h4 class="modal-title">Póliza</h4>
+                <button type="button" class="close" onclick="closeInsurancePolicy();">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="box">
@@ -82,23 +82,19 @@
                     <div class="col-lg-12">
                         <div class="card">
                             <div class="card-body">
-                                <form id="InsuracesDocument" kendo-validator="true" kendo-messages="messages"
+                                <form id="InsuracesDocument" kendo-validator="true" kendo-messages="messages" asp-action="SaveInsurancePolicy" asp-controller="InsurancePolicy"
                                       data-ajax="true"
-                                      data-ajax-method="post"
-                                      data-ajax-begin="SaveInsurancePolicy">
+                                      data-ajax-method="post" enctype="multipart/form-data"
+                                      data-ajax-begin="onBegin" data-ajax-complete="onComplete"
+                                      data-ajax-failure="onFailed" data-ajax-success="onSuccess"
+                                      >
                                     <div class="row">
                                         <div class="col-md-4">
-                                            <label asp-for="InsurancePolicyId" class="control-label">Id Póliza</label>
-                                            <kendo-numerictextbox name="InsurancePolicyId"
-                                                                  format="n"
-                                                                  min="0"
-                                                                  enable="false"
-                                                                  disabled
-                                                                  max="99999999"
-                                                                  step="1"
-                                                                  style="width: 100%;"
-                                                                  value="Model.InsurancePolicyId" />
-                                            <span asp-validation-for="InsurancePolicyId" class="text-danger"></span>
+                                            <div class="form-group">
+                                                <label asp-for="InsurancePolicyId" class="control-label" style="min-width:100%">Id Póliza</label>
+                                                <input readonly  class="form-control" asp-for="InsurancePolicyId" name="InsurancePolicyId" style="min-width:100%" />
+                                                <span asp-validation-for="InsurancePolicyId" class="text-danger"></span>
+                                            </div>
                                         </div>
                                         <div class="col-md-4">
                                             <div class="form-group">
@@ -135,11 +131,13 @@
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <label asp-for="InsurancesId" class="control-label">Aseguradora</label>
+                                                <input type="text" asp-for="InsurancesName"  name="InsurancesName" hidden />
                                                 <kendo-dropdownlist name="InsurancesId" for="@Model.InsurancesId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                     option-label="Seleccione la aseguradora"
                                                                     datatextfield="InsurancesName"
                                                                     datavaluefield="InsurancesId"
                                                                     required
+                                                                    onchange="SetInsuranceName()"
                                                                     class="form-control-line"
                                                                     style="width: 100%;">
                                                     <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
@@ -153,11 +151,13 @@
                                         <div class="col-md-4">
                                             <div class="form-group">
                                                 <label asp-for="CustomerId" class="control-label"> Cliente</label>
+                                                <input type="text" asp-for="CustomerName" name="CustomerName" hidden  />
                                                 <kendo-dropdownlist name="CustomerId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                     option-label="Seleccione el cliente"
                                                                     datatextfield="CustomerName"
                                                                     datavaluefield="CustomerId"
                                                                     class="form-control-line"
+                                                                    onchange="SetCustomerName()"
                                                                     required
                                                                     style="width: 100%;">
                                                     <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
@@ -222,34 +222,31 @@
                                         </div>
                                     </div>
                                     <div class="row">
-                                        <div class="col-md-5">
-                                             <kendo-upload drop-zone="drop-zone1" name="files" on-upload="SaveInsurancePolicy">
-                                                <localization select="Seleccionar Archivos" cancel="Cancelar" drop-files-here="Soltar Archivo aquí" invalid-file-extension="Extensión de Archivo Invalido" retry="Reintentar" />
+                                        <div class="col-md-4">
+                                            <kendo-upload drop-zone="drop-zone1" name="files" on-upload="SaveInsurancePolicy" multiple="false" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif">
+                                                <localization select="Adjuntar Archivo" cancel="Cancelar" drop-files-here="Soltar Archivo aquí" invalid-file-extension="Extensión de Archivo Invalido" retry="Reintentar" />
                                                 <files />
-                                                <async save-url="@Url.Action("SaveInsurancePolicy","InsurancePolicy")" />
-                                                <validation allowed-extensions='@new string[] { ".jpg",".png",".jpeg" }' max-file-size="10485760" />
+                                                <validation  max-file-size="10485760" />
                                             </kendo-upload>
                                         </div>
+                                        @if (Model.AttachementFileName != null)
+                                        {
+                                        <div class="col-md-8">
+                                            <label class="control-label" asp-for="AttachementFileName">Archivo Adjunto</label>
+                                            <input type="text" asp-for="AttachementFileName" class="form-control" readonly />
+                                            <button type="button" onclick="DescargarAdjunto()" class="btn btn-success">Descargar Adjunto</button>
+                                        </div>
+                                           
+                                        }
 
-                                        <script>
-                                                function GetDocumentName(dataName) {
-                                                    var fileName = "@Model.AttachementFileName";
-                                                    return fileName
-                                                }
-                                                function GetDocumentExtension(dataExtension) {
-                                                    var fileName = "@Model.AttachementFileName";
-                                                    var fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1);
-                                                    return fileExtension
-                                                }
-                                        </script>
+                                        <input type="text" asp-for="AttachmentURL" hidden />
                                     </div>
 
-
-                                    @*<div class="row">
+                                    <div class="modal-footer">
                                         <div class="col-md-12">
-                                            <button id="btnInsurancePolicy" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                            <button  id="btnInsurancePolicy" class="form-control btn-miboton" type="submit" > Guardar </button>
                                         </div>
-                                    </div>*@
+                                    </div>
 
                                 </form>
                             </div>
@@ -261,3 +258,78 @@
         </div>
     </div>
 </div>
+<script>
+    function DescargarAdjunto() {       
+         var dataObject = {             
+             'tpath': '@Model.AttachmentURL'
+        };
+
+
+        console.log(dataObject.Path);
+        debugger;
+          var ajax = new XMLHttpRequest();
+         ajax.open("Post", '@Url.Action("DownloadFile", "Download")' , true);
+          ajax.responseType = "blob";
+          ajax.setRequestHeader("Content-Type", "application/json");
+                            ajax.onreadystatechange = function () {
+                                if (this.readyState == 4) {
+                                    //debugger;
+                                   // var blob = new Blob([this.response]);
+                                    var blob = new Blob([this.response], { type: "application/octet-stream" });
+                                    //var fileName = dataItem.DocumentName;
+                                    var fileName = '@Model.AttachementFileName';
+                                    saveAs(blob, fileName);
+                                    //application/octet-stream
+                                }
+        };
+        ajax.send(JSON.stringify(dataObject));
+
+
+        
+
+    }
+
+    function SetInsuranceName() { $('#InsurancesName').val($('#InsurancesId').data("kendoDropDownList").text()) }
+
+    function SetCustomerName() { $('#CustomerName').val($('#CustomerId').data("kendoDropDownList").text()) }
+
+    var onBegin = function () {
+        //alert("Begin");
+        $("#btnInsurancePolicy").attr("disabled", true);
+    };
+
+    var onComplete = function () {
+        var grid = $("#gridInsurancePolicy").getKendoGrid();
+        grid.dataSource.read();
+    };
+
+    
+
+    var onSuccess = function (context) {
+        console.log(context);
+        $.toast({
+            heading: 'Satisfactorio',
+            text: '<br/><br/> Datos guardados correctamente.',
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'success',
+            hideAfter: 30000,
+            stack: 6
+        });
+        $('#myModalInsurancePolicy').modal('hide');
+    };
+
+    var onFailed = function (context) {
+        console.log(context);
+        $.toast({
+            heading: 'Error',
+            text: '<br/><br/> Error al Crear Empleado',
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'error',
+            hideAfter: 30000,
+            stack: 6
+        });
+        $("#btnInsurancePolicy").attr("disabled", false);
+    };
+</script>

@@ -49,6 +49,11 @@
                 totalimpuesto = totalimpuesto + t["TaxAmount"];
             }
 
+            if (t["TaxCode"] == "I.S.C") {
+                TotalGravado = TotalGravado + (t["Total"] - t["TaxAmount"]);
+                totalimpuesto = totalimpuesto + t["TaxAmount"];
+            }
+
             if (t["TaxCode"] == "I.V.A") {
                 TotalGravado18 = TotalGravado18 + (t["Total"] - t["TaxAmount"]);
                 totalimpuesto18 = totalimpuesto18 + t["TaxAmount"];
@@ -220,8 +225,9 @@
         <!-- Modal content-->
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" onclick="closesaleorderline();">&times;</button>
                 <h4 class="modal-title">Detalle Nota Débito</h4>
+                <button type="button" class="close" onclick="closesaleorderline();">&times;</button>
+                
             </div>
             <div class="modal-body">
 
@@ -289,20 +295,40 @@
                                                     <div class="col-md-4">
                                                         <div class="form-group">
                                                             <label asp-for="AccountId" class="control-label" style="width:100%"></label>
-                                                            <kendo-dropdownlist name="AccountId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                                for="AccountId"
-                                                                                option-label="Seleccione Cuenta"
-                                                                                datatextfield="AccountName"
-                                                                                datavaluefield="AccountId"
-                                                                                style="width: 100%;"
-                                                                                required>
+                                                            @if (Model.DebitNoteId > 0)
+                                                            {
+                                                                <kendo-dropdownlist name="AccountId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                                    for="AccountId"
+                                                                                    option-label="Seleccione Cuenta"
+                                                                                    datatextfield="AccountName"
+                                                                                    datavaluefield="AccountId"
+                                                                                    style="width: 100%;color:black;font-weight:600" enable="false"
+                                                                                    data-val-required="La Cuenta es requeridad.">
 
-                                                                <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
-                                                                    <transport>
-                                                                        <read url="@Url.Action("GetAccountingDiary", "Accounting")" />
-                                                                    </transport>
-                                                                </datasource>
-                                                            </kendo-dropdownlist>
+                                                                    <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
+                                                                        <transport>
+                                                                            <read url="@Url.Action("GetAccountingDiary", "Accounting")" />
+                                                                        </transport>
+                                                                    </datasource>
+                                                                </kendo-dropdownlist>
+                                                            }
+                                                            else
+                                                            {
+                                                                <kendo-dropdownlist name="AccountId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                                    for="AccountId"
+                                                                                    option-label="Seleccione Cuenta"
+                                                                                    datatextfield="AccountName"
+                                                                                    datavaluefield="AccountId"
+                                                                                    style="width: 100%;"
+                                                                                    data-val-required="La Cuenta es requeridad.">
+
+                                                                    <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
+                                                                        <transport>
+                                                                            <read url="@Url.Action("GetAccountingDiary", "Accounting")" />
+                                                                        </transport>
+                                                                    </datasource>
+                                                                </kendo-dropdownlist>
+                                                            }
                                                             <span asp-validation-for="AccountId" class="text-danger"></span>
                                                         </div>
                                                     </div>
@@ -352,13 +378,14 @@
 
             <span asp-validation-for="SubProductId" class="text-danger"></span>
         </div>*@
-                                                    </div>
-                                                    <div class="col-md-4">
                                                         <div class="form-group">
                                                             <label asp-for="Description" class="control-label" style="width:100%"></label>
-                                                            <input type="text" id="DescriptionDetail" asp-for="Description" class="form-control" style="min-width:100%" required />
+                                                            <input type="text" id="DescriptionDetail" asp-for="Description" class="form-control" style="min-width:100%" data-val-required="La Descripción es requerida." />
                                                             <span asp-validation-for="Description" class="text-danger"></span>
                                                         </div>
+                                                    </div>
+                                                    <div class="col-md-4">
+                                                        
                                                     </div>
                                                 </div>
                                                 <div class="row">
@@ -386,28 +413,56 @@
                                                     <div class="col-md-4">
                                                         <div class="form-group">
                                                             <label asp-for="Quantity" class="control-label" style="width:100%"></label>
-                                                            <kendo-numerictextbox name="Quantity"
-                                                                                  format="n2"
-                                                                                  min="0"
-                                                                                  step="1"
-                                                                                  required
-                                                                                  onchange="CalcularTotal();"
-                                                                                  style="width:100%"
-                                                                                  value="Model.Quantity"></kendo-numerictextbox>
+                                                            @if (Model.DebitNoteId > 0)
+                                                            {
+                                                                <kendo-numerictextbox name="Quantity"
+                                                                                      format="n2"
+                                                                                      min="0"
+                                                                                      step="1"
+                                                                                      data-val-required="La Cantidad es requerida."
+                                                                                      onchange="CalcularTotal();"
+                                                                                      style="width:100%;color:black;font-weight:500" disabled
+                                                                                      value="Model.Quantity"></kendo-numerictextbox>
+                                                            }
+                                                            else
+                                                            {
+                                                                <kendo-numerictextbox name="Quantity"
+                                                                                      format="n2"
+                                                                                      min="0"
+                                                                                      step="1"
+                                                                                      data-val-required="La Cantidad es requerida."
+                                                                                      onchange="CalcularTotal();"
+                                                                                      style="width:100%"
+                                                                                      value="Model.Quantity"></kendo-numerictextbox>
+                                                            }
                                                             <span asp-validation-for="Quantity" class="text-danger"></span>
                                                         </div>
                                                     </div>
                                                     <div class="col-md-4">
                                                         <div class="form-group">
                                                             <label asp-for="Price" class="control-label" style="width:100%"></label>
-                                                            <kendo-numerictextbox name="Price"
-                                                                                  format="n2"
-                                                                                  min="0"
-                                                                                  step="1"
-                                                                                  required
-                                                                                  onchange="CalcularTotal();"
-                                                                                  style="width:100%"
-                                                                                  value="Model.Price"></kendo-numerictextbox>
+                                                            @if (Model.DebitNoteId > 0)
+                                                            {
+                                                                <kendo-numerictextbox name="Price"
+                                                                                      format="n2"
+                                                                                      min="0"
+                                                                                      step="1"
+                                                                                      data-val-required="El Precio es requerido."
+                                                                                      onchange="CalcularTotal();"
+                                                                                      style="width:100%;color:black;font-weight:500" disabled
+                                                                                      value="Model.Price"></kendo-numerictextbox>
+                                                            }
+                                                            else
+                                                            {
+                                                                <kendo-numerictextbox name="Price"
+                                                                                      format="n2"
+                                                                                      min="0"
+                                                                                      step="1"
+                                                                                      data-val-required="El Precio es requerido."
+                                                                                      onchange="CalcularTotal();"
+                                                                                      style="width:100%"
+                                                                                      value="Model.Price"></kendo-numerictextbox>
+                                                            }
                                                             <span asp-validation-for="Price" class="text-danger"></span>
                                                         </div>
                                                     </div>
@@ -422,10 +477,10 @@
                                                                                   id="AmountLine"
                                                                                   spinners="false"
                                                                                   min="0"
-                                                                                  required
+                                                                                  data-val-required="El Monto es requerido."
                                                                                   disabled
                                                                                   step="1"
-                                                                                  style="width:100%"
+                                                                                  style="width:100%;color:black;font-weight:500"
                                                                                   value="Model.Amount"></kendo-numerictextbox>
                                                             <span asp-validation-for="Amount" class="text-danger"></span>
                                                         </div>
@@ -433,17 +488,33 @@
                                                     <div class="col-md-4">
                                                         <div class="form-group">
                                                             <label asp-for="DiscountPercentage" class="control-label" style="width:100%"></label>
-                                                            <kendo-numerictextbox name="DiscountPercentage"
-                                                                                  format="#.## '%'"
-                                                                                  min="0"
-                                                                                  spinners="false"
-                                                                                  decimals="2"
-                                                                                  max="100"
-                                                                                  maxlength="3"
-                                                                                  onchange="CalcularTotal();"
-                                                                                  style="width:100%"
-                                                                                  value="Model.DiscountPercentage"></kendo-numerictextbox>
-                                                            @*<span asp-validation-for="DiscountPercentage" class="text-danger"></span>*@
+                                                            @if (Model.DebitNoteId > 0)
+                                                            {
+                                                                <kendo-numerictextbox name="DiscountPercentage"
+                                                                                      format="#.## '%'"
+                                                                                      min="0"
+                                                                                      spinners="false"
+                                                                                      decimals="2"
+                                                                                      max="100" data-val-required="El Porcentaje Descuento es requerido."
+                                                                                      maxlength="3" disabled
+                                                                                      onchange="CalcularTotal();"
+                                                                                      style="width:100%;color:black;font-weight:500"
+                                                                                      value="Model.DiscountPercentage"></kendo-numerictextbox>
+                                                            }
+                                                            else
+                                                            {
+                                                                <kendo-numerictextbox name="DiscountPercentage"
+                                                                                      format="#.## '%'"
+                                                                                      min="0"
+                                                                                      spinners="false"
+                                                                                      decimals="2"
+                                                                                      max="100" data-val-required="El Porcentaje Descuento es requerido."
+                                                                                      maxlength="3"
+                                                                                      onchange="CalcularTotal();"
+                                                                                      style="width:100%"
+                                                                                      value="Model.DiscountPercentage"></kendo-numerictextbox>
+                                                            }
+                                                            <span asp-validation-for="DiscountPercentage" class="text-danger"></span>
                                                         </div>
                                                     </div>
                                                     <div class="col-md-4">
@@ -455,12 +526,12 @@
                                                                                   max="999999999"
                                                                                   step="1"
                                                                                   spinners="false"
-                                                                                  required
+                                                                                  data-val-required="El Monto Descuento es requerido."
                                                                                   disabled
                                                                                   readonly
-                                                                                  style="width:100%"
+                                                                                  style="width:100%;color:black;font-weight:500"
                                                                                   value="Model.DiscountAmount"></kendo-numerictextbox>
-                                                            @*<span asp-validation-for="DiscountAmount" class="text-danger"></span>*@
+                                                            <span asp-validation-for="DiscountAmount" class="text-danger"></span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -474,32 +545,52 @@
                                                                                   min="0"
                                                                                   step="1"
                                                                                   spinners="false"
-                                                                                  required
+                                                                                  data-val-required="El Sub Total es requerido."
                                                                                   disabled
                                                                                   readonly
-                                                                                  style="width:100%"
+                                                                                  style="width:100%;color:black;font-weight:500"
                                                                                   value="Model.SubTotal"></kendo-numerictextbox>
-                                                            @*<span asp-validation-for="SubTotal" class="text-danger"></span>*@
+                                                            <span asp-validation-for="SubTotal" class="text-danger"></span>
                                                         </div>
                                                     </div>
 
                                                     <div class="col-md-4">
                                                         <div class="form-group">
                                                             <label asp-for="TaxId" class="control-label" style="width:100%">Impuesto</label>
-                                                            <kendo-dropdownlist name="TaxId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                                for="TaxId"
-                                                                                option-label="Seleccione el Impuestos"
-                                                                                datatextfield="TaxCode"
-                                                                                datavaluefield="TaxId"
-                                                                                data-validate="false"
-                                                                                onchange="GetPercentage();"
-                                                                                style="width: 100%;">
-                                                                <datasource type="DataSourceTagHelperType.WebApi">
-                                                                    <transport>
-                                                                        <read url="@Url.Action("GetTaxes", "Tax")" />
-                                                                    </transport>
-                                                                </datasource>
-                                                            </kendo-dropdownlist>
+                                                            @if (Model.DebitNoteId > 0)
+                                                            {
+                                                                <kendo-dropdownlist name="TaxId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                                    for="TaxId"
+                                                                                    option-label="Seleccione el Impuestos"
+                                                                                    datatextfield="TaxCode"
+                                                                                    datavaluefield="TaxId"
+                                                                                    data-validate="false"
+                                                                                    onchange="GetPercentage();" enable="false"
+                                                                                    style="width: 100%;color:black;font-weight:600">
+                                                                    <datasource type="DataSourceTagHelperType.WebApi">
+                                                                        <transport>
+                                                                            <read url="@Url.Action("GetTaxes", "Tax")" />
+                                                                        </transport>
+                                                                    </datasource>
+                                                                </kendo-dropdownlist>
+                                                            }
+                                                            else
+                                                            {
+                                                                <kendo-dropdownlist name="TaxId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                                    for="TaxId"
+                                                                                    option-label="Seleccione el Impuestos"
+                                                                                    datatextfield="TaxCode"
+                                                                                    datavaluefield="TaxId"
+                                                                                    data-validate="false"
+                                                                                    onchange="GetPercentage();"
+                                                                                    style="width: 100%;">
+                                                                    <datasource type="DataSourceTagHelperType.WebApi">
+                                                                        <transport>
+                                                                            <read url="@Url.Action("GetTaxes", "Tax")" />
+                                                                        </transport>
+                                                                    </datasource>
+                                                                </kendo-dropdownlist>
+                                                            }
                                                         </div>
                                                     </div>
                                                     <div class="col-md-4">
@@ -510,16 +601,16 @@
                                                                                   min="0"
                                                                                   decimals="2"
                                                                                   spinners="false"
-                                                                                  required
+                                                                                  data-val-required="El Porcentaje Impuesto es requerido."
                                                                                   disabled
                                                                                   readonly
                                                                                   max="100"
                                                                                   maxlength="3"
                                                                                   step="0.01"
                                                                                   onchange="CalcularTotal();"
-                                                                                  style="width:100%"
+                                                                                  style="width:100%;color:black;font-weight:500"
                                                                                   value="Model.TaxPercentage"></kendo-numerictextbox>
-                                                            @*<span asp-validation-for="TaxPercentage" class="text-danger"></span>*@
+                                                            <span asp-validation-for="TaxPercentage" class="text-danger"></span>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -533,12 +624,12 @@
                                                                                   min="0"
                                                                                   step="1"
                                                                                   spinners="false"
-                                                                                  required
+                                                                                  data-val-required="El Monto Impuesto es requerido."
                                                                                   disabled
                                                                                   readonly
-                                                                                  style="width:100%"
+                                                                                  style="width:100%;color:black;font-weight:500"
                                                                                   value="Model.TaxAmount"></kendo-numerictextbox>
-                                                            @*<span asp-validation-for="TaxAmount" class="text-danger" style="width:100%"></span>*@
+                                                            <span asp-validation-for="TaxAmount" class="text-danger" style="width:100%"></span>
                                                         </div>
                                                     </div>
                                                     <div class="col-md-4">
@@ -548,14 +639,14 @@
                                                                                   format="n2"
                                                                                   min="0"
                                                                                   spinners="false"
-                                                                                  required
+                                                                                  data-val-required="El Total es requerido."
                                                                                   disabled
                                                                                   readonly
                                                                                   id="TotalLine"
                                                                                   step="1"
-                                                                                  style="width:100%"
+                                                                                  style="width:100%;color:black;font-weight:500"
                                                                                   value="Model.Total"></kendo-numerictextbox>
-                                                            @*<span asp-validation-for="Total" class="text-danger"></span>*@
+                                                            <span asp-validation-for="Total" class="text-danger"></span>
                                                         </div>
                                                     </div>
                                                 </div>

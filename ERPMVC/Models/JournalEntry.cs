@@ -30,6 +30,8 @@ namespace ERPMVC.Models
         public Int64 DocumentId { get; set; }
         [Display(Name = "Beneficiario")]
         public int? PartyId { get; set; }
+        [Display(Name = "Nombre Beneficiario")]
+        public string PartyName { get; set; }
         [Display(Name = "Tipos de Documento")]
         public Int32? VoucherType { get; set; }
         [Display(Name = "Nombre de Tipo de Voucher")]
@@ -67,7 +69,10 @@ namespace ERPMVC.Models
         public Int64? EstadoId { get; set; }
         [Display(Name = "Estado")]
         public string EstadoName { get; set; }
-
+        [Display(Name = "Aprobado Por")]
+        public string ApprovedBy { get; set; }
+        [Display(Name = "Fecha de aprobación")]
+        public DateTime? ApprovedDate { get; set; }
 
 
         public virtual ICollection<JournalEntryLine> JournalEntryLines { get; set; }

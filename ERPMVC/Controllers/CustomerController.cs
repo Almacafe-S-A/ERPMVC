@@ -77,6 +77,7 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/Customer/GetCustomerById/" + CustomerId);
                 string valorrespuesta = "";
+
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
@@ -90,8 +91,12 @@ namespace ERPMVC.Controllers
                         valorrespuesta = "";
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         ProformaInvoice _proforma = JsonConvert.DeserializeObject<ProformaInvoice>(valorrespuesta);
-                        _customers.EndDate = DateTime.Now;
-                        _customers.StartDate = _proforma.OrderDate;
+                        if (_proforma !=null)
+                        {
+                            _customers.EndDate = DateTime.Now;
+                            _customers.StartDate = _proforma.OrderDate;
+                        }
+                        
                         
                     }
                 }
@@ -160,7 +165,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        [Authorize(Policy = "Cliente")]
+        //[Authorize(Policy = "Cliente")]
         // GET: Customer/Details/5
         public async Task<ActionResult> Details(Int64 CustomerId)
         {

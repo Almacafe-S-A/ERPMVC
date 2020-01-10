@@ -173,10 +173,13 @@ namespace ERPMVC.Controllers
                     var value = (insertresult.Result as ObjectResult).Value;
 
                     DebitNote resultado = ((DebitNote)(value));
-                    if (_DebitNote.CAI == "" || _DebitNote.CAI == null)
+                    if (resultado.Fiscal is false)
                     {
-                        string error = await result.Content.ReadAsStringAsync();
-                        return await Task.Run(() => BadRequest($" No existe un CAI activo para el punto de emisión."));
+                        if (resultado.CAI == "" || resultado.CAI == null)
+                        {
+                            string error = await result.Content.ReadAsStringAsync();
+                            return await Task.Run(() => BadRequest($" No existe un CAI activo para el punto de emisión."));
+                        }
                     }
                 }
                 else

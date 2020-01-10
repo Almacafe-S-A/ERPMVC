@@ -42,7 +42,10 @@ namespace ERPMVC.Controllers
             return await Task.Run(()=> View());
         }
 
-
+        public async Task<IActionResult> SFEstadoResultados()
+        {
+            return await Task.Run(() => View());
+        }
 
         public async Task<JsonResult> GetProfitAndLoss([DataSourceRequest]DataSourceRequest request, Fechas _Fecha)
         {

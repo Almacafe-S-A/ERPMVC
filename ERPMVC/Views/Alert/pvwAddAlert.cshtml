@@ -1,4 +1,4 @@
-﻿@model ERPMVC.DTO.AlertDTO
+﻿@model ERPMVC.Models.Alert
 @addTagHelper *, Kendo.Mvc
 
 @{ Layout = null;
@@ -34,14 +34,16 @@
                     <div class="col-lg-12">
                         <div class="card">
                             <div class="card-body">
-                                <form id="frmAlerts" kendo-validator="true" kendo-messages="messages"
-                                      data-ajax="true"
-                                      data-ajax-method="post"
-                                      data-ajax-begin="SaveAlert"
-                                      class="validation-wizard wizard-circle">
+                                <form id="frmAlert" kendo-validator="true" asp-action="SaveAlert" asp-controller="Alert" 
+									  data-ajax="true"
+									  data-ajax-method="post" enctype="multipart/form-data"
+                                      data-ajax-begin="onBegin" data-ajax-complete="onComplete"
+                                     data-ajax-failure="onFailed" data-ajax-success="onSuccess"
+
+									  class="validation-wizard wizard-circle">
                                     <div class="form-body">
-                                        <h3 class="card-title">Alertas</h3>
-                                        <hr>
+                                        
+
                                         <div class="row">
                                             <div class="col-md-3">
                                                 <div class="form-group">
@@ -116,8 +118,10 @@
                                                     <label asp-for="SujetaARos" class=" control-label" style="min-width:100%">Sujeta a Reporte ROS</label>
                                                     @(Html.Kendo().SwitchFor(m => m.SujetaARos)
 
+
                                                                                            .Name("SujetaARos").Messages(m => m.Checked("Si"))//.Readonly(true)
                                                                                                                                              //.Events(ev => ev.Change("onChange"))
+
 
                                                     )
                                                 </div>
@@ -127,7 +131,9 @@
                                                     <label asp-for="FalsoPositivo" class=" control-label" style="min-width:100%">Falso Positivo</label>
                                                     @(Html.Kendo().SwitchFor(m => m.FalsoPositivo)
 
+
                                                                                            .Name("FalsoPositivo").Messages(m => m.Checked("Si"))
+
                                                             //.Events(ev => ev.Change("onChange"))
 
                                                     )
@@ -136,51 +142,51 @@
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label asp-for="Estado" class=" control-label" style="min-width:100%">Estado</label>
-                                                    @(Html.Kendo().DropDownList()
-                                                                                        .Name("Estado")
-                                                                                        .DataTextField("Text")
-                                                                                        .DataValueField("Value")
-                                                                                        //.Events(e => e.Change("change"))
-                                                                                        .BindTo(new List<SelectListItem>() {
-                                                                                                                                                                                                                                                new SelectListItem() {
-                                                                                                                                                                                                                                                    Text = "En Proceso de Analisis",
-                                                                                                                                                                                                                                                    Value = "En Proceso de Analisis"
-                                                                                                                                                                                                                                                },
-                                                                                                                                                                                                                                                new SelectListItem() {
-                                                                                                                                                                                                                                                    Text = "Cerrada",
-                                                                                                                                                                                                                                                    Value = "Cerrada"
-                                                                                                                                                                                                                                                }
-                                                                                        })
-                                                                                        .Value("1")
-                                                                                        .HtmlAttributes(new { style = "width: 100%" })
-                                                    )
-                                                    <span asp-validation-for="Estado" class="text-danger"></span>
+                                                    <input asp-for="Estado" hidden  />
+                                                    <kendo-dropdownlist name="IdEstado"
+                                                                        for="@Model.IdEstado"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar Estado"
+                                                                        datatextfield="NombreEstado"
+                                                                        datavaluefield="IdEstado"
+                                                                         on-change="SetEstado"
+                                                                        on-data-bound="deshabilitar"
+                                                                        data-val-required="Valor requerido" style="min-width:100%">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetporGrupoEstado", "Estados",new { GrupoId = 4 })" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="IdEstado" class="text-danger"></span>
+
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <label asp-for="ActionTakenName" class=" control-label" style="min-width:100%">Acción Tomada</label>
-                                                    @(Html.Kendo().DropDownList()
-                                                                                        .Name("ActionTakenName")
-                                                                                        .DataTextField("Text")
-                                                                                        .DataValueField("Value")
-                                                                                        //.Events(e => e.Change("change"))
-                                                                                        .BindTo(new List<SelectListItem>() {
-                                                                                                                                                                                                                                                new SelectListItem() {
-                                                                                                                                                                                                                                                    Text = "Analizada",
-                                                                                                                                                                                                                                                    Value = "Analizada"
-                                                                                                                                                                                                                                                },
-                                                                                                                                                                                                                                                new SelectListItem() {
-                                                                                                                                                                                                                                                    Text = "Pendiente de Analisis ",
-                                                                                                                                                                                                                                                    Value = "Pendiente de Analisis "
-                                                                                                                                                                                                                                                }
-                                                                                        })
-                                                                                        .Value("1")
-                                                                                        .HtmlAttributes(new { style = "width: 100%" })
-                                                    )
-                                                    <span asp-validation-for="ActionTakenName" class="text-danger"></span>
+                                                    <label asp-for="ActionTakenId" class=" control-label" style="min-width:100%">Accion Tomada</label>
+                                                    <input asp-for="ActionTakenName" hidden  />
+                                                    <kendo-dropdownlist name="ActionTakenId"
+                                                                        for="@Model.ActionTakenId"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar Estado"
+                                                                        datatextfield="NombreEstado"
+                                                                        datavaluefield="IdEstado"
+                                                                        on-change="SetAccion"
+                                                                        
+                                                                        data-val-required="Valor requerido" style="min-width:100%">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetporGrupoEstado", "Estados",new { GrupoId = 5 })" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="ActionTakenId" class="text-danger"></span>
+
                                                 </div>
                                             </div>
+
+
 
 
                                         </div>
@@ -214,125 +220,64 @@
 
 
 <script>
-    var cerrada = false;
+    function SetAccion() { $('#ActionTakenName').val($('#ActionTakenId').data('kendoDropDownList').text()) }
 
-    $(document).ready(function () {
+    function SetEstado() { $('#Estado').val($('#IdEstado').data('kendoDropDownList').text()) }
+
+   function deshabilitar() {
         debugger;
-        var fechaCierre = $('#CloseDate').val();
+        var accion = $('#IdEstado').data("kendoDropDownList").text();
         //var estado = $('#Estado').val();
-        if (fechaCierre != '1/1/0001 12:00:00 AM' && fechaCierre != '01/01/0001 0:00:00' && fechaCierre != null) {
+        if (accion == 'Cerrada' ) {
        // if (estado == 'Cerrado') {
             $('#FalsoPositivo').attr('readonly', true);
             $('#SujetaARos').attr('readonly', true);
             $('#AlertType').attr('readonly', true);
             $('#Observacion').attr('readonly', true);
             $('#ActionTakenName').attr('readonly', true);
-            cerrada = true;
-        }
+            $("#btnGuardar").attr("disabled", true);
+                    }
 
 
-    });
-
-
-    function SaveAlert(e) {
-
-        if (cerrada) {
-            $.toast({
-                heading: 'Error ',
-                text: ' Alerta Cerrada no puede ser modificada',
-                position: 'top-right',
-                loaderBg: '#ff6849',
-                icon: 'error',
-                hideAfter: 3000,
-                stack: 6
-            });
-            return;
-        }
-
-            var notification = $("#notification").data("kendoNotification");
-           // e.preventDefault();
-                 $("#btnGuardar").hide();
-                $("#btnGuardar").prop("disabled", true);
-
-           // var displayedData = $("#gridCountry").data().kendoGrid.dataSource.view();
-
-        var dataObject = {
-            'AlertId': $("#AlertId").val() === "" ? "0" : $("#AlertId").val(),
-            'Code' : $('#Code').val(),
-            'CloseDate' : $('#CloseDate').val(),
-            'Estado' : $('#Estado').val(),
-            'AlertName' : $('#AlertName').val(),
-            'DocumentName' : $('#DocumentName').val(),
-            'Description' : $('#Description').val(),
-            'ActionTakenName' : $('#ActionTakenName').val(),
-            'FalsoPositivo' : $('#FalsoPositivo').is(':checked'),
-            'SujetaARos': $('#FalsoPositivo').is(':checked'),
-            'Type' : $('#Type').val(),
-            'AlertType': $('#AlertType').val(),
-            'Observacion' :  $('#Observacion').val(),
-                           
-            };
-
-           // console.log(JSON.stringify(dataObject));
-            //var form = $("#frmNumeracion");
-           // form.validate();
-
-            var validator = $("#frmAlerts").data("kendoValidator");
-                 var status = $(".status");
-
-                if (validator.validate()) {
-
-                    $.ajax({
-                        url: '@Url.Action("SaveAlert", "Alert")',
-                        method: 'POST',
-                        datatype: "json",
-                        contentType: 'application/json',
-                        async: false,
-                        data: JSON.stringify(dataObject),
-                        success: function (data) {
-
-                            //notification.show({
-                            //    message: "Guardado correctamente!"
-                            //}, "upload-success");
-                            $.toast({
-                                heading: 'Satisfactorio',
-                                text: 'Datos guardados correctamente.',
-                                position: 'top-right',
-                                loaderBg: '#ff6849',
-                                icon: 'success',
-                                hideAfter: 30000,
-                                stack: 6
-                            });
-
-                            RefrescarGrid();
-
-                            $('#ModalAlert').modal('hide');
-
-
-
-
-
-                        },
-                        error: function (XMLHttpRequest, textStatus, errorThrown) {
-
-                            notification.show({
-                                title: "Validación",
-                                message: textStatus + ": " + XMLHttpRequest.responseText
-                            }, "error");
-
-                        }
-                    });
-
-                }
-                else {
-                    notification.show({
-                        title: "Validación",
-                        message: "Datos no validos en el formulario"
-                    }, "error");
-                }
-
-
-            $("#btnGuardar").show();
-            $("#btnGuardar").prop("disabled", false);
     }
+
+    var onBegin = function () {
+        //alert("Begin");
+        $("#btnGuardar").attr("disabled", true);
+    };
+
+    var onComplete = function () {
+        var grid = $("#gridAlert").getKendoGrid();
+        grid.dataSource.read();
+    };
+
+    var onSuccess = function (context) {
+        console.log(context);
+        $.toast({
+            heading: 'Satisfactorio',
+            text: '<br/><br/> Datos guardados correctamente.',
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'success',
+            hideAfter: 30000,
+            stack: 6
+        });
+        $('#ModalAlert').modal('hide');
+    };
+
+    var onFailed = function (context) {
+        console.log(context);
+        $.toast({
+            heading: 'Error',
+            text: '<br/><br/> Error al Crear Empleado',
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'error',
+            hideAfter: 30000,
+            stack: 6
+        });
+    };
+
+
+    
 </script>

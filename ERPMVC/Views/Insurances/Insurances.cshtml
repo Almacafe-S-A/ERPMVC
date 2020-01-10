@@ -36,7 +36,7 @@
             InsurancesId:0,
             editar: 1
         };
-        
+
         $.ajax({
             url: '@Url.Action("pvwAddInsurances", "Insurances")',
             method: 'POST',
@@ -47,7 +47,7 @@
             success: function (result) {
                 $("#InsurancesDocument").html('');
                 $("#InsurancesDocument").html(result);
-                $("#files").data("kendoUpload").disable();
+                //$("#files").data("kendoUpload").disable();
                 $('#myModalInsurancesDocumentUpload').modal('show');
             },
              error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -75,12 +75,12 @@
                     $("#InsurancesDocument").html('');
                     $("#InsurancesDocument").html(result);
                     $("#DocumentTypeId").data("kendoDropDownList").value(dataItem.DocumentTypeId);
-                    var fileName = dataItem.DocumentName;
-                    var fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1);
-                    var files = [
-                        { name: fileName, extension: "." + fileExtension },
-                    ];
-                    $("#files").kendoUpload({
+                    //var fileName = dataItem.DocumentName;
+                    //var fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1);
+                    //var files = [
+                    //    { name: fileName, extension: "." + fileExtension },
+                    //];
+                    @*$("#files").kendoUpload({
                         async: {
                             saveUrl: "@Url.Action("SaveInsurancesDocument","Insurances")",
                             removeUrl: "@Url.Action("", "")",
@@ -95,8 +95,11 @@
                             invalidFileExtension: "Extensión de Archivo Invalido",
                             retry: "Reintentar",
                         },
+                        validation: {
+                            allowedExtensions: [".jpg", ".jpeg", ".png"]
+                        },
                         files: files,
-                    });
+                    });*@
                     $('#InsurancesId').val(dataItem.InsurancesId);
                     $('#InsurancesName').val(dataItem.InsurancesName);
 
@@ -106,7 +109,7 @@
                     alert(textStatus + ": " + XMLHttpRequest.responseText);
                 }
             });
-         }
+    }
 </script>
 
 @(Html.Kendo().Grid<ERPMVC.Models.Insurances>()
@@ -115,14 +118,22 @@
                     {
                         columns.Command(command =>
                         {
-                //command.Custom("Ver detalles").Click("Detalles");
-                //command.Custom("Editar").Click("EditTypeAccount");
-                        command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditInsurances");
-                        }).Title("Acciones").Width(30);
-                        columns.Bound(p => p.InsurancesId).Title("Codigo").Width(50);
-                        columns.Bound(p => p.InsurancesName).Title("Nombre").Width(200);
+                            //command.Custom("Ver detalles").Click("Detalles");
+                            //command.Custom("Editar").Click("EditTypeAccount");
+                            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditInsurances");
+                            command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("DeleteInsurances");
+
+                        }).Title("Acciones").Width(75);
+                        columns.Bound(p => p.InsurancesId).Title("Código").Width(50);
+                        columns.Bound(p => p.InsurancesName).Title("Nombre").Width(225);
+                        columns.Bound(p => p.Path).Title("Archivo").ClientTemplate("#if (Path != null) {#Si#} else {#No#} #").Width(75);
                         columns.Bound(p => p.DocumentTypeId).Hidden();
+                        columns.Bound(p => p.CreatedDate).Title("Fecha Creación").Format("{0:dd/MM/yyyy HH:mm:ss}").Width(100).Hidden();
+                        columns.Bound(p => p.CreatedUser).Title("Usuario Creación").Width(100).Hidden();
+                        columns.Bound(p => p.ModifiedUser).Title("Usuario Modifico").Width(100).Hidden();
+                        columns.Bound(p => p.ModifiedDate).Title("Fecha Modifico").Format("{0:dd/MM/yyyy HH:mm:ss}").Width(100).Hidden();
                     })
+
                         .Filterable(f => f.Operators(o => o.ForString(s => s
                                                 .Clear()
                                                 .Contains("Contiene")
@@ -156,9 +167,9 @@
                                         ))
                     .ToolBar(tools =>
                     {
-            // tools.Create();
-            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddInsurances();" });
+                        // tools.Create();
+                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddInsurances();" });
                         tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
                         tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
 
@@ -167,13 +178,16 @@
                     })
                     .Editable(e => e.Mode(GridEditMode.PopUp))
                     .Sortable()
-                    .Pageable()
+                    .Pageable(s => s
+                        .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+                        .Empty("No hay datos."))
+                    )
                     .Filterable()
                     .Scrollable()
-                    .Pdf(pdf => pdf.FileName("InsurancesReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    .Pdf(pdf => pdf.FileName("DocumentosAseguradorasReporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                     + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
                     .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                        .Excel(excel => excel.FileName("InsurancesReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        .Excel(excel => excel.FileName("DocumentosAseguradorasReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                     + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
                     .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
                     .DataSource(dataSource =>
@@ -187,6 +201,7 @@
                             model.Field(p => p.InsurancesName).Editable(false);
 
                         })
+                        .Sort(s => s.Add(m => m.CreatedDate).Descending())
                         .Events(events => events.Error("error_handler"))
                         .Read(read => read.Action("Get", "Insurances"))
                         .Create(create => create.Action("Insert", "Insurances"))
@@ -196,12 +211,69 @@
                     )
                         .Events(e =>
                         {
-                //  e.Save("onsave");
+                            //  e.Save("onsave");
 
-            })
+                        })
 )
 
 <div id="InsurancesDocument">
     @await Html.PartialAsync("pvwAddInsurances", new ERPMVC.Models.Insurances { InsurancesId = 0, DocumentTypeId = 0 })
 </div>
 
+<div id="CustomerConditionView">
+</div>
+
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridInsurancesDocument").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridInsurancesDocument").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
+    //setRowButtonTooltip(".k-grid-GenerarFactura", "Generar una factura fiscal!");
+    //setRowButtonTooltip(".k-grid-Imprimir", "Imprimir");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
+
+    function DeleteInsurances(e) {
+        if (confirm('¿Esta seguro que desea eliminar este registro?')) {
+            e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                InsurancesId: dataItem.InsurancesId,
+                DocumentTypeId: dataItem.DocumentTypeId,
+                CreatedDate: dataItem.CreatedDate,
+                CreatedUser: dataItem.CreatedUser,
+                ModifiedUser: dataItem.ModifiedUser,
+                ModifiedDate: dataItem.ModifiedDate
+            };
+            debugger;
+            $.ajax({
+                url: '@Url.Action("DeleteInsuranceDocument", "Insurances")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    debugger;
+                    RefrescarGrid();
+                
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+        }
+    }
+</script>
