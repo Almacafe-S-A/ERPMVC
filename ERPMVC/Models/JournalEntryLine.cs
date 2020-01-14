@@ -68,6 +68,14 @@ namespace ERPMVC.Models
         [Required]
         [Display(Name = "Fecha de Modificación")]
         public DateTime ModifiedDate { get; set; }
+        [Display(Name = "Id de Socio de negocios")]
+        public int? PartyId { get; set; }
+        [Display(Name = "Nombre de Socio de negocios")]
+        public string PartyName { get; set; }
+        [Display(Name = "Tipo de Socio de negocios")]
+        public int PartyTypeId { get; set; }
 
+        [Display(Name = "Tipo de Socio de negocios")]
+        public string PartyTypeName { get; set; }
     }
 }
