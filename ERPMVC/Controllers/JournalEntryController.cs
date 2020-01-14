@@ -409,11 +409,28 @@ namespace ERPMVC.Controllers
                 {
                     _JournalEntry.CreatedDate = DateTime.Now;
                     _JournalEntry.CreatedUser = HttpContext.Session.GetString("user");
-
+                    _JournalEntryP.PartyTypeName = "";
+                    var beneficiarios = 0;
                     foreach (var item in _JournalEntryP.JournalEntryLines)
                     {
                         item.CreatedUser = HttpContext.Session.GetString("user");
                         item.ModifiedUser = HttpContext.Session.GetString("user");
+                        if(item.PartyName != null)
+                        {
+                            _JournalEntryP.PartyTypeId = item.PartyTypeId;
+                            _JournalEntryP.PartyTypeName = item.PartyTypeName;
+                            _JournalEntryP.PartyId = item.PartyId;
+                            _JournalEntryP.PartyName = item.PartyName;
+                            
+                            beneficiarios++; 
+                        }
+                    }
+                    if (beneficiarios > 1)
+                    {
+                        _JournalEntryP.PartyName = "Varios";
+                        _JournalEntryP.PartyId = 0;
+                        _JournalEntryP.PartyTypeName = "";
+                        _JournalEntryP.PartyTypeId = 0;
                     }
 
                     var insertresult = await Insert(_JournalEntryP);
