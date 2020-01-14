@@ -2,7 +2,70 @@
 @{
 	ViewData["Title"] = "Activos Fijos";
 }
+<script>
+    function OnSave() {
+        console.log("Salvando");
+    }
 
+    function AddFixedAsset() {
+        var validator = $("#frmFixedAsset").data("kendoValidator");
+        validator.hideMessages();
+        $("#btnFixedAsset").show();
+        $("#btnFixedAsset").prop("disabled", false);
+		$('#ModalFixedAsset').find(':input').not(':submit').val('');
+		$('#FixedAssetGroupId').data('kendoDropDownList').value(-1);
+		$('#BranchId').data('kendoDropDownList').value(-1);
+		$('#WarehouseId').data('kendoDropDownList').value(-1);
+		$('#CenterCostId').data('kendoDropDownList').value(-1);
+		$('#IdEstado').data('kendoDropDownList').value(-1);
+		var grid = $("#gridDepreciation").data("kendoGrid");
+		var newDataSource = new kendo.data.DataSource({
+			data: []
+		});
+		grid.setDataSource(newDataSource);
+		$('#ModalFixedAsset').modal('show');
+        $('#FixedAssetId').val('0');
+
+	}
+
+
+
+    function EditFixedAsset(e) {
+        debugger;
+		e.preventDefault();
+		var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+		var dataObject = {
+			FixedAssetId: dataItem.FixedAssetId,
+			editar: 0
+		};
+
+		$.ajax({
+			url: '@Url.Action("pvwFixedAsset", "FixedAsset")',
+			method: 'POST',
+			datatype: "json",
+			contentType: 'application/json',
+			async: false,
+			data: JSON.stringify(dataObject),
+			success: function (result) {
+				$("#numFixedAsset").html('');
+				$("#numFixedAsset").html(result);
+				$("#ModalFixedAsset").modal('show');
+			},
+			error: function (xhr, status, error) {
+				var errorMessage = xhr.status + ': ' + xhr.statusText
+				alert('Error - ' + errorMessage);
+			}
+        });
+        RefrescarGrid();
+        
+	}
+
+	function RefrescarGrid() {
+		var grid = $("#gridFixedAsset").getKendoGrid();
+		grid.dataSource.read();
+    }
+
+</script>
 <h3 class="text-themecolor">Activos Fijos</h3>
 
 @* Telerik *@
@@ -68,11 +131,11 @@
                         .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")))
                         .Filterable()
                         .Scrollable()
-                        .Pdf(pdf => pdf.FileName("ActivosFijosReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_" +
+                        .Pdf(pdf => pdf.FileName("Activos-Fijos-Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_" +
                             DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" +
                             DateTime.Now.Second + ".pdf")
                             .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                            .Excel(excel => excel.FileName("ActivosFijosReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                            .Excel(excel => excel.FileName("Activos-Fijos-Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                             + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
                             .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
                         .DataSource(ds => ds
@@ -97,62 +160,7 @@
                     .Resizable(conf => conf.Columns(true))
 )
 
-<script>
-	function AddFixedAsset() {
-		$('#ModalFixedAsset').find(':input').not(':submit').val('');
-		$('#FixedAssetGroupId').data('kendoDropDownList').value(-1);
-		$('#BranchId').data('kendoDropDownList').value(-1);
-		//$('#WarehouseId').data('kendoDropDownList').value(-1);
-		$('#CenterCostId').data('kendoDropDownList').value(-1);
-		$('#IdEstado').data('kendoDropDownList').value(-1);
-		var grid = $("#gridDepreciation").data("kendoGrid");
-		var newDataSource = new kendo.data.DataSource({
-			data: []
-		});
-		grid.setDataSource(newDataSource);
-		$('#ModalFixedAsset').modal('show');
-		$('#FixedAssetId').val('0');
-	}
 
-	function OnSave() {
-		console.log("Salvando");
-	}
-
-	function EditFixedAsset(e) {
-		e.preventDefault();
-		var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-		var dataObject = {
-			FixedAssetId: dataItem.FixedAssetId,
-			editar: 0
-		};
-
-		$.ajax({
-			url: '@Url.Action("pvwFixedAsset", "FixedAsset")',
-			method: 'POST',
-			datatype: "json",
-			contentType: 'application/json',
-			async: false,
-			data: JSON.stringify(dataObject),
-			success: function (result) {
-				$("#numFixedAsset").html('');
-				$("#numFixedAsset").html(result);
-				$("#ModalFixedAsset").modal('show');
-			},
-			error: function (xhr, status, error) {
-				var errorMessage = xhr.status + ': ' + xhr.statusText
-				alert('Error - ' + errorMessage);
-			}
-		});
-	}
-
-	function RefrescarGrid() {
-		var grid = $("#gridFixedAsset").getKendoGrid();
-		grid.dataSource.read();		
-    }
-
-
-    
-</script>
 
 <script>
 

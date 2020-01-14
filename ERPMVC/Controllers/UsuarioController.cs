@@ -8,6 +8,7 @@ using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -240,6 +241,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[controller]/[action]")]
+        [AllowAnonymous]
         public async Task<ActionResult<ApplicationUser>> ChangePassword([FromBody]CambiarPassDTO _cambio)
         {
             try
@@ -258,7 +260,10 @@ namespace ERPMVC.Controllers
                         result = await _client.PostAsJsonAsync(baseadress + "api/Usuario/ChangePassword", _cambio);
                         if (result.IsSuccessStatusCode)
                         {
-                            return new ObjectResult(new DataSourceResult { Data = "", Total = 1 });
+                            //return new ObjectResult(new DataSourceResult { Data = "", Total = 1 });
+                            await HttpContext.SignOutAsync();
+                            HttpContext.Session.Clear();
+                            return await Task.Run(() => RedirectToAction(nameof(HomeController.Index), "Home"));
                         }
                         else
                         {   
@@ -281,6 +286,7 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return await Task.Run(() => BadRequest($"Ocurrio un error no manejado en el sistema "));
             }
+            
         }
 
         [HttpPut("PutUsuario")]
@@ -310,7 +316,7 @@ namespace ERPMVC.Controllers
                     string error = await result.Content.ReadAsStringAsync();
                     return this.Json(new DataSourceResult
                     {
-                        Errors = $"Ocurrio un error:{error} El password debe tener mayusculas y minusculas!"
+                        Errors = $"Error: El password debe cumplir con los requisitos minimos (Longitud 8, Mayúsculas, minúsculas, 1 carater especial y caracteres númericos)!"
                     });
                     // return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
                     //return await Task.Run(() => BadRequest($"Ocurrio un error{result.Content.ReadAsStringAsync()}"));
@@ -324,7 +330,7 @@ namespace ERPMVC.Controllers
                 return await Task.Run(() => BadRequest($"Ocurrio un error{ex.Message}"));
             }
 
-
+            
             _usuario.PasswordHash = "**********************";
             return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
 
