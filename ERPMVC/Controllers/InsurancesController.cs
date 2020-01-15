@@ -164,57 +164,60 @@ namespace ERPMVC.Controllers
                 var result1 = await _client.GetAsync(baseadress + "api/Insurances/GetInsurancesByInsurancesName/" + _InsurancesP.InsurancesName);
                 string valorrespuesta1 = "";
                 IFormFile file = files.FirstOrDefault();
+                _InsurancesP.ModifiedDate = DateTime.Now;
+                _InsurancesP.ModifiedUser = HttpContext.Session.GetString("user");
+                if (result1.IsSuccessStatusCode)
+                {
+                    valorrespuesta1 = await (result1.Content.ReadAsStringAsync());
+                    _Insurances = JsonConvert.DeserializeObject<Insurances>(valorrespuesta1);
+                }
+                        
+                if (_Insurances == null) { _Insurances = new Models.Insurances(); }
+
+                if (_Insurances.InsurancesId > 0)
+                {
+                    if (_Insurances.InsurancesId != _InsurancesP.InsurancesId)
+                        return await Task.Run(() => BadRequest($"Ya existe una Aseguradora registrada con ese nombre."));
+                }
+                        
+                if (_InsurancesP.InsurancesId == 0)
+                {
+                    _InsurancesP.CreatedDate = DateTime.Now;
+                    _InsurancesP.DocumentName = "";
+                    _InsurancesP.CreatedUser = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_InsurancesP);
+                    var value = (insertresult.Result as ObjectResult).Value;
+                    _InsurancesP = ((InsurancesDTO)(value));
+                }
+                else
+                {
+                    var result = await _client.GetAsync(baseadress + "api/Insurances/GetInsurancesById/" + _InsurancesP.InsurancesId);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _Insurances = JsonConvert.DeserializeObject<Insurances>(valorrespuesta);
+                    }
+                    if (file != null)
+                    {
+                        if (System.IO.File.Exists(_Insurances.Path))
+                        {
+                            System.IO.File.Delete(_Insurances.Path);
+                        }
+                    }
+                    _InsurancesP.DocumentName = "";
+                    _InsurancesP.Path = _Insurances.Path;
+                    _InsurancesP.CreatedDate = _Insurances.CreatedDate;
+                    _InsurancesP.CreatedUser = _Insurances.CreatedUser;
+                    var updateresult = await Update(_InsurancesP.InsurancesId, _InsurancesP);
+                }
+                
                 if (file != null)
                 {
                     FileInfo info = new FileInfo(file.FileName);
                     if (info.Extension.Equals(".jpeg") || info.Extension.Equals(".jpg")
                         || info.Extension.Equals(".png") || info.Extension.Equals(".gif"))
                     {
-
-                        _InsurancesP.ModifiedDate = DateTime.Now;
-                        _InsurancesP.ModifiedUser = HttpContext.Session.GetString("user");
-                        if (result1.IsSuccessStatusCode)
-                        {
-                            valorrespuesta1 = await (result1.Content.ReadAsStringAsync());
-                            _Insurances = JsonConvert.DeserializeObject<Insurances>(valorrespuesta1);
-                        }
-                        
-                        if (_Insurances == null) { _Insurances = new Models.Insurances(); }
-
-                        if (_Insurances.InsurancesId > 0)
-                        {
-                            if (_Insurances.InsurancesId != _InsurancesP.InsurancesId)
-                                return await Task.Run(() => BadRequest($"Ya existe una Aseguradora registrada con ese nombre."));
-                        }
-                        
-                        if (_InsurancesP.InsurancesId == 0)
-                        {
-                            _InsurancesP.CreatedDate = DateTime.Now;
-                            _InsurancesP.DocumentName = file.FileName;
-                            _InsurancesP.CreatedUser = HttpContext.Session.GetString("user");
-                            var insertresult = await Insert(_InsurancesP);
-                            var value = (insertresult.Result as ObjectResult).Value;
-                            _InsurancesP = ((InsurancesDTO)(value));
-                        }
-                        else
-                        {
-                            var result = await _client.GetAsync(baseadress + "api/Insurances/GetInsurancesById/" + _InsurancesP.InsurancesId);
-                            string valorrespuesta = "";
-                            if (result.IsSuccessStatusCode)
-                            {
-                                valorrespuesta = await (result.Content.ReadAsStringAsync());
-                                _Insurances = JsonConvert.DeserializeObject<Insurances>(valorrespuesta);
-                            }
-                            if (System.IO.File.Exists(_Insurances.Path))
-                            {
-                                System.IO.File.Delete(_Insurances.Path);
-                            }
-                            _InsurancesP.DocumentName = file.FileName;
-                            _InsurancesP.CreatedDate = _Insurances.CreatedDate;
-                            _InsurancesP.CreatedUser = _Insurances.CreatedUser;
-                            var updateresult = await Update(_InsurancesP.InsurancesId, _InsurancesP);
-                        }
-
                         var filePath = _hostingEnvironment.WebRootPath + "/Insurances/" + _InsurancesP.InsurancesId + "_"
                             + file.FileName.Replace(info.Extension, "") + "_" + _InsurancesP.DocumentTypeId + "_" + _InsurancesP.DocumentTypeName
                             + info.Extension;
@@ -223,7 +226,7 @@ namespace ERPMVC.Controllers
                         {
                             await file.CopyToAsync(stream);
                         }
-
+                        _InsurancesP.DocumentName = file.FileName;
                         _InsurancesP.Path = filePath;
                         var updateresult2 = await Update(_Insurances.InsurancesId, _InsurancesP);
                     }
@@ -231,10 +234,6 @@ namespace ERPMVC.Controllers
                     {
                         return await Task.Run(() => BadRequest($"Extensión de Imagen no permitida."));
                     }
-                }
-                else
-                {
-                    return await Task.Run(() => BadRequest($"Seleccione una Imagen."));
                 }
             }
             catch (Exception ex)
