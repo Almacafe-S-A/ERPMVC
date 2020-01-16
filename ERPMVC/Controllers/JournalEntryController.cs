@@ -411,6 +411,9 @@ namespace ERPMVC.Controllers
                     _JournalEntry.CreatedUser = HttpContext.Session.GetString("user");
                     _JournalEntryP.PartyTypeName = "";
                     var beneficiarios = 0;
+                    var NombreBeneficiario = "";
+                    var CountParty = 0;
+                    var CountPartyDistintos = 0;
                     foreach (var item in _JournalEntryP.JournalEntryLines)
                     {
                         item.CreatedUser = HttpContext.Session.GetString("user");
@@ -422,10 +425,30 @@ namespace ERPMVC.Controllers
                             _JournalEntryP.PartyId = item.PartyId;
                             _JournalEntryP.PartyName = item.PartyName;
                             
-                            beneficiarios++; 
+                            beneficiarios++;
+
+                            NombreBeneficiario = item.PartyName;
+                            foreach (var item1 in _JournalEntryP.JournalEntryLines)
+                            {
+                                if (item1.PartyName != null)
+                                {
+                                    if (NombreBeneficiario == item1.PartyName)
+                                    {
+                                        CountParty++;
+                                    }
+                                    else
+                                    {
+                                        CountPartyDistintos++;
+                                    }
+                                }
+                            }
                         }
                     }
-                    if (beneficiarios > 1)
+                    if (CountParty > 1 && CountPartyDistintos == 0)
+                    {
+                        _JournalEntryP.PartyName = NombreBeneficiario;
+                    }
+                    else if (beneficiarios > 1)
                     {
                         _JournalEntryP.PartyName = "Varios";
                         _JournalEntryP.PartyId = 0;
