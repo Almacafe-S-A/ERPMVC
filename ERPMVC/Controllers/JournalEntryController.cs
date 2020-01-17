@@ -10,6 +10,7 @@ using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -25,22 +26,26 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public JournalEntryController(ILogger<JournalEntryController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public JournalEntryController(ILogger<JournalEntryController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
       
         // GET: Purch
         public ActionResult Index()
         {
-           
+            ViewData["permisoAprobar"] =_principal.HasClaim("Contabilidad.Movimientos.Asiento Contable.Aprobar", "true");
+
 
             return View();
         }
 
         public ActionResult IndexAjustes()
-        {         
+        {
+            ViewData["permisoAprobarAjuste"] = _principal.HasClaim("Contabilidad.Movimientos.Ajustes Contables.Aprobar", "true");
             return View();
         }
         public ActionResult JournalEntryLine()
