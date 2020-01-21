@@ -57,7 +57,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    _CreditNote.NumeroDEIString = $"{_CreditNote.Sucursal}-{_CreditNote.Caja}-05-{_CreditNote.NúmeroDEI.ToString().PadLeft(8, '0')} ";
+                    _CreditNote.NumeroDEIString = $"{_CreditNote.Sucursal}-{_CreditNote.Caja}-{_CreditNote.TipoDocumento}-{_CreditNote.NúmeroDEI.ToString().PadLeft(8, '0')} ";
                 }
             }
             catch (Exception ex)
@@ -157,6 +157,8 @@ namespace ERPMVC.Controllers
 
                 if (_listCreditNote.CreditNoteId == 0)
                 {
+                    _CreditNote.TipoDocumento = "05";
+                    _CreditNote.DeliveryDate = DateTime.Now;
                     _CreditNote.FechaCreacion = DateTime.Now;
                     _CreditNote.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_CreditNote);
