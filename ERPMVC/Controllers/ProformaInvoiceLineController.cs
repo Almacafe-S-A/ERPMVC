@@ -347,25 +347,34 @@ namespace ERPMVC.Controllers
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<ProformaInvoiceLine>> Delete([FromBody]ProformaInvoiceLine _ProformaInvoiceLine)
         {
+            List<ProformaInvoiceLine> _ProformaInvoiceLIST = new List<ProformaInvoiceLine>();
             try
             {
+                _ProformaInvoiceLIST = JsonConvert.DeserializeObject<List<ProformaInvoiceLine>>(HttpContext.Session.GetString("listadoproductosproformainvoice"));
 
-                List<ProformaInvoiceLine> _salesorderLIST =
-              JsonConvert.DeserializeObject<List<ProformaInvoiceLine>>(HttpContext.Session.GetString("listadoproductosproformainvoice"));
-
-                if (_salesorderLIST != null)
+                if (_ProformaInvoiceLIST != null)
                 {
-                    _salesorderLIST = _salesorderLIST
-                            .Where(q => q.ProformaLineId == _ProformaInvoiceLine.ProformaLineId)
-                           .Where(q => q.Quantity != _ProformaInvoiceLine.Quantity)
-                           .Where(q => q.Amount != _ProformaInvoiceLine.Amount)
-                           .Where(q => q.Total != _ProformaInvoiceLine.Total)
-                           .Where(q => q.Price != _ProformaInvoiceLine.Price)
-                           .Where(q => q.SubProductId != _ProformaInvoiceLine.SubProductId)
-                          .ToList();
-
-                    HttpContext.Session.SetString("listadoproductosproformainvoice", JsonConvert.SerializeObject(_salesorderLIST));
+                    var item = _ProformaInvoiceLIST.Find(c => c.ProformaLineId == _ProformaInvoiceLine.ProformaLineId);
+                    _ProformaInvoiceLIST.Remove(item);
+                    HttpContext.Session.SetString("listadoproductosproformainvoice", JsonConvert.SerializeObject(_ProformaInvoiceLIST));
                 }
+
+                //  List<ProformaInvoiceLine> _salesorderLIST =
+                //JsonConvert.DeserializeObject<List<ProformaInvoiceLine>>(HttpContext.Session.GetString("listadoproductosproformainvoice"));
+
+                //  if (_salesorderLIST != null)
+                //  {
+                //      _salesorderLIST = _salesorderLIST
+                //              .Where(q => q.ProformaLineId == _ProformaInvoiceLine.ProformaLineId)
+                //             .Where(q => q.Quantity != _ProformaInvoiceLine.Quantity)
+                //             .Where(q => q.Amount != _ProformaInvoiceLine.Amount)
+                //             .Where(q => q.Total != _ProformaInvoiceLine.Total)
+                //             .Where(q => q.Price != _ProformaInvoiceLine.Price)
+                //             .Where(q => q.SubProductId != _ProformaInvoiceLine.SubProductId)
+                //            .ToList();
+
+                //      HttpContext.Session.SetString("listadoproductosproformainvoice", JsonConvert.SerializeObject(_salesorderLIST));
+                //  }
 
                 //string baseadress = config.Value.urlbase;
                 //HttpClient _client = new HttpClient();
@@ -388,7 +397,7 @@ namespace ERPMVC.Controllers
 
 
             return await Task.Run(()=> Ok(_ProformaInvoiceLine));
-           // return new ObjectResult(new DataSourceResult { Data = new[] { _ProformaInvoiceLine }, Total = 1 });
+           //return new ObjectResult(new DataSourceResult { Data = new[] { _ProformaInvoiceLine }, Total = 1 });
         }
 
 
