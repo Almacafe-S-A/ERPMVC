@@ -19,6 +19,8 @@ namespace ERPMVC.Models
 
         [Display(Name = "Saldo Contable")]
         public double AccountBalance { get; set; }
+        [Display(Name = "Acepta Saldo Negativo")]
+        public bool? AceptaNegativo { get; set; }
 
 
         [MaxLength(5000)]
@@ -28,7 +30,7 @@ namespace ERPMVC.Models
         public bool? IsCash { get; set; }
         [Display(Name = "Tipo de Cuenta")]
         public Int64? TypeAccountId { get; set; }
-        [Display(Name = "Bloqueo para Diarios:")]
+        [Display(Name = "Bloqueo para Diarios")]
         public bool? BlockedInJournal { get; set; }
         [Required]
         [StringLength(50)]
