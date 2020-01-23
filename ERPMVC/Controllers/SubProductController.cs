@@ -371,7 +371,7 @@ namespace ERPMVC.Controllers
                         return await Task.Run(() => BadRequest($"Ya existe un SubServicio con el mismo Nombre."));
                 }
 
-                if (_SubProduct.SubproductId == 0)
+                if (_SubProductS.SubproductId == 0)
                 {
                         _SubProductS.FechaCreacion = DateTime.Now;
                         _SubProductS.UsuarioCreacion = HttpContext.Session.GetString("user");
@@ -380,7 +380,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    var result = await _client.GetAsync(baseadress + "api/SubProduct/GetSubProductById/" + _SubProduct.SubproductId);
+                    var result = await _client.GetAsync(baseadress + "api/SubProduct/GetSubProductById/" + _SubProductS.SubproductId);
                     string valorrespuesta = "";
                     if (result1.IsSuccessStatusCode)
                     {
