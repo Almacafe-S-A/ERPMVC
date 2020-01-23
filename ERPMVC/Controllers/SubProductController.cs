@@ -345,8 +345,6 @@ namespace ERPMVC.Controllers
         //[HttpPost("[controller]/[action]")]
         public async Task<ActionResult<SubProduct>> SaveSubProduct([FromBody]SubProductDTO _SubProductS)
         {
-
-
             //   SubProduct _SubProductS = new SubProduct(); //JsonConvert.DeserializeObject<SubProductDTO>(dto.ToString());
             SubProduct _SubProduct = _SubProductS;
             try
@@ -356,34 +354,43 @@ namespace ERPMVC.Controllers
                     string baseadress = config.Value.urlbase;
                     HttpClient _client = new HttpClient();
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                var result1 = await _client.GetAsync(baseadress + "api/SubProduct/GetSubProductByProductName/" + _SubProduct.ProductName);
+                string valorrespuesta1 = "";
+                if (result1.IsSuccessStatusCode)
+                {
+                        valorrespuesta1 = await (result1.Content.ReadAsStringAsync());
+                        _SubProduct = JsonConvert.DeserializeObject<SubProductDTO>(valorrespuesta1);
+                }
+
+                if (_SubProduct == null) { _SubProduct = new Models.SubProduct(); }
+
+                if (_SubProduct.SubproductId > 0)
+                {
+                    if (_SubProduct.SubproductId != _SubProductS.SubproductId)
+                        return await Task.Run(() => BadRequest($"Ya existe un SubServicio con el mismo Nombre."));
+                }
+
                 if (_SubProduct.SubproductId == 0)
                 {
-                    var result = await _client.GetAsync(baseadress + "api/SubProduct/GetSubProductById/" + _SubProduct.SubproductId);
-                    string valorrespuesta = "";
-                    _SubProduct.FechaModificacion = DateTime.Now;
-                    _SubProduct.UsuarioModificacion = HttpContext.Session.GetString("user");
-                    if (result.IsSuccessStatusCode)
-                    {
-
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _SubProduct = JsonConvert.DeserializeObject<SubProductDTO>(valorrespuesta);
-                    }
-
-                    if (_SubProduct == null) { _SubProduct = new Models.SubProduct(); }
-                }
-                    if (_SubProduct.SubproductId == 0)
-                    {
                         _SubProductS.FechaCreacion = DateTime.Now;
                         _SubProductS.UsuarioCreacion = HttpContext.Session.GetString("user");
                         var insertresult = await Insert(_SubProductS);
 
-                    }
-                    else
+                }
+                else
+                {
+                    var result = await _client.GetAsync(baseadress + "api/SubProduct/GetSubProductById/" + _SubProduct.SubproductId);
+                    string valorrespuesta = "";
+                    if (result1.IsSuccessStatusCode)
                     {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _SubProduct = JsonConvert.DeserializeObject<SubProductDTO>(valorrespuesta);
+                    }
                     _SubProductS.UsuarioCreacion = _SubProduct.UsuarioCreacion;
                     _SubProductS.FechaCreacion = _SubProduct.FechaCreacion;
                     var updateresult = await Update(_SubProduct.SubproductId, _SubProductS);
-                    }
+                }
 
                 }
                 catch (Exception ex)
