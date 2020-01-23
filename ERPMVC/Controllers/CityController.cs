@@ -87,7 +87,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _City = JsonConvert.DeserializeObject<List<City>>(valorrespuesta);
-                    _City = _City.Where(q => q.StateId == StateId).ToList();
+                    _City = _City.Where(q => q.StateId == StateId).OrderBy(q => q.Name).ToList();
                 }
 
 
