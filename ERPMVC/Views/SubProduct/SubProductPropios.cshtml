@@ -78,6 +78,38 @@
                 }
             });
          }
+    function DeleteSubProduct(e) {
+        if (confirm('¿Esta seguro que desea eliminar este registro?')) {
+            e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                SubproductId: dataItem.SubproductId,
+                TituloVentana: 'SubServicios',
+                ProductTypeId: '1'
+            };
+
+            $.ajax({
+                url: '@Url.Action("Delete", "SubProduct")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    RefrescarGrid();
+     
+                    
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+        }
+    }
+    function RefrescarGrid() {
+        var grid = $("#gridSubProduct").getKendoGrid();
+        grid.dataSource.read();
+    }
 
 
 </script>
@@ -97,7 +129,8 @@
                                 //command.Custom("Editar").Click("EditSubProduct");
                                 //command.Destroy().Text("Eliminar");
                                 command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditSubProduct");
-                                command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                                command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash").Click("DeleteSubProduct");
+                                //command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
                             }).Width(150).Title("Acciones");
                             columns.Bound(p => p.SubproductId).Width(70);
                             columns.Bound(p => p.ProductName).Width(160);
@@ -149,8 +182,8 @@
                         })
                         .Events(events => events.Error("error_handler"))
                         .Read(read => read.Action("GetSubProductoByTipoGrid", "SubProduct").Data("ProductType"))
-                       //.Create(create => create.Action("Insert", "Product").Type(HttpVerbs.Post))
-                       //.Update(update => update.Action("Update", "Product").Type(HttpVerbs.Post))
+                       .Create(create => create.Action("Insert", "Product").Type(HttpVerbs.Post))
+                       .Update(update => update.Action("Update", "Product").Type(HttpVerbs.Post))
                        .Destroy(destroy => destroy.Action("Delete", "SubProduct").Type(HttpVerbs.Post))
                         )
                         .Events(e =>
