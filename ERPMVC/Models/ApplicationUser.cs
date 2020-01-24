@@ -19,6 +19,10 @@ namespace ERPMVC.Models
         [DataType("Password")]
         //[UIHint("Password")]
         public override string PasswordHash { get; set; }
+        [UIHint("Phone")]
+        public override string PhoneNumber { get; set; }
+
+        
 
         public DateTime LastPasswordChangedDate { get; set; }
         public DateTime FechaCreacion { get; set; }
