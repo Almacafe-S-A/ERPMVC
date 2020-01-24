@@ -120,7 +120,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _State = JsonConvert.DeserializeObject<List<State>>(valorrespuesta);
-                    _State= _State.Where(q => q.CountryId == CountryId).ToList();
+                    _State= _State.Where(q => q.CountryId == CountryId).OrderBy(q => q.Name).ToList();
                 }
 
 

@@ -52,6 +52,11 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Cierre = JsonConvert.DeserializeObject<BitacoraCierreContable>(valorrespuesta);
+                    if (!Utils.Cerrado &&_Cierre.FechaCierre >= DateTime.Now.AddDays(-1))
+                    {
+                        Utils.Cerrado=true;
+
+                    }
                 }
                 else {
                     return await Task.Run(() => BadRequest($"No se puede aplicar este cierre."));

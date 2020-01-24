@@ -178,15 +178,21 @@ namespace ERPMVC.Controllers
 
                 if (_listWarehouse.WarehouseId == 0)
                 {
-                    var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouseByName/" + _Warehouse.WarehouseName);
+                    var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouse/");
                     string valorrespuesta = "";
                     _Warehouse.FechaModificacion = DateTime.Now;
                     _Warehouse.UsuarioModificacion = HttpContext.Session.GetString("user");
                     if (result.IsSuccessStatusCode)
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _listWarehouse = JsonConvert.DeserializeObject<Warehouse>(valorrespuesta);
-                        
+                        Warehouse = JsonConvert.DeserializeObject<List<Warehouse>>(valorrespuesta);
+
+                        Warehouse = Warehouse.Where(q => q.WarehouseName == _Warehouse.WarehouseName && q.BranchId == _Warehouse.BranchId).ToList();
+                        if (Warehouse.Count > 0)
+                        {
+                            return await Task.Run(() => BadRequest("Ya exíste una Bodega creada con el mismo Nombre en esta Sucursal"));
+                        }
+
                         if (_listWarehouse == null)
                         {
                             _listWarehouse = new Warehouse();
