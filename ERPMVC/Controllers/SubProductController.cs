@@ -464,32 +464,72 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult<SubProduct>> Delete(Int64 SubProductId, SubProduct _SubProduct)
+        public async Task<ActionResult<SubProduct>> Delete([FromBody] SubProduct _SubProductp)
         {
+            SubProduct _SubProduct = _SubProductp;
+            List<InvoiceLine> _InvoiceLine = new List<InvoiceLine>();
+            List<ProformaInvoiceLine> _ProformaInvoiceLine = new List<ProformaInvoiceLine>();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/SubProduct/Delete", _SubProduct);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result1 = await _client.GetAsync(baseadress + "api/SubProduct/ValidationDelete/" + _SubProduct.SubproductId);
+                string valorrespuesta1 = "";
+
+                if (result1.IsSuccessStatusCode)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _SubProduct = JsonConvert.DeserializeObject<SubProduct>(valorrespuesta);
+
+                    valorrespuesta1 = await (result1.Content.ReadAsStringAsync());
                 }
+                if (valorrespuesta1 == "0")
+                {
+                    var result = await _client.PostAsJsonAsync(baseadress + "api/SubProduct/Delete", _SubProduct);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _SubProduct = JsonConvert.DeserializeObject<SubProduct>(valorrespuesta);
+                    }
+                }
+                else
+                {
+                    return await Task.Run(() => BadRequest("Este registro tiene referencia a otros datos,No se puede Eliminar"));
+                }
+
 
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error: {ex.Message}");
+                return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
-
-
             return new ObjectResult(new DataSourceResult { Data = new[] { _SubProduct }, Total = 1 });
+            //try
+            //{
+            //    string baseadress = config.Value.urlbase;
+            //    HttpClient _client = new HttpClient();
+            //    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+            //    var result = await _client.PostAsJsonAsync(baseadress + "api/SubProduct/Delete", _SubProduct);
+            //    string valorrespuesta = "";
+            //    if (result.IsSuccessStatusCode)
+            //    {
+            //        valorrespuesta = await (result.Content.ReadAsStringAsync());
+            //        _SubProduct = JsonConvert.DeserializeObject<SubProduct>(valorrespuesta);
+            //    }
+
+            //}
+            //catch (Exception ex)
+            //{
+            //    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+            //    return BadRequest($"Ocurrio un error: {ex.Message}");
+            //}
+
+
+
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _SubProduct }, Total = 1 });
         }
 
 
