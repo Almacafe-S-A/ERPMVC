@@ -474,8 +474,16 @@ namespace ERPMVC.Controllers
 
                 else
                 {
+                    _JournalEntryP.EstadoId = 5;
+                    _JournalEntryP.EstadoName = "Enviada a Aprobacion";
                     _JournalEntryP.CreatedUser = _JournalEntry.CreatedUser;
                     _JournalEntryP.CreatedDate = _JournalEntry.CreatedDate;
+                    _JournalEntryP.PartyId = _JournalEntry.PartyId;
+                    _JournalEntryP.PartyName = _JournalEntry.PartyName;
+                    _JournalEntryP.PartyTypeId = _JournalEntry.PartyTypeId;
+                    _JournalEntryP.PartyTypeName = _JournalEntry.PartyTypeName;
+                    _JournalEntryP.ModifiedDate = DateTime.Now;
+                    _JournalEntryP.ModifiedUser = HttpContext.Session.GetString("user");
                     var updateresult = await Update(_JournalEntry.JournalEntryId, _JournalEntryP);
                 }
 

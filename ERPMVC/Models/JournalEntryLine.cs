@@ -14,10 +14,10 @@ namespace ERPMVC.Models
         public Int64 JournalEntryLineId { get; set; }
         [Display(Name = "Id Entrada diario")]
         public Int64 JournalEntryId { get; set; }
-        [StringLength(30)]
+        //[StringLength(30)]
         [Display(Name = "Numero de Centro de Costo")]
         public string Num { get; set; }
-        [StringLength(60)]
+        //[StringLength(60)]
         [Display(Name = "Nombre de Centro Costo")]
         public string Description { get; set; }
 
@@ -47,7 +47,7 @@ namespace ERPMVC.Models
         [Display(Name = "Crédito moneda extranjera")]
         public double CreditME { get; set; }
         public string Memo { get; set; }
-
+        //[StringLength(30)]
         [Display(Name = "Id Centro de costos")]
         public Int64 CostCenterId { get; set; }
 
