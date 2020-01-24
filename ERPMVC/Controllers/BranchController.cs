@@ -154,6 +154,8 @@ namespace ERPMVC.Controllers
 
         public async Task<ActionResult<Branch>> SaveBranch([FromBody]BranchDTO _BranchP)
         {
+            List<Branch> Branch = new List<Branch>();
+
             Branch _Branch = _BranchP;
             try
             {
@@ -170,6 +172,18 @@ namespace ERPMVC.Controllers
                     _Branch.UsuarioModificacion = HttpContext.Session.GetString("user");
                     if (result.IsSuccessStatusCode)
                     {
+                        var result1 = await _client.GetAsync(baseadress + "api/Branch/GetBranch/");
+                        string valorrespuesta1 = "";
+                        valorrespuesta1 = await (result1.Content.ReadAsStringAsync());
+                        Branch = JsonConvert.DeserializeObject<List<Branch>>(valorrespuesta1);
+
+                        Branch = Branch.Where(q => q.BranchCode == _BranchP.BranchCode).ToList();
+                        if (Branch.Count > 0)
+                        {
+                            return await Task.Run(() => BadRequest("Ya exíste una Sucursal con este código de sucursal"));
+                        }
+
+
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _Branch = JsonConvert.DeserializeObject<Branch>(valorrespuesta);
                         if (_Branch == null)
