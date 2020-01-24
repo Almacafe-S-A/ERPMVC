@@ -278,22 +278,23 @@
         grid.dataSource.read();
     }
 
-        function SaveSubProduct(e) {
+    function SaveSubProduct(e) {
+        if ($("#SubproductId").val() == 0) {
 
             var notification = $("#notification").data("kendoNotification");
-           // e.preventDefault();
-            $("#btnSubProduct").hide();
+            // e.preventDefault();
+            $("#btnSubProduct").show();
             $("#btnSubProduct").prop("disabled", true);
 
             var UnitOfMeasureId = 0;
             var UnitOfMeasureName = "";
-            if ($("#UnitOfMeasureId").data("kendoDropDownList")!=null) {
+            if ($("#UnitOfMeasureId").data("kendoDropDownList") != null) {
                 UnitOfMeasureId = $("#UnitOfMeasureId").data("kendoDropDownList").value();
                 UnitOfMeasureName = $("#UnitOfMeasureId").data("kendoDropDownList").text();
             }
 
             var tipoprohibido = "";
-            if ($("#TipoProhibidoId").data("kendoDropDownList")!=null) {
+            if ($("#TipoProhibidoId").data("kendoDropDownList") != null) {
                 tipoprohibido = $("#TipoProhibidoId").data("kendoDropDownList").text();
             }
 
@@ -304,8 +305,8 @@
                 'ProductName': $("#ProductName").val(),
                 'ProductCode': $("#ProductCode").val(),
                 'Barcode': $("#Barcode").val(),
-                'UnitOfMeasureId': UnitOfMeasureId ,
-                'UnitOfMeasureName': UnitOfMeasureName ,
+                'UnitOfMeasureId': UnitOfMeasureId,
+                'UnitOfMeasureName': UnitOfMeasureName,
                 'Description': $("#Description").val(),
                 'ProductTypeId': $("#ProductTypeId").val(),
                 'ProductTypeName': $("#ProductTypeName").val(),
@@ -316,22 +317,130 @@
                 'TipoProhibidoName': tipoprohibido,
                 'IdEstado': $("#IdEstado").val(),
                 'Estado': $("#IdEstado").data("kendoDropDownList").text(),
-                  //'FechaCreacion': $("#FechaCreacion").val(),
-                  //'FechaModificacion':$("#FechaModificacion").val(),
-                  //'UsuarioCreacion':$("#UsuarioCreacion").val(),
-                  //'UsuarioModificacion':$("#UsuarioModificacion").val(),
-                 // '_SubProduct': displayedData
+                //'FechaCreacion': $("#FechaCreacion").val(),
+                //'FechaModificacion':$("#FechaModificacion").val(),
+                //'UsuarioCreacion':$("#UsuarioCreacion").val(),
+                //'UsuarioModificacion':$("#UsuarioModificacion").val(),
+                // '_SubProduct': displayedData
             };
 
             //console.log('OBJETO', dataObject);
-             //console.log(JSON.stringify(dataObject));
-             //var form = $("#frmNumeracion");
-             //form.validate();
+            //console.log(JSON.stringify(dataObject));
+            //var form = $("#frmNumeracion");
+            //form.validate();
             //console.log(dataObject);
             var validator = $("#frmSubProduct").data("kendoValidator");
-               //  var status = $(".status");
-           // console.log(validator)
+            //  var status = $(".status");
+            // console.log(validator)
             //console.log('VERIFICAR',displayedData.length)
+
+            if (validator.validate()) {
+
+                $.ajax({
+                    url: '@Url.Action("SaveSubProduct", "SubProduct")',
+                    method: 'POST',
+                    datatype: "json",
+                    contentType: 'application/json',
+                    async: false,
+                    data: JSON.stringify(dataObject),
+                    success: function (data) {
+
+                        //notification.show({
+                        //    message: "Guardado correctamente!"
+                        //}, "upload-success");
+                        $.toast({
+                            heading: 'Satisfactorio',
+                            text: '</br></br>Datos guardados correctamente.',
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'success',
+                            hideAfter: 7000,
+                            stack: 6
+                        });
+
+                        RefreshCotizaciones();
+
+                        $('#ModalSubProduct').modal('hide');
+
+
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        console.log('VERIFICAR')
+
+                        notification.show({
+                            title: "Validación",
+                            message: textStatus + ": " + XMLHttpRequest.responseText
+                        }, "error");
+                        $("#btnSubProduct").show();
+                        $("#btnSubProduct").prop("disabled", false);
+
+                    }
+                });
+            }
+            else {
+                notification.show({
+                    title: "Validación",
+                    message: "Hay datos invalidos en el formulario!"
+                }, "error");
+            }
+            $("#btnSubProduct").show();
+            $("#btnSubProduct").prop("disabled", false);
+
+        }
+        else {
+            if (confirm('¿Esta seguro de guardar los cambios?')) {
+                var notification = $("#notification").data("kendoNotification");
+                // e.preventDefault();
+                $("#btnSubProduct").show();
+                $("#btnSubProduct").prop("disabled", false);
+
+                var UnitOfMeasureId = 0;
+                var UnitOfMeasureName = "";
+                if ($("#UnitOfMeasureId").data("kendoDropDownList") != null) {
+                    UnitOfMeasureId = $("#UnitOfMeasureId").data("kendoDropDownList").value();
+                    UnitOfMeasureName = $("#UnitOfMeasureId").data("kendoDropDownList").text();
+                }
+
+                var tipoprohibido = "";
+                if ($("#TipoProhibidoId").data("kendoDropDownList") != null) {
+                    tipoprohibido = $("#TipoProhibidoId").data("kendoDropDownList").text();
+                }
+
+                //var displayedData = $("#gridSubProduct").data().kendoGrid.dataSource.view();
+
+                var dataObject = {
+                    'SubproductId': $("#SubproductId").val() === "" ? "0" : $("#SubproductId").val(),
+                    'ProductName': $("#ProductName").val(),
+                    'ProductCode': $("#ProductCode").val(),
+                    'Barcode': $("#Barcode").val(),
+                    'UnitOfMeasureId': UnitOfMeasureId,
+                    'UnitOfMeasureName': UnitOfMeasureName,
+                    'Description': $("#Description").val(),
+                    'ProductTypeId': $("#ProductTypeId").val(),
+                    'ProductTypeName': $("#ProductTypeName").val(),
+                    'Merma': $("#Merma").val(),
+                    'BagBalance': $("#BagBalance").val(),
+                    'Balance': $("#Balance").val(),
+                    'TipoProhibidoId': $("#TipoProhibidoId").val(),
+                    'TipoProhibidoName': tipoprohibido,
+                    'IdEstado': $("#IdEstado").val(),
+                    'Estado': $("#IdEstado").data("kendoDropDownList").text(),
+                    //'FechaCreacion': $("#FechaCreacion").val(),
+                    //'FechaModificacion':$("#FechaModificacion").val(),
+                    //'UsuarioCreacion':$("#UsuarioCreacion").val(),
+                    //'UsuarioModificacion':$("#UsuarioModificacion").val(),
+                    // '_SubProduct': displayedData
+                };
+
+                //console.log('OBJETO', dataObject);
+                //console.log(JSON.stringify(dataObject));
+                //var form = $("#frmNumeracion");
+                //form.validate();
+                //console.log(dataObject);
+                var validator = $("#frmSubProduct").data("kendoValidator");
+                //  var status = $(".status");
+                // console.log(validator)
+                //console.log('VERIFICAR',displayedData.length)
 
                 if (validator.validate()) {
 
@@ -373,7 +482,6 @@
 
                         }
                     });
-
                 }
                 else {
                     notification.show({
@@ -381,9 +489,10 @@
                         message: "Hay datos invalidos en el formulario!"
                     }, "error");
                 }
-
-
-            $("#btnSubProduct").show();
-            $("#btnSubProduct").prop("disabled", false);
+                $("#btnSubProduct").show();
+                $("#btnSubProduct").prop("disabled", false);
+            }
+        }
+            
     }
 </script>
