@@ -25,6 +25,7 @@
                 let fechaactual = String(today.getDate()).padStart(2, '0') + "/" + String(today.getMonth() + 1).padStart(2, '0') + "/" + today.getFullYear();
                 grid.dataSource.insert({ PaymentScheduleRulesByCustomerId: 0, ScheduleSubservicesId: $("#ScheduleSubservicesId").val(), CustomerId: $("#CustomerId").val(), CustomerName: $("#CustomerId").data("kendoDropDownList").text(), });
                 SaveDetails();
+                RefrescarGridDetalle();
             }
             else {
                 //notification.show({
@@ -37,7 +38,7 @@
                     position: 'top-right',
                     loaderBg: '#ff6849',
                     icon: 'error',
-                    hideAfter: 30000,
+                    hideAfter: 4000,
                     stack: 6
                 });
             }
@@ -66,7 +67,7 @@
 
      function Delete(e) {
         e.preventDefault();
-        if (confirm('Esta seguro que desea eliminar la fila?')) {
+         if (confirm('¿Esta seguro que desea eliminar la fila?')) {
             var notification = $("#notification").data("kendoNotification");
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
 
@@ -81,6 +82,7 @@
                 async: false,
                 data: JSON.stringify(dataItem),
                 success: function (data) {
+                    
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     notification.show({
@@ -89,7 +91,9 @@
                     }, "error");
                 }
             });
-            grid.dataSource.remove(dataItem);
+             grid.dataSource.remove(dataItem);
+             RefrescarGridDetalle();
+             
         }
     }
 
@@ -116,23 +120,33 @@
                 contentType: 'application/json',
                 async: false,
                 data: JSON.stringify(dataObject),
+                success: function (data) {
 
+                   
+                },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
 
                     notification.show({
                         title: "Validacion",
                         message: textStatus + ": " + XMLHttpRequest.responseText
                     }, "error");
-                    $("#btnGuardarDetalle").show();
-                    $("#btnGuardarDetalle").prop("disabled", false);
+                    
                 }
                
         });
+        CustomerName: $("#CustomerId").data("kendoDropDownList").value(0),
         $("#btnGuardarDetalle").show();
         $("#btnGuardarDetalle").prop("disabled", true);
         
         
     }
+    
+    function RefrescarGridDetalle() {
+        var grid = $("#gridPaymentScheduleRulesByCustomer").getKendoGrid();
+        grid.dataSource.read();
+    };
+
+   
 </script>
 
 <h3 class="text-themecolor">Detalle de clientes a los que se aplica la regla </h3>
@@ -172,7 +186,7 @@
                        {
 
                //command.Custom("Editar").Click("Editar");
-               command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText("Actualizar").CancelText("Cancelar");
+               //command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText("Actualizar").CancelText("Cancelar");
                            command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
 
                //command.Destroy().Text("Eliminar");
@@ -180,7 +194,7 @@
            }).Title("Acciones").Width(100);
                        columns.Bound(p => p.PaymentScheduleRulesByCustomerId).Hidden(true).Width(100);
                        columns.Bound(p => p.ScheduleSubservicesId).Width(125);
-                       columns.Bound(p => p.CustomerId).EditorTemplateName("Customer").Title("Codigo Cliente").Width(135);
+                       columns.Bound(p => p.CustomerId).EditorTemplateName("Customer").Title("Código Cliente").Width(135);
                        columns.Bound(p => p.CustomerName).Title("Nombre Cliente").Width(120);
            //columns.Bound(p => p.).Width(150);
 
@@ -254,5 +268,6 @@
         }
 
         setRowButtonTooltip(".k-grid-edit", "Editar registro");
+        setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
         setRowButtonTooltip(".k-grid-Agregar", "Agregar nuevo registro");
     </script>

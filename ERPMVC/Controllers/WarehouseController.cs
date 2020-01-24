@@ -35,6 +35,36 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
+        public async Task<ActionResult> ValidacionWarehouseName([FromBody]Warehouse Warehouse)
+        {
+            List<Warehouse> _Warehouse = new List<Warehouse>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouse");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Warehouse = JsonConvert.DeserializeObject<List<Warehouse>>(valorrespuesta);
+                    _Warehouse = _Warehouse.Where(q => q.WarehouseName == Warehouse.WarehouseName && q.BranchId == Warehouse.BranchId ).ToList();
+                    if (_Warehouse.Count > 0)
+                    {
+                        return await Task.Run(() => BadRequest("Ya exíste una Bodega creada con el mismo Nombre en esta Sucursal"));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return await Task.Run(() => Ok(_Warehouse));
+        }
+
+        [HttpPost("[action]")]
         public async Task<ActionResult> pvwWarehouse([FromBody]Warehouse _warehouse)
         {
             Warehouse _Warehouse = new Warehouse();
@@ -137,6 +167,8 @@ namespace ERPMVC.Controllers
 
         public async Task<ActionResult<Warehouse>> SaveWarehouse([FromBody]Warehouse _Warehouse)
         {
+            List<Warehouse> Warehouse = new List<Warehouse>();
+
             Warehouse _listWarehouse = _Warehouse;
             try
             {              
@@ -146,14 +178,21 @@ namespace ERPMVC.Controllers
 
                 if (_listWarehouse.WarehouseId == 0)
                 {
-                    var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouseByName/" + _Warehouse.WarehouseName);
+                    var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouse/");
                     string valorrespuesta = "";
                     _Warehouse.FechaModificacion = DateTime.Now;
                     _Warehouse.UsuarioModificacion = HttpContext.Session.GetString("user");
                     if (result.IsSuccessStatusCode)
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _listWarehouse = JsonConvert.DeserializeObject<Warehouse>(valorrespuesta);
+                        Warehouse = JsonConvert.DeserializeObject<List<Warehouse>>(valorrespuesta);
+
+                        Warehouse = Warehouse.Where(q => q.WarehouseName == _Warehouse.WarehouseName && q.BranchId == _Warehouse.BranchId).ToList();
+                        if (Warehouse.Count > 0)
+                        {
+                            return await Task.Run(() => BadRequest("Ya exíste una Bodega creada con el mismo Nombre en esta Sucursal"));
+                        }
+
                         if (_listWarehouse == null)
                         {
                             _listWarehouse = new Warehouse();
@@ -177,14 +216,25 @@ namespace ERPMVC.Controllers
                     //    return await Task.Run(() => BadRequest($"No se guardo la bodega."));
                     //}
                 }
+
+
+
                 else
                 {
-                    var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouseById/" + _Warehouse.WarehouseId);
+                    var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouse/");
                     string valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _listWarehouse = JsonConvert.DeserializeObject<Warehouse>(valorrespuesta);
+                        Warehouse = JsonConvert.DeserializeObject<List<Warehouse>>(valorrespuesta);
+
+                         Warehouse = Warehouse.Where(q => q.WarehouseName == _Warehouse.WarehouseName && q.BranchId == _Warehouse.BranchId).ToList();
+                        if (Warehouse.Count > 0)
+                        {
+                            return await Task.Run(() => BadRequest("Ya exíste una Bodega creada con el mismo Nombre en esta Sucursal"));
+                        }
+                       
+
                         if (_listWarehouse == null)
                         {
                             _listWarehouse = new Warehouse();

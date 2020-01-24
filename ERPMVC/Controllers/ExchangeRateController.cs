@@ -51,7 +51,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ExchangeRate = JsonConvert.DeserializeObject<List<ExchangeRate>>(valorrespuesta);
-
+                    
                 }
             }
             catch (Exception ex)
@@ -64,6 +64,10 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult<ExchangeRate>> SaveExchangeRate([FromBody]ExchangeRateDTO _ExchangeRateP)
         {
             ExchangeRate _ExchangeRate = _ExchangeRateP;
+            if (_ExchangeRateP.DayofRate.Date>DateTime.Now)
+            {
+                return await Task.Run(() => BadRequest($"La fecha no puede ser Mayor a la Actual"));
+            }
             try
             {
                 ExchangeRate _listAccount = new ExchangeRate();

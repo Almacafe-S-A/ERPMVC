@@ -1,7 +1,10 @@
 ﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
 
 @{
     ViewData["Title"] = "Movimientos Financieros";
+    bool permiso;
+    permiso = (bool)ViewData["permisoAprobar"];
 }
 
 <script>
@@ -301,7 +304,7 @@
                                                 //command.Custom("Ver detalles").Text(" ").IconClass("fa fa-edit").Click("EditJournalEntry");
                                                 command.Custom("Editar").Text(" ").IconClass("far fa-list-alt").Click("EditJournalEntry");
                                                 command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("Imprimir");
-                                                if (Gerente)
+                                                if (permiso)
                                                 {
                                                     command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("AprobarAsiento");
                                                     command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("RechazarAsiento");
@@ -371,10 +374,10 @@
                                         )
                                         .Filterable()
                                         .Scrollable()
-                                        .Pdf(pdf => pdf.FileName("AsientoContableReporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                        .Pdf(pdf => pdf.FileName("Asiento_Contable_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                                         + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
                                         .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                        .Excel(excel => excel.FileName("AsientoContableReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                        .Excel(excel => excel.FileName("Asiento_Contable_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                                         + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
                                         .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
                                         .Events(e => e.DataBound("dataBound"))
@@ -395,6 +398,7 @@
                                             model.Field(p => p.EstadoId).Editable(true);
 
                                         })
+                                        .Filter(f => f.Add(m => m.TypeOfAdjustmentId).IsEqualTo(65))
                                         .Sort(s => s.Add(m => m.CreatedDate).Descending())
                                         .Events(events => events.Error("error_handler"))
                                         .Read(read => read.Action("GetJournalEntryAsientos", "JournalEntry"))
@@ -432,7 +436,7 @@
         }
         setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
         setToolbarTooltip(".k-grid-Editar", "Ver Detalle");
-        setToolbarTooltip(".k-grid-Imprimir", "Imprimir");
+        setToolbarTooltip(".k-grid-Imprimir", "Imprimir registro");
         setRowButtonTooltip(".k-grid-Aprobar", "Aprobar Asiento");
         setRowButtonTooltip(".k-grid-Rechazar", "Rechazar Asiento");
     </script>

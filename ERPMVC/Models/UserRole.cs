@@ -10,26 +10,22 @@ namespace ERPMVC.Models
     public class ApplicationUserRole : IdentityUserRole<Guid>
     {
 
-        // [UIHint("UserId")]
-        //[Required]
-        //public Guid UserId { get; set; }
-        //[Required]
-        ////[UIHint("Roledropdown")]
-        //public Guid RoleId { get; set; }
         public string UserName { get; set; }
 
         public string RoleName { get; set; }
 
-        [Required]
+        public Int64 IdEstado { get; set; }
+        public string Estado { get; set; }
+
+    
         public string UsuarioCreacion { get; set; }
 
-        [Required]
+  
         public string UsuarioModificacion { get; set; }
 
-        [Required]
+   
         public DateTime FechaCreacion { get; set; }
 
-        [Required]
         public DateTime FechaModificacion { get; set; }
 
     }
