@@ -18,10 +18,10 @@ namespace ERPMVC.Models
         [Display(Name = "Probabilidad")]
         [Required]
         public Int64 Probabilidad { get; set; }
-        [Display(Name = "Limite Calidad Inferior")]
+        [Display(Name = "Límite Calidad Inferior")]
         [Required]
         public Int64 LimiteCalidadInferior { get; set; }
-        [Display(Name = "Limete Calidad Superior")]
+        [Display(Name = "Límete Calidad Superior")]
         [Required]
         public Int64 LimeteCalidadSuperir { get; set; }
         [Display(Name = "Rango Inferior de Severidad")]
@@ -32,5 +32,13 @@ namespace ERPMVC.Models
         public string Nivel { get; set; }
         [Display(Name = "Color")]
         public string ColorHexadecimal { get; set; }
+        [Display(Name = "Fecha Creación")]
+        public DateTime FechaCreacion { get; set; }
+        [Display(Name = "Fecha Modifico")]
+        public DateTime FechaModificacion { get; set; }
+        [Display(Name = "Usuario Creación")]
+        public string UsuarioCreacion { get; set; }
+        [Display(Name = "Usuario Modifico")]
+        public string UsuarioModificacion { get; set; }
     }
 }

@@ -17,10 +17,8 @@ namespace ERPMVC.Models
         [Display(Name = "Nombre del puesto")]
         public string NombrePuesto { get; set; }
         [Display(Name = "Departamento")]
-        [Required(AllowEmptyStrings = false, ErrorMessage = "*El campo {0} es requerido")]
         public long? IdDepartamento { get; set; }
         [Display(Name = "Departamento")]
-        [Required(AllowEmptyStrings = false, ErrorMessage = "*El campo {0} es requerido")]
         public string NombreDepartamento { get; set; }
         [Display(Name = "Estado")]
         [Required(AllowEmptyStrings = false, ErrorMessage = "*El campo {0} es requerido")]

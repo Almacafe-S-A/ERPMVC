@@ -44,7 +44,7 @@ namespace ERPMVC.Controllers
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 if (HttpContext.Session.Get("journalentryline") == null
                    || HttpContext.Session.GetString("journalentryline") == "")
                 {
@@ -58,10 +58,85 @@ namespace ERPMVC.Controllers
                 {
                     _JournalEntryLine = JsonConvert.DeserializeObject<List<JournalEntryLine>>(HttpContext.Session.GetString("journalentryline"));
                 }
+                if (_JournalEntryLinep.JournalEntryId > 0 && _JournalEntryLinep.JournalEntryLineId > 0)
+                {
+                    JournalEntry _JournalEntryP = new JournalEntry();
 
+                    _JournalEntryLinep.JournalEntryLineId = 0;
+                    var insertresult = await Insert(_JournalEntryLinep);
+                    
+                    var result1 = await _client.GetAsync(baseadress + "api/JournalEntryLine/GetJournalEntryLineByJournalId/" + _JournalEntryLinep.JournalEntryId);
+                    string valorrespuesta1 = "";
+                    if (result1.IsSuccessStatusCode)
+                    {
+                        valorrespuesta1 = await (result1.Content.ReadAsStringAsync());
+                        _JournalEntryLine = JsonConvert.DeserializeObject<List<JournalEntryLine>>(valorrespuesta1);
+
+                        var result2 = await _client.GetAsync(baseadress + "api/JournalEntry/GetJournalEntryById/" + _JournalEntryLinep.JournalEntryId);
+                        string valorrespuesta2 = "";
+                        if (result2.IsSuccessStatusCode)
+                        {
+                            valorrespuesta2 = await (result2.Content.ReadAsStringAsync());
+                            _JournalEntryP = JsonConvert.DeserializeObject<JournalEntry>(valorrespuesta2);
+                        }
+                        _JournalEntryP.PartyTypeName = "";
+                        var beneficiarios = 0;
+                        var NombreBeneficiario = "";
+                        var CountParty = 0;
+                        var CountPartyDistintos = 0;
+                        foreach (var item in _JournalEntryP.JournalEntryLines)
+                        {
+                            if (item.PartyName != null)
+                            {
+                                _JournalEntryP.PartyTypeId = item.PartyTypeId;
+                                _JournalEntryP.PartyTypeName = item.PartyTypeName;
+                                _JournalEntryP.PartyId = item.PartyId;
+                                _JournalEntryP.PartyName = item.PartyName;
+
+                                beneficiarios++;
+
+                                NombreBeneficiario = item.PartyName;
+                                foreach (var item1 in _JournalEntryP.JournalEntryLines)
+                                {
+                                    if (item1.PartyName != null)
+                                    {
+                                        if (NombreBeneficiario == item1.PartyName)
+                                        {
+                                            CountParty++;
+                                        }
+                                        else
+                                        {
+                                            CountPartyDistintos++;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (CountParty > 1 && CountPartyDistintos == 0)
+                        {
+                            _JournalEntryP.PartyName = NombreBeneficiario;
+                        }
+                        else if (beneficiarios > 1)
+                        {
+                            _JournalEntryP.PartyName = "Varios";
+                            _JournalEntryP.PartyId = 0;
+                            _JournalEntryP.PartyTypeName = "";
+                            _JournalEntryP.PartyTypeId = 0;
+                        }
+                        _JournalEntryP.ModifiedUser = HttpContext.Session.GetString("user");
+                        _JournalEntryP.ModifiedDate = DateTime.Now;
+                        var result3 = await _client.PostAsJsonAsync(baseadress + "api/JournalEntry/Update", _JournalEntryP);
+                        string valorrespuesta3 = "";
+                        if (result3.IsSuccessStatusCode)
+                        {
+                            valorrespuesta3 = await (result3.Content.ReadAsStringAsync());
+                            _JournalEntryP = JsonConvert.DeserializeObject<JournalEntryDTO>(valorrespuesta3);
+                        }
+                    }
+                    
+                }
                 if (_JournalEntryLinep.JournalEntryId > 0)
                 {
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                     var result = await _client.GetAsync(baseadress + "api/JournalEntryLine/GetJournalEntryLineByJournalId/"+ _JournalEntryLinep.JournalEntryId);
                     string valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
@@ -132,17 +207,90 @@ namespace ERPMVC.Controllers
             List<JournalEntryLine> _journalentryLIST = new List<JournalEntryLine>();
             try
             {
-                //string baseadress = config.Value.urlbase;
-                //HttpClient _client = new HttpClient();
-                //_client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                //var result = await _client.PostAsJsonAsync(baseadress + "api/JournalEntryLine/Delete", _JournalEntryLine);
-                //string valorrespuesta = "";
-                //if (result.IsSuccessStatusCode)
-                //{
-                //    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                //    _JournalEntryLine = JsonConvert.DeserializeObject<JournalEntryLine>(valorrespuesta);
-                //}
+                if (_JournalEntryLine.JournalEntryId > 0)
+                {
+                    JournalEntry _JournalEntryP = new JournalEntry();
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.PostAsJsonAsync(baseadress + "api/JournalEntryLine/Delete", _JournalEntryLine);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _JournalEntryLine = JsonConvert.DeserializeObject<JournalEntryLine>(valorrespuesta);
 
+                        List<JournalEntryLine> _JournalEntryLineList = new List<JournalEntryLine>();
+                        var result1 = await _client.GetAsync(baseadress + "api/JournalEntryLine/GetJournalEntryLineByJournalId/" + _JournalEntryLine.JournalEntryId);
+                        string valorrespuesta1 = "";
+                        if (result1.IsSuccessStatusCode)
+                        {
+                            valorrespuesta1 = await (result1.Content.ReadAsStringAsync());
+                            _JournalEntryLineList = JsonConvert.DeserializeObject<List<JournalEntryLine>>(valorrespuesta1);
+
+                            var result2 = await _client.GetAsync(baseadress + "api/JournalEntry/GetJournalEntryById/" + _JournalEntryLine.JournalEntryId);
+                            string valorrespuesta2 = "";
+                            if (result2.IsSuccessStatusCode)
+                            {
+                                valorrespuesta2 = await (result2.Content.ReadAsStringAsync());
+                                _JournalEntryP = JsonConvert.DeserializeObject<JournalEntry>(valorrespuesta2);
+                            }
+                            _JournalEntryP.PartyTypeName = "";
+                            var beneficiarios = 0;
+                            var NombreBeneficiario = "";
+                            var CountParty = 0;
+                            var CountPartyDistintos = 0;
+                            foreach (var item in _JournalEntryP.JournalEntryLines)
+                            {
+                                if (item.PartyName != null)
+                                {
+                                    _JournalEntryP.PartyTypeId = item.PartyTypeId;
+                                    _JournalEntryP.PartyTypeName = item.PartyTypeName;
+                                    _JournalEntryP.PartyId = item.PartyId;
+                                    _JournalEntryP.PartyName = item.PartyName;
+
+                                    beneficiarios++;
+
+                                    NombreBeneficiario = item.PartyName;
+                                    foreach (var item1 in _JournalEntryP.JournalEntryLines)
+                                    {
+                                        if (item1.PartyName != null)
+                                        {
+                                            if (NombreBeneficiario == item1.PartyName)
+                                            {
+                                                CountParty++;
+                                            }
+                                            else
+                                            {
+                                                CountPartyDistintos++;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if (CountParty > 1 && CountPartyDistintos == 0)
+                            {
+                                _JournalEntryP.PartyName = NombreBeneficiario;
+                            }
+                            else if (beneficiarios > 1)
+                            {
+                                _JournalEntryP.PartyName = "Varios";
+                                _JournalEntryP.PartyId = 0;
+                                _JournalEntryP.PartyTypeName = "";
+                                _JournalEntryP.PartyTypeId = 0;
+                            }
+                            _JournalEntryP.ModifiedUser = HttpContext.Session.GetString("user");
+                            _JournalEntryP.ModifiedDate = DateTime.Now;
+                            var result3 = await _client.PostAsJsonAsync(baseadress + "api/JournalEntry/Update", _JournalEntryP);
+                            string valorrespuesta3 = "";
+                            if (result3.IsSuccessStatusCode)
+                            {
+                                valorrespuesta3 = await (result3.Content.ReadAsStringAsync());
+                                _JournalEntryP = JsonConvert.DeserializeObject<JournalEntryDTO>(valorrespuesta3);
+                            }
+                        }
+                    }
+                }
                 _journalentryLIST =
                 JsonConvert.DeserializeObject<List<JournalEntryLine>>(HttpContext.Session.GetString("journalentryline"));
 

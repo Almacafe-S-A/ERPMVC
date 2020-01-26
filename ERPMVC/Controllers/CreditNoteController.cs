@@ -57,7 +57,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    _CreditNote.NumeroDEIString = $"{_CreditNote.Sucursal}-{_CreditNote.Caja}-05-{_CreditNote.NúmeroDEI.ToString().PadLeft(8, '0')} ";
+                    _CreditNote.NumeroDEIString = $"{_CreditNote.Sucursal}-{_CreditNote.Caja}-{_CreditNote.TipoDocumento}-{_CreditNote.NúmeroDEI.ToString().PadLeft(8, '0')} ";
                 }
             }
             catch (Exception ex)
@@ -112,6 +112,9 @@ namespace ERPMVC.Controllers
             try
             {
                 CreditNote _listCreditNote = new CreditNote();
+                List<CreditNote> _listCreditNoteRTN = new List<CreditNote>();
+                List<CreditNote> _listCreditNoteValidation = new List<CreditNote>();
+                List<CreditNote> _listCreditNoteNombre = new List<CreditNote>();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -126,10 +129,36 @@ namespace ERPMVC.Controllers
                     _listCreditNote = JsonConvert.DeserializeObject<CreditNote>(valorrespuesta);
                 }
 
-                if (_listCreditNote == null) { _listCreditNote = new CreditNote(); }
+                if (_listCreditNote == null) {
+                    _listCreditNote = new CreditNote();
+                    
+                    var resultRTN = await _client.GetAsync(baseadress + "api/CreditNote/GetCreditNote");
+                    string valorrespuestaRTN = "";
+                    if (resultRTN.IsSuccessStatusCode)
+                    {
+                        valorrespuestaRTN = await (resultRTN.Content.ReadAsStringAsync());
+                        _listCreditNoteValidation = JsonConvert.DeserializeObject<List<CreditNote>>(valorrespuestaRTN);
+                        _listCreditNoteRTN = _listCreditNoteValidation.Where(q => q.RTN == _CreditNote.RTN).ToList();
+                        _listCreditNoteNombre = _listCreditNoteValidation.Where(q => q.CreditNoteName == _CreditNote.CreditNoteName).ToList();
+                        if(_listCreditNoteRTN.Count > 0 && _listCreditNoteNombre.Count > 0)
+                        {
+                            return await Task.Run(() => BadRequest("Ya exísten Notas de Crédito creadas con el mismo Nombre y RTN"));
+                        }
+                        else if (_listCreditNoteRTN.Count > 0)
+                        {
+                            return await Task.Run(() => BadRequest("Ya exíste una Nota de Crédito creada con el mismo RTN"));
+                        }
+                        else if (_listCreditNoteNombre.Count > 0)
+                        {
+                            return await Task.Run(() => BadRequest("Ya exíste una Nota de Crédito creada con el mismo Nombre"));
+                        }
+                    }
+                }
 
                 if (_listCreditNote.CreditNoteId == 0)
                 {
+                    _CreditNote.TipoDocumento = "05";
+                    _CreditNote.DeliveryDate = DateTime.Now;
                     _CreditNote.FechaCreacion = DateTime.Now;
                     _CreditNote.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_CreditNote);
@@ -278,7 +307,64 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpPost("[action]")]
+        public async Task<ActionResult> ValidacionRTN([FromBody]CreditNote creditNote)
+        {
+            List<CreditNote> _creditNote = new List<CreditNote>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CreditNote/GetCreditNote");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _creditNote = JsonConvert.DeserializeObject<List<CreditNote>>(valorrespuesta);
+                    _creditNote = _creditNote.Where(q => q.RTN == creditNote.RTN).ToList();
+                    if (_creditNote.Count > 0)
+                    {
+                        return await Task.Run(() => BadRequest("Ya exíste una Nota de Crédito creada con el mismo RTN"));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return await Task.Run(() => Ok(_creditNote));
+        }
 
-
+        [HttpPost("[action]")]
+        public async Task<ActionResult> ValidacionCreditNoteName([FromBody]CreditNote creditNote)
+        {
+            List<CreditNote> _creditNote = new List<CreditNote>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CreditNote/GetCreditNote");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _creditNote = JsonConvert.DeserializeObject<List<CreditNote>>(valorrespuesta);
+                    _creditNote = _creditNote.Where(q => q.CreditNoteName == creditNote.CreditNoteName).ToList();
+                    if (_creditNote.Count > 0)
+                    {
+                        return await Task.Run(() => BadRequest("Ya exíste una Nota de Crédito creada con el mismo Nombre"));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return await Task.Run(() => Ok(_creditNote));
+        }
     }
 }

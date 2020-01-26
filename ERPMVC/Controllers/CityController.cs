@@ -54,7 +54,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _City = JsonConvert.DeserializeObject<List<City>>(valorrespuesta);
-
+                    _City = _City.OrderByDescending(q => q.Id).ToList();
                 }
 
 
@@ -87,7 +87,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _City = JsonConvert.DeserializeObject<List<City>>(valorrespuesta);
-                    _City = _City.Where(q => q.StateId == StateId).ToList();
+                    _City = _City.Where(q => q.StateId == StateId).OrderBy(q => q.Name).ToList();
                 }
 
 
@@ -254,7 +254,7 @@ namespace ERPMVC.Controllers
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                     if (_City.Id == 0)
                     { 
-                    var result = await _client.GetAsync(baseadress + "api/City/GetCityById/" + _City.Id);
+                    var result = await _client.GetAsync(baseadress + "api/City/GetCityByName/" + _City.Name + "/" + _City.StateId);
                     string valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
@@ -264,7 +264,11 @@ namespace ERPMVC.Controllers
 
                     if (_City == null) { _City = new Models.City(); }
                     }
-                    if (_CityS.Id == 0)
+                    if (_City.Id > 0)
+                    {
+                        return await Task.Run(() => BadRequest($"Ya existe una ciudad registrado con ese nombre."));
+                    }
+                if (_CityS.Id == 0)
                     {
                         var insertresult = await Insert(_CityS);
                     //    var value = (insertresult.Result as ObjectResult).Value;

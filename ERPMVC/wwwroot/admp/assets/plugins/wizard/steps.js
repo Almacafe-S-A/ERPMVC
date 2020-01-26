@@ -6,7 +6,7 @@ $(".tab-wizard").steps({
     labels: {
         next: 'Siguiente <i class="fa fa-chevron-right"></i>',
         previous: '<i class="fa fa-chevron-left"></i> Anterior',
-        finish: "Enviar"
+        finish: "Finalizar"
     }, 
     onStepChanging: function (event, currentIndex, newIndex) {
           console.log('Current Index'+currentIndex);

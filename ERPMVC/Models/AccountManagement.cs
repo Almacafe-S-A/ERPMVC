@@ -15,7 +15,6 @@ namespace ERPMVC.Models
         [Required]
         [Display(Name = "Fecha de apertura")]
         public DateTime OpeningDate { get; set; }
-        [Required]
         [Display(Name = "Tipo de cuenta")]
         public string AccountType { get; set; }
 
@@ -48,6 +47,9 @@ namespace ERPMVC.Models
 
         [Display(Name = "Usuario de modificación")]
         public string UsuarioModificacion { get; set; }
+
+        [ForeignKey("AccountId")]
+        public Int64 AccountId { get; set; }
 
         public string CodigoNombre => $"{AccountNumber} - {Description}";
     }

@@ -1,7 +1,10 @@
 ﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
 
 @{
     ViewData["Title"] = "Movimientos Financieros";
+    bool permiso;
+    permiso = (bool)ViewData["permisoAprobar"];
 }
 
 <script>
@@ -100,31 +103,12 @@
                     $('#ModalJournalEntry').modal('show');
                    // document.getElementById("btnJournalEntry").disabled = true;
                     //document.getElementById("btnAgregarLinea").disabled = true;
-                    $("#IdPartyType").data("kendoDropDownList").value(dataItem.PartyTypeId);
-                    if (dataItem.PartyTypeId == 1) {
-                        $("#customer").show();
-                        $("#party").hide();
-                        $("#vendor").hide();
-                        $("#employe").hide();
-                    }
-                    else if (dataItem.PartyTypeId == 2) {
-                        $("#customer").hide();
-                        $("#party").hide();
-                        $("#vendor").hide();
-                        $("#employe").show();
-                    }
-                    else if (dataItem.PartyTypeId == 3) {
-                        $("#customer").hide();
-                        $("#party").hide();
-                        $("#vendor").show();
-                        $("#employe").hide();
-                    }
-                    else {
+                    $("#IdPartyType").data("kendoDropDownList").value(0);
+                    
                         $("#customer").hide();
                         $("#party").show();
                         $("#vendor").hide();
                         $("#employe").hide();
-                    }
                    
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -187,7 +171,7 @@
         var notification = $("#notification").data("kendoNotification");
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         if (dataItem.IdEstado != 7) {
-        if (confirm('Esta seguro de rechazado este asiento contable?')) {
+        if (confirm('Esta seguro de rechazar este asiento contable?')) {
             e.preventDefault();       
             var dataObject = {
                 JournalEntryId: dataItem.JournalEntryId,
@@ -250,18 +234,33 @@
     }
 
     function Imprimir(e, id) {
-       // debugger;
+        debugger;
         var dataItem;
+        
         if (e != null) {
-            e.preventDefault();
-            dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataItemEstado = this.dataItem($(e.currentTarget).closest("tr"));
+            if (dataItemEstado.EstadoId == 6) {
+                e.preventDefault();
+                dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+                var url = '@Url.Action("SFAsientoContable", "JournalEntry")/' + dataItem.JournalEntryId;
+                var win = window.open(url, '_blank');
+                win.focus();
+            }
+            else {
+                alert("Este Asiento Contable debe ser Aprobado primero para generar el reporte.")
+            }
         }
         else {
-            dataItem = { JournalEntryId: $("#JournalEntryId").val() };
+            if ($("#EstadoId").val() == 6) {
+                dataItem = { JournalEntryId: $("#JournalEntryId").val() };
+                var url = '@Url.Action("SFAsientoContable", "JournalEntry")/' + dataItem.JournalEntryId;
+                var win = window.open(url, '_blank');
+                win.focus();
+            }
+            else {
+                alert("Este Asiento Contable debe ser Aprobado primero para generar el reporte.")
+            }
         }
-        var url = '@Url.Action("SFAsientoContable", "JournalEntry")/' + dataItem.JournalEntryId;
-           var win = window.open(url, '_blank');
-           win.focus();
     }
 </script>
 
@@ -284,9 +283,9 @@
                                             {
                                                 //.Custom("Ver detalles").Text(" ").IconClass("far fa-list-alt").Click("DetallesJournalEntry");
                                                 //command.Custom("Ver detalles").Text(" ").IconClass("fa fa-edit").Click("EditJournalEntry");
-                                                command.Custom("Editar").Text(" ").IconClass("far fa-list-alt").Click("EditJournalEntry");
+                                                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditJournalEntry");
                                                 command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("Imprimir");
-                                                if (Gerente)
+                                                if (permiso)
                                                 {
                                                     command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("AprobarAsiento");
                                                     command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("RechazarAsiento");
@@ -294,11 +293,12 @@
                                                 }
 
                                                 //  command.Destroy();
-                                            }).Width(200);
+                                            }).Title("Acciones").Width(175);
 
-                                            columns.Bound(p => p.JournalEntryId).Title("Id Asiento Contable").Width(150);
+                                            columns.Bound(p => p.JournalEntryId).Title("Id Asiento Contable").Width(200);
                                             columns.Bound(p => p.DatePosted).Title("Fecha de  Transacción").Format("{0:dd/MM/yyyy}").Width(250);
-                                            columns.Bound(p => p.PartyId).Title("Beneficiario").Width(150);
+                                            columns.Bound(p => p.PartyId).Width(150).Hidden(true);
+                                            columns.Bound(p => p.PartyName).Title("Beneficiario").Width(200);
                                             columns.Bound(p => p.TotalDebit).Width(200).Format("{0:N2}");
                                             columns.Bound(p => p.TotalCredit).Width(200).Format("{0:N2}");
                                             columns.Bound(p => p.Memo).Title("Sinopsis").Width(350);
@@ -349,13 +349,16 @@
                                         .Editable(e => e.Mode(GridEditMode.PopUp))
                                         .Sortable()
                                         .AutoBind(true)
-                                        .Pageable()
+                                        .Pageable(s => s
+                                            .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+                                            .Empty("No hay datos."))
+                                        )
                                         .Filterable()
                                         .Scrollable()
-                                        .Pdf(pdf => pdf.FileName("JournalEntryReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                        .Pdf(pdf => pdf.FileName("Asiento_Contable_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                                         + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
                                         .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                        .Excel(excel => excel.FileName("JournalEntryReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                        .Excel(excel => excel.FileName("Asiento_Contable_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                                         + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
                                         .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
                                         .Events(e => e.DataBound("dataBound"))
@@ -376,6 +379,8 @@
                                             model.Field(p => p.EstadoId).Editable(true);
 
                                         })
+                                        .Filter(f => f.Add(m => m.TypeOfAdjustmentId).IsEqualTo(65))
+                                        .Sort(s => s.Add(m => m.CreatedDate).Descending())
                                         .Events(events => events.Error("error_handler"))
                                         .Read(read => read.Action("GetJournalEntryAsientos", "JournalEntry"))
                                         .Create(create => create.Action("Insert", "JournalEntry"))
@@ -410,6 +415,9 @@
                 content: btn_tooltip
             });
         }
+        setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+        setToolbarTooltip(".k-grid-Editar", "Editar Registro");
+        setToolbarTooltip(".k-grid-Imprimir", "Imprimir registro");
         setRowButtonTooltip(".k-grid-Aprobar", "Aprobar Asiento");
         setRowButtonTooltip(".k-grid-Rechazar", "Rechazar Asiento");
     </script>

@@ -117,6 +117,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _clientes = JsonConvert.DeserializeObject<List<SubProduct>>(valorrespuesta);
+                    _clientes = _clientes.OrderBy(q => q.ProductName).ToList();
                 }
 
             }

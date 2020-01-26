@@ -39,6 +39,11 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        public IActionResult SFSegurosEndosados()
+        {
+            return View();
+        }
+
         [HttpPost]
         public async Task<ActionResult> pvwAddInsuranceEndorsement([FromBody]InsuranceEndorsement _InsuranceEndorsementp)
         {

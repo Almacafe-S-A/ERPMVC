@@ -1,0 +1,166 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "Country";
+
+}
+
+<script>
+
+    function onsave(e) {
+        //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+        // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+    function caidata(data) {
+        data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+        data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    }
+
+    function AddCountry() {
+
+       var dataObject = {
+            Id: 0,
+            editar: 1
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwAddCountry", "Alert")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#numCountry").html('');
+                $("#numCountry").html(result);
+
+                $('#ModalCountry').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+
+
+    function EditCountry(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            Id: dataItem.Id,
+            editar: 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwAddCountry", "Alert")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#numCountry").html('');
+                $("#numCountry").html(result);
+
+
+                //$("#btnCAI").hide();
+                $('#ModalCountry').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+
+    function RefrescarGrid() {
+        var grid = $("#gridCountry").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+    function EsGafi() {
+        return { GAFI: true }
+    }
+
+
+</script>
+
+<h3 class="text-themecolor">Paises de alto riesgo segun GAFI</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.Country> ()
+    .Name("gridCountry")
+
+    .Columns(columns =>
+    {
+
+        columns.Command(command =>
+        {
+            //command.Custom("Ver detalles").Click("Detalles");
+            command.Custom("Editar").Click("EditCountry");
+            command.Destroy().Text("Eliminar");
+        }).Width(250);
+
+        columns.Bound(p => p.Id).Width(150);
+        columns.Bound(p => p.SortName).Width(170);
+        columns.Bound(p => p.Name).Width(170);
+       // columns.Bound(p => p.PhoneCode).Width(170);
+        columns.Bound(p => p.NivelRiesgoName).Width(170);
+        columns.Bound(p => p.AccionName).Width(170);
+        columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy}").Width(170);
+        columns.Bound(p => p.ListaName).Width(170);
+        columns.Bound(p => p.TipoAlertaName).Width(170);
+    })
+
+
+    .ToolBar(tools =>
+    {
+
+        //tools.Create();
+        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCountry()" });
+        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+    })
+    .Editable(e => e.Mode(GridEditMode.PopUp))
+    .Sortable()
+    .Pageable()
+    .Filterable()
+    .Scrollable()
+    .Pdf(pdf => pdf.FileName("CountryReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+    .Excel(excel => excel.FileName("CountryReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+    .DataSource(dataSource =>
+    dataSource
+    .WebApi()
+
+    .ServerOperation(true)
+    .Model(model =>
+    {
+        model.Id(p => p.Id);
+        model.Field(p => p.Id).Editable(false);
+
+
+    })
+    .Events(events => events.Error("error_handler"))
+    .Read(read => read.Action("Get", "Country").Data("EsGafi"))
+    .Create(create => create.Action("Insert", "Country").Type(HttpVerbs.Post))
+    .Update(update => update.Action("Update", "Country").Type(HttpVerbs.Post))
+    .Destroy(destroy => destroy.Action("Delete", "Country").Type(HttpVerbs.Post))
+
+    )
+    .Events(e =>
+    {
+        e.Save("onsave");
+
+    })
+    )
+
+    <div id="numCountry">
+        @await Html.PartialAsync("pvwAddCountry", new ERPMVC.DTO.CountryDTO { Id = 0 ,GAFI = true , Actualizacion=DateTime.Now  })
+    </div>

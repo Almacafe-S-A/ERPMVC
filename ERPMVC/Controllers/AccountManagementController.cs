@@ -300,33 +300,81 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _AccountManagement }, Total = 1 });
         }
 
+        //[HttpPost]
+        //public async Task<ActionResult<AccountManagement>> Delete(Int64 AccountManagementId, AccountManagement _AccountManagement)
+        //{
+        //    try
+        //    {
+        //        string baseadress = config.Value.urlbase;
+        //        HttpClient _client = new HttpClient();
+        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+        //        var result = await _client.PostAsJsonAsync(baseadress + "api/AccountManagement/Delete", _AccountManagement);
+        //        string valorrespuesta = "";
+        //        if (result.IsSuccessStatusCode)
+        //        {
+        //            valorrespuesta = await (result.Content.ReadAsStringAsync());
+        //            _AccountManagement = JsonConvert.DeserializeObject<AccountManagement>(valorrespuesta);
+        //        }
+
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+        //        return BadRequest($"Ocurrio un error: {ex.Message}");
+        //    }
+
+
+
+        //    return new ObjectResult(new DataSourceResult { Data = new[] { _AccountManagement }, Total = 1 });
+        //}
         [HttpPost]
-        public async Task<ActionResult<AccountManagement>> Delete(Int64 AccountManagementId, AccountManagement _AccountManagement)
+        public async Task<ActionResult<AccountManagement>> Delete(Int64 AccountManagementId,[FromBody] AccountManagement _AccountManagementS)
         {
+            AccountManagement _AccountManagement = _AccountManagementS;
+            List<CheckAccount> _CheckAccount = new List<CheckAccount>();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/AccountManagement/Delete", _AccountManagement);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result1 = await _client.GetAsync(baseadress + "api/AccountManagement/ValidationDelete/" + _AccountManagement.AccountManagementId);
+                string valorrespuesta1 = "";
+
+                if (result1.IsSuccessStatusCode)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _AccountManagement = JsonConvert.DeserializeObject<AccountManagement>(valorrespuesta);
+
+                    valorrespuesta1 = await (result1.Content.ReadAsStringAsync());
                 }
+                if (valorrespuesta1 == "0")
+                {
+                    _AccountManagement.AccountType = "0";
+                    _AccountManagement.BankId = 0;
+                    _AccountManagement.CurrencyId = 0;
+
+                    var result = await _client.PostAsJsonAsync(baseadress + "api/AccountManagement/Delete", _AccountManagement);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _AccountManagement = JsonConvert.DeserializeObject<AccountManagement>(valorrespuesta);
+                    }
+                }
+                else
+                {
+                    return await Task.Run(() => BadRequest("Este registro tiene referencia a otros datos,No se puede Eliminar"));
+                }
+
 
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error: {ex.Message}");
+                return BadRequest($"Ocurrio un error{ex.Message}");
             }
-
-
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _AccountManagement }, Total = 1 });
         }
+
     }
 }
