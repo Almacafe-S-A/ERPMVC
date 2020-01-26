@@ -22,6 +22,16 @@ namespace ERPMVC.Models
         [Display(Name = "Código de grupo")]
         public string FixedGroupCode { get; set; }
 
+        [Display(Name = "Cuenta de Activo")]
+        public Int64? FixedAssetAccountingId { get; set; }
+        [ForeignKey("FixedAssetAccountingId")]
+        public Accounting FixedAssetAccounting { get; set; }
+
+        [Display(Name = "Cuenta de Depreciacionde Activo")]
+        public Int64? DepreciationAccountingId { get; set; }
+        [ForeignKey("DepreciationAccountingId")]
+        public Accounting DepreciationFixedAssetAccounting { get; set; }
+
         [Display(Name = "Estado")]
         public Int64 IdEstado { get; set; }
 
