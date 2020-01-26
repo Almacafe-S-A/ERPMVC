@@ -62,8 +62,6 @@ namespace ERPMVC.Models
 
         [Display(Name = "RTN")]
         public string RTN { get; set; }
-
-        [DataType(DataType.PhoneNumber)]
         [Display(Name = "Teléfono")]
         public string Tefono { get; set; }
 
