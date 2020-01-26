@@ -118,7 +118,7 @@ namespace ERPMVC.Controllers
                         BitacoraCierreContable cierre = JsonConvert.DeserializeObject<BitacoraCierreContable>(ultimoCierre);
                         DateTime fechaactual = DateTime.Now;
                         fechaactual = fechaactual.AddDays(-1);
-                        Utils.Cerrado = cierre.FechaCierre.Date >= fechaactual;
+                        Utils.Cerrado = cierre.FechaCierre.Date == fechaactual.Date;
 
 
 
