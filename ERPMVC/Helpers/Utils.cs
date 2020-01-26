@@ -8,5 +8,7 @@ namespace ERPMVC.Helpers
     public static class Utils
     {
         public static string ConexionReportes { get; set; }
+
+        public static bool Cerrado { get; set; }
     }
 }

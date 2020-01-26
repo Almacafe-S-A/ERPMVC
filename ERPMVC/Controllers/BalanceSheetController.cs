@@ -24,6 +24,12 @@ namespace ERPMVC.Controllers
 
         }
 
+        public async Task<IActionResult> BalanceSaldos()
+        {
+            return await Task.Run(() => View());
+
+        }
+
         public async Task<IActionResult> SFAuxiliarMovimientos()
         {
             return await Task.Run(() => View());

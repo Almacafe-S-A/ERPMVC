@@ -10,6 +10,7 @@ using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -25,22 +26,26 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public JournalEntryController(ILogger<JournalEntryController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public JournalEntryController(ILogger<JournalEntryController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
       
         // GET: Purch
         public ActionResult Index()
         {
-           
+            ViewData["permisoAprobar"] =_principal.HasClaim("Contabilidad.Movimientos.Asiento Contable.Aprobar", "true");
+
 
             return View();
         }
 
         public ActionResult IndexAjustes()
-        {         
+        {
+            ViewData["permisoAprobarAjuste"] = _principal.HasClaim("Contabilidad.Movimientos.Ajustes Contables.Aprobar", "true");
             return View();
         }
         public ActionResult JournalEntryLine()
@@ -148,7 +153,8 @@ namespace ERPMVC.Controllers
                         _so = JsonConvert.DeserializeObject<JournalEntryDTO>(valorrespuesta);
                         _so.EstadoId = 6;
                         _so.EstadoName = "Aprobado";
-
+                        _so.ApprovedBy = HttpContext.Session.GetString("user");
+                        _so.ApprovedDate = DateTime.Now;
                         var resultsalesorder = await Update(_so.JournalEntryId, _so);
 
                         var value = (resultsalesorder.Result as ObjectResult).Value;
@@ -408,11 +414,51 @@ namespace ERPMVC.Controllers
                 {
                     _JournalEntry.CreatedDate = DateTime.Now;
                     _JournalEntry.CreatedUser = HttpContext.Session.GetString("user");
-
+                    _JournalEntryP.PartyTypeName = "";
+                    var beneficiarios = 0;
+                    var NombreBeneficiario = "";
+                    var CountParty = 0;
+                    var CountPartyDistintos = 0;
                     foreach (var item in _JournalEntryP.JournalEntryLines)
                     {
                         item.CreatedUser = HttpContext.Session.GetString("user");
                         item.ModifiedUser = HttpContext.Session.GetString("user");
+                        if(item.PartyName != null)
+                        {
+                            _JournalEntryP.PartyTypeId = item.PartyTypeId;
+                            _JournalEntryP.PartyTypeName = item.PartyTypeName;
+                            _JournalEntryP.PartyId = item.PartyId;
+                            _JournalEntryP.PartyName = item.PartyName;
+                            
+                            beneficiarios++;
+
+                            NombreBeneficiario = item.PartyName;
+                            foreach (var item1 in _JournalEntryP.JournalEntryLines)
+                            {
+                                if (item1.PartyName != null)
+                                {
+                                    if (NombreBeneficiario == item1.PartyName)
+                                    {
+                                        CountParty++;
+                                    }
+                                    else
+                                    {
+                                        CountPartyDistintos++;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (CountParty > 1 && CountPartyDistintos == 0)
+                    {
+                        _JournalEntryP.PartyName = NombreBeneficiario;
+                    }
+                    else if (beneficiarios > 1)
+                    {
+                        _JournalEntryP.PartyName = "Varios";
+                        _JournalEntryP.PartyId = 0;
+                        _JournalEntryP.PartyTypeName = "";
+                        _JournalEntryP.PartyTypeId = 0;
                     }
 
                     var insertresult = await Insert(_JournalEntryP);

@@ -119,10 +119,18 @@ namespace ERPMVC.Controllers
 
                 if (_SeveridadRiesgoP.IdSeveridad == 0)
                 {
+                    _SeveridadRiesgoP.FechaCreacion = DateTime.Now;
+                    _SeveridadRiesgoP.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    _SeveridadRiesgoP.FechaModificacion = DateTime.Now;
+                    _SeveridadRiesgoP.UsuarioModificacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_SeveridadRiesgoP);
                 }
                 else
                 {
+                    _SeveridadRiesgoP.FechaCreacion = _SeveridadRiesgo.FechaCreacion;
+                    _SeveridadRiesgoP.UsuarioCreacion = _SeveridadRiesgo.UsuarioCreacion;
+                    _SeveridadRiesgoP.FechaModificacion = DateTime.Now;
+                    _SeveridadRiesgoP.UsuarioModificacion = HttpContext.Session.GetString("user");
                     var updateresult = await Update(_SeveridadRiesgo.IdSeveridad, _SeveridadRiesgoP);
                 }
             }

@@ -43,6 +43,13 @@
         grid.dataSource.read();
     }
 
+    function ShowEndorsementReport() {
+                //e.preventDefault();
+        //var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        window.location.href = '@Url.Action("SFSegurosEndosados", "InsuranceEndorsement")';
+    }
+
     function AddEndoso() {
         debugger;
         ClearSession();
@@ -63,7 +70,7 @@
                 $("#divInsuranceEndorsement").html('');
                 $("#divInsuranceEndorsement").html(result);
 
-                RefreshInvoiceDetail();
+                //RefreshInvoiceDetail();
                  $("#btnSaveInsuranceEndorsement").show();
                  $('#myModalSalesOrder').modal('show');
             },
@@ -101,7 +108,7 @@
 
                 var txt = $(result);
 
-                 RefreshInvoiceDetail();
+                 //RefreshInvoiceDetail();
                  $("#btnSaveInsuranceEndorsement").hide();
                  $('#myModalSalesOrder').modal('show');
             },
@@ -141,12 +148,13 @@
                                                   //command.Destroy().Text("Eliminar").IconClass("fa fa-trash-alt").Text(" ");
                                                   //command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
 
-                                              }).Title("Acciones").Width(140);
+                                              }).Title("Acciones").Width(100);
                                               columns.Bound(p => p.InsuranceEndorsementId).Title("Id").Width(150);
                                               columns.Bound(p => p.DateGenerated).Format("{0:dd/MM/yyyy}").Title("Fecha").Width(170);
                                               columns.Bound(p => p.Customername).Title("Cliente").Width(250);
                                               columns.Bound(p => p.ProductName).Title("Producto").Width(250);
                                               columns.Bound(p => p.InsurancePolicyId).Title("Póliza").Width(250);
+                                              columns.Bound(p => p.EstadoId).ClientTemplate("#if (EstadoId == 1) {#Activo#} else {#Inactivo#} #").Title("Estado").Width(150);
                                           })
                                               .Filterable(f => f.Operators(o => o.ForString(s => s
                                                        .Clear()
@@ -189,20 +197,24 @@
 
                                               tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
                                               tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
+                                              tools.Custom().Text("Reporte de endosos")
+                                                                     .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ShowEndorsementReport();" });
 
                                           })
                                            .Editable(e => e.Mode(GridEditMode.PopUp))
                                             .Sortable()
                                             .AutoBind(true)
-                                            .Pageable()
+                                            .Pageable(s => s
+                                                .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+                                                .Empty("No hay datos."))
+                                            )
                                             .Filterable()
                                             .Scrollable()
                                             // .ClientDetailTemplateId("template")
-                                            .Pdf(pdf => pdf.FileName("InsuranceEndorsementReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                            .Pdf(pdf => pdf.FileName("SegurosEndosadosReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                                             + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
                                             .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                              .Excel(excel => excel.FileName("InsuranceEndorsementReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                              .Excel(excel => excel.FileName("SegurosEndosadosReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                                             + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
                                             .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
                                             .Events(e => e.DataBound("dataBound"))
@@ -220,6 +232,7 @@
 
 
                                             })
+                                            //.Sort(s => s.Add(m => m.FechaCreacion).Descending())
                                             .Events(events =>
                                             {
                                                 events.Error("error_handler");
@@ -259,6 +272,6 @@
     setRowButtonTooltip(".k-grid-Imprimir", "Imprimir");
     setRowButtonTooltip(".k-grid-Editar", "Editar registro");
     setRowButtonTooltip(".k-grid-Agregar", "Agregar nuevo registro");
-    setRowButtonTooltip(".k-grid-delete", "Eliminar");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
 </script>
 

@@ -10,7 +10,7 @@ namespace ERPMVC.Models
     public class FixedAsset
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Display(Name = "Id")]
+        [Display(Name = "Id Activo Fijo")]
         public Int64 FixedAssetId { get; set; }
 
         [Display(Name = "Nombre de activo fijo")]
@@ -69,6 +69,18 @@ namespace ERPMVC.Models
 
         [Display(Name = "Total Depreciado")]
         public double TotalDepreciated { get; set; }
+
+        [Display(Name = "Costo Total Activo")]
+        public double ActiveTotalCost { get; set; }
+
+        [Display(Name = "Valor residual porcentaje")]
+        public double ResidualValuePercent { get; set; }
+
+        [Display(Name = "Valor neto")]
+        public double NetValue { get; set; }
+
+        [Display(Name = "Depreciacion Acumulada")]
+        public double AccumulatedDepreciation { get; set; }
 
         [Display(Name = "Fecha de creación")]
         public DateTime FechaCreacion { get; set; }

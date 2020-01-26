@@ -10,55 +10,27 @@ $(function () {
     // Newsletter
     // ============================================================== 
     
-    //var chart = new Chartist.Line('.campaign', {
-    //      labels: [1, 2, 3, 4, 5, 6, 7, 8],
-    //      series: [
-    //        [0, 5000, 15000, 8000, 15000, 9000, 30000, 0]
-    //        , [0, 3000, 5000, 2000, 8000, 1000, 5000, 0]
-    //      ]}, {
-    //      low: 0,
-    //      high: 28000,
-    //      showArea: true,
-    //      fullWidth: true,
-    //      plugins: [
-    //        Chartist.plugins.tooltip()
-    //      ],
-    //        axisY: {
-    //        onlyInteger: true
-    //        , scaleMinSpace: 40    
-    //        , offset: 20
-    //        , labelInterpolationFnc: function (value) {
-    //            return (value / 1000) + 'k';
-    //        }
-    //    },
-    //    });
-
-
-
-
     var chart = new Chartist.Line('.campaign', {
-        labels: [1, 2, 3, 4, 5, 6, 7, 8,9,10,11,12],
-        series: [facturacionA,
-            facturacionB
-            //[0, 5000, 15000, 8000, 15000, 9000, 30000, 0]
-            //, [0, 3000, 5000, 2000, 8000, 1000, 5000, 0]
-        ]
-    }, {
-            low: 0,
-            high: 28000,
-            showArea: true,
-            fullWidth: true,
-            plugins: [
-                Chartist.plugins.tooltip()
-            ],
+          labels: [1, 2, 3, 4, 5, 6, 7, 8],
+          series: [
+            [0, 5000, 15000, 8000, 15000, 9000, 30000, 0]
+            , [0, 3000, 5000, 2000, 8000, 1000, 5000, 0]
+          ]}, {
+          low: 0,
+          high: 28000,
+          showArea: true,
+          fullWidth: true,
+          plugins: [
+            Chartist.plugins.tooltip()
+          ],
             axisY: {
-                onlyInteger: true
-                , scaleMinSpace: 40
-                , offset: 20
-                , labelInterpolationFnc: function (value) {
-                    return (value / 1000) + 'k';
-                }
-            },
+            onlyInteger: true
+            , scaleMinSpace: 40    
+            , offset: 20
+            , labelInterpolationFnc: function (value) {
+                return (value / 1000) + 'k';
+            }
+        },
         });
 
         // Offset x1 a tiny amount so that the straight stroke gets a bounding box
@@ -129,70 +101,7 @@ $(function () {
         });
     }
     
-   // ============================================================== 
-    // world map
-    // ==============================================================
-    //jQuery('#visitfromworld').vectorMap({
-    //    map: 'world_mill_en'
-    //    , backgroundColor: '#fff'
-    //    , borderColor: '#ccc'
-    //    , borderOpacity: 0.9
-    //    , borderWidth: 1
-    //    , zoomOnScroll : false
-    //    , color: '#ddd'
-    //    , regionStyle: {
-    //        initial: {
-    //            fill: '#fff' 
-    //        }
-    //    }
-    //    , markerStyle: {
-    //        initial: {
-    //            r: 8
-    //            , 'fill': '#26c6da'
-    //            , 'fill-opacity': 1
-    //            , 'stroke': '#000'
-    //            , 'stroke-width': 0
-    //            , 'stroke-opacity': 1
-    //        }
-    //    , }
-    //    , enableZoom: true
-    //    , hoverColor: '#79e580'
-    //    , markers: [{
-    //        latLng: [21.00, 78.00]
-    //        , name: 'India : 9347'
-    //        , style: {fill: '#26c6da'}
-    //    },
-    //  {
-    //    latLng : [-33.00, 151.00],
-    //    name : 'Australia : 250'
-    //    , style: {fill: '#02b0c3'}
-    //  },
-    //  {
-    //    latLng : [36.77, -119.41],
-    //    name : 'USA : 250'
-    //    , style: {fill: '#11a0f8'}
-    //  },
-    //  {
-    //    latLng : [55.37, -3.41],
-    //    name : 'UK   : 250'
-    //    , style: {fill: '#745af2'}
-    //  },
-    //  {
-    //    latLng : [25.20, 55.27],
-    //    name : 'UAE : 250'
-    //    , style: {fill: '#ffbc34'}
-    //  }]
-    //    , hoverOpacity: null
-    //    , normalizeFunction: 'linear'
-    //    , scaleColors: ['#fff', '#ccc']
-    //    , selectedColor: '#c9dfaf'
-    //    , selectedRegions: []
-    //    , showTooltip: true
-    //    , onRegionClick: function (element, code, region) {
-    //        var message = 'You clicked "' + region + '" which has the code: ' + code.toUpperCase();
-    //        alert(message);
-    //    }
-    //});
+
     // ============================================================== 
     // SALES DIFFERENCE
     // ==============================================================

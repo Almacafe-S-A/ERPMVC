@@ -28,6 +28,14 @@ namespace ERPMVC.Models
         [Display(Name = "Ruta")]
         public string Path { get; set; }
 
+        public string Estado { get; set; }
+
+        [Display(Name = "Estado")]
+        public Int64 EstadoId { get; set; }
+
+        [ForeignKey("EstadoId")]
+        public Estados Estados { get; set; }
+
         [Required]
         [Display(Name = "Usuario que lo crea")]
         public string CreatedUser { get; set; }

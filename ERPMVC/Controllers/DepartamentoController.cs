@@ -55,9 +55,8 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Departamento = JsonConvert.DeserializeObject<List<Departamento>>(valorrespuesta);
-
+                    _Departamento = _Departamento.OrderByDescending(q => q.IdDepartamento).ToList();
                 }
-
 
             }
             catch (Exception ex)
@@ -142,7 +141,6 @@ namespace ERPMVC.Controllers
         [HttpPost]
         public async Task<ActionResult<Departamento>> SaveDepartamento([FromBody]DepartamentoDTO _DepartamentoS)
         {
-
             Departamento _Departamento = _DepartamentoS;
             try
             {
@@ -150,7 +148,8 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Departamento/GetDepartamento/" + _Departamento.IdDepartamento);
+                var result = await _client.GetAsync(baseadress + "api/Departamento/GetDepartamentoByDepartamentoName/" + _Departamento.NombreDepartamento);
+                //var result = await _client.GetAsync(baseadress + "api/Departamento/GetDepartamento/" + _Departamento.IdDepartamento);
                 string valorrespuesta = "";
                 _Departamento.FechaModificacion = DateTime.Now;
                 _Departamento.Usuariomodificacion = HttpContext.Session.GetString("user");
@@ -161,7 +160,13 @@ namespace ERPMVC.Controllers
                 }
 
                 if (_Departamento == null) { _Departamento = new Models.Departamento(); }
-
+                if (_Departamento.IdDepartamento > 0)
+                {
+                    if (_Departamento.IdDepartamento != _DepartamentoS.IdDepartamento)
+                    {
+                        return await Task.Run(() => BadRequest($"Ya existe un departamento registrado con ese nombre."));
+                    }
+                }
                 if (_DepartamentoS.IdDepartamento == 0)
                 {
                     //_CAI.FechaCreacion = DateTime.Now;

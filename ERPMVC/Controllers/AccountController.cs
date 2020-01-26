@@ -20,6 +20,8 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
+using ERPMVC.DTO;
+using Kendo.Mvc.UI;
 
 namespace ERPMVC.Controllers
 {
@@ -109,6 +111,18 @@ namespace ERPMVC.Controllers
                             Utils.ConexionReportes = cadena;
                         }
 
+                        
+                        
+                        var resultadoCierre = await cliente.GetAsync(baseadress + "api/CierreContable/UltimoCierre");                        
+                        string ultimoCierre = await resultadoCierre.Content.ReadAsStringAsync();
+                        BitacoraCierreContable cierre = JsonConvert.DeserializeObject<BitacoraCierreContable>(ultimoCierre);
+                        DateTime fechaactual = DateTime.Now;
+                        fechaactual = fechaactual.AddDays(-1);
+                        Utils.Cerrado = cierre.FechaCierre.Date >= fechaactual;
+
+
+
+
                         return RedirectToAction("Index", "Home");
 
                     }
@@ -141,7 +155,51 @@ namespace ERPMVC.Controllers
 
 
         }
-        
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<ApplicationUser>> ChangePassword([FromBody]CambiarPassDTO _cambio)
+        {
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                var result = await _client.GetAsync(baseadress + "api/Usuario/GetUserByEmail/" + _cambio.Email);
+                if (result.IsSuccessStatusCode)
+                {
+                    string password = _cambio.Password;
+                    string datosUsuario = await (result.Content.ReadAsStringAsync());
+                    /*if (!await IsPasswordHistory(JsonConvert.DeserializeObject<ApplicationUser>(datosUsuario).Id.ToString(),password))
+                    {*/
+                    result = await _client.PostAsJsonAsync(baseadress + "api/Cuenta/CambiarPassword", _cambio);
+                    if (result.IsSuccessStatusCode)
+                    {
+                        return new ObjectResult(new DataSourceResult { Data = "", Total = 1 });
+                    }
+                    else
+                    {
+                        string error = await result.Content.ReadAsStringAsync();
+                        return await Task.Run(() => BadRequest($"{error}"));
+                    }
+                    /*}
+                    else
+                    {
+                        return await Task.Run(() => BadRequest($"No puede utilizar las ultimas contraseñas "));
+                    }*/
+                }
+                else
+                {
+                    return await Task.Run(() => BadRequest($"Usuario o contraseña incorrecta"));
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return await Task.Run(() => BadRequest($"Ocurrio un error no manejado en el sistema "));
+            }
+        }
+
 
         [HttpGet]
         // [ValidateAntiForgeryToken]
