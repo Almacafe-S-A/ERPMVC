@@ -1,7 +1,10 @@
 ﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
 
 @{
     ViewData["Title"] = "Movimientos Financieros";
+    bool permiso;
+    permiso = (bool)ViewData["permisoAprobarAjuste"];
 }
 
 <script>
@@ -36,8 +39,8 @@
 
     function AddJournalEntry() {
         clearsession();
-      
-        $('#ModalJournalEntry').find(':input').not(':submit').val('');       
+
+        $('#ModalJournalEntry').find(':input').not(':submit').val('');
         $("#JournalEntryId").val('0');
 
 
@@ -99,31 +102,12 @@
                     $("#NumJournalEntry").html(result);
                     //$("#btnCAI").hide();
                     $('#ModalJournalEntry').modal('show');
-                    $("#IdPartyType").data("kendoDropDownList").value(dataItem.PartyTypeId);
-                    if (dataItem.PartyTypeId == 1) {
-                        $("#customer").show();
-                        $("#party").hide();
-                        $("#vendor").hide();
-                        $("#employe").hide();
-                    }
-                    else if (dataItem.PartyTypeId == 2) {
-                        $("#customer").hide();
-                        $("#party").hide();
-                        $("#vendor").hide();
-                        $("#employe").show();
-                    }
-                    else if (dataItem.PartyTypeId == 3) {
-                        $("#customer").hide();
-                        $("#party").hide();
-                        $("#vendor").show();
-                        $("#employe").hide();
-                    }
-                    else {
+                    $("#IdPartyType").data("kendoDropDownList").value(0);
+                    
                         $("#customer").hide();
                         $("#party").show();
                         $("#vendor").hide();
                         $("#employe").hide();
-                    }
 
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -139,7 +123,7 @@
         if (dataItem.IdEstado != 6) {
         if (confirm('Esta seguro de aprobar este ajuste?')) {
             e.preventDefault();
-        
+
             var dataObject = {
                 JournalEntryId: dataItem.JournalEntryId,
                 editar: 0
@@ -187,7 +171,7 @@
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         if (dataItem.IdEstado != 7) {
         if (confirm('Esta seguro de rechazar este ajuste?')) {
-            e.preventDefault();       
+            e.preventDefault();
             var dataObject = {
                 JournalEntryId: dataItem.JournalEntryId,
                 editar: 0
@@ -259,10 +243,10 @@
      function Imprimir(e, id) {
         debugger;
         var dataItem;
-        
+
         if (e != null) {
             var dataItemEstado = this.dataItem($(e.currentTarget).closest("tr"));
-            if (dataItemEstado.EstadoId != 5) {
+            if (dataItemEstado.EstadoId == 6) {
                 e.preventDefault();
                 dataItem = this.dataItem($(e.currentTarget).closest("tr"));
                 var url = '@Url.Action("SFAjusteContable", "JournalEntry")/' + dataItem.JournalEntryId;
@@ -274,7 +258,7 @@
             }
         }
         else {
-            if ($("#EstadoId").val() != 5) {
+            if ($("#EstadoId").val() == 6) {
                 dataItem = { JournalEntryId: $("#JournalEntryId").val() };
                 var url = '@Url.Action("SFAjusteContable", "JournalEntry")/' + dataItem.JournalEntryId;
                 var win = window.open(url, '_blank');
@@ -300,147 +284,147 @@
 
     }
     @(Html.Kendo().Grid<ERPMVC.Models.JournalEntry>
-                                    ()
-                                    .Name("gridNumeracionJournalEntry")
-                                    .Columns(columns =>
-                                    {
-                                        columns.Command(command =>
-                                        {
-                                            //command.Custom("Ver detalles").Text(" ").IconClass("far fa-list-alt").Click("DetallesJournalEntry");
-                                            command.Custom("Editar").Text(" ").IconClass("far fa-list-alt").Click("EditJournalEntry");
-                                            command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("Imprimir");
-                                            /// command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("AprobarAjuste");
-                                            if (Gerente)
+                                            ()
+                                            .Name("gridNumeracionJournalEntry")
+                                            .Columns(columns =>
                                             {
-                                                command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("AprobarAjuste");
-                                                command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("RechazarAjuste");
-                                            }
-                                            //  command.Destroy();
-                                        }).Title("Acciones").Width(125);
+                                                columns.Command(command =>
+                                                {
+                                        //command.Custom("Ver detalles").Text(" ").IconClass("far fa-list-alt").Click("DetallesJournalEntry");
+                                        command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditJournalEntry");
+                                                    command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("Imprimir");
+                                        /// command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("AprobarAjuste");
+                                        if (permiso)
+                                                    {
+                                                        command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("AprobarAjuste");
+                                                        command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("RechazarAjuste");
+                                                    }
+                                        //  command.Destroy();
+                                    }).Title("Acciones").Width(175);
 
-                                        columns.Bound(p => p.JournalEntryId).Title("Id Asiento Contable").Width(200);
-                                        columns.Bound(p => p.DatePosted).Title("Fecha de  Transacción").Format("{0:dd/MM/yyyy}").Width(250);
-                                        columns.Bound(p => p.PartyId).Title("Beneficiario").Width(200).Hidden(true);
-                                        columns.Bound(p => p.PartyName).Title("Beneficiario").Width(200);
-                                        columns.Bound(p => p.TotalDebit).Width(200).Format("{0:N2}");
-                                        columns.Bound(p => p.TotalCredit).Width(200).Format("{0:N2}");
-                                        columns.Bound(p => p.Memo).Title("Sinopsis").Width(350);
-                                        columns.Bound(p => p.EstadoName).Title("Estado").Width(170);
-                                        columns.Bound(p => p.EstadoId).Hidden().Title("Estado").Width(170);
-                                        columns.Bound(p => p.PartyTypeId).Hidden().Title("").Width(170);
+                                                columns.Bound(p => p.JournalEntryId).Title("Id Asiento Contable").Width(200);
+                                                columns.Bound(p => p.DatePosted).Title("Fecha de  Transacción").Format("{0:dd/MM/yyyy}").Width(250);
+                                                columns.Bound(p => p.PartyId).Title("Beneficiario").Width(200).Hidden(true);
+                                                columns.Bound(p => p.PartyName).Title("Beneficiario").Width(200);
+                                                columns.Bound(p => p.TotalDebit).Width(200).Format("{0:N2}");
+                                                columns.Bound(p => p.TotalCredit).Width(200).Format("{0:N2}");
+                                                columns.Bound(p => p.Memo).Title("Sinopsis").Width(350);
+                                                columns.Bound(p => p.EstadoName).Title("Estado").Width(170);
+                                                columns.Bound(p => p.EstadoId).Hidden().Title("Estado").Width(170);
+                                                columns.Bound(p => p.PartyTypeId).Hidden().Title("").Width(170);
 
-                                    })
-                                    .Filterable(f => f.Operators(o => o.ForString(s => s
-                                    .Clear()
-                                    .Contains("Contiene")
-                                    .DoesNotContain("No contiene")
-                                    .EndsWith("Termina con")
-                                    .IsEqualTo("Es igual a")
-                                    .IsNotEqualTo("No es igual a")
-                                    .IsNull("Es nulo")
-                                    .StartsWith("Inicia con")
-
-
-                                    )
-                                    .ForNumber(n => n
-                                    .Clear()
-                                    .IsEqualTo("Es igual a")
-                                    .IsGreaterThan("Es mayor que")
-                                    .IsLessThan("Es menor que")
-                                    .IsNull("Es nulo")
-                                    .IsLessThanOrEqualTo("Es menor o igual que")
-                                    .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                    )
-                                    .ForDate(d => d
-                                    .Clear()
-                                    .IsEqualTo("Es igual que")
-                                    .IsGreaterThan("Es mayor que")
-                                    .IsLessThan("Es menor que")
-                                    .IsLessThanOrEqualTo("Es menor o igual que")
-                                    .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                    .IsNotEqualTo("No es igual que")
-                                    )
-                                    ))
-                                    .ToolBar(tools =>
-                                    {
-                                        // tools.Create();
-                                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                                            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddJournalEntry()" });
-                                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                            })
+                                            .Filterable(f => f.Operators(o => o.ForString(s => s
+                                            .Clear()
+                                            .Contains("Contiene")
+                                            .DoesNotContain("No contiene")
+                                            .EndsWith("Termina con")
+                                            .IsEqualTo("Es igual a")
+                                            .IsNotEqualTo("No es igual a")
+                                            .IsNull("Es nulo")
+                                            .StartsWith("Inicia con")
 
 
+                                            )
+                                            .ForNumber(n => n
+                                            .Clear()
+                                            .IsEqualTo("Es igual a")
+                                            .IsGreaterThan("Es mayor que")
+                                            .IsLessThan("Es menor que")
+                                            .IsNull("Es nulo")
+                                            .IsLessThanOrEqualTo("Es menor o igual que")
+                                            .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                            )
+                                            .ForDate(d => d
+                                            .Clear()
+                                            .IsEqualTo("Es igual que")
+                                            .IsGreaterThan("Es mayor que")
+                                            .IsLessThan("Es menor que")
+                                            .IsLessThanOrEqualTo("Es menor o igual que")
+                                            .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                            .IsNotEqualTo("No es igual que")
+                                            )
+                                            ))
+                                            .ToolBar(tools =>
+                                            {
+                                    // tools.Create();
+                                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                    .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddJournalEntry()" });
+                                                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
 
-                                    })
-                                    .Editable(e => e.Mode(GridEditMode.PopUp))
-                                    .Sortable()
-                                    .AutoBind(true)
-                                    .Pageable()
-                                    .Filterable()
-                                    .Scrollable()
-                                    .Pdf(pdf => pdf.FileName("AjusteContableReporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                    .Excel(excel => excel.FileName("AjusteContableReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                    .Events(e => e.DataBound("dataBound"))
-                                    .DataSource(dataSource =>
-                                    dataSource
-                                    .WebApi()
 
-                                    .ServerOperation(true)
-                                    .Model(model =>
-                                    {
-                                        model.Id(p => p.JournalEntryId);
-                                        model.Field(p => p.DatePosted).Editable(true);
-                                        model.Field(p => p.PartyId).Editable(true);
-                                        model.Field(p => p.TotalDebit).Editable(true);
-                                        model.Field(p => p.TotalCredit).Editable(true);
-                                        model.Field(p => p.Memo).Editable(true);
-                                        model.Field(p => p.EstadoName).Editable(true);
-                                        model.Field(p => p.EstadoId).Editable(true);
-                                        model.Field(p => p.EstadoId).Editable(true);
 
-                                    })
-                                    .Sort(s => s.Add(m => m.CreatedDate).Descending())
-                                    .Events(events => events.Error("error_handler"))
-                                    .Read(read => read.Action("GetJournalEntryAjustes", "JournalEntry"))
-                                    .Create(create => create.Action("Insert", "JournalEntry"))
-                                    .Update(update => update.Action("Update", "JournalEntry", new { id = "{0}" }))
-                                    //.Destroy(destroy => destroy.Action("Delete", "TypeAccount", new { Num = "{1}" }).Type(HttpVerbs.Delete))
+                                            })
+                                            .Editable(e => e.Mode(GridEditMode.PopUp))
+                                            .Sortable()
+                                            .AutoBind(true)
+                                            .Pageable()
+                                            .Filterable()
+                                            .Scrollable()
+                                            .Pdf(pdf => pdf.FileName("Ajuste_Contable_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                            .Excel(excel => excel.FileName("Ajuste_Contable_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                            .Events(e => e.DataBound("dataBound"))
+                                            .DataSource(dataSource =>
+                                            dataSource
+                                            .WebApi()
+                                            .ServerOperation(true)
+                                            .Model(model =>
+                                            {
+                                                model.Id(p => p.JournalEntryId);
+                                                model.Field(p => p.DatePosted).Editable(true);
+                                                model.Field(p => p.PartyId).Editable(true);
+                                                model.Field(p => p.TotalDebit).Editable(true);
+                                                model.Field(p => p.TotalCredit).Editable(true);
+                                                model.Field(p => p.Memo).Editable(true);
+                                                model.Field(p => p.EstadoName).Editable(true);
+                                                model.Field(p => p.EstadoId).Editable(true);
+                                                model.Field(p => p.EstadoId).Editable(true);
 
-                                    )
-                                    .Events(e =>
-                                    {
-                                        e.Save("onsave");
+                                            })
+                                            .Filter(f => f.Add(m => m.TypeOfAdjustmentId).IsEqualTo(66))
+                                            .Sort(s => s.Add(m => m.CreatedDate).Descending())
+                                            .Events(events => events.Error("error_handler"))
+                                            .Read(read => read.Action("GetJournalEntryAjustes", "JournalEntry"))
+                                            .Create(create => create.Action("Insert", "JournalEntry"))
+                                            .Update(update => update.Action("Update", "JournalEntry", new { id = "{0}" }))
+                                            //.Destroy(destroy => destroy.Action("Delete", "TypeAccount", new { Num = "{1}" }).Type(HttpVerbs.Delete))
 
-                                    })
+                                            )
+                                            .Events(e =>
+                                            {
+                                                e.Save("onsave");
+
+                                            })
     )
 </div>
 
-    <div id="NumJournalEntry">
-        @await Html.PartialAsync("pvwAddJournalEntryAjuste", new ERPMVC.DTO.JournalEntryDTO { JournalEntryId = 0, Date = DateTime.Now, DatePosted = DateTime.Now })
-    </div>
+<div id="NumJournalEntry">
+    @await Html.PartialAsync("pvwAddJournalEntryAjuste", new ERPMVC.DTO.JournalEntryDTO { JournalEntryId = 0, Date = DateTime.Now, DatePosted = DateTime.Now })
+</div>
 
-    <script>
+<script>
 
-        function setToolbarTooltip(btn_cl, btn_tooltip) {
-            $("#gridNumeracionJournalEntry").kendoTooltip({
-                filter: btn_cl,
-                content: btn_tooltip
-            });
-        }
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridNumeracionJournalEntry").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
 
-        function setRowButtonTooltip(btn_cl, btn_tooltip) {
-            $("#gridNumeracionJournalEntry").kendoTooltip({
-                filter: btn_cl,
-                content: btn_tooltip
-            });
-        }
-        setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
-        setToolbarTooltip(".k-grid-Editar", "Ver Detalle");
-        setToolbarTooltip(".k-grid-Imprimir", "Imprimir");
-        setRowButtonTooltip(".k-grid-Aprobar", "Aprobar Ajuste");
-        setRowButtonTooltip(".k-grid-Rechazar", "Rechazar Ajuste");
-    </script>
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridNumeracionJournalEntry").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setToolbarTooltip(".k-grid-Editar", "Editar registro");
+    setToolbarTooltip(".k-grid-Imprimir", "Imprimir registro");
+    setRowButtonTooltip(".k-grid-Aprobar", "Aprobar Ajuste");
+    setRowButtonTooltip(".k-grid-Rechazar", "Rechazar Ajuste");
+</script>

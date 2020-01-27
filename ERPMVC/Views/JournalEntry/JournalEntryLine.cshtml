@@ -1,4 +1,9 @@
 ﻿<script>
+    //$(document).ready(function () {
+    //    $("#Debito").kendoMaskedTextBox({
+    //        mask: "#,0.00;(#,0.00)"
+    //    });
+    //});
     //function dataJournalEntry() {
     //    return {
     //        JournalEntryId: $("#JournalEntryId").val()
@@ -32,13 +37,13 @@
             // console.log(e);
             // console.log(e.response.Data);
             //console.log('lenght--' + e.response.Data.length);
-            $("#TotalCredito").val("0");
-            $("#TotalDebito").val("0");
+            $("#TotalCredito").data("kendoNumericTextBox").value(0);
+            $("#TotalDebito").data("kendoNumericTextBox").value(0);
             $("#TotalDebit").val("0");
             $("#TotalCredit").val("0");
             for (var i = 0; i < e.response.Data.length; i++) {
-                $("#TotalCredito").val(parseFloat(Number($("#TotalCredito").val()) + Number(e.response.Data[i].Credit)).toFixed(2));
-                $("#TotalDebito").val(parseFloat(Number($("#TotalDebito").val()) + Number(e.response.Data[i].Debit)).toFixed(2));
+                $("#TotalCredito").data("kendoNumericTextBox").value(parseFloat(Number($("#TotalCredito").val()) + Number(e.response.Data[i].Credit)).toFixed(2));
+                $("#TotalDebito").data("kendoNumericTextBox").value(parseFloat(Number($("#TotalDebito").val()) + Number(e.response.Data[i].Debit)).toFixed(2));
                 $("#TotalDebit").val(parseFloat(Number($("#TotalDebit").val()) + Number(e.response.Data[i].Debit)).toFixed(2));
                 $("#TotalCredit").val(parseFloat(Number($("#TotalCredit").val()) + Number(e.response.Data[i].Credit)).toFixed(2));
             }
@@ -50,13 +55,38 @@
         var displayedData = $("#gridNumeracionJournalEntryLine").data().kendoGrid.dataSource.data();
         var cuenta = $("#Cuenta").val();
         var costo = $("#CostCenter").val();
+        var beneficiario = $('#PartyName').val();
+        var Credito = $('#Credito').val();
         for (i = 0; i < displayedData.length; i++) {
-            if (Number(displayedData[i].AccountId) == Number(cuenta)) {
-                if (Number(displayedData[i].CostCenterId) == Number(costo)) {
-                    if (Number(displayedData[i].Credit) > 0 || Number(displayedData[i].Debit) > 0) {
-                        alert("Ya se agrego un crédito para este centro de costos y está cuenta");
-                        $("#Credito").val("");
-                        return;
+            if (beneficiario != "") {
+                if (Number(displayedData[i].Credit) > 0) {
+                    if (Number(displayedData[i].Credit) == Number(Credito)) {
+                        if (Number(displayedData[i].AccountId) == Number(cuenta)) {
+                            if (Number(displayedData[i].CostCenterId) == Number(costo)) {
+                                if (displayedData[i].PartyName == beneficiario) {
+                                    if (Number(displayedData[i].Credit) > 0 || Number(displayedData[i].Debit) > 0) {
+                                        alert("Ya se agrego un crédito para este centro de costos, está cuenta, este beneficiario y con el mismo Monto.");
+                                        $("#Credito").val("");
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else {
+                if (Number(displayedData[i].Credit) > 0) {
+                    if (Number(displayedData[i].Credit) == Number(Credito)) {
+                        if (Number(displayedData[i].AccountId) == Number(cuenta)) {
+                            if (Number(displayedData[i].CostCenterId) == Number(costo)) {
+                                if (Number(displayedData[i].Credit) > 0 || Number(displayedData[i].Debit) > 0) {
+                                    alert("Ya se agrego un crédito para este centro de costos, está cuenta y con el mismo Monto.");
+                                    $("#Credito").val("");
+                                    return;
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -68,13 +98,38 @@
         var displayedData = $("#gridNumeracionJournalEntryLine").data().kendoGrid.dataSource.data();
         var cuenta = $("#Cuenta").val();
         var costo = $("#CostCenter").val();
+        var beneficiario = $('#PartyName').val();
+        var Debito = $('#Debito').val();
         for (i = 0; i < displayedData.length; i++) {
-            if (Number(displayedData[i].AccountId) == Number(cuenta)) {
-                if (Number(displayedData[i].CostCenterId) == Number(costo)) {
-                    if (Number(displayedData[i].Credit) > 0 || Number(displayedData[i].Debit) > 0) {
-                        alert("Ya se agrego un débito para este centro de costos y está cuenta")
-                        $("#Debito").val("");
-                        return;
+            if (beneficiario != "") {
+                if (Number(displayedData[i].Debit) > 0) {
+                    if (Number(displayedData[i].Debit) == Number(Debito)) {
+                        if (Number(displayedData[i].AccountId) == Number(cuenta)) {
+                            if (Number(displayedData[i].CostCenterId) == Number(costo)) {
+                                if (displayedData[i].PartyName == beneficiario) {
+                                    if (Number(displayedData[i].Credit) > 0 || Number(displayedData[i].Debit) > 0) {
+                                        alert("Ya se agrego un débito para este centro de costos, está cuenta, este beneficiario y con el mismo Monto.");
+                                        $("#Debito").data("kendoNumericTextBox").value(null);
+                                        return;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            else {
+                if (Number(displayedData[i].Debit) > 0) {
+                    if (Number(displayedData[i].Debit) == Number(Debito)) {
+                        if (Number(displayedData[i].AccountId) == Number(cuenta)) {
+                            if (Number(displayedData[i].CostCenterId) == Number(costo)) {
+                                if (Number(displayedData[i].Credit) > 0 || Number(displayedData[i].Debit) > 0) {
+                                    alert("Ya se agrego un débito para este centro de costos, está cuenta y con el mismo Monto.");
+                                    $("#Debito").data("kendoNumericTextBox").value(null);
+                                    return;
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -201,26 +256,120 @@
             <div class="row" id="div2">
                 <div class="col-md-4">
                     <div class="form-group">
-                        <label id="Debitolbl" class=" control-label" style="width:100%">Débito</label>
-                        <input id="Debito" type="number" class="form-control" style="min-width:100%" min="0" maxlength="30" onKeyPress="return format(event)" />
-                        <span id="Span5" class="text-danger"></span>
+                        <label class="  control-label" style="width:100%">Tipo de Beneficiario</label>
+                        <kendo-dropdownlist name="PartyTypeId"
+                                            id="IdPartyType"
+                                            data-val-required="El Tipo Beneficiario es requerido."
+                                            filter="Kendo.Mvc.UI.FilterType.Contains"
+                                            style="width: 100%;">
+                        </kendo-dropdownlist>
+                        @*<span asp-validation-for="PartyTypeId" class="text-danger"></span>*@
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <div class="form-group" id="party">
+                        <label class="  control-label" style="width:100%">Beneficiario</label>
+                        <kendo-dropdownlist name="PartyId"
+                                            id="IdParty"
+                                            enable: false,
+                                            option-label="Seleccionar beneficiario"
+                                            filter="Kendo.Mvc.UI.FilterType.Contains"
+                                            style="width: 100%;">
+                        </kendo-dropdownlist>
+                        @*<span asp-validation-for="PartyId" class="text-danger"></span>*@
+                    </div>
+                    <div class="form-group" id="employe">
+                        <label class="  control-label" style="width:100%">Beneficiario</label>
+                        <kendo-dropdownlist name="PartyId"
+                                            id="idemploye"
+                                            filter="Kendo.Mvc.UI.FilterType.Contains"
+                                            option-label="Seleccionar Empleado"
+                                            datatextfield="NombreEmpleado"
+                                            datavaluefield="IdEmpleado"
+                                            style="width: 100%;">
+                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999999">
+                                <sorts>
+                                    <sort field="NombreEmpleado" direction="asc" />
+                                </sorts>
+                                <transport>
+                                    <read url="@Url.Action("Get", "Employees")" />
+                                </transport>
+                            </datasource>
+                        </kendo-dropdownlist>
+                    </div>
+                    <div class="form-group" id="vendor">
+                        <label class="  control-label" style="width:100%">Beneficiario</label>
+                        <kendo-dropdownlist name="PartyId"
+                                            id="IdVendor"
+                                            filter="Kendo.Mvc.UI.FilterType.Contains"
+                                            option-label="Seleccionar Proveedor"
+                                            datatextfield="VendorName"
+                                            datavaluefield="VendorId"
+                                            style="width: 100%;">
+                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999999">
+                                <sorts>
+                                    <sort field="VendorName" direction="asc" />
+                                </sorts>
+                                <transport>
+                                    <read url="@Url.Action("GetVendor", "Vendor")" />
+                                </transport>
+                            </datasource>
+                        </kendo-dropdownlist>
+                    </div>
+                    <div class="form-group" id="customer">
+                        <label class="  control-label" style="width:100%">Beneficiario</label>
+                        <kendo-dropdownlist name="VoucheType"
+                                            id="IdCustomer"
+                                            filter="Kendo.Mvc.UI.FilterType.Contains"
+                                            option-label="Seleccionar Cliente"
+                                            datatextfield="CustomerName"
+                                            datavaluefield="CustomerId"
+                                            style="width: 100%;">
+                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999999">
+                                <sorts>
+                                    <sort field="CustomerName" direction="asc" />
+                                </sorts>
+                                <transport>
+                                    <read url="@Url.Action("Get", "Customer")" />
+                                </transport>
+                            </datasource>
+                        </kendo-dropdownlist>
                     </div>
                 </div>
                 <div class="col-md-4">
                     <div class="form-group">
+                        <label id="Debitolbl" class=" control-label" style="width:100%">Débito</label>
+                        <input id="Debito" type="number" class="form-control" style="min-width:93%" min="0" maxlength="30" onKeyPress="return format(event)" />
+                        <script>
+                            $(document).ready(function () {
+                                $("#Debito").kendoNumericTextBox();
+                            });
+                        </script>
+                        <span id="Span5" class="text-danger"></span>
+                    </div>
+                </div>
+            </div>
+            <div class="row" id="div3">
+                <div class="col-md-4">
+                    <div class="form-group">
                         <label id="Creditolbl" class=" control-label" style="width:100%">Crédito</label>
-                        <input id="Credito" type="number" class="form-control" style="min-width:100%" min="0" maxlength="30" onKeyPress="return format(event)"/>
+                        <input id="Credito" type="number" class="form-control" style="min-width:93%" min="0" maxlength="30" onKeyPress="return format(event)" />
+                        <script>
+                            $(document).ready(function () {
+                                $("#Credito").kendoNumericTextBox();
+                            });
+                        </script>
                         <span id="Span4" class="text-danger"></span>
                     </div>
                 </div>
-
-
+                
                 <div class="col-md-4">
                     <div class="form-group">
                         <label id="JournalEntryLinelbl" class=" control-label" style="width:100%" hidden>Id Journal Entry Line</label>
                         <input id="JournalEntryLineId" type="text" class="form-control" style="min-width:100%" value="0" hidden />
                         <label class=" control-label" style="width:100%"></label>
-                            <button type="button" id="btnAgregarLinea" class="form-control btn-miboton" onclick="RefrescarGridLinea();">Agregar Línea</button>
+                        <button type="button" id="btnAgregarLinea" class="form-control btn-miboton" onclick="RefrescarGridLinea();">Agregar Línea</button>
                     </div>
                 </div>
             </div>
@@ -237,10 +386,11 @@
 
 
 <script>  
-    var id = $("#JournalEntryId").val();
-    if (id > 0) {
+    var id = $("#EstadoId").val();
+    if (id == 6) {
         $("#div1").hide();
         $("#div2").hide();
+        $("#div3").hide();
     }
 
     function format(e) {
@@ -254,8 +404,8 @@
         this.value = parseFloat(this.value).toFixed(2);
         if (Number(credito) && Number(debito) > 0) {
             alert("No se puede ingresar débito y crédito al mismo tiempo.");
-            $("#Credito").val("");
-            $("#Debito").val("");
+            $("#Credito").data("kendoNumericTextBox").value(null);
+            $("#Debito").data("kendoNumericTextBox").value(null);
         }
 
     });
@@ -265,8 +415,8 @@
         this.value = parseFloat(this.value).toFixed(2);
         if (Number(credito) && Number(debito) > 0) {
             alert("No se puede ingresar débito y crédito al mismo tiempo.");
-            $("#Credito").val("");
-            $("#Debito").val("");
+            $("#Credito").data("kendoNumericTextBox").value(null);
+            $("#Debito").data("kendoNumericTextBox").value(null);
         }
     });
 
@@ -301,6 +451,13 @@
             else {
                 setCostCenterName = $("#CostCenter").data("kendoDropDownList").text()
             }
+            var setPartyTypeName = "";
+            if ($("#IdPartyType").val() == 0) {
+                setPartyTypeName = "";
+            }
+            else {
+                setPartyTypeName = $("#IdPartyType").data("kendoDropDownList").text()
+            }
             return {
                 'JournalEntryLineId': id,
                 'JournalEntryId': @Model.JournalEntryId,
@@ -308,6 +465,10 @@
                 'Credit': Number($("#Credito").val()),
                 'AccountId': Number($("#Cuenta").val()),
                 'AccountName': $("#Cuenta").data("kendoDropDownList").text(),
+                'PartyTypeId': Number($("#IdPartyType").val()),
+                'PartyTypeName': setPartyTypeName,
+                'PartyId': Number($("#PartyId").val()),
+                'PartyName': $("#PartyName").val(),
                 // 'Num': $("#Num").val(),
                 'Description': $("#Descripcion").val(),
                 'CostCenterId': Number($("#CostCenter").val()),
@@ -369,7 +530,8 @@
         var costo = $("#CostCenter").val();
  
         if (cuenta == "") {
-            $('#Cuenta').after(' <span id="Span" class="text-danger">Campos requeridos</span>');
+            //$('#Cuenta').after('</br> <span id="Span" class="text-danger">Campos requeridos</span>');
+            $('#Span').text("Campos requeridos");
             return false;
         }
         //else if (costo == "") {
@@ -387,9 +549,18 @@
             grid.dataSource.read();
             grid.refresh();
             $("#JournalEntryLineId").val(0);
-            $('#Debito').val('');
-            $('#Credito').val('');
+            $('#Debito').data("kendoNumericTextBox").value(null);
+            $('#Credito').data("kendoNumericTextBox").value(null);
             $('#Descripcion').val('');
+            $("#IdPartyType").data('kendoDropDownList').value(0);
+            $('#PartyName').val(null);
+            $("#customer").hide();
+            $("#party").show();
+            $("#vendor").hide();
+            $("#employe").hide();
+            //$("#IdVendor").data("kendoDropDownList").value(0);
+            //$("#idemploye").data("kendoDropDownList").value(0);
+            //$("#IdCustomer").data("kendoDropDownList").value(0);
             $("#CostCenter").data('kendoDropDownList').value(0);
             $("#Cuenta").data('kendoDropDownList').value(0);
         }           
@@ -397,7 +568,7 @@
 
     //borrar mensajes en tiempo real
     $("#Cuenta").on("change", function () {
-        $('#Span1').text('');
+        $('#Span').text('');
     });
 
 
@@ -413,7 +584,7 @@
                                                                                                 .Name("gridNumeracionJournalEntryLine")
                                                                                                 .Columns(columns =>
                                                                                                 {
-                                                                                                    if (Model.JournalEntryId == 0)
+                                                                                                    if (Model.EstadoId != 6)
                                                                                                     {
                                                                                                         columns.Command(command =>
                                                                                                         {
@@ -428,13 +599,18 @@
                                                                                                         }).Title("Acciones").Width(100);
                                                                                                     }
                                                                                                     columns.Bound(p => p.JournalEntryLineId).Title("Id Line").Width(100).Hidden(true);
-                                                                                                    columns.Bound(p => p.Description).Title("Descripción").Width(200);
                                                                                                     columns.Bound(p => p.AccountId).Hidden().Width(200);
                                                                                                     columns.Bound(p => p.AccountName).Width(200);
-                                                                                                    columns.Bound(p => p.CostCenterId).Hidden().Width(200);
-                                                                                                    columns.Bound(p => p.CostCenterName).Width(200);
                                                                                                     columns.Bound(p => p.Debit).Width(200).Format("{0:N2}");
                                                                                                     columns.Bound(p => p.Credit).Width(200).Format("{0:N2}");
+                                                                                                    columns.Bound(p => p.Description).Title("Descripción").Width(200);
+                                                                                                    columns.Bound(p => p.PartyTypeId).Hidden().Width(200);
+                                                                                                    columns.Bound(p => p.PartyTypeName).Title("Tipo de Beneficiario").Width(250);
+                                                                                                    columns.Bound(p => p.PartyId).Hidden().Width(200);
+                                                                                                    columns.Bound(p => p.PartyName).Title("Nombre del Beneficiario").Width(270);
+                                                                                                    columns.Bound(p => p.CostCenterId).Hidden().Width(200);
+                                                                                                    columns.Bound(p => p.CostCenterName).Width(200);
+                                                                                                    
                                                                                                     //columns.Bound(p => p.JournalEntryLineId).Width(150);
                                                                                                     //columns.Bound(p => p.JournalEntryId).Width(150).HtmlAttributes(new { JournalEntryId = "id" });
                                                                                                     //columns.Bound(p => p.JournalEntryId).Width(150);
@@ -494,10 +670,10 @@
                                                                                                 )
                                                                                                 .Filterable()
                                                                                                 .Scrollable()
-                                                                                                .Pdf(pdf => pdf.FileName("AsientoContableLíneaReporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                                                .Pdf(pdf => pdf.FileName("Asiento_Contable_Línea_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                                                                                                 + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
                                                                                                 .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                                                                                .Excel(excel => excel.FileName("AsientoContableLíneaReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                                                .Excel(excel => excel.FileName("Asiento_Contable_Línea_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                                                                                                 + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
                                                                                                 .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
                                                                                                 .DataSource(dataSource => dataSource
@@ -525,7 +701,7 @@
                                                                                                     columns.Bound(p => p.Amount).Title("Monto ").Width(250);
                                                                                                */
                                                                                                 })
-                                                                                                .Sort(s => s.Add(m => m.JournalEntryLineId).Descending())
+                                                                                                //.Sort(s => s.Add(m => m.JournalEntryLineId).Descending())
                                                                                                 .Events(events => events.Error("error_handler"))
                                                                                                 .Read(read => read.Action("GetJournalEntryLine", "JournalEntryLine").Data("AgregarLinea"))
                                                                                                 .Create(create => create.Action("Insert", "JournalEntryLine"))
@@ -568,6 +744,13 @@
         <div class="form-group">
             <label id="Totallbl" class=" control-label" style="width:100%">Total Débito:</label>
             <input id="TotalDebito" type="number" class="form-control" style="min-width:80%" readonly />
+            <script>
+                $(document).ready(function () {
+                    $("#TotalDebito").kendoNumericTextBox({
+                        spinners: false
+                    });
+                });
+            </script>
             <span id="spanDebito" class="text-danger"></span>
         </div>
     </div>
@@ -575,6 +758,13 @@
         <div class="form-group">
             <label id="Totallbl" class=" control-label" style="width:100%">Total Crédito:</label>
             <input id="TotalCredito" type="number" class="form-control" style="min-width:80%" readonly />
+            <script>
+                $(document).ready(function () {
+                    $("#TotalCredito").kendoNumericTextBox({
+                        spinners: false
+                    });
+                });
+            </script>
             <span id="spanCredito" class="text-danger"></span>
         </div>
     </div>

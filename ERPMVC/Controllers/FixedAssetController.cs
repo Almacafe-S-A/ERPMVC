@@ -109,9 +109,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/FixedAsset/GetFixedAssetById/" + _FixedAsset.FixedAssetId);
-                string valorrespuesta = "";
-                _FixedAsset.FechaModificacion = DateTime.Now;
-                _FixedAsset.UsuarioModificacion = HttpContext.Session.GetString("user");
+                string valorrespuesta = ""; 
                 if (result.IsSuccessStatusCode)
                 {
 
@@ -130,6 +128,10 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
+                    _FixedAsset.FechaCreacion = _listFixedAsset.FechaCreacion;
+                    _FixedAsset.UsuarioCreacion = _listFixedAsset.UsuarioCreacion;
+                    _FixedAsset.UsuarioModificacion = _listFixedAsset.UsuarioModificacion;
+                    _FixedAsset.FechaModificacion = _listFixedAsset.FechaModificacion;
                     var updateresult = await Update(_FixedAsset.FixedAssetId, _FixedAsset);
                 }
 
@@ -154,8 +156,8 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _FixedAsset.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _FixedAsset.UsuarioModificacion = HttpContext.Session.GetString("user");
+                //_FixedAsset.UsuarioCreacion = HttpContext.Session.GetString("user");
+                //_FixedAsset.UsuarioModificacion = HttpContext.Session.GetString("user");
                 var result = await _client.PostAsJsonAsync(baseadress + "api/FixedAsset/Insert", _FixedAsset);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -182,7 +184,8 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-
+                _FixedAsset.FechaModificacion = DateTime.Now;
+                _FixedAsset.UsuarioModificacion = HttpContext.Session.GetString("user");
                 var result = await _client.PutAsJsonAsync(baseadress + "api/FixedAsset/Update", _FixedAsset);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)

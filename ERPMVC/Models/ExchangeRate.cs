@@ -17,6 +17,8 @@ namespace ERPMVC.Models
         [Display(Name = "Tasa de Venta")]
         public decimal ExchangeRateValue { get; set; }
 
+        [Display(Name = "Tasa de Compra")]
+        public decimal ExchangeRateValueCompra { get; set; }
         [Display(Name = "Id Moneda")]
         public Int64 CurrencyId { get; set; }
 

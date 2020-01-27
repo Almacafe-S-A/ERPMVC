@@ -1,7 +1,10 @@
 ﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
 
 @{
     ViewData["Title"] = "Movimientos Financieros";
+    bool permiso;
+    permiso = (bool)ViewData["permisoAprobar"];
 }
 
 <script>
@@ -100,31 +103,12 @@
                     $('#ModalJournalEntry').modal('show');
                    // document.getElementById("btnJournalEntry").disabled = true;
                     //document.getElementById("btnAgregarLinea").disabled = true;
-                    $("#IdPartyType").data("kendoDropDownList").value(dataItem.PartyTypeId);
-                    if (dataItem.PartyTypeId == 1) {
-                        $("#customer").show();
-                        $("#party").hide();
-                        $("#vendor").hide();
-                        $("#employe").hide();
-                    }
-                    else if (dataItem.PartyTypeId == 2) {
-                        $("#customer").hide();
-                        $("#party").hide();
-                        $("#vendor").hide();
-                        $("#employe").show();
-                    }
-                    else if (dataItem.PartyTypeId == 3) {
-                        $("#customer").hide();
-                        $("#party").hide();
-                        $("#vendor").show();
-                        $("#employe").hide();
-                    }
-                    else {
+                    $("#IdPartyType").data("kendoDropDownList").value(0);
+                    
                         $("#customer").hide();
                         $("#party").show();
                         $("#vendor").hide();
                         $("#employe").hide();
-                    }
                    
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -255,7 +239,7 @@
         
         if (e != null) {
             var dataItemEstado = this.dataItem($(e.currentTarget).closest("tr"));
-            if (dataItemEstado.EstadoId != 5) {
+            if (dataItemEstado.EstadoId == 6) {
                 e.preventDefault();
                 dataItem = this.dataItem($(e.currentTarget).closest("tr"));
                 var url = '@Url.Action("SFAsientoContable", "JournalEntry")/' + dataItem.JournalEntryId;
@@ -267,7 +251,7 @@
             }
         }
         else {
-            if ($("#EstadoId").val() != 5) {
+            if ($("#EstadoId").val() == 6) {
                 dataItem = { JournalEntryId: $("#JournalEntryId").val() };
                 var url = '@Url.Action("SFAsientoContable", "JournalEntry")/' + dataItem.JournalEntryId;
                 var win = window.open(url, '_blank');
@@ -299,9 +283,9 @@
                                             {
                                                 //.Custom("Ver detalles").Text(" ").IconClass("far fa-list-alt").Click("DetallesJournalEntry");
                                                 //command.Custom("Ver detalles").Text(" ").IconClass("fa fa-edit").Click("EditJournalEntry");
-                                                command.Custom("Editar").Text(" ").IconClass("far fa-list-alt").Click("EditJournalEntry");
+                                                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditJournalEntry");
                                                 command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("Imprimir");
-                                                if (Gerente)
+                                                if (permiso)
                                                 {
                                                     command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("AprobarAsiento");
                                                     command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("RechazarAsiento");
@@ -309,7 +293,7 @@
                                                 }
 
                                                 //  command.Destroy();
-                                            }).Title("Acciones").Width(125);
+                                            }).Title("Acciones").Width(175);
 
                                             columns.Bound(p => p.JournalEntryId).Title("Id Asiento Contable").Width(200);
                                             columns.Bound(p => p.DatePosted).Title("Fecha de  Transacción").Format("{0:dd/MM/yyyy}").Width(250);
@@ -371,10 +355,10 @@
                                         )
                                         .Filterable()
                                         .Scrollable()
-                                        .Pdf(pdf => pdf.FileName("AsientoContableReporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                        .Pdf(pdf => pdf.FileName("Asiento_Contable_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                                         + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
                                         .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                        .Excel(excel => excel.FileName("AsientoContableReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                        .Excel(excel => excel.FileName("Asiento_Contable_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                                         + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
                                         .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
                                         .Events(e => e.DataBound("dataBound"))
@@ -395,6 +379,7 @@
                                             model.Field(p => p.EstadoId).Editable(true);
 
                                         })
+                                        .Filter(f => f.Add(m => m.TypeOfAdjustmentId).IsEqualTo(65))
                                         .Sort(s => s.Add(m => m.CreatedDate).Descending())
                                         .Events(events => events.Error("error_handler"))
                                         .Read(read => read.Action("GetJournalEntryAsientos", "JournalEntry"))
@@ -431,8 +416,8 @@
             });
         }
         setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
-        setToolbarTooltip(".k-grid-Editar", "Ver Detalle");
-        setToolbarTooltip(".k-grid-Imprimir", "Imprimir");
+        setToolbarTooltip(".k-grid-Editar", "Editar Registro");
+        setToolbarTooltip(".k-grid-Imprimir", "Imprimir registro");
         setRowButtonTooltip(".k-grid-Aprobar", "Aprobar Asiento");
         setRowButtonTooltip(".k-grid-Rechazar", "Rechazar Asiento");
     </script>

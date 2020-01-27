@@ -11,6 +11,7 @@ using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -435,7 +436,7 @@ namespace ERPMVC.Controllers
                     throw ex;
                 }
           
-            return Json(_accounting.ToTreeDataSourceResult(request));
+            return Json(_accounting.ToDataSourceResult(request));
 
         }
 
@@ -810,6 +811,8 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult> pvwAddAccounting([FromBody]AccountingDTO _sarpara)
         {
             AccountingDTO _Account = new AccountingDTO();
+
+            
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -846,6 +849,11 @@ namespace ERPMVC.Controllers
                     }
 
                 }
+                ViewData["naturaleza"] = new List<SelectListItem>
+                                     {
+                                         new SelectListItem("Acreedora","A"),
+                                         new SelectListItem("Deudora","D")
+                                     };
             }
             catch (Exception ex)
             {
