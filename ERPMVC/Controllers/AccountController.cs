@@ -113,12 +113,20 @@ namespace ERPMVC.Controllers
 
                         
                         
-                        var resultadoCierre = await cliente.GetAsync(baseadress + "api/CierreContable/UltimoCierre");                        
+                        var resultadoCierre = await cliente.GetAsync(baseadress + "api/CierreContable/UltimoCierre");
                         string ultimoCierre = await resultadoCierre.Content.ReadAsStringAsync();
                         BitacoraCierreContable cierre = JsonConvert.DeserializeObject<BitacoraCierreContable>(ultimoCierre);
-                        DateTime fechaactual = DateTime.Now;
-                        fechaactual = fechaactual.AddDays(-1);
-                        Utils.Cerrado = cierre.FechaCierre.Date == fechaactual.Date;
+                        if (cierre!=null)
+                        {                            
+                            DateTime fechaactual = DateTime.Now;
+                            fechaactual = fechaactual.AddDays(-1);
+                            Utils.Cerrado = cierre.FechaCierre.Date >= fechaactual.Date;
+                        }
+                        else
+                        {
+                            Utils.Cerrado = true;
+                        }
+                        
 
 
 

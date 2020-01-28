@@ -40,7 +40,15 @@ namespace ERPMVC.Controllers
             string ultimoCierre = await resultadoCierre.Content.ReadAsStringAsync();
             BitacoraCierreContable cierre = JsonConvert.DeserializeObject<BitacoraCierreContable>(ultimoCierre);
             BitacoraCierreContable NuevoCierre = new BitacoraCierreContable();
-            NuevoCierre.FechaCierre = cierre.FechaCierre.AddDays(1);
+            if (cierre!=null)
+            {
+                NuevoCierre.FechaCierre = cierre.FechaCierre.AddDays(1);
+            }
+            else
+            {
+                NuevoCierre.FechaCierre = DateTime.Now;
+            }
+            
             return View(NuevoCierre);
         }
 
