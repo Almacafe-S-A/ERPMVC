@@ -54,7 +54,7 @@
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label asp-for="AccountCode" class="control-label" style="width: 100%;"></label>
+                                                    <label asp-for="AccountCode" class="control-label" style="width: 100%;">Código Contable</label>
                                                     <input type="text" asp-for="AccountCode" name="AccountCode" class="form-control" autocomplete="off" validationMessage="El Código de Cuenta es requerido" required style="min-width:100%" onkeypress="return SoloNumeros(event)"  />
                                                     
 
@@ -139,18 +139,16 @@
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
-                                                <label asp-for="Totaliza" class=" control-label" style="width:100%"></label>
-                                                <kendo-switch for="@Model.Totaliza" name="Totaliza" checked="@Model.Totaliza">
-                                                    <messages checked="SI" unchecked="NO" />
-
-                                                </kendo-switch>
+                                                <label asp-for="Totaliza" class=" control-label" style="width:100%">Totaliza</label>
+                                                @(Html.Kendo().SwitchFor(m => m.Totaliza).Messages(c => c.Checked("SI").Unchecked("NO"))
+                                                )
                                             </div>
                                             <div class="col-md-4">
-                                                <label asp-for="AceptaNegativo" class=" control-label" style="width:100%"></label>
-                                                <kendo-switch for="@Model.AceptaNegativo" name="Totaliza" checked="@Model.AceptaNegativo">
-                                                    <messages checked="SI" unchecked="NO" />
-
-                                                </kendo-switch>
+                                                <div class="form-group">
+                                                    <label class="control-label" style="width: 100%;">Acepta Saldo Negativo</label>
+                                                    @(Html.Kendo().SwitchFor(m => m.AceptaNegativo).Messages(c => c.Checked("SI").Unchecked("NO"))
+                                                    )
+                                                </div>
                                             </div>
 
                                         </div>
@@ -305,23 +303,28 @@
         grid.dataSource.read();
     }
     var activo;
-    function SaveAccounting(e)
-    {
+
+
+     function SaveAccounting() {
+       // $("#btnAccounting").prop('disabled', true);
+        //e.preventDefault();
         var notification = $("#notification").data("kendoNotification");
-        var dataObject = { 'AccountId': $("#AccountId").val(),
+        var dataObject = {
+            'AccountId': $("#AccountId").val(),
             'AccountName': $("#AccountName").val(),
             'Description': $("#Description").val(),
             'ParentAccountId': $("#ParentAccountId").val(),
             'AccountCode': $("#AccountCode").val(),
             'IsCash': $("#IsCash").is(':checked'),
             'BlockedInJournal': $("#BlockedInJournal").is(':checked'),
+            'AceptaNegativo': $("#AceptaNegativo").is(':checked'),
             'TypeAccountId': $("#TypeAccountId").val() == '' || $("#TypeAccountId").val() == null
                 ? 0
                 : $("#TypeAccountId").val(),
             'IdEstado': $("#IdEstado").val(),
             'Estado': $("#IdEstado").data("kendoDropDownList").text(),
             'Totaliza': $("#Totaliza").is(':checked'),
-            'DeudoraAcreedora':$('#DeudoraAcreedora').val()
+            'DeudoraAcreedora': $('#DeudoraAcreedora').val()
 
         };
 
@@ -368,7 +371,7 @@
 
             }
             else {
-               // swal("Error", "Datos invalidos en el formulario", "error")
+                // swal("Error", "Datos invalidos en el formulario", "error")
 
                 notification.show({
                     title: "Error",
@@ -376,8 +379,7 @@
                 }, "error");
             }
         }
-        else
-        {
+        else {
             $.toast({
                 heading: 'Error',
                 text: '<br/><br/>' + "El campo Tipo de Cuenta no es el mismo del Padre Contable.",
@@ -397,52 +399,52 @@
     }
     function FatherAccounting() {
 
-        if (banderadepadre == 1) {
-            return true;
+            if (banderadepadre == 1) {
+                return true;
 
-        }
-        else {
-             var typeAccount;
+            }
+            else {
+                var typeAccount;
                 var dataParentid = {
                     AccountId: $("#ParentAccountId").val()
 
                 };
 
-             $.ajax({
-                url: '@Url.Action("GetAccountingById", "Accounting")',
-                method: 'GET',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: dataParentid,
-                 success: function (result) {
-                     //document.getElementById('TypeAccountId').innerHTML = result.TypeAccountId;
-                    // $("#TypeAccountId").val(result.TypeAccountId);
-                    // var dropdownlist = $("#TypeAccountId").data("kendoDropDownList");
-                   //  dropdownlist.select(result.TypeAccountId);
-                     //    dropdownlist.prop("readonly", true);//onfocus="myFunction(this)"
-                     if (result != null) {
-                         typeAccount = result.TypeAccountId;
-                     }
-                },
-                 error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $.ajax({
+                    url: '@Url.Action("GetAccountingById", "Accounting")',
+                    method: 'GET',
+                    datatype: "json",
+                    contentType: 'application/json',
+                    async: false,
+                    data: dataParentid,
+                    success: function (result) {
+                        //document.getElementById('TypeAccountId').innerHTML = result.TypeAccountId;
+                        // $("#TypeAccountId").val(result.TypeAccountId);
+                        // var dropdownlist = $("#TypeAccountId").data("kendoDropDownList");
+                        //  dropdownlist.select(result.TypeAccountId);
+                        //    dropdownlist.prop("readonly", true);//onfocus="myFunction(this)"
+                        if (result != null) {
+                            typeAccount = result.TypeAccountId;
+                        }
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
 
                         notification.show({
                             title: "Error",
                             message: textStatus + ": " + XMLHttpRequest.responseText
                         }, "error");
-                     //swal("Error", "Server Error.", "error");
+                        //swal("Error", "Server Error.", "error");
 
                     }
                 });
 
-                 if ($("#TypeAccountId").val() != typeAccount  ) {
+                if ($("#TypeAccountId").val() != typeAccount) {
                     return false;
-                    }
-                 else {
+                }
+                else {
 
-                 return true;
-                    }
+                    return true;
+                }
+            }
         }
-    }
 </script>

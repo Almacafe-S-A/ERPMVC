@@ -5,868 +5,303 @@
     ViewData["Title"] = "Control Aistencias";
 
     var ElementoConfiguracion = ViewData["ElementoConfiguracion"] as IEnumerable<ERPMVC.Models.ElementoConfiguracion>;
-    var today = DateTime.Now.ToString("MM/dd/yyyy 00:00", new System.Globalization.CultureInfo("en-US"));
+    var today = DateTime.Now.ToString("dd/MM/yyyy 00:00", new System.Globalization.CultureInfo("es-ES"));
 }
 
 
 <script>
 
     function onsave(e) {
+        //No se utiliza
+    }
+     
+
+
+
+    function AsistenciaTitle() {
+        var meses = ["",
+            "Enero", "Febrero", "Marzo",
+            "Abril", "Mayo", "Junio", "Julio",
+            "Agosto", "Septiembre", "Octubre",
+            "Noviembre", "Diciembre"
+        ]
+
+        var titulo = $("#monthpicker").getKendoDatePicker().value().toJSON()
+        var encabezado = titulo.split("-");
+        var teyearPiker = encabezado[0];
+        var temonthpiker = encabezado[1];
+        var tmes = parseInt(temonthpiker);
+
+        $("#TituloControl").html("Control de Asistencias de " + meses[tmes] + " de " + teyearPiker);
+
+    }
+    
+    
+
+    $(window).load(function () {
+
+        $("#TituloControl").html("Control de Asistencias de ");
+
+
+    });
+
+    function InicialesDias() {
+
+        var nombres_dias = new Array("Domingo", "Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado")
+        var nombres_meses = new Array("Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre")
+        var titulogrid = $("#monthpicker").getKendoDatePicker().value().toJSON()
+        var datePikerarraytitles = titulogrid.split("-");
+        var yearPikertitle = datePikerarraytitles[0];
+        var monthpikertitle = datePikerarraytitles[1];
+        //var daypikertitle = datePikerarraytitles[2].substring(0, 2);       
+        var dias = new Date(yearPikertitle, monthpikertitle, 0).getDate();
+        var i;
+
+        // $("#TituloControl").html("Control de Asistencias de " + nombres_meses[parseInt(monthpikertitle)-1] + " de " + yearPikertitle);
+
+        for (i = 1; i <= dias; i++) {
+
+            var dbDate = "" + yearPikertitle + "/" + monthpikertitle + "/" + i + "";
+            var date = new Date(dbDate);
+            dia_mes = date.getDate() //dia del mes        
+            dia_semana = date.getDay() //dia de la semana             
+            mes = date.getMonth() + 1
+            anio = date.getFullYear()
+
+            var tes = (nombres_dias[dia_semana] + ", " + dia_mes + " de " + nombres_meses[mes - 1] + " de " + anio)
+
+
+            $("#gridControlAsistencia thead [data-field=Dia" + i + "TA] .k-link").html(tes.substring(0, 1) + "<br />" + " " + i)
+
+        }
+
+        //Ocultar segun la cantidad de dias del mes
+        var grids = $("#gridControlAsistencia").data("kendoGrid");
+        if (dias == 28) {
+            grids.hideColumn(30);
+            grids.hideColumn(31);
+            grids.hideColumn(32);
+        } else if (dias == 29) {
+            grids.showColumn(29);
+            grids.showColumn(30);
+            grids.hideColumn(31);
+            grids.hideColumn(32);
+        } else if (dias == 30) {
+            grids.showColumn(29);
+            grids.showColumn(30);
+            grids.showColumn(31);
+            grids.hideColumn(32);
+
+
+        } if (dias == 31) {
+            //alert("Rock");
+            grids.showColumn(29);
+            grids.showColumn(30);
+            grids.showColumn(31);
+            grids.showColumn(32);
+        }
+
+
 
     }
 
+    function ParametroDatepikere() {
+        var datepikerselect = $("#monthpicker").getKendoDatePicker().value().toJSON()
+        return {
+            'datepikerselect': datepikerselect,
 
-
-    function RefrescarGrid() {
-
-        var grid = $("#gridControlAsistencia").getKendoGrid();
-        grid.dataSource.read();
-
+        }
     }
 
-
-</script>
-
-<h3 class="text-themecolor">Control Asistencias </h3>
-<div class="">
-    <h4 style="margin-top: 2em;">Seleccionar Mes y Año:</h4>
-
-    @(Html.Kendo().DatePicker()
-                                                  .Name("monthpicker")
-                                                  .Start(CalendarView.Year)
-                                                  .Depth(CalendarView.Year)
-                                                  .Format("MMMM yyyy")
-                                                  .Value(@today)
-                                                  .DateInput()
-                                                  .HtmlAttributes(new { style = "width: 25%", title = "monthpicker" })
-                                                  .Events(e => e.Change("monthpicker_change"))
-
-    )
-
-</div>
-<script>
-
-    //var f = new Date();
-    //document.write(f.getDate() + "/" + (f.getMonth() + 1) + "/" + f.getFullYear());
+    function AsistenciaPorDatepker() {
+        var datepikerselect = $("#monthpicker").getKendoDatePicker().value().toJSON()
+                
+        var datePikerarray = datepikerselect.split("-");
+        //console.log(datePikerarray + " Piker")
+        var yearPiker = datePikerarray[0];
+        var monthpiker = datePikerarray[1];
+        var daypiker = datePikerarray[2].substring(0, 2); // datepiker
+        var primero = ("01" + "-" + monthpiker + "-" + yearPiker)
+        var fechapiker = parseFloat(yearPiker + monthpiker + daypiker)
 
 
-    //$(document).ready(function () {
+        var inputToday = $("#FechaActual").val();
+        var inputrarray = inputToday.split("/");
+        //console.log(inputrarray + " inputToday")
+        var yearInput = inputrarray[2].substring(0, 4);
+        var monthInput = inputrarray[1];
+        var dayInput = inputrarray[0];
+        var actual = (yearInput + "-" + monthInput + "-" + dayInput)
+        var fechainput = parseFloat(yearInput + monthInput + dayInput)
 
 
-    //});
+        if (parseInt(fechapiker) > parseInt(fechainput)) {
 
-    //$('document').ready(function () {
-
-    //    LLenarTabla();
-
-    //});
-
-
-
-
-
-    function metal() {
-
-       // $("#monthpicker").data("kendoDatePicker").value(new Date());
-        LLenarTabla();
-
-    }
-
-
-
-    function monthpicker_change() {
-
-
-            LLenarTabla();
-
-    }
-
-
-    function LLenarTabla() {
-       
-        var displayedData1 = $("#monthpicker").getKendoDatePicker().value().toJSON()      
-
-        var stringVal = displayedData1.toString();
-        
-        var dates = displayedData1.split("-");
-        console.log(dates)
-
-        var p1 = dates[0];
-        var p2 = dates[1];
-        var p3 = dates[2].substring(0, 2); // datepiker
-
-        if (p3 == 01) {
-            p3 = 1
-        }
-        if (p3 == 02) {
-            p3 = 2
-        }
-        if (p3 == 03) {
-            p3 = 3
-        }
-        if (p3 == 04) {
-            p3 = 4
-        }
-        if (p3 == 05) {
-            p3 = 5
-        }
-        if (p3 == 06) {
-            p3 = 6
-        }
-        if (p3 == 07) {
-            p3 = 7
-        }
-        if (p3 == 08) {
-            p3 = 8
-        }
-        if (p3 == 09) {
-            p3 = 9
-        }
-        //----------------------------------------
-        var fechapiker = parseInt(p1 + p2 + p3);
-
-        var hoy = new Date();
-        var dd = hoy.getDate();
-        var mm = hoy.getMonth()+1;
-        var yyyy = hoy.getFullYear();
-        var fecha_actual = parseInt(yyyy +""+ mm +""+  dd);
-        
-        //---------validar Columnas disable
-        var columndisable = 0;
-        if (fechapiker < fecha_actual) {          
-            columndisable = 31;
-
-        }
-        if (fechapiker == fecha_actual) {          
-            columndisable = p3;
-        }
-        if (fechapiker > fecha_actual) {
             alert("Mes aun no disponible")
             return false;
         }
+        else {
+            var grid = $("#gridControlAsistencia").getKendoGrid();
+            grid.dataSource.read();
+        }
 
+        
 
-
-
-        //---------------------------------------
-
-
-       
-        var primero = (p1 + "-" + p2 + "-" + "01").toString();
-        var _UltimoMes = new Date(p1, p2, 0).getDate();
-       
-        $.ajax({
-            url: '@Url.Action("GetGetControlAsistencias", "ControlAsistencias")',
-            method: 'GET',
-            datatype: "json",
-            contentType: 'application/json',
-            async: false,
-            data: { 'primero': primero, 'actual': stringVal},
-                                success: function (data) {
-                                    var grid = $("#gridControlAsistencia").getKendoGrid();
-                                    var datasource = grid.dataSource;
-                                    var raw = datasource._data;
-                                    for (i = datasource._data.length - 1; i >= 0; i--) {
-                                        var item = raw[i];
-                                        datasource.remove(item);
-                                    }
-                                    for (var i = 0; i < data.Data.length; i++) {
-                                       datasource.insert(data.Data[i]);
-                                       
-
-
-                                        if (columndisable == 1) {
-                                            grid.dataSource.at(i).fields["Dia2TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia3TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia4TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia5TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia6TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia7TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia8TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia9TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia10TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia11TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia12TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia13TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia14TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia15TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia16TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia17TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia18TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia19TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia20TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia21TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia22TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia23TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia24TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia25TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia26TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 2) {
-                                            grid.dataSource.at(i).fields["Dia3TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia4TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia5TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia6TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia7TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia8TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia9TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia10TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia11TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia12TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia13TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia14TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia15TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia16TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia17TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia18TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia19TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia20TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia21TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia22TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia23TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia24TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia25TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia26TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 3) {
-                                            grid.dataSource.at(i).fields["Dia4TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia5TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia6TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia7TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia8TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia9TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia10TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia11TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia12TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia13TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia14TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia15TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia16TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia17TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia18TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia19TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia20TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia21TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia22TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia23TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia24TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia25TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia26TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 4) {
-                                            grid.dataSource.at(i).fields["Dia5TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia6TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia7TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia8TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia9TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia10TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia11TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia12TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia13TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia14TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia15TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia16TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia17TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia18TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia19TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia20TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia21TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia22TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia23TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia24TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia25TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia26TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 5) {
-                                            grid.dataSource.at(i).fields["Dia6TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia7TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia8TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia9TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia10TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia11TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia12TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia13TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia14TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia15TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia16TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia17TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia18TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia19TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia20TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia21TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia22TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia23TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia24TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia25TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia26TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 6) {
-                                            grid.dataSource.at(i).fields["Dia7TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia8TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia9TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia10TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia11TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia12TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia13TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia14TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia15TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia16TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia17TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia18TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia19TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia20TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia21TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia22TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia23TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia24TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia25TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia26TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 7) {
-                                            grid.dataSource.at(i).fields["Dia8TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia9TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia10TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia11TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia12TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia13TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia14TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia15TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia16TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia17TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia18TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia19TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia20TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia21TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia22TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia23TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia24TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia25TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia26TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 8) {
-                                            grid.dataSource.at(i).fields["Dia9TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia10TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia11TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia12TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia13TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia14TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia15TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia16TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia17TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia18TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia19TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia20TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia21TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia22TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia23TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia24TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia25TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia26TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 9) {
-                                            grid.dataSource.at(i).fields["Dia10TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia11TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia12TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia13TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia14TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia15TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia16TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia17TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia18TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia19TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia20TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia21TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia22TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia23TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia24TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia25TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia26TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 10) {
-                                            grid.dataSource.at(i).fields["Dia11TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia12TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia13TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia14TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia15TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia16TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia17TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia18TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia19TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia20TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia21TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia22TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia23TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia24TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia25TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia26TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 11) {
-                                            grid.dataSource.at(i).fields["Dia12TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia13TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia14TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia15TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia16TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia17TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia18TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia19TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia20TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia21TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia22TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia23TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia24TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia25TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia26TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 12) {
-                                            grid.dataSource.at(i).fields["Dia13TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia14TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia15TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia16TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia17TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia18TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia19TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia20TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia21TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia22TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia23TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia24TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia25TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia26TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 13) {
-                                            grid.dataSource.at(i).fields["Dia14TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia15TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia16TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia17TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia18TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia19TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia20TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia21TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia22TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia23TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia24TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia25TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia26TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 14) {
-                                            grid.dataSource.at(i).fields["Dia15TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia16TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia17TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia18TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia19TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia20TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia21TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia22TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia23TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia24TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia25TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia26TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 15) {
-                                            grid.dataSource.at(i).fields["Dia16TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia17TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia18TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia19TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia20TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia21TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia22TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia23TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia24TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia25TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia26TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 16) {
-                                            grid.dataSource.at(i).fields["Dia17TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia18TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia19TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia20TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia21TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia22TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia23TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia24TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia25TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia26TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 17) {
-                                            grid.dataSource.at(i).fields["Dia18TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia19TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia20TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia21TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia22TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia23TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia24TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia25TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia26TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 18) {
-                                            grid.dataSource.at(i).fields["Dia19TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia20TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia21TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia22TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia23TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia24TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia25TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia26TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 19) {
-                                            grid.dataSource.at(i).fields["Dia20TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia21TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia22TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia23TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia24TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia25TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia26TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 20) {
-                                            grid.dataSource.at(i).fields["Dia21TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia22TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia23TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia24TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia25TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia26TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 21) {
-                                           grid.dataSource.at(i).fields["Dia22TA"].editable = false;
-                                           grid.dataSource.at(i).fields["Dia23TA"].editable = false;
-                                           grid.dataSource.at(i).fields["Dia24TA"].editable = false;
-                                           grid.dataSource.at(i).fields["Dia25TA"].editable = false;
-                                           grid.dataSource.at(i).fields["Dia26TA"].editable = false;
-                                           grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                           grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                           grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                           grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                           grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 22) {
-                                            grid.dataSource.at(i).fields["Dia23TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia24TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia25TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia26TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 23) {
-                                            grid.dataSource.at(i).fields["Dia24TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia25TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia26TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 24) {
-                                            grid.dataSource.at(i).fields["Dia25TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia26TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 25) {
-                                            grid.dataSource.at(i).fields["Dia26TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 26) {
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 27) {
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 28) {
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 29) {
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = false;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 30) {
-                                          grid.dataSource.at(i).fields["Dia31TA"].editable = false;
-                                        }
-                                        if (columndisable == 31) {
-                                            grid.dataSource.at(i).fields["Dia1TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia2TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia3TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia4TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia5TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia6TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia7TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia8TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia9TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia10TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia11TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia12TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia13TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia14TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia15TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia16TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia17TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia18TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia19TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia20TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia21TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia22TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia23TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia24TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia25TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia26TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia27TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia28TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia29TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia30TA"].editable = true;
-                                            grid.dataSource.at(i).fields["Dia31TA"].editable = true;
-                                        }
-
-
-                                    }
-
-                                    var gridControlAsistencias = $("#gridControlAsistencia").data().kendoGrid.dataSource.data();
-                                    if (gridControlAsistencias.length > 0) {
-                                    //--------------------Llamar funcion----------Title Letra por dia ejempl  "V-1" ------------------------------------
-                                        InicialesLetras()
-                                    //-------------------------------------------------------------------------------------------------------------------
-
-
-                                        habilitarColumnaFecha()
-
-
-
-
-                                    }
-                                    else {
-
-                                    }
-                                },
-                                //error: function (XMLHttpRequest, textStatus, errorThrown) {
-
-                                //    notification.show({
-                                //        title: "Validación",
-                                //        message: textStatus + ": " + XMLHttpRequest.responseText
-                                //    }, "error");
-
-                                //}
-                            });
     }
 
+    function enables() {
+        debugger;
+        var datepikerselect = $("#monthpicker").getKendoDatePicker().value().toJSON()
+        var datePikerarray = datepikerselect.split("-");
+        //console.log(datePikerarray + " Piker")
+        var yearPiker = datePikerarray[0];
+        var monthpiker = datePikerarray[1];
+        var daypiker = datePikerarray[2].substring(0, 2); // datepiker
+        var primero = ("01" + "-" + monthpiker + "-" + yearPiker)
+        var fechadatepiker = parseFloat(yearPiker + monthpiker + daypiker)
 
-    function habilitarColumnaFecha() {
-
-
-        var displayedData1 = $("#monthpicker").getKendoDatePicker().value().toJSON()
-
-        var dates = displayedData1.split("-");
-        var p1h = dates[0];
-        var p2h = dates[1];
-        var p3h = dates[2];
-        var _UltimoMes = new Date(p1h, p2h, 0).getDate();       
-        var grids = $("#gridControlAsistencia").data("kendoGrid");
-        if (_UltimoMes == 28) {
-            grids.hideColumn(32);
-            grids.hideColumn(33);
-            grids.hideColumn(34);                       
-        } else if (_UltimoMes == 29) {
-            grids.showColumn(31);
-            grids.showColumn(32);
-            grids.hideColumn(33);
-            grids.hideColumn(34);
-        } else if (_UltimoMes == 30) {
-            grids.showColumn(31);
-            grids.showColumn(32);
-            grids.showColumn(33);
-            grids.hideColumn(34);
+        var inputToday = $("#FechaActual").val();
+        var inputrarray = inputToday.split("/");
+        //console.log(inputrarray + " inputToday")
+        var yearInput = inputrarray[2].substring(0, 4);
+        var monthInput = inputrarray[1];
+        var dayInput = inputrarray[0];
+        var actual = (yearInput + "-" + monthInput + "-" + dayInput)
+        var fechainput = parseFloat(yearInput + monthInput + dayInput)
 
 
-        } if(_UltimoMes == 31) {
-            //alert("Rock");
-            grids.showColumn(31);
-            grids.showColumn(32);
-            grids.showColumn(33);
-            grids.showColumn(34);
+
+       
+
+        var columndisable = 0;
+        if (parseInt(fechadatepiker) < parseInt(fechainput)) {
+
+            columndisable = 31
+        }
+        if (parseInt(fechadatepiker) == parseInt(fechainput)) {
+
+            columndisable = parseInt(dayInput)
         }
 
 
-    }
+        var noEdit = false;
+        var siEdit = true;
+        var grid = $("#gridControlAsistencia").data("kendoGrid");
 
+        var len = $("#gridControlAsistencia").length;
+        for (var i = 0; i <= len; i++) {
+            var model = $("#gridControlAsistencia").data("kendoGrid").dataSource.at(i);
+            if (model) {
 
-    function InicialesLetras() {
-        var grids = $("#gridControlAsistencia").data("kendoGrid");
+                var ncolumn = columndisable;
 
-        var datas = grids.dataItem("tr:eq(0)");
-        $("#gridControlAsistencia thead [data-field=Dia1TA] .k-link").html(datas.LetraD1 + "<br />" + " 1")
-        $("#gridControlAsistencia thead [data-field=Dia2TA] .k-link").html(datas.LetraD2 + "<br />" + " 2")
-        $("#gridControlAsistencia thead [data-field=Dia3TA] .k-link").html(datas.LetraD3 + "<br />" + " 3")
-        $("#gridControlAsistencia thead [data-field=Dia4TA] .k-link").html(datas.LetraD4 + "<br />" + " 4")
-        $("#gridControlAsistencia thead [data-field=Dia5TA] .k-link").html(datas.LetraD5 + "<br />" + " 5")
-        $("#gridControlAsistencia thead [data-field=Dia6TA] .k-link").html(datas.LetraD6 + "<br />" + " 6")
-        $("#gridControlAsistencia thead [data-field=Dia7TA] .k-link").html(datas.LetraD7 + "<br />" + " 7")
-        $("#gridControlAsistencia thead [data-field=Dia8TA] .k-link").html(datas.LetraD8 + "<br />" + " 8")
-        $("#gridControlAsistencia thead [data-field=Dia9TA] .k-link").html(datas.LetraD9 + "<br />" + " 9")
-        $("#gridControlAsistencia thead [data-field=Dia10TA] .k-link").html(datas.LetraD10 + "<br />" + " 10")
-        $("#gridControlAsistencia thead [data-field=Dia11TA] .k-link").html(datas.LetraD11 + "<br />" + " 11")
-        $("#gridControlAsistencia thead [data-field=Dia12TA] .k-link").html(datas.LetraD12 + "<br />" + " 12")
-        $("#gridControlAsistencia thead [data-field=Dia13TA] .k-link").html(datas.LetraD13 + "<br />" + " 13")
-        $("#gridControlAsistencia thead [data-field=Dia14TA] .k-link").html(datas.LetraD14 + "<br />" + " 14")
-        $("#gridControlAsistencia thead [data-field=Dia15TA] .k-link").html(datas.LetraD15 + "<br />" + " 15")
-        $("#gridControlAsistencia thead [data-field=Dia16TA] .k-link").html(datas.LetraD16 + "<br />" + " 16")
-        $("#gridControlAsistencia thead [data-field=Dia17TA] .k-link").html(datas.LetraD17 + "<br />" + " 17")
-        $("#gridControlAsistencia thead [data-field=Dia18TA] .k-link").html(datas.LetraD18 + "<br />" + " 18")
-        $("#gridControlAsistencia thead [data-field=Dia19TA] .k-link").html(datas.LetraD19 + "<br />" + " 19")
-        $("#gridControlAsistencia thead [data-field=Dia20TA] .k-link").html(datas.LetraD20 + "<br />" + " 20")
-        $("#gridControlAsistencia thead [data-field=Dia21TA] .k-link").html(datas.LetraD21 + "<br />" + " 21")
-        $("#gridControlAsistencia thead [data-field=Dia22TA] .k-link").html(datas.LetraD22 + "<br />" + " 22")
-        $("#gridControlAsistencia thead [data-field=Dia23TA] .k-link").html(datas.LetraD23 + "<br />" + " 23")
-        $("#gridControlAsistencia thead [data-field=Dia24TA] .k-link").html(datas.LetraD24 + "<br />" + " 24")
-        $("#gridControlAsistencia thead [data-field=Dia25TA] .k-link").html(datas.LetraD25 + "<br />" + " 25")
-        $("#gridControlAsistencia thead [data-field=Dia26TA] .k-link").html(datas.LetraD26 + "<br />" + " 26")
-        $("#gridControlAsistencia thead [data-field=Dia27TA] .k-link").html(datas.LetraD27 + "<br />" + " 27")
-        $("#gridControlAsistencia thead [data-field=Dia28TA] .k-link").html(datas.LetraD28 + "<br />" + " 28")
-        $("#gridControlAsistencia thead [data-field=Dia29TA] .k-link").html(datas.LetraD29 + "<br />" + " 29")
-        $("#gridControlAsistencia thead [data-field=Dia30TA] .k-link").html(datas.LetraD30 + "<br />" + " 30")
-        $("#gridControlAsistencia thead [data-field=Dia31TA] .k-link").html(datas.LetraD31 + "<br />" + " 31")
-        $("#gridControlAsistencia thead [data-field=LlegadasTarde] .k-link").html("Llegadas" + "<br />" + " Tarde")
-        $("#gridControlAsistencia thead [data-field=DiasLaborales] .k-link").html("Días" + "<br />" + "Laborales")
-        $("#gridControlAsistencia thead [data-field=PorcentajeLlegadasTarde] .k-link").html("% de Llegadas" + "<br />" + " Tarde")
-    }
+                debugger;
+                for (var c = 0; c <= 31; c++) {
 
+                    switch (c) {
+                        case 1:                            
+                                model.fields["Dia1TA"].editable = siEdit;                                                      
+                            break;
+                        case 2:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia2TA"].editable = siEdit;} else { model.fields["Dia2TA"].editable = noEdit;}
+                            break;
+                        case 3:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia3TA"].editable = siEdit; } else { model.fields["Dia3TA"].editable = noEdit; }
+                            break;
+                        case 4:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia4TA"].editable = siEdit; } else { model.fields["Dia4TA"].editable = noEdit; }
+                            break;
+                        case 5:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia5TA"].editable = siEdit; } else { model.fields["Dia5TA"].editable = noEdit; }
+                            break;
+                        case 6:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia6TA"].editable = siEdit; } else { model.fields["Dia6TA"].editable = noEdit; }
+                            break;
+                        case 7:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia7TA"].editable = siEdit; } else { model.fields["Dia8TA"].editable = noEdit; }
+                            break;
+                        case 8:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia8TA"].editable = siEdit; } else { model.fields["Dia8TA"].editable = noEdit; }
+                            break;
+                        case 9:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia9TA"].editable = siEdit; } else { model.fields["Dia9TA"].editable = noEdit; }
+                            break;
+                        case 10:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia10TA"].editable = siEdit; } else { model.fields["Dia10TA"].editable = noEdit; }
+                            break;
+                        case 11:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia11TA"].editable = siEdit; } else { model.fields["Dia11TA"].editable = noEdit; }
+                            break;
+                        case 12:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia12TA"].editable = siEdit; } else { model.fields["Dia12TA"].editable = noEdit; }
+                            break;
+                        case 13:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia13TA"].editable = siEdit; } else { model.fields["Dia13TA"].editable = noEdit; }
+                            break;
+                        case 14:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia14TA"].editable = siEdit; } else { model.fields["Dia14TA"].editable = noEdit; }
+                            break;
+                        case 15:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia15TA"].editable = siEdit; } else { model.fields["Dia15TA"].editable = noEdit; }
+                            break;
+                        case 16:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia16TA"].editable = siEdit; } else { model.fields["Dia16TA"].editable = noEdit; }
+                            break;
+                        case 17:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia17TA"].editable = siEdit; } else { model.fields["Dia17TA"].editable = noEdit; }
+                            break;
+                        case 18:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia18TA"].editable = siEdit; } else { model.fields["Dia18TA"].editable = noEdit; }
+                            break;
+                        case 19:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia19TA"].editable = siEdit; } else { model.fields["Dia19TA"].editable = noEdit; }
+                            break;
+                        case 20:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia20TA"].editable = siEdit; } else { model.fields["Dia20TA"].editable = noEdit; }
+                            break;
+                        case 21:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia21TA"].editable = siEdit; } else { model.fields["Dia21TA"].editable = noEdit; }
+                            break;
+                        case 22:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia22TA"].editable = siEdit; } else { model.fields["Dia22TA"].editable = noEdit; }
+                            break;
+                        case 23:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia23TA"].editable = siEdit; } else { model.fields["Dia23TA"].editable = noEdit; }
+                            break;
+                        case 24:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia24TA"].editable = siEdit; } else { model.fields["Dia24TA"].editable = noEdit; }
+                            break;
+                        case 25:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia25TA"].editable = siEdit; } else { model.fields["Dia25TA"].editable = noEdit; }
+                            break;
+                        case 26:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia26TA"].editable = siEdit; } else { model.fields["Dia26TA"].editable = noEdit; }
+                            break;
+                        case 27:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia27TA"].editable = siEdit; } else { model.fields["Dia27TA"].editable = noEdit; }
+                            break;
+                        case 28:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia28TA"].editable = siEdit; } else { model.fields["Dia28TA"].editable = noEdit; }
+                            break;
+                        case 29:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia29TA"].editable = siEdit; } else { model.fields["Dia29TA"].editable = noEdit; }
+                            break;
+                        case 30:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia30TA"].editable = siEdit; } else { model.fields["Dia30TA"].editable = noEdit; }
+                            break;
+                        case 31:
+                            if (columndisable > c || columndisable == c) { model.fields["Dia31TA"].editable = siEdit; } else { model.fields["Dia31TA"].editable = noEdit; }
+                            break;
 
+                        default:
+                            break;
+                    }
 
+                }              
 
-
-
-
-
-
-
-
-
-
-
-    function RefrescarGrid() {
-
-        var grid = $("#gridControlAsistencia").getKendoGrid();
-        grid.dataSource.read();
-
-    }
-
-
-
+            }
+          }
+        }
 
 
 
@@ -878,365 +313,494 @@
 
 
 
-<br />
-
-@(Html.Kendo().Grid<ERPMVC.DTO.ControlAsistenciasDTO>
-                                        ()
-                                        .Name("gridControlAsistencia")
-                                        .Columns(columns =>
-                                        {
-
-                                            columns.Command(command =>
-                                            {
-
-                                    //command.Custom("Ver detalles").Click("Detalles");
-                                    //command.Custom("Editar").Click("EditControlAsistencias");
-                                    //command.Edit().Text(" ").IconClass(" fa-faedit").UpdateText(" ").IconClass("fa fa-up");
-                                    command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText(" ").IconClass("fa fa-up").CancelText(" ").IconClass("fa fa-edit");
-                                    //command.Destroy().Text("Eliminar");
-                                }).Locked(true).Lockable(false).Width(200);
-                                            columns.Bound(p => p.EmployeesId).Width(100).Hidden();
-                                            columns.Bound(p => p.Empleado.IdEmpleado).Width(150).Hidden();
-                                            columns.Bound(p => p.Empleado.NombreEmpleado).Locked(true).Lockable(false).Width(250).Title("Nombre del Empleado");
-                                            columns.ForeignKey(p => p.Dia1TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("1").Width(100).HtmlAttributes(new { @style = "background:#=ColorD1#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia2TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("2").Width(100).HtmlAttributes(new { @style = "background:#=ColorD2#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia3TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("3").Width(100).HtmlAttributes(new { @style = "background:#=ColorD3#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia4TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("4").Width(100).HtmlAttributes(new { @style = "background:#=ColorD4#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia5TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("5").Width(100).HtmlAttributes(new { @style = "background:#=ColorD5#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia6TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("6").Width(100).HtmlAttributes(new { @style = "background:#=ColorD6#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia7TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("7").Width(100).HtmlAttributes(new { @style = "background:#=ColorD7#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia8TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("8").Width(100).HtmlAttributes(new { @style = "background:#=ColorD8#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia9TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("9").Width(100).HtmlAttributes(new { @style = "background:#=ColorD9#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia10TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("10").Width(100).HtmlAttributes(new { @style = "background:#=ColorD10#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia11TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("11").Width(100).HtmlAttributes(new { @style = "background:#=ColorD11#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia12TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("12").Width(100).HtmlAttributes(new { @style = "background:#=ColorD12#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia13TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("13").Width(100).HtmlAttributes(new { @style = "background:#=ColorD13#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia14TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("14").Width(100).HtmlAttributes(new { @style = "background:#=ColorD14#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia15TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("15").Width(100).HtmlAttributes(new { @style = "background:#=ColorD15#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia16TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("16").Width(100).HtmlAttributes(new { @style = "background:#=ColorD16#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia17TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("17").Width(100).HtmlAttributes(new { @style = "background:#=ColorD17#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia18TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("18").Width(100).HtmlAttributes(new { @style = "background:#=ColorD18#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia19TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("19").Width(100).HtmlAttributes(new { @style = "background:#=ColorD19#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia20TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("20").Width(100).HtmlAttributes(new { @style = "background:#=ColorD20#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia21TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("21").Width(100).HtmlAttributes(new { @style = "background:#=ColorD21#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia22TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("22").Width(100).HtmlAttributes(new { @style = "background:#=ColorD22#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia23TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("23").Width(100).HtmlAttributes(new { @style = "background:#=ColorD23#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia24TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("24").Width(100).HtmlAttributes(new { @style = "background:#=ColorD24#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia25TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("25").Width(100).HtmlAttributes(new { @style = "background:#=ColorD25#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia26TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("26").Width(100).HtmlAttributes(new { @style = "background:#=ColorD26#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia27TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("27").Width(100).HtmlAttributes(new { @style = "background:#=ColorD27#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia28TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("28").Width(100).HtmlAttributes(new { @style = "background:#=ColorD28#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia29TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("29").Width(100).HtmlAttributes(new { @style = "background:#=ColorD29#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia30TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("30").Width(100).HtmlAttributes(new { @style = "background:#=ColorD30#;color:black;" });
-                                            columns.ForeignKey(p => p.Dia31TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("31").Width(100).HtmlAttributes(new { @style = "background:#=ColorD31#;color:black;" });
-
-                                //Letras dias
-                                columns.Bound(p => p.LetraD1).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD2).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD3).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD4).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD5).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD6).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD7).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD8).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD9).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD10).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD11).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD12).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD13).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD14).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD15).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD16).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD17).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD18).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD19).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD20).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD21).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD22).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD23).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD24).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD25).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD26).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD27).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD28).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD29).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD30).Width(150).Hidden();
-                                            columns.Bound(p => p.LetraD31).Width(150).Hidden();
-
-                                //Columnas para Color
-                                columns.Bound(p => p.ColorD1).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD2).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD3).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD4).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD5).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD6).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD7).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD8).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD9).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD10).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD11).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD12).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD13).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD14).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD15).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD16).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD17).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD18).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD19).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD20).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD21).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD22).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD23).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD24).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD25).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD26).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD27).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD28).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD29).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD20).Width(150).Hidden();
-                                            columns.Bound(p => p.ColorD31).Width(150).Hidden();
-
-
-                                            columns.Bound(p => p.LlegadasTarde).Width(150).Title("Llegadas Tarde");
-                                            columns.Bound(p => p.DiasLaborales).Width(150).Title("Dias Laborales");
-                                            columns.Bound(p => p.PorcentajeLlegadasTarde).Width(200).Title("%Llgadas Tarde");
-
-
-
-                                        })
-                                        //.Filterable(f => f.Operators(o => o.ForString(s => s
-                                        //                               .Clear()
-                                        //                               .Contains("Contiene")
-                                        //                               .DoesNotContain("No contiene")
-                                        //                               .EndsWith("Termina con")
-                                        //                               .IsEqualTo("Es igual a")
-                                        //                               .IsNotEqualTo("No es igual a")
-                                        //                               .IsNull("Es nulo")
-                                        //                               .StartsWith("Inicia con")
-
-
-                                        //                         )
-                                        //                         .ForNumber(n => n
-                                        //                           .Clear()
-                                        //                           .IsEqualTo("Es igual a")
-                                        //                           .IsGreaterThan("Es mayor que")
-                                        //                           .IsLessThan("Es menor que")
-                                        //                           .IsNull("Es nulo")
-                                        //                           .IsLessThanOrEqualTo("Es menor o igual que")
-                                        //                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                        //                         )
-                                        //                         .ForDate(d => d
-                                        //                         .Clear()
-                                        //                         .IsEqualTo("Es igual que")
-                                        //                         .IsGreaterThan("Es mayor que")
-                                        //                         .IsLessThan("Es menor que")
-                                        //                         .IsLessThanOrEqualTo("Es menor o igual que")
-                                        //                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                        //                         .IsNotEqualTo("No es igual que")
-                                        //                          )
-                                        //                       ))
-                                        .ToolBar(tools =>
-                                        {
-                                // tools.Create();
-                                //tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                //                                                         .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddEstados()" });
-                                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-
-
-                                        })
-                                        .Editable(e => e.Mode(GridEditMode.InLine).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
-                                        .Sortable()
-                                        .Pageable()
-                                        //.Filterable()
-                                        .Scrollable()
-                                        .Pdf(pdf => pdf.FileName("ControlAsistenciasReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                            .Excel(excel => excel.FileName("ControlAsistenciasReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                        .DataSource(dataSource =>
-                                            dataSource
-                                            .WebApi()
-
-                                            .ServerOperation(true)
-                                            .Model(model =>
-                                            {
-                                                model.Id(p => p.EmployeesId);
-                                                model.Field(p => p.Empleado.IdEmpleado).Editable(false);
-                                                model.Field(p => p.Empleado.NombreEmpleado).Editable(false);
-                                                model.Field(p => p.Dia1TA).DefaultValue(1);
-                                                model.Field(p => p.Dia2TA).DefaultValue(1);
-                                                model.Field(p => p.Dia3TA).DefaultValue(1);
-                                                model.Field(p => p.Dia4TA).DefaultValue(1);
-                                                model.Field(p => p.Dia5TA).DefaultValue(1);
-                                                model.Field(p => p.Dia6TA).DefaultValue(1);
-                                                model.Field(p => p.Dia7TA).DefaultValue(1);
-                                                model.Field(p => p.Dia8TA).DefaultValue(1);
-                                                model.Field(p => p.Dia9TA).DefaultValue(1);
-                                                model.Field(p => p.Dia10TA).DefaultValue(1);
-                                                model.Field(p => p.Dia11TA).DefaultValue(1);
-                                                model.Field(p => p.Dia12TA).DefaultValue(1);
-                                                model.Field(p => p.Dia13TA).DefaultValue(1);
-                                                model.Field(p => p.Dia14TA).DefaultValue(1);
-                                                model.Field(p => p.Dia15TA).DefaultValue(1);
-                                                model.Field(p => p.Dia16TA).DefaultValue(1);
-                                                model.Field(p => p.Dia17TA).DefaultValue(1);
-                                                model.Field(p => p.Dia18TA).DefaultValue(1);
-                                                model.Field(p => p.Dia19TA).DefaultValue(1);
-                                                model.Field(p => p.Dia20TA).DefaultValue(1);
-                                                model.Field(p => p.Dia21TA).DefaultValue(1);
-                                                model.Field(p => p.Dia22TA).DefaultValue(1);
-                                                model.Field(p => p.Dia23TA).DefaultValue(1);
-                                                model.Field(p => p.Dia24TA).DefaultValue(1);
-                                                model.Field(p => p.Dia25TA).DefaultValue(1);
-                                                model.Field(p => p.Dia26TA).DefaultValue(1);
-                                                model.Field(p => p.Dia27TA).DefaultValue(1);
-                                                model.Field(p => p.Dia28TA).DefaultValue(1);
-                                                model.Field(p => p.Dia29TA).DefaultValue(1);
-                                                model.Field(p => p.Dia30TA).DefaultValue(1);
-                                                model.Field(p => p.Dia31TA).DefaultValue(1);
-
-
-
-                                    // dia letras
-                                    model.Field(p => p.LetraD1);
-                                                model.Field(p => p.LetraD2);
-                                                model.Field(p => p.LetraD3);
-                                                model.Field(p => p.LetraD4);
-                                                model.Field(p => p.LetraD5);
-                                                model.Field(p => p.LetraD6);
-                                                model.Field(p => p.LetraD7);
-                                                model.Field(p => p.LetraD8);
-                                                model.Field(p => p.LetraD9);
-                                                model.Field(p => p.LetraD10);
-                                                model.Field(p => p.LetraD11);
-                                                model.Field(p => p.LetraD12);
-                                                model.Field(p => p.LetraD13);
-                                                model.Field(p => p.LetraD14);
-                                                model.Field(p => p.LetraD15);
-                                                model.Field(p => p.LetraD16);
-                                                model.Field(p => p.LetraD17);
-                                                model.Field(p => p.LetraD18);
-                                                model.Field(p => p.LetraD19);
-                                                model.Field(p => p.LetraD20);
-                                                model.Field(p => p.LetraD21);
-                                                model.Field(p => p.LetraD22);
-                                                model.Field(p => p.LetraD23);
-                                                model.Field(p => p.LetraD24);
-                                                model.Field(p => p.LetraD25);
-                                                model.Field(p => p.LetraD26);
-                                                model.Field(p => p.LetraD27);
-                                                model.Field(p => p.LetraD28);
-                                                model.Field(p => p.LetraD29);
-                                                model.Field(p => p.LetraD30);
-                                                model.Field(p => p.LetraD31);
-
-                                    // Color
-                                    model.Field(p => p.ColorD1);
-                                                model.Field(p => p.ColorD2);
-                                                model.Field(p => p.ColorD3);
-                                                model.Field(p => p.ColorD4);
-                                                model.Field(p => p.ColorD5);
-                                                model.Field(p => p.ColorD6);
-                                                model.Field(p => p.ColorD7);
-                                                model.Field(p => p.ColorD8);
-                                                model.Field(p => p.ColorD9);
-                                                model.Field(p => p.ColorD10);
-                                                model.Field(p => p.ColorD11);
-                                                model.Field(p => p.ColorD12);
-                                                model.Field(p => p.ColorD13);
-                                                model.Field(p => p.ColorD14);
-                                                model.Field(p => p.ColorD15);
-                                                model.Field(p => p.ColorD16);
-                                                model.Field(p => p.ColorD17);
-                                                model.Field(p => p.ColorD18);
-                                                model.Field(p => p.ColorD19);
-                                                model.Field(p => p.ColorD20);
-                                                model.Field(p => p.ColorD21);
-                                                model.Field(p => p.ColorD22);
-                                                model.Field(p => p.ColorD23);
-                                                model.Field(p => p.ColorD24);
-                                                model.Field(p => p.ColorD25);
-                                                model.Field(p => p.ColorD26);
-                                                model.Field(p => p.ColorD27);
-                                                model.Field(p => p.ColorD28);
-                                                model.Field(p => p.ColorD29);
-                                                model.Field(p => p.ColorD30);
-                                                model.Field(p => p.ColorD31);
-
-
-                                                model.Field(p => p.LlegadasTarde).Editable(false);
-                                                model.Field(p => p.DiasLaborales).Editable(false);
-                                                model.Field(p => p.PorcentajeLlegadasTarde).Editable(false);
-
-
-
-                                            })
-                                            .Events(events => events.Error("error_handler"))
-
-                                            .Read(read => read.Action("GetGetControlAsistencias", "ControlAsistencias").Data("LLenarTabla"))
-
-                                            .Update(update => update.Action("PostControlAsistencias", "ControlAsistencias", new { Id = "{0}" }).Type(HttpVerbs.Post))
-
-                                        )
-                                        .Events(e =>
-                                        {
-                                            e.Save("onsave");
-
-                                        })
-)
 
 
 
 
 
 
-<div class="col-xs-12 col-sm-6">
-    <div class="wrapper wrapper-content animated fadeInRight">
-        <div class="row">
+
+
+<div class="modal-dialog modal-lg">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 id="TituloControl" class="modal-title"> </h4>
+        </div>
+        <div class="modal-body">
             <div class="col-lg-12">
-                <div class="ibox float-e-margins">
-                    <div class="ibox-title">
-                        @*<h5>Observaciones </h5>*@
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="form-group">
+                            <label style="width:100%">Seleccione Mes y Año </label>
+                            @(Html.Kendo().DatePicker()
+                                          .Name("monthpicker")
+                                          .Start(CalendarView.Year)
+                                          .Depth(CalendarView.Year)
+                                          .Format("MMMM yyyy")
+                                          .Value(@today)
+                                          .DateInput()
+                                          .HtmlAttributes(new { style = "width: 100%", title = "monthpicker" })
+
+                                    /*.Events(e => e.Change("monthpicker_change"))*/
+
+                            )
+                            <input id="FechaActual" type="text" value="@today" style="visibility:hidden" />
+
+                        </div>
                     </div>
-                    <div class="ibox-content">
-                        <div class="table-responsive">
-                            <table class="table-bordered" style="border-color:black">
-                                <thead>
-                                    <tr>
-                                        <td colspan="2" ; style="background-color:#007bff;color:black;border-collapse:separate;border-spacing:2px;border-color:black" align="center">
-                                            Obcervaciones
-                                        </td>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach (var item in (ViewData["ElementoConfiguracion"] as IEnumerable<ERPMVC.Models.ElementoConfiguracion>))
-                                    {
-                                        <tr>
-                                            <td style="background-color: @item.Formula; color:black;border:5px;" align="center">
-                                                @Html.DisplayFor(modelItem => item.Valorstring)
-                                            </td>
-                                            <td style="color:black;border-collapse:separate;border-spacing:5px;border-color:black">
-                                                @Html.DisplayFor(modelItem => item.Descripcion)
-                                            </td>
-                                        </tr>
-
-
-                                    }
-
-
-
-                                </tbody>
-                            </table>
-
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label style="width:100%"></label>
+                            <button type="button" id="GetAsistencias" name="GetAsistencias" onclick="AsistenciaPorDatepker();" class="form-control btn-miboton" >Listar Asistencia</button>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <h3 class="text-themecolor"></h3>
+
+            @* Grid *@
+
+            <br />
+
+            @(Html.Kendo().Grid<ERPMVC.DTO.ControlAsistenciasDTO>
+                                                                        ()
+                                                                        .Name("gridControlAsistencia")
+                                                                        .Columns(columns =>
+                                                                        {
+                                                                            DateTime c = DateTime.Now;
+                                                                            DateTime hoy = DateTime.Now;
+
+                                                                            columns.Command(command =>
+                                                                            {
+                                                                                command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText(" ").CancelText(" ");
+                                                                            }).Width(150).Title("Acciones").Locked(true).Lockable(false);
+                                                                            columns.Bound(p => p.EmployeesId).Width(50).Locked(true).Lockable(false).Title("Id").Visible(false);
+                                                                            columns.Bound(p => p.Empleado.NombreEmpleado).Width(250).Title("Empleado").Locked(true).Lockable(false);
+                                                                            columns.ForeignKey(p => p.Dia1TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("1").Width(50).HtmlAttributes(new { @style = "background:#=ColorD1#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia2TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("2").Width(50).HtmlAttributes(new { @style = "background:#=ColorD2#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia3TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("3").Width(50).HtmlAttributes(new { @style = "background:#=ColorD3#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia4TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("4").Width(50).HtmlAttributes(new { @style = "background:#=ColorD4#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia5TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("5").Width(50).HtmlAttributes(new { @style = "background:#=ColorD5#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia6TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("6").Width(50).HtmlAttributes(new { @style = "background:#=ColorD6#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia7TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("7").Width(50).HtmlAttributes(new { @style = "background:#=ColorD7#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia8TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("8").Width(50).HtmlAttributes(new { @style = "background:#=ColorD8#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia9TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("9").Width(50).HtmlAttributes(new { @style = "background:#=ColorD9#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia10TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("10").Width(50).HtmlAttributes(new { @style = "background:#=ColorD10#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia11TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("11").Width(50).HtmlAttributes(new { @style = "background:#=ColorD11#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia12TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("12").Width(50).HtmlAttributes(new { @style = "background:#=ColorD12#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia13TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("13").Width(50).HtmlAttributes(new { @style = "background:#=ColorD13#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia14TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("14").Width(50).HtmlAttributes(new { @style = "background:#=ColorD14#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia15TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("15").Width(50).HtmlAttributes(new { @style = "background:#=ColorD15#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia16TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("16").Width(50).HtmlAttributes(new { @style = "background:#=ColorD16#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia17TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("17").Width(50).HtmlAttributes(new { @style = "background:#=ColorD17#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia18TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("18").Width(50).HtmlAttributes(new { @style = "background:#=ColorD18#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia19TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("19").Width(50).HtmlAttributes(new { @style = "background:#=ColorD19#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia20TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("20").Width(50).HtmlAttributes(new { @style = "background:#=ColorD20#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia21TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("21").Width(50).HtmlAttributes(new { @style = "background:#=ColorD21#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia22TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("22").Width(50).HtmlAttributes(new { @style = "background:#=ColorD22#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia23TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("23").Width(50).HtmlAttributes(new { @style = "background:#=ColorD23#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia24TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("24").Width(50).HtmlAttributes(new { @style = "background:#=ColorD24#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia25TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("25").Width(50).HtmlAttributes(new { @style = "background:#=ColorD25#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia26TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("26").Width(50).HtmlAttributes(new { @style = "background:#=ColorD26#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia27TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("27").Width(50).HtmlAttributes(new { @style = "background:#=ColorD27#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia28TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("28").Width(50).HtmlAttributes(new { @style = "background:#=ColorD28#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia29TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("29").Width(50).HtmlAttributes(new { @style = "background:#=ColorD29#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia30TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("30").Width(50).HtmlAttributes(new { @style = "background:#=ColorD30#;color:black;" });
+                                                                            columns.ForeignKey(p => p.Dia31TA, (System.Collections.IEnumerable)ViewData["ElementoConfiguracion"], "Id", "Valorstring").Title("31").Width(50).HtmlAttributes(new { @style = "background:#=ColorD31#;color:black;" });
+
+
+
+
+
+                                                                            //Letras dias
+                                                                            //columns.Bound(p => p.LetraD1).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD2).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD3).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD4).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD5).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD6).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD7).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD8).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD9).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD10).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD11).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD12).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD13).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD14).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD15).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD16).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD17).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD18).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD19).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD20).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD21).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD22).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD23).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD24).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD25).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD26).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD27).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD28).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD29).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD30).Width(150).Hidden();
+                                                                            //columns.Bound(p => p.LetraD31).Width(150).Hidden();
+
+                                                                            //Columnas para Color
+                                                                            columns.Bound(p => p.ColorD1).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD2).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD3).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD4).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD5).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD6).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD7).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD8).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD9).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD10).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD11).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD12).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD13).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD14).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD15).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD16).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD17).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD18).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD19).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD20).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD21).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD22).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD23).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD24).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD25).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD26).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD27).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD28).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD29).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD20).Width(150).Hidden();
+                                                                            columns.Bound(p => p.ColorD31).Width(150).Hidden();
+
+
+                                                                            //columns.Bound(p => p.Dia1).Width(200).Visible(false);
+                                                                            //columns.Bound(p => p.Dia2).Width(200).Visible(false);
+                                                                            //columns.Bound(p => p.Dia3).Width(200).Visible(false);
+                                                                            //columns.Bound(p => p.Dia4).Width(200).Visible(false);
+                                                                            //columns.Bound(p => p.Dia5).Width(200).Visible(false);
+                                                                            //columns.Bound(p => p.Dia6).Width(200).Visible(false);
+                                                                            //columns.Bound(p => p.Dia7).Width(200).Visible(false);
+                                                                            //columns.Bound(p => p.Dia8).Width(200).Visible(false);
+                                                                            //columns.Bound(p => p.Dia9).Width(200).Visible(false);
+                                                                            //columns.Bound(p => p.Dia11).Width(50).Visible(false);
+                                                                            //columns.Bound(p => p.Dia12).Width(50).Visible(false);
+                                                                            //columns.Bound(p => p.Dia10).Width(50).Visible(false);
+                                                                            //columns.Bound(p => p.Dia13).Width(50).Visible(false);
+                                                                            //columns.Bound(p => p.Dia14).Width(50).Visible(false);
+                                                                            //columns.Bound(p => p.Dia15).Width(50).Visible(false);
+                                                                            //columns.Bound(p => p.Dia16).Width(50).Visible(false);
+                                                                            //columns.Bound(p => p.Dia17).Width(50).Visible(false);
+                                                                            //columns.Bound(p => p.Dia18).Width(50).Visible(false);
+                                                                            //columns.Bound(p => p.Dia19).Width(50).Visible(false);
+                                                                            //columns.Bound(p => p.Dia20).Width(50).Visible(false);
+                                                                            //columns.Bound(p => p.Dia21).Width(50).Visible(false);
+                                                                            //columns.Bound(p => p.Dia22).Width(50).Visible(false);
+                                                                            //columns.Bound(p => p.Dia23).Width(50).Visible(false);
+                                                                            //columns.Bound(p => p.Dia24).Width(50).Visible(false);
+                                                                            //columns.Bound(p => p.Dia25).Width(50).Visible(false);
+                                                                            //columns.Bound(p => p.Dia26).Width(50).Visible(false);
+                                                                            //columns.Bound(p => p.Dia27).Width(50).Visible(false);
+                                                                            //columns.Bound(p => p.Dia28).Width(50).Visible(false);
+                                                                            //columns.Bound(p => p.Dia29).Width(50).Visible(false);
+                                                                            //columns.Bound(p => p.Dia30).Width(50).Visible(false);
+                                                                            //columns.Bound(p => p.Dia31).Width(50).Visible(false);
+
+                                                                            columns.Bound(p => p.LlegadasTarde).Width(150).Title("Llegadas Tarde");
+                                                                            columns.Bound(p => p.DiasLaborales).Width(150).Title("Dias Laborales");
+                                                                            columns.Bound(p => p.PorcentajeLlegadasTarde).Width(150).Title("%Llgadas Tarde");
+
+
+
+
+                                                                        })
+
+
+
+                                                                        .Events(events => events.Cancel("Cancel").DataBound("DataBound"))
+                                                                        .ToolBar(tools =>
+                                                                        {
+
+                                                                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+                                                                        })
+
+                                                                        .Editable(e => e.Mode(GridEditMode.InLine).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                                                                        .Sortable()
+                                                                        .Pageable()
+                                                                        //.Selectable(selectable => selectable.Type(GridSelectionType.Cell))
+                                                                        .Scrollable()
+                                                                        .Pdf(pdf => pdf.FileName("EstadosReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                                                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                                                            .Excel(excel => excel.FileName("EstadosReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                                                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                                                        .DataSource(dataSource =>
+                                                                            dataSource
+                                                                            .WebApi()
+
+                                                                            .ServerOperation(true)
+                                                                            .Model(model =>
+                                                                            {
+                                                                                model.Id(p => p.EmployeesId);
+                                                                                model.Field(p => p.Empleado.NombreEmpleado).Editable(false);
+                                                                                model.Field(p => p.Dia1TA).DefaultValue(1).Editable(true);
+                                                                                model.Field(p => p.Dia2TA).DefaultValue(1).Editable(true);
+                                                                                model.Field(p => p.Dia3TA).DefaultValue(1).Editable(true);
+                                                                                model.Field(p => p.Dia4TA).DefaultValue(1).Editable(true);
+                                                                                model.Field(p => p.Dia5TA).DefaultValue(1).Editable(true);
+                                                                                model.Field(p => p.Dia6TA).DefaultValue(1).Editable(true);
+                                                                                model.Field(p => p.Dia7TA).DefaultValue(1).Editable(true);
+                                                                                model.Field(p => p.Dia8TA).DefaultValue(1).Editable(true);
+                                                                                model.Field(p => p.Dia9TA).DefaultValue(1).Editable(true);
+                                                                                model.Field(p => p.Dia10TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia11TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia12TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia13TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia14TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia15TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia16TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia17TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia18TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia19TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia20TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia21TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia22TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia23TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia24TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia25TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia26TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia27TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia28TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia29TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia30TA).DefaultValue(1).Editable(false);
+                                                                                model.Field(p => p.Dia31TA).DefaultValue(1).Editable(false);
+
+
+                                                                                // dia letras
+                                                                                //model.Field(p => p.LetraD1);
+                                                                                //model.Field(p => p.LetraD2);
+                                                                                //model.Field(p => p.LetraD3);
+                                                                                //model.Field(p => p.LetraD4);
+                                                                                //model.Field(p => p.LetraD5);
+                                                                                //model.Field(p => p.LetraD6);
+                                                                                //model.Field(p => p.LetraD7);
+                                                                                //model.Field(p => p.LetraD8);
+                                                                                //model.Field(p => p.LetraD9);
+                                                                                //model.Field(p => p.LetraD10);
+                                                                                //model.Field(p => p.LetraD11);
+                                                                                //model.Field(p => p.LetraD12);
+                                                                                //model.Field(p => p.LetraD13);
+                                                                                //model.Field(p => p.LetraD14);
+                                                                                //model.Field(p => p.LetraD15);
+                                                                                //model.Field(p => p.LetraD16);
+                                                                                //model.Field(p => p.LetraD17);
+                                                                                //model.Field(p => p.LetraD18);
+                                                                                //model.Field(p => p.LetraD19);
+                                                                                //model.Field(p => p.LetraD20);
+                                                                                //model.Field(p => p.LetraD21);
+                                                                                //model.Field(p => p.LetraD22);
+                                                                                //model.Field(p => p.LetraD23);
+                                                                                //model.Field(p => p.LetraD24);
+                                                                                //model.Field(p => p.LetraD25);
+                                                                                //model.Field(p => p.LetraD26);
+                                                                                //model.Field(p => p.LetraD27);
+                                                                                //model.Field(p => p.LetraD28);
+                                                                                //model.Field(p => p.LetraD29);
+                                                                                //model.Field(p => p.LetraD30);
+                                                                                //model.Field(p => p.LetraD31);
+
+                                                                                // Color
+                                                                                model.Field(p => p.ColorD1);
+                                                                                model.Field(p => p.ColorD2);
+                                                                                model.Field(p => p.ColorD3);
+                                                                                model.Field(p => p.ColorD4);
+                                                                                model.Field(p => p.ColorD5);
+                                                                                model.Field(p => p.ColorD6);
+                                                                                model.Field(p => p.ColorD7);
+                                                                                model.Field(p => p.ColorD8);
+                                                                                model.Field(p => p.ColorD9);
+                                                                                model.Field(p => p.ColorD10);
+                                                                                model.Field(p => p.ColorD11);
+                                                                                model.Field(p => p.ColorD12);
+                                                                                model.Field(p => p.ColorD13);
+                                                                                model.Field(p => p.ColorD14);
+                                                                                model.Field(p => p.ColorD15);
+                                                                                model.Field(p => p.ColorD16);
+                                                                                model.Field(p => p.ColorD17);
+                                                                                model.Field(p => p.ColorD18);
+                                                                                model.Field(p => p.ColorD19);
+                                                                                model.Field(p => p.ColorD20);
+                                                                                model.Field(p => p.ColorD21);
+                                                                                model.Field(p => p.ColorD22);
+                                                                                model.Field(p => p.ColorD23);
+                                                                                model.Field(p => p.ColorD24);
+                                                                                model.Field(p => p.ColorD25);
+                                                                                model.Field(p => p.ColorD26);
+                                                                                model.Field(p => p.ColorD27);
+                                                                                model.Field(p => p.ColorD28);
+                                                                                model.Field(p => p.ColorD29);
+                                                                                model.Field(p => p.ColorD30);
+                                                                                model.Field(p => p.ColorD31);
+
+
+
+                                                                                //model.Field(p => p.Dia1);
+                                                                                //model.Field(p => p.Dia2);
+                                                                                //model.Field(p => p.Dia3);
+                                                                                //model.Field(p => p.Dia4);
+                                                                                //model.Field(p => p.Dia5);
+                                                                                //model.Field(p => p.Dia6);
+                                                                                //model.Field(p => p.Dia7);
+                                                                                //model.Field(p => p.Dia8);
+                                                                                //model.Field(p => p.Dia9);
+                                                                                //model.Field(p => p.Dia10);
+                                                                                //model.Field(p => p.Dia11);
+                                                                                //model.Field(p => p.Dia12);
+                                                                                //model.Field(p => p.Dia13);
+                                                                                //model.Field(p => p.Dia14);
+                                                                                //model.Field(p => p.Dia15);
+                                                                                //model.Field(p => p.Dia16);
+                                                                                //model.Field(p => p.Dia17);
+                                                                                //model.Field(p => p.Dia18);
+                                                                                //model.Field(p => p.Dia19);
+                                                                                //model.Field(p => p.Dia20);
+                                                                                //model.Field(p => p.Dia21);
+                                                                                //model.Field(p => p.Dia22);
+                                                                                //model.Field(p => p.Dia23);
+                                                                                //model.Field(p => p.Dia24);
+                                                                                //model.Field(p => p.Dia25);
+                                                                                //model.Field(p => p.Dia26);
+                                                                                //model.Field(p => p.Dia27);
+                                                                                //model.Field(p => p.Dia28);
+                                                                                //model.Field(p => p.Dia29);
+                                                                                //model.Field(p => p.Dia30);
+                                                                                //model.Field(p => p.Dia31);
+                                                                                model.Field(p => p.LlegadasTarde).Editable(false);
+                                                                                model.Field(p => p.DiasLaborales).Editable(false);
+                                                                                model.Field(p => p.PorcentajeLlegadasTarde).Editable(false);
+
+                                                                            })
+                                                                            .Events(events => events.Error("error_handler"))
+                                                                            //.Read(read => read.Action("GetGetControlAsistencias", "ControlAsistencias"))
+                                                                            .Read(read => read.Action("GetGetControlAsistencias", "ControlAsistencias").Data("ParametroDatepikere"))
+                                                                            .Update(update => update.Action("PostControlAsistencias", "ControlAsistencias", new { Id = "{0}" }).Type(HttpVerbs.Post))
+
+
+                                                                        )
+                                                                        .Events(e =>
+                                                                        {
+                                                                            e.Save("onsave");
+
+                                                                        })
+            )
+
+
+
+            <br />
+
+            <div class="col-xs-12 col-sm-6">
+                <div class="wrapper wrapper-content animated fadeInRight">
+                    <div class="row">
+                        <div class="col-lg-12">
+                            <div class="ibox float-e-margins">
+                                <div class="ibox-title">
+                                    @*<h5>Observaciones </h5>*@
+                                </div>
+                                <div class="ibox-content">
+                                    <div class="table-responsive">
+                                        <table class="table-bordered" style="border-color:black">
+                                            <thead>
+                                                <tr>
+                                                    <td colspan="2" ; style="background-color:#007bff;color:black;border-collapse:separate;border-spacing:2px;border-color:black" align="center">
+                                                        Obcervaciones
+                                                    </td>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @foreach (var item in (ViewData["ElementoConfiguracion"] as IEnumerable<ERPMVC.Models.ElementoConfiguracion>))
+                                                {
+                                                    <tr>
+                                                        <td style="background-color: @item.Formula; color:black;border:5px;" align="center">
+                                                            @Html.DisplayFor(modelItem => item.Valorstring)
+                                                        </td>
+                                                        <td style="color:black;border-collapse:separate;border-spacing:5px;border-color:black">
+                                                            @Html.DisplayFor(modelItem => item.Descripcion)
+                                                        </td>
+                                                    </tr>
+
+
+                                                }
+
+
+
+                                            </tbody>
+                                        </table>
+
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+
+
         </div>
     </div>
 </div>
+
+
+
+
+
+<script>
+
+
+    function Cancel(e) {        
+        this.refresh();
+    }
+
+    function DataBound() {
+        enables()
+        AsistenciaTitle()
+        InicialesDias()
+
+    }
+
+   
+
+
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridControlAsistencia").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridControlAsistencia").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+    setRowButtonTooltip(".k-grid-edit", "Editar Registro");
+    //setRowButtonTooltip(".k-grid-delete", "Eliminar");
+    setRowButtonTooltip(".k-grid-update", "Guardar Registro");
+    setRowButtonTooltip(".k-grid-cancel", "Cancelar");
+
+
+
+   
+
+</script>

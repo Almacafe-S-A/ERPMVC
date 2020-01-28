@@ -64,7 +64,8 @@ namespace ERPMVC.Controllers
         {
             if ((string)(jsonResult["reportAction"]) == "Export")
             {
-                jsonResult["reportName"] = "my_custom_report";
+                jsonResult["reportName"] = "Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second;
             }
 
             if (jsonResult.ContainsKey("CustomData"))

@@ -162,6 +162,9 @@
                                                                         style="width: 100%;"
                                                                         auto-bind="true">
                                                         <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
+                                                            <sorts>
+                                                                <sort field="BranchName" direction="asc" />
+                                                            </sorts>
                                                             <transport>
                                                                 <read url="@Url.Action("Get", "Branch")" />
                                                             </transport>
@@ -175,7 +178,8 @@
                                                 <script>
                                                     function GetBranchId() {
                                                         return {
-                                                            'BranchId': $("#BranchId").data("kendoDropDownList").value()
+                                                            'TipoDocumento': "05--Nota de Crédito",
+                                                            'BranchId': $("#BranchId").data("kendoDropDownList").value(),
                                                         }
                                                     }
                                                 </script>
@@ -186,12 +190,12 @@
                                                         <kendo-dropdownlist name="IdPuntoEmision" for="IdPuntoEmision" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                             option-label="Seleccione el punto de emisión"
                                                                             auto-bind="false"
-                                                                            datatextfield="PuntoEmisionCod"
+                                                                            datatextfield="PuntoEmision"
                                                                             datavaluefield="IdPuntoEmision" enable="false"
                                                                             style="width: 100%;color:black;font-weight:600" data-val-required="El Punto de emisión es requerido.">
                                                             <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
                                                                 <transport>
-                                                                    <read url="@Url.Action("GetPuntoEmisionByBranchId", "PuntoEmision")" data="GetBranchId" />
+                                                                    <read url="@Url.Action("GetPuntoEmisonEnNumeracionSAR", "NumeracionSAR")" data="GetBranchId" />
                                                                 </transport>
                                                             </datasource>
                                                         </kendo-dropdownlist>
@@ -201,12 +205,15 @@
                                                         <kendo-dropdownlist name="IdPuntoEmision" for="IdPuntoEmision" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                             option-label="Seleccione el punto de emisión"
                                                                             auto-bind="false"
-                                                                            datatextfield="PuntoEmisionCod"
+                                                                            datatextfield="PuntoEmision"
                                                                             datavaluefield="IdPuntoEmision"
                                                                             style="width: 100%;" data-val-required="El Punto de emisión es requerido.">
                                                             <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
+                                                                <sorts>
+                                                                    <sort field="PuntoEmision" direction="asc" />
+                                                                </sorts>
                                                                 <transport>
-                                                                    <read url="@Url.Action("GetPuntoEmisionByBranchId", "PuntoEmision")" data="GetBranchId" />
+                                                                    <read url="@Url.Action("GetPuntoEmisonEnNumeracionSAR", "NumeracionSAR")" data="GetBranchId" />
                                                                 </transport>
                                                             </datasource>
                                                         </kendo-dropdownlist>
@@ -266,6 +273,8 @@
                                                                           $("#RTN").val(result.RTN);
                                                                           $("#Correo").val(result.Email);
                                                                           $("#Tefono").val(result.Phone);
+                                                                          var maskedtextbox = $("#Tefono").data("kendoMaskedTextBox");
+                                                                          maskedtextbox.value($("#Tefono").val());
                                                                           $("#CustomerRefNumber").val(result.CustomerRefNumber);
 
                                                                      },
@@ -306,6 +315,9 @@
                                                                             onchange="SetCustomerName();"
                                                                             style="min-width: 100%;" data-val-required="El Cliente es requerido.">
                                                             <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
+                                                                <sorts>
+                                                                    <sort field="CustomerName" direction="asc" />
+                                                                </sorts>
                                                                 <transport>
                                                                     <read url="@Url.Action("GetCustomer", "Common")" />
                                                                 </transport>
@@ -434,6 +446,9 @@
                                                                             datavaluefield="CurrencyId"
                                                                             style="width: 100%;">
                                                             <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
+                                                                <sorts>
+                                                                    <sort field="CurrencyName" direction="asc" />
+                                                                </sorts>
                                                                 <transport>
                                                                     <read url="@Url.Action("GetCurrency", "Currency")" />
                                                                 </transport>
@@ -473,6 +488,9 @@
                                                                             data-val-required="El Tipo de Venta es requerido."
                                                                             style="width: 100%;">
                                                             <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
+                                                                <sorts>
+                                                                    <sort field="SalesTypeName" direction="asc" />
+                                                                </sorts>
                                                                 <transport>
                                                                     <read url="@Url.Action("Get", "SalesType")" />
                                                                 </transport>
@@ -512,6 +530,9 @@
                                                                             data-val-required="El Producto es requerido."
                                                                             style="width: 100%;">
                                                             <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
+                                                                <sorts>
+                                                                    <sort field="ProductName" direction="asc" />
+                                                                </sorts>
                                                                 <transport>
                                                                     <read url="@Url.Action("GetProduct", "Common")" />
                                                                 </transport>
@@ -531,76 +552,65 @@
                                                     <label asp-for="OrderDate" class="control-label" style="width: 100%;"></label>
                                                     @if (Model.CreditNoteId > 0)
                                                     {
-                                                    <kendo-datetimepicker name="OrderDate"
-                                                                          style="min-width: 86%;color:black;font-weight:600" class="form-control"
-                                                                          format="dd/MM/yyyy hh:mm:ss" disabled
-                                                                          time-format="hh:mm:ss"
-                                                                          data-val-required="La Fecha de pedido es requerida."
-                                                                          value="Model.OrderDate"></kendo-datetimepicker>
+                                                        <kendo-datetimepicker name="OrderDate"
+                                                                              style="min-width: 86%;color:black;font-weight:600" class="form-control"
+                                                                              format="dd/MM/yyyy hh:mm:ss" disabled
+                                                                              time-format="hh:mm:ss"
+                                                                              data-val-required="La Fecha de pedido es requerida."
+                                                                              value="Model.OrderDate"></kendo-datetimepicker>
                                                     }
                                                     else
                                                     {
-                                                    <kendo-datetimepicker name="OrderDate"
-                                                                          style="min-width: 86%;" class="form-control"
-                                                                          format="dd/MM/yyyy hh:mm:ss"
-                                                                          time-format="hh:mm:ss"
-                                                                          data-val-required="La Fecha de pedido es requerida."
-                                                                          value="Model.OrderDate"></kendo-datetimepicker>
+                                                        <kendo-datetimepicker name="OrderDate"
+                                                                              style="min-width: 86%;" class="form-control"
+                                                                              format="dd/MM/yyyy hh:mm:ss"
+                                                                              time-format="hh:mm:ss"
+                                                                              data-val-required="La Fecha de pedido es requerida."
+                                                                              value="Model.OrderDate"></kendo-datetimepicker>
                                                     }
-                                                                          <span asp-validation-for="OrderDate" class="text-danger"></span>
+                                                    <span asp-validation-for="OrderDate" class="text-danger"></span>
                                                 </div>
                                             </div>
-
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label asp-for="DeliveryDate" class="control-label" style="width: 100%;"></label>
-                                                    @if (Model.CreditNoteId > 0)
-                                                    {
+                                            @if (Model.CreditNoteId > 0)
+                                            {
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label asp-for="DeliveryDate" class="control-label" style="width: 100%;"></label>
                                                         <kendo-datetimepicker name="DeliveryDate"
                                                                               style="min-width: 86%;color:black;font-weight:600" class="form-control"
                                                                               format="dd/MM/yyyy hh:mm:ss"
                                                                               time-format="hh:mm:ss" disabled
                                                                               data-val-required="La Fecha de Entrega es requerida."
                                                                               value="Model.DeliveryDate"></kendo-datetimepicker>
-                                                    }
-                                                    else
-                                                    {
-                                                        <kendo-datetimepicker name="DeliveryDate"
-                                                                              style="min-width: 86%;" class="form-control"
-                                                                              format="dd/MM/yyyy hh:mm:ss"
-                                                                              time-format="hh:mm:ss"
-                                                                              data-val-required="La Fecha de Entrega es requerida."
-                                                                              value="@DateTime.Now"></kendo-datetimepicker>
-                                                    }
-                                                    <span asp-validation-for="DeliveryDate" class="text-danger"></span>
+                                                       
+                                                    </div>
                                                 </div>
-                                            </div>
-
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label asp-for="ExpirationDate" class="control-label" style="width: 100%;"></label>
-                                                    @if (Model.CreditNoteId > 0)
-                                                    {
-                                                        <kendo-datetimepicker name="ExpirationDate" class="form-control"
-                                                                              style="min-width: 86%;color:black;font-weight:600" disabled
-                                                                              format="dd/MM/yyyy hh:mm:ss"
-                                                                              time-format="hh:mm:ss" data-val-required="La Fecha de Vencimiento es requerida."
-                                                                              value="Model.ExpirationDate"></kendo-datetimepicker>
-                                                    }
-                                                    else
-                                                    {
-                                                        <kendo-datetimepicker name="ExpirationDate"
-                                                                              style="min-width: 86%;" class="form-control"
-                                                                              format="dd/MM/yyyy hh:mm:ss"
-                                                                              time-format="hh:mm:ss" data-val-required="La Fecha de Vencimiento es requerida."
-                                                                              value="Model.ExpirationDate"></kendo-datetimepicker>
-                                                    }
-                                                    <span asp-validation-for="ExpirationDate" class="text-danger"></span>
+                                            }
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label asp-for="ExpirationDate" class="control-label" style="width: 100%;"></label>
+                                                        @if (Model.CreditNoteId > 0)
+                                                        {
+                                                            <kendo-datetimepicker name="ExpirationDate" class="form-control"
+                                                                                  style="min-width: 86%;color:black;font-weight:600" disabled
+                                                                                  format="dd/MM/yyyy hh:mm:ss"
+                                                                                  time-format="hh:mm:ss" data-val-required="La Fecha de Vencimiento es requerida."
+                                                                                  value="Model.ExpirationDate"></kendo-datetimepicker>
+                                                        }
+                                                        else
+                                                        {
+                                                            <kendo-datetimepicker name="ExpirationDate"
+                                                                                  style="min-width: 86%;" class="form-control"
+                                                                                  format="dd/MM/yyyy hh:mm:ss"
+                                                                                  time-format="hh:mm:ss" data-val-required="La Fecha de Vencimiento es requerida."
+                                                                                  value="Model.ExpirationDate"></kendo-datetimepicker>
+                                                        }
+                                                        <span asp-validation-for="ExpirationDate" class="text-danger"></span>
+                                                    </div>
                                                 </div>
+
+
                                             </div>
-
-
-                                        </div>
 
                                         @*<div class="row">
             <div class="col-md-4">
@@ -683,7 +693,7 @@
                                                                         <kendo-numerictextbox name="Amount"
                                                                                               format="n2"
                                                                                               spinners="false"
-                                                                                              style="width: 100%;text-align:right;padding-right: 3px;color:black;font-weight:500"
+                                                                                              style="min-width: 100%;text-align:right;padding-right: 3px;color:black;font-weight:500"
                                                                                               min="0" disabled class="control-label right bold"
                                                                                               max="999999999"
                                                                                               value="Model.Amount"></kendo-numerictextbox>
@@ -698,7 +708,7 @@
                                                                         <kendo-numerictextbox name="Discount"
                                                                                               format="n2" spinners="false"
                                                                                               min="0"
-                                                                                              style="width: 100%;text-align:right;padding-right: 3px;color:black;font-weight:500"
+                                                                                              style="min-width: 100%;text-align:right;padding-right: 3px;color:black;font-weight:500"
                                                                                               max="999999999"
                                                                                               disabled class=" control-label right bold"
                                                                                               value="Model.Discount"></kendo-numerictextbox>
@@ -714,7 +724,7 @@
                                                                                               min="0"
                                                                                               required
                                                                                               disabled class="control-label right bold"
-                                                                                              style="width: 100%;text-align:right;color:black;font-weight:500"
+                                                                                              style="min-width: 100%;text-align:right;color:black;font-weight:500"
                                                                                               max="999999999"
                                                                                               step="1"
                                                                                               value="Model.SubTotal"></kendo-numerictextbox>
@@ -729,7 +739,7 @@
                                                                                               format="n2" spinners="false"
                                                                                               min="0"
                                                                                               disabled class="control-label right bold"
-                                                                                              style="width: 100%;text-align:right;padding-right: 3px;color:black;font-weight:500"
+                                                                                              style="min-width: 100%;text-align:right;padding-right: 3px;color:black;font-weight:500"
                                                                                               max="999999999"
                                                                                               step="1"
                                                                                               value="Model.Tax"></kendo-numerictextbox>
@@ -747,7 +757,7 @@
                                                                                               min="0"
                                                                                               disabled
                                                                                               class="control-label right bold"
-                                                                                              style="width: 100%;text-align:right;padding-right: 3px;color:black;font-weight:500"
+                                                                                              style="min-width: 100%;text-align:right;padding-right: 3px;color:black;font-weight:500"
                                                                                               max="999999999"
                                                                                               step="1"
                                                                                               value="Model.Tax18"></kendo-numerictextbox>
@@ -764,7 +774,7 @@
                                                                         {
                                                                             <kendo-numerictextbox name="Freight"
                                                                                                   format="n2" spinners="false"
-                                                                                                  style="width: 100%;text-align:right;padding-right:3px;color:black;font-weight:500"
+                                                                                                  style="min-width: 100%;text-align:right;padding-right:3px;color:black;font-weight:500"
                                                                                                   min="0" disabled
                                                                                                   data-val-required="El Flete es requerido." class="control-label right bold"
                                                                                                   onchange="CalcularTotalDocumento();"
@@ -776,7 +786,7 @@
                                                                         {
                                                                             <kendo-numerictextbox name="Freight"
                                                                                                   format="n2" spinners="false"
-                                                                                                  style="width: 100%;text-align:right;padding-right:3px"
+                                                                                                  style="min-width: 100%;text-align:right;padding-right:3px"
                                                                                                   min="0"
                                                                                                   data-val-required="El Flete es requerido." class="control-label right bold"
                                                                                                   onchange="CalcularTotalDocumento();"
@@ -813,7 +823,7 @@
                                                                                               min="0"
                                                                                               disabled
                                                                                               required class="control-label right bold"
-                                                                                              style="width: 100%;text-align:right;padding-right: 3px;color:black;font-weight:500"
+                                                                                              style="min-width: 100%;text-align:right;padding-right: 3px;color:black;font-weight:500"
                                                                                               max="999999999"
                                                                                               step="1"
                                                                                               value="Model.TotalExento"></kendo-numerictextbox>
@@ -831,7 +841,7 @@
                                                                                               min="0"
                                                                                               disabled
                                                                                               required class="control-label right bold"
-                                                                                              style="width: 100%;text-align:right;padding-right: 3px;color:black;font-weight:500"
+                                                                                              style="min-width: 100%;text-align:right;padding-right: 3px;color:black;font-weight:500"
                                                                                               max="999999999"
                                                                                               step="1"
                                                                                               value="Model.TotalExonerado"></kendo-numerictextbox>
@@ -848,7 +858,7 @@
                                                                                               min="0"
                                                                                               disabled
                                                                                               required class="control-label right bold"
-                                                                                              style="width: 100%;text-align:right;padding-right: 3px;color:black;font-weight:500"
+                                                                                              style="min-width: 100%;text-align:right;padding-right: 3px;color:black;font-weight:500"
                                                                                               max="999999999"
                                                                                               step="1"
                                                                                               value="Model.TotalGravado"></kendo-numerictextbox>
@@ -865,7 +875,7 @@
                                                                                               min="0"
                                                                                               disabled
                                                                                               required class="control-label right bold"
-                                                                                              style="width: 100%;text-align:right;padding-right: 3px;color:black;font-weight:500"
+                                                                                              style="min-width: 100%;text-align:right;padding-right: 3px;color:black;font-weight:500"
                                                                                               max="999999999"
                                                                                               step="1"
                                                                                               value="Model.TotalGravado18"></kendo-numerictextbox>
@@ -884,7 +894,7 @@
                                                                                               min="0"
                                                                                               disabled
                                                                                               required class="control-label right bold"
-                                                                                              style="width: 100%;text-align:right;padding-right: 3px;color:black;font-weight:500"
+                                                                                              style="min-width: 100%;text-align:right;padding-right: 3px;color:black;font-weight:500"
                                                                                               max="999999999"
                                                                                               step="1"
                                                                                               value="Model.Total"></kendo-numerictextbox>
@@ -1068,12 +1078,12 @@
 
         if (validadetalle) {
             debugger;
-            var _deliveryDate = "0001-01-01";
+            //var _deliveryDate = "0001-01-01";
             var _orderDate = "0001-01-01";
             var _expirationDate = "0001-01-01";
-            if ($("#DeliveryDate").getKendoDateTimePicker().value() != null || $("#DeliveryDate").getKendoDateTimePicker().value() != undefined) {
-                _deliveryDate = $("#DeliveryDate").getKendoDateTimePicker().value().toJSON()
-            }
+            //if ($("#DeliveryDate").getKendoDateTimePicker().value() != null || $("#DeliveryDate").getKendoDateTimePicker().value() != undefined) {
+            //    _deliveryDate = $("#DeliveryDate").getKendoDateTimePicker().value().toJSON()
+            //}
             if ($("#OrderDate").getKendoDateTimePicker().value() != null || $("#OrderDate").getKendoDateTimePicker().value() != undefined) {
                 _orderDate = $("#OrderDate").getKendoDateTimePicker().value().toJSON()
             }
@@ -1093,7 +1103,7 @@
                 'ProductName': $("#ProductId").data("kendoDropDownList").text(),
                 'OrderDate': _orderDate,
                 'CreditNoteDate': _orderDate,
-                'DeliveryDate': _deliveryDate,
+                //'DeliveryDate': _deliveryDate,
                 'ExpirationDate': _expirationDate,
                 'CurrencyId': Number($("#CurrencyId").val()),
                 'CurrencyName': $("#CurrencyId").data("kendoDropDownList").text(),
@@ -1108,6 +1118,7 @@
                 'Discount': $("#Discount").val(),
                 'InvoiceId': $("#IdFactura").val(),
                 'Tax': $("#Tax").val(),
+                'Tax18': $("#Tax18").val(),
                 'Freight': $("#Freight").val(),
                 'Total': $("#Total").val(),
                 'Correo': $("#Correo").val(),
@@ -1117,6 +1128,7 @@
                 'TotalExento': $("#TotalExento").val(),
                 'TotalExonerado': $("#TotalExonerado").val(),
                 'TotalGravado': $("#TotalGravado").val(),
+                'TotalGravado18': $("#TotalGravado18").val(),
                 //'SalesOrderId': ($("#cbxBuscarCotizaciones").val() === '' ? 0 : $("#cbxBuscarCotizaciones").val()),
                 //'CertificadoDepositoId': $("#cbxBuscarCertificadosDeposito").val() === '' ? 0 : $("#cbxBuscarCertificadosDeposito").val(),
                 //'CustomerAreaId': $("#cbxBuscarCustomerArea").val() === '' ? 0 : $("#cbxBuscarCustomerArea").val(),
@@ -1242,6 +1254,8 @@
                             $("#Correo").val(result.Correo);
                             $("#RTN").val(result.RTN);
                             $("#Tefono").val(result.Tefono);
+                            var maskedtextbox = $("#Tefono").data("kendoMaskedTextBox");
+                            maskedtextbox.value($("#Tefono").val());
                             $("#CustomerRefNumber").val(result.CustomerRefNumber);
                             $("#BranchId").data("kendoDropDownList").value(result.BranchId);
                             $("#IdPuntoEmision").data("kendoDropDownList").value(result.IdPuntoEmision);
@@ -1249,7 +1263,7 @@
                             $("#SalesTypeId").data("kendoDropDownList").value(result.SalesTypeId);
                             $("#ProductId").data("kendoDropDownList").value(result.ProductId);
                             $("#OrderDate").kendoDateTimePicker({ value: new Date(result.OrderDate), dateInput: true });
-                            $("#DeliveryDate").kendoDateTimePicker({ value: new Date(result.DeliveryDate), dateInput: true });
+                            //$("#DeliveryDate").kendoDateTimePicker({ value: new Date(result.DeliveryDate), dateInput: true });
                             $("#ExpirationDate").kendoDateTimePicker({ value: new Date(result.ExpirationDate), dateInput: true });
                             $("#NoOCExenta").val(result.NoOCExenta);
                             $("#NoConstanciadeRegistro").val(result.NoConstanciadeRegistro);

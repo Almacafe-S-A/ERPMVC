@@ -10,6 +10,7 @@ using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
+using System.Security.Claims;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -23,14 +24,17 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public VendorInvoiceController(ILogger<VendorInvoiceController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public VendorInvoiceController(ILogger<VendorInvoiceController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         public IActionResult Index()
         {
+            ViewData["permisoActualizarRecibido"] = _principal.HasClaim("Compras.Factura Proveedores.Actualizar a Recibido", "true");
             return View();
         }
 
