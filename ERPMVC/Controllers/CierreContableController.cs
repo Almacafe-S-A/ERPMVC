@@ -31,9 +31,17 @@ namespace ERPMVC.Controllers
         }
 
 
-        public ActionResult CierreContable()
+        public async Task<IActionResult> CierreContable()
         {
-            return View();
+            string baseadress = config.Value.urlbase;
+            HttpClient cliente = new HttpClient();
+            cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+            var resultadoCierre = await cliente.GetAsync(baseadress + "api/CierreContable/UltimoCierre");
+            string ultimoCierre = await resultadoCierre.Content.ReadAsStringAsync();
+            BitacoraCierreContable cierre = JsonConvert.DeserializeObject<BitacoraCierreContable>(ultimoCierre);
+            BitacoraCierreContable NuevoCierre = new BitacoraCierreContable();
+            NuevoCierre.FechaCierre = cierre.FechaCierre.AddDays(1);
+            return View(NuevoCierre);
         }
 
 
@@ -56,6 +64,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Cierre = JsonConvert.DeserializeObject<BitacoraCierreContable>(valorrespuesta);
+                    ERPMVC.Helpers.Utils.Cerrado = true;
                 }
                 else
                 {
