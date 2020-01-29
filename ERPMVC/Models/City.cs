@@ -19,5 +19,7 @@ namespace ERPMVC.Models
 
         [Display(Name = "Departamento")]
         public long? StateId { get; set; }
+        [ForeignKey("StateId")]
+        public State State { get; set; }
     }
 }
