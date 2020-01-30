@@ -337,22 +337,30 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _InvoiceLine }, Total = 1 });
         }
 
-        [HttpPost("[action]")]
+        [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<InvoiceLine>> Delete([FromBody]InvoiceLine _InvoiceLine)
         {
+            List<InvoiceLine> _InvoiceLIST = new List<InvoiceLine>();
             try
             {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-
-                var result = await _client.PostAsJsonAsync(baseadress + "api/InvoiceLine/Delete", _InvoiceLine);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
+                _InvoiceLIST = JsonConvert.DeserializeObject<List<InvoiceLine>>(HttpContext.Session.GetString("listadoproductosinvoice"));
+                if (_InvoiceLIST != null)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _InvoiceLine = JsonConvert.DeserializeObject<InvoiceLine>(valorrespuesta);
+                    var item = _InvoiceLIST.Find(c => c.InvoiceLineId == _InvoiceLine.InvoiceLineId);
+                    _InvoiceLIST.Remove(item);
+                    HttpContext.Session.SetString("listadoproductosinvoice", JsonConvert.SerializeObject(_InvoiceLIST));
                 }
+                //string baseadress = config.Value.urlbase;
+                //HttpClient _client = new HttpClient();
+                //_client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                //var result = await _client.PostAsJsonAsync(baseadress + "api/InvoiceLine/Delete", _InvoiceLine);
+                //string valorrespuesta = "";
+                //if (result.IsSuccessStatusCode)
+                //{
+                //    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                //    _InvoiceLine = JsonConvert.DeserializeObject<InvoiceLine>(valorrespuesta);
+                //}
 
             }
             catch (Exception ex)
@@ -362,8 +370,8 @@ namespace ERPMVC.Controllers
             }
 
 
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _InvoiceLine }, Total = 1 });
+            return await Task.Run(() => Ok(_InvoiceLine));
+            //return new ObjectResult(new DataSourceResult { Data = new[] { _InvoiceLine }, Total = 1 });
         }
 
 
