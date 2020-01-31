@@ -33,16 +33,11 @@ namespace ERPMVC.Controllers
 
         public async Task<IActionResult> CierreContable()
         {
-            string baseadress = config.Value.urlbase;
-            HttpClient cliente = new HttpClient();
-            cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-            var resultadoCierre = await cliente.GetAsync(baseadress + "api/CierreContable/UltimoCierre");
-            string ultimoCierre = await resultadoCierre.Content.ReadAsStringAsync();
-            BitacoraCierreContable cierre = JsonConvert.DeserializeObject<BitacoraCierreContable>(ultimoCierre);
+            BitacoraCierreContable ultimocierre = await GetUltimoCierre();
             BitacoraCierreContable NuevoCierre = new BitacoraCierreContable();
-            if (cierre!=null)
+            if (ultimocierre != null)
             {
-                NuevoCierre.FechaCierre = cierre.FechaCierre.AddDays(1);
+                NuevoCierre.FechaCierre = ultimocierre.FechaCierre.AddDays(1);
             }
             else
             {
@@ -56,9 +51,16 @@ namespace ERPMVC.Controllers
         [HttpPost]
         public async Task<ActionResult> GetEjecutarCierreContable([FromBody]BitacoraCierreContable _Cierrep)
         {
+            BitacoraCierreContable ultimocierre = await GetUltimoCierre();
+      
             if (_Cierrep.FechaCierre > DateTime.Now)
             {
                 return await Task.Run(() => BadRequest($"La fecha no puede ser mayor a la fecha actual"));
+            }
+
+            if (ultimocierre != null && _Cierrep.FechaCierre< ultimocierre.FechaCierre)
+            {
+                return await Task.Run(() => BadRequest($"La fecha no puede anterior al ultimo cierre"));
             }
             BitacoraCierreContable _Cierre = new BitacoraCierreContable();
             try
@@ -77,7 +79,7 @@ namespace ERPMVC.Controllers
                 else
                 {
                     string error = await result.Content.ReadAsStringAsync();
-                    return await Task.Run(() => BadRequest($"Error: {error},No se puede aplicar este cierre."));
+                    return await Task.Run(() => BadRequest($"Error: Server Error,No se puede aplicar este cierre."));
                 }
                 if (_Cierre == null)
                 {
@@ -86,10 +88,36 @@ namespace ERPMVC.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                _logger.LogError($"Tiempo de espera agotado");
                 throw ex;
             }
             return Json(_Cierre);
+        }
+
+
+        public async Task<BitacoraCierreContable> GetUltimoCierre() {
+            string baseadress = config.Value.urlbase;
+            HttpClient cliente = new HttpClient();
+            cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+            var resultadoCierre = await cliente.GetAsync(baseadress + "api/CierreContable/UltimoCierre");
+            string ultimoCierre = await resultadoCierre.Content.ReadAsStringAsync();
+            BitacoraCierreContable cierre = JsonConvert.DeserializeObject<BitacoraCierreContable>(ultimoCierre);
+
+            if (cierre!= null)
+            {
+                return cierre;
+            }
+            else
+            {
+                return null;
+            }
+
+
+
+
+
+
+
         }
 
     }
