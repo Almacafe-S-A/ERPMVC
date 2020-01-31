@@ -7,6 +7,19 @@
 
 <script>
 
+    //$.ajaxSetup({
+    //    beforeSend:function (xhr, settings) {
+    //        if (settings.context != undefined && settings.context.hasClass('btn')) {
+    //            settings.context.button('loading');
+    //        }
+    //    },
+    //    complete:function () {
+    //        this.button('reset');
+    //    }
+    //});
+
+
+
     function RefrescarGridCierreContable() {
         var grid = $("#gridBitacoraCierreContable").getKendoGrid();
         grid.dataSource.read();
@@ -21,32 +34,36 @@
     function Cierre() {
         debugger
         var parametro = $("#FechaCierre").getKendoDatePicker().value().toJSON();
-        console.log("parametro", parametro)
+        console.log("parametro", parametro);
+        $('#loading').show();
+        $("#Cierre").prop('value', 'Ejecutando ...');
         if (parametro != '') {
             var dataObjectConfiguration = {
                 FechaCierre: parametro
             };
             $.ajax({
-             url: '@Url.Action("GetEjecutarCierreContable", "CierreContable")',
-                   method: 'POST',
-                   datatype: "json",
-                   contentType: 'application/json',
-                   async: false,
-                   data: JSON.stringify(dataObjectConfiguration),
+                url: '@Url.Action("GetEjecutarCierreContable", "CierreContable")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: true,
+
+                data: JSON.stringify(dataObjectConfiguration),
                 success: function (result) {
-                    
-                        $.toast({
-                            heading: 'Satisfactorio',
-                            text: '<br/><br/>' +'Se aplico el cierre contable.',
-                            position: 'top-right',
-                            loaderBg: '#ff6849',
-                            icon: 'success',
-                            hideAfter: 30000,
-                            stack: 6
-                        });
-                        $("#FechaCierre").val('');
-                        RefrescarGridCierreContable();
-                        RefrescarGridCierreProcesos();
+                    $('#loading').hide();
+                    $("#Cierre").prop('value', 'Ejecutar');
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: '<br/><br/>' + 'Se aplico el cierre contable.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                    $("#FechaCierre").val('');
+                    RefrescarGridCierreContable();
+                    //RefrescarGridCierreProcesos();
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     console.log(textStatus + ": " + XMLHttpRequest.responseText);
@@ -59,11 +76,20 @@
                         hideAfter: 30000,
                         stack: 6
                     });
+                    $('#loading').hide();
+                    $("#Cierre").prop('value', 'Ejecutar');
 
                 }
-             });
+            });
+            //RefrescarGridCierreContable();
+
         }
     }
+        $(function () {
+            debugger;
+            $('#loading').hide();
+
+        });
 </script>
 
 <h4 >Cierre Contable Manual</h4>
@@ -77,7 +103,7 @@
                             <label style="width:100%">Fecha</label>
                             <kendo-datepicker name="Date" style="width: 100%;"
                                               id="FechaCierre"
-                                              format="dd/MM/yyyy" readonly
+                                              format="dd/MM/yyyy" 
                                               required
                                               value="@Model.FechaCierre"
                                               data-val-required="La fecha es requerida"></kendo-datepicker>
@@ -87,7 +113,15 @@
                     <div class="col-md-4">
                         <div class="form-group">
                             <label style="width:100%"></label>
-                            <button type="button" id="Cierre" class="form-control btn-miboton" onclick="Cierre();">Ejecutar</button>
+                            <button type="button" id="Cierre" class="btn btn-primary" style="min-width:100%" onclick="Cierre();">Ejecutar </button>
+                           
+                            <div id="loading">
+                                <svg class="circular" viewBox="25 25 50 50" >
+                                    <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2" stroke-miterlimit="10"></circle>
+                                </svg>
+                            </div>
+                            
+                            
                         </div>
                     </div>
                 </div>
