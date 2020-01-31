@@ -145,8 +145,9 @@ namespace ERPMVC.Controllers
             Country _Country = _CountryP;
             try
             {
-               // _CountryP = JsonConvert.DeserializeObject<CountryDTO>(dto.ToString());
-            
+                // _CountryP = JsonConvert.DeserializeObject<CountryDTO>(dto.ToString());
+                Country _Paises = new Country();   
+
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -157,39 +158,100 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Country = JsonConvert.DeserializeObject<CountryDTO>(valorrespuesta);
+                    _Paises = JsonConvert.DeserializeObject<CountryDTO>(valorrespuesta);
                 }
 
-                if (_Country == null) { _Country = new Models.Country(); }
-                if (_CountryP.SortName == null) { _CountryP.SortName = _CountryP.Name; }
-                if (_CountryP.Id == 0)
+                if (_Paises == null) { _Paises = new Models.Country(); }
+
+
+                if (_Paises.Id == 0)
                 {
-                    _Country.FechaCreacion = DateTime.Now;
+                    _Country.FechaCreacion = DateTime.Now;                    
                     _Country.Usuariocreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_CountryP);
-                    var value = (insertresult.Result as ObjectResult).Value;
-                    try
-                    {                       
-                        Country resultado = ((Country)(value));
-                        if (resultado.Id <= 0)
-                        {
-                            return await Task.Run(() => BadRequest($"Ocurrio un error"));
-                        }
-                    }
-                    catch (Exception ex)
+                    Country _CountryDuplicate = new Models.Country();
+                    //string baseadress = config.Value.urlbase;
+                    HttpClient _client2 = new HttpClient();
+                    _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var resultado = await _client.GetAsync(baseadress + "api/Country/GetCountryByName/" + _Country.Name);
+                    string valorrespuesta2 = "";
+                    if (resultado.IsSuccessStatusCode)
                     {
-                        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                        _logger.LogError($"Ocurrio un error desde metodo que va al api: {value.ToString()}");
-                        return await Task.Run(() => BadRequest($"Ocurrio un error{value.ToString()}"));
+                        valorrespuesta2 = await (resultado.Content.ReadAsStringAsync());
+                        _CountryDuplicate = JsonConvert.DeserializeObject<Country>(valorrespuesta2);
+
                     }
-                  
+
+                    if (_CountryDuplicate != null)
+                    {
+
+                        string error = await result.Content.ReadAsStringAsync();
+                        return await Task.Run(() => BadRequest($"El nombre del país ya esta registrado."));
+
+                    }
+
+                    var insertresult = await Insert(_CountryP);
                 }
                 else
                 {
+                    Country _CountryDuplicated = new Country();
+                    //string baseadress = config.Value.urlbase;
+                    HttpClient _client2 = new HttpClient();
+                    _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var resultado = await _client.GetAsync(baseadress + "api/Country/GetCountryByName/" + _Country.Name);
+                    string valorrespuesta2 = "";
+
+                    if (resultado.IsSuccessStatusCode)
+                    {
+                        valorrespuesta2 = await (resultado.Content.ReadAsStringAsync());
+                        _CountryDuplicated = JsonConvert.DeserializeObject<Country>(valorrespuesta2);
+
+                    }
+                    if (_CountryDuplicated != null)
+                    {
+                        if (_CountryDuplicated.Id != _Country.Id)
+
+                        {
+                            string error = await result.Content.ReadAsStringAsync();
+                            return await Task.Run(() => BadRequest($"El nombre del país ya esta ingresado..."));
+                        }
+
+                    }
                     _CountryP.Usuariocreacion = _Country.Usuariocreacion;
                     _CountryP.FechaCreacion = _Country.FechaCreacion;
                     var updateresult = await Update(_Country.Id, _CountryP);
                 }
+
+
+
+                //if (_CountryP.SortName == null) { _CountryP.SortName = _CountryP.Name; }
+                //if (_CountryP.Id == 0)
+                //{
+                //    _Country.FechaCreacion = DateTime.Now;
+                //    _Country.Usuariocreacion = HttpContext.Session.GetString("user");
+                //    var insertresult = await Insert(_CountryP);
+                //    var value = (insertresult.Result as ObjectResult).Value;
+                //    try
+                //    {                       
+                //        Country resultado = ((Country)(value));
+                //        if (resultado.Id <= 0)
+                //        {
+                //            return await Task.Run(() => BadRequest($"Ocurrio un error"));
+                //        }
+                //    }
+                //    catch (Exception ex)
+                //    {
+                //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                //        _logger.LogError($"Ocurrio un error desde metodo que va al api: {value.ToString()}");
+                //        return await Task.Run(() => BadRequest($"Ocurrio un error{value.ToString()}"));
+                //    }
+                  
+                //}
+                //else
+                //{
+                //    _CountryP.Usuariocreacion = _Country.Usuariocreacion;
+                //    _CountryP.FechaCreacion = _Country.FechaCreacion;
+                //    var updateresult = await Update(_Country.Id, _CountryP);
+                //}
 
             }
             catch (Exception ex)
