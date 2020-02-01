@@ -1,6 +1,6 @@
 ﻿@using Kendo.Mvc.UI
 @{
-    ViewData["Title"] = "ESTADOS";
+    ViewData["Title"] = "Estados";
 }
 
 
@@ -62,12 +62,94 @@
 
     }
 
+    var IdConfiguracion = 0;
+    var firstload = 0;
+    function EstadoByGrupo(EstadoByGrupoIdv) {
+        debugger;
+        kendo.ui.progress($("#divClasificacionCuentas"), true);
+        setTimeout(function () {
+            kendo.ui.progress($("#divClasificacionCuentas"), false);
+        }, 3000);
+        IdConfiguracion = EstadoByGrupoIdv;
 
+        var grid = $("#gridEstados").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+    function DropchangeEstado() {
+        var grid = $("#gridEstados").getKendoGrid();
+        grid.dataSource.read();
+    }
    
-    
+    function DataByGrupo() {
+        debugger;
+        var GrupoEstadoId = 0;
+        if ($("#GrupoEstado").data("kendoDropDownList").text() === "Todos") {
+            GrupoEstadoId = 0;
+        }
+        else if ($("#GrupoEstado").data("kendoDropDownList").text() != "Todos") {
+            GrupoEstadoId = $("#GrupoEstado").data("kendoDropDownList").value();
+        }
+        
+
+        return {
+            'GrupoEstadoId': GrupoEstadoId,
+            'GrupoConfiguracionId': IdConfiguracion,
+        }
+    }
 </script>
 
 <h3 class="text-themecolor">Estados</h3>
+<div class="card" id="divClasificacionCuentas">
+    <div class="card-body">
+        <h4 class="card-title">Clasificación de Estados</h4>
+
+        <hr />
+        <div class="row">
+            <div class="col-md-5">
+                <label class="control-label" style="min-width: 100%;">Mostrar Estados de Grupo Configuración</label>
+                <kendo-dropdownlist id="GrupoConfiguracion"
+                                    filter="Kendo.Mvc.UI.FilterType.Contains"
+                                    onchange="EstadoByGrupo(this.value)"
+                                    option-label="Todos"
+                                    datatextfield="Nombreconfiguracion"
+                                    datavaluefield="IdConfiguracion"
+                                    style="min-width: 100%;">
+                    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999999">
+                        <sorts>
+                            <sort field="Nombreconfiguracion" direction="asc" />
+                        </sorts>
+                        <transport>
+                            <read url="@Url.Action("Get", "GrupoConfiguracion")" />
+                        </transport>
+                    </datasource>
+                </kendo-dropdownlist>
+            </div>
+
+            <div class="col-md-5">
+                <label class="control-label" style="min-width: 100%;">Mostrar Estados de Grupo Estado</label>
+                <kendo-dropdownlist id="GrupoEstado"
+                                    filter="Kendo.Mvc.UI.FilterType.Contains"
+                                    onchange="DropchangeEstado()"
+                                    option-label="Todos"
+                                    datatextfield="Nombre"
+                                    datavaluefield="Id"
+                                    style="width: 100%;">
+                    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999999">
+                        <sorts>
+                            <sort field="Nombre" direction="asc" />
+                        </sorts>
+                        <transport>
+                            <read url="@Url.Action("GetGrupoEstado", "Estados")" />
+                        </transport>
+                    </datasource>
+                </kendo-dropdownlist>
+            </div>
+        </div>
+
+
+    </div>
+</div>
 @(Html.Kendo().Grid<ERPMVC.Models.Estados>
     ()
     .Name("gridEstados")
@@ -77,9 +159,9 @@
         columns.Command(command =>
         {
             //command.Custom("Ver detalles").Click("Detalles");
-            command.Custom("Editar").Click("EditEstado");
-            command.Destroy().Text("Eliminar");
-        }).Width(250);
+            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditEstado");
+            command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+        }).Title("Acciones").Width(100);
 
         columns.Bound(p => p.IdEstado).Width(150);
         columns.Bound(p => p.NombreEstado).Width(200);
@@ -139,10 +221,10 @@
     .Pageable()
     .Filterable()
     .Scrollable()
-    .Pdf(pdf => pdf.FileName("EstadosReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+    .Pdf(pdf => pdf.FileName("Estados_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
     + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
     .ProxyURL(Url.Action("Export", "Home")).AllPages())
-        .Excel(excel => excel.FileName("EstadosReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+        .Excel(excel => excel.FileName("Estados_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
     + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
     .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
     .DataSource(dataSource =>
@@ -160,7 +242,7 @@
 
         })
         .Events(events => events.Error("error_handler"))
-        .Read(read => read.Action("Get", "Estados"))
+        .Read(read => read.Action("GetEstadoByGrupo", "Estados").Data("DataByGrupo"))
         .Create(create => create.Action("Insert", "Estados").Type(HttpVerbs.Post))
         .Update(update => update.Action("Update", "Estados", new { IdEstado = "{0}" }).Type(HttpVerbs.Put))
         .Destroy(destroy => destroy.Action("Delete", "Estados", new { IdEstado = "{0}" }).Type(HttpVerbs.Delete))
@@ -176,3 +258,25 @@
 <div id="NumEstados">
     @await Html.PartialAsync("pvwAddEstado", new ERPMVC.DTO.EstadoDTO { IdEstado = 0})
 </div>
+
+<script>
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridEstados").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridEstados").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+
+</script>
