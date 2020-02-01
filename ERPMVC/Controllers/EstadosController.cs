@@ -346,7 +346,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet("[controller]/[action]")]
-        public async Task<ActionResult> GetEstadoByGrupo([DataSourceRequest]DataSourceRequest request, int GrupoEstadoId, int GrupoConfiguracionId)
+        public async Task<ActionResult> GetEstadoByGrupo([DataSourceRequest]DataSourceRequest request, int GrupoEstadoId)
         {
             List<Estados> _Estados = new List<Estados>();
             try
@@ -355,13 +355,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.GetAsync(baseadress + "api/Estados/GetEstadosByGrupoEstado/" + GrupoEstadoId + "/" + GrupoConfiguracionId);
+                var result = await _client.GetAsync(baseadress + "api/Estados/GetEstadosByGrupoEstado/" + GrupoEstadoId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Estados = JsonConvert.DeserializeObject<List<Estados>>(valorrespuesta);
-                    //_Estados = _Estados.OrderByDescending(q => q.IdEstado).ToList();
                 }
             }
             catch (Exception ex)
