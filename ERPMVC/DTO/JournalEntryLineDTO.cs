@@ -18,5 +18,6 @@ namespace ERPMVC.DTO
     public class JournalEntryLineConciliacionDTO : JournalEntryLine
     {
         public DateTime FechaTransaccion { get; set; }
+        public string TipoDocumento { get; set; }
     }
 }
