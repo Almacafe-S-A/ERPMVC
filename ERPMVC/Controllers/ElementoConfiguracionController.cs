@@ -74,7 +74,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet("[controller]/[action]")]
-        public async Task<ActionResult> GetElementoByIdConfiguracion([DataSourceRequest]DataSourceRequest request,Int64 Id,string Estado="A")
+        public async Task<ActionResult> GetElementoByIdConfiguracion([DataSourceRequest]DataSourceRequest request,Int64 Id,string Estado="Activo")
         {
             List<ElementoConfiguracion> _ElementoConfiguracion = new List<ElementoConfiguracion>();
             try

@@ -86,6 +86,18 @@ namespace ERPMVC.Controllers
                 {
                     _SalesOrders = JsonConvert.DeserializeObject<List<SalesOrderLine>>(HttpContext.Session.GetString("listadoproductos"));
                 }
+                if (_SalesOrderLine.SalesOrderId > 0 && _SalesOrderLine.SalesOrderLineId == 0)
+                {
+
+                    _SalesOrderLine.SalesOrderLineId = 0;
+                    var insertresult = await Insert(_SalesOrderLine);
+                }
+
+                if (_SalesOrderLine.SalesOrderId > 0 && _SalesOrderLine.SalesOrderLineId > 0)
+                {
+                    var updateresult = await Update(_SalesOrderLine.SalesOrderLineId, _SalesOrderLine);
+                }
+
                 if (_SalesOrderLine.SalesOrderId > 0)
                 {
 
@@ -242,7 +254,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PutAsJsonAsync(baseadress + "api/SalesOrderLine/Update", _SalesOrderLine);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/SalesOrderLine/Update", _SalesOrderLine);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
