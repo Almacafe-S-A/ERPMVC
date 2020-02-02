@@ -79,7 +79,7 @@ namespace ERPMVC.Controllers
                 else
                 {
                     string error = await result.Content.ReadAsStringAsync();
-                    return await Task.Run(() => BadRequest($"Error: Server Error,No se puede aplicar este cierre."));
+                    return await Task.Run(() => BadRequest($"Error: {error},No se puede aplicar este cierre."));
                 }
                 if (_Cierre == null)
                 {
