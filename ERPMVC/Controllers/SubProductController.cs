@@ -464,7 +464,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult<SubProduct>> Delete([FromBody] SubProduct _SubProductp)
+        public async Task<ActionResult<SubProduct>> Delete(SubProduct _SubProductp)
         {
             SubProduct _SubProduct = _SubProductp;
             List<InvoiceLine> _InvoiceLine = new List<InvoiceLine>();
