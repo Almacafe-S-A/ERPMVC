@@ -1,7 +1,9 @@
 ﻿@using Kendo.Mvc.UI
+@using ERPMVC.Models
 
 @{
     ViewData["Title"] = "State";
+    var Pais = ViewData["Pais"] as IEnumerable<ERPMVC.Models.Country>;
 
 }
 
@@ -22,9 +24,12 @@
         $('#ModalState').find(':input').not(':submit').val('');
         $('#ModalState').modal('show');
         $("#StateId").val('0');
-
-
-
+        $("#Id").val('0');
+        $("#CountryId").data("kendoDropDownList").value(0);
+        var validator = $("#frmState").data("kendoValidator");
+        validator.hideMessages();
+        $('#ModalState').find(':input').not(':submit').val('');
+        $("#CountryId").data("kendoDropDownList").value(0);
 
     }
 
@@ -69,72 +74,98 @@
 <h3 class="text-themecolor">Departamento</h3>
 
 @(Html.Kendo().Grid<ERPMVC.Models.State>
-        ()
+            ()
 
-        .Name("gridState")
+            .Name("gridState")
 
-        .Columns(columns =>
-        {
-            columns.Command(command =>
+            .Columns(columns =>
             {
-                //command.Custom("Ver detalles").Click("Detalles");
-                command.Custom("Editar").Click("EditState");
-                command.Destroy().Text("Eliminar");
-            }).Width(250);
-            columns.Bound(p => p.Id).Width(150);
-            columns.Bound(p => p.Name).Width(170);
-        })
+                columns.Command(command =>
+                {
+                    //command.Custom("Ver detalles").Click("Detalles");
+                    command.Custom("Editar").Text(" ").Click("EditState").IconClass("fa fa-edit");
+                    command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                }).Width(100);
+                columns.Bound(p => p.Id).Width(150);
+                columns.Bound(p => p.Name).Width(170);                
+                columns.ForeignKey(p => p.CountryId, (System.Collections.IEnumerable)ViewData["Pais"], "Id", "Name").Title("País").Width(200);
+
+            })
 
 
-        .ToolBar(tools =>
-        {
+            .ToolBar(tools =>
+            {
 
-            //tools.Create();
-            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddState()" });
-            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-
-        })
-        .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
-        .Sortable()
-        .Pageable()
-        .Filterable()
-        .Scrollable()
-        .Pdf(pdf => pdf.FileName("StateReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-        .ProxyURL(Url.Action("Export", "Home")).AllPages())
-        .Excel(excel => excel.FileName("StateReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-        .DataSource(dataSource =>
-        dataSource
-        .WebApi()
-
-        .ServerOperation(true)
-        .Model(model =>
-        {
-            model.Id(p => p.Id);
-            model.Field(p => p.Id).Editable(false);
+                //tools.Create();
+                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddState()" });
+                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
 
 
-        })
-        .Events(events => events.Error("error_handler"))
-        .Read(read => read.Action("Get", "State"))
-        .Create(create => create.Action("Insert", "State").Type(HttpVerbs.Post))
-        .Update(update => update.Action("Update", "State").Type(HttpVerbs.Post))
-        .Destroy(destroy => destroy.Action("Delete", "State").Type(HttpVerbs.Post))
 
-        )
-        .Events(e =>
-        {
-            e.Save("onsave");
+            })
+            .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+            .Sortable()
+            .Pageable()
+            .Filterable()
+            .Scrollable()
+            .Pdf(pdf => pdf.FileName("StateReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+            .ProxyURL(Url.Action("Export", "Home")).AllPages())
+            .Excel(excel => excel.FileName("StateReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+            .DataSource(dataSource =>
+            dataSource
+            .WebApi()
 
-        })
+            .ServerOperation(true)
+            .Model(model =>
+            {
+                model.Id(p => p.Id);
+                model.Field(p => p.Id).Editable(false);
+                model.Field(p => p.CountryId).Editable(false);
+                //model.Field(p => p.Country.Name).Editable(false);
+
+
+            })
+            .Events(events => events.Error("error_handler"))
+            .Read(read => read.Action("Get", "State"))
+            .Create(create => create.Action("Insert", "State").Type(HttpVerbs.Post))
+            .Update(update => update.Action("Update", "State").Type(HttpVerbs.Post))
+            .Destroy(destroy => destroy.Action("Delete", "State").Type(HttpVerbs.Post))
+
+            )
+            .Events(e =>
+            {
+                e.Save("onsave");
+
+            })
 )
 
 <div id="numState">
     @await Html.PartialAsync("pvwAddState", new ERPMVC.DTO.StateDTO { Id = 0 })
 </div>
+
+
+
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridState").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridState").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+</script>

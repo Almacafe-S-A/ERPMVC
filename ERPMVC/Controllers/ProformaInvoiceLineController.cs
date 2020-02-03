@@ -44,7 +44,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ProformaInvoiceLine/GetProformaInvoiceLineById/" + _salesorderline.ProformaInvoiceId);
+                var result = await _client.GetAsync(baseadress + "api/ProformaInvoiceLine/GetProformaInvoiceLineById/" + _salesorderline.ProformaLineId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -105,6 +105,7 @@ namespace ERPMVC.Controllers
             List<ProformaInvoiceLine> _GoodsReceivedLine = new List<ProformaInvoiceLine>();
             try
             {
+                
                 if (HttpContext.Session.Get("listadoproductosproformainvoice") == null
                    || HttpContext.Session.GetString("listadoproductosproformainvoice") == "")
                 {
@@ -115,15 +116,26 @@ namespace ERPMVC.Controllers
                     }
                 }
                 else
-                {
-                    var result = HttpContext.Session.GetString("listadoproductosproformainvoice");
-                    try
-                    {
+                { 
                         _GoodsReceivedLine = JsonConvert.DeserializeObject<List<ProformaInvoiceLine>>(HttpContext.Session.GetString("listadoproductosproformainvoice"));
-                    }
-                    catch (Exception ex)
+                }
+                if (_ProformaInvoiceLinep.ProformaInvoiceId > 0 && _ProformaInvoiceLinep.ProformaLineId > 0)
+                {
+                    ProformaInvoice _ProformaInvoiceP = new ProformaInvoice();
+
+                    //_ProformaInvoiceLinep.ProformaLineId = 0;
+                    var updateresult = await Update(_ProformaInvoiceLinep.ProformaLineId, _ProformaInvoiceLinep);
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    _ProformaInvoiceP.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    _ProformaInvoiceP.FechaModificacion = DateTime.Now;
+                    var result1 = await _client.GetAsync(baseadress + "api/ProformaInvoiceLine/Update/" + _ProformaInvoiceLinep);
+                    string valorrespuesta1 = "";
+                    if (result1.IsSuccessStatusCode)
                     {
-                        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                        valorrespuesta1 = await (result1.Content.ReadAsStringAsync());
+                        _GoodsReceivedLine = JsonConvert.DeserializeObject<List<ProformaInvoiceLine>>(valorrespuesta1);  
                     }
 
                 }

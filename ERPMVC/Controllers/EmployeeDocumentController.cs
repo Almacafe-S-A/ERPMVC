@@ -136,6 +136,8 @@ namespace ERPMVC.Controllers
                 }
 
                 ViewBag.pathcontrato = _EmployeeDocument.Path;
+                var stream = new FileStream(_EmployeeDocument.Path, FileMode.Open);
+                return new FileStreamResult(stream, "application/pdf");
             }
             catch (Exception ex)
             {

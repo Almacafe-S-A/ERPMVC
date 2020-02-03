@@ -134,7 +134,32 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> GetElementoByGrupoConfiguracion([DataSourceRequest]DataSourceRequest request, int GrupoConfiguracionId)
+        {
+            List<ElementoConfiguracion> _ElementosConfiguracion = new List<ElementoConfiguracion>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
+                var result = await _client.GetAsync(baseadress + "api/ElementoConfiguracion/GetElementosConfiguracionByGrupoConfiguracion/" + GrupoConfiguracionId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _ElementosConfiguracion = JsonConvert.DeserializeObject<List<ElementoConfiguracion>>(valorrespuesta);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_ElementosConfiguracion.ToDataSourceResult(request));
+        }
         //public async Task<ActionResult<ElementoConfiguracion>> SaveElementoConfiguracion([FromBody]ElementoConfiguracion _ElementoConfiguracion)
         //[HttpPost("[action]")]
         //public async Task<ActionResult<ElementoConfiguracion>> SaveProduct([FromBody]ElementoConfiguracionDTO _ElementoConfiguracionS)

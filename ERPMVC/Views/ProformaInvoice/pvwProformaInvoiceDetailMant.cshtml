@@ -19,55 +19,74 @@
 
     function closesaleorderline() {
         $("#myModalSalesOrderLine").modal('hide');
+        $('#SubProductId').data("kendoDropDownList").value(0);
 
     }
 
-
     function CalcularTotalDocumento() {
-        var freight = $("#Freight").val()===""?0:$("#Freight").val();
-
-        var displayedData = $("#gridProformaInvoiceDetail").data().kendoGrid.dataSource.data();
-        var subtotal = 0, total = 0, totaldescuento = 0, totalimpuesto = 0,totalimpuesto18=0, totalmonto = 0;
-        var TotalExento = 0, TotalExonerado = 0, TotalGravado = 0,TotalGravado18=0;
-
+        var freight = $("#Freight").val() === "" ? 0 : $("#Freight").val();
         debugger;
+        var displayedData = $("#gridProformaInvoiceDetail").data().kendoGrid.dataSource.view();
+        var subtotal = 0, total = 0, totaldescuento = 0, totalimpuesto = 0, totalimpuesto18 = 0, totalmonto = 0;
+        var TotalExento = 0, TotalExonerado = 0, TotalGravado = 0, TotalGravado18 = 0;
 
 
-       //$(displayedData).each(function (index, element) {
-        for (var i = 0; i < displayedData.length; i++) {
-          
-            //var t = JSON.parse(JSON.stringify(element));
 
-            total = total + displayedData[i].Total;
-            subtotal = subtotal + displayedData[i].SubTotal;
-            totaldescuento = totaldescuento + displayedData[i].DiscountAmount;
-            totalmonto = totalmonto + displayedData[i].Amount;
+        $(displayedData).each(function (index, element) {
+            var t = JSON.parse(JSON.stringify(element));
 
-            if (displayedData[i].TaxCode == "I.S.V" ) {
-                TotalGravado = TotalGravado + (displayedData[i].Total - displayedData[i].TaxAmount);
-                totalimpuesto = totalimpuesto + displayedData[i].TaxAmount;
+
+
+            total = total + t["Total"];
+            subtotal = subtotal + t["SubTotal"];
+            totaldescuento = totaldescuento + t["DiscountAmount"];
+            totalmonto = totalmonto + t["Amount"];
+
+
+
+            if (t["TaxCode"] == "I.S.V") {
+                TotalGravado = TotalGravado + (t["Total"] - t["TaxAmount"]);
+                totalimpuesto = totalimpuesto + t["TaxAmount"];
             }
 
-            if (displayedData[i].TaxCode == "I.V.A") {
-                TotalGravado18 = TotalGravado18 + (displayedData[i].Total -TaxAmount);
-                totalimpuesto18 = totalimpuesto18 + displayedData[i].TaxAmount;
+
+
+            if (t["TaxCode"] == "I.S.C") {
+                TotalGravado = TotalGravado + (t["Total"] - t["TaxAmount"]);
+                totalimpuesto = totalimpuesto + t["TaxAmount"];
             }
 
-            if (displayedData[i].TaxCode == "EXE") {
-                TotalExento = TotalExento + displayedData[i].Total;
+
+
+            if (t["TaxCode"] == "I.V.A") {
+                TotalGravado18 = TotalGravado18 + (t["Total"] - t["TaxAmount"]);
+                totalimpuesto18 = totalimpuesto18 + t["TaxAmount"];
             }
 
-            if (displayedData[i].TaxCode == "EXO") {
-                TotalExonerado = TotalExonerado + displayedData[i].Total;
+
+
+            if (t["TaxCode"] == "EXE") {
+                TotalExento = TotalExento + t["Total"];
             }
 
-        }
 
-        debugger;
-       // console.log(Number(TotalGravado)); console.log(Number(TotalGravado18)); console.log(Number(TotalExento));
-       // console.log(Number(TotalExonerado)); console.log(Number(totalimpuesto18)); console.log(Number(totalimpuesto));
-        //console.log(Number(freight));
+
+            if (t["TaxCode"] == "EXO") {
+                TotalExonerado = TotalExonerado + t["Total"];
+            }
+
+
+
+        });
+
+
+
+        //console.log(TotalGravado); console.log(TotalGravado18); console.log(TotalExento);
+        //console.log(TotalExonerado); console.log(totalimpuesto18); console.log(totalimpuesto); console.log(Number(freight));
+        //console.log(total, TotalExento, TotalExonerado, TotalGravado);
         var sumatotal = Number(TotalGravado) + Number(TotalGravado18) + Number(TotalExento) + Number(TotalExonerado) + Number(totalimpuesto18) + Number(totalimpuesto) + Number(freight);
+
+
 
         setearvalor('Amount', totalmonto);
         setearvalor('TotalExento', TotalExento);
@@ -75,42 +94,15 @@
         setearvalor('TotalGravado', TotalGravado);
         setearvalor('TotalGravado18', TotalGravado18);
 
-        setearvalor('Discount', Number(totaldescuento));
-        setearvalor('Tax', Number(totalimpuesto));
-        setearvalor('Tax18', Number(totalimpuesto18));
-        setearvalor('SubTotal', Number(subtotal) );
-        setearvalor('Total', Number(sumatotal));
 
 
-        @*if ($("#cbxBuscarCertificadosDeposito").val() !== '') {
-          //  console.log($("#Price").data("kendoNumericTextBox").value());
-            var dataObject = {
-                CertificadoDepositoId: $("#cbxBuscarCertificadosDeposito").val(),
-                SalesOrderId: ($("#cbxBuscarCotizaciones").val() === '' ? 0 : $("#cbxBuscarCotizaciones").val()),
-                OrderDate: $("#OrderDate").getKendoDateTimePicker().value().toJSON(),
-                SubTotal: $("#Price").data("kendoNumericTextBox").value(),
-                Discount: $("#Quantity").data("kendoNumericTextBox").value(),
-            };
+        setearvalor('Discount', totaldescuento);
+        setearvalor('Tax', totalimpuesto);
+        setearvalor('Tax18', totalimpuesto18);
+        setearvalor('SubTotal', subtotal);
+        setearvalor('Total', sumatotal);
 
-            console.log(dataObject);
 
-            $.ajax({
-                url: '@Url.Action("CalcularConCertificado","ProformaInvoice")',
-                method: 'POST',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: JSON.stringify(dataObject),
-                success: function (result) {
-                    console.log(result);
-                    setearvalor("Total", result.Total);
-
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
-                }
-            });
-        }*@
 
     }
 
@@ -127,10 +119,19 @@
             }
         }
         else {
-            notification.show({
-                title: "Validación",
-                message: "Seleccione el SubProducto!"
-            }, "error");
+            //notification.show({
+            //    title: "Validación",
+            //    message: "Seleccione el SubProducto!"
+            //}, "error");
+            $.toast({
+                heading: 'Validación',
+                text: '<br/><br/>Seleccione el SubProducto!',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 7000,
+                stack: 6
+            });
 
             return;
         }
@@ -350,7 +351,7 @@
                                                                                 datavaluefield="SubproductId"
                                                                                 auto-bind="false"
                                                                                 on-select="setsubproductname"
-                                                                                required data-required-msg="SubProducto es requerido"
+                                                                                required data-required-msg="El SubProducto es requerido"
                                                                                 style="width: 100%;">
                                                                 <datasource type="DataSourceTagHelperType.WebApi" page-size="99999999">
                                                                     <transport>
@@ -395,35 +396,35 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="UnitOfMeasureId" class="control-label" style="width:100%"></label>
-                                                    <kendo-dropdownlist name="UnitOfMeasureId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        id="UnitOfMeasureId"
-                                                                        option-label="Seleccione la unidad de medida"
-                                                                        for="UnitOfMeasureId"
-                                                                        datatextfield="UnitOfMeasureName"
-                                                                        datavaluefield="UnitOfMeasureId"
-                                                                        auto-bind="true"
-                                                                        required data-required-msg="Unidad de Medida es requerido" 
-                                                                        style="width: 100%;">
-                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999999">
-                                                            <transport>
-                                                                <read url="@Url.Action("GetUnitOfMeasure", "UnitOfMeasure")" />
-                                                            </transport>
-                                                        </datasource>
-                                                    </kendo-dropdownlist>
+                                                        <kendo-dropdownlist name="UnitOfMeasureId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                            id="UnitOfMeasureId"
+                                                                            option-label="Seleccione la unidad de medida"
+                                                                            for="UnitOfMeasureId"
+                                                                            datatextfield="UnitOfMeasureName"
+                                                                            datavaluefield="UnitOfMeasureId"
+                                                                            auto-bind="true"
+                                                                            required data-required-msg="Unidad de Medida es requerido"
+                                                                            style="width: 100%;">
+                                                            <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999999">
+                                                                <transport>
+                                                                    <read url="@Url.Action("GetUnitOfMeasure", "UnitOfMeasure")" />
+                                                                </transport>
+                                                            </datasource>
+                                                        </kendo-dropdownlist>
                                                     <span asp-validation-for="UnitOfMeasureId" class="text-danger"></span>
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Quantity" class="control-label" style="width:100%"></label>
-                                                    <kendo-numerictextbox name="Quantity"
-                                                                          format="n2"
-                                                                          min="0"
-                                                                          step="1"
-                                                                          required data-required-msg="Cantidad es requerido"
-                                                                          onchange="CalcularTotal();"
-                                                                          style="width:100%"
-                                                                          value="Model.Quantity"></kendo-numerictextbox>
+                                                        <kendo-numerictextbox name="Quantity"
+                                                                              format="n2"
+                                                                              min="0"
+                                                                              step="1"
+                                                                              required data-required-msg="Cantidad es requerido"
+                                                                              onchange="CalcularTotal();"
+                                                                              style="width:100%"
+                                                                              value="Model.Quantity"></kendo-numerictextbox>
                                                     <span asp-validation-for="Quantity" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -432,14 +433,14 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Price" class="control-label" style="width:100%"></label>
-                                                    <kendo-numerictextbox name="Price"
-                                                                          format="n2"
-                                                                          min="0"
-                                                                          step="1"
-                                                                          required data-required-msg="Precio es requerido"
-                                                                          onchange="CalcularTotal();"
-                                                                          style="width:100%"
-                                                                          value="Model.Price"></kendo-numerictextbox>
+                                                        <kendo-numerictextbox name="Price"
+                                                                              format="n2"
+                                                                              min="0"
+                                                                              step="1"
+                                                                              required data-required-msg="Precio es requerido"
+                                                                              onchange="CalcularTotal();"
+                                                                              style="width:100%"
+                                                                              value="Model.Price"></kendo-numerictextbox>
                                                     <span asp-validation-for="Price" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -467,16 +468,16 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="DiscountPercentage" class="control-label" style="width:100%"></label>
-                                                    <kendo-numerictextbox name="DiscountPercentage"
-                                                                          format="#.## '%'"
-                                                                          min="0"
-                                                                          decimals="2"
-                                                                          max="100"
-                                                                          maxlength="3"
-                                                                          required data-required-msg="Porcentaje descuento es requerido"
-                                                                          onchange="CalcularTotal();"
-                                                                          style="width:100%"
-                                                                          value="Model.DiscountPercentage"></kendo-numerictextbox>
+                                                        <kendo-numerictextbox name="DiscountPercentage"
+                                                                              format="#.## '%'"
+                                                                              min="0"
+                                                                              decimals="2"
+                                                                              max="100"
+                                                                              maxlength="3"
+                                                                              required data-required-msg="Porcentaje descuento es requerido"
+                                                                              onchange="CalcularTotal();"
+                                                                              style="width:100%"
+                                                                              value="Model.DiscountPercentage"></kendo-numerictextbox>
                                                     <span asp-validation-for="DiscountPercentage" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -485,14 +486,14 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="DiscountAmount" class="control-label" style="width:100%"></label>
-                                                    <kendo-numerictextbox name="DiscountAmount"
-                                                                          format="n2"
-                                                                          min="0"
-                                                                          max="999999999"
-                                                                          step="1"
-                                                                          readonly
-                                                                          style="width:100%"
-                                                                          value="Model.DiscountAmount"></kendo-numerictextbox>
+                                                        <kendo-numerictextbox name="DiscountAmount" enable="false"
+                                                                              format="n2"
+                                                                              min="0"
+                                                                              max="999999999"
+                                                                              step="1"
+                                                                              readonly
+                                                                              style="width:100%"
+                                                                              value="Model.DiscountAmount"></kendo-numerictextbox>
                                                     <span asp-validation-for="DiscountAmount" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -521,21 +522,20 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="TaxCode" class="control-label" style="width:100%"></label>
-
-                                                    <kendo-dropdownlist name="TaxId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        for="TaxId"
-                                                                        option-label="Seleccione el Impuestos"
-                                                                        datatextfield="TaxCode"
-                                                                        datavaluefield="TaxId"
-                                                                        required data-required-msg="Código Impuesto es requerido"
-                                                                        onchange="GetPercentage();"
-                                                                        style="width: 100%;">
-                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999999">
-                                                            <transport>
-                                                                <read url="@Url.Action("GetTaxes", "Tax")" />
-                                                            </transport>
-                                                        </datasource>
-                                                    </kendo-dropdownlist>
+                                                        <kendo-dropdownlist name="TaxId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                            for="TaxId"
+                                                                            option-label="Seleccione el Impuestos"
+                                                                            datatextfield="TaxCode"
+                                                                            datavaluefield="TaxId"
+                                                                            required data-required-msg="Código Impuesto es requerido"
+                                                                            onchange="GetPercentage();"
+                                                                            style="width: 100%;">
+                                                            <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999999">
+                                                                <transport>
+                                                                    <read url="@Url.Action("GetTaxes", "Tax")" />
+                                                                </transport>
+                                                            </datasource>
+                                                        </kendo-dropdownlist>
                                                     <span asp-validation-for="TaxCode" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -558,12 +558,6 @@
                                                     <span asp-validation-for="TaxPercentage" class="text-danger"></span>
                                                 </div>
                                             </div>
-
-
-
-
-
-
                                         </div>
 
                                         <div class="row">
@@ -599,10 +593,9 @@
 
                                     </div>
                                     <div class="row">
-                                        @if (Model.ProformaInvoiceId == 0)
-                                        {
+                                       
                                             <button id="btnActualizarCotizacionLinea" type="submit" class="form-control btn-miboton">Guardar</button>
-                                        }
+                                        
                                     </div>
                                 </form>
                             </div>
