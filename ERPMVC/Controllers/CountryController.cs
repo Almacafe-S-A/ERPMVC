@@ -185,7 +185,14 @@ namespace ERPMVC.Controllers
                     {
 
                         string error = await result.Content.ReadAsStringAsync();
-                        return await Task.Run(() => BadRequest($"El nombre del país ya esta registrado."));
+                        if (_CountryDuplicate.GAFI == true)
+                        {
+                            return await Task.Run(() => BadRequest($"El nombre del país ya esta registrado... como país GAFI ."));
+                        }
+                        else
+                        {
+                            return await Task.Run(() => BadRequest($"El nombre del país ya esta registrado... como país no GAFI "));
+                        }
 
                     }
 
@@ -212,7 +219,15 @@ namespace ERPMVC.Controllers
 
                         {
                             string error = await result.Content.ReadAsStringAsync();
-                            return await Task.Run(() => BadRequest($"El nombre del país ya esta ingresado..."));
+
+                            if (_CountryDuplicated.GAFI == true)
+                            {
+                                return await Task.Run(() => BadRequest($"El nombre del país ya esta registrado... como país GAFI ."));
+                            }
+                            else
+                            {
+                                return await Task.Run(() => BadRequest($"El nombre del país ya esta registrado... como país no GAFI "));
+                            }
                         }
 
                     }
