@@ -14,4 +14,10 @@ namespace ERPMVC.DTO
 
         public string token { get; set; }
     }
+    public class GrupoEstado
+    {
+        public int Id { get; set; } 
+        public string Nombre { get; set; }
+
+    }
 }

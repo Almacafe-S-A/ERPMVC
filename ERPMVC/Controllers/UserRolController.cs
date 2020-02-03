@@ -364,17 +364,42 @@ namespace ERPMVC.Controllers
             try
             {
 
+      
+
                 if (_role.RoleId.ToString() != "" && _role.UserId.ToString() != "" && _role.RoleId != null && _role.UserId != null)
                 {
                     // TODO: Add insert logic here
                     string baseadress = config.Value.urlbase;
                     HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                    List<ApplicationUserRole> _roles = new List<ApplicationUserRole>();
+
+                    var result1 = await _client.GetAsync(baseadress + "api/UserRol/GetUserRoles");
+
+                    string valorrespuesta1 = "";
+                    if (result1.IsSuccessStatusCode)
+                    {
+                        valorrespuesta1 = await (result1.Content.ReadAsStringAsync());
+                        _roles = JsonConvert.DeserializeObject<List<ApplicationUserRole>>(valorrespuesta1);
+
+                        _roles = _roles.Where(e => e.UserId == _role.UserId ).ToList();
+
+                        if(_roles.Count > 0)
+                        {
+
+                            return await Task.Run(() => BadRequest("Este usuario ya tiene un rol asignado"));
+
+                        }
+
+                    }
+
                     _role.FechaCreacion = DateTime.Now;
                     _role.FechaModificacion = DateTime.Now;
                     _role.UsuarioCreacion = HttpContext.Session.GetString("user");
                     _role.UsuarioModificacion = HttpContext.Session.GetString("user");
 
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    
                     var result = await _client.PostAsJsonAsync(baseadress + "api/UserRol/Insert", _role);
 
                     string valorrespuesta = "";
@@ -444,6 +469,10 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " +  HttpContext.Session.GetString("token"));
+
+                _rol.UsuarioCreacion = "l";
+
+                _rol.UsuarioModificacion = "l";
 
                 var result = await _client.PostAsJsonAsync(baseadress + "api/UserRol/Delete", _rol);
                 string valorrespuesta = "";

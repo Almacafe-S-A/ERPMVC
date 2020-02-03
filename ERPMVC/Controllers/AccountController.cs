@@ -111,6 +111,26 @@ namespace ERPMVC.Controllers
                             Utils.ConexionReportes = cadena;
                         }
 
+                        
+                        
+                        var resultadoCierre = await cliente.GetAsync(baseadress + "api/CierreContable/UltimoCierre");
+                        string ultimoCierre = await resultadoCierre.Content.ReadAsStringAsync();
+                        BitacoraCierreContable cierre = JsonConvert.DeserializeObject<BitacoraCierreContable>(ultimoCierre);
+                        if (cierre!=null)
+                        {                            
+                            DateTime fechaactual = DateTime.Now;
+                            fechaactual = fechaactual.AddDays(-1);
+                            Utils.Cerrado = cierre.FechaCierre.Date >= fechaactual.Date;
+                        }
+                        else
+                        {
+                            Utils.Cerrado = true;
+                        }
+                        
+
+
+
+
                         return RedirectToAction("Index", "Home");
 
                     }

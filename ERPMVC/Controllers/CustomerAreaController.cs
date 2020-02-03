@@ -69,13 +69,18 @@ namespace ERPMVC.Controllers
                         }
                     }
                 }
+                                            
+                              
 
                 if (_CustomerArea == null)
                 {
                     _CustomerArea = new CustomerArea();
                     _CustomerArea.DocumentDate = DateTime.Now;
+                    _CustomerArea.BranchId =     Convert.ToInt32(HttpContext.Session.GetString("BranchId"));
 
                 }
+               
+
             }
             catch (Exception ex)
             {

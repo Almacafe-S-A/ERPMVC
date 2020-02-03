@@ -48,6 +48,13 @@ namespace ERPMVC.Controllers
             return await Task.Run(() => View());
 
         }
+
+        public async Task<IActionResult> SFMovimientosHistoricos()
+        {
+            return await Task.Run(() => View());
+
+        }
+
         public async Task<JsonResult> AccountingByTypeAccount(Int64 TypeAccountId)
         {
             Accounting _customers = new Accounting();
