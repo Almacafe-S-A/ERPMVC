@@ -89,6 +89,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _PuntoEmision = JsonConvert.DeserializeObject<List<PuntoEmision>>(valorrespuesta);
+                    _PuntoEmision = _PuntoEmision.OrderByDescending(e => e.IdPuntoEmision).ToList();
 
                 }
 
