@@ -81,7 +81,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _tax = JsonConvert.DeserializeObject<List<Tax>>(valorrespuesta);
-
+                    _tax = _tax.OrderByDescending(e => e.TaxId).ToList();
                 }
 
 
