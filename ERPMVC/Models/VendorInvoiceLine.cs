@@ -60,5 +60,11 @@ namespace ERPMVC.Models
 
         [ForeignKey("AccountId")]
         public Accounting Account { get; set; }
+
+        public Int64 CostCenterId { get; set; }
+        [ForeignKey("CostCenterId")]
+        public CostCenter CostCenter { get; set; }
+
+        public string CostCenterName { get; set; }
     }
 }
