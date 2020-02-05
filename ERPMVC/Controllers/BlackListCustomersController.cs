@@ -41,7 +41,11 @@ namespace ERPMVC.Controllers
             return PartialView();
         }
 
-
+        public async Task<IActionResult> SFBlackListCustomers()
+        {
+            //return await Task.Run(() => View());
+            return View();
+        }
 
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
