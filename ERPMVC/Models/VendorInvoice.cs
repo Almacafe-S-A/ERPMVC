@@ -63,6 +63,10 @@ namespace ERPMVC.Models
         [Display(Name = "RTN")]
         public string RTN { get; set; }
         [Display(Name = "Teléfono")]
+
+        public Int64 CostCenterId { get; set; }
+        [ForeignKey("CostCenterId")]
+        public CostCenter CostCenter { get; set; }
         public string Tefono { get; set; }
 
         [Display(Name = "Correo")]
