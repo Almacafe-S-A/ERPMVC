@@ -235,7 +235,39 @@ namespace ERPMVC.Controllers
 
 
 
- 
+        [HttpGet]
+        public async Task<DataSourceResult> GetPuntoEmisonEnNumeracionSAR([DataSourceRequest]DataSourceRequest request, String TipoDocumento, int BranchId)
+        {
+            List<NumeracionSAR> _NumeracionSAR = new List<NumeracionSAR>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/NumeracionSAR/GetNumeracion");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _NumeracionSAR = JsonConvert.DeserializeObject<List<NumeracionSAR>>(valorrespuesta);
+                    _NumeracionSAR = _NumeracionSAR.Where(q => q.Estado == "Activo")
+                                                   .Where(q => q.BranchId == BranchId)
+                                                   .Where(q => q.DocType == TipoDocumento).ToList();
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _NumeracionSAR.ToDataSourceResult(request);
+
+        }
 
     }
 }

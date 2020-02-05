@@ -48,6 +48,13 @@ namespace ERPMVC.Controllers
             return await Task.Run(() => View());
 
         }
+
+        public async Task<IActionResult> SFMovimientosHistoricos()
+        {
+            return await Task.Run(() => View());
+
+        }
+
         public async Task<JsonResult> AccountingByTypeAccount(Int64 TypeAccountId)
         {
             Accounting _customers = new Accounting();
@@ -969,6 +976,48 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
         }
-       
+
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetCuentaContableCuentaBanco([DataSourceRequest] DataSourceRequest request,
+            int CuentaId)
+        {
+            request.Filters.Clear();
+            List<Accounting> cuentas = new List<Accounting>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/AccountManagement/GetSAccountManagementById/" + CuentaId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    AccountManagement cuentaBanco = JsonConvert.DeserializeObject<AccountManagement>(valorrespuesta);
+                    result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountById/" + cuentaBanco.AccountId);
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        Accounting cuentaContable = JsonConvert.DeserializeObject<Accounting>(valorrespuesta);
+                        cuentas.Add(cuentaContable);
+                    }
+                    else
+                    {
+                        _logger.LogError($"Ocurrio un error: { result.ReasonPhrase}");
+                    }
+                }
+                else
+                {
+                    _logger.LogError($"Ocurrio un error: { result.ReasonPhrase}");
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return await cuentas.ToDataSourceResultAsync(request);
+        }
+
     }
 }

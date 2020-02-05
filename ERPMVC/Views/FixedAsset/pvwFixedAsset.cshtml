@@ -78,10 +78,10 @@
                                                     <div class="form-group">
                                                         <label asp-for="AssetDate" class="control-label" style="min-width:100%;">Fecha de Adquisición</label>
                                                         <kendo-datepicker name="AssetDate"
+                                                                          value="Model.AssetDate"
                                                                           format="dd/MM/yyyy"
                                                                           style="min-width:96%;" class="form-control"
-                                                                          data-val-required="La fecha es requerida"
-                                                                          value="Model.AssetDate" />
+                                                                          data-val-required="La fecha es requerida"/>
                                                         <span asp-validation-for="AssetDate" class="text-danger"></span>
                                                     </div>
                                                 </div>
@@ -178,14 +178,14 @@
 
                                             <div class="col-md-3">
                                                 <label asp-for="ResidualValuePercent" class="control-label" min="0" style="min-width:100%">Valor residual porcentaje</label>
-                                                <input asp-for="ResidualValuePercent" class="form-control" data-val-required="El Valor residual porcentaje es requerido" onchange="onChangeValorResidualPorcentaje()" name="ResidualValuePercent" id="ResidualValuePercent" />
+                                                <input asp-for="ResidualValuePercent" class="form-control" data-val-required="El Valor residual porcentaje es requerido" onchange="Calculos()" name="ResidualValuePercent" id="ResidualValuePercent" onKeyPress="return soloNumeros(event)"/>
                                             </div>
 
                                             <div class="col-md-3">
                                                 <label asp-for="FixedActiveLife" class="control-label" style="min-width:100%;">Vida Útil</label>
                                                 <kendo-numerictextbox name="FixedActiveLife"
                                                                       for="FixedActiveLife" format="###"
-                                                                      onchange="onChangeVidaUtil()"
+                                                                      onchange="Calculos()"
                                                                       style="min-width:94%" min="0" maxlength="3"
                                                                       data-val-required="La Vida útil es requerida" />
                                                 <span asp-validation-for="FixedActiveLife" class="text-danger"></span>
@@ -193,15 +193,16 @@
                                             <div class="col-md-3">
                                                 <label asp-for="Amount" class="control-label" style="min-width:100%">Valor Adquisición</label>
                                                 <kendo-numerictextbox name="Amount"
-                                                                      onchange="onChangeMonto()"
+                                                                      onchange="Calculos()"
                                                                       for="Amount" style="min-width:94%" min="0" data-val-required="EL Valor Adquisición es requerido" />
                                                 <span asp-validation-for="Amount" class="text-danger"></span>
                                             </div>
                                             <div class="col-md-3">
                                                 <label asp-for="Cost" class="control-label" style="min-width:100%">Costos Adicionales</label>
                                                 <kendo-numerictextbox name="Cost"
+                                                                       onchange="Calculos()"
                                                                       for="Cost" style="min-width:94%" min="0"
-                                                                      onchange="Calculos()" />
+                                                                       @*data-val-required="EL Costos Adicionales es requerido"*@ data-validate="false"/>
                                                 @*<span asp-validation-for="Cost" class="text-danger"></span>*@
                                             </div>
                                         </div>
@@ -289,19 +290,21 @@
 		$("#warning").hide();
 	})
 
-	function onChangeVidaUtil() {
-        $("#Amount").data("kendoNumericTextBox").value(null);
-        $("#Cost").data("kendoNumericTextBox").value(null);
-    }
+	//function onChangeVidaUtil() {
+ //       $("#Amount").data("kendoNumericTextBox").value(null);
+ //       $("#Cost").data("kendoNumericTextBox").value();
+ //   }
 
-	function onChangeMonto() {
-        $("#Cost").data("kendoNumericTextBox").value(null);
-    }
 
-    function onChangeValorResidualPorcentaje() {
-        $("#Amount").data("kendoNumericTextBox").value(null);
-        $("#Cost").data("kendoNumericTextBox").value(null);
 
+    //function onChangeValorResidualPorcentaje() {
+    //    //$("#Amount").data("kendoNumericTextBox").value(null);
+    //    $("#Cost").data("kendoNumericTextBox").value();
+
+   // }
+    function soloNumeros(e) {
+        var key = window.Event ? e.which : e.keyCode
+        return (key >= 48 && key <= 57)
     }
 
    
@@ -341,7 +344,7 @@
 			'CenterCostName': costCenter.text(),
 			'FixedActiveLife': $('#FixedActiveLife').val(),
 			'Amount': $('#Amount').val(),
-            'Cost': $('#Cost').val(),
+                'Cost': $('#Cost').val() === "" ? "0" : $("#Cost").val(),
             'ActiveTotalCost': $('#ActiveTotalCost').val(),
             'ResidualValuePercent': $('#ResidualValuePercent').val(),
             'NetValue': $('#NetValue').val() === "" ? "0" : $("#NetValue").val(),
@@ -367,8 +370,8 @@
 				data: JSON.stringify(dataObject),
 				success: function (data) {
 					$("#btnFixedAsset").show();
-					//$("#warning").show();
-					//SaveHistorial(data)
+					$("#warning").show();
+					SaveHistorial(data)
 					$.toast({
                         heading: 'Satisfactorio',
                         text: '<br/><br/>Datos guardados correctamente.',
@@ -403,8 +406,10 @@
             $("#btnFixedAsset").prop("disabled", false);
             return false;
         }
-        $("#btnFixedAsset").hide();
+        $("#btnFixedAsset").show();
         $("#btnFixedAsset").prop("disabled", true);
+        $('#ModalFixedAsset').modal('hide');
+        RefrescarGrid();
        
 	}
 
@@ -434,12 +439,12 @@
         var _valorResidualPorcentaje = $("#ResidualValuePercent").val();
         var _valorResidual = 0;
         var _monto = $("#Amount").val();
-        var _costosadicionales = $("#Cost").val();
+        var _costosadicionales = $("#Cost").val() === "" ? "0" : $("#Cost").val();
         var _vidaUtil = $("#FixedActiveLife").val();
        
        
         // Costo total Activo = Valor adquisicion + Costos adicionales
-        _costoTotalActivo = parseInt(_monto) + parseInt(_costosadicionales);
+        _costoTotalActivo = parseFloat(_monto) + parseFloat(_costosadicionales);
         $("#ActiveTotalCost").val(formatter.format(round(_costoTotalActivo, 2)));
 
         // Valor residual = Valor Residual Porcentaje * CostoTotalActivo
@@ -458,7 +463,7 @@
 		$("#TotalDepreciated").val(formatter.format(round(_depreciacionAnual, 2)));
 	}
 
-    function SaveHistorial(_data) {
+    @*function SaveHistorial(_data) {
         debugger
 		var _fechaInicial;
 		var _fechaInicialConvert;
@@ -489,12 +494,14 @@
 		//_vidaUtil = parseInt($('#FixedActiveLife').val(), 10);
 		//_totalDepreciated = parseFloat($('#TotalDepreciated').val());
 
-		if (_data.FixedAssetId !== 0) {
+        if (_data.FixedAssetId !== 0) {
+            debugger;
 			_fechaInicial = _data.AssetDate;
 			_vidaUtil = _data.FixedActiveLife;
 			_totalDepreciated = _data.TotalDepreciated;
-		} else {
-			_fechaInicial = $("#AssetDate").getKendoDateTimePicker().value().toJSON()        
+        }
+        else {
+            _fechaInicial = $("#AssetDate").getKendoDatePicker().value().toJSON(); 
 			_vidaUtil = parseInt($('#FixedActiveLife').val(), 10);
 			_totalDepreciated = parseFloat($('#TotalDepreciated').val());
 		}
@@ -540,7 +547,8 @@
 					contentType: 'application/json',
 					async: false,
 					data: JSON.stringify(dataObject),
-					success: function () {
+                    success: function () {
+                        $('#ModalFixedAsset').modal('hide');
 					},
 					error: function (XMLHttpRequest, textStatus, errorThrown) {
 						notification.show({
@@ -576,7 +584,8 @@
 					contentType: 'application/json',
 					async: false,
 					data: JSON.stringify(dataObject),
-					success: function () {
+                    success: function () {
+                        $('#ModalFixedAsset').modal('hide');
 					},
 					error: function (XMLHttpRequest, textStatus, errorThrown) {
 						notification.show({
@@ -613,7 +622,8 @@
 						contentType: 'application/json',
 						async: false,
 						data: JSON.stringify(dataObject),
-						success: function () {
+                        success: function () {
+                            $('#ModalFixedAsset').modal('hide');
 						},
 						error: function (XMLHttpRequest, textStatus, errorThrown) {
 							notification.show({
@@ -646,7 +656,8 @@
 						contentType: 'application/json',
 						async: false,
 						data: JSON.stringify(dataObject),
-						success: function () {
+                        success: function () {
+                            $('#ModalFixedAsset').modal('hide');
 						},
 						error: function (XMLHttpRequest, textStatus, errorThrown) {
 							notification.show({
@@ -681,7 +692,7 @@
 					async: false,
 					data: JSON.stringify(dataObject),
 					success: function () {
-
+                        $('#ModalFixedAsset').modal('hide');
 					},
 					error: function (XMLHttpRequest, textStatus, errorThrown) {
 						notification.show({
@@ -718,7 +729,8 @@
 						contentType: 'application/json',
 						async: false,
 						data: JSON.stringify(dataObject),
-						success: function () {
+                        success: function () {
+                            $('#ModalFixedAsset').modal('hide');
 						},
 						error: function (XMLHttpRequest, textStatus, errorThrown) {
 							notification.show({
@@ -752,7 +764,8 @@
 						contentType: 'application/json',
 						async: false,
 						data: JSON.stringify(dataObject),
-						success: function () {
+                        success: function () {
+                            $('#ModalFixedAsset').modal('hide');
 						},
 						error: function (XMLHttpRequest, textStatus, errorThrown) {
 							notification.show({
@@ -764,7 +777,7 @@
 				}				
 			}
 		}
-	}
+	}*@
 
 	function DeleteDepreciateFixedAsset(_id) {
 		var dataObject =

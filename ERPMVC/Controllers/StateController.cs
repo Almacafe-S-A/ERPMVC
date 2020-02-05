@@ -29,8 +29,10 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-        public IActionResult State()
+        public async Task<IActionResult> State()
         {
+            ViewData["Pais"] = await ObtenerPais();
+
             return View();
         }
 
@@ -71,6 +73,38 @@ namespace ERPMVC.Controllers
 
 
 
+        async Task<IEnumerable<Country>> ObtenerPais()
+        {
+            IEnumerable<Country> paises = null;
+            
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Country/GetCountry");                
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    paises = JsonConvert.DeserializeObject<IEnumerable<Country>>(valorrespuesta);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            ViewData["Pais"] = paises.FirstOrDefault();
+            return paises;
+
+        }
+
+
+
+
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
@@ -87,7 +121,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _State = JsonConvert.DeserializeObject<List<State>>(valorrespuesta);
-
+                    _State = _State.OrderByDescending(e => e.Id).ToList();
                 }
 
 
@@ -120,7 +154,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _State = JsonConvert.DeserializeObject<List<State>>(valorrespuesta);
-                    _State= _State.Where(q => q.CountryId == CountryId).ToList();
+                    _State= _State.Where(q => q.CountryId == CountryId).OrderBy(q => q.Name).ToList();
                 }
 
 
@@ -147,7 +181,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/State/GetStateById/" + _State.Id);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/State/GetStateByName" , _State);
                 string valorrespuesta = "";
                 _State.FechaModificacion = DateTime.Now;
                 _State.Usuariomodificacion = HttpContext.Session.GetString("user");
@@ -159,18 +193,48 @@ namespace ERPMVC.Controllers
 
                 if (_State == null) { _State = new Models.State(); }
 
+
+
+
+
+                if (_State.Id > 0)
+                {
+                    if (_State.Id != _StateS.Id)
+                        return await Task.Run(() => BadRequest($"Ya éxiste un departamento registrado con este nombre para este país."));
+                }
+
                 if (_StateS.Id == 0)
                 {
-                    //_CAI.FechaCreacion = DateTime.Now;
-                    //_CAI.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    _StateS.FechaCreacion = DateTime.Now;
+                    _StateS.Usuariocreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_StateS);
                 }
                 else
                 {
-                    _StateS.Usuariocreacion = _State.Usuariocreacion;
+                    var result2 = await _client.GetAsync(baseadress + "api/State/GetStateById/" + _StateS.Id);
+                    string valorrespuesta2 = "";
+                    if (result2.IsSuccessStatusCode)
+                    {
+                        valorrespuesta2 = await (result2.Content.ReadAsStringAsync());
+                        _State = JsonConvert.DeserializeObject<State>(valorrespuesta2);
+                    }
                     _StateS.FechaCreacion = _State.FechaCreacion;
+                    _StateS.Usuariocreacion = _State.Usuariocreacion;
+                    _State.Usuariomodificacion = HttpContext.Session.GetString("user");
+                    _State.FechaModificacion = DateTime.Now;
                     var updateresult = await Update(_State.Id, _StateS);
                 }
+                
+                //    _CAI.FechaCreacion = DateTime.Now;
+                //    _CAI.UsuarioCreacion = HttpContext.Session.GetString("user");
+                //    var insertresult = await Insert(_StateS);
+                //}
+                //else
+                //{
+                //    _StateS.Usuariocreacion = _State.Usuariocreacion;
+                //    _StateS.FechaCreacion = _State.FechaCreacion;
+                //    var updateresult = await Update(_State.Id, _StateS);
+                //}
 
             }
             catch (Exception ex)

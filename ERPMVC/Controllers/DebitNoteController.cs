@@ -96,7 +96,7 @@ namespace ERPMVC.Controllers
                     valorrespuestaBranch = await (resultBranch.Content.ReadAsStringAsync());
                     _branch = JsonConvert.DeserializeObject<Branch>(valorrespuestaBranch);
 
-                    _DebitNote.NumeroDEIString = $"{_branch.BranchCode}-{_DebitNote.Caja}-05-{_DebitNote.NúmeroDEI.ToString().PadLeft(8, '0')} ";
+                    _DebitNote.NumeroDEIString = $"{_branch.BranchCode}-{_DebitNote.Caja}-{_DebitNote.TipoDocumento}-{_DebitNote.NúmeroDEI.ToString().PadLeft(8, '0')} ";
                     //var resultado = new BranchController().FileUploadMsgView(_DebitNote.BranchId);
                 }
             }
@@ -167,6 +167,7 @@ namespace ERPMVC.Controllers
 
                 if (_listDebitNote.DebitNoteId == 0)
                 {
+                    _DebitNote.TipoDocumento = "06";
                     _DebitNote.FechaCreacion = DateTime.Now;
                     _DebitNote.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_DebitNote);

@@ -345,6 +345,59 @@ namespace ERPMVC.Controllers
             return Json(_clientes.ToDataSourceResult(request));
         }
 
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> GetEstadoByGrupo([DataSourceRequest]DataSourceRequest request, int GrupoEstadoId)
+        {
+            List<Estados> _Estados = new List<Estados>();
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
+                var result = await _client.GetAsync(baseadress + "api/Estados/GetEstadosByGrupoEstado/" + GrupoEstadoId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Estados = JsonConvert.DeserializeObject<List<Estados>>(valorrespuesta);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_Estados.ToDataSourceResult(request));
+        }
+
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> GetGrupoEstado([DataSourceRequest]DataSourceRequest request)
+        {
+            List<GrupoEstado> _Estados = new List<GrupoEstado>();
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                var result = await _client.GetAsync(baseadress + "api/Estados/GetGrupoEstados");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Estados = JsonConvert.DeserializeObject<List<GrupoEstado>>(valorrespuesta);
+                    _Estados = _Estados.OrderByDescending(q => q.Id).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_Estados.ToDataSourceResult(request));
+        }
     }
 }

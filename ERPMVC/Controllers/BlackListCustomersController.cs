@@ -41,7 +41,11 @@ namespace ERPMVC.Controllers
             return PartialView();
         }
 
-
+        public async Task<IActionResult> SFBlackListCustomers()
+        {
+            //return await Task.Run(() => View());
+            return View();
+        }
 
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
@@ -155,7 +159,11 @@ namespace ERPMVC.Controllers
 
                 if (_BlackListCustomers == null)
                 {
-                    _BlackListCustomers = new BlackListCustomersDTO();
+                    //_BlackListCustomers = new BlackListCustomersDTO();
+                    _BlackListCustomers = new BlackListCustomersDTO
+                    {
+                        DocumentDate = DateTime.Now
+                    };
                 }
             }
             catch (Exception ex)
