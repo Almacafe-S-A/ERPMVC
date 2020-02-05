@@ -1,0 +1,420 @@
+﻿@model ERPMVC.DTO.RetentionReceiptDTO
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+   // {"required","Valor requerido" }
+};
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<div id="ModalComprobanteRetencion" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Comprobante de Retención</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmComprobanteRetencion" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveComprobanteRetencion"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="RetentionReceiptId" class=" control-label" style="min-width:100%">Id Comprobante de Retención</label>
+                                                    <input type="text" asp-for="RetentionReceiptId" name="RetentionReceiptId" class="form-control" disabled="disabled" style="min-width:100%" />
+                                                    <span asp-validation-for="RetentionReceiptId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="VendorId" class=" control-label" style="min-width:100%"></label>
+                                                    <kendo-dropdownlist name="VendorId" required data-required-msg="El Proveedor es requerido."
+                                                                        for="@Model.VendorId"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione el Proveedor!"
+                                                                        datatextfield="VendorName"
+                                                                        datavaluefield="VendorId"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <sorts>
+                                                                <sort field="VendorName" direction="asc" />
+                                                            </sorts>
+                                                            <transport>
+                                                                <read url="@Url.Action("GetVendor", "Vendor")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="VendorId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="RTN" class=" control-label" style="min-width:100%"></label>
+                                                    <input type="text" maxlength="14" asp-for="RTN" name="RTN" required data-required-msg="El RTN es requerido." class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <span asp-validation-for="RTN" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label class=" control-label" style="min-width:100%">Factura de Proveedor</label>
+                                                   @if (Model.RetentionReceiptId > 0){
+                                                        <kendo-dropdownlist name="VendorInvoiceId" required data-required-msg=""
+                                                                            filter="Kendo.Mvc.UI.FilterType.Contains" enable="true"
+                                                                            option-label="Seleccione la Factura de Proveedor!"
+                                                                            datatextfield="VendorInvoiceName"
+                                                                            datavaluefield="VendorInvoiceId"
+                                                                            style="min-width: 100%;">
+                                                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
+                                                                <sorts>
+                                                                    <sort field="VendorInvoiceName" direction="asc" />
+                                                                </sorts>
+                                                                <transport>
+                                                                    <read url="@Url.Action("GetVendorInvoiceByVendorId", "VendorInvoice")" data="GetVendorId" />
+                                                                </transport>
+                                                            </datasource>
+                                                        </kendo-dropdownlist>
+                                                    }
+                                                    else
+                                                    {
+                                                        <kendo-dropdownlist name="VendorInvoiceId" required data-required-msg=""
+                                                                            filter="Kendo.Mvc.UI.FilterType.Contains" enable="false"
+                                                                            option-label="Seleccione la Factura de Proveedor!"
+                                                                            datatextfield="VendorInvoiceName"
+                                                                            datavaluefield="VendorInvoiceId"
+                                                                            style="min-width: 100%;">
+                                                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
+                                                                <sorts>
+                                                                    <sort field="VendorInvoiceName" direction="asc" />
+                                                                </sorts>
+                                                                <transport>
+                                                                    <read url="@Url.Action("GetVendorInvoiceByVendorId", "VendorInvoice")" data="GetVendorId" />
+                                                                </transport>
+                                                            </datasource>
+                                                        </kendo-dropdownlist>
+                                                    }
+                                                    <span class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="NoCorrelativo" class=" control-label" style="min-width:100%"></label>
+                                                    <input type="text" asp-for="NoCorrelativo" name="NoCorrelativo" required data-required-msg="El Número Correlativo es requerido." class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <span asp-validation-for="NoCorrelativo" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="IdTipoDocumento" class=" control-label" style="min-width:100%"></label>
+                                                    <kendo-dropdownlist name="IdTipoDocumento" required data-required-msg="El Tipo de Documento es Requerido."
+                                                                        for="@Model.IdTipoDocumento"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione Tipo de Documento!"
+                                                                        datatextfield="Descripcion"
+                                                                        datavaluefield="IdTipoDocumento"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <sorts>
+                                                                <sort field="Descripcion" direction="asc" />
+                                                            </sorts>
+                                                            <transport>
+                                                                <read url="@Url.Action("GetTiposDocumento", "TiposDocumento")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="IdTipoDocumento" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="CAI" class=" control-label" style="min-width:100%"></label>
+                                                    @*<kendo-dropdownlist name="CAI" required data-required-msg="El Número CAI es Requerido."
+                                                                        for="@Model.CAI"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione Número CAI!"
+                                                                        datatextfield="_cai"
+                                                                        datavaluefield="IdCAI"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <sorts>
+                                                                <sort field="_cai" direction="asc" />
+                                                            </sorts>
+                                                            <transport>
+                                                                <read url="@Url.Action("Get", "CAI")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>*@
+                                                    <input type="text" maxlength="40" asp-for="CAI" name="CAI" required data-required-msg="El Número CAI es requerido." class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <span asp-validation-for="CAI" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            @if (Model.RetentionReceiptId > 0)
+                                            {
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label asp-for="FechaEmision" class="control-label"></label>
+                                                        <kendo-datepicker name="FechaEmision" style="min-width: 93%;" class="form-control"
+                                                                            format="dd/MM/yyyy"
+                                                                            data-val-required="La Fecha de Emisión es requerida."
+                                                                            value="@Model.FechaEmision" />
+                                                        <span asp-validation-for="FechaEmision" class="text-danger"></span>
+                                                    </div>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label asp-for="FechaEmision" class="control-label"></label>
+                                                        <kendo-datepicker name="FechaEmision" style="min-width: 93%;" class="form-control"
+                                                                            format="dd/MM/yyyy"
+                                                                            data-val-required="La Fecha de Emisión es requerida." min="@DateTime.Now"
+                                                                            value="@Model.FechaEmision" />
+                                                        <span asp-validation-for="FechaEmision" class="text-danger"></span>
+                                                    </div>
+                                                </div>
+                                            }
+                                            @if (Model.RetentionReceiptId > 0)
+                                            {
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label asp-for="DueDate" class="control-label"></label>
+                                                        <kendo-datepicker name="DueDate" style="min-width: 93%;" class="form-control"
+                                                                            format="dd/MM/yyyy"
+                                                                            data-val-required="La Fecha de Vencimiento es requerida."
+                                                                            value="@Model.DueDate" />
+                                                        <span asp-validation-for="DueDate" class="text-danger"></span>
+                                                    </div>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label asp-for="DueDate" class="control-label"></label>
+                                                        <kendo-datepicker name="DueDate" style="min-width: 93%;" class="form-control"
+                                                                            format="dd/MM/yyyy"
+                                                                            data-val-required="La Fecha de Vencimiento es requerida." min="@DateTime.Now"
+                                                                            value="@Model.DueDate" />
+                                                        <span asp-validation-for="DueDate" class="text-danger"></span>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="DocumentId" class=" control-label" style="min-width:100%"></label>
+                                                    <input type="text" maxlength="30" asp-for="DocumentId" name="DocumentId" disabled required data-required-msg="El Documento es requerido." class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <span asp-validation-for="DocumentId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button id="btnComprobanteRetencion" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $("#NoCorrelativo").kendoMaskedTextBox({
+            mask: "000-000-00-00000000"
+        });
+
+        if (@Model.RetentionReceiptId > 0) {
+            $("#VendorInvoiceId").data("kendoDropDownList").value(@Model.DocumentId);
+        }
+    });
+
+    function GetVendorId() {
+        return {
+            'VendorId': $("#VendorId").data("kendoDropDownList").value(),
+        }
+    }
+
+    $("#VendorId").change(function () {
+        $("#VendorInvoiceId").data("kendoDropDownList").dataSource.read();
+        if ($("#VendorId").val() > 0) {
+            var VendorId = $("#VendorId").data("kendoDropDownList").value();
+            $.ajax({
+                url: '@Url.Action("GetVendorById", "Vendor")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: { VendorId: VendorId },
+                success: function (result) {
+                    if (result != undefined) {
+                        $("#VendorInvoiceId").data("kendoDropDownList").enable(true);
+                        $("#RTN").val(result.RTN);
+                    }
+                    else {
+                        $.toast({
+                            heading: 'Validación',
+                            text: "Este proveedor no tiene ninguna factura registrada!",
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 30000,
+                            stack: 6
+                        });
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+        }
+        else {
+            $("#RTN").val(null);
+            $("#VendorInvoiceId").data("kendoDropDownList").value(0);
+            $("#VendorInvoiceId").data("kendoDropDownList").enable(false);
+        }
+    });
+
+    $("#VendorInvoiceId").change(function () {
+        if ($("#VendorInvoiceId").data("kendoDropDownList").value() > 0) {
+            var VendorInvoiceId = $("#VendorInvoiceId").val();
+            var dataObject = {
+                VendorInvoiceId: VendorInvoiceId,
+                editar: 1
+            };
+            $.ajax({
+                url: '@Url.Action("VendorInvoiceById", "VendorInvoice")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    if (result.InvoiceId == 0) {
+                        $.toast({
+                            heading: 'Validación',
+                            text: "No se encontraron los datos de la factura.",
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 30000,
+                            stack: 6
+                        });
+                    }
+                    else {
+                        $("#IdTipoDocumento").data("kendoDropDownList").value(result.TipoDocumento);
+                        $("#CAI").val(result.CAI);
+                        $("#DocumentId").val(result.VendorInvoiceId);
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+        }
+        else {
+            $("#DocumentId").val("0");
+        }
+    });
+
+    $("#FechaEmision").change(function () {
+        var _fechaEmision = "";
+        var _fechaVencimiento = "";
+        if ($("#FechaEmision").getKendoDatePicker().value() != null || $("#FechaEmision").getKendoDatePicker().value() != undefined || $("#FechaEmision").val() != "") {
+            _fechaEmision = $("#FechaEmision").getKendoDatePicker().value().toJSON()
+
+            $("#DueDate").kendoDatePicker("min", _fechaEmision)
+
+            if ($("#DueDate").getKendoDatePicker().value() != null || $("#DueDate").getKendoDatePicker().value() != undefined || $("#DueDate").val() != "") {
+                _fechaVencimiento = $("#DueDate").getKendoDatePicker().value().toJSON()
+                if (_fechaEmision > _fechaVencimiento) {
+                    $("#DueDate").val(null);
+                }
+            }
+        }
+    });
+
+    function SaveComprobanteRetencion() {
+        $("#btnComprobanteRetencion").hide();
+        $("#btnComprobanteRetencion").prop("disabled", true);
+
+        var dataObject = {
+            'RetentionReceiptId': $("#RetentionReceiptId").val() === "" ? "0" : $("#RetentionReceiptId").val(),
+            'DocumentId': $("#DocumentId").val(),
+            'FechaEmision': $("#FechaEmision").getKendoDatePicker().value().toJSON(),
+            'DueDate': $("#DueDate").getKendoDatePicker().value().toJSON(),
+            'IdTipoDocumento': $("#IdTipoDocumento").data("kendoDropDownList").value(),
+            'NoCorrelativo': $("#NoCorrelativo").val(),
+            'CAI': $("#CAI").val(),
+            'RTN': $("#RTN").val(),
+            'VendorId': $("#VendorId").data("kendoDropDownList").value(),
+        };
+        
+        var validator = $("#frmComprobanteRetencion").data("kendoValidator");
+        var status = $(".status");
+        debugger;
+        if (validator.validate()) {
+            $.ajax({
+                url: '@Url.Action("SaveComprobanteRetencion", "RetentionReceipt")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: '<br/><br/>Datos guardados correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+
+                    RefrescarGrid();
+                    $('#ModalComprobanteRetencion').modal('hide');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                }
+            });
+        }
+        else {
+            status.text("Oops! There is invalid data in the form.")
+                .removeClass("valid")
+                .addClass("invalid");
+        }
+    }
+</script>

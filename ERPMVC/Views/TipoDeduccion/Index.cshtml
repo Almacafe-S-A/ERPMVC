@@ -1,0 +1,130 @@
+﻿@using Kendo.Mvc.UI
+<h3 class="text-themecolor">Tipos de Deducciones</h3>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <div id="grdTipos"></div>
+        </div>
+    </div>
+</div>
+<div id="ModalTipoDeduccion"></div>
+
+<script>
+    function agregar_click() {
+        var parametros = {
+            TipoDeduccion: 0,
+            Editar: 1
+        };
+
+        $.ajax({
+            url: '@Url.Action("VistaDetalle", "TipoDeduccion")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(parametros),
+            success: function (result) {
+                $("#ModalTipoDeduccion").html('');
+                $("#ModalTipoDeduccion").html(result);
+                $('#ModalTipoDeduccionUpload').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+
+    function RefreshTipoDeduccion() {
+        $("#grdTipos").getKendoGrid().dataSource.read();
+    }
+
+    function crearGrid() {
+        $("#grdTipos").kendoGrid({
+            dataSource: {
+                type:"WebApi",
+                transport: {
+                    read:"@Url.Action("GetDeducciones", "TipoDeduccion")"
+                },
+                schema: {
+                    model: {
+                        fields: {
+                            DeductionId: { name: "DeductionId", type: "number", editable: false },
+                            Description: { name: "Description", type: "string", editable: false },
+                            DeductionType: { name: "DeductionType", type: "string", editable: false },
+                            Formula: { name: "Formula", type: "number", editable: false },
+                            Fortnight: { name: "Fortnight", type: "number", editable: false }
+                        }
+                    }
+                }
+            },
+            toolbar: [
+                { template: '<a class="k-button" href="\\#" onclick="return agregar_click()">Agregar</a>' }
+            ],
+            columns: [
+                {
+                    command: [
+                        { name: "editar", click: editar_click, iconClass: "fa fa-edit", text:"" },
+                        { name: "detalle", click: detalle_click, iconClass: "fa fa-list-alt", text:"" }
+                    ],
+                    width:100
+                },
+                { field: "DeductionId", title: "Id. ", width: 80 },
+                { field: "Description", title: "Descripción", width: 200},
+                { field: "DeductionType", title: "Tipo", width: 100 },
+                { field: "Formula", title: "Formula/Valor", width: 100 },
+                { field: "Fortnight", title: "Quincena a aplicar", width: 100 }
+            ],
+            height: 400,
+            scrollable: true,
+            editable: false
+        });
+    }
+
+    function editar_click(e) {
+        var registro = this.dataItem($(e.currentTarget).closest('tr'));
+        var parametros = {
+            DeductionId: registro.DeductionId
+        };
+        $.ajax({
+            url: '@Url.Action("EditarDeduccion", "TipoDeduccion")',
+            method: 'POST',
+            datatype: "json",
+            async: false,
+            data: parametros,//JSON.stringify(parametros),
+            success: function (result) {
+                $("#ModalTipoDeduccion").html('');
+                $("#ModalTipoDeduccion").html(result);
+                $('#ModalTipoDeduccionUpload').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+
+    function detalle_click(e) {
+        var registro = this.dataItem($(e.currentTarget).closest('tr'));
+        var parametros = {
+            DeductionId: registro.DeductionId
+        };
+        $.ajax({
+            url: '@Url.Action("VerDeduccion", "TipoDeduccion")',
+            method: 'POST',
+            datatype: "json",
+            async: false,
+            data: parametros,//JSON.stringify(parametros),
+            success: function (result) {
+                $("#ModalTipoDeduccion").html('');
+                $("#ModalTipoDeduccion").html(result);
+                $('#ModalTipoDeduccionUpload').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+
+    $(document).ready(function() {
+        crearGrid();
+    });
+</script>

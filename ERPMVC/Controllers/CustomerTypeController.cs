@@ -55,6 +55,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CustomerType = JsonConvert.DeserializeObject<List<CustomerType>>(valorrespuesta);
+                    _CustomerType = _CustomerType.OrderByDescending(e => e.CustomerTypeId).ToList();
                 }
 
             }
