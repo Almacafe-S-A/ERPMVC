@@ -16,6 +16,9 @@ namespace ERPMVC.Models
         [Display(Name = "Id Empleado")]
         public Int64 EmployeeId { get; set; }
 
+        [ForeignKey("EmployeeId")]
+        public Employees Employees { get; set; }
+
         [Display(Name = "Empleado")]
         public string EmployeeName { get; set; }
 
@@ -25,10 +28,25 @@ namespace ERPMVC.Models
         [Display(Name = "Motivo")]
         public string Motivo { get; set; }
 
-        //public Customer Customer { get; set; }
-        //[Display(Name = "Id Cliente")]
-        //[ForeignKey("CustomerId")]
-        //public Int64? CustomerId { get; set; }
+        [Display(Name = "Cliente")]
+        public Int64 CustomerId { get; set; }
+        [ForeignKey("CustomerId")]
+        public Customer Customer { get; set; }
+
+        [Display(Name = "Cliente")]
+        public string CustomerName { get; set; }
+
+        [Display(Name = "Hora de inicio")]
+        public DateTime StartTime { get; set; }
+
+        [Display(Name = "Hora de fin")]
+        public DateTime EndTime { get; set; }
+
+        [Display(Name = "Cantidad de horas")]
+        public decimal QuantityHours { get; set; }
+
+        [Display(Name = "Factor Salario")]
+        public decimal HourlySalary { get; set; }
 
         [Display(Name = "Usuario modificación")]
         public string UsuarioModificacion { get; set; }
@@ -42,7 +60,7 @@ namespace ERPMVC.Models
         [Display(Name = "Usuario modificación")]
         public DateTime FechaModificacion { get; set; }
 
-     
-        public List<EmployeeExtraHoursDetail> EmployeeExtraHoursDetail { get; set; }
+
+        //public List<EmployeeExtraHoursDetail> EmployeeExtraHoursDetail { get; set; }
     }
 }

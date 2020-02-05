@@ -54,7 +54,7 @@ namespace ERPMVC.Controllers
 
                 if (_EmployeeExtraHours == null)
                 {
-                    _EmployeeExtraHours = new EmployeeExtraHoursDTO { WorkDate = DateTime.Now };
+                    _EmployeeExtraHours = new EmployeeExtraHoursDTO { WorkDate = DateTime.Now , StartTime = DateTime.Now , EndTime = DateTime.Now };
                 }
             }
             catch (Exception ex)
