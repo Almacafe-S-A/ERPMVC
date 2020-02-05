@@ -39,6 +39,15 @@ namespace ERPMVC.Controllers
         {
             //CheckAccountLines _Check = new CheckAccountLines();
             _pCheque.Date = DateTime.Now;
+            if (_pCheque.CheckNumber.Length>Int32.MaxValue)
+            {
+                _pCheque.CheckNumber = (Convert.ToInt32(_pCheque.CheckNumber.Substring(_pCheque.CheckNumber.Length -4))+1).ToString();
+
+            }
+            else
+            {
+
+            }
             //try
             //{
             //    string baseadress = config.Value.urlbase;
@@ -66,7 +75,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_pCheque);
+            return  PartialView(_pCheque);
 
         }
         public async Task<JsonResult> GetCheckAccountById(Int64 CheckAccountId)
