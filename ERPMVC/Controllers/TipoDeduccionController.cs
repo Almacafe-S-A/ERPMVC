@@ -34,7 +34,38 @@ namespace ERPMVC.Controllers
 
         public ActionResult VistaDetalle()
         {
-            return PartialView("pvwTipoDeduccion");
+            ViewData["Editar"] = 1;
+            return PartialView("pvwTipoDeduccion", new DeduccionDTO());
+        }
+
+        public async Task<ActionResult> EditarDeduccion(long DeductionId)
+        {
+            var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
+                config.Value.urlbase + "api/Deduction/GetDeductionById/" + DeductionId);
+            if (respuesta.IsSuccessStatusCode)
+            {
+                var contenido = await respuesta.Content.ReadAsStringAsync();
+                var resultado = JsonConvert.DeserializeObject<DeduccionDTO>(contenido);
+                ViewData["Editar"] = 1;
+                return PartialView("pvwTipoDeduccion", resultado);
+            }
+
+            return BadRequest();
+        }
+
+        public async Task<ActionResult> VerDeduccion(long DeductionId)
+        {
+            var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
+                config.Value.urlbase + "api/Deduction/GetDeductionById/" + DeductionId);
+            if (respuesta.IsSuccessStatusCode)
+            {
+                var contenido = await respuesta.Content.ReadAsStringAsync();
+                var resultado = JsonConvert.DeserializeObject<DeduccionDTO>(contenido);
+                ViewData["Editar"] = 0;
+                return PartialView("pvwTipoDeduccion", resultado);
+            }
+
+            return BadRequest();
         }
 
         public async Task<ActionResult<DeduccionDTO>> GetDeducciones()
@@ -60,6 +91,42 @@ namespace ERPMVC.Controllers
             {
                 logger.LogError(ex.StackTrace);
                 return BadRequest("Error al cargar tipos de deducciones");
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> GuardarDeduccion([FromBody] DeduccionDTO deduccion)
+        {
+            if (ModelState.IsValid)
+            {
+                deduccion.DeductionType = deduccion.DeductionTypeId == 1 ? "Por Ley" : "Eventual";
+
+                HttpResponseMessage respuesta;
+                if (deduccion.DeductionId == 0)
+                {
+                    respuesta = await Utils.HttpPostAsync(HttpContext.Session.GetString("token"),
+                        config.Value.urlbase + "api/Deduction/Insert", deduccion);
+                }
+                else
+                {
+                    respuesta = await Utils.HttpPutAsync(HttpContext.Session.GetString("token"),
+                        config.Value.urlbase + "api/Deduction/Update", deduccion);
+                }
+                
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    ViewData["Editar"] = 1;
+                    return PartialView("pvwTipoDeduccion", deduccion);
+                }
+                else
+                {
+                    return BadRequest();
+                }
+                
+            }
+            else
+            {
+                throw new Exception("Campos no validos en tipo de deducción");
             }
         }
     }

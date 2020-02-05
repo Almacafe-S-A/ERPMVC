@@ -1,4 +1,8 @@
-﻿<div id="ModalTipoDeduccionUpload" class="modal fade" role="dialog">
+﻿@model ERPMVC.DTO.DeduccionDTO
+@{
+    var editable = (int)ViewData["Editar"] != 1;
+}
+<div id="ModalTipoDeduccionUpload" class="modal fade" role="dialog">
     <div class="modal-dialog modal-lg">
 
         <!-- Modal content-->
@@ -9,17 +13,144 @@
             </div>
 
             <div class="modal-body" kendo-validator="true" name="mdlCuerpo">
-                <div class="row">
-
-                </div>
+                <form id="frmTipoDeduccion" asp-action="GuardarDeduccion" asp-controller="TipoDeduccion" kendo-validator="true" method="post" onsubmit="Guardar(event)">
+                    <div class="row">
+                        <div class="container">
+                            <div class="row">
+                                <div class="col">
+                                    <label asp-for="DeductionId"></label><br />
+                                    <input asp-for="DeductionId" readonly="readonly" />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <label asp-for="Description"></label><br />
+                                    <input asp-for="Description" readonly="@editable"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <label for="DeductionTypeId"></label><br />
+                                    <input type="radio" id="DeductionTypeId" name="DeductionTypeId" value="1" checked="checked" style="position: relative; left: 0px; opacity: 100;" disabled="@editable"/> Por Ley
+                                    <input type="radio" name="DeductionTypeId" value="2" style="position: relative; left: 0px; opacity: 100;"  disabled="@editable"/> Eventual<br />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <label asp-for="Formula"></label><br />
+                                    <input asp-for="Formula" readonly="@editable"/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <input id="EsPorcentaje" type="checkbox" style="position: relative; left: 0px; opacity: 100;" disabled="@editable"/>Es % de sueldo bruto<br/>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    <label for="Fortnight"></label><br />
+                                    <input type="radio" id="Fortnight" name="Fortnight" value="1" checked="checked" style="position: relative; left: 0px; opacity: 100;" disabled="@editable"/> 1era
+                                    <input type="radio" id="Fortnight2" name="Fortnight" value="2" style="position: relative; left: 0px; opacity: 100;" disabled="@editable"/> 2da<br />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col">
+                                    @if (!editable)
+                                    {
+                                        <input type="submit" value="Guardar" />
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
+<span id="notificacion"></span>
 
 <script>
+
+    $(document).ready(function () {
+        debugger;
+        if (@Model.DeductionId !== 0) {
+            var $tipos = $('input:radio[name=DeductionTypeId]');
+            var $quincenas = $('input:radio[name=Fortnight]');
+            if (@Model.DeductionTypeId === 1) {
+                $tipos.filter('[value=1]').prop('checked', true);
+                $tipos.filter('[value=2]').prop('checked', false);
+            } else {
+                $tipos.filter('[value=1]').prop('checked', false);
+                $tipos.filter('[value=2]').prop('checked', true);
+            }
+
+            if (@Model.Fortnight === 1) {
+                $quincenas.filter('[value=1]').prop('checked', true);
+                $quincenas.filter('[value=2]').prop('checked', false);
+            } else {
+                $quincenas.filter('[value=1]').prop('checked', false);
+                $quincenas.filter('[value=2]').prop('checked', true);
+            }
+
+            if (@Model.EsPorcentaje.ToString().ToLower()===true) {
+                $("#EsPorcentaje").prop('checked', true);
+            }
+        }
+
+        
+    });
+
     function CerrarTipoDeduccion() {
         window.RefreshTipoDeduccion();
         $("#ModalTipoDeduccionUpload").modal('hide');
+    }
+
+    function Guardar(e) {
+        debugger;
+        e.preventDefault();
+
+        var deduccion = {
+            DeductionId: Number($("#DeductionId").val()),
+            Description: $("#Description").val(),
+            DeductionTypeId: Number($("input[name='DeductionTypeId']:checked").val()),
+            DeductionType: "",
+            Formula: Number($("#Formula").val()),
+            Fortnight: Number($("input[name='Fortnight']:checked").val()),
+            EsPorcentaje: $("#EsPorcentaje").is(":checked")
+        };
+        var validator = $("#frmTipoDeduccion").data("kendoValidator");
+        var notificacion = $("#notificacion").kendoNotification().data("kendoNotification");
+        if (validator.validate()) {
+            $.ajax({
+                url: '@Url.Action("GuardarDeduccion", "TipoDeduccion")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(deduccion),
+                success: function (data) {
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: '<br/><br/>Datos guardados correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 3000,
+                        stack: 6
+                    });
+                    window.RefreshTipoDeduccion();
+                    $("#ModalTipoDeduccionUpload").modal('hide');
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    notificacion.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+                }
+            });
+        }
+        return false;
     }
 </script>
