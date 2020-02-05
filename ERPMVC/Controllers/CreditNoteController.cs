@@ -157,7 +157,7 @@ namespace ERPMVC.Controllers
 
                 if (_listCreditNote.CreditNoteId == 0)
                 {
-                    _CreditNote.TipoDocumento = "05";
+                    _CreditNote.TipoDocumento = "06";
                     _CreditNote.DeliveryDate = DateTime.Now;
                     _CreditNote.FechaCreacion = DateTime.Now;
                     _CreditNote.UsuarioCreacion = HttpContext.Session.GetString("user");
