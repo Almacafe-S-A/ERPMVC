@@ -87,7 +87,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _SubServicesWareHouse = JsonConvert.DeserializeObject<List<SubServicesWareHouse>>(valorrespuesta);
-
+                    _SubServicesWareHouse = _SubServicesWareHouse.OrderByDescending(e => e.SubServicesWareHouseId).ToList();
                 }
 
 

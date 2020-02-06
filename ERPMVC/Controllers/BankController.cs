@@ -86,7 +86,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Bank = JsonConvert.DeserializeObject<List<Bank>>(valorrespuesta);
-
+                    _Bank = _Bank.OrderByDescending(e => e.BankId).ToList();
                 }
 
 

@@ -167,7 +167,7 @@ namespace ERPMVC.Controllers
 
                 if (_listDebitNote.DebitNoteId == 0)
                 {
-                    _DebitNote.TipoDocumento = "06";
+                    _DebitNote.TipoDocumento = "07";
                     _DebitNote.FechaCreacion = DateTime.Now;
                     _DebitNote.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_DebitNote);

@@ -153,6 +153,7 @@ namespace ERPMVC.Controllers
                             obj.DiscountPercentage = _InvoiceLinep.DiscountPercentage;
                             obj.Total = _InvoiceLinep.Total;
                             obj.AccountId = _InvoiceLinep.AccountId;
+                            obj.CostCenterId = _InvoiceLinep.CostCenterId;
 
 
                         }
