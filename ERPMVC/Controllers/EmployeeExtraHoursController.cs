@@ -105,38 +105,85 @@ namespace ERPMVC.Controllers
         [HttpPost("[action]")]
         public async Task<ActionResult<EmployeeExtraHours>> SaveEmployeeExtraHours([FromBody]EmployeeExtraHours _EmployeeExtraHours)
         {
-
+            EmployeeExtraHours _EmployeeExtraHoursp = _EmployeeExtraHours;
             try
             {
                 EmployeeExtraHours _listEmployeeExtraHours = new EmployeeExtraHours();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/EmployeeExtraHours/GetEmployeeExtraHoursById/" + _EmployeeExtraHours.EmployeeExtraHoursId);
-                string valorrespuesta = "";
-                _EmployeeExtraHours.FechaModificacion = DateTime.Now;
-                _EmployeeExtraHours.UsuarioModificacion = HttpContext.Session.GetString("user");
-                if (result.IsSuccessStatusCode)
-                {
+                var result1 = await _client.GetAsync(baseadress + "api/EmployeeExtraHours/GetEmployeeExtraHoursByEmployeeName/" + _EmployeeExtraHours.EmployeeName);
+                string valorrespuesta1 = "";
 
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listEmployeeExtraHours = JsonConvert.DeserializeObject<EmployeeExtraHours>(valorrespuesta);
+                if (result1.IsSuccessStatusCode)
+                {
+                    valorrespuesta1 = await (result1.Content.ReadAsStringAsync());
+                    _EmployeeExtraHoursp = JsonConvert.DeserializeObject<EmployeeExtraHoursDTO>(valorrespuesta1);
                 }
 
-                if (_listEmployeeExtraHours == null) { _listEmployeeExtraHours = new EmployeeExtraHours(); }
+                if (_EmployeeExtraHoursp == null) { _EmployeeExtraHoursp = new Models.EmployeeExtraHours(); }
 
-                if (_listEmployeeExtraHours.EmployeeExtraHoursId == 0)
+                if (_EmployeeExtraHoursp.EmployeeExtraHoursId > 0)
                 {
-                    _EmployeeExtraHours.FechaCreacion = DateTime.Now;
-                    _EmployeeExtraHours.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    if (_EmployeeExtraHoursp.EmployeeExtraHoursId != _EmployeeExtraHours.EmployeeExtraHoursId)
+                        return await Task.Run(() => BadRequest($"Ya existe un Empleado registrado con el mismo Nombre."));
+                }
+
+
+                if (_EmployeeExtraHours.EmployeeExtraHoursId == 0)
+                {
+                    _EmployeeExtraHoursp.FechaCreacion = DateTime.Now;
+                    _EmployeeExtraHoursp.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_EmployeeExtraHours);
                 }
                 else
                 {
-                    var updateresult = await Update(_EmployeeExtraHours);
+                    var result = await _client.GetAsync(baseadress + "api/EmployeeExtraHours/GetEmployeeExtraHoursById/" + _EmployeeExtraHours.EmployeeExtraHoursId);
+                    string valorrespuesta = "";
+                    if (result1.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _EmployeeExtraHoursp = JsonConvert.DeserializeObject<EmployeeExtraHoursDTO>(valorrespuesta);
+                    }
+                    //_EmployeeExtraHours.FechaCreacion = _EmployeeExtraHoursp.FechaCreacion;
+                    //_EmployeeExtraHours.UsuarioCreacion = _EmployeeExtraHoursp.UsuarioCreacion;
+                    _EmployeeExtraHours.UsuarioCreacion = _EmployeeExtraHoursp.UsuarioCreacion;
+                    _EmployeeExtraHours.FechaCreacion = _EmployeeExtraHoursp.FechaCreacion;
+                    var updateresult = await Update(_EmployeeExtraHoursp.EmployeeExtraHoursId, _EmployeeExtraHours);
                 }
 
             }
+            //try
+            //{
+            //    EmployeeExtraHours _listEmployeeExtraHours = new EmployeeExtraHours();
+            //    string baseadress = config.Value.urlbase;
+            //    HttpClient _client = new HttpClient();
+            //    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+            //    var result = await _client.GetAsync(baseadress + "api/EmployeeExtraHours/GetEmployeeExtraHoursById/" + _EmployeeExtraHours.EmployeeExtraHoursId);
+            //    string valorrespuesta = "";
+            //    _EmployeeExtraHours.FechaModificacion = DateTime.Now;
+            //    _EmployeeExtraHours.UsuarioModificacion = HttpContext.Session.GetString("user");
+            //    if (result.IsSuccessStatusCode)
+            //    {
+
+            //        valorrespuesta = await (result.Content.ReadAsStringAsync());
+            //        _listEmployeeExtraHours = JsonConvert.DeserializeObject<EmployeeExtraHours>(valorrespuesta);
+            //    }
+
+            //    if (_listEmployeeExtraHours == null) { _listEmployeeExtraHours = new EmployeeExtraHours(); }
+
+            //    if (_listEmployeeExtraHours.EmployeeExtraHoursId == 0)
+            //    {
+            //        _EmployeeExtraHours.FechaCreacion = DateTime.Now;
+            //        _EmployeeExtraHours.UsuarioCreacion = HttpContext.Session.GetString("user");
+            //        var insertresult = await Insert(_EmployeeExtraHours);
+            //    }
+            //    else
+            //    {
+            //        var updateresult = await Update(_EmployeeExtraHours);
+            //    }
+
+            //}
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
@@ -151,14 +198,20 @@ namespace ERPMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult<EmployeeExtraHours>> Insert(EmployeeExtraHours _EmployeeExtraHours)
         {
+            EmployeeExtraHours _EmployeeExtraHoursp = _EmployeeExtraHours;
             try
             {
                 // TODO: Add insert logic here
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _EmployeeExtraHours.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _EmployeeExtraHours.UsuarioModificacion = HttpContext.Session.GetString("user");
+                //_EmployeeExtraHours.UsuarioCreacion = HttpContext.Session.GetString("user");
+                //_EmployeeExtraHours.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _EmployeeExtraHoursp.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _EmployeeExtraHoursp.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _EmployeeExtraHoursp.FechaCreacion = DateTime.Now;
+                _EmployeeExtraHoursp.FechaModificacion = DateTime.Now;
+                
                 var result = await _client.PostAsJsonAsync(baseadress + "api/EmployeeExtraHours/Insert", _EmployeeExtraHours);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -184,14 +237,16 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<EmployeeExtraHours>> Update(EmployeeExtraHours _EmployeeExtraHours)
+        public async Task<ActionResult<EmployeeExtraHours>> Update(Int64 Id, EmployeeExtraHours _EmployeeExtraHours)
         {
+            EmployeeExtraHours _EmployeeExtraHoursp = _EmployeeExtraHours;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-
+                _EmployeeExtraHoursp.FechaModificacion = DateTime.Now;
+                _EmployeeExtraHoursp.UsuarioModificacion = HttpContext.Session.GetString("user");
                 var result = await _client.PutAsJsonAsync(baseadress + "api/EmployeeExtraHours/Update", _EmployeeExtraHours);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
