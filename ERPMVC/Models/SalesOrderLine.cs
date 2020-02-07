@@ -58,5 +58,11 @@ namespace ERPMVC.Models
         [Display(Name = "Monto Impuesto")]
         public double TaxAmount { get; set; }
         public double Total { get; set; }
+
+        [Display(Name = "Valor")]
+        public decimal? Valor { get; set; }
+
+        [Display(Name = "Porcentaje")]
+        public decimal? Porcentaje { get; set; }
     }
 }
