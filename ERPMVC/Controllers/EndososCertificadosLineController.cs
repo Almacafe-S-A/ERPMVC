@@ -140,10 +140,38 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    if (_EndososCertificadosLineP.Price > 0)
+                    List<EndososCertificadosLine> _existelinea = new List<EndososCertificadosLine>();
+                    if (HttpContext.Session.GetString("listadoproductosEndosos") != "" && HttpContext.Session.GetString("listadoproductosEndosos") != null)
+                    {
+                        _EndososCertificadosLine = JsonConvert.DeserializeObject<List<EndososCertificadosLine>>(HttpContext.Session.GetString("listadoproductosEndosos"));
+                        _existelinea = _EndososCertificadosLine.Where(q => q.EndososCertificadosLineId == _EndososCertificadosLineP.EndososCertificadosLineId).ToList();
+                    }
+
+                    if (_EndososCertificadosLineP.Price > 0 && _existelinea.Count == 0)
                     {
                         _EndososCertificadosLine.Add(_EndososCertificadosLineP);
                         HttpContext.Session.SetString("listadoproductosEndosos", JsonConvert.SerializeObject(_EndososCertificadosLine).ToString());
+                    }
+                    else
+                    {
+
+                        var obj = _EndososCertificadosLine.FirstOrDefault(x => x.EndososCertificadosLineId == _EndososCertificadosLineP.EndososCertificadosLineId);
+                        if (obj != null)
+                        {
+                            //obj.CertificadoLineId = _EndososCertificadosLineP.CertificadoLineId;
+                            obj.Price = _EndososCertificadosLineP.Price;
+                            obj.EndososCertificadosId = _EndososCertificadosLineP.EndososCertificadosId;
+                            obj.EndososCertificadosLineId = _EndososCertificadosLineP.EndososCertificadosLineId;
+                            obj.Quantity = _EndososCertificadosLineP.Quantity;
+                            obj.SubProductId = _EndososCertificadosLineP.SubProductId;
+                            obj.SubProductName = _EndososCertificadosLineP.SubProductName;
+                            obj.UnitOfMeasureId = _EndososCertificadosLineP.UnitOfMeasureId;
+                            obj.UnitOfMeasureName = _EndososCertificadosLineP.UnitOfMeasureName;
+                            obj.ValorEndoso = _EndososCertificadosLineP.ValorEndoso;
+                        }
+
+                        HttpContext.Session.SetString("listadoproductosEndosos", JsonConvert.SerializeObject(_EndososCertificadosLine).ToString());
+
                     }
                 }
 
@@ -161,6 +189,25 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<EndososCertificadosLine>> SetLinesInSession([FromBody]EndososCertificadosLine _EndososCertificadosLineP)
+        {
+            try
+            {
+                List<EndososCertificadosLine> _EndososCertificadosLine = new List<EndososCertificadosLine>();
+                _EndososCertificadosLine = JsonConvert.DeserializeObject<List<EndososCertificadosLine>>(HttpContext.Session.GetString("listadoproductosEndosos"));
+
+                if (_EndososCertificadosLine == null) { _EndososCertificadosLine = new List<EndososCertificadosLine>(); }
+                _EndososCertificadosLine.Add(_EndososCertificadosLineP);
+                HttpContext.Session.SetString("listadoproductosEndosos", JsonConvert.SerializeObject(_EndososCertificadosLine).ToString());
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return await Task.Run(() => Json(_EndososCertificadosLineP));
+        }
 
         [HttpPost("[action]")]
         public async Task<ActionResult<EndososCertificadosLine>> SaveEndososCertificadosLine([FromBody]EndososCertificadosLine _EndososCertificadosLine)
