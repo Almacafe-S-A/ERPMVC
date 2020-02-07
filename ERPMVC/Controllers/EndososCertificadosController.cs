@@ -325,10 +325,19 @@ namespace ERPMVC.Controllers
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _EndososCertificados }, Total = 1 });
         }
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> SFEndosos(Int32 id)
+        {
+            try
+            {
+                EndososCertificados _EndososCertificados = new EndososCertificados { EndososCertificadosId = id, };
+                return await Task.Run(() => View(_EndososCertificados));
+            }
+            catch (Exception)
+            {
 
-
-
-
-
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+        }
     }
 }
