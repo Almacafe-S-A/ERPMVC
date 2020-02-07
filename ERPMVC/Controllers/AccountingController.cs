@@ -55,6 +55,12 @@ namespace ERPMVC.Controllers
 
         }
 
+        public async Task<IActionResult> SFCambiosPatrimonio()
+        {
+            return await Task.Run(() => View());
+
+        }
+
         public async Task<JsonResult> AccountingByTypeAccount(Int64 TypeAccountId)
         {
             Accounting _customers = new Accounting();
