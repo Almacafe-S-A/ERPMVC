@@ -25,8 +25,29 @@
             }
         }
 
+        var displayedData = $("#gridEndososDetail").data().kendoGrid.dataSource.view();
+        var id = -999999;
+        debugger;
+        if (Number($("#EndososCertificadosLineId").val()) === 0) {
+            if (displayedData.length > 0) {
+                for (var i = 0; i < displayedData.length; i++) {
+                    if (displayedData[i].EndososCertificadosLineId > id)
+                        id = displayedData[i].EndososCertificadosLineId;
+
+                }
+
+                id = id + 1;
+            }
+            else if ($("#SubProductId").val() > 0) {
+                id = 1;
+            }
+        }
+        else {
+            id = $("#CreditNoteLineId").val();
+        }
+
         return {
-            'EndososCertificadosLineId': $("#EndososCertificadosLineId").val(),
+            'EndososCertificadosLineId': id,
             'EndososCertificadosId':@Model.EndososCertificadosId,
             'UnitOfMeasureId': $("#UnitOfMeasureId").val(),
             'UnitOfMeasureName': unidaddemedida,
@@ -49,7 +70,6 @@
 
 
     function AddEndososDetalle() {
-        var notification = $("#notification").data("kendoNotification");
       //  console.log($("#ProductId").val());
         if ($("#ProductId").val() !== '' && $("#ProductId").val() !== '0'
             && $("#CustomerId").val() !== '0' && $("#CustomerId").val() !== ''  ) {
@@ -58,22 +78,23 @@
             $("#frmEndososCertificadosLine :input").not('#EndososCertificadosLineId').prop("disabled", false);
             //$("#frmEndososCertificadosLine :input").val('');
             $('#myModalEndososCertificadosLine').modal('show');
-        } else {
-            var notification = $("#notification").data("kendoNotification");
-            notification.show({
-                title: "Validacion",
-                message: "Debe seleccionar un producto y un cliente!"
-            }, "error");
-
         }
-
+        else {
+            $.toast({
+                heading: 'Validación',
+                text: "Debe seleccionar un producto y un cliente!",
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+        }
     }
 
 
     function EditEndososDetalle(e) {
-     
         e.preventDefault();
-        var notification = $("#notification").data("kendoNotification");
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
 
         if (dataItem.EndososCertificadosId > 0) {
@@ -96,12 +117,15 @@
                    
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
-
-                    //  $("#btngenerarfactura").show();
-                    notification.show({
-                        title: "Validacion",
-                        message: textStatus + ": " + XMLHttpRequest.responseText
-                    }, "error");
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
 
                 }
             });
@@ -163,11 +187,14 @@
     }
 
     function Delete(e) {
-        e.preventDefault();
-        var notification = $("#notification").data("kendoNotification");
-        if (confirm('Esta seguro que desea eliminar la fila?')) {
-            var notification = $("#notification").data("kendoNotification");
+        if (confirm('¿Esta seguro que desea eliminar la fila?')) {
+            debugger;
+            e.preventDefault();
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                EndososCertificadosLineId: dataItem.EndososCertificadosLineId,
+                EndososCertificadosId: dataItem.EndososCertificadosId,
+            };
 
             $.ajax({
                 url: '@Url.Action("Delete", "EndososCertificadosLine")',
@@ -175,29 +202,24 @@
                 datatype: "json",
                 contentType: 'application/json',
                 async: false,
-                data: JSON.stringify(dataItem),
+                data: JSON.stringify(dataObject),
                 success: function (data) {
-                    //$("#EndososLineMant").html('');
-                    //$("#EndososLineMant").html(data);
-                    //var txt = $(data);
-                    //var found = $("#SubProductId", txt);
-                    //subproducto = $(found).val();
+
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
-
-                    //  $("#btngenerarfactura").show();
-                    notification.show({
-                        title: "Validacion",
-                        message: textStatus + ": " + XMLHttpRequest.responseText
-                    }, "error");
-
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
                 }
             });
-
             var grid = $("#gridEndososDetail").data("kendoGrid");     
             grid.dataSource.remove(dataItem);
-            //Sync it with the grid
-            //grid.dataSource.sync();
         }
     }
 </script>
@@ -224,16 +246,16 @@
 
                                               columns.Bound(p => p.EndososCertificadosLineId).Title("Id Linea").Width(120);
                                               columns.Bound(p => p.EndososCertificadosId).Width(150);
-                                              columns.Bound(p => p.SubProductName).Width(150);                                       
+                                              columns.Bound(p => p.SubProductName).Width(150);
                                               columns.Bound(p => p.UnitOfMeasureName).Width(150);
                                               columns.Bound(p => p.UnitOfMeasureId).Visible(false).Title("Unidad de medida").Width(0);
-                                             // columns.Bound(p => p.SubProductId).Hidden().Title("Producto").Width(0);
+                                              // columns.Bound(p => p.SubProductId).Hidden().Title("Producto").Width(0);
                                               columns.Bound(p => p.Price).Title("Precio").Visible(false).Width(100);
                                               columns.Bound(p => p.SubProductId).Title("Producto").Visible(false).Width(150);
                                               columns.Bound(p => p.Quantity).Width(150);
                                               columns.Bound(p => p.ValorEndoso).Width(150);
                                               columns.Bound(p => p.Price).Width(150);
-                                             
+
                                           })
                                               .Filterable(f => f.Operators(o => o.ForString(s => s
                                        .Clear()
@@ -305,7 +327,7 @@
                                                 model.Id(p => p.EndososCertificadosLineId);
                                                 model.Field(p => p.EndososCertificadosLineId).Editable(false);
                                                 model.Field(p => p.EndososCertificadosId).Editable(false);
-                                              //  model.Field(p => p.ControlPalletsId).Editable(true);
+                                                //  model.Field(p => p.ControlPalletsId).Editable(true);
 
                                             })
                                             .Sort(s => s.Add(m => m.EndososCertificadosLineId).Descending())
@@ -318,7 +340,7 @@
                                             .Read(read => read.Action("GetEndososCertificadosLineByEndososCertificadosId", "EndososCertificadosLine").Data("GetEndososCertificadosId"))
                                             //.Create(create => create.Action("Insert", "SalesOrderLine"))
                                             //.Update(update => update.Action("Update", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
-                                            .Destroy(destroy => destroy.Action("Delete", "EndososCertificadosLine").Type(HttpVerbs.Post))
+                                            //.Destroy(destroy => destroy.Action("Delete", "EndososCertificadosLine").Type(HttpVerbs.Post))
                                       )
         )
 
