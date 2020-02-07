@@ -6,6 +6,7 @@ using System.Net;
 using System.Net.Http;
 using System.Net.Mail;
 using System.Reflection;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
 using ERPMVC.DTO;
@@ -38,13 +39,15 @@ namespace ERPMVC.Controllers
         private readonly ILogger _logger;
         private readonly IViewRenderService _viewRenderService;
         private readonly ViewRender view;
+        private readonly ClaimsPrincipal _principal;
 
         //public SalesOrderController(ILogger<SalesOrderController> logger,IOptions<MyConfig> config)
         public SalesOrderController(ILogger<SalesOrderController> logger, IOptions<MyConfig> config
             , IMapper mapper, IViewRenderService viewRenderService
-            , ViewRender view
+            , ViewRender view, IHttpContextAccessor httpContextAccessor
             )
         {
+            _principal = httpContextAccessor.HttpContext.User;
             this.mapper = mapper;
             this._logger = logger;
             this._config = config;
@@ -56,8 +59,10 @@ namespace ERPMVC.Controllers
         public IActionResult Index()
         {
             // SalesOrderDTO _dto = new SalesOrderDTO();
+
             try
             {
+                ViewData["permisoAprobar"] = _principal.HasClaim("Ventas.Cotizaciones.Aprobar", "true");
 
             }
             catch (Exception ex)
@@ -256,6 +261,47 @@ namespace ERPMVC.Controllers
             }
 
             return RedirectToAction("", "");
+        }
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<SalesOrderDTO>> Anular([FromBody]SalesOrderDTO _SalesOrder)
+        {
+            SalesOrderDTO _so = new SalesOrderDTO();
+            if (_SalesOrder != null)
+            {
+                try
+                {
+                    string baseadress = _config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/SalesOrder/GetSalesOrderById/" + _SalesOrder.SalesOrderId);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _so = JsonConvert.DeserializeObject<SalesOrderDTO>(valorrespuesta);
+                        _so.IdEstado = 7;
+                        _so.Estado = "Rechazado";
+                        _so.Observacion = _SalesOrder.Observacion;
+                        var resultsalesorder = await Update(_so.SalesOrderId, _so);
+
+                        var value = (resultsalesorder.Result as ObjectResult).Value;
+                        SalesOrder resultado = ((SalesOrder)(value));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                    throw ex;
+                }
+            }
+            else
+            {
+                return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+            }
+
+            return await Task.Run(() => Ok(_so));
         }
 
         [HttpPost("[controller]/[action]")]
