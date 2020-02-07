@@ -38,44 +38,45 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult> pvwAddCheck([FromBody]CheckAccountLines _pCheque)
         {
             //CheckAccountLines _Check = new CheckAccountLines();
-            _pCheque.Date = DateTime.Now;
-            if (_pCheque.CheckNumber.Length>Int32.MaxValue)
+            
+            try
             {
-                _pCheque.CheckNumber = (Convert.ToInt32(_pCheque.CheckNumber.Substring(_pCheque.CheckNumber.Length -4))+1).ToString();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Check/GetCheckLineById/" + _pCheque.Id);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _pCheque = JsonConvert.DeserializeObject<CheckAccountLines>(valorrespuesta);
 
+                }
+
+                if (_pCheque.Id == 0)
+                {
+                    _pCheque.Date = DateTime.Now;
+                    if (_pCheque.CheckNumber.Length > Int32.MaxValue)
+                    {
+                        _pCheque.CheckNumber = (Convert.ToInt32(_pCheque.CheckNumber.Substring(_pCheque.CheckNumber.Length - 4)) + 1).ToString();
+
+                    }
+                    else
+                    {
+                        _pCheque.CheckNumber = (Convert.ToInt32(_pCheque.CheckNumber) + 1).ToString();
+                    }
+                    //_pCheque = new CheckAccountLines { Date = DateTime.Now };
+                }
             }
-            else
+            catch (Exception ex)
             {
-
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
             }
-            //try
-            //{
-            //    string baseadress = config.Value.urlbase;
-            //    HttpClient _client = new HttpClient();
-            //    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-            //    var result = await _client.GetAsync(baseadress + "api/Check/GetCheckById/" + _sarpara.CheckAccountId);
-            //    string valorrespuesta = "";
-            //    if (result.IsSuccessStatusCode)
-            //    {
-            //        valorrespuesta = await (result.Content.ReadAsStringAsync());
-            //        _Check = JsonConvert.DeserializeObject<CheckAccountLines>(valorrespuesta);
-
-            //    }
-
-            //    if (_Check == null)
-            //    {
-            //        _Check = new CheckAccountLines { FechaIngreso = DateTime.Now };
-            //    }
-            //}
-            //catch (Exception ex)
-            //{
-            //    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-            //    throw ex;
-            //}
 
 
 
-            return  PartialView(_pCheque);
+            return PartialView(_pCheque);
 
         }
         public async Task<JsonResult> GetCheckAccountById(Int64 CheckAccountId)
@@ -430,7 +431,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<CheckAccount>> SaveCheck(CheckAccountLines _Check)
+        public async Task<ActionResult<CheckAccount>> SaveCheck([FromBody]CheckAccountLinesDTO _Check)
         {
             CheckAccountLines _CheckAccount = _Check;
             try
@@ -479,7 +480,7 @@ namespace ERPMVC.Controllers
         // POST: CheckAccount/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<CheckAccount>> InsertCheck(CheckAccountLines _CheckAccount)
+        public async Task<ActionResult<CheckAccount>> InsertCheck(CheckAccountLinesDTO _CheckAccount)
         {
             try
             {
@@ -495,7 +496,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CheckAccount = JsonConvert.DeserializeObject<CheckAccountLines>(valorrespuesta);
+                    _CheckAccount = JsonConvert.DeserializeObject<CheckAccountLinesDTO>(valorrespuesta);
                 }
 
             }
