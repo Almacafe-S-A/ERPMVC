@@ -44,7 +44,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Check/GetCheckLineById/" + _pCheque.Id);
+                var result = await _client.GetAsync(baseadress + "api/Check/GetCheckAccountLinesById/" + _pCheque.Id);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -78,6 +78,54 @@ namespace ERPMVC.Controllers
 
 
             return PartialView(_pCheque);
+
+        }
+
+
+
+        public async Task<ActionResult> AnularCheque([FromBody]CheckAccountLines _pCheque)
+        {
+            //CheckAccountLines _Check = new CheckAccountLines();
+
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CheckAccountLines/GetCheckAccountLinesById/" + _pCheque.Id);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _pCheque = JsonConvert.DeserializeObject<CheckAccountLines>(valorrespuesta);
+                }
+                if (_pCheque.Estado != "Anulado")
+                {
+                   
+                    result = await _client.PutAsJsonAsync(baseadress + "api/CheckAccountLines/AnularCheque", _pCheque);
+                    valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _pCheque = JsonConvert.DeserializeObject<CheckAccountLines>(valorrespuesta);
+                    }
+                }
+                else
+                {
+                    return BadRequest($"Error este cheque ya habia sido Anulado.");
+                }
+            }
+               
+            
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error: { ex.ToString() }");
+            }
+
+
+
+            return Ok(_pCheque);
 
         }
         public async Task<JsonResult> GetCheckAccountById(Int64 CheckAccountId)
