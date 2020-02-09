@@ -34,6 +34,19 @@ namespace ERPMVC.Controllers
         {
             return View();
         }
+        [HttpGet]
+        public async Task<ActionResult> SFCheque(int id)
+        {
+            try
+            {
+                CheckAccountLines _check = new CheckAccountLines { Id = id, };
+                return await Task.Run(() => View(_check));
+            }
+            catch (Exception)
+            {
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+        }
 
         public async Task<ActionResult> pvwAddCheck([FromBody]CheckAccountLines _pCheque)
         {
