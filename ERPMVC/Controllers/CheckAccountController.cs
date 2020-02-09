@@ -56,15 +56,16 @@ namespace ERPMVC.Controllers
                 if (_pCheque.Id == 0)
                 {
                     _pCheque.Date = DateTime.Now;
-                    if (_pCheque.CheckNumber.Length > Int32.MaxValue)
-                    {
-                        _pCheque.CheckNumber = (Convert.ToInt32(_pCheque.CheckNumber.Substring(_pCheque.CheckNumber.Length - 4)) + 1).ToString();
+                    //_pCheque.CheckNumber = 
+                    //if (_pCheque.CheckNumber.Length > Int32.MaxValue)
+                    //{
+                    //    _pCheque.CheckNumber = (Convert.ToInt32(_pCheque.CheckNumber.Substring(_pCheque.CheckNumber.Length - 4)) + 1).ToString();
 
-                    }
-                    else
-                    {
-                        _pCheque.CheckNumber = (Convert.ToInt32(_pCheque.CheckNumber) + 1).ToString();
-                    }
+                    //}
+                    //else
+                    //{
+                    //    _pCheque.CheckNumber = (Convert.ToInt32(_pCheque.CheckNumber) + 1).ToString();
+                    //}
                     //_pCheque = new CheckAccountLines { Date = DateTime.Now };
                 }
             }

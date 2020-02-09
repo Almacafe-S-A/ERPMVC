@@ -122,40 +122,52 @@ namespace ERPMVC
             {
                 options.Filters.Add(new CorsAuthorizationFilterFactory("AllowAllOrigins"));
             });
-
-            string baseadress = Configuration.GetSection("AppSettings").GetSection("urlbase").Value;
-            HttpClient _client = new HttpClient();
-            var result = _client.GetAsync(baseadress + "api/Permisos/ListarPermisos");
-            if (result.Result.IsSuccessStatusCode)
+            try
             {
-                var respuesta = (result.Result.Content.ReadAsStringAsync());
-                List<string> permisos = JsonConvert.DeserializeObject<List<string>>(respuesta.Result);
-                services.AddAuthorization(options =>
+                string baseadress = Configuration.GetSection("AppSettings").GetSection("urlbase").Value;
+                HttpClient _client = new HttpClient();
+                var result = _client.GetAsync(baseadress + "api/Permisos/ListarPermisos");
+                if (result.Result.IsSuccessStatusCode)
                 {
-                    string permisosActualizados = "";
-                    foreach (var permiso in permisos)
+                    var respuesta = (result.Result.Content.ReadAsStringAsync());
+                    List<string> permisos = JsonConvert.DeserializeObject<List<string>>(respuesta.Result);
+                    services.AddAuthorization(options =>
                     {
-                        permisosActualizados += permiso + "\r\n";
-                        options.AddPolicy(permiso, policy => policy.RequireClaim(permiso, "true"));
-                    }
-                    //Actualiza el archivo local de permisos
-                    File.WriteAllText("PermisosSistema.txt",permisosActualizados);
+                        string permisosActualizados = "";
+                        foreach (var permiso in permisos)
+                        {
+                            permisosActualizados += permiso + "\r\n";
+                            options.AddPolicy(permiso, policy => policy.RequireClaim(permiso, "true"));
+                        }
+                        //Actualiza el archivo local de permisos
+                        File.WriteAllText("PermisosSistema.txt", permisosActualizados);
 
-                });
+                    });
+                }
+                else
+                {//No se logro comunicar con el servidor de backend para cargar los permisos actualizados
+
+                }
             }
-            else
-            {//No se logro comunicar con el servidor de backend para cargar los permisos actualizados
+            catch (System.AggregateException )
+            {
+
                 var permisosText = File.ReadAllText("PermisosSistema.txt");
                 permisosText = permisosText.Replace("\r", "");
                 var permisos = permisosText.Split("\n");
                 services.AddAuthorization(options =>
-                                          {
-                                              foreach (var permiso in permisos)
-                                              {
-                                                  options.AddPolicy(permiso, policy => policy.RequireClaim(permiso, "true"));
-                                              }
-                                          });
+                {
+                    foreach (var permiso in permisos)
+                    {
+                        options.AddPolicy(permiso, policy => policy.RequireClaim(permiso, "true"));
+                    }
+                });
             }
+            catch (Exception) {
+                throw;
+            
+            }
+            
             
 
             services.AddKendo();
