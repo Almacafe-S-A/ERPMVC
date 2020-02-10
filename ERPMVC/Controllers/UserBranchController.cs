@@ -58,10 +58,6 @@ namespace ERPMVC.Controllers
                     _users = JsonConvert.DeserializeObject<List<ApplicationUser>>(valorrespuesta);
                     _users = _users.OrderBy(q => q.UserName).ToList();
                 }
-
-
-                List<Branch> _usersbra = new List<Branch>();
-
             }
             catch (System.Exception ex)
             {
@@ -73,7 +69,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost]
-        public async Task<JsonResult> SucursalesPorUsuario(UserBranch rama, Guid Userselect)
+        public async Task<JsonResult> SucursalesPorUsuario(UserBranch Sucursal, Guid Userselect)
         {
 
             UserBranch _usersbra = new UserBranch();
@@ -81,16 +77,212 @@ namespace ERPMVC.Controllers
             {
                 string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-                                               
-                rama.UserId = Userselect;
+
+                Sucursal.UserId = Userselect;
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/UserBranch/ObtenerUserBranch", rama);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/UserBranch/ObtenerUserBranch", Sucursal);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _usersbra = JsonConvert.DeserializeObject<UserBranch>(valorrespuesta);                    
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw (new Exception(ex.Message));
+            }            
+            return Json(_usersbra);
+        }
+
+        [HttpGet]
+        public async Task<JsonResult> Sucursales(string UserParametrp)
+        {
+            List<UserBranch> _FormarSucursales = new List<UserBranch>();           
+            List<Branch> _branchs = new List<Branch>();
+
+            if(UserParametrp == null)
+            {
+                List<UserBranch> Branch = _FormarSucursales;
+                _FormarSucursales = Branch;
+            }
+            else
+            {
+                Guid Userselect = new Guid("" + UserParametrp + "");
+                try
+                {
+                    string baseadress = _config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    string apidir = "api/Branch/GetBranch";
+                    var result = await _client.GetAsync(baseadress + apidir);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _branchs = JsonConvert.DeserializeObject<List<Branch>>(valorrespuesta);
+                    }
+
+                    foreach (var Brach in _branchs)
+                    {
+                        UserBranch NuevaBrach = new UserBranch();
+                        NuevaBrach.BranchId = Brach.BranchId;
+
+                        var SucursalesAsignadas = await SucursalesPorUsuario(NuevaBrach, Userselect);
+                        var ASucursal = ((UserBranch)SucursalesAsignadas.Value);
+
+                        if (ASucursal == null)
+                        {
+                        }
+                        else
+                        {
+                            NuevaBrach.Id = ASucursal.Id;
+                            NuevaBrach.BranchId = ASucursal.BranchId;
+                            NuevaBrach.BranchName = ASucursal.BranchName;
+                            NuevaBrach.UserId = Userselect;                           
+                            _FormarSucursales.Add(NuevaBrach);
+                        }
+
+
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                    throw ex;
+                }
+
+            }
+            return Json(_FormarSucursales);          
+        }
+                          
+        [HttpGet]
+        public async Task<JsonResult> SucursalesNo(string UserParametrp)
+        {
+            List<UserBranch> _FormaSucursales = new List<UserBranch>();
+            List<Branch> _branchs = new List<Branch>();
+
+            if (UserParametrp == null)
+            {
+                List<UserBranch> Sucursales = _FormaSucursales;
+                _FormaSucursales = Sucursales;
+            }
+            else
+            {
+                Guid Userselect = new Guid("" + UserParametrp + "");
+                try
+                {
+                    string baseadress = _config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    string apidir = "api/Branch/GetBranch";
+                    var result = await _client.GetAsync(baseadress + apidir);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _branchs = JsonConvert.DeserializeObject<List<Branch>>(valorrespuesta);
+                    }
+                    foreach (var Brach in _branchs)
+                    {
+                        UserBranch NuevaBrach = new UserBranch();
+                        NuevaBrach.BranchId = Brach.BranchId;
+
+                        var SucursalesAsignadas = await SucursalesPorUsuario(NuevaBrach, Userselect);
+                        var ASucursal = ((UserBranch)SucursalesAsignadas.Value);
+                        
+                        if (ASucursal == null)
+                        {
+                            NuevaBrach.BranchId = Brach.BranchId;
+                            NuevaBrach.BranchName = Brach.BranchName;
+                            NuevaBrach.UserId = new Guid("00000000-0000-0000-0000-000000000000");
+                            NuevaBrach.Id = 0;
+                            _FormaSucursales.Add(NuevaBrach);
+                        }
+                        else
+                        {
+                        }
+                    }
+
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                    throw ex;
+                }
+            }
+            return Json(_FormaSucursales);           
+        }
+
+
+        [HttpGet]
+        public async Task<JsonResult> InsertAndDelete(string UsuarioId, Int32 BranchId, string BranchName, bool Accion, Int32 Id)
+        {
+            UserBranch _usersbra = new UserBranch();
+            try
+            {
+                Guid UserSucursal = new Guid("" + UsuarioId + "");
+
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+                _usersbra.UserId = UserSucursal;
+                _usersbra.BranchId = BranchId;
+
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/UserBranch/ObtenerUserBranch", _usersbra);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _usersbra = JsonConvert.DeserializeObject<UserBranch>(valorrespuesta);
+                }
+
+                if(_usersbra == null && Accion == true) {
+
+                    UserBranch _UserBranch = new UserBranch();                  
+
+                    string baseadres = _config.Value.urlbase;
+                    HttpClient _clients = new HttpClient();
+                    _clients.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    _UserBranch.UserId = UserSucursal;
+                    _UserBranch.BranchId = BranchId;
+                    _UserBranch.BranchName = BranchName;
+                    _UserBranch.CreatedUser = HttpContext.Session.GetString("user");
+                    _UserBranch.CreatedDate = DateTime.Now;
+                    var resultsave = await _client.PostAsJsonAsync(baseadress + "api/UserBranch/Insert", _UserBranch);
+                    string valorrespuestasave = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuestasave = await (result.Content.ReadAsStringAsync());
+                        _UserBranch = JsonConvert.DeserializeObject<UserBranch>(valorrespuesta);
+                    }
+                }
+
+                if (_usersbra != null && Accion == false)
+                {
+
+                    UserBranch _UserBranch = new UserBranch();
+
+                    _UserBranch.UserId = UserSucursal;
+                    _UserBranch.BranchId = BranchId;
+                    _UserBranch.BranchName = BranchName;
+                    _UserBranch.Id = Id;
+
+                    string baseadresdelete = _config.Value.urlbase;
+                    HttpClient _clientdelete = new HttpClient();
+                    _clientdelete.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                    var resultdelete = await _clientdelete.PostAsJsonAsync(baseadress + "api/UserBranch/Delete", _UserBranch);
+                    string valorrespuestadelete = "";
+                    if (resultdelete.IsSuccessStatusCode)
+                    {
+                        valorrespuestadelete = await (resultdelete.Content.ReadAsStringAsync());
+                        _UserBranch = JsonConvert.DeserializeObject<UserBranch>(valorrespuesta);
+                    }
                 }
 
             }
@@ -99,358 +291,10 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw (new Exception(ex.Message));
             }
-            //return Json(_users);
-            return Json(_usersbra);
-        }
-
-        [HttpGet]
-        public async Task<DataSourceResult> GetBranch([DataSourceRequest]DataSourceRequest request)
-        {
-            List<Branch> _branchs = new List<Branch>();
-
-            try
-            {
-                string baseadress = _config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                string apidir = "api/Branch/GetBranch";
-                var result = await _client.GetAsync(baseadress + apidir);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _branchs = JsonConvert.DeserializeObject<List<Branch>>(valorrespuesta);
-
-
-                   
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-
-
-            return _branchs.ToDataSourceResult(request);
-
-        }
-
-
-        [HttpGet/*("[action]")*/]
-        public async Task<JsonResult> Sucursales(/*[FromBody]*/ string UserParametrp)
-        {
-
-            //var a = "fc405b7d-9fe3-43c9-97b5-d87a174cab8a";
-
-            //Guid Userselect = new Guid (a);
-            List<UserBranchDTO> _FormarRamas = new List<UserBranchDTO>();
             
-
-            List<Branch> _branchs = new List<Branch>();
-
-            if(UserParametrp == null)
-            {
-
-                List<UserBranchDTO> ccc  = _FormarRamas;
-
-                _FormarRamas = ccc;
-
-            }
-            else
-            {
-                Guid Userselect = new Guid("" + UserParametrp + "");
-
-                try
-                {
-
-                    string baseadress = _config.Value.urlbase;
-                    HttpClient _client = new HttpClient();
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    string apidir = "api/Branch/GetBranch";
-                    var result = await _client.GetAsync(baseadress + apidir);
-                    string valorrespuesta = "";
-                    if (result.IsSuccessStatusCode)
-                    {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _branchs = JsonConvert.DeserializeObject<List<Branch>>(valorrespuesta);
-
-
-                    }
-
-                    foreach (var Rama in _branchs)
-                    {
-                        UserBranchDTO NuevaRama = new UserBranchDTO();
-                        NuevaRama.BranchId = Rama.BranchId;
-
-                        var SucursalesAsignadas = await SucursalesPorUsuario(NuevaRama, Userselect);
-                        var ASucursal = ((UserBranch)SucursalesAsignadas.Value);
-
-
-                        if (ASucursal == null)
-                        {
-                            //NuevaRama.BranchId = Rama.BranchId;
-                            //NuevaRama.BranchName = Rama.BranchName;
-                            //NuevaRama.UserId = new Guid("00000000-0000-0000-0000-000000000000");
-                            //NuevaRama.regitrado = false;
-
-                            //_FormarRamas.Add(NuevaRama);
-                        }
-                        else
-                        {
-
-                            NuevaRama.BranchId = ASucursal.BranchId;
-                            NuevaRama.BranchName = ASucursal.BranchName;
-                            NuevaRama.UserId = Userselect;
-                            NuevaRama.regitrado = true;
-
-
-                            _FormarRamas.Add(NuevaRama);
-                        }
-
-
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                    throw ex;
-                }
-
-            }
-
-
-            return Json(_FormarRamas);
-          //  return _FormarRamas.ToDataSourceResult(request);
-        }
-
-
-
-
-
-        [HttpGet/*("[action]")*/]
-        public async Task<JsonResult> SucursalesNo(/*[FromBody]*/ string UserParametrp)
-        {
-
-            //var a = "fc405b7d-9fe3-43c9-97b5-d87a174cab8a";
-
-            //Guid Userselect = new Guid (a);
-            List<UserBranchDTO> _FormarRamas = new List<UserBranchDTO>();
-
-
-            List<Branch> _branchs = new List<Branch>();
-
-            if (UserParametrp == null)
-            {
-
-                List<UserBranchDTO> ccc = _FormarRamas;
-
-                _FormarRamas = ccc;
-
-            }
-            else
-            {
-                Guid Userselect = new Guid("" + UserParametrp + "");
-
-                try
-                {
-
-                    string baseadress = _config.Value.urlbase;
-                    HttpClient _client = new HttpClient();
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    string apidir = "api/Branch/GetBranch";
-                    var result = await _client.GetAsync(baseadress + apidir);
-                    string valorrespuesta = "";
-                    if (result.IsSuccessStatusCode)
-                    {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _branchs = JsonConvert.DeserializeObject<List<Branch>>(valorrespuesta);
-
-
-                    }
-
-                    foreach (var Rama in _branchs)
-                    {
-                        UserBranchDTO NuevaRama = new UserBranchDTO();
-                        NuevaRama.BranchId = Rama.BranchId;
-
-                        var SucursalesAsignadas = await SucursalesPorUsuario(NuevaRama, Userselect);
-                        var ASucursal = ((UserBranch)SucursalesAsignadas.Value);
-
-
-                        if (ASucursal == null)
-                        {
-                            NuevaRama.BranchId = Rama.BranchId;
-                            NuevaRama.BranchName = Rama.BranchName;
-                            NuevaRama.UserId = new Guid("00000000-0000-0000-0000-000000000000");
-                            NuevaRama.regitrado = false;
-
-                            _FormarRamas.Add(NuevaRama);
-                        }
-                        else
-                        {
-
-                            //NuevaRama.BranchId = ASucursal.BranchId;
-                            //NuevaRama.BranchName = ASucursal.BranchName;
-                            //NuevaRama.UserId = Userselect;
-                            //NuevaRama.regitrado = true;
-
-
-                            //_FormarRamas.Add(NuevaRama);
-                        }
-
-
-                    }
-
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                    throw ex;
-                }
-
-            }
-
-
-            return Json(_FormarRamas);
-            //  return _FormarRamas.ToDataSourceResult(request);
-        }
-
-
-        [HttpPost]
-        public async Task<ActionResult> SaveUserBranch( string[] ArrayNoAsignadas, string[] ArrayAsignadas)
-        {
-
-            UserBranch cc = new UserBranch();
-
-
-            return Json(cc);
-        }
-
-
-
-        [HttpPost]
-        public JsonResult UserBranch(string procesoData, int cabo)
-        {
-
-
-            UserBranch cc = new UserBranch();
-
-
-            return Json(cc);
+            return Json(_usersbra);
 
         }
-
-
-
-
-        [HttpPost]
-        public async Task<ActionResult<UserBranch>> Insert(UserBranch _UserBranch)
-        {
-            try
-            {                
-                string baseadress = _config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _UserBranch.CreatedUser = HttpContext.Session.GetString("user");
-                _UserBranch.CreatedDate = DateTime.Now;                
-                var result = await _client.PostAsJsonAsync(baseadress + "api/UserBranch/Insert", _UserBranch);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _UserBranch = JsonConvert.DeserializeObject<UserBranch>(valorrespuesta);
-                }
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error{ex.Message}");
-            }
-            return Ok(_UserBranch);
-            //return new ObjectResult(new DataSourceResult { Data = new[] { _ExchangeRate }, Total = 1 });
-        }
-
-
-        [HttpPut("Id")]
-        public async Task<IActionResult> Update(Int64 UserBranchId, UserBranch _UserBranch)
-        {
-            try
-            {
-                string baseadress = _config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _UserBranch.ModifiedUser = HttpContext.Session.GetString("user");
-                _UserBranch.ModifiedDate = DateTime.Now;
-                var result = await _client.PutAsJsonAsync(baseadress + "api/UserBranch/Update", _UserBranch);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _UserBranch = JsonConvert.DeserializeObject<UserBranch>(valorrespuesta);
-                }
-                else
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    throw new Exception($"Ocurrio un error:{valorrespuesta}");
-                }
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error{ex.Message}");
-            }
-            return Ok(_UserBranch);
-            //return new ObjectResult(new DataSourceResult { Data = new[] { _UserBranch }, Total = 1 });
-        }
-
-
-        [HttpDelete("Id")]
-        public async Task<ActionResult<UserBranch>> Delete(UserBranch _UserBranch)
-        {
-            try
-            {
-                string baseadress = _config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-
-                var result = await _client.PostAsJsonAsync(baseadress + "api/UserBranch/Delete", _UserBranch);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _UserBranch = JsonConvert.DeserializeObject<UserBranch>(valorrespuesta);
-                }
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                return BadRequest($"Ocurrio un error: {ex.Message}");
-            }
-
-            return new ObjectResult(new DataSourceResult { Data = new[] { _UserBranch }, Total = 1 });
-        }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
     }
