@@ -31,9 +31,9 @@
                                                                 option-label="Seleccionar el Usuario"
                                                                 datatextfield="UserName"
                                                                 datavaluefield="Id"
-                                                                onchange="readlisbox();"
+                                                                onchange="readlisbox(); CargadoData();"
                                                                 style="width: 100%;">
-                                                <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="990000">
                                                     <transport>
                                                         <read url="@Url.Action("GetUsuarios", "UserBranch")" />
                                                     </transport>
@@ -43,10 +43,10 @@
                                         <hr>
                                         <div class="row">
                                             
-
+                                             <div class="col-md-2" ></div>
                                             <div class="col-md-4">
-                                                <div id="example">
-                                                    <div class="demo-section k-content">
+                                                <div id="Listas">
+                                                    <div class="demo-section k-content" >
                                                         <label style="width:100%">Sucursales no Asignadas </label>
                                                         @(Html.Kendo().ListBox()
                                                                                               .Name("listbox1")
@@ -80,8 +80,8 @@
 
                                             <div class="col-md-4">
                                                 <div class="col-md-4">
-                                                    <div id="example" role="application">
-                                                        <div class="demo-section k-content">
+                                                    <div id="Listas" role="application">
+                                                        <div id="Progres2" class="demo-section k-content">
                                                             <label style="width:100%">Sucursales Asignadas </label>
                                                             @(Html.Kendo().ListBox()
                                                                                   .Name("listbox2")
@@ -136,255 +136,131 @@
     function opnertneritems() {
 
         UserBranch()
+       
     }
 
 
 
-    function UserBranch() {
-
-        var SucursalesNoAsignadas = $("#listbox1").data("kendoListBox").dataSource;        
-        var ArrayNoAsignadas = [];       
-        var raw = SucursalesNoAsignadas._data;       
-
-        for (i = SucursalesNoAsignadas._data.length - 1; i >= 0; i--) {
-            var NoAsignadasId = raw[i].BranchId;
-            var NoAsignadasName = raw[i].BranchName;
-
-            var item = {
-                NoAsignadasId, NoAsignadasName
-            }
-            ArrayNoAsignadas.push(item);
-        }
-        console.log(ArrayNoAsignadas)
-
-
-
-        var SucursalesAsignadas = $("#listbox2").data("kendoListBox").dataSource;
-        var ArrayAsignadas = [];
-        var rawsi = SucursalesAsignadas._data;
-
-        for (i = SucursalesAsignadas._data.length - 1; i >= 0; i--) {
-            var AsignadasId = rawsi[i].BranchId;
-            var AsignadasName = rawsi[i].BranchName;
-                       
-            var item = { AsignadasId, AsignadasName }
-            ArrayAsignadas.push(item);
-        }
-        console.log(ArrayAsignadas)
-
-
-        //var procesoData = "rock";
-        //var cabo = 123;
-
-        $.ajax({
-            url: '@Url.Action("SaveUserBranch", "UserBranch")', 
-            method: 'POST',
-            dataType: "json",
-            contentType: "application/json; charset=utf-8",
-            data: JSON.stringify({ ArrayAsignadas: ArrayAsignadas, ArrayNoAsignadas: ArrayNoAsignadas}),
-        })
-            .done(function (data) {
-                if (data == 'Error') {
-                    alert('No Enviado');
-
-                }
-                else {
-
-
-                }
-
-            });
-
-
-
-
-
-
-                    @*$.ajax({
-                        url: '@Url.Action("Save", "UserBranch")',
-                        method: 'POST',
-                        datatype: "json",
-                        contentType: 'application/json',
-                        async: false,
-                        data: { ArrayAsignadas: ArrayAsignadas},
-                        success: function (data) {
-
-                            //console.log(data)
-
-                        },
-                        error: function (XMLHttpRequest, textStatus, errorThrown) {
-                            notification.show({
-                               title: "Validación",
-                                message: textStatus + ": " + XMLHttpRequest.responseText
-                            }, "error");
-                        }
-                    });*@
-
-
-
-
-
-
-
-
+    function CargadoData() {
+       
+        kendo.ui.progress($("#Listas"), true);
+        setTimeout(function () {
+            kendo.ui.progress($("#Listas"), false);
+        }, 1000);
+        kendo.ui.progress($("#Progres2"), true);
+        setTimeout(function () {
+            kendo.ui.progress($("#Progres2"), false);
+        }, 1000);
 
        
 
-
-         @*$.ajax({
-                url: '@Url.Action("Save_Delete", "UserBranch")',
-                method: 'POST',
-                datatype: "json",
-                contentType: 'application/json; charset=utf-8',
-                async: false,
-                data: JSON.stringify(ArrayNoAsignadas, ArrayAsignadas),
-                success: function (result) {
-                    
-                    
-                    alert(result + " Listo")
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
-                }
-            });*@
-               
     }
+
+
+    function UserBranch() {     
+
+        var Insert_And_Delete = false;
+
+        var UsuarioId = $("#GetUsuarios").data("kendoDropDownList").value();     
+        var SucursalesAsignadas = $("#listbox2").data("kendoListBox").dataSource;
+        var rawsi = SucursalesAsignadas._data;
+        for (i = SucursalesAsignadas._data.length - 1; i >= 0; i--) {
+            var BranchId = rawsi[i].BranchId;
+            var BranchName = rawsi[i].BranchName;            
+              $.ajax({
+                          url: '@Url.Action("InsertAndDelete", "UserBranch")',
+                          method: 'GET',
+                          datatype: "json",
+                          contentType: 'application/json; charset=utf-8',
+                          async: false,
+                          data: { 'UsuarioId': UsuarioId, BranchId: BranchId, 'BranchName': BranchName, Accion: true },
+                          success: function (result) {
+                              Insert_And_Delete = true;
+                      },
+                      error: function (XMLHttpRequest, textStatus, errorThrown) {
+                      notification.show({
+                      title: "Validación",
+                      message: textStatus + ": " + XMLHttpRequest.responseText
+                     }, "error");
+                  }
+            });
+
+                       
+        }
+
+
+        var SucursalesNoAsignadas = $("#listbox1").data("kendoListBox").dataSource; 
+        var raw = SucursalesNoAsignadas._data;
+        for (i = SucursalesNoAsignadas._data.length - 1; i >= 0; i--) {
+            var BranchId = raw[i].BranchId;
+            var BranchName = raw[i].BranchName;
+              $.ajax({
+                          url: '@Url.Action("InsertAndDelete", "UserBranch")',
+                          method: 'GET',
+                          datatype: "json",
+                          contentType: 'application/json; charset=utf-8',
+                          async: false,
+                          data: { 'UsuarioId': UsuarioId, BranchId: BranchId, 'BranchName': BranchName, Accion: false },
+                          success: function (result) {
+                              Insert_And_Delete = true;
+                      },
+                      error: function (XMLHttpRequest, textStatus, errorThrown) {
+                      notification.show({
+                      title: "Validación",
+                      message: textStatus + ": " + XMLHttpRequest.responseText
+                     }, "error");
+                  }
+            });
+        }     
+
+        if (Insert_And_Delete == true) {
+            CargadoData()
+            $.toast({
+                heading: 'Satisfactorio',
+                text: 'Datos guardados correctamente.',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'success',
+                showHideTransition: 'slide',
+                hideAfter: 6000,
+                stack: 6
+            });
+        }
+
+    }
+
+
+   
+    
 
 
     function readlisbox() {
         var listBox = $("#listbox2").getKendoListBox();
         listBox.dataSource.read();
 
-
         var listBox1 = $("#listbox1").getKendoListBox();
         listBox1.dataSource.read();
-
     }
 
 
-    function CargarPermisos() {                     
-
-        var UserParametrp =  $("#GetUsuarios").data("kendoDropDownList").value();
-        //alert(UserParametrp)
+    function CargarPermisos() {      
+       
+        var UserParametrp =  $("#GetUsuarios").data("kendoDropDownList").value();       
         return {
             'UserParametrp': UserParametrp,
+        }        
 
-        }
-
-        //test()
     }
 
-
-
-
-
-   
-
-
-
-    //var dataSource;
-
-    //function test() {
-    //    var UserParametro = $("#GetUsuarios").val();
-    //    String(UserParametro)
-    //    alert(UserParametro)
-
-    //    var n = 2;
-    //    console.log(UserParametro)
-
-    //    $("#button").kendoButton({
-    //        click: function (e) {
-    //            dataSource.sync();
-    //        }
-    //    });
-
-    //    var dataObject = {
-    //        'UserParametrp': UserParametro
-
-    //    }
-
-    //    dataSource = new kendo.data.DataSource({
-    //        serverFiltering: false,
-    //        transport: {
-    //            read: {
-                    
-    //                url: '/UserBranch/Sucursales',
-                    
-                    
-    //                //method: 'POST',
-    //                dataType: "json",
-    //                //contentType: 'application/json',
-
-                    
-                    
-    //                //data: JSON.stringify(dataObject),                  
-                    
-    //            },
-    //            //update: {
-    //            //    url: crudServiceBaseUrl + "/Products/Update",
-    //            //    dataType: "jsonp"
-    //            //},
-    //            parameterMap: function (options, operation) {
-    //                if (operation !== "read" && options.models) {
-    //                    return { models: kendo.stringify(options.models) };
-    //                }
-    //            }
-    //        },
-    //        requestStart: function () {
-    //            kendo.ui.progress($(".demo-section"), true);
-    //        },
-    //        requestEnd: function () {
-    //            kendo.ui.progress($(".demo-section"), false);
-    //        },
-    //        batch: false,
-    //        schema: {
-               
-    //            model: {
-    //                id: "BranchId",
-    //                fields: {
-    //                    BranchId: { editable: false, nullable: true },
-    //                    BranchName: { validation: { required: true } },                        
-    //                    regitrado: { type: "boolean" },                       
-    //                }
-    //            }
-    //        }
-    //    });
-
-
-    //    console.log(dataSource)
-
-    //    dataSource.fetch(function () {
-    //        var data = this.data();
-    //        var listbox1 = $("#listbox1").data("kendoListBox");
-    //        var listbox2 = $("#listbox2").data("kendoListBox");
-    //        for (var i = 0; i < data.length; i++) {
-    //            if (data[i]["regitrado"]) {
-    //                listbox1.add(data[i]);
-    //            }
-    //            else {
-    //                listbox2.add(data[i]);
-    //            }
-    //        }
-    //    });
-    //};
-
-    //function setDiscontinued(ev, flag) {
-    //    var removedItems = ev.dataItems;
-    //    for (var i = 0; i < removedItems.length; i++) {
-    //        var item = dataSource.getByUid(removedItems[i].uid);
-    //        item["regitrado"] = flag;
-    //        item.dirty = !item.dirty;
-    //    }
-    //}
 </script>
 
 
 <style>
-    #example .k-listbox .k-item {
+    #Listas .k-listbox .k-item {
         cursor: move;
     }
 
-    #example .arrow {
+    #Listas .arrow {
         padding: 8px 0 5px 238px;
     }
 
@@ -393,12 +269,12 @@
         margin-top: 20px;
     }
 
-    #example .demo-section {
+    #Listas .demo-section {
         max-width: none;
         width: 555px;
     }
 
-    #example .k-listbox {
+    #Listas .k-listbox {
         width: 275px;
         height: 310px;
     }

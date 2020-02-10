@@ -8,9 +8,7 @@ namespace ERPMVC.DTO
 {
     public class UserBranchDTO : UserBranch
     {
-        public List<UserBranch> _UserBranch { get; set; }
-
-        public Boolean regitrado { get; set; }
+        public List<UserBranch> _UserBranch { get; set; }       
 
         public int editar { get; set; } = 1;
 
