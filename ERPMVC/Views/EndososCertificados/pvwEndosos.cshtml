@@ -132,14 +132,14 @@
                                                                                success: function (data) {
                                                                                    console.log(data);
 
-                                                                                   $("#CustomerId").data("kendoDropDownList").value(data.CustomerId);                                                                                  
+                                                                                   $("#CustomerId").data("kendoDropDownList").value(data.CustomerId);
                                                                                    $("#CustomerId").data("kendoDropDownList").trigger('change');
                                                                                    $("#BankId").data("kendoDropDownList").value(data.BankId);
                                                                                    $("#CurrencyId").data("kendoDropDownList").value(data.CurrencyId);
                                                                                    $("#ProductId").data("kendoDropDownList").value(data.ServicioId);
                                                                                     //$("#CustomerId").data("kendoDropDownList").select(data.CustomerId);
                                                                                    //$("#BranchId").data("kendoDropDownList").value(data.BranchId);
-                                                                                   //$("#WarehouseId").data("kendoDropDownList").value(data.WarehouseId);                                                                       
+                                                                                   //$("#WarehouseId").data("kendoDropDownList").value(data.WarehouseId);
                                                                                    //var NoCD = $("#NoCD").data("kendoNumericTextBox");
                                                                                    //NoCD.value(data.NoCD);
                                                                                    //NoCD.trigger('change');
@@ -162,8 +162,21 @@
 
 
                                                                                    for (i = 0; i < data._CertificadoLine.length; i++) {
-                                                                                       datasource.insert({
-                                                                                           EndososCertificadosLineId: 0,
+                                                                                       //datasource.insert({
+                                                                                       //    EndososCertificadosLineId: 0,
+                                                                                       //    EndososCertificadosId: 0
+                                                                                       //    , CertificadoLineId: data._CertificadoLine[i].CertificadoLineId
+                                                                                       //    , Price: data.Total
+                                                                                       //    , UnitOfMeasureName: data._CertificadoLine[i].UnitMeasurName, UnitOfMeasureId: data._CertificadoLine[i].UnitMeasureId
+                                                                                       //    , SubProductId: data._CertificadoLine[i].SubProductId, SubProductName: data._CertificadoLine[i].SubProductName
+                                                                                       //    , WareHouseId: data._CertificadoLine[i].WarehouseId
+                                                                                       //    , WarehouseName: data._CertificadoLine[i].WarehouseName
+                                                                                       //    , Quantity: data._CertificadoLine[i].Quantity //, NoCertificadoDeposito: data._CertificadoLine[i].NoCD
+
+                                                                                       //});
+                                                                                       var displayedData1 = $("#gridEndososDetail").data().kendoGrid.dataSource.view();
+                                                                                       var midataObject = {
+                                                                                           EndososCertificadosLineId: displayedData1.length + 1,
                                                                                            EndososCertificadosId: 0
                                                                                            , CertificadoLineId: data._CertificadoLine[i].CertificadoLineId
                                                                                            , Price: data.Total
@@ -171,13 +184,24 @@
                                                                                            , SubProductId: data._CertificadoLine[i].SubProductId, SubProductName: data._CertificadoLine[i].SubProductName
                                                                                            , WareHouseId: data._CertificadoLine[i].WarehouseId
                                                                                            , WarehouseName: data._CertificadoLine[i].WarehouseName
-                                                                                           , Quantity: data._CertificadoLine[i].Quantity //, NoCertificadoDeposito: data._CertificadoLine[i].NoCD                                                                            
-
-                                                                                       });
-                                                                                   }
-
-
-
+                                                                                           , Quantity: data._CertificadoLine[i].Quantity //, NoCertificadoDeposito: data._CertificadoLine[i].NoCD
+                                                                                       }
+                                                                                       $.ajax({
+                                                                                            url: '@Url.Action("SetLinesInSession", "EndososCertificadosLine")',
+                                                                                            method: 'POST',
+                                                                                            datatype: "json",
+                                                                                            contentType: 'application/json',
+                                                                                            async: false,
+                                                                                            data: JSON.stringify(midataObject),
+                                                                                           success: function (result) {
+                                                                                               console.log("Registro Guardado en Menoria", midataObject);
+                                                                                            },
+                                                                                            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                                                                                alert(textStatus + ": " + XMLHttpRequest.responseText);
+                                                                                            }
+                                                                                        });
+                                                                                            datasource.insert(midataObject);
+                                                                                        };
                                                                                },
                                                                                error: function (XMLHttpRequest, textStatus, errorThrown) {
 
@@ -210,29 +234,59 @@
 
                                                     </script>
                                                     <input type="hidden" id="singuardar" value="0" />
-                                                    @(Html.Kendo().DropDownList()
-                                                       .Name("cbxBuscar")
-                                                       .Filter(Kendo.Mvc.UI.FilterType.Contains)
-                                                       .OptionLabel("Buscar")
-                                                       .DataTextField("CustomerName")
-                                                       .DataValueField("IdCD")
-                                                       .HtmlAttributes(new { style = "width:100%" })
-                                                       .Height(290)
-                                                       .Events(e =>
-                                                       {
-                                                           e.Change("changesetearvalues");
-                                                          // e.Filtering("applyFilterCustomer");
-                                                         })
-                                                       .AutoBind(true)
-                                                       .DataSource(source =>
-                                                       {
-                                                           source.Ajax()
-                                                           .PageSize(80)
+                                                    @if (Model.EndososCertificadosId > 0)
+                                                    {
+                                                        @(Html.Kendo().DropDownList()
+                                                                           .Name("cbxBuscar")
+                                                                           .Enable(false)
+                                                                           .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                                                                           .OptionLabel("Buscar")
+                                                                           .DataTextField("CustomerName")
+                                                                           .DataValueField("IdCD")
+                                                                           .HtmlAttributes(new { style = "width:100%" })
+                                                                           .Height(290)
+                                                                           .Events(e =>
+                                                                           {
+                                                                               e.Change("changesetearvalues");
+                                                                                                               // e.Filtering("applyFilterCustomer");
+                                                                                                           })
+                                                                           .AutoBind(true)
+                                                                           .DataSource(source =>
+                                                                           {
+                                                                               source.Ajax()
+                                                                               .PageSize(80)
 
-                                                           .Read("Virtualization_Read", "CertificadoDeposito");
-                                                       })
-                                                       .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapper"))
-                                                    )
+                                                                               .Read("Virtualization_Read", "CertificadoDeposito");
+                                                                           })
+                                                                           .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapper"))
+                                                        )
+                                                    }
+                                                    else
+                                                    {
+                                                        @(Html.Kendo().DropDownList()
+                                                                       .Name("cbxBuscar")
+                                                                       .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                                                                       .OptionLabel("Buscar")
+                                                                       .DataTextField("CustomerName")
+                                                                       .DataValueField("IdCD")
+                                                                       .HtmlAttributes(new { style = "width:100%" })
+                                                                       .Height(290)
+                                                                       .Events(e =>
+                                                                       {
+                                                                           e.Change("changesetearvalues");
+                                                                                                               // e.Filtering("applyFilterCustomer");
+                                                                                                           })
+                                                                       .AutoBind(true)
+                                                                       .DataSource(source =>
+                                                                       {
+                                                                           source.Ajax()
+                                                                           .PageSize(80)
+
+                                                                           .Read("Virtualization_Read", "CertificadoDeposito");
+                                                                       })
+                                                                       .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapper"))
+                                                        )
+                                                    }
 
 
                                                 </div>
@@ -243,14 +297,15 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="EndososCertificadosId" class="control-label" style="width:100%"></label>
-                                                    <kendo-numerictextbox name="EndososCertificadosId"
+                                                    @*<kendo-numerictextbox name="EndososCertificadosId"
                                                                           format="n"
                                                                           min="0"
                                                                           disabled
                                                                           max="99999999"
                                                                           step="1"
                                                                           style="width: 100%;"
-                                                                          value="Model.EndososCertificadosId"></kendo-numerictextbox>
+                                                                          value="Model.EndososCertificadosId"></kendo-numerictextbox>*@
+                                                    <input type="text" asp-for="EndososCertificadosId" name="EndososCertificadosId" class="form-control form-control-line" disabled="disabled" style="min-width:100%" />
                                                     <span asp-validation-for="EndososCertificadosId" class="text-danger"></span>
                                                 </div>
 
@@ -451,7 +506,7 @@
 
                                                 <kendo-dropdownlist name="TipoEndoso" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                     for="TipoEndoso"
-                                                                    option-label="Seleccione el Producto"
+                                                                    option-label="Seleccione el Tipo de Endoso"
                                                                     datatextfield="Nombre"
                                                                     datavaluefield="Id"
                                                                     required
@@ -580,7 +635,7 @@
                                 </form>
 
                                 <div class="row">
-                                    @if (Model.editar==1)
+                                    @if (Model.EndososCertificadosId == 0)
                                     {
                                         <button id="btnSaveControlEstiba" type="submit" class="form-control btn-miboton" onclick="SaveEndosos(this);">Guardar</button>
                                     }
@@ -607,7 +662,7 @@
     }
 
     function SaveEndosos(e) {
-
+        debugger;
         var notification = $("#notification").data("kendoNotification");
        // e.preventDefault();
         $("#btnSaveControlEstiba").hide();
@@ -631,9 +686,9 @@
             'CurrencyId': $("#CurrencyId").val(),
             'CurrencyName': $("#CurrencyName").val(),
             'ValorEndosar': $("#ValorEndosar").val(),
-            //'TipoEndosoId': $("#TipoEndosoId").val(),
-            //'TipoEndosoName': $("#TipoEndosoId").data("kendoDropDownList").text(),
-            'TipoEndosoIdList': $("#TipoEndosoId").val(),
+            'TipoEndosoId': $("#TipoEndosoId").data("kendoMultiSelect").value(),
+            //'TipoEndosoName': $("#TipoEndosoId").kendoMultiSelect().data("kendoMultiSelect").dataItems(),
+            //'TipoEndosoIdList': $("#TipoEndosoId").data("kendoMultiSelect").value(),
             'FirmadoEn': $("#FirmadoEn").val(),
             'TipoEndoso': $("#TipoEndoso").val(),
             'NombreEndoso': $("#NombreEndoso").val(),
