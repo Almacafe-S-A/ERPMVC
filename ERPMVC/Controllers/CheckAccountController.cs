@@ -48,7 +48,7 @@ namespace ERPMVC.Controllers
             }
         }
 
-        public async Task<ActionResult> pvwAddCheck([FromBody]CheckAccountLines _pCheque)
+        public async Task<ActionResult> pvwAddCheck([FromBody]CheckAccountLinesDTO _pCheque)
         {
             //CheckAccountLines _Check = new CheckAccountLines();
             
@@ -62,7 +62,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _pCheque = JsonConvert.DeserializeObject<CheckAccountLines>(valorrespuesta);
+                    _pCheque = JsonConvert.DeserializeObject<CheckAccountLinesDTO>(valorrespuesta);
 
                 }
 
