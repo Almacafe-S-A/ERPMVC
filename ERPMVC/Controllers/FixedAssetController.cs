@@ -34,6 +34,11 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        public ActionResult SFFixedAssetsToDepreciate()
+        {
+            return View();
+        }
+
         public async Task<ActionResult> pvwFixedAsset([FromBody]FixedAssetDTO _data)
         {
             FixedAssetDTO _FixedAsset = new FixedAssetDTO();
