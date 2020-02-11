@@ -197,6 +197,7 @@ namespace ERPMVC.Controllers
                     _InsurancesP.CreatedDate = DateTime.Now;
                     _InsurancesP.DocumentName = file.FileName;
                     _InsurancesP.CreatedUser = HttpContext.Session.GetString("user");
+                    _InsurancesP.DocumentTypeId = 53;
                     _InsurancesP.DocumentTypeName = "Foto";
                     var insertresult = await Insert(_InsurancesP);
                     var value = (insertresult.Result as ObjectResult).Value;
