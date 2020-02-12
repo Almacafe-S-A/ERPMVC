@@ -69,18 +69,22 @@ namespace ERPMVC.Controllers
                 if (_pCheque.Id == 0)
                 {
                     _pCheque.Date = DateTime.Now;
-                    //_pCheque.CheckNumber = 
-                    //if (_pCheque.CheckNumber.Length > Int32.MaxValue)
-                    //{
-                    //    _pCheque.CheckNumber = (Convert.ToInt32(_pCheque.CheckNumber.Substring(_pCheque.CheckNumber.Length - 4)) + 1).ToString();
+                    //AccountManagement account = new AccountManagement();
+                    //////////Busca la cuenta bancaria asociadada a la chequera
+                    _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    result = await _client.GetAsync(baseadress + "api/AccountManagement/GetSAccountManagementById/" + _pCheque.AccountManagement.AccountManagementId);
+                    valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _pCheque.AccountManagement = JsonConvert.DeserializeObject<AccountManagement>(valorrespuesta);
+                        
 
-                    //}
-                    //else
-                    //{
-                    //    _pCheque.CheckNumber = (Convert.ToInt32(_pCheque.CheckNumber) + 1).ToString();
-                    //}
-                    //_pCheque = new CheckAccountLines { Date = DateTime.Now };
+                    }
                 }
+
+
             }
             catch (Exception ex)
             {

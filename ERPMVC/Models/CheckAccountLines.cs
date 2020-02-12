@@ -36,6 +36,8 @@ namespace ERPMVC.Models
         //[ForeignKey("RetencionId")]
         //public RetentionReceipt Retention { get; set; }
 
+        public string Sinopsis { get; set; }
+
         public Int64 IdEstado { get; set; }
         [ForeignKey("IdEstado")]
         public Estados Estados { get; set; }
