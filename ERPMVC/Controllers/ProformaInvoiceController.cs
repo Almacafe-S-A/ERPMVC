@@ -195,6 +195,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ProformaInvoice = JsonConvert.DeserializeObject<List<ProformaInvoice>>(valorrespuesta);
+                    _ProformaInvoice = _ProformaInvoice.OrderByDescending(x => x.ProformaId).ToList();
                 }
                 //else if(result.StatusCode== 401)
                 //{
