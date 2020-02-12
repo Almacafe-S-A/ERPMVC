@@ -29,7 +29,7 @@ namespace ERPMVC.Models
         [Display(Name = "CAI")]
         public string CAI { get; set; }
 
-        [Display(Name = "Fecha de Emision")]
+        [Display(Name = "Fecha de Emisión")]
         public DateTime FechaEmision { get; set; }
 
         [Display(Name = "RTN")]
@@ -53,27 +53,27 @@ namespace ERPMVC.Models
 
         [Display(Name = "Nombre Sucursal")]
         public string BranchName { get; set; }
-        [Display(Name = "Codigo Sucursal")]
+        [Display(Name = "Código Sucursal")]
         public string BranchCode { get; set; }
 
         [ForeignKey("IdPuntoEmision")]
-        [Display(Name = "Punto de emisión")]
+        [Display(Name = "Punto de Emisión")]
         public Int64 IdPuntoEmision { get; set; }
 
         public Int64 IdEstado { get; set; }
 
         public string Estado { get; set; }
 
-        [Display(Name = "Numero de Factura")]
+        [Display(Name = "Número de Factura")]
         public int NumeroDEI { get; set; }
 
-        [Display(Name = "Descripcion Impuesto Retenido")]
+        [Display(Name = "Descripción Impuesto Retenido")]
         public string RetentionTaxDescription { get; set; }
 
         [Display(Name = "Base Imponible")]
         public double TaxableBase { get; set; }
 
-        [Display(Name = "Porcentaje")]
+        [Display(Name = "Impuesto")]
         public double Percentage { get; set; }
 
         [Display(Name = "Importe Total")]
