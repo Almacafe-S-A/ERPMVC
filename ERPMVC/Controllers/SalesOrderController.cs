@@ -62,7 +62,7 @@ namespace ERPMVC.Controllers
 
             try
             {
-                ViewData["permisoAprobar"] = _principal.HasClaim("Ventas.Cotizaciones.Aprobar", "true");
+                ViewData["permisoAprobar"] = _principal.HasClaim("Ventas.Cotizaciones", "true");
 
             }
             catch (Exception ex)
