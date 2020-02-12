@@ -305,5 +305,21 @@ namespace ERPMVC.Controllers
             }
             return new ObjectResult(new DataSourceResult { Data = new[] { _RetentionReceipt }, Total = 1 });
         }
+
+        //--------------------------------------------------------------------------------------
+
+        [HttpGet]
+        public async Task<ActionResult> SFComprobanteRetencion(Int32 id)
+        {
+            try
+            {
+                RetentionReceiptDTO _RetentionReceipt = new RetentionReceiptDTO { RetentionReceiptId = id, };
+                return await Task.Run(() => View(_RetentionReceipt));
+            }
+            catch (Exception)
+            {
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+        }
     }
 }
