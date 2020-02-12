@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -24,13 +25,16 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public RetentionReceiptController(ILogger<RetentionReceiptController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public RetentionReceiptController(ILogger<RetentionReceiptController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
         public IActionResult Index()
         {
+            ViewData["permisoAprobar"] = _principal.HasClaim("Contabilidad.Movimientos.Asiento Contable.Aprobar", "true");
             return View();
         }
 
@@ -81,7 +85,7 @@ namespace ERPMVC.Controllers
                 }
                 if (_RetentionReceipt == null)
                 {
-                    _RetentionReceipt = new RetentionReceiptDTO { RetentionReceiptId = 0, FechaEmision = DateTime.Now, DueDate = DateTime.Now };
+                    _RetentionReceipt = new RetentionReceiptDTO { RetentionReceiptId = 0, FechaEmision = DateTime.Now, DueDate = DateTime.Now, BranchId = Convert.ToInt32(HttpContext.Session.GetString("BranchId")) };
                 }
             }
             catch (Exception ex)
@@ -90,6 +94,86 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
             return PartialView(_RetentionReceipt);
+        }
+
+        //--------------------------------------------------------------------------------------
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<RetentionReceiptDTO>> Aprobar([FromBody]RetentionReceiptDTO _RetentionReceipt)
+        {
+            RetentionReceiptDTO _so = new RetentionReceiptDTO();
+            if (_RetentionReceipt != null)
+            {
+                try
+                {
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/RetentionReceipt/GetRetentionReceiptById/" + _RetentionReceipt.RetentionReceiptId);
+                    string jsonresult = "";
+                    jsonresult = JsonConvert.SerializeObject(_RetentionReceipt);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _so = JsonConvert.DeserializeObject<RetentionReceiptDTO>(valorrespuesta);
+                        _so.IdEstado = 6;
+                        _so.Estado = "Aprobado";
+                        //_so.ApprovedBy = HttpContext.Session.GetString("user");
+                        //_so.ApprovedDate = DateTime.Now;
+                        var resultRetentionReceipt = await Update(_so.RetentionReceiptId, _so);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                    throw ex;
+                }
+            }
+            else
+            {
+                return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+            }
+            return await Task.Run(() => Ok(_so));
+        }
+
+        //--------------------------------------------------------------------------------------
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<RetentionReceiptDTO>> Rechazar([FromBody]RetentionReceiptDTO _RetentionReceipt)
+        {
+            RetentionReceiptDTO _so = new RetentionReceiptDTO();
+            if (_RetentionReceipt != null)
+            {
+                try
+                {
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/RetentionReceipt/GetRetentionReceiptById/" + _RetentionReceipt.RetentionReceiptId);
+                    string jsonresult = "";
+                    jsonresult = JsonConvert.SerializeObject(_RetentionReceipt);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _so = JsonConvert.DeserializeObject<RetentionReceiptDTO>(valorrespuesta);
+                        _so.IdEstado = 7;
+                        _so.Estado = "Rechazado";
+                        var resultsalesorder = await Update(_so.RetentionReceiptId, _so);
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                    throw ex;
+                }
+            }
+            else
+            {
+                return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+            }
+            return await Task.Run(() => Ok(_so));
         }
 
         //--------------------------------------------------------------------------------------
@@ -123,6 +207,11 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
+                    _RetentionReceiptP.IdEstado = 5;
+                    _RetentionReceiptP.Estado = "Enviada a Aprobacion";
+                    _RetentionReceiptP.CAI = _RetentionReceipt.CAI;
+                    _RetentionReceiptP.BranchCode = _RetentionReceipt.BranchCode;
+                    _RetentionReceiptP.NumeroDEI = _RetentionReceipt.NumeroDEI;
                     _RetentionReceiptP.FechaCreacion = _RetentionReceipt.FechaCreacion;
                     _RetentionReceiptP.UsuarioCreacion = _RetentionReceipt.UsuarioCreacion;
                     _RetentionReceiptP.FechaModificacion = DateTime.Now;

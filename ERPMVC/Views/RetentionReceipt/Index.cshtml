@@ -1,90 +1,99 @@
 ﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
 @{
     ViewData["Title"] = "Comprobante de Retención";
-    //Layout = "~/Views/Shared/_Layout.cshtml";
+    bool permiso;
+    permiso = (bool)ViewData["permisoAprobar"];
 }
 
 <h3 class="text-themecolor">Comprobante de Retención</h3>
 
 @(Html.Kendo().Grid<ERPMVC.Models.RetentionReceipt>()
-                    .Name("gridComprobanteRetencion")
-                    .Columns(columns =>
-                    {
-                        columns.Command(command =>
+                        .Name("gridComprobanteRetencion")
+                        .Columns(columns =>
                         {
-                            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditComprobanteRetencion");
-                            command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("DeleteComprobanteRetencion");
-                        }).Width(125).Title("Acciones");
-                        columns.Bound(p => p.RetentionReceiptId).Width(100);
-                        columns.Bound(p => p.NoCorrelativo).Title("No. Correlativo").Width(300);
-                        columns.Bound(p => p.FechaEmision).Title("Fecha Emisioón").Format("{0:dd/MM/yyyy}").Width(250);
-                        columns.Bound(p => p.DueDate).Title("Fecha de Vencimiento").Format("{0:dd/MM/yyyy}").Width(250);
-                        columns.Bound(p => p.CAI).Title("CAI").Format("{0:dd/MM/yyyy}").Width(350);
-                    })
-                    .Filterable(f => f.Operators(o => o.ForString(s => s
-                        .Clear()
-                        .Contains("Contiene")
-                        .DoesNotContain("No contiene")
-                        .EndsWith("Termina con")
-                        .IsEqualTo("Es igual a")
-                        .IsNotEqualTo("No es igual a")
-                        .IsNull("Es nulo")
-                        .StartsWith("Inicia con"))
-                    .ForNumber(n => n
-                        .Clear()
-                        .IsEqualTo("Es igual a")
-                        .IsGreaterThan("Es mayor que")
-                        .IsLessThan("Es menor que")
-                        .IsNull("Es nulo")
-                        .IsLessThanOrEqualTo("Es menor o igual que")
-                        .IsGreaterThanOrEqualTo("Es mayor o igual que"))
-                    .ForDate(d => d
-                        .Clear()
-                        .IsEqualTo("Es igual que")
-                        .IsGreaterThan("Es mayor que")
-                        .IsLessThan("Es menor que")
-                        .IsLessThanOrEqualTo("Es menor o igual que")
-                        .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                        .IsNotEqualTo("No es igual que"))
-                    ))
-                    .ToolBar(tools =>
-                    {
-                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddComprobanteRetencion()" });
-                        tools.Custom().Text("Reporte").IconClass("").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ImprimirComprobanteRetencion();" });
-                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-                    })
-                    .Editable(e => e.Mode(GridEditMode.PopUp))
-                    .Sortable()
-                    .Pageable(s => s
-                        .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
-                        .Empty("No hay datos."))
-                    )
-                    .Filterable()
-                    .Scrollable()
-                    .Pdf(pdf => pdf.FileName("Comprobantes_Retención_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                    .Excel(excel => excel.FileName("Comprobantes_Retención_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                    .DataSource(dataSource =>
-                    dataSource
-                    .WebApi()
-                    .ServerOperation(true)
-                    .Model(model =>
-                    {
-                        model.Id(p => p.RetentionReceiptId);
-                        model.Field(p => p.RetentionReceiptId).Editable(false);
-                    })
-                    .Sort(s => s.Add(m => m.RetentionReceiptId).Descending())
-                    .Events(events => events.Error("error_handler"))
-                    .Read(read => read.Action("Get", "RetentionReceipt"))
-                    )
-                    .Events(e =>
-                    {
-                        e.Save("onsave");
-                    })
+                            columns.Command(command =>
+                            {
+                                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditComprobanteRetencion");
+                                command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("DeleteComprobanteRetencion");
+                                command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirComprobanteRetencion");
+                                if (permiso)
+                                {
+                                    command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("AprobarComprobante");
+                                    command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("RechazarComprobante");
+                                }
+                            }).Width(175).Title("Acciones");
+                            columns.Bound(p => p.RetentionReceiptId).Width(100);
+                            columns.Bound(p => p.NoCorrelativo).Title("No. Correlativo").Width(300);
+                            columns.Bound(p => p.FechaEmision).Title("Fecha Emisión").Format("{0:dd/MM/yyyy}").Width(250);
+                            columns.Bound(p => p.DueDate).Title("Fecha de Vencimiento").Format("{0:dd/MM/yyyy}").Width(250);
+                            columns.Bound(p => p.CAI).Title("CAI").Format("{0:dd/MM/yyyy}").Width(350);
+                            columns.Bound(p => p.Estado).Title("Estado").Width(200);
+                        })
+                        .Filterable(f => f.Operators(o => o.ForString(s => s
+                            .Clear()
+                            .Contains("Contiene")
+                            .DoesNotContain("No contiene")
+                            .EndsWith("Termina con")
+                            .IsEqualTo("Es igual a")
+                            .IsNotEqualTo("No es igual a")
+                            .IsNull("Es nulo")
+                            .StartsWith("Inicia con"))
+                        .ForNumber(n => n
+                            .Clear()
+                            .IsEqualTo("Es igual a")
+                            .IsGreaterThan("Es mayor que")
+                            .IsLessThan("Es menor que")
+                            .IsNull("Es nulo")
+                            .IsLessThanOrEqualTo("Es menor o igual que")
+                            .IsGreaterThanOrEqualTo("Es mayor o igual que"))
+                        .ForDate(d => d
+                            .Clear()
+                            .IsEqualTo("Es igual que")
+                            .IsGreaterThan("Es mayor que")
+                            .IsLessThan("Es menor que")
+                            .IsLessThanOrEqualTo("Es menor o igual que")
+                            .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                            .IsNotEqualTo("No es igual que"))
+                        ))
+                        .ToolBar(tools =>
+                        {
+                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddComprobanteRetencion()" });
+                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                        })
+                        .Editable(e => e.Mode(GridEditMode.PopUp))
+                        .Sortable()
+                        .Pageable(s => s
+                            .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+                            .Empty("No hay datos."))
+                        )
+                        .Filterable()
+                        .Scrollable()
+                        .Pdf(pdf => pdf.FileName("Comprobantes_Retención_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                        .Excel(excel => excel.FileName("Comprobantes_Retención_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                        .Events(e => e.DataBound("dataBound"))
+                        .DataSource(dataSource =>
+                        dataSource
+                        .WebApi()
+                        .ServerOperation(true)
+                        .Model(model =>
+                        {
+                            model.Id(p => p.RetentionReceiptId);
+                            model.Field(p => p.RetentionReceiptId).Editable(false);
+                        })
+                        .Sort(s => s.Add(m => m.RetentionReceiptId).Descending())
+                        .Events(events => events.Error("error_handler"))
+                        .Read(read => read.Action("Get", "RetentionReceipt"))
+                        )
+                        .Events(e =>
+                        {
+                            e.Save("onsave");
+                        })
 )
 
 <div id="numComprobanteRetencion">
@@ -110,6 +119,9 @@
     setToolbarTooltip(".k-grid-Reporte", "Reporte de Comprobante de Retención");
     setRowButtonTooltip(".k-grid-Editar", "Editar registro");
     setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir registro");
+    setRowButtonTooltip(".k-grid-Aprobar", "Aprobar Comprobante de Retención");
+    setRowButtonTooltip(".k-grid-Rechazar", "Rechazar Comprobante de Retención");
 
     function AddComprobanteRetencion() {
         var dataObject = {
@@ -129,7 +141,15 @@
                 $('#ModalComprobanteRetencion').modal('show');
             },
             error: function (XMLHttpRequest, textStatus, errorThrown) {
-                alert(textStatus + ": " + XMLHttpRequest.responseText);
+                $.toast({
+                    heading: 'Validación',
+                    text: textStatus + ": " + XMLHttpRequest.responseText,
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 30000,
+                    stack: 6
+                });
             }
         });
     }
@@ -154,7 +174,15 @@
                 $('#ModalComprobanteRetencion').modal('show');
             },
             error: function (XMLHttpRequest, textStatus, errorThrown) {
-                alert(textStatus + ": " + XMLHttpRequest.responseText);
+                $.toast({
+                    heading: 'Validación',
+                    text: textStatus + ": " + XMLHttpRequest.responseText,
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 30000,
+                    stack: 6
+                });
             }
         });
     }
@@ -176,7 +204,15 @@
                     RefrescarGrid();
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
                 }
             });
         }
@@ -188,6 +224,131 @@
     function RefrescarGrid() {
         var grid = $("#gridComprobanteRetencion").getKendoGrid();
         grid.dataSource.read();
+    }
+
+    function AprobarComprobante(e) {
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (dataItem.IdEstado != 6) {
+            if (confirm('¿Esta seguro de aprobar este comprobante de retención?')) {
+            e.preventDefault();
+            var dataObject = {
+                RetentionReceiptId: dataItem.RetentionReceiptId,
+                editar: 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("Aprobar","RetentionReceipt")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: '<br/><br/>El comprobante de retención se a aprobado correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 7000,
+                        stack: 6
+                    });
+                    RefrescarGrid();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                }
+            });
+            }
+        }
+        else {
+            $.toast({
+                heading: 'Validación',
+                text: "<br/><br/>El comprobante de retención no ha sido aprobado",
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+        }
+    }
+
+
+    function RechazarComprobante(e) {
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (dataItem.IdEstado != 7) {
+        if (confirm('¿Esta seguro de rechazar este comprobante de retención?')) {
+            e.preventDefault();
+            var dataObject = {
+                RetentionReceiptId: dataItem.RetentionReceiptId,
+                editar: 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("Rechazar","RetentionReceipt")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: '<br/><br/>El comprobante de retención se a rechazado correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                    RefrescarGrid();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                }
+            });
+            }
+        }
+        else {
+            $.toast({
+                heading: 'Validación',
+                text: "<br/><br/>El comprobante de retención no ha sido rechazado",
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+        }
+    }
+
+    function dataBound(e) {
+        $.each(this.dataSource.data(), function () {
+            if (Number(this.IdEstado) != 5) {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Rechazar').hide();
+            }
+            if (Number(this.IdEstado) != 6) {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Imprimir').hide();
+            }
+        })
     }
 
     function ImprimirComprobanteRetencion() {
