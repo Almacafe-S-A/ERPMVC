@@ -68,7 +68,7 @@ namespace ERPMVC.Controllers
             return BadRequest();
         }
 
-        public async Task<ActionResult<DeduccionDTO>> GetDeducciones()
+        public async Task<ActionResult<List<DeduccionDTO>>> GetDeducciones()
         {
             try
             {
