@@ -17,6 +17,10 @@ namespace ERPMVC.Models
         public DateTime OpeningDate { get; set; }
         [Display(Name = "Tipo de cuenta")]
         public string AccountType { get; set; }
+        public long? TypeAccountId { get; set; }
+
+        [ForeignKey("TypeAccountId")]
+        public ElementoConfiguracion TypeAccount { get; set; }
 
         [Display(Name = "Número de cuenta")]
         public string AccountNumber { get; set; }
