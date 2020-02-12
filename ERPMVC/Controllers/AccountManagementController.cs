@@ -156,6 +156,34 @@ namespace ERPMVC.Controllers
 
         }
 
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetAccountManagementByBankIdByAccountType([DataSourceRequest]DataSourceRequest request, int Bankid,int pTypeAccount)
+        {
+            List<AccountManagement> _AccountManagement = new List<AccountManagement>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/AccountManagement/GetAccountManagementByBankIdTypeAccountId/{Bankid}/{pTypeAccount}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _AccountManagement = JsonConvert.DeserializeObject<List<AccountManagement>>(valorrespuesta);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _AccountManagement.ToDataSourceResult(request);
+
+        }
+
         [HttpGet("[controller]/[action]")]
         public async Task<JsonResult> GetJson([DataSourceRequest]DataSourceRequest request)
         {
@@ -299,6 +327,9 @@ namespace ERPMVC.Controllers
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _AccountManagement }, Total = 1 });
         }
+
+
+
 
         //[HttpPost]
         //public async Task<ActionResult<AccountManagement>> Delete(Int64 AccountManagementId, AccountManagement _AccountManagement)

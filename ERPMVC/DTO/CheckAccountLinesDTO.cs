@@ -9,6 +9,9 @@ namespace ERPMVC.DTO
     public class CheckAccountLinesDTO : CheckAccountLines
     {
         public int PartyTypeId { get; set; }
+
         public List<JournalEntryLine> JournalEntryLines { get; set; }
+
+        public AccountManagement AccountManagement { get; set; }
     }
 }
