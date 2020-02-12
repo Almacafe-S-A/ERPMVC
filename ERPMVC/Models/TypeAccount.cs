@@ -29,6 +29,8 @@ namespace ERPMVC.Models
         [Required]
         [Display(Name = "Fecha de Modificacion")]
         public DateTime ModifiedDate { get; set; }
+        [Display(Name = "Cuenta Deudora / Acreedora")]
+        public string DeudoraAcreedora { get; set; }
 
     }
 

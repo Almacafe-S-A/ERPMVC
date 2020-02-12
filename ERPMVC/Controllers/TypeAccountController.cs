@@ -11,6 +11,7 @@ using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
@@ -75,7 +76,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/TypeAccount/GetTypeAccountById/" + _TypeAccount.TypeAccountId);
+                var result = await _client.GetAsync(baseadress + "api/TypeAccount/GetTypeAccountByName/" + _TypeAccount.TypeAccountName);
                 string valorrespuesta = "";
                 _TypeAccount.ModifiedDate = DateTime.Now;
                 _TypeAccount.ModifiedUser = HttpContext.Session.GetString("user");
@@ -86,8 +87,16 @@ namespace ERPMVC.Controllers
                     _TypeAccount = JsonConvert.DeserializeObject<TypeAccount>(valorrespuesta);
                 }
 
+
                 if (_TypeAccount == null) { _TypeAccount = new Models.TypeAccount(); }
 
+
+
+                if (_TypeAccount.TypeAccountId > 0)
+                {
+                    if (_TypeAccount.TypeAccountId != _TypeAccountP.TypeAccountId)
+                        return await Task.Run(() => BadRequest($"Ya existe un tipo de cuenta registrado con ese nombre."));
+                }
                 if (_TypeAccountP.TypeAccountId == 0)
                 {
                     _TypeAccount.CreatedDate = DateTime.Now;
@@ -134,6 +143,11 @@ namespace ERPMVC.Controllers
                 {
                     _TypeAccount = new TypeAccountDTO();
                 }
+                ViewData["naturaleza"] = new List<SelectListItem>
+                                     {
+                                         new SelectListItem("Acreedora","A"),
+                                         new SelectListItem("Deudora","D")
+                                     };
             }
             catch (Exception ex)
             {
@@ -158,6 +172,9 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+               
+
                 _TypeAccount.CreatedUser = HttpContext.Session.GetString("user");
                 _TypeAccount.CreatedDate = DateTime.Now;
                 _TypeAccount.ModifiedUser = HttpContext.Session.GetString("user");
