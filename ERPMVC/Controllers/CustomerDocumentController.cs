@@ -136,6 +136,18 @@ namespace ERPMVC.Controllers
                 }
 
                 ViewBag.pathcontrato = _CustomerDocument.Path;
+
+
+                if (System.IO.File.Exists(_CustomerDocument.Path))
+                {
+                    var stream = new FileStream(_CustomerDocument.Path, FileMode.Open);
+                    return new FileStreamResult(stream, "application/pdf");
+                }
+                else
+                {
+                    return await Task.Run(() => BadRequest($"No se encontro el archivo."));
+                }
+                
             }
             catch (Exception ex)
             {
@@ -164,6 +176,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CustomerDocument = JsonConvert.DeserializeObject<List<CustomerDocument>>(valorrespuesta);
+                    _CustomerDocument = _CustomerDocument.OrderByDescending(x => x.CustomerDocumentId).ToList();
 
                 }
 
