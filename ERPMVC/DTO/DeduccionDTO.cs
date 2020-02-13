@@ -31,5 +31,9 @@ namespace ERPMVC.DTO
         public DateTime FechaModificacion { get; set; }
         public string UsuarioModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
+
+        public string EtiquetaDropDown =>
+            (DeductionTypeId == 1 ? "(L)" : "(E)") + (EsPorcentaje ? "(F:%)" : "(F:V)") +
+            ((int) Fortnight == 1 ? "(Q:1)" : "(Q:2)") + Description;
     }
 }

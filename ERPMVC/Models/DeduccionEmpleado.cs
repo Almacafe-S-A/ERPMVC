@@ -42,6 +42,8 @@ namespace ERPMVC.Models
         public DateTime FechaModificacion { get; set; }
         public string UsuarioModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
+
+        public DeduccionDTO Deduccion { get; set; }
     }
 
     public class DeduccionesEmpleadoDTO
@@ -50,5 +52,6 @@ namespace ERPMVC.Models
         public string NombreEmpleado { get; set; }
         public int CantidadDeducciones { get; set; }
         public float TotalDeducciones { get; set; }
+        public double SalarioEmpleado { get; set; }
     }
 }
