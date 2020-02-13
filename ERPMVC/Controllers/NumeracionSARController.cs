@@ -236,7 +236,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet]
-        public async Task<DataSourceResult> GetPuntoEmisonEnNumeracionSAR([DataSourceRequest]DataSourceRequest request, String TipoDocumento, int BranchId)
+        public async Task<DataSourceResult> GetPuntoEmisonEnNumeracionSAR([DataSourceRequest]DataSourceRequest request, int IdTipoDocumento, int BranchId)
         {
             List<NumeracionSAR> _NumeracionSAR = new List<NumeracionSAR>();
             try
@@ -253,7 +253,7 @@ namespace ERPMVC.Controllers
                     _NumeracionSAR = JsonConvert.DeserializeObject<List<NumeracionSAR>>(valorrespuesta);
                     _NumeracionSAR = _NumeracionSAR.Where(q => q.Estado == "Activo")
                                                    .Where(q => q.BranchId == BranchId)
-                                                   .Where(q => q.DocType == TipoDocumento).ToList();
+                                                   .Where(q => q.DocTypeId == IdTipoDocumento).ToList();
                 }
 
 

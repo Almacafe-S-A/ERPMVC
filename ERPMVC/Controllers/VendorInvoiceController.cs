@@ -187,7 +187,7 @@ namespace ERPMVC.Controllers
 
         public async Task<DataSourceResult> GetVendorInvoiceByVendorId([DataSourceRequest]DataSourceRequest request, Int64 VendorId)
         {
-            List<VendorInvoiceDTO> _VendorInvoice = new List<VendorInvoiceDTO>();
+            List<VendorInvoice> _VendorInvoice = new List<VendorInvoice>();
             try
             {
                 string baseadress = config.Value.urlbase;
@@ -198,8 +198,15 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _VendorInvoice = JsonConvert.DeserializeObject<List<VendorInvoiceDTO>>(valorrespuesta);
-                    _VendorInvoice = _VendorInvoice.Where(p => p.VendorId == VendorId).ToList();
+                    _VendorInvoice = JsonConvert.DeserializeObject<List<VendorInvoice>>(valorrespuesta);
+                    _VendorInvoice = (from c in _VendorInvoice
+                                           .Where(q => q.VendorId == VendorId)
+                                            select new VendorInvoice
+                                            {
+                                                VendorInvoiceId = c.VendorInvoiceId,
+                                                VendorInvoiceName = "Id:" + c.VendorInvoiceId + " || Número de Factura:" + c.NumeroDEI  + "|| Fecha:" + c.FechaCreacion + "|| Total:" + c.Total,
+                                                VendorId = c.VendorId,
+                                            }).ToList();
                 }
             }
             catch (Exception ex)
