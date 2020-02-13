@@ -120,6 +120,11 @@ namespace ERPMVC.Models
 
         [Display(Name = "Moneda tasa")]
         public double Currency { get; set; }
+        [Display(Name = "SubProducto")]
+        public Int64? SubProductId { get; set; }
+
+        [Display(Name = "Nombre SubProducto")]
+        public string SubProductName { get; set; }
 
         [Display(Name = "Número de referencia de cliente")]
         public string CustomerRefNumber { get; set; }
