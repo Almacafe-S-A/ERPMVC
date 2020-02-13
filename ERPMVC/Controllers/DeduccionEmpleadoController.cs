@@ -30,6 +30,22 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        public ActionResult EditarDeducciones(long codigoEmpleado, string nombreEmpleado)
+        {
+            ViewData["Editar"] = 1;
+            ViewData["CodigoEmpleado"] = codigoEmpleado;
+            ViewData["NombreEmpleado"] = nombreEmpleado;
+            return View("pvwAgregarDeduccionEmpleado");
+        }
+
+        public ActionResult VerDeducciones(long codigoEmpleado, string nombreEmpleado)
+        {
+            ViewData["Editar"] = 0;
+            ViewData["CodigoEmpleado"] = codigoEmpleado;
+            ViewData["NombreEmpleado"] = nombreEmpleado;
+            return View("pvwAgregarDeduccionEmpleado");
+        }
+
         public async Task<ActionResult<List<DeduccionesEmpleadoDTO>>> GetEmpleadosDeducciones()
         {
             var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
