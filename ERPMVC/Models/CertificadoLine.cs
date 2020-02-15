@@ -37,5 +37,12 @@ namespace ERPMVC.Models
         [Display(Name = "Total Cantidad")]
         public double TotalCantidad { get; set; }
 
+
+        [Display(Name = "Bodega")]
+        public Int64 WarehouseId { get; set; }
+        [Display(Name = "Bodega")]
+        public string WarehouseName { get; set; }
+
+
     }
 }
