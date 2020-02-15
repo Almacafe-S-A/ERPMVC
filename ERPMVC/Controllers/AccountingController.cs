@@ -552,7 +552,8 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Accounting/GetNoChildAccounts");
+                //var result = await _client.GetAsync(baseadress + "api/Accounting/GetNoChildAccounts"); Cambio de metodo a configuracion de bloqueo para diarios
+                var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountDiary");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
