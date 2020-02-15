@@ -16,7 +16,7 @@ namespace ERPMVC.DTO
         public string Description { get; set; }
         [Required(ErrorMessage = "La categoría de deducción es requerida")]
         [Display(Name = "Categoría de Deducción")]
-        [Range(1,2,ErrorMessage = "La categoría de deducción puede ser: Por Ley o Eventual")]
+        [Range(1,3,ErrorMessage = "La categoría de deducción puede ser: Por Ley, Eventual o Colegiación")]
         public Int64 DeductionTypeId { get; set; }
         public string DeductionType { get; set; }
         [Required(ErrorMessage = "El valor es requerido")]

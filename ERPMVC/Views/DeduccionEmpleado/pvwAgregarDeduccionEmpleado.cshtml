@@ -67,6 +67,11 @@
                         }
                     }
                 },
+                requestEnd: function (e) {
+                    if (e.type !== "read") {
+                        $("#grdDeduccionesEmpleado").data("kendoGrid").dataSource.read();
+                    }
+                },
                 aggregate: [
                     { field: "Deduccion", aggregate: "count" },
                     {field:"Monto", aggregate:"sum"}
@@ -91,8 +96,8 @@
                     field: "Deduccion", title: "Tipo Deducción", width: 100, editor: editorTipoDeduccion, template: "#= Deduccion.EtiquetaDropDown #",
                     aggregates: ["count"], footerTemplate:"Cantidad: #=count#"},
                 {
-                    field: "Monto", title: "Monto", width: 100, editor: editorNumerico, aggregates:["sum"],
-                    footerTemplate:"Total: #=sum#"
+                    field: "Monto", title: "Monto", width: 100, editor: editorNumerico, format:"{0:#,##0.00}", aggregates:["sum"],
+                    footerTemplate:'Total: #= kendo.toString( sum, "\\#,\\#\\#0.00") #'
                 },
                 { field: "VigenciaInicio", title: "Vigente desde", width: 100 , template: '#= kendo.toString(VigenciaInicio,"dd/MM/yyyy")#'},
                 { field: "VigenciaFinaliza", title: "Vigente hasta", width: 100, template: '#= kendo.toString(VigenciaFinaliza,"dd/MM/yyyy")#' },
@@ -114,10 +119,12 @@
     function ValidarIngreso(e) {
         debugger;
         var deduccion = e.model;
-        if (deduccion.DeductionId === 0) {
+        if (typeof deduccion.Deduccion === 'undefined') {
             alert('Debe seleccionar el tipo de deducción');
             e.preventDefault();
             return false;
+        } else {
+            deduccion.set("DeductionId", deduccion.DeductionId);
         }
         if (deduccion.Monto <= 0) {
             alert('Debe ingresar un valor para el monto de la deducción');
