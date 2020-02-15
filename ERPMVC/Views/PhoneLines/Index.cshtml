@@ -1,0 +1,224 @@
+﻿@using Kendo.Mvc.UI
+@{
+    ViewData["Title"] = "Líneas de Teléfono";
+}
+
+<h3 class="text-themecolor">Líneas de Teléfono</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.PhoneLines>()
+                            .Name("gridPhoneLines")
+                            .Columns(columns =>
+                            {
+                                columns.Command(command =>
+                                {
+                                    command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditPhoneLines");
+                                    command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("DeletePhoneLines");
+                                    command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirPhoneLines");
+                                }).Width(175).Title("Acciones");
+                                columns.Bound(p => p.PhoneLineId).Title("Id").Width(100);
+                                columns.Bound(p => p.NombreEmpleado).Title("Nombre del Empleado").Width(300);
+                                columns.Bound(p => p.CompanyPhone).Title("Teléfono de la Empresa").Width(250);
+                                columns.Bound(p => p.TotalUS).Title("Total Factura US").Format("{0:n2}").Width(250);
+                                columns.Bound(p => p.TotalLps).Title("Total Factura Lps").Format("{0:n2}").Width(250);
+                                columns.Bound(p => p.Branch.BranchName).Title("Sucursal").Width(250);
+                                columns.Bound(p => p.Estado).Title("Estado").Width(125);
+                            })
+                            .Filterable(f => f.Operators(o => o.ForString(s => s
+                                .Clear()
+                                .Contains("Contiene")
+                                .DoesNotContain("No contiene")
+                                .EndsWith("Termina con")
+                                .IsEqualTo("Es igual a")
+                                .IsNotEqualTo("No es igual a")
+                                .IsNull("Es nulo")
+                                .StartsWith("Inicia con"))
+                            .ForNumber(n => n
+                                .Clear()
+                                .IsEqualTo("Es igual a")
+                                .IsGreaterThan("Es mayor que")
+                                .IsLessThan("Es menor que")
+                                .IsNull("Es nulo")
+                                .IsLessThanOrEqualTo("Es menor o igual que")
+                                .IsGreaterThanOrEqualTo("Es mayor o igual que"))
+                            .ForDate(d => d
+                                .Clear()
+                                .IsEqualTo("Es igual que")
+                                .IsGreaterThan("Es mayor que")
+                                .IsLessThan("Es menor que")
+                                .IsLessThanOrEqualTo("Es menor o igual que")
+                                .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                .IsNotEqualTo("No es igual que"))
+                            ))
+                            .ToolBar(tools =>
+                            {
+                                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddPhoneLines()" });
+                                tools.Custom().Text("Reporte").IconClass("k-icon k-i-plus").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ImprimirPhoneLines()" });
+                                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                            })
+                            .Editable(e => e.Mode(GridEditMode.PopUp))
+                            .Sortable()
+                            .Pageable(s => s
+                                .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+                                .Empty("No hay datos."))
+                            )
+                            .Filterable()
+                            .Scrollable()
+                            .Pdf(pdf => pdf.FileName("Líneas_Telefónicas_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                            .Excel(excel => excel.FileName("Líneas_Telefónicas_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                            .DataSource(dataSource =>
+                            dataSource
+                            .WebApi()
+                            .ServerOperation(true)
+                            .Model(model =>
+                            {
+                                model.Id(p => p.PhoneLineId);
+                                model.Field(p => p.PhoneLineId).Editable(false);
+                            })
+                            .Sort(s => s.Add(m => m.PhoneLineId).Descending())
+                            .Events(events => events.Error("error_handler"))
+                            .Read(read => read.Action("Get", "PhoneLines"))
+                            )
+                            .Events(e =>
+                            {
+                                e.Save("onsave");
+                            })
+)
+
+<div id="numPhoneLines">
+    @await Html.PartialAsync("pvwAddPhoneLines", new ERPMVC.DTO.PhoneLinesDTO { PhoneLineId = 0 })
+</div>
+
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridPhoneLines").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridPhoneLines").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setToolbarTooltip(".k-grid-Reporte", "Reporte de Líneas de Teléfonos");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
+    //setRowButtonTooltip(".k-grid-Imprimir", "Imprimir registro");
+    //setRowButtonTooltip(".k-grid-Aprobar", "Aprobar Comprobante de Retención");
+    //setRowButtonTooltip(".k-grid-Rechazar", "Rechazar Comprobante de Retención");
+
+    function AddPhoneLines() {
+        var dataObject = {
+            PhoneLineId: 0,
+            editar : 1
+        };
+        $.ajax({
+            url: '@Url.Action("pvwAddPhoneLines", "PhoneLines")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#numPhoneLines").html('');
+                $("#numPhoneLines").html(result);
+                $('#ModalPhoneLines').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $.toast({
+                    heading: 'Validación',
+                    text: textStatus + ": " + XMLHttpRequest.responseText,
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 30000,
+                    stack: 6
+                });
+            }
+        });
+    }
+    function EditPhoneLines(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            PhoneLineId: dataItem.PhoneLineId,
+            editar : 1
+        };
+        $.ajax({
+            url: '@Url.Action("pvwAddPhoneLines", "PhoneLines")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#numPhoneLines").html('');
+                $("#numPhoneLines").html(result);
+                $('#ModalPhoneLines').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $.toast({
+                    heading: 'Validación',
+                    text: textStatus + ": " + XMLHttpRequest.responseText,
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 30000,
+                    stack: 6
+                });
+            }
+        });
+    }
+    function DeletePhoneLines(e) {
+        if (confirm('¿Esta seguro que desea eliminar este registro?')) {
+            e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                PhoneLineId: dataItem.PhoneLineId
+            };
+            $.ajax({
+                url: '@Url.Action("Delete", "PhoneLines")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    RefrescarGrid();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                }
+            });
+        }
+    }
+    function onsave() {
+        console.log("onsave");
+    }
+
+    function RefrescarGrid() {
+        var grid = $("#gridPhoneLines").getKendoGrid();
+        grid.dataSource.read();
+    }
+    
+    function ImprimirPhoneLines(e) {
+        console.log("ImprimirPhoneLines");
+    }
+</script>
