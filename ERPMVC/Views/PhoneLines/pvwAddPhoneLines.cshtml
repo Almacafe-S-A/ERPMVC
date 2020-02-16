@@ -213,18 +213,31 @@
 <script>
     $(document).ready(function () {
         $("#CompanyPhone").kendoMaskedTextBox({
-            mask: "(999) 9999-9999"
+            mask: "(999) 9999-9999",
+            change: ValidacionDuplicateCompanyPhone
         });
 
         $("#CompanyPhoneAlert").hide();
     });
 
-    function SaveComprobanteRetencion() {
-        console.log("SaveComprobanteRetencion");
-    }
-
     $("#CompanyPhone").change(function () {
         validarCompanyPhone();
+    })
+    
+    $("#IdEmpleado").change(function () {
+        ValidacionDuplicateEmpleado();
+    })
+
+    $("#DueBalanceUS").change(function () {
+        ConvercionDolarALps();
+    })
+
+    $("#PaymentUS").change(function () {
+        ConvercionDolarALps();
+    })
+
+    $("#TotalUS").change(function () {
+        ConvercionDolarALps();
     })
 
     $("#btnPhoneLines").click(function () {
@@ -241,9 +254,127 @@
         var cadena = $("#CompanyPhone").val();
         if (cadena.indexOf("_") > -1 == true) {
             $("#CompanyPhoneAlert").show();
+            return false;
         }
         else {
             $("#CompanyPhoneAlert").hide();
+        }
+    }
+
+    function ConvercionDolarALps() {
+        var DueBalanceUS = 0, DueBalanceLps = 0, PaymentUS = 0, PaymentLps = 0, TotalUS = 0, TotalLps = 0, TasaDeCambio = 0;
+        DueBalanceUS = $("#DueBalanceUS").val();
+        DueBalanceLps = $("#DueBalanceLps").val();
+        PaymentUS = $("#PaymentUS").val();
+        PaymentLps = $("#PaymentLps").val();
+        TotalUS = $("#TotalUS").val();
+        TotalLps = $("#TotalLps").val();
+        if (DueBalanceUS > 0 || PaymentUS > 0 || TotalUS > 0) {
+            var dataObject = { CurrencyId: 2 };
+            $.ajax({
+                url: '@Url.Action("TasaDeCambioDolar", "PhoneLines")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    if (data != undefined) {
+                        TasaDeCambio = data.ExchangeRateValue;
+                        DueBalanceLps = Number(DueBalanceUS) * Number(TasaDeCambio);
+                        $("#DueBalanceLps").data("kendoNumericTextBox").value(DueBalanceLps);
+                        PaymentLps = Number(PaymentUS) * Number(TasaDeCambio);
+                        $("#PaymentLps").data("kendoNumericTextBox").value(PaymentLps);
+                        TotalLps = Number(TotalUS) * Number(TasaDeCambio);
+                        $("#TotalLps").data("kendoNumericTextBox").value(TotalLps);
+                    }
+                    else {
+                        $.toast({
+                            heading: 'Error',
+                            text: '<br/><br/> No se encontro la tasa de cambio de dolar de hoy, porfavor Ingrese la Tasa de Cambio primero',
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 30000,
+                            stack: 6
+                        });
+                        $("#DueBalanceLps").data("kendoNumericTextBox").value(null);
+                        $("#PaymentLps").data("kendoNumericTextBox").value(null);
+                        $("#TotalLps").data("kendoNumericTextBox").value(null);
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+        }
+        else {
+            $("#DueBalanceLps").data("kendoNumericTextBox").value(0);
+            $("#PaymentLps").data("kendoNumericTextBox").value(0);
+            $("#TotalLps").data("kendoNumericTextBox").value(0);
+        }
+    }
+
+    function ValidacionDuplicateEmpleado() {
+        var dataObject = {
+            PhoneLineId: $("#PhoneLineId").val(),
+            IdEmpleado: $("#IdEmpleado").data("kendoDropDownList").value(),
+        };
+        if ($("#IdEmpleado").data("kendoDropDownList").value() > 0) {
+            $.ajax({
+                url: '@Url.Action("ValidacionEmpleado", "PhoneLines")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                }
+            });
+        }
+    }
+
+    function ValidacionDuplicateCompanyPhone() {
+        var dataObject = {
+            PhoneLineId: $("#PhoneLineId").val(),
+            CompanyPhone: $("#CompanyPhone").val(),
+        };
+        debugger;
+        if ($("#CompanyPhone").val() != "" && $('#CompanyPhoneAlert').is(':hidden')) {
+            $.ajax({
+                url: '@Url.Action("ValidacionCompanyPhone", "PhoneLines")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                }
+            });
         }
     }
 
@@ -292,6 +423,11 @@
                     $('#ModalPhoneLines').modal('hide');
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    if (XMLHttpRequest.responseText == "Ya exíste una Línea de Teléfono creada con el mismo Empleado."
+                        || XMLHttpRequest.responseText == "Ya exíste una Línea de Teléfono creada con el mismo Número de Teléfono.") {
+                        $("#btnPhoneLines").show();
+                        $("#btnPhoneLines").prop("disabled", false);
+                    }
                     $.toast({
                         heading: 'Validación',
                         text: textStatus + ": " + XMLHttpRequest.responseText,

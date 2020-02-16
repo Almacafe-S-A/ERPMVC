@@ -119,6 +119,16 @@ namespace ERPMVC.Controllers
                     _PhoneLinesP.FechaModificacion = DateTime.Now;
                     _PhoneLinesP.UsuarioCreacion = HttpContext.Session.GetString("user");
                     _PhoneLinesP.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    var ValidacionEmpleadoresult = await ValidacionEmpleado(_PhoneLinesP);
+                    if ((ValidacionEmpleadoresult as ObjectResult).Value.ToString() == "Ya exíste una Línea de Teléfono creada con el mismo Empleado.")
+                    {
+                        return await Task.Run(() => BadRequest("Ya exíste una Línea de Teléfono creada con el mismo Empleado."));
+                    }
+                    var ValidacionCompanyPhoneresult = await ValidacionCompanyPhone(_PhoneLinesP);
+                    if ((ValidacionCompanyPhoneresult as ObjectResult).Value.ToString() == "Ya exíste una Línea de Teléfono creada con el mismo Número de Teléfono.")
+                    {
+                        return await Task.Run(() => BadRequest("Ya exíste una Línea de Teléfono creada con el mismo Número de Teléfono."));
+                    }
                     var insertresult = await Insert(_PhoneLinesP);
                 }
                 else
@@ -127,6 +137,16 @@ namespace ERPMVC.Controllers
                     _PhoneLinesP.UsuarioCreacion = _PhoneLines.UsuarioCreacion;
                     _PhoneLinesP.FechaModificacion = DateTime.Now;
                     _PhoneLinesP.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    var ValidacionEmpleadoresult = await ValidacionEmpleado(_PhoneLinesP);
+                    if ((ValidacionEmpleadoresult as ObjectResult).Value.ToString() == "Ya exíste una Línea de Teléfono creada con el mismo Empleado.")
+                    {
+                        return await Task.Run(() => BadRequest("Ya exíste una Línea de Teléfono creada con el mismo Empleado."));
+                    }
+                    var ValidacionCompanyPhoneresult = await ValidacionCompanyPhone(_PhoneLinesP);
+                    if ((ValidacionCompanyPhoneresult as ObjectResult).Value.ToString() == "Ya exíste una Línea de Teléfono creada con el mismo Número de Teléfono.")
+                    {
+                        return await Task.Run(() => BadRequest("Ya exíste una Línea de Teléfono creada con el mismo Número de Teléfono."));
+                    }
                     var updateresult = await Update(_PhoneLines.PhoneLineId, _PhoneLinesP);
                 }
             }
@@ -222,6 +242,128 @@ namespace ERPMVC.Controllers
         public async Task<IActionResult> SFPhoneLines()
         {
             return await Task.Run(() => View());
+        }
+
+        //--------------------------------------------------------------------------------------
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> TasaDeCambioDolar([FromBody]ExchangeRate _ExchangeRateP)
+        {
+            ExchangeRate _ExchangeRate = new ExchangeRate();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                _ExchangeRate.CurrencyId = _ExchangeRateP.CurrencyId;
+                _ExchangeRate.DayofRate = DateTime.Now;
+                _ExchangeRate.ExchangeRateValue = 0;
+                _ExchangeRate.ExchangeRateId = 0;
+                _ExchangeRate.CreatedDate = DateTime.Now;
+                _ExchangeRate.ModifiedDate = DateTime.Now;
+                _ExchangeRate.CreatedUser = HttpContext.Session.GetString("user");
+                _ExchangeRate.ModifiedUser = HttpContext.Session.GetString("user");
+
+                var result = await _client.PostAsJsonAsync(baseadress + "api/ExchangeRate/GetExchangeRateByFecha", _ExchangeRate);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _ExchangeRate = JsonConvert.DeserializeObject<ExchangeRate>(valorrespuesta);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return await Task.Run(() => Ok(_ExchangeRate));
+        }
+
+        //--------------------------------------------------------------------------------------
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> ValidacionEmpleado([FromBody]PhoneLines _PhoneLines)
+        {
+            List<PhoneLines> _PhoneLinesList = new List<PhoneLines>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/PhoneLines/GetPhoneLines");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _PhoneLinesList = JsonConvert.DeserializeObject<List<PhoneLines>>(valorrespuesta);
+                    if (_PhoneLines.PhoneLineId != 0)
+                    {
+                        _PhoneLines = _PhoneLinesList.Where(q => q.IdEmpleado == _PhoneLines.IdEmpleado && q.PhoneLineId != _PhoneLines.PhoneLineId).FirstOrDefault();
+                        if (_PhoneLines != null)
+                        {
+                            return await Task.Run(() => BadRequest("Ya exíste una Línea de Teléfono creada con el mismo Empleado."));
+                        }
+                    }
+                    else
+                    {
+                        _PhoneLines = _PhoneLinesList.Where(q => q.IdEmpleado == _PhoneLines.IdEmpleado).FirstOrDefault();
+                        if (_PhoneLines != null)
+                        {
+                            return await Task.Run(() => BadRequest("Ya exíste una Línea de Teléfono creada con el mismo Empleado."));
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return await Task.Run(() => Ok(_PhoneLinesList));
+        }
+
+        //--------------------------------------------------------------------------------------
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> ValidacionCompanyPhone([FromBody]PhoneLines _PhoneLines)
+        {
+            List<PhoneLines> _PhoneLinesList = new List<PhoneLines>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/PhoneLines/GetPhoneLines");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _PhoneLinesList = JsonConvert.DeserializeObject<List<PhoneLines>>(valorrespuesta);
+                    if (_PhoneLines.PhoneLineId != 0)
+                    {
+                        _PhoneLines = _PhoneLinesList.Where(q => q.CompanyPhone == _PhoneLines.CompanyPhone && q.PhoneLineId != _PhoneLines.PhoneLineId).FirstOrDefault();
+                        if (_PhoneLines != null)
+                        {
+                            return await Task.Run(() => BadRequest("Ya exíste una Línea de Teléfono creada con el mismo Número de Teléfono."));
+                        }
+                    }
+                    else
+                    {
+                        _PhoneLines = _PhoneLinesList.Where(q => q.CompanyPhone == _PhoneLines.CompanyPhone).FirstOrDefault();
+                        if (_PhoneLines != null)
+                        {
+                            return await Task.Run(() => BadRequest("Ya exíste una Línea de Teléfono creada con el mismo Número de Teléfono."));
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return await Task.Run(() => Ok(_PhoneLinesList));
         }
     }
 }
