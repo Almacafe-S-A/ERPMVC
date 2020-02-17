@@ -392,7 +392,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+                    return await Task.Run(() => BadRequest("Datos no guardados!"));
                 }
 
             }

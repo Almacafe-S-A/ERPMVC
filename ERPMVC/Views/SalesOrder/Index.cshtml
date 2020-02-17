@@ -3,7 +3,7 @@
 @using System.Security.Claims
 
 @{
-    //ViewData["Title"] = "Movimientos Financieros";
+    ViewData["Title"] = "Cotización";
     bool permiso;
     permiso = (bool)ViewData["permisoAprobar"];
 }
@@ -362,10 +362,19 @@
 
 
     function dataBound(e) {
+
+ 
         $.each(this.dataSource.data(), function () {
-           // console.log(this);
+            // console.log(this);
+            var dataObject = {
+                SalesOrderId: this.SalesOrderId,
+                editar: 0
+            };
+
+           
+
             if (Number(this.IdEstado) != 5 && Number(this.IdEstado) != 8) {
-              //  console.log(this.SalesOrderId);
+             
                 $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
                 $('[data-uid=' + this.uid + ']').find('.k-grid-Anular').hide();
                
@@ -377,6 +386,37 @@
 
             if (Number(this.CustomerId) > 0) {
                 $('[data-uid=' + this.uid + ']').find('.k-grid-CrearCliente').hide();
+            }
+
+            var test = 0;
+
+             $.ajax({
+                url: '@Url.Action("GetCustomerContractbySalesorderId", "CustomerContract")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    debugger;
+                    if (result != undefined) {
+
+                        test = 1;
+                    }
+
+                    else {
+
+                        test= 0;
+                    }
+                    
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                   
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+            if (test != 0) {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-GenerarContrato').hide();
             }
         })
     }

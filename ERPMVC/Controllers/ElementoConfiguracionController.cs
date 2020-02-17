@@ -88,7 +88,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ElementoConfiguracion = JsonConvert.DeserializeObject<List<ElementoConfiguracion>>(valorrespuesta);
-                    _ElementoConfiguracion = _ElementoConfiguracion.Where(q => q.Estado == Estado).ToList();
+                    _ElementoConfiguracion = _ElementoConfiguracion.Where(q => q.IdEstado == 1).ToList();
                 }
 
             }
