@@ -142,6 +142,15 @@ namespace ERPMVC.Models
         [Display(Name = "Correo")]
         public string Correo3 { get; set; }
 
+        public string Observcion { get; set; }
+
+        [Display(Name = "Estado")]
+        public Int64? IdEstado { get; set; }
+
+        public Estados Estados { get; set; }
+        [Display(Name = "Estado")]
+        public string Estado { get; set; }
+
         [Display(Name = "Fecha de Creación")]
         public DateTime FechaCreacion { get; set; }
 
