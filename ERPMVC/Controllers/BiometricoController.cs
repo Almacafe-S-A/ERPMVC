@@ -11,6 +11,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Net.Http.Headers;
+using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 
 namespace ERPMVC.Controllers
@@ -79,15 +80,18 @@ namespace ERPMVC.Controllers
                                         };
                 
 
-                for (int fila = 0; fila <= hoja.LastRowNum; fila++)
+                for (int fila = 1; fila <= hoja.LastRowNum; fila++)
                 {
                     var filaRegistro = hoja.GetRow(fila);
+                    var IdBiometrico = filaRegistro.GetCell(0, MissingCellPolicy.RETURN_NULL_AND_BLANK).ToString();
+                    var fechaHora = filaRegistro.GetCell(1, MissingCellPolicy.RETURN_NULL_AND_BLANK).ToString();
+                    var tipo = filaRegistro.GetCell(2, MissingCellPolicy.RETURN_NULL_AND_BLANK).ToString();
                     DetalleBiometrico detalle = new DetalleBiometrico()
                                                 {
                                                     Encabezado = biometrico,
-                                                    FechaHora = filaRegistro.GetCell(1).DateCellValue,
-                                                    IdBiometrico = (long)filaRegistro.GetCell(0).NumericCellValue,
-                                                    Tipo = filaRegistro.GetCell(2).StringCellValue
+                                                    FechaHora = DateTime.ParseExact(fechaHora,"dd/MM/yyyy hh:mm tt",null),
+                                                    IdBiometrico = long.Parse(IdBiometrico),
+                                                    Tipo = tipo
                                                 };
                     biometrico.Detalle.Add(detalle);
                 }
