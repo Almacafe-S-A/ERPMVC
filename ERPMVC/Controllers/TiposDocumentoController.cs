@@ -52,7 +52,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _clientes = JsonConvert.DeserializeObject<List<TiposDocumento>>(valorrespuesta);
-                    _clientes = _clientes.OrderByDescending(q => q.IdTipoDocumento).ToList();
+                    _clientes = _clientes.OrderBy(q => q.IdTipoDocumento).ToList();
                 }
 
             }

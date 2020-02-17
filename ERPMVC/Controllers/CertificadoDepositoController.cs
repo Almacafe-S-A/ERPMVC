@@ -710,6 +710,8 @@ namespace ERPMVC.Controllers
                     ms.WriteTo(file);
 
                 ViewBag.pathcontrato = completepath;
+                var stream = new FileStream(completepath, FileMode.Open);
+                return new FileStreamResult(stream, "application/pdf");
             }
             catch (Exception ex)
             {
