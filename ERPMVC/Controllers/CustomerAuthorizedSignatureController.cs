@@ -308,7 +308,38 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerAuthorizedSignature }, Total = 1 });
         }
 
+        [HttpGet]
+        public async Task<JsonResult> GetRTNValidationDuplicate(string RTN, Int32 CustomerId, Int32 CustomerAuthorizedSignatureId)
+        {
+            Int32 Existe = 0;
 
+            CustomerAuthorizedSignature Contiene = new CustomerAuthorizedSignature();
+
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                Contiene.RTN = RTN;
+                Contiene.CustomerId = CustomerId;
+                Contiene.CustomerAuthorizedSignatureId = CustomerAuthorizedSignatureId;
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/CustomerAuthorizedSignature/GetFirmaByRTN", Contiene);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    Existe = JsonConvert.DeserializeObject<Int32>(valorrespuesta);
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(Existe);
+        }
 
 
 
