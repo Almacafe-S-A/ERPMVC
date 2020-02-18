@@ -83,6 +83,7 @@ namespace ERPMVC.Controllers
                 for (int fila = 1; fila <= hoja.LastRowNum; fila++)
                 {
                     var filaRegistro = hoja.GetRow(fila);
+                    
                     var IdBiometrico = filaRegistro.GetCell(0, MissingCellPolicy.RETURN_NULL_AND_BLANK).ToString();
                     var fechaHora = filaRegistro.GetCell(1, MissingCellPolicy.RETURN_NULL_AND_BLANK).ToString();
                     var tipo = filaRegistro.GetCell(2, MissingCellPolicy.RETURN_NULL_AND_BLANK).ToString();
