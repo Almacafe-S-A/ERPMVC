@@ -50,6 +50,11 @@ namespace ERPMVC.Models
 
         [Display(Name = "Número de Factura")]
         public string TipoDocumento { get; set; }
+        [Display(Name = "SubProducto")]
+        public Int64? SubProductId { get; set; }
+
+        [Display(Name = "Nombre SubProducto")]
+        public string SubProductName { get; set; }
 
         [Display(Name = "Número de Factura")]
         public int NúmeroDEI { get; set; }
