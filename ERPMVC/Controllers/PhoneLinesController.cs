@@ -263,8 +263,7 @@ namespace ERPMVC.Controllers
                 _ExchangeRate.ModifiedDate = DateTime.Now;
                 _ExchangeRate.CreatedUser = HttpContext.Session.GetString("user");
                 _ExchangeRate.ModifiedUser = HttpContext.Session.GetString("user");
-
-                var result = await _client.PostAsJsonAsync(baseadress + "api/ExchangeRate/GetExchangeRateByFecha", _ExchangeRate);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/ExchangeRate/GetExchangeRateByFecha/ExchangeRate", _ExchangeRate);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
