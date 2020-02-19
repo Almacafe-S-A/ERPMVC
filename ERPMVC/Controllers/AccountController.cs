@@ -88,7 +88,9 @@ namespace ERPMVC.Controllers
                         HttpContext.Session.SetString("token", _userToken.Token);
                         HttpContext.Session.SetString("Expiration", _userToken.Expiration.ToString());
                         HttpContext.Session.SetString("user", model.Email);
-                       // HttpContext.Session.SetString("BranchId", _userToken.BranchId.ToString());
+                        // HttpContext.Session.SetString("BranchId", _userToken.BranchId.ToString());
+                        HttpContext.Session.SetString("BranchId", "1"); // se coloco la sucursal en duro hasta que se defina como se va utilizar las sucursale de los usuarios 
+
 
                         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:key"]));
                         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
