@@ -39,7 +39,7 @@ namespace ERPMVC.Controllers
         [Authorize(Policy = "Seguridad.Usuarios")]
         public async Task<IActionResult> Usuarios()
         {
-            ViewData["Branches"] = await ObtenerBranches();
+            //ViewData["Branches"] = await ObtenerBranches();
             return View();
         }
 
@@ -198,7 +198,7 @@ namespace ERPMVC.Controllers
                 _usuario.FechaCreacion = DateTime.Now;
                 _usuario.UsuarioModificacion = HttpContext.Session.GetString("user");
                 _usuario.UserName = _usuario.Email;
-                _usuario.BranchId = _usuario.Branch.BranchId;
+                //_usuario.BranchId = _usuario.Branch.BranchId;
                 _usuario.IsEnabled = true;
                 var result = await _client.PostAsJsonAsync(baseadress + "api/Usuario/PostUsuario", _usuario);
                 string valorrespuesta = "";
@@ -297,7 +297,7 @@ namespace ERPMVC.Controllers
                 // TODO: Add insert logic here
                 string baseadress = config.Value.urlbase;
                 _usuario.UserName = _usuario.Email;
-                _usuario.BranchId = _usuario.BranchId;
+                //_usuario.BranchId = _usuario.BranchId;
                 HttpClient _client = new HttpClient();
                 _usuario.cambiarpassword = _usuario.cambiarpassword == null ? false : true;
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));

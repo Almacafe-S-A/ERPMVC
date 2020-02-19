@@ -88,7 +88,7 @@ namespace ERPMVC.Controllers
                         HttpContext.Session.SetString("token", _userToken.Token);
                         HttpContext.Session.SetString("Expiration", _userToken.Expiration.ToString());
                         HttpContext.Session.SetString("user", model.Email);
-                        HttpContext.Session.SetString("BranchId", _userToken.BranchId.ToString());
+                       // HttpContext.Session.SetString("BranchId", _userToken.BranchId.ToString());
 
                         var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configuration["JWT:key"]));
                         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
