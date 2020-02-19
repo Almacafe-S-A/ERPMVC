@@ -257,7 +257,7 @@ namespace ERPMVC.Controllers
                     string datosUsuario = await (result.Content.ReadAsStringAsync());
                     /*if (!await IsPasswordHistory(JsonConvert.DeserializeObject<ApplicationUser>(datosUsuario).Id.ToString(),password))
                     {*/
-                        result = await _client.PostAsJsonAsync(baseadress + "api/Usuario/ChangePassword", _cambio);
+                        result = await _client.PostAsJsonAsync(baseadress + "api/Cuenta/CambiarPasswordPoliticas", _cambio);
                         if (result.IsSuccessStatusCode)
                         {
                             //return new ObjectResult(new DataSourceResult { Data = "", Total = 1 });
@@ -362,7 +362,7 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _user }, Total = 1 });
         }
 
-
+       
         async Task<IEnumerable<Branch>> ObtenerBranches()
         {
             IEnumerable<Branch> branches = null;
@@ -389,6 +389,60 @@ namespace ERPMVC.Controllers
             ViewData["defaultbranch"] = branches.FirstOrDefault();
             return branches;
 
+        }
+
+        [HttpPost("PostUsuario")]
+        public async Task<ActionResult<ApplicationUser>> Desbloquear(ApplicationUserDTO _usuario)
+        {
+            try
+            {
+                // TODO: Add insert logic here
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                _usuario.UsuarioCreacion = HttpContext.Session.GetString("token");
+                _usuario.FechaCreacion = DateTime.Now;
+                _usuario.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _usuario.UserName = _usuario.Email;
+                //_usuario.BranchId = _usuario.Branch.BranchId;
+                _usuario.IsEnabled = true;
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Usuario/PostUsuario", _usuario);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _usuario = JsonConvert.DeserializeObject<ApplicationUserDTO>(valorrespuesta);
+
+                    _usuario.PasswordHash = "**********************";
+                }
+                else
+                {
+
+                    _usuario.PasswordHash = await result.Content.ReadAsStringAsync() + " El password debe tener mayusculas y minusculas!";
+                    string error = await result.Content.ReadAsStringAsync();
+                    return this.Json(new DataSourceResult
+                    {
+                        //Data=  _usuario ,
+                        Errors = $"Ocurrio un error:{error} El password debe tener mayusculas y minusculas!"
+
+                    });
+
+                    // return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
+                    //return await Task.Run(() => BadRequest($"Ocurrio un error:{result.Content.ReadAsStringAsync()} El password debe tener mayusculas y minusculas!"));
+                    //  throw new Exception($"Ocurrio un error:{result.Content.ReadAsStringAsync()} El password debe tener mayusculas y minusculas!");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                //return BadRequest($"Ocurrio un error{ex.Message}");
+                throw ex;
+
+            }
+
+            _usuario.PasswordHash = "**********************";
+            return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
         }
 
     }
