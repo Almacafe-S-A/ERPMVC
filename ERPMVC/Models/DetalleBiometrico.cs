@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace ERPMVC.Models
 {
@@ -17,6 +18,7 @@ namespace ERPMVC.Models
 
         public string Tipo { get; set; }
 
+        [JsonIgnore]
         public Biometrico Encabezado { get; set; }
 
         public Employees Empleado { get; set; }

@@ -98,8 +98,9 @@ namespace ERPMVC.Controllers
         {
             try
             {
-                if (ModelState.IsValid)
-                {
+                //if (ModelState.IsValid)
+                //{
+                deduccionGuardar.Deduccion = null;
                     if (deduccionGuardar.Id == 0)
                     {
                         deduccionGuardar.UsuarioCreacion = HttpContext.Session.GetString("user");
@@ -120,7 +121,7 @@ namespace ERPMVC.Controllers
                         var resultado = JsonConvert.DeserializeObject<DeduccionEmpleado>(contenido);
                         return Json(new[] { resultado }.ToDataSourceResult(request, ModelState));
                     }
-                }
+               // }
                 return BadRequest();
             }
             catch (Exception ex)
