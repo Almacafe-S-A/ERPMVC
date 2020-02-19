@@ -169,6 +169,7 @@ namespace ERPMVC.Controllers
                             obj.UnitOfMeasureId = _EndososCertificadosLineP.UnitOfMeasureId;
                             obj.UnitOfMeasureName = _EndososCertificadosLineP.UnitOfMeasureName;
                             obj.ValorEndoso = _EndososCertificadosLineP.ValorEndoso;
+                            obj.Saldo = _EndososCertificadosLineP.Saldo;
                         }
 
                         HttpContext.Session.SetString("listadoproductosEndosos", JsonConvert.SerializeObject(_EndososCertificadosLine).ToString());
@@ -308,6 +309,32 @@ namespace ERPMVC.Controllers
             }
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _EndososCertificadosLine }, Total = 1 });
+        }
+        
+        public async Task<IActionResult> PutEndososCertificadosLine()
+        {
+            try
+            {
+                //string baseadress = config.Value.urlbase;
+                //HttpClient _client = new HttpClient();
+                //_client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                //var result = await _client.PutAsJsonAsync(baseadress + "api/EndososCertificadosLine/Update", _EndososCertificadosLine);
+                //string valorrespuesta = "";
+                //if (result.IsSuccessStatusCode)
+                //{
+                //    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                //    _EndososCertificadosLine = JsonConvert.DeserializeObject<EndososCertificadosLine>(valorrespuesta);
+                //}
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+
+            return await Task.Run(() => Ok());
         }
 
         [HttpPost("[controller]/[action]")]

@@ -73,14 +73,14 @@
         <!-- Modal content-->
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" onclick="closeCustomerPhones();">&times;</button>
                 <h4 class="modal-title">Información telefonos por cliente</h4>
+                <button type="button" class="close" onclick="closeCustomerPhones();">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="container-fluid">
-                    <div class="row">
-                        <div class="col-8">
-                            <div class="card">
+                <div class="row">
+                    <div class="col-lg-12">
+                        
+                            <div class="card-body">
                                 <div class="card-body">
 
                                     <form id="frmCustomerPhones" kendo-validator="true" kendo-messages="messages" kendo-rules="rules"
@@ -89,7 +89,7 @@
                                           method="post" class="validation-wizard wizard-circle">
 
                                         <div class="row">
-                                            <div class="col-md-8">
+                                            <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="CustomerPhoneId" class="  control-label" style="width:100%"></label>
                                                     <kendo-numerictextbox name="CustomerPhoneId"
@@ -104,20 +104,13 @@
                                                 </div>
                                             </div>
 
-
-
-                                        </div>
-
-
-                                        <div class="row">
-
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <script>
                                                         function CustomerPhones() {
 
-                                                           // hcustom = $("#CustomerId").val();
-                                                          //  $("#CustomerPhonesProduct").data("kendoMultiSelect").dataSource.read();
+                                                            // hcustom = $("#CustomerId").val();
+                                                            //  $("#CustomerPhonesProduct").data("kendoMultiSelect").dataSource.read();
 
                                                         }
                                                     </script>
@@ -130,7 +123,7 @@
                                                                         enable="false"
                                                                         required
                                                                         datatextfield="CustomerName"
-                                                                        datavaluefield="CustomerId"                                                                       
+                                                                        datavaluefield="CustomerId"
                                                                         style="width: 100%;">
 
                                                         <datasource type="DataSourceTagHelperType.WebApi" page-size="10000">
@@ -146,31 +139,51 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Phone" class="  control-label" style="width:100%"></label>
-                                                    <input type="text" id="PhoneCPhones" asp-for="Phone" class="k-textbox"  onkeypress="return SoloNumeros(event)"  style="min-width:100%" />
+                                                    <input type="text" id="PhoneCPhones" asp-for="Phone" required data-required-msg="El teléfono es requerido." class="form-control" onchange="validarTelefono()"autocomplete="off" style="min-width:100%" />                                                   
                                                     <span asp-validation-for="Phone" class="text-danger"></span>
+                                                    <span id="TelefonoAlert" class="text-danger"><span role="alert" class="k-icon k-i-warning"></span> Complete el número de teléfono.</span>
                                                     @*<button type="button" onclick="return RefreshOFAC();" class="k-button k-primary"><i class="fa fa-search"></i>LISTADOS</button>*@
                                                 </div>
                                             </div>
 
+                                            <script>
+                                                function validarTelefono() {
+                                                    var cadena = $("#PhoneCPhones").val();
+
+                                                    if (cadena.indexOf("_") > -1 == true) {
+                                                        $("#TelefonoAlert").show();
+                                                    }
+                                                    else {
+                                                        $("#TelefonoAlert").hide();
+                                                    }
+
+                                                }
+                                               
+                                                    $("#btnSaveCustomerPhones").click(function (event) {
+                                                        if ($('#TelefonoAlert').is(':hidden')) {
+                                                            return true;
+                                                        }
+                                                        else {
+                                                            return false;
+                                                        }
+                                                    });
+                                                
+
+                                                
+                                            </script>
 
                                         </div>
-
-                                     
-
-
-
-
                                     </form>
 
                                     <div class="row">
-                                        <div class="col-md-8">
+                                        <div class="col-md-12">
                                             <button id="btnSaveCustomerPhones" type="submit" class="form-control btn-miboton" onclick="SaveCustomerPhones(this);">Guardar</button>
                                         </div>
                                     </div>
 
                                 </div>
                             </div>
-                        </div>
+                       
                     </div>
                 </div>
             </div>
@@ -200,6 +213,11 @@
         }
     }
     function SaveCustomerPhones(e) {
+
+
+        if ($('#TelefonoAlert').is(':hidden')) {
+
+ 
 
         var notification = $("#notification").data("kendoNotification");
        // e.preventDefault();
@@ -243,8 +261,12 @@
                             stack: 6
                         });
 
-                        //RefreshGridEstibas();
-                       // $('#myModalSalesOrder').modal('hide');
+                        
+
+                        var grid = $("#gridCustomerPhones").getKendoGrid();
+                        grid.dataSource.read();
+
+                        $('#myModalCustomerPhones').modal('hide');
 
                     },
                     error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -273,9 +295,53 @@
         //        message: "Debe agregar los productos!"
         //    }, "error");
 
-       // }
-
+        }
 
 
     }
+
+
+     //VALIDAR Phone
+    $("#PhoneCPhones").on("change", function () {
+       
+        var PhoneCPhones = $("#PhoneCPhones").val();
+        var CustomerId = $("#CustomerIdCPhone").val();
+        var CustomerPhoneId = $("#CustomerPhoneId").val();      
+        
+        if (PhoneCPhones != "") {
+            
+            $.ajax({
+                          url: '@Url.Action("GetPhone", "CustomerPhones")',
+                          method: 'GET',
+                          datatype: "json",
+                          contentType: 'application/json',
+                          async: false,
+                data: { 'PhoneCPhones': PhoneCPhones, 'CustomerId': CustomerId, 'CustomerPhoneId': CustomerPhoneId },
+                          success: function (result) {
+                              if (result > 0) {
+
+                                  $.toast({
+                                      heading: 'error',
+                                      text: 'Ya existe un Teléfono registrada con este Número para este cliente...!',
+                                      position: 'top-right',
+                                      loaderBg: '#ff6849',
+                                      icon: 'error',
+                                      showHideTransition: 'slide',
+                                      hideAfter: 6000,
+                                      stack: 6
+                                  });
+                                  $("#PhoneCPhones").val('');
+                              }
+                      },
+                  //    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                  //    notification.show({
+                  //    title: "Validación",
+                  //    message: textStatus + ": " + XMLHttpRequest.responseText
+                  //   }, "error");
+                  //}
+               });               
+        }
+    });
+
+  
 </script>
