@@ -101,13 +101,13 @@
         <!-- Modal content-->
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
                 <h4 class="modal-title">Información Socios por cliente</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="container">
-                    <div class="row">
-                        <div class="col-lg-12">
+                <div class="row">
+                    <div class="col-lg-12">
+                        <div class="card">
 
                             @*<div class="card">
                                 </div>*@
@@ -119,25 +119,22 @@
                                       method="post" class="validation-wizard wizard-circle">
 
                                     <div class="row">
-                                        <div class="col-md-3">
+                                        <div class="col-md-4">
                                             <div class="form-group">
                                                 <label asp-for="PartnerId" class="  control-label" style="width:100%"></label>
                                                 @*<kendo-numerictextbox name="PartnerId"
-                                                    format="n"
-                                                    enable="false"
-                                                    min="0"
-                                                    style="width:100%"
-                                                    step="1"
-                                                    value="Model.PartnerId"></kendo-numerictextbox>*@
+                format="n"
+                enable="false"
+                min="0"
+                style="width:100%"
+                step="1"
+                value="Model.PartnerId"></kendo-numerictextbox>*@
                                                 <input type="text" id="PartnerId" asp-for="PartnerId" disabled readonly class="k-textbox" style="min-width:100%" />
                                                 <span asp-validation-for="PartnerId" class="text-danger"></span>
                                             </div>
                                         </div>
-                                    </div>
 
-
-                                    <div class="row">
-                                        <div class="col-md-3">
+                                        <div class="col-md-4">
                                             <div class="form-group">
                                                 <script>
                                                     function CustomerPartners() {
@@ -168,7 +165,7 @@
                                             </div>
                                         </div>
 
-                                        <div class="col-md-6">
+                                        <div class="col-md-4">
                                             <div class="form-group">
                                                 <label asp-for="PartnerName" class="  control-label" style="width:100%"></label>
                                                 <div class="input-group">
@@ -182,24 +179,27 @@
                                             </div>
                                         </div>
 
+
                                     </div>
 
+
+
                                     <div class="row">
-                                        <div class="col-md-3">
+                                        <div class="col-md-4">
                                             <div class="form-group">
                                                 <label asp-for="Telefono" class="  control-label" style="width:100%"></label>
                                                 <input type="text" id="TelefonoCP" asp-for="Telefono" class="k-textbox" onKeyPress="return SoloNumeros(event)" style="min-width:100%" />
                                                 <span asp-validation-for="Telefono" class="text-danger"></span>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
+                                        <div class="col-md-4">
                                             <div class="form-group">
                                                 <label asp-for="Correo" class="  control-label" style="width:100%"></label>
                                                 <input type="email" id="CorreoCP" asp-for="Correo" placeholder="nombre@ejemplo.com" maxlength="150" data-email-msg="Formato del Correo no valido" class="k-textbox" style="min-width:100%" />
                                                 <span asp-validation-for="Correo" class="text-danger"></span>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
+                                        <div class="col-md-4">
                                             <div class="form-group">
                                                 <label asp-for="RTN" class="  control-label" style="width:100%"></label>
                                                 <input type="text" id="RTNCP" asp-for="RTN" onKeyPress="return SoloNumeros(event)" class="k-textbox" style="min-width:100%" />
@@ -210,7 +210,7 @@
                                     </div>
 
                                     <div class="row">
-                                        <div class="col-md-3">
+                                        <div class="col-md-4">
                                             <div class="form-group">
 
                                                 <label asp-for="FuncionarioPublico" class="control-label" style="width:100%"></label>
@@ -220,7 +220,7 @@
                                                 <span asp-validation-for="FuncionarioPublico" class="text-danger"></span>
                                             </div>
                                         </div>
-                                        <div class="col-md-3">
+                                        <div class="col-md-4">
                                             <div class="form-group">
                                                 <label asp-for="CargoPublico" class="  control-label" style="width:100%"></label>
                                                 <input type="text" id="CargoPublico" asp-for="CargoPublico" class="k-textbox" style="min-width:100%" />
@@ -229,7 +229,7 @@
                                         </div>
                                     </div>
                                     <div class="row">
-                                        <div class=" col-sm-10 col-md-10">
+                                        <div class=" col-sm-10 col-md-12">
                                             <div class="form-group">
                                                 <button id="btnSaveCustomerPartners" type="submit" class="form-control btn-miboton" onclick="SaveCustomerPartners(this);">Guardar</button>
                                             </div>
@@ -368,6 +368,55 @@
        // }
 
     }
+
+
+    //vALIDAR RTN
+    $("#RTNCP").on("change", function () {
+       
+        var RTN = $("#RTNCP").val();
+        var CustomerId = $("#CustomerIdCP").val();
+        var PartnerId = $("#PartnerId").val();      
+       
+        if (RTN != "") {
+            //alert(CustomerId)
+
+            $.ajax({
+                          url: '@Url.Action("GetRTNValidationDuplicate", "CustomerPartners")',
+                          method: 'GET',
+                          datatype: "json",
+                          contentType: 'application/json',
+                          async: false,
+                data: { 'RTN': RTN, 'CustomerId': CustomerId, 'PartnerId': PartnerId },
+                          success: function (result) {
+                              if (result > 0) {
+
+                                  $.toast({
+                                      heading: 'error',
+                                      text: 'Ya existe un Socio registrado con este RTN para este cliente...!',
+                                      position: 'top-right',
+                                      loaderBg: '#ff6849',
+                                      icon: 'error',
+                                      showHideTransition: 'slide',
+                                      hideAfter: 6000,
+                                      stack: 6
+                                  });
+                                  $("#RTNCP").val('');
+                              }
+                      },
+                  //    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                  //    notification.show({
+                  //    title: "Validación",
+                  //    message: textStatus + ": " + XMLHttpRequest.responseText
+                  //   }, "error");
+                  //}
+               });               
+        }
+    });
+
+
+      
+
+
 
 
 </script>
