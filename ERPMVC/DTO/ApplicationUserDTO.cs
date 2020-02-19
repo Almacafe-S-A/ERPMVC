@@ -13,6 +13,9 @@ namespace ERPMVC.DTO
         [Display(Name = "Reestablecer")]
         [DataType("Boolean")]
         public bool? cambiarpassword { get; set; }
+        [Display(Name = "Bloqueado")]
+        [DataType("Boolean")]
+        public bool? IsBlocked { get; set; }
     }
 
 
