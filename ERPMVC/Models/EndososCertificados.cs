@@ -82,6 +82,14 @@ namespace ERPMVC.Models
         [Display(Name = "Total endoso")]
         public double TotalEndoso { get; set; }
 
+        public DateTime FechaLiberacion { get; set; }
+
+        public DateTime FechaCancelacion { get; set; }
+
+        public double CantidadEndosada { get; set; }
+
+        public double Saldo { get; set; }
+
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }

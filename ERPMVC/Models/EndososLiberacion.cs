@@ -19,7 +19,17 @@ namespace ERPMVC.Models
 
         [Display(Name = "Tipo de Endoso")]
         public string TipoEndoso { get; set; }
+        [Display(Name = "Producto")]
+        public Int64 SubProductId { get; set; }
 
+        [Display(Name = "Producto")]
+        public string SubProductName { get; set; }
+
+        [Display(Name = "Unidad de medida")]
+        public Int64 UnitOfMeasureId { get; set; }
+
+        [Display(Name = "Unidad de medida")]
+        public string UnitOfMeasureName { get; set; }
         [Display(Name = "Fecha de liberación")]
         public DateTime FechaLiberacion { get; set; }
 
