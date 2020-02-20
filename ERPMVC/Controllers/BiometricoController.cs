@@ -140,16 +140,17 @@ namespace ERPMVC.Controllers
                     config.Value.urlbase + "api/Biometrico/Guardar", biometrico);
                 if (respuesta.IsSuccessStatusCode)
                 {
-                    return View("Index");
+                    return RedirectToAction("Index");
                 }
 
                 ViewData["Errores"]=respuesta.RequestMessage;
-                return View("Index");
+                return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
                 logger.LogError(ex,"Error al guardar el registro biometrico");
-                return BadRequest(ex);
+                ViewData["Errores"] = ex.Message;
+                return RedirectToAction("Index");
             }
         }
     }
