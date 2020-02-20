@@ -390,12 +390,11 @@ namespace ERPMVC.Controllers
                     _CheckAccountS.FechaCreacion = DateTime.Now;
                     _CheckAccountS.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_CheckAccountS);
-                    //var status = (insertresult.Result as StatusCodeResult).StatusCode;
-                    if (insertresult.Value == null)
+                    if (insertresult.Result is BadRequestObjectResult)
                     {
                         return BadRequest(((BadRequestObjectResult)insertresult.Result).Value);
                     }
-                    
+
                 }
                 else
                 {
