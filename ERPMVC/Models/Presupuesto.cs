@@ -20,7 +20,7 @@ namespace ERPMVC.Models
 
         public int PeriodoId { get; set; }
         [ForeignKey("PeriodoId")]
-        //public Periodo Periodo { get; set; }
+        public Periodo Periodo { get; set; }
 
         public decimal PresupuestoEnero { get; set; }
         public decimal PresupuestoFebrero { get; set; }
@@ -50,8 +50,8 @@ namespace ERPMVC.Models
         public decimal EjecucionDiciembre { get; set; }
 
         public Int64 AccountigId { get; set; }
-        [ForeignKey("AccountigId")]
-        public Accounting Accounting { get; set; }
+        //[ForeignKey("AccountigId")]
+        //public Accounting Accounting { get; set; }
 
         public string AccountName { get; set; }
 
@@ -63,5 +63,8 @@ namespace ERPMVC.Models
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
         public string UsuarioModificacion { get; set; }
+
+        [UIHint("Cuentas")]
+        public virtual Accounting Accounting { get; set; }
     }
 }

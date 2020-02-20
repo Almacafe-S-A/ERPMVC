@@ -30,8 +30,11 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-        public IActionResult Presupuesto()
+        
+     public async Task<IActionResult> Presupuesto()
+      
         {
+            ViewData["Cuentas"] = await ObtenerCuentas();
             return View();
         }
 
@@ -236,6 +239,34 @@ namespace ERPMVC.Controllers
 
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _Presupuesto }, Total = 1 });
+        }
+
+        async Task<IEnumerable<Accounting>> ObtenerCuentas()
+        {
+            IEnumerable<Accounting> cuentas = null;
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccount");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    cuentas = JsonConvert.DeserializeObject<IEnumerable<Accounting>>(valorrespuesta);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            ViewData["defaultaccount"] = cuentas.FirstOrDefault();
+            return cuentas;
+
         }
 
 
