@@ -91,7 +91,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _roles = JsonConvert.DeserializeObject<List<ApplicationRole>>(valorrespuesta);
-
+                    _roles = _roles.OrderBy(q => q.Name).ToList();
                 }
             }
             catch (Exception ex)
@@ -166,25 +166,44 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<ApplicationRole>> PostRol(ApplicationRole _role)
+        public async Task<ActionResult<ApplicationRole>> PostRol(ApplicationRole _roleS)
         {
+            ApplicationRole _role = _roleS;
             try
             {
                 // TODO: Add insert logic here
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-                _role.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _role.UsuarioModificacion = HttpContext.Session.GetString("user");
-                _role.FechaCreacion = DateTime.Now;
-                _role.FechaModificacion = DateTime.Now;
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Roles/CreateRole", _role);
+
+                var result = await _client.GetAsync(baseadress + "api/Roles/GetRoleByName/" + _role.Name);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _role = JsonConvert.DeserializeObject<ApplicationRole>(valorrespuesta);
-                }      
+                }
+                if (_role == null) { _role = new Models.ApplicationRole(); _role = _roleS; }
+
+                _role.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _role.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _role.FechaCreacion = DateTime.Now;
+                _role.FechaModificacion = DateTime.Now;
+
+                if (_role.Id != _roleS.Id)
+                {
+                    return await Task.Run(() => BadRequest($"Ya éxiste un rol registrado con este nombre."));
+                }
+                else
+                {
+                    result = await _client.PostAsJsonAsync(baseadress + "api/Roles/CreateRole", _role);
+                    valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _role = JsonConvert.DeserializeObject<ApplicationRole>(valorrespuesta);
+                    }
+                }
 
             }
             catch (Exception ex)
