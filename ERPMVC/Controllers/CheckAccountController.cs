@@ -438,6 +438,10 @@ namespace ERPMVC.Controllers
                 else
                 {
                     string error = await result.Content.ReadAsStringAsync();
+                    if (error.Length>100)
+                    {
+                        error = "Error al Guardar";
+                    }
                     return BadRequest($"{error}");
                 }
 

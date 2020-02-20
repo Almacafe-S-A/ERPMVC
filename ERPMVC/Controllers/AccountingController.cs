@@ -974,6 +974,17 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     cuentas = JsonConvert.DeserializeObject<List<Accounting>>(valorrespuesta);
+                    cuentas = (from c in cuentas
+                               select new Accounting
+                                  {
+                                      AccountId = c.AccountId,
+                                      AccountName = c.AccountCode + "--" + c.AccountName,
+                                      AccountCode = c.AccountCode,
+                                      Description = c.Description,
+                                      Estado = c.Estado,
+                                      IdEstado = c.IdEstado,
+                                  }
+                                   ).ToList();
                 }
                 return cuentas.ToDataSourceResult(request);
             }
