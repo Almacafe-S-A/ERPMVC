@@ -539,6 +539,10 @@ namespace ERPMVC.Controllers
                     _Check.FechaCreacion = DateTime.Now;
                     _Check.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await InsertCheck(_Check);
+                    if (insertresult.Result is BadRequestObjectResult)
+                    {
+
+                    }
                 }
                 else
                 {
