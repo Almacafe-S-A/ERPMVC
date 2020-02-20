@@ -66,6 +66,8 @@ namespace ERPMVC.Models
         [Required]
         [Display(Name = "Ciudad Id")]
         public long? IdCity { get; set; }
+        [Display(Name = "Horas Extra")]
+        public bool? HorasExtra { get; set; }
         [Required]
         [Display(Name = "Moneda de Salario")]
         public long? IdCurrency { get; set; }
