@@ -18,7 +18,7 @@
                         <input id="Archivo" name="Archivo" type="file" />
                     </div>
                     <div class="form-group">
-                        <input type="submit"/>
+                        <input type="submit" />
                     </div>
                 </form>
             </div>
@@ -29,6 +29,8 @@
         </div>
     </div>
 </div>
+<div id="ModalContenido"></div>
+
 <script>
 
 
@@ -43,7 +45,7 @@
                         id:"Id",
                         fields: {
                             Id: { type: "number", editable: false },
-                            Fecha: { type: "date", editable: false }, 
+                            Fecha: { type: "date", editable: false },
                             Observacion: { type:"string", editable: false },
                             IdEstado: { type: "number", editable: false },
                             Estado: { defaultValue: {IdEstado:0,NombreEstado:""}, editable: false }
@@ -85,7 +87,27 @@
     }
 
     function VerDetalle(e) {
-
+        e.preventDefault();
+        var registro = this.dataItem($(e.currentTarget).closest('tr'));
+        var parametros = {
+            IdBiometrico: registro.Id
+        };
+        
+        $.ajax({
+            url: '@Url.Action("VerDetalle", "Biometrico")',
+            method: 'GET',
+            datatype: "json",
+            async: false,
+            data: parametros,
+            success: function (result) {
+                $("#ModalContenido").html('');
+                $("#ModalContenido").html(result);
+                $('#modalDetalle').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
     }
 
     function Aprobar(e) {
@@ -94,6 +116,10 @@
 
     function Rechazar(e) {
 
+    }
+
+    function RefreshBiometrico() {
+        $("#grdConfiguracion").getKendoGrid().dataSource.read();
     }
 
     $(document).ready(function () {

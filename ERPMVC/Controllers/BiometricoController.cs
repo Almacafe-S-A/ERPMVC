@@ -36,6 +36,12 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        public IActionResult VerDetalle(long idBiometrico)
+        {
+            ViewData["IdBiometrico"] = idBiometrico;
+            return PartialView("pvwDetalle");
+        }
+
         [HttpGet("[action]")]
         public async Task<ActionResult> GetBiometricos()
         {
@@ -54,6 +60,28 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 logger.LogError(ex,"Error al cargar los archivos biometricos");
+                return BadRequest(ex);
+            }
+        }
+
+        [HttpGet("[action]")]
+        public async Task<ActionResult> GetDetalleBiometrico(long IdBiometrico)
+        {
+            try
+            {
+                var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
+                    config.Value.urlbase + $"api/Biometrico/GetDetalleBiometrico/{IdBiometrico}");
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    var contenido = await respuesta.Content.ReadAsStringAsync();
+                    var resultado = JsonConvert.DeserializeObject<List<DetalleBiometrico>>(contenido);
+                    return Ok(resultado);
+                }
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error al cargar el detalle del archivo biometrico ");
                 return BadRequest(ex);
             }
         }
