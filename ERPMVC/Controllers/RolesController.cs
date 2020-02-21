@@ -235,6 +235,10 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _rol = JsonConvert.DeserializeObject<ApplicationRole>(valorrespuesta);
                 }
+                else
+                {
+                    return BadRequest($"Ocurrio un error{result.ReasonPhrase}");
+                }
 
             }
             catch (Exception ex)
