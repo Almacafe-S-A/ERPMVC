@@ -496,6 +496,45 @@ namespace ERPMVC.Controllers
 
 
 
+        [HttpGet]
+        private async Task<List<ControlPallets>> GetControlPalletbyIdandCustomerid(int BoletaId, int CustomerId)
+        {
+            List<ControlPallets> _ControlPallets = new List<ControlPallets>();
+
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPalletsNoSelected");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _ControlPallets = JsonConvert.DeserializeObject<List<ControlPallets>>(valorrespuesta);
+
+                    _ControlPallets = (from c in _ControlPallets
+                                       .Where(q => q.EsIngreso == 1)
+                                       select new ControlPallets
+                                       {
+                                           ControlPalletsId = c.ControlPalletsId,
+                                           CustomerName = "Id:" + c.ControlPalletsId + " || Control de ingresos:" + c.PalletId
+                                              + " || Nombre:" + c.CustomerName + " || Placa:" + c.Placa + " || Motorista:" + c.Motorista + " || Fecha: " + c.DocumentDate + " || Total:" + c.TotalSacos,
+                                           DocumentDate = c.DocumentDate,
+
+                                       }
+                                      ).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            // return Json(_CustomerConditions.ToDataSourceResult(request));
+            return _ControlPallets;
+        }
+
 
 
     }
