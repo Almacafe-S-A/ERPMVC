@@ -68,7 +68,7 @@ namespace ERPMVC.Controllers
             return BadRequest();
         }
 
-        public async Task<ActionResult<DeduccionDTO>> GetDeducciones()
+        public async Task<ActionResult<List<DeduccionDTO>>> GetDeducciones()
         {
             try
             {
@@ -99,7 +99,7 @@ namespace ERPMVC.Controllers
         {
             if (ModelState.IsValid)
             {
-                deduccion.DeductionType = deduccion.DeductionTypeId == 1 ? "Por Ley" : "Eventual";
+                deduccion.DeductionType = deduccion.DeductionTypeId == 1 ? "Por Ley" : deduccion.DeductionTypeId == 2 ? "Eventual" : "Colegiación";
 
                 HttpResponseMessage respuesta;
                 if (deduccion.DeductionId == 0)
@@ -127,6 +127,28 @@ namespace ERPMVC.Controllers
             else
             {
                 throw new Exception("Campos no validos en tipo de deducción");
+            }
+        }
+
+        public async Task<ActionResult> GetTipoDeduccionPorNombre(string nombre)
+        {
+            try
+            {
+                var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
+                    config.Value.urlbase + "api/Deduction/GetDeductionByDescription/" + nombre);
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    var contenido = await respuesta.Content.ReadAsStringAsync();
+                    var resultado = JsonConvert.DeserializeObject<DeduccionDTO>(contenido);
+                    return Ok(resultado);
+                }
+
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex,"Error al cargar tipo deducción por nombre");
+                return BadRequest();
             }
         }
     }
