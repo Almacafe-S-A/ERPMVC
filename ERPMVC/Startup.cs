@@ -42,8 +42,8 @@ namespace ERPMVC
         public Startup(IHostingEnvironment env, IConfiguration configuration, IServiceProvider serviceProvider)
         {
 
-            string License = File.ReadAllText(System.IO.Path.Combine(env.ContentRootPath, "SyncfusionLicense.txt"), Encoding.UTF8);
-            SyncfusionLicenseProvider.RegisterLicense(License);
+            //string License = File.ReadAllText(System.IO.Path.Combine(env.ContentRootPath, "SyncfusionLicense.txt"), Encoding.UTF8);
+            //SyncfusionLicenseProvider.RegisterLicense(License);
             Configuration = configuration;
         }
 
@@ -240,8 +240,8 @@ namespace ERPMVC
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IHostingEnvironment env)
         {
-          
 
+            Syncfusion.Licensing.SyncfusionLicenseProvider.RegisterLicense("ODM3NkAzMTM3MmUzNDJlMzBPRm41TTBEL2hiZ0pjbG93dDZPQ0VocmRCWkJHSXlzWFgrUkxrZVlDaUpzPQ==");
             app.UseAuthentication();
             var defaultDateCulture = "es-ES";
             var ci = new CultureInfo(defaultDateCulture);

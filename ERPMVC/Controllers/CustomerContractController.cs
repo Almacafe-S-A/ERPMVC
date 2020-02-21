@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Syncfusion.DocIO;
-using Syncfusion.DocIO.Utilities;
+
 using Syncfusion.DocIO.DLS;
 using Microsoft.AspNetCore.Hosting;
 using ERPMVC.Models;
@@ -19,6 +19,7 @@ using Kendo.Mvc.Extensions;
 using Microsoft.AspNetCore.Http;
 using Syncfusion.Pdf;
 using Syncfusion.DocIORenderer;
+
 
 namespace ERPMVC.Controllers
 {
