@@ -31,8 +31,9 @@
                             <div class="row">
                                 <div class="col">
                                     <label for="DeductionTypeId"></label><br />
-                                    <input type="radio" id="DeductionTypeId" name="DeductionTypeId" value="1" checked="checked" style="position: relative; left: 0px; opacity: 100;" disabled="@editable"/> Por Ley
-                                    <input type="radio" name="DeductionTypeId" value="2" style="position: relative; left: 0px; opacity: 100;"  disabled="@editable"/> Eventual<br />
+                                    <input type="radio" id="DeductionTypeId" name="DeductionTypeId" value="1" checked="checked" style="position: relative; left: 0px; opacity: 100;" disabled="@editable" /> Por Ley
+                                    <input type="radio" name="DeductionTypeId" value="2" style="position: relative; left: 0px; opacity: 100;" disabled="@editable" /> Eventual<br />
+                                    <input type="radio" name="DeductionTypeId" value="3" style="position: relative; left: 0px; opacity: 100;" disabled="@editable" /> Colegiación<br />
                                 </div>
                             </div>
                             <div class="row">
@@ -73,16 +74,22 @@
 <script>
 
     $(document).ready(function () {
-        debugger;
+        //debugger;
         if (@Model.DeductionId !== 0) {
             var $tipos = $('input:radio[name=DeductionTypeId]');
             var $quincenas = $('input:radio[name=Fortnight]');
             if (@Model.DeductionTypeId === 1) {
                 $tipos.filter('[value=1]').prop('checked', true);
                 $tipos.filter('[value=2]').prop('checked', false);
-            } else {
+                $tipos.filter('[value=3]').prop('checked', false);
+            } else if (@Model.DeductionTypeId === 2) {
                 $tipos.filter('[value=1]').prop('checked', false);
                 $tipos.filter('[value=2]').prop('checked', true);
+                $tipos.filter('[value=3]').prop('checked', false);
+            }else {
+                $tipos.filter('[value=1]').prop('checked', false);
+                $tipos.filter('[value=2]').prop('checked', false);
+                $tipos.filter('[value=3]').prop('checked', true);
             }
 
             if (@Model.Fortnight === 1) {
@@ -107,9 +114,7 @@
     }
 
     function Guardar(e) {
-        debugger;
         e.preventDefault();
-
         var deduccion = {
             DeductionId: Number($("#DeductionId").val()),
             Description: $("#Description").val(),
@@ -122,34 +127,70 @@
         var validator = $("#frmTipoDeduccion").data("kendoValidator");
         var notificacion = $("#notificacion").kendoNotification().data("kendoNotification");
         if (validator.validate()) {
+
             $.ajax({
-                url: '@Url.Action("GuardarDeduccion", "TipoDeduccion")',
-                method: 'POST',
+                url: '@Url.Action("GetTipoDeduccionPorNombre", "TipoDeduccion")',
+                method: 'GET',
                 datatype: "json",
                 contentType: 'application/json',
                 async: false,
-                data: JSON.stringify(deduccion),
+                data: {nombre : deduccion.Description},
                 success: function (data) {
-                    $.toast({
-                        heading: 'Satisfactorio',
-                        text: '<br/><br/>Datos guardados correctamente.',
-                        position: 'top-right',
-                        loaderBg: '#ff6849',
-                        icon: 'success',
-                        hideAfter: 3000,
-                        stack: 6
-                    });
-                    window.RefreshTipoDeduccion();
-                    $("#ModalTipoDeduccionUpload").modal('hide');
+                    if (typeof data === 'undefined') {
+                         $.ajax({
+                            url: '@Url.Action("GuardarDeduccion", "TipoDeduccion")',
+                            method: 'POST',
+                            datatype: "json",
+                            contentType: 'application/json',
+                            async: false,
+                            data: JSON.stringify(deduccion),
+                            success: function (data) {
+                                $.toast({
+                                    heading: 'Satisfactorio',
+                                    text: '<br/><br/>Datos guardados correctamente.',
+                                    position: 'top-right',
+                                    loaderBg: '#ff6849',
+                                    icon: 'success',
+                                    hideAfter: 3000,
+                                    stack: 6
+                                });
+                                window.RefreshTipoDeduccion();
+                                $("#ModalTipoDeduccionUpload").modal('hide');
 
+                            },
+                            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                notificacion.show({
+                                    title: "Validación",
+                                    message: textStatus + ": " + XMLHttpRequest.responseText
+                                }, "error");
+                            }
+                        });
+                    } else {
+                        $.toast({
+                            heading: 'Error',
+                            text: '<br/><br/> Ya existe un tipo de deducción llamado ' + data.Description,
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 2000,
+                            stack: 6
+                        });
+                    }
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    notificacion.show({
-                        title: "Validación",
-                        message: textStatus + ": " + XMLHttpRequest.responseText
-                    }, "error");
+                    $.toast({
+                        heading: 'Error',
+                        text: '<br/><br/> ' + textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 2000,
+                        stack: 6
+                    });
                 }
             });
+
+            
         }
         return false;
     }
