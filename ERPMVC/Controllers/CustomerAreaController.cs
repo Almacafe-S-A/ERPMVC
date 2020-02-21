@@ -321,6 +321,52 @@ namespace ERPMVC.Controllers
         {
             try
             {
+                //=================================== Al actualizar un registro = y se selecciona un nuevo registro se inserta =======================================================
+
+                var CustomerAreaProductosRegistradas = await AreaProductByCustomerId(_CustomerArea.CustomerAreaId);
+                List<CustomerAreaProduct> ProductRegitrados = ((List<CustomerAreaProduct>)CustomerAreaProductosRegistradas.Value);
+
+                foreach (var ProductosPantalla in _CustomerArea.Productos)
+                {
+                    var Existe = ProductRegitrados.Where(x => x.ProductId == ProductosPantalla && x.CustomerAreaId == _CustomerArea.CustomerAreaId).Count();
+
+                    if (Existe == 0)
+                    {
+                        CustomerAreaProduct inst = new CustomerAreaProduct();
+                        inst.CustomerAreaId = _CustomerArea.CustomerAreaId;
+                        inst.ProductId = ProductosPantalla;
+                        inst.FechaCreacion = DateTime.Now;
+                        var insertresult = await InsertDetalle(inst);
+                    }
+                }
+
+                //============================= Fin del nuevo insert ================================================================================================================
+
+                //============================================Si se quita un producto de del multiselect se elimina ===============================================================
+
+                var CustomerAreaProductosRegistradasEliminar = await AreaProductByCustomerId(_CustomerArea.CustomerAreaId);
+                List<CustomerAreaProduct> ProductRegitradosEliminar = ((List<CustomerAreaProduct>)CustomerAreaProductosRegistradasEliminar.Value);
+
+                foreach (var deletes in _CustomerArea.Productos)
+                {
+                    CustomerAreaProduct inst = new CustomerAreaProduct();
+                    inst = ProductRegitradosEliminar.Where(x => x.ProductId == deletes).FirstOrDefault();
+                    ProductRegitradosEliminar.Remove(inst);
+
+                }
+
+                foreach (var lisexis in ProductRegitradosEliminar)
+                {
+                    CustomerAreaProduct inst = new CustomerAreaProduct();
+                    inst.CustomerAreaId = _CustomerArea.CustomerAreaId;
+                    inst.FechaCreacion = DateTime.Now;
+                    inst.ProductId = lisexis.ProductId;
+                    inst.CustomerAreaProductId = lisexis.CustomerAreaProductId;
+                    var Delete = await DeleteProduct(inst);
+                }
+
+                //====================================fin de la aeliminación ===========================================================================
+
                 string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -342,6 +388,38 @@ namespace ERPMVC.Controllers
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerArea }, Total = 1 });
         }
+
+
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<ActionResult<CustomerAreaProduct>> InsertDetalle(CustomerAreaProduct _CustomerAreaProduct)
+        {
+            try
+            {
+                // TODO: Add insert logic here
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                //_CustomerAreaProduct.Usu = HttpContext.Session.GetString("user");
+                //_CustomerAreaProduct.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/CustomerArea/InsertDetalleNuevo", _CustomerAreaProduct);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerAreaProduct = JsonConvert.DeserializeObject<CustomerAreaProduct>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+            return Ok(_CustomerAreaProduct);           
+        }
+
+
 
         [HttpPost("[action]")]
         public async Task<ActionResult<CustomerArea>> Delete([FromBody]CustomerArea _CustomerArea)
@@ -373,6 +451,62 @@ namespace ERPMVC.Controllers
         }
 
 
+
+        [HttpGet]
+        public async Task<JsonResult> AreaProductByCustomerId(Int64 _Productos)
+        {
+
+            List<CustomerAreaProduct> Produstos = new List<CustomerAreaProduct>();
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();               
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CustomerArea/GetCustomerAreaProduct/" + _Productos);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    Produstos = JsonConvert.DeserializeObject<List<CustomerAreaProduct>>(valorrespuesta);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(Produstos);
+        }
+
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<CustomerArea>> DeleteProduct(CustomerAreaProduct _CustomerAreaProduct)
+        {
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                var result = await _client.PostAsJsonAsync(baseadress + "api/CustomerArea/DeleteProducto", _CustomerAreaProduct);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerAreaProduct = JsonConvert.DeserializeObject<CustomerAreaProduct>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error: {ex.Message}");
+            }
+
+
+
+            return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerAreaProduct }, Total = 1 });
+        }
 
 
 

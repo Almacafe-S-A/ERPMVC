@@ -365,6 +365,49 @@ namespace ERPMVC.Controllers
 
 
 
+        public async Task<ActionResult> InvoiceCustomer()
+        {
+            return await Task.Run(() => PartialView());
+        }
+
+
+
+        [HttpGet]
+        public async Task<DataSourceResult> GetByCustomer([DataSourceRequest]DataSourceRequest request, Int32 CustomerId)
+        {
+            List<Invoice> _Invoice = new List<Invoice>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Invoice/GetInvoice");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Invoice = JsonConvert.DeserializeObject<List<Invoice>>(valorrespuesta);
+                    _Invoice = _Invoice.OrderByDescending(q => q.InvoiceId).ToList();
+                    _Invoice = _Invoice.Where(x => x.CustomerId ==  CustomerId).ToList();
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _Invoice.ToDataSourceResult(request);
+
+        }
+
+
+
 
     }
 }

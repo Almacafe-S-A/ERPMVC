@@ -19,7 +19,68 @@
                     alert(textStatus + ": " + XMLHttpRequest.responseText);
               }
           });
-      }
+    }
+
+     function AnularContrato(e) {
+         console.log('id', $("#AnularContrato").val())
+        console.log('observacion',$("#ObservacionAnular").val())
+        
+        
+        if (confirm('Esta seguro de anular esta cotización?')) {
+           
+
+            var dataObject = {
+                CustomerContractId: $("#AnularContrato").val(),
+                Observcion: $("#ObservacionAnular").val(),
+
+                editar: 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("Anular", "CustomerContract")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+
+                    $('#ModalAnular').modal('hide');
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: '<br/><br/>Cotización anulada correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 7000,
+                        stack: 6
+                    });
+
+                    RefrescarGrid();
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+            
+        }
+     
+        }
+
+    function Anular(e) {
+     
+       
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        $("#AnularContrato").val(dataItem.CustomerContractId)
+                $("#btnSaveCotizacion").show();
+                $('#ModalAnular').modal('show');
+                
+            }
 
     function AddCustomerContractSignature() {
 
@@ -107,14 +168,17 @@
                               {
                                   command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCustomerContractSignature");
                                   command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirContrato");
+                                  command.Custom("Anular").Text(" ").IconClass("fa fa-ban").Click("Anular");
                                   // command.Custom("Ver detalles").Click("Detalles");
                                   // command.Edit(); command.Destroy();
-                              }).Width(80);
+                              }).Title("Acciones").Width(80);
                               columns.Bound(p => p.CustomerContractId).Width(100);
                               columns.Bound(p => p.CustomerId).Visible(false).Width(100);
                               columns.Bound(p => p.CustomerName).Width(100);
                               columns.Bound(p => p.CustomerManager).Width(150);
                               columns.Bound(p => p.Manager).Width(100);
+                              columns.Bound(p => p.Estado).Width(100);
+                              columns.Bound(p => p.Observcion).Width(100);
                               columns.Bound(p => p.StorageTime).Width(100);
 
 

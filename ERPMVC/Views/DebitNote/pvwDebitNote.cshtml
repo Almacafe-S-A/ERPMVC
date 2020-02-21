@@ -142,7 +142,7 @@
                                         <div class="row">
                                             <div class=" col-md-4">
                                                 <div class="form-group">
-                                                    <label asp-for="DebitNoteId" class="control-label"></label>
+                                                    <label asp-for="DebitNoteId" class="control-label">Id Nota Débito</label>
                                                     <input type="text" asp-for="DebitNoteId" class="form-control" style="min-width: 100%" disabled />
                                                     @*<span asp-validation-for="DebitNoteId" class="text-danger"></span>*@
                                                 </div>
@@ -195,7 +195,7 @@
                                                 <script>
                                                     function GetBranchId() {
                                                         return {
-                                                            'TipoDocumento': "06--Nota de Débito",
+                                                            'IdTipoDocumento': 9,
                                                             'BranchId': $("#BranchId").data("kendoDropDownList").value(),
                                                         }
                                                     }
@@ -555,6 +555,58 @@
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
+                                                    <script>
+                                                        function SubProductByProductoId() {
+                                                            return {
+                                                                'ProductId': $("#ProductId").data("kendoDropDownList").value()
+                                                            }
+                                                        }
+                                                    </script>
+                                                    <div>
+                                                        <label asp-for="SubProductId" class="control-label" style="width:100%">SubServicios</label>
+                                                        @if (Model.DebitNoteId > 0)
+                                                        {
+                                                            <kendo-dropdownlist name="SubProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                                option-label="Seleccione el SubServicio"
+                                                                                for="SubProductId"
+                                                                                datatextfield="ProductName"
+                                                                                datavaluefield="SubproductId" enable="false"
+                                                                                data-val-required="El SubServicio es requerido."
+                                                                                style="width: 100%;color:black;font-weight:600">
+                                                                <datasource type="DataSourceTagHelperType.WebApi">
+                                                                    <transport>
+                                                                        <read url="@Url.Action("GetSubProductByProductId", "ProductRelation")" data="SubProductByProductoId" />
+                                                                    </transport>
+                                                                </datasource>
+
+                                                            </kendo-dropdownlist>
+                                                        }
+                                                        else
+                                                        {
+                                                            <kendo-dropdownlist name="SubProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                                option-label="Seleccione el SubServicio"
+                                                                                for="SubProductId"
+                                                                                datatextfield="ProductName"
+                                                                                datavaluefield="SubproductId"
+                                                                                data-val-required="El SubServicio es requerido."
+                                                                                style="width: 100%;">
+                                                                <datasource type="DataSourceTagHelperType.WebApi">
+                                                                    <sorts>
+                                                                        @*<sort field="ProductName" direction="asc" />*@
+                                                                    </sorts>
+                                                                    <transport>
+                                                                        <read url="@Url.Action("GetSubProductByProductId", "ProductRelation")" data="SubProductByProductoId" />
+                                                                    </transport>
+                                                                </datasource>
+
+                                                            </kendo-dropdownlist>
+                                                        }
+                                                    </div>
+                                                    <span asp-validation-for="SubProductId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
                                                     <label asp-for="OrderDate" class="control-label" style="width: 100%;">Fecha Orden</label>
                                                     @if (Model.DebitNoteId > 0)
                                                     {
@@ -593,7 +645,7 @@
                                                                               style="min-width: 86%;" class="form-control"
                                                                               format="dd/MM/yyyy hh:mm:ss"
                                                                               time-format="hh:mm:ss" data-val-required="La Fecha Entrega es requerida."
-                                                                              value="@DateTime.Now" ></kendo-datetimepicker>
+                                                                              value="@DateTime.Now"></kendo-datetimepicker>
                                                     }
                                                     <span asp-validation-for="DeliveryDate" class="text-danger"></span>
                                                 </div>
@@ -971,6 +1023,7 @@
     }
     ///validar not copy paste///
     $(document).ready(function () {
+        llenarsubproduct();
         $("#TefonoAlert").hide();
 
         $("#FacturaId").on('paste', function (e) {
@@ -1001,6 +1054,10 @@
             e.preventDefault();
         })
     });
+
+    $("#ProductId").on("change", function () {
+        llenarsubproduct();
+    })
 
     function BuscarFactura(e) {
         var FactFiscal = $("#IdFacturaFiscal").val();
@@ -1238,6 +1295,8 @@
                 'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
                 'ProductId': $("#ProductId").val(),
                 'ProductName': $("#ProductId").data("kendoDropDownList").text(),
+                'SubProductId': $("#SubProductId").val(),
+                'SubProductName': $("#SubProductId").data("kendoDropDownList").text(),
                 'OrderDate': _orderDate,
                 'DebitNoteDate': _orderDate,
                 'DeliveryDate': _deliveryDate,

@@ -55,6 +55,12 @@ namespace ERPMVC.Controllers
 
         }
 
+        public async Task<IActionResult> SFCambiosPatrimonio()
+        {
+            return await Task.Run(() => View());
+
+        }
+
         public async Task<JsonResult> AccountingByTypeAccount(Int64 TypeAccountId)
         {
             Accounting _customers = new Accounting();
@@ -546,7 +552,8 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Accounting/GetNoChildAccounts");
+                //var result = await _client.GetAsync(baseadress + "api/Accounting/GetNoChildAccounts"); Cambio de metodo a configuracion de bloqueo para diarios
+                var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountDiary");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -967,6 +974,17 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     cuentas = JsonConvert.DeserializeObject<List<Accounting>>(valorrespuesta);
+                    cuentas = (from c in cuentas
+                               select new Accounting
+                                  {
+                                      AccountId = c.AccountId,
+                                      AccountName = c.AccountCode + "--" + c.AccountName,
+                                      AccountCode = c.AccountCode,
+                                      Description = c.Description,
+                                      Estado = c.Estado,
+                                      IdEstado = c.IdEstado,
+                                  }
+                                   ).ToList();
                 }
                 return cuentas.ToDataSourceResult(request);
             }

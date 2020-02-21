@@ -157,6 +157,66 @@ namespace ERPMVC.Controllers
 
         }
 
+        public async Task<ActionResult> VendorInvoiceById([FromBody]VendorInvoiceDTO _sarpara)
+        {
+            VendorInvoiceDTO _VendorInvoice = new VendorInvoiceDTO();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/VendorInvoice/GetVendorInvoiceById/" + _sarpara.VendorInvoiceId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _VendorInvoice = JsonConvert.DeserializeObject<VendorInvoiceDTO>(valorrespuesta);
+                }
+                if(_VendorInvoice == null)
+                {
+                    _VendorInvoice = new VendorInvoiceDTO();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return await Task.Run(() => Ok(_VendorInvoice));
+        }
+
+        public async Task<DataSourceResult> GetVendorInvoiceByVendorId([DataSourceRequest]DataSourceRequest request, Int64 VendorId)
+        {
+            List<VendorInvoice> _VendorInvoice = new List<VendorInvoice>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/VendorInvoice/GetVendorInvoice");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _VendorInvoice = JsonConvert.DeserializeObject<List<VendorInvoice>>(valorrespuesta);
+                    _VendorInvoice = (from c in _VendorInvoice
+                                           .Where(q => q.VendorId == VendorId)
+                                            select new VendorInvoice
+                                            {
+                                                VendorInvoiceId = c.VendorInvoiceId,
+                                                VendorInvoiceName = "Id:" + c.VendorInvoiceId + " || Número de Factura:" + c.NumeroDEI  + "|| Fecha:" + c.FechaCreacion + "|| Total:" + c.Total,
+                                                VendorId = c.VendorId,
+                                            }).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return _VendorInvoice.ToDataSourceResult(request);
+        }
+
         [HttpPost("[action]")]
         public async Task<ActionResult<VendorInvoiceDTO>> SaveVendorInvoice([FromBody]VendorInvoiceDTO _VendorInvoice)
         {

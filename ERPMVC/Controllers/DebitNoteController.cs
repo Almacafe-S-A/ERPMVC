@@ -126,7 +126,10 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _DebitNote = JsonConvert.DeserializeObject<List<DebitNote>>(valorrespuesta);
-
+                    foreach (var item in _DebitNote)
+                    {
+                        item.NoSAG = $"{item.Sucursal}-{item.Caja}-{item.TipoDocumento}-{item.NúmeroDEI.ToString().PadLeft(8, '0')} ";
+                    }
                 }
 
 
@@ -167,7 +170,7 @@ namespace ERPMVC.Controllers
 
                 if (_listDebitNote.DebitNoteId == 0)
                 {
-                    _DebitNote.TipoDocumento = "06";
+                    _DebitNote.TipoDocumento = "07";
                     _DebitNote.FechaCreacion = DateTime.Now;
                     _DebitNote.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_DebitNote);

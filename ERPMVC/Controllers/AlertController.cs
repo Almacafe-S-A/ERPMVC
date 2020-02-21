@@ -101,7 +101,7 @@ namespace ERPMVC.Controllers
 
                 if (_Country == null)
                 {
-                    _Country = new CountryDTO { Actualizacion = DateTime.Now,  };
+                    _Country = new CountryDTO { Actualizacion = DateTime.Now, };
                 }
             }
             catch (Exception ex)
@@ -313,6 +313,64 @@ namespace ERPMVC.Controllers
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _Alert }, Total = 1 });
         }
+
+
+
+
+
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<Alert>> GenerarAlerta([FromBody]AlertDTO _Alert)
+        {
+
+            try
+            {
+                if (_Alert.Estado == "Cerrada")
+                {
+                    _Alert.CloseDate = DateTime.Now;
+                }
+                Alert _listAlert = new Alert();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Alert/GetAlertById/" + _Alert.AlertId);
+                string valorrespuesta = "";
+                _Alert.FechaModificacion = DateTime.Now;
+                _Alert.UsuarioModificacion = HttpContext.Session.GetString("user");
+                if (result.IsSuccessStatusCode)
+                {
+
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _listAlert = JsonConvert.DeserializeObject<Alert>(valorrespuesta);
+                }
+
+                if (_listAlert == null)
+                {
+                    _Alert.FechaCreacion = DateTime.Now;
+                    _Alert.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_Alert);
+                }
+                else
+                {
+                    var updateresult = await Update(_Alert.AlertId, _Alert);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Json(_Alert);
+        }
+
+
+
+
+
+
+
 
 
 

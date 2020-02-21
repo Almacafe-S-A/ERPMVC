@@ -1,12 +1,41 @@
-﻿@model ERPMVC.Models.CheckAccountLines
+﻿@model ERPMVC.DTO.CheckAccountLinesDTO
 @{ Layout = null;
-    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
-    {"required","Requerido" }
-};
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." }};
     var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
 }
 
-
+    <script>
+        function AddComprobanteRetencion() {
+        var dataObject = {
+            RetentionReceiptId: 0,
+            editar : 1
+        };
+        $.ajax({
+            url: '@Url.Action("pvwAddRetentionReceipt", "RetentionReceipt")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#numComprobanteRetencion").html('');
+                $("#numComprobanteRetencion").html(result);
+                $('#ModalComprobanteRetencion').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $.toast({
+                    heading: 'Validación',
+                    text: textStatus + ": " + XMLHttpRequest.responseText,
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 30000,
+                    stack: 6
+                });
+            }
+        });
+    }
+    </script>
 
 
     <div id="ModalCheck" class="modal fade" role="dialog">
@@ -19,7 +48,7 @@
                 </div>
                 <div class="modal-body">
 
-                    <form id="frmCheck" kendo-validator="true" kendo-messages="messages" asp-controller="CheckAccount" asp-action="SaveCheck"
+                    <form id="frmCheck" kendo-validator="true" kendo-messages="messages" 
                           data-ajax="true"
                           data-ajax-method="post" enctype="multipart/form-data"
                           data-ajax-begin="onBegin" data-ajax-complete="onComplete"
@@ -28,36 +57,33 @@
                         <div class="row">
                             <div class="col-md-4">
                                 <div class="form-group">
-                                    <label asp-for="CheckAccountId" class=" control-label" style="min-width:100%">Id Chequera</label>
-                                    <input type="text" asp-for="CheckAccountId" name="CheckAccountId" class="form-control" readonly style="min-width:100%" />
+                                    <label asp-for="CheckAccountId" class="control-label" style="min-width:100%">Id Chequera</label>
+                                    <input type="text" asp-for="CheckAccountId" name="CheckAccountId" class="k-textbox" readonly style="min-width:100%" />
                                     <span asp-validation-for="CheckAccountId" class="text-danger"></span>
                                 </div>
                             </div>
                             <div class="col-md-4" hidden>
                                 <div class="form-group">
                                     <label asp-for="Id" class=" control-label" style="min-width:100%"></label>
-                                    <input type="text" asp-for="Id" name="Id" class="form-control" readonly style="min-width:100%" />
+                                    <input type="text" asp-for="Id" name="Id" class="k-textbox" readonly style="min-width:100%" />
                                     <span asp-validation-for="Id" class="text-danger"></span>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label asp-for="CheckNumber" class=" control-label" style="min-width:100%">Número de Cheque</label>
-                                    <input type="text" asp-for="CheckNumber" name="CheckNumber" class="form-control" style="min-width:100%" data-val-required="Número de Cheque es requerido" required />
+                                    <input type="text" asp-for="CheckNumber" name="CheckNumber" class="k-textbox" style="min-width:100%" data-val-required="Número de Cheque es requerido" required   />
                                     <span asp-validation-for="CheckNumber" class="text-danger"></span>
                                 </div>
                             </div>
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label asp-for="Date" class=" control-label" style="min-width:100%">Fecha</label>
-
                                     <kendo-datepicker name="Date" for="Date"
                                                       style="min-width:100%"
-                                                      format="dd/MM/yyyy hh:mm:ss"
-                                                      time-format="hh:mm:ss"
-                                                      data-val-required="La fecha es requerida" required
-                                                      readonly />
-                                    <span asp-validation-for="Date" class="text-danger"></span>
+                                                      format="dd/MM/yyyy"
+                                                      time-format="hh:mm:ss"                                                     
+                                                       />
                                 </div>
                             </div>
 
@@ -66,13 +92,13 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label class="  control-label" style="width:100%">Tipo de Beneficiario</label>
-                                    <kendo-dropdownlist name="PartyTypeId"
+                                    <kendo-dropdownlist name="PartyTypeId" for="PartyTypeId"
                                                         id="IdPartyType"
                                                         data-val-required="El Tipo Beneficiario es requerido."
                                                         filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                        style="width: 100%;">
+                                                        style="min-width: 100%;">
                                     </kendo-dropdownlist>
-                                    @*<span asp-validation-for="PartyTypeId" class="text-danger"></span>*@
+                                    <span asp-validation-for="PartyTypeId" class="text-danger"></span>
                                 </div>
                             </div>
 
@@ -81,12 +107,12 @@
                                     <label class="  control-label" style="width:100%">Beneficiario</label>
                                     <kendo-dropdownlist name="PartyId"
                                                         id="IdParty"
-                                                        enable: false,
+                                                        enable="false"
                                                         option-label="Seleccionar beneficiario"
                                                         filter="Kendo.Mvc.UI.FilterType.Contains"
                                                         style="width: 100%;">
                                     </kendo-dropdownlist>
-                                    @*<span asp-validation-for="PartyId" class="text-danger"></span>*@
+                                    
                                 </div>
                                 <div class="form-group" id="employe">
                                     <label class="  control-label" style="width:100%">Beneficiario</label>
@@ -148,8 +174,8 @@
 
                                 <div class="form-group" id="notype">
                                     <label asp-for="PaytoOrderOf" class=" control-label" style="min-width:100%">Pagar a la Orden de</label>
-                                    <input type="text" asp-for="PaytoOrderOf" name="PaytoOrderOf" class="form-control" style="min-width:100%" required />
-                                    <span asp-validation-for="PaytoOrderOf" class="text-danger"></span>
+                                    <input type="text" asp-for="PaytoOrderOf" name="PaytoOrderOf" class="k-textbox" style="min-width:100%"  />
+                                    
                                 </div>
 
                             </div>
@@ -163,7 +189,7 @@
                             <div class="col-md-8">
                                 <div class="form-group">
                                     <label asp-for="Place" class=" control-label" style="min-width:100%">Lugar</label>
-                                    <input type="text" asp-for="Place" name="Date" class="form-control" style="min-width:100%" required />
+                                    <input type="text" asp-for="Place" name="Date" class="k-textbox" style="min-width:100%"  data-val-required="El Lugar es requerido." />
                                     <span asp-validation-for="Place" class="text-danger"></span>
                                 </div>
                             </div>
@@ -173,24 +199,45 @@
                                     <kendo-numerictextbox for="Ammount" name="Ammount"
                                                           format="n2"
                                                           min="0"
-                                                          spinners="false"
-                                                          required
+                                                          spinners="false"                                                          
                                                           maxlength="20"
                                                           style="min-width:100%" />
                                     <span asp-validation-for="Ammount" class="text-danger"></span>
                                 </div>
                             </div>
 
-                            <div class="col-md-12">
-                                <button id="btnCheckAccount" class="form-control btn-miboton" type="submit" hidden> Guardar </button>
-                            </div>
+                            
                         </div>
 
-                        @await Html.PartialAsync("JournalEntryLine", new ERPMVC.Models.JournalEntry { JournalEntryId = 0 })
+                        <div class="row">
+                            <div class="col-md-8">
+                                <div class="form-group">
+                                    <label asp-for="Sinopsis" class=" control-label" style="min-width:100%">Sinopsis</label>
+                                    <input type="text" asp-for="Sinopsis" name="Date" class="k-textbox" style="min-width:100%" data-val-required="La Sinopsis es Requerida" />
+                                    <span asp-validation-for="Sinopsis" class="text-danger"></span>
+                                </div>
+                            </div>
+                            @*<div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="RetencionId" class="k-label" style="min-width:100%">Retencion</label>
+                                    <input type="text" asp-for="RetencionId" name="Date" class="form-control"  />
+                                    <button class="btn btn-primary" onclick="AddComprobanteRetencion()" type="button">Asociar Retención</button>
+                                </div>
+                            </div>*@
+
+                        </div>
+                        <div class="row">
+                            
+                        </div>
+
+                            @await Html.PartialAsync("JournalEntryLine", new ERPMVC.DTO.JournalEntryLineDTO { JournalEntryId = 0, AccountId = Convert.ToInt32( Model.AccountManagement==null? 0:Model.AccountManagement.AccountId) })
+
                     </form>
                     <div class="row">
-
-                        <button id="Guardar" class="form-control btn-miboton" type="button" onclick="SaveJournalEntry()"> Guardar </button>
+                        
+                            <button id="Guardar" class="form-control btn-miboton" type="button" onclick="SaveJournalEntry()"> Guardar </button>
+                       
+                        
                     </div>
                 </div>
                     <div class="modal-footer">
@@ -205,16 +252,23 @@
         </div>
        
     </div>
-
+    @*<div id="numComprobanteRetencion">
+        @await Html.PartialAsync("pvwAddRetentionReceipt", new ERPMVC.DTO.RetentionReceiptDTO { RetentionReceiptId = 0, FechaEmision = DateTime.Now, DueDate = DateTime.Now })
+    </div>*@
 
 
 
 <script>
 
-    function Guardar() {
-        
-        SaveJournalEntry();
+function customFunction(input) {
+
+        if (input.attr('name') === "Ammount" && input.val() == "0.00") {
+            return false;
+        }
+
+        return true;
     }
+
 
     var onBegin = function () {
         //alert("Begin");
@@ -277,7 +331,7 @@
             dataValueField: "value",
             optionLabel: {
                 text: "Seleccione tipo de  beneficiario",
-                value: 0
+                value: null
             },
             dataSource: [
                 { text: "Digitar", value: 0 },
@@ -363,8 +417,48 @@
 
     function SaveJournalEntry(e) {
         debugger;
-        var Debito = $("#TotalDebit").val();
-        var Credito = $("#TotalCredit").val();
+        if ($("#Ammount").val()<1) {
+            $.toast({
+                                heading: 'Error',
+                                text: 'Monto no puede ser cero',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'error',
+                                hideAfter: 30000,
+                                stack: 6
+            });
+            return;
+        }
+
+        if ($("#Place").val()=='') {
+            $.toast({
+                                heading: 'Error',
+                                text: 'Debe Colocarl el lugar de emision del Cheque',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'error',
+                                hideAfter: 30000,
+                                stack: 6
+            });
+
+            return;
+        }
+        var IdTipoBeneficiario = $("#IdPartyType").data("kendoDropDownList").value();
+        if (IdTipoBeneficiario == '') {
+             $.toast({
+                                heading: 'Error',
+                                text: 'Debe de seleccionar el beneficiario',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'error',
+                                hideAfter: 30000,
+                                stack: 6
+             });
+            return;
+        }
+        
+        var Debito = $("#TotalDebito").val();
+        var Credito = $("#TotalCredito").val();
         if (Number(Credito) != Number(Debito)) {
                 alert("La partida contable no esta cuadrada");
                 return
@@ -374,57 +468,53 @@
             return
         };
 
-        debugger;
-            var notification = $("#notification").data("kendoNotification");
-           // e.preventDefault();
-        $("#btnJournalEntry").hide();
-        $("#btnJournalEntry").prop("disabled", true);
+        debugger;           
+        $("#Guardar").hide();
+        $("#Guardar").prop("disabled", true);
 
         var displayedData = $("#gridNumeracionJournalEntryLine").data().kendoGrid.dataSource.data();
         for (var i = 0; i < displayedData.length; i++) {
             displayedData[i].JournalEntryLineId = 0;
         }
-         document.getElementById('btnCheckAccount').click();
+        document.getElementById('btnCheckAccount').click();
+
+        
+        beneficiario = '';
+        switch (IdTipoBeneficiario) {
+            case '0':
+                beneficiario = $("#PaytoOrderOf").val();
+                break;
+            case '1':
+                beneficiario = $("#IdCustomer").data("kendoDropDownList").text();
+                break;
+            case '2':
+                beneficiario = $("#idemploye").data("kendoDropDownList").text();
+                break;
+            case '3':
+                beneficiario = $("#IdVendor").data("kendoDropDownList").text();
+                break;
+            
+            
+        }
 
         var dataObject = {
-            'JournalEntryId':0,
-            'GeneralLedgerHeaderId': 0,
-            'PartyId': $("#PartyId").val(),
-            'VoucherType': $("#VoucherType").val(),
-            'TypeJournalName': $("#VoucherType").data("kendoDropDownList").text(),
-            'Date': $("#Date").getKendoDateTimePicker().value().toJSON(),
-            'DatePosted': $("#Date").getKendoDatePicker().value().toJSON(),
-            'Memo': "",
-            'ReferenceNo': 0,
-            'TotalCredit': $("#TotalCredit").val(), 
-            'TotalDebit': $("#TotalDebit").val(), 
-            'TypeOfAdjustmentId': 66,
-            'TypeOfAdjustmentName': "Asiento Contable",
-            'PartyTypeId': $("#IdPartyType").val(),
-            'PartyTypeName': $("#IdPartyType").data("kendoDropDownList").text(),
-            'PartyId': $("#PartyId").val(),
-            'PartyName': $("#PartyName").val(),
-            'EstadoName': "Aprobado",
-            'EstadoId': 6,
-            //'IdTypeofPayment': $("#IdTypeofPayment").val(),
-            //'IdPaymentCode': $("#IdPaymentCode").val(),
-            //'CreatedDate': $("#CreatedDate").val(),
-            //'ModifiedDate': $("#ModifiedDate").val(),
-            //'CreatedUser': $("#CreatedUser").val(),
-            //'ModifiedUser': $("#ModifiedUser").val(),           
+            'CheckAccountId':$("#CheckAccountId").val(),
+            'CheckNumber':$("#CheckNumber").val(),
+            'Date':$("#Date").getKendoDatePicker().value().toJSON(),
+            'Place':$("#Place").val(),
+            'PaytoOrderOf':beneficiario,
+            'RTN':$("#RTN").val(),
+            'Ammount':$("#Ammount").val(),
+            'Adress': $("#Adress").val(),
+            'Sinopsis':$("#Sinopsis").val(),
             'JournalEntryLines': displayedData
             };
 
            console.log(displayedData);
            console.log(JSON.stringify(dataObject));
-            //var form = $("#frmNumeracion");
-            //form.validate();
-
-        var validator = $("#frmJournalEntry").data("kendoValidator");
-                 var status = $(".status");
-                if (validator.validate()) {
+           
                     $.ajax({
-                        url: '@Url.Action("SaveJournalEntry", "JournalEntry")',
+                        url: '@Url.Action("SaveCheck", "CheckAccount")',
                         method: 'POST',
                         datatype: "json",
                         contentType: 'application/json',
@@ -438,7 +528,7 @@
                             //}, "upload-success");
                             $.toast({
                                 heading: 'Satisfactorio',
-                                text: '<br/><br/>Datos guardados correctamente.',
+                                text: 'Datos guardados correctamente.',
                                 position: 'top-right',
                                 loaderBg: '#ff6849',
                                 icon: 'success',
@@ -446,26 +536,28 @@
                                 stack: 6
                             });
                             RefrescarGrid();
-                            $('#ModalJournalEntry').modal('hide');
+                            $('#ModalCheck').modal('hide');
 
                         },
                         error: function (XMLHttpRequest, textStatus, errorThrown) {
 
-                            notification.show({
-                                title: "Validacion",
-                                message: textStatus + ": " + XMLHttpRequest.responseText
-                            }, "error");
+                           $.toast({
+                                heading: 'Error',
+                                text: '<br/><br/>Error al Registrar el Cheque',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'error',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+                            RefrescarGrid();
+                           // $('#ModalCheck').modal('hide');
                         }
                     });
-                }
-                else {
-                    status.text("Oops! There is invalid data in the form.")
-                        .removeClass("valid")
-                        .addClass("invalid");
-        }
-        $("#btnJournalEntry").show();
+                
+        $("#Guardar").show();
         //$("#btnJournalEntry").prop("disabled", true);
-        $("#btnJournalEntry").prop("disabled", false);
+        $("#Guardar").prop("disabled", false);
     }    
 
 </script>

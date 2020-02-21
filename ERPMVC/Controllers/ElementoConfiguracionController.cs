@@ -95,7 +95,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet("[controller]/[action]")]
-        public async Task<ActionResult> GetElementoByIdConfiguracion([DataSourceRequest]DataSourceRequest request,Int64 Id,string Estado="A")
+        public async Task<ActionResult> GetElementoByIdConfiguracion([DataSourceRequest]DataSourceRequest request,Int64 Id,string Estado="Activo")
         {
             List<ElementoConfiguracion> _ElementoConfiguracion = new List<ElementoConfiguracion>();
             try
@@ -109,7 +109,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ElementoConfiguracion = JsonConvert.DeserializeObject<List<ElementoConfiguracion>>(valorrespuesta);
-                    _ElementoConfiguracion = _ElementoConfiguracion.Where(q => q.Estado == Estado).ToList();
+                    _ElementoConfiguracion = _ElementoConfiguracion.Where(q => q.IdEstado == 1).ToList();
                 }
 
             }

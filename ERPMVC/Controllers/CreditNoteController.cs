@@ -89,7 +89,10 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CreditNote = JsonConvert.DeserializeObject<List<CreditNote>>(valorrespuesta);
-
+                    foreach (var item in _CreditNote)
+                    {
+                        item.NoSAG = $"{item.Sucursal}-{item.Caja}-{item.TipoDocumento}-{item.NúmeroDEI.ToString().PadLeft(8, '0')} ";
+                    }
                 }
 
 
@@ -157,7 +160,7 @@ namespace ERPMVC.Controllers
 
                 if (_listCreditNote.CreditNoteId == 0)
                 {
-                    _CreditNote.TipoDocumento = "05";
+                    _CreditNote.TipoDocumento = "06";
                     _CreditNote.DeliveryDate = DateTime.Now;
                     _CreditNote.FechaCreacion = DateTime.Now;
                     _CreditNote.UsuarioCreacion = HttpContext.Session.GetString("user");

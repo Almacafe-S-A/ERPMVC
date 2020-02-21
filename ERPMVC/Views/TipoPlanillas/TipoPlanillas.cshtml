@@ -1,7 +1,7 @@
 ﻿@using Kendo.Mvc.UI
 
 @{
-    ViewData["Title"] = "TipoPlanillas";
+    ViewData["Title"] = "Tipo Planillas";
 
 }
 
@@ -22,7 +22,12 @@
         $('#ModalTipoPlanillas').find(':input').not(':submit').val('');
         $('#ModalTipoPlanillas').modal('show');
         $("#IdTipoPlanilla").val('0');
+        $("#EstadoId").data('kendoDropDownList').value(0);
 
+
+
+        var validator = $("#frmTipoPlanillas").data("kendoValidator");
+        validator.hideMessages();
     }
 
 
@@ -30,7 +35,7 @@
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         var dataObject = {
-            Id: dataItem.Id,
+            IdTipoPlanilla: dataItem.IdTipoPlanilla,
             editar: 0
         };
 
@@ -53,6 +58,38 @@
                 alert(textStatus + ": " + XMLHttpRequest.responseText);
             }
         });
+    }
+
+    function DeleteTipoPlanillas(e) {
+        if (confirm('¿Esta seguro que desea eliminar este registro?')) {
+            e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                IdTipoPlanilla: dataItem.IdTipoPlanilla
+            };
+            $.ajax({
+                url: '@Url.Action("Delete", "TipoPlanillas")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    RefrescarGrid();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                }
+            });
+        }
     }
 
     function RefrescarGrid() {
@@ -80,15 +117,18 @@
 
             columns.Command(command =>
             {
-    //command.Custom("Ver detalles").Click("Detalles");
-    command.Custom("Editar").Click("EditTipoPlanillas");
-                command.Destroy().Text("Eliminar");
-            }).Width(250);
+                //command.Custom("Ver detalles").Click("Detalles");
+
+
+                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditTipoPlanillas");
+                command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("DeleteTipoPlanillas");
+                //command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+            }).Title("Acciones").Width(70);
 
             columns.Bound(p => p.IdTipoPlanilla).Width(150);
-            columns.Bound(p => p.TipoPlanilla).Width(170);
-            columns.Bound(p => p.Descripcion).Width(170);
-            columns.Bound(p => p.Estado).Width(170);
+            columns.Bound(p => p.TipoPlanilla).Title("Nombre Tipo de Planillas").Width(170);
+            columns.Bound(p => p.Descripcion).Title("Descripción").Width(170);
+            columns.Bound(p => p.Estado).Title("Estado").Width(170);
 
 
         })
@@ -97,9 +137,9 @@
         .ToolBar(tools =>
         {
 
-//tools.Create();
-tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddTipoPlanillas()" });
+            //tools.Create();
+            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddTipoPlanillas()" });
             tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
             tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
 
@@ -108,13 +148,16 @@ tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
         })
         .Editable(e => e.Mode(GridEditMode.PopUp))
         .Sortable()
-        .Pageable()
+        .Pageable(s => s
+            .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+            .Empty("No hay datos."))
+        )
         .Filterable()
         .Scrollable()
-        .Pdf(pdf => pdf.FileName("TipoPlanillasReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+        .Pdf(pdf => pdf.FileName("Tipo_Planillas_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
         + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
         .ProxyURL(Url.Action("Export", "Home")).AllPages())
-        .Excel(excel => excel.FileName("TipoPlanillasReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+        .Excel(excel => excel.FileName("Tipo_Planillas_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
         + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
         .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
         .DataSource(dataSource =>
@@ -146,3 +189,22 @@ tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
 <div id="numTipoPlanillas">
     @await Html.PartialAsync("pvwAddTipoPlanillas", new ERPMVC.DTO.TipoPlanillasDTO { IdTipoPlanilla = 0 })
 </div>
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridTipoPlanillas").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridTipoPlanillas").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+</script>

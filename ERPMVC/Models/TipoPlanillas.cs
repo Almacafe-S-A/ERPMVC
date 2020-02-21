@@ -16,16 +16,12 @@ namespace ERPMVC.Models
         [Display(Name = "Id")]
         public long IdTipoPlanilla { get; set; }
         [Display(Name = "Tipo de Planilla")]
-        [Required]
         public string TipoPlanilla { get; set; }
         [Display(Name = "Descripción")]
-        [Required]
         public string Descripcion { get; set; }
         [Display(Name = "Estado")]
-        [Required]
         public string Estado { get; set; }
         [Display(Name = "Estado")]
-        [Required]
         public long EstadoId { get; set; }
 
 

@@ -6,7 +6,23 @@
 
 
 <script>
-
+      function clearsession() {
+         var dataObject = ["journalentryline"];
+         $.ajax({
+            url: '@Url.Action("ClearSession","Common")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                  //  $('#myModalSalesOrder').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+         });
+    }
 
 
     function AddCheckAccount() {
@@ -41,13 +57,29 @@
     }
 
     function AddCheck(e) {
+        clearsession();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (dataItem.Estado == "Inactivo") {
+             $.toast({
+                                heading: 'Error',
+                                text: 'No se puedene emitrio Cheques de una Chequera Inactiva',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'error',
+                                hideAfter: 30000,
+                                stack: 6
+             });
+            return;
+        }
         var dataObject = {
             CheckAccountId: dataItem.CheckAccountId,
-            CheckNumber: dataItem.NumeroActual,
-            id: 0
+            CheckNumber: dataItem.NumeroActual,            
+            id: 0,
+            AccountManagement: {
+                AccountManagementId : dataItem.AccountManagementId
+            }
         };
-
+        //console.log(dataItem.AccountManagementId);
         $('#ModalCheck').find(':input').not(':submit').val('');
         //$('#ModalCheckAccount').modal('show');
         $("#CheckAccountId").val('0');
@@ -74,6 +106,8 @@
 
     }
 
+
+   
 
 
          function EditCheckAccount(e) {
@@ -106,6 +140,9 @@
          }
 
 
+    
+    
+
 
 </script>
 
@@ -120,15 +157,17 @@
                                     command.Custom("EmitirCheque").Text(" ").IconClass("fa fa-plus").Click("AddCheck");
                                     command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCheckAccount");
                                     //command.Destroy().IconClass("fa fa-trash").Text(" ");
-                                }).Width(150);
+                                }).Title("Acciones").Width(150);
 
                                 columns.Bound(p => p.CheckAccountId).Width(100);
                                 columns.Bound(p => p.CheckAccountNo).Width(200);
                                 columns.Bound(p => p.BankName).Width(150);
+                                columns.Bound(p => p.AccountManagementId).Visible(false);
                                 columns.Bound(p => p.AssociatedAccountNumber).Width(150);
                                 columns.Bound(p => p.NoInicial).Width(150);
                                 columns.Bound(p => p.NoFinal).Width(150);
                                 columns.Bound(p => p.NumeroActual).Width(150);
+                                columns.Bound(p => p.Estado).Width(150);
                             })
                                 .Filterable(f => f.Operators(o => o.ForString(s => s
                                                        .Clear()
@@ -215,10 +254,12 @@
                     .Name("grid_#=CheckAccountId#")
                     .Columns(columns =>
                     {
-                        /*columns.Command(command =>
+                        columns.Command(command =>
                         {
-                            command.Custom("Anular").Click("AnularCheque");
-                        }).Width(100);*/
+                            command.Custom("Anular").Text(" ").IconClass("fa fa-close").Click("AnularCheque");
+                            command.Custom("ImprimirCheque").Text(" ").IconClass("fa fa-print").Click("ImprimirCheque");
+                            command.Custom("ImprimirReporteCheque").Text(" ").IconClass("fa fa-print").Click("ImprimirReporteCheque");
+                        }).Title("Acciones").Width(150);
                         columns.Bound(o => o.Id).Title("Id").Width(80);
                         columns.Bound(o => o.CheckNumber).Title("Numero").Width(120);
                         columns.Bound(o => o.Date).Title("Fecha").Format("{0:dd/MM/yyyy}").Width(120);
@@ -257,6 +298,77 @@
 
 
 <script>
+    function AnularCheque(e) {
+        debugger;  
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                CheckAccountId: dataItem.CheckAccountId,
+                Id: dataItem.Id,
+            };
+
+            $.ajax({
+                url: '@Url.Action("AnularCheque", "CheckAccount")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $.toast({
+                                heading: 'Satisfactorio',
+                                text: 'Cheque Anulado Correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    //alert(textStatus + ": " + XMLHttpRequest.responseText);
+                     $.toast({
+                                heading: 'Error',
+                                text: XMLHttpRequest.responseText,
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'error',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+                }
+            });
+        RefrescarGrid();
+    }
+
+        function ImprimirCheque(e) {
+        debugger;  
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            
+
+            var url = '@Url.Action("SFCheque", "CheckAccount")/' + dataItem.Id;
+                var win = window.open(url, '_blank');
+                win.focus();
+
+            
+    }
+    function ImprimirReporteCheque(e) {
+        debugger;  
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            
+
+            var url = '@Url.Action("SFVoucherCheque", "CheckAccount")/' + dataItem.Id;
+                var win = window.open(url, '_blank');
+                win.focus();
+
+            
+    }
+
+
+
+
     function setToolbarTooltip(btn_cl, btn_tooltip) {
         $("#gridCheckAccount").kendoTooltip({
             filter: btn_cl,
@@ -271,11 +383,9 @@
         });
     } 
 
-
-
-    function AnularCheque(e) {
-       
-    }
+    setRowButtonTooltip(".k-grid-Anular", "Anular Cheque");
+    setRowButtonTooltip(".k-grid-ImprimirCheque", "Imprimir Cheque");
+    setRowButtonTooltip(".k-grid-ImprimirReporteCheque", "Imprimir reporte de voucher");
     setRowButtonTooltip(".k-grid-Editar", "Editar Chequera");
     setRowButtonTooltip(".k-grid-delete", "Eliminar");
     setRowButtonTooltip(".k-grid-EmitirCheque", "Emitir Cheque");
@@ -284,7 +394,7 @@
 
 
 <div id="NumCheck">
-    @await Html.PartialAsync("pvwAddCheck" , new ERPMVC.Models.CheckAccountLines { CheckAccountId = 0 , Id = 0 })
+    @await Html.PartialAsync("pvwAddCheck" , new ERPMVC.DTO.CheckAccountLinesDTO { CheckAccountId = 0 , Id = 0 })
 
 </div>
     

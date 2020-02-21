@@ -67,6 +67,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Employees = JsonConvert.DeserializeObject<EmployeesDTO>(valorrespuesta);
+                    _Employees.QtySalary = Convert.ToDecimal(_Employees.Salario);
 
                 }
             }
@@ -142,6 +143,7 @@ namespace ERPMVC.Controllers
                     _EmployeesP.FechaCreacion = DateTime.Now;
                     _EmployeesP.Usuariocreacion = HttpContext.Session.GetString("user");
                     if (_EmployeesP.QtySalary > 0) {
+                        _EmployeesP.Salario = _EmployeesP.QtySalary;
                         EmployeeSalaryDTO _Salary = new EmployeeSalaryDTO();
                         _Salary.QtySalary = _EmployeesP.QtySalary;
                         _Salary.DayApplication = _EmployeesP.DayApplication;
@@ -179,6 +181,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
+                    _EmployeesP.Salario = _EmployeesP.QtySalary;
                     _EmployeesP.Foto = _Employees.Foto;
                     _EmployeesP.Usuariocreacion = _Employees.Usuariocreacion;
                     _EmployeesP.FechaCreacion = _Employees.FechaCreacion;

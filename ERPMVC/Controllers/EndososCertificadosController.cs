@@ -209,6 +209,8 @@ namespace ERPMVC.Controllers
 
                     if (_listEndososCertificados.EndososCertificadosId == 0)
                     {
+                        _EndososCertificados.FechaLiberacion = DateTime.Now;
+                        _EndososCertificados.FechaCancelacion = DateTime.Now;
                         _EndososCertificados.FechaCreacion = DateTime.Now;
                         _EndososCertificados.UsuarioCreacion = HttpContext.Session.GetString("user");
                         var insertresult = await Insert(_EndososCertificados);
@@ -325,10 +327,19 @@ namespace ERPMVC.Controllers
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _EndososCertificados }, Total = 1 });
         }
+        [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> SFEndosos(Int32 id)
+        {
+            try
+            {
+                EndososCertificados _EndososCertificados = new EndososCertificados { EndososCertificadosId = id, };
+                return await Task.Run(() => View(_EndososCertificados));
+            }
+            catch (Exception)
+            {
 
-
-
-
-
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+        }
     }
 }

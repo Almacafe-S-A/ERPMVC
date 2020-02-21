@@ -136,6 +136,18 @@ namespace ERPMVC.Controllers
                 }
 
                 ViewBag.pathcontrato = _CustomerDocument.Path;
+
+
+                if (System.IO.File.Exists(_CustomerDocument.Path))
+                {
+                    var stream = new FileStream(_CustomerDocument.Path, FileMode.Open);
+                    return new FileStreamResult(stream, "application/pdf");
+                }
+                else
+                {
+                    return await Task.Run(() => BadRequest($"No se encontro el archivo."));
+                }
+                
             }
             catch (Exception ex)
             {
@@ -164,6 +176,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CustomerDocument = JsonConvert.DeserializeObject<List<CustomerDocument>>(valorrespuesta);
+                    _CustomerDocument = _CustomerDocument.OrderByDescending(x => x.CustomerDocumentId).ToList();
 
                 }
 
@@ -185,7 +198,15 @@ namespace ERPMVC.Controllers
 
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<CustomerDocument>> SaveCustomerDocument(IEnumerable<IFormFile> files,CustomerDocumentDTO _CustomerDocument)
-        {
+        {            
+            var Respuestasd = "TipoDocumentoRequerido";
+            var ImagenRequerida = "ImagenRequerida";
+            int existedocumentos = 0;
+            
+            if (_CustomerDocument.DocumentTypeId == 0){return Json(Respuestasd);}
+            _CustomerDocument.CustomerId = _CustomerDocument.CustomerParametrosave;
+
+            IFormFile filesDocument = files.FirstOrDefault();
 
             try
             {               
@@ -197,14 +218,44 @@ namespace ERPMVC.Controllers
                 var result = await _client.GetAsync(baseadress + "api/CustomerDocument/GetCustomerDocumentById/" + _CustomerDocument.CustomerDocumentId);
                 string valorrespuesta = "";
 
+
+                if (_CustomerDocument.DocumentName != null && filesDocument == null)
+                {
+                    
+
+                        _CustomerDocument.FechaModificacion = DateTime.Now;
+                        _CustomerDocument.UsuarioModificacion = HttpContext.Session.GetString("user");
+                        if (result.IsSuccessStatusCode)
+                        {
+
+                            valorrespuesta = await (result.Content.ReadAsStringAsync());
+                            _listCustomerDocument = JsonConvert.DeserializeObject<CustomerDocument>(valorrespuesta);
+                        }
+
+                    var DocuemntoNames = await GetDocumentoDuplicate(_CustomerDocument);
+                    existedocumentos = Convert.ToInt32(DocuemntoNames.Value);
+
+                    if (existedocumentos > 0)
+                    {
+                        return Json(existedocumentos);
+                    }
+                    else
+                    {
+                        var updateresult = await Update(_CustomerDocument.CustomerDocumentId, _CustomerDocument);
+                    }
+
+                    return Json(_CustomerDocument);
+
+                }
+                else { 
+
                 foreach (var file in files)
                 {
+                    ImagenRequerida = "ImagenRequeridaNo";
 
-                   
                     FileInfo info = new FileInfo(file.FileName);
-                    if (info.Extension.Equals(".pdf") || info.Extension.Equals(".jpg") 
-                        || info.Extension.Equals(".png")
-                       || info.Extension.Equals(".xls") || info.Extension.Equals(".xlsx"))
+                    if (info.Extension.Equals(".pdf") || info.Extension.Equals(".jpeg") 
+                        || info.Extension.Equals(".png") || info.Extension.Equals(".txt"))
                     {                      
 
                         _CustomerDocument.FechaModificacion = DateTime.Now;
@@ -222,18 +273,44 @@ namespace ERPMVC.Controllers
                             _CustomerDocument.FechaCreacion = DateTime.Now;
                             _CustomerDocument.DocumentName = file.FileName;
                             _CustomerDocument.UsuarioCreacion = HttpContext.Session.GetString("user");
-                            var insertresult = await Insert(_CustomerDocument);
-                            var value = (insertresult.Result as ObjectResult).Value;
-                            _CustomerDocument = ((CustomerDocumentDTO)(value));
+
+                            var DocuemntoNames = await GetDocumentoDuplicate(_CustomerDocument);
+                            existedocumentos = Convert.ToInt32(DocuemntoNames.Value);
+
+                            if (existedocumentos > 0)
+                            {
+                                return Json(existedocumentos);
+                            }
+                            else
+                            {
+                                var insertresult = await Insert(_CustomerDocument);
+                                var value = (insertresult.Result as ObjectResult).Value;
+                                _CustomerDocument = ((CustomerDocumentDTO)(value));
+                            }
                         }
                         else
                         {
+
                             if (System.IO.File.Exists(_listCustomerDocument.Path))
                                 System.IO.File.Delete(_listCustomerDocument.Path);
                             _CustomerDocument.DocumentName = file.FileName;
                             _CustomerDocument.UsuarioCreacion = _listCustomerDocument.UsuarioCreacion;
                             _CustomerDocument.FechaCreacion = _listCustomerDocument.FechaCreacion;
-                            var updateresult = await Update(_CustomerDocument.CustomerDocumentId, _CustomerDocument);
+
+
+                            var DocuemntoNames = await GetDocumentoDuplicate(_CustomerDocument);
+                            existedocumentos = Convert.ToInt32(DocuemntoNames.Value);
+
+                            if (existedocumentos > 0)
+                            {
+                                return Json(existedocumentos);
+                            }
+                            else
+                            {
+                                var updateresult = await Update(_CustomerDocument.CustomerDocumentId, _CustomerDocument);
+                            }
+
+                          
                         }
 
                        
@@ -253,6 +330,13 @@ namespace ERPMVC.Controllers
                         var updateresult2 = await Update(_CustomerDocument.CustomerDocumentId, _CustomerDocument);
                     }
                 }
+            }
+
+                if (ImagenRequerida == "ImagenRequerida")
+                {
+                    return Json(ImagenRequerida);
+                }
+
 
             }
             catch (Exception ex)
@@ -356,7 +440,36 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpGet]
+        public async Task<JsonResult> GetDocumentoDuplicate(CustomerDocument Documento)
+        {
+            Int32 Existe = 0;
 
+            CustomerDocument Contiene = new CustomerDocument();
+
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/CustomerDocument/GetDocumento", Documento);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    Existe = JsonConvert.DeserializeObject<Int32>(valorrespuesta);
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(Existe);
+        }
 
 
     }

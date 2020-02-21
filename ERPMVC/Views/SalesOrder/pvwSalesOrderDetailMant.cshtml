@@ -6,7 +6,7 @@
 
     completedorderlinemant = function (xhr) {
 
-        $('#myModalSalesOrderLine').find(':input').not('#SalesOrderId :submit').val('0');      
+        $('#myModalSalesOrderLine').find(':input').not('#SalesOrderId :submit').val('0');
         $('#UnitOfMeasureId').data("kendoDropDownList").value('0');
         $('#TaxId').data("kendoDropDownList").value(0);
         $('#SubProductId').data("kendoDropDownList").value(0);
@@ -24,9 +24,15 @@
 
 
     function CalcularTotalDocumento() {
-        var freight = $("#Freight").val()===""?0:$("#Freight").val();
+        debugger;
+        var freight = $("#Freight").val() === "" ? 0 : $("#Freight").val();
 
-        var displayedData = $("#gridCotizacionesDetail").data().kendoGrid.dataSource.data();
+        //var grid = $("#gridCotizacionesDetail").getKendoGrid();
+        //grid.dataSource.read();
+        //grid.refresh();
+
+        var displayedData = $("#gridCotizacionesDetail").data("kendoGrid").dataSource.data();
+        console.log("Vista", displayedData.length)
         var subtotal =0, amount =0, total = 0, totaldescuento = 0, totalimpuesto = 0,totalimpuesto18=0, totalmonto = 0;
         var TotalExento = 0, TotalExonerado = 0, TotalGravado = 0,TotalGravado18=0;
 
@@ -40,6 +46,11 @@
 
 
             if (t["TaxCode"] == "I.S.V" ) {
+                TotalGravado = TotalGravado + (t["Total"] - t["TaxAmount"]);
+                totalimpuesto = totalimpuesto + t["TaxAmount"];
+            }
+
+            if (t["TaxCode"] == "I.S.C") {
                 TotalGravado = TotalGravado + (t["Total"] - t["TaxAmount"]);
                 totalimpuesto = totalimpuesto + t["TaxAmount"];
             }
@@ -76,6 +87,8 @@
         setearvalor('SubTotal', Number(subtotal));
         setearvalor('Total', sumatotal);
     }
+
+
 
     function AddConceptoCotizacion(e) {
        // e.preventDefault();
@@ -133,6 +146,48 @@
 
     }
 
+    
+
+    function lockunidaddemedida() {
+        debugger;
+        if ($("#TypeContractId").data("kendoDropDownList").text() === "Cobro por Comisión") {
+            $("#UnitOfMeasureId").data("kendoDropDownList").enable(false);
+            $("#UnitOfMeasureId").removeAttr("required");
+            $("#UnitOfMeasureId_validationMessage").text("");
+        }
+
+        else {
+            $("#UnitOfMeasureId").data("kendoDropDownList").enable(true);
+
+        }
+
+        if  ($("#TypeContractId").data("kendoDropDownList").text() === "Seguro") {
+            $("#Valor").data("kendoNumericTextBox").enable(true);
+           
+        }
+
+        else {
+            $("#Valor").data("kendoNumericTextBox").enable(false);
+            $("#Valor").removeAttr("required");
+            $("#Valor").text("");
+        }
+
+        if ($("#TypeContractId").data("kendoDropDownList").text() === "Comisión Arancelaria") {
+            $("#Porcentaje").data("kendoNumericTextBox").enable(true);
+
+        }
+
+        else {
+            $("#Porcentaje").data("kendoNumericTextBox").enable(false);
+            $("#Porcentaje").removeAttr("required");
+            $("#Porcentaje").text("");
+        }
+    }
+
+
+
+
+
     function CalcularTotal() {
         //debugger;
         var quantity = $("#Quantity").val();
@@ -149,9 +204,10 @@
         setearvalor("TotalLine", Total);
     }
 
-    function cargarloader() {
-       $("#btnActualizarCotizacionLinea").prop("disabled", true);
-    }
+    //function cargarloader() {
+       
+    //   $("#btnActualizarCotizacionLinea").prop("disabled", true);
+    //}
 
     function agregarcondicionpopup() {
         var dataObject = { 'ConditionId': 0 };
@@ -227,8 +283,8 @@
         <!-- Modal content-->
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" onclick="closesaleorderline();">&times;</button>
                 <h4 class="modal-title">Detalle de cotización</h4>
+                <button type="button" class="close" onclick="closesaleorderline();">&times;</button>
             </div>
             <div class="modal-body">
 
@@ -243,9 +299,9 @@
                     <div class="col-md-12">
                         <div class="card-base">
                             <div class="card-icon">
-                                <a href="#" title="Widgets" id="widgetCardIcon" class="imagecard">
+                                @*<a href="#" title="Widgets" id="widgetCardIcon" class="imagecard">
                                     <span class="fa fa-plus-hexagon"></span>
-                                </a>
+                                </a>*@
                                 <div class="card-data widgetCardData">
                                     <h3 class="box-title" style="color:#3c8dbc;text-align:center">Condiciones</h3>
                                     @*<p class="card-block text-center">Cantidad de usuarios.</p>*@
@@ -265,8 +321,8 @@
 
                             @*asp-controller="SalesOrderLine"  asp-action="SaveSalesOrderLine"*@
                             <div class="card-body">
-                                <form id="frmSalesOrderLine"
-                                      kendo-validator="true" kendo-messages="messages1" kendo-rules="rules1"
+                                <form id="frmSalesOrderLine" kendo-validator="true"
+                                      @*kendo-validator="true" kendo-messages="messages1" kendo-rules="rules1"*@
                                       data-ajax-method="post"
                                       data-ajax-loading="#loading"
                                       data-ajax-complete="completedorderlinemant"
@@ -315,7 +371,7 @@
                                                                         datavaluefield="SubproductId"
                                                                         auto-bind="false"
                                                                         on-select="setsubproductname"
-                                                                        required
+                                                                        data-val-required="El Subservicio es requerido"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi">
                                                             <transport>
@@ -332,7 +388,7 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Description" class="control-label" style="width:100%"></label>
-                                                    <input type="text" id="DescriptionDetail" asp-for="Description" class="form-control" style="min-width:100%" />
+                                                    <input type="text" id="DescriptionDetail" asp-for="Description" data-val-required="La Descripción es requerida" class="form-control k-invalid" style="min-width:100%" />
 
                                                     <span asp-validation-for="Description" class="text-danger"></span>
                                                 </div>
@@ -350,7 +406,8 @@
                                                                         datatextfield="UnitOfMeasureName"
                                                                         datavaluefield="UnitOfMeasureId"
                                                                         auto-bind="true"
-                                                                        required
+                                                                        onchange="lockunidaddemedida()"
+                                                                        data-val-required="La Unidad de medida es requerida"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi">
                                                             <transport>
@@ -369,10 +426,10 @@
                                                                           format="n2"
                                                                           min="0"
                                                                           step="1"
-                                                                          required
+                                                                          data-val-required="La Cantidad es requerida"
                                                                           onchange="CalcularTotal();"
-                                                                          style="width:100%"
-                                                                          value="Model.Quantity"></kendo-numerictextbox>
+                                                                          style="width:48%"
+                                                                          value="Model.Quantity" />
                                                     <span asp-validation-for="Quantity" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -381,19 +438,61 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Price" class="control-label" style="width:100%"></label>
-                                                    <kendo-numerictextbox name="Price"
-                                                                          format="n2"
+                                                    <kendo-numerictextbox decimals="6" name="Price"
+                                                                          format="n6"
                                                                           min="0"
                                                                           step="1"
-                                                                          required
+                                                                          data-val-msg="El Precio es requerido"
                                                                           onchange="CalcularTotal();"
-                                                                          style="width:100%"
-                                                                          value="Model.Price"></kendo-numerictextbox>
+                                                                          style="width:48%"
+                                                                          value="Model.Price" />
                                                     <span asp-validation-for="Price" class="text-danger"></span>
                                                 </div>
                                             </div>
 
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Porcentaje" class="control-label" style="width:100%"></label>
+                                                    <kendo-numerictextbox decimals="3" name="Porcentaje"
+                                                                          format="n3"
+                                                                          min="0"
+                                                                          step="1"
+                                                                          style="width:48%" />
+                                                    <span asp-validation-for="Porcentaje" class="text-danger"></span>
+                                                </div>
+                                            </div>
 
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Valor" class="control-label" style="width:100%"></label>
+                                                    <kendo-numerictextbox decimals="3" name="Valor"
+                                                                          format="n3"
+                                                                          min="0"
+                                                                          step="1"
+                                                                          style="width:48%" />
+                                                    <span asp-validation-for="Valor" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="TaxPercentage" class="control-label" style="width:100%"></label>
+                                                    <kendo-numerictextbox name="TaxPercentage"
+                                                                          format="#.## '%'"
+                                                                          min="0"
+                                                                          decimals="2"
+                                                                          required
+                                                                          disabled
+                                                                          max="100"
+                                                                          maxlength="3"
+                                                                          step="0.01"
+                                                                          onchange="CalcularTotal();"
+                                                                          style="width:48%"
+                                                                          value="Model.TaxPercentage" />
+                                                    <span asp-validation-for="TaxPercentage" class="text-danger"></span>
+                                                </div>
+                                            </div>
 
                                         </div>
 
@@ -412,7 +511,7 @@
                                                                           disabled
                                                                           step="1"
                                                                           style="width:100%"
-                                                                          value="Model.Amount"></kendo-numerictextbox>
+                                                                          value="Model.Amount"/>
 
                                                     <span asp-validation-for="Amount" class="text-danger"></span>
                                                 </div>
@@ -427,8 +526,8 @@
                                                                           max="100"
                                                                           maxlength="3"
                                                                           onchange="CalcularTotal();"
-                                                                          style="width:100%"
-                                                                          value="Model.DiscountPercentage"></kendo-numerictextbox>
+                                                                          style="width:48%"
+                                                                          value="Model.DiscountPercentage"/>
                                                     <span asp-validation-for="DiscountPercentage" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -443,8 +542,9 @@
                                                                           max="999999999"
                                                                           step="1"
                                                                           readonly
-                                                                          style="width:100%"
-                                                                          value="Model.DiscountAmount"></kendo-numerictextbox>
+                                                                          disabled
+                                                                          style="width:48%"
+                                                                          value="Model.DiscountAmount"/>
                                                     <span asp-validation-for="DiscountAmount" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -465,8 +565,8 @@
                                                                           step="1"
                                                                           required
                                                                           disabled
-                                                                          style="width:100%"
-                                                                          value="Model.SubTotal"></kendo-numerictextbox>
+                                                                          style="width:48%"
+                                                                          value="Model.SubTotal"/>
                                                     <span asp-validation-for="SubTotal" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -478,7 +578,7 @@
                                                                         option-label="Seleccione el Impuestos"
                                                                         datatextfield="TaxCode"
                                                                         datavaluefield="TaxId"
-                                                                        required
+                                                                        data-val-required="El código impuesto es requerido"
                                                                         for="TaxId"
                                                                         onchange="GetPercentage();"
                                                                         style="width: 100%;">
@@ -488,28 +588,11 @@
                                                             </transport>
                                                         </datasource>
                                                     </kendo-dropdownlist>
-                                                    <span asp-validation-for="TaxCode" class="text-danger"></span>
+                                                    <span asp-validation-for="TaxId" class="text-danger"></span>
                                                 </div>
                                             </div>
 
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label asp-for="TaxPercentage" class="control-label" style="width:100%"></label>
-                                                    <kendo-numerictextbox name="TaxPercentage"
-                                                                          format="#.## '%'"
-                                                                          min="0"
-                                                                          decimals="2"
-                                                                          required
-                                                                          disabled
-                                                                          max="100"
-                                                                          maxlength="3"
-                                                                          step="0.01"
-                                                                          onchange="CalcularTotal();"
-                                                                          style="width:100%"
-                                                                          value="Model.TaxPercentage"></kendo-numerictextbox>
-                                                    <span asp-validation-for="TaxPercentage" class="text-danger"></span>
-                                                </div>
-                                            </div>
+                                           
                                         </div>
 
                                         <div class="row">
@@ -521,8 +604,8 @@
                                                                           min="0"
                                                                           step="1"
                                                                           disabled
-                                                                          style="width:100%"
-                                                                          value="Model.TaxAmount"></kendo-numerictextbox>
+                                                                          style="width:48%"
+                                                                          value="Model.TaxAmount"/>
                                                     <span asp-validation-for="TaxAmount" class="text-danger" style="width:100%"></span>
                                                 </div>
                                             </div>
@@ -536,16 +619,17 @@
                                                                           required
                                                                           id="TotalLine"
                                                                           step="1"
-                                                                          style="width:100%"
-                                                                          value="Model.Total"></kendo-numerictextbox>
+                                                                          style="width:48%"
+                                                                          value="Model.Total"/>
                                                     <span asp-validation-for="Total" class="text-danger"></span>
                                                 </div>
                                             </div>
                                         </div>
 
                                     </div>
+                                    
                                     <div class="row">
-                                        <button id="btnActualizarCotizacionLinea" type="submit" class="form-control">Actualizar</button>
+                                        <button id="btnActualizarCotizacionLinea" type="submit" class="form-control btn-miboton">Guardar</button>
                                     </div>
                                 </form>
                             </div>

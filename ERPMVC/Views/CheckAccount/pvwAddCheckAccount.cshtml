@@ -36,8 +36,8 @@
                                 <div class="form-group">
                                     <input type="text" asp-for="BankName" hidden />
                                     <label asp-for="BankId" class="control-label" style="min-width:100%"></label>
-                                    <kendo-dropdownlist name="BankId"
-                                                        for="@Model.BankId"
+                                    <kendo-dropdownlist name="BankId" 
+                                                        for="BankId"
                                                         filter="Kendo.Mvc.UI.FilterType.Contains"
                                                         option-label="Seleccione el banco"
                                                         datatextfield="BankName"
@@ -59,7 +59,7 @@
                                 <script>
                                     function GetCuentas() {
 
-                                        return { 'BankId': $("#BankId").val() }
+                                        return { 'BankId': $("#BankId").val() , 'pTypeAccount':95 }
                                     }
 
                                     function refreshCuentas() {
@@ -71,7 +71,7 @@
                                     <input type="text" asp-for="AssociatedAccountNumber" hidden />
                                     <label asp-for="AccountManagementId" class="control-label" style="min-width:100%">Número de Cuenta</label>
                                     <kendo-dropdownlist name="AccountManagementId"
-                                                        for="@Model.AccountManagementId"
+                                                        for="AccountManagementId"
                                                         filter="Kendo.Mvc.UI.FilterType.Contains"
                                                         option-label="Seleccione una Cuenta"
                                                         datatextfield="AccountNumber"
@@ -81,7 +81,7 @@
                                                         style="min-width: 100%;">
                                         <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
                                             <transport>
-                                                <read url="@Url.Action("GetAccountManagementByBankId", "AccountManagement")" data="GetCuentas" />
+                                                <read url="@Url.Action("GetAccountManagementByBankIdByAccountType", "AccountManagement")" data="GetCuentas" />
                                             </transport>
                                         </datasource>
                                     </kendo-dropdownlist>
@@ -104,7 +104,7 @@
                             <div class="col-md-4">
                                 <div class="form-group">
                                     <label asp-for="CheckAccountNo" class=" control-label" style="min-width:100%"></label>
-                                    <input type="text" asp-for="CheckAccountNo" name="CheckAccountNo" data-val-required="Número de Chequera es requerido" style="min-width: 100%;" class="form-control" required maxlength="50" onKeyPress="return soloNumeros(event)" />
+                                    <input type="text" asp-for="CheckAccountNo" name="CheckAccountNo"  style="min-width: 100%;" class="form-control"  maxlength="50" onKeyPress="return soloNumeros(event)" />
 
                                 </div>
                             </div>
@@ -130,10 +130,32 @@
                                     <label asp-for="FechaIngreso" class="control-label" style="width: 100%;"></label>
                                     <kendo-datepicker name="FechaIngreso" for="FechaIngreso"
                                                       style="width: 100%;"
-                                                      format="dd/MM/yyyy"                                                      
+                                                      format="dd/MM/yyyy"
                                                       data-val-required="La fecha es requerida"
                                                       readonly />
 
+                                </div>
+                            </div>
+                            <input type="text" hidden asp-for="Estado" />
+                            <input type="text" hidden asp-for="NumeroActual" />
+                            <div class="col-md-4">
+                                <div class="form-group">
+                                    <label asp-for="IdEstado" class="control-label">Estado</label>
+                                    <kendo-dropdownlist name="IdEstado"
+                                                        for="@Model.IdEstado"
+                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                        option-label="Seleccionar Estado"
+                                                        datatextfield="NombreEstado"
+                                                        required data-required-msg="El estado es requerido."
+                                                        datavaluefield="IdEstado"
+                                                        style="width: 100%;">
+                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                            <transport>
+                                                <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                                            </transport>
+                                        </datasource>
+                                    </kendo-dropdownlist>
+                                    <span asp-validation-for="IdEstado" class="text-danger"></span>
                                 </div>
                             </div>
                         </div>
@@ -182,11 +204,10 @@
     };
 
     var onFailedC = function (context) {
-        // alert(context);
         console.log(context);
         $.toast({
             heading: 'Error',
-            text: '<br/><br/> Error al Guardar',
+            text: context.responseText,
             position: 'top-right',
             loaderBg: '#ff6849',
             icon: 'error',
@@ -194,6 +215,22 @@
             stack: 6
         });
     };
+
+
+    $("#IdEstado").change(function () {
+        $("#Estado").val($("#IdEstado").data("kendoDropDownList").text());
+    }); 
+
+    $(document).ready(function () {
+        debugger;
+        if ($("#NoInicial").val() != $("#NumeroActual").val()) {
+            $("#NoInicial").prop("readonly", true);
+            $("#NoFinal").prop("readonly", true);
+        }
+
+
+    });
+
     $("#NoFinal").change(function () {
         var NoInicial = $("#NoInicial").val();
         var NoFinal = $("#NoFinal").val();
@@ -201,7 +238,8 @@
             alert("El número final tiene que ser mayor que el número inicial");
             $("#NoFinal").val('');
         }
-    });
+    }); 
+
     function soloNumeros(e) {
         var key = window.Event ? e.which : e.keyCode
         return (key >= 48 && key <= 57)

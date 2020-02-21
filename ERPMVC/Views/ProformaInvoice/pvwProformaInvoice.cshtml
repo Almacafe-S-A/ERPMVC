@@ -301,7 +301,7 @@
                                           .DataSource(source =>
                                           {
                                               source.Ajax()
-                                              .PageSize(80)
+                                              .PageSize(9999999)
                                                .Read(read => read.Action("Virtualization_ReadByCustomer", "SalesOrder")
                                                    .Data("ClienteId"));
 
@@ -537,7 +537,7 @@
                                                                  .DataSource(source =>
                                                                  {
                                                                      source.Ajax()
-                                                                     .PageSize(80)
+                                                                     .PageSize(9999999)
                                                                       .Read(read => read.Action("Virtualization_ReadByCustomer", "CertificadoDeposito")
                                                                       .Data("ClienteId"));
                                                                      source.ServerFiltering(true);
@@ -702,7 +702,7 @@
                                                                                                 .DataTextField("CustomerName")
                                                                                                 .DataValueField("CustomerAreaId")
                                                                                                 .HtmlAttributes(new { style = "width:100%" })
-                                                                                                .Height(290)
+                                                                                                .Height(9999999)
                                                                                                 .Events(e =>
                                                                                                 {
                                                                                                                 // e.Change("changeAreaUtilizada");
@@ -792,8 +792,8 @@
                                                 <div class="form-group">
                                                     <label asp-for="ProformaName" class="control-label" style="width:100%"></label>
                                                     <span>
-                                                        <input asp-for="ProformaName" class="form-control form-control-line" style="min-width: 75%" required data-required-msg="Nombre Cliente es requerido" maxlength="60" />
-                                                        <button onclick="RefreshOFAC();" class="k-button k-primary"><i class="fa fa-search"></i>OFAC</button>
+                                                        <input asp-for="ProformaName" class="form-control form-control-line" style="min-width: 100%" required data-required-msg="Nombre Cliente es requerido" maxlength="60" />
+                                                        @*<button onclick="RefreshOFAC();" class="k-button k-primary"><i class="fa fa-search"></i>OFAC</button>*@
                                                     </span>
                                                     <span asp-validation-for="ProformaName" class="text-danger"></span>
                                                 </div>
@@ -1376,186 +1376,210 @@
 
     function SaveCotizacion(e) {
         debugger;
-        var StartDate = $("#StartDate").getKendoDateTimePicker().value().toJSON();
-        var EndDate = $("#EndDate").getKendoDateTimePicker().value().toJSON();
-        if (StartDate < EndDate) {
-        var notification = $("#notification").data("kendoNotification");
-        // e.preventDefault();
-        $("#btnSaveCotizacion").hide();
-        $("#btnSaveCotizacion").prop("disabled", true);
+        //var StartDate = $("#StartDate").getKendoDateTimePicker().value().toJSON();
+        //var EndDate = $("#EndDate").getKendoDateTimePicker().value().toJSON();
+        if ($("#StartDate").getKendoDateTimePicker().value() && $("#EndDate").getKendoDateTimePicker().value() > 0) {
+            if ($("#StartDate").getKendoDateTimePicker().value() < $("#EndDate").getKendoDateTimePicker().value()) {
+                var notification = $("#notification").data("kendoNotification");
+                // e.preventDefault();
+                $("#btnSaveCotizacion").hide();
+                $("#btnSaveCotizacion").prop("disabled", true);
 
-        var validadetalle = true;
-        var displayedData = $("#gridProformaInvoiceDetail").data().kendoGrid.dataSource.view();
-        for (var i = 0; i < displayedData.length; i++) {
-            displayedData[i].ProformaLineId = 0;
-            if (displayedData[i].TaxCode === '' || displayedData[i].TaxCode === null
-                || displayedData[i].Total === 0) {
-                notification.show({
-                    title: "Validación",
-                    message: "No Ingreso el codigo de impuesto"
-                }, "error");
+                var validadetalle = true;
+                var displayedData = $("#gridProformaInvoiceDetail").data().kendoGrid.dataSource.view();
+                for (var i = 0; i < displayedData.length; i++) {
+                    displayedData[i].ProformaLineId = 0;
+                    if (displayedData[i].TaxCode === '' || displayedData[i].TaxCode === null
+                        || displayedData[i].Total === 0) {
+                        notification.show({
+                            title: "Validación",
+                            message: "No Ingreso el codigo de impuesto"
+                        }, "error");
 
-                validadetalle = false;
-            }
-        }
-        debugger
-        if (validadetalle) {
-            var dataObject = {
-                'ProformaId': $("#ProformaId").val() === "" ? "0" : $("#ProformaId").val(),
-                'ProformaName': $("#ProformaName").val(),
-                'BranchId': $("#BranchId").val(),
-                'BranchName': $("#BranchId").data("kendoDropDownList").text(),
-                'CustomerId': $("#CustomerId").val(),
-                'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
-                'ProductId': $("#ProductId").val(),
-                'ProductName': $("#ProductId").data("kendoDropDownList").text(),
-                'OrderDate': $("#OrderDate").getKendoDateTimePicker().value().toJSON(),
-               // 'DeliveryDate': $("#DeliveryDate").getKendoDateTimePicker().value().toJSON(),
-                'ExpirationDate': $("#ExpirationDate").getKendoDateTimePicker().value().toJSON(),
-                'StartDate': $("#StartDate").getKendoDateTimePicker().value().toJSON(),
-                'EndDate': $("#EndDate").getKendoDateTimePicker().value().toJSON(),
-                'CurrencyId': Number($("#CurrencyId").val()),
-                'CurrencyName': $("#CurrencyId").data("kendoDropDownList").text(),
-                'CustomerRefNumber': $("#CustomerRefNumber").val(),
-                'SalesTypeId': $("#SalesTypeId").val(),
-                //'TypeContractId': Number($("#TypeContractId").val()),
-                //'NameContract': $("#TypeContractId").data("kendoDropDownList").text(),
-                'Remarks': $("#Remarks").val(),
-                'Amount': $("#Amount").val(),
-                'SubTotal': $("#SubTotal").val(),
-                'Discount': $("#Discount").val(),
-                'Tax': $("#Tax").val(),
-                'Freight': $("#Freight").val(),
-                'Total': $("#Total").val(),
-                'Correo': $("#Correo").val(),
-                'Direccion': $("#Direccion").val(),
-                'Identificador': $("#IdentificadorCalculo").val(),
-                'RTN': $("#RTN").val(),
-                'Tefono': $("#Tefono").val(),
-                'TotalExento': $("#TotalExento").val(),
-                'TotalExonerado': $("#TotalExonerado").val(),
-                'TotalGravado': $("#TotalGravado").val(),
-                'SalesOrderId': ($("#cbxBuscarCotizaciones").val() === '' ? 0 : $("#cbxBuscarCotizaciones").val()),
-                //'CertificadoDepositoId': $("#cbxBuscarCertificadosDeposito").val() === '' ? 0 : $("#cbxBuscarCertificadosDeposito").val(),
-                'CustomerAreaId': $("#cbxBuscarCustomerArea").val() === '' ? 0 : $("#cbxBuscarCustomerArea").val(),
-                'ProformaInvoiceLine': displayedData,
+                        validadetalle = false;
+                    }
+                }
+                debugger
+                if (validadetalle) {
+                    var dataObject = {
+                        'ProformaId': $("#ProformaId").val() === "" ? "0" : $("#ProformaId").val(),
+                        'ProformaName': $("#ProformaName").val(),
+                        'BranchId': $("#BranchId").val(),
+                        'BranchName': $("#BranchId").data("kendoDropDownList").text(),
+                        'CustomerId': $("#CustomerId").val(),
+                        'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
+                        'ProductId': $("#ProductId").val(),
+                        'ProductName': $("#ProductId").data("kendoDropDownList").text(),
+                        'OrderDate': $("#OrderDate").getKendoDateTimePicker().value().toJSON(),
+                        // 'DeliveryDate': $("#DeliveryDate").getKendoDateTimePicker().value().toJSON(),
+                        'ExpirationDate': $("#ExpirationDate").getKendoDateTimePicker().value().toJSON(),
+                        'StartDate': $("#StartDate").getKendoDateTimePicker().value().toJSON(),
+                        'EndDate': $("#EndDate").getKendoDateTimePicker().value().toJSON(),
+                        'CurrencyId': Number($("#CurrencyId").val()),
+                        'CurrencyName': $("#CurrencyId").data("kendoDropDownList").text(),
+                        'CustomerRefNumber': $("#CustomerRefNumber").val(),
+                        'SalesTypeId': $("#SalesTypeId").val(),
+                        //'TypeContractId': Number($("#TypeContractId").val()),
+                        //'NameContract': $("#TypeContractId").data("kendoDropDownList").text(),
+                        'Remarks': $("#Remarks").val(),
+                        'Amount': $("#Amount").val(),
+                        'SubTotal': $("#SubTotal").val(),
+                        'Discount': $("#Discount").val(),
+                        'Tax': $("#Tax").val(),
+                        'Tax18': $("#Tax18").val(),
+                        'Freight': $("#Freight").val(),
+                        'Total': $("#Total").val(),
+                        'Correo': $("#Correo").val(),
+                        'Direccion': $("#Direccion").val(),
+                        'Identificador': $("#IdentificadorCalculo").val(),
+                        'RTN': $("#RTN").val(),
+                        'Tefono': $("#Tefono").val(),
+                        'TotalExento': $("#TotalExento").val(),
+                        'TotalExonerado': $("#TotalExonerado").val(),
+                        'TotalGravado': $("#TotalGravado").val(),
+                        'TotalGravado18': $("#TotalGravado18").val(),
+                        'SalesOrderId': ($("#cbxBuscarCotizaciones").val() === '' ? 0 : $("#cbxBuscarCotizaciones").val()),
+                        //'CertificadoDepositoId': $("#cbxBuscarCertificadosDeposito").val() === '' ? 0 : $("#cbxBuscarCertificadosDeposito").val(),
+                        'CustomerAreaId': $("#cbxBuscarCustomerArea").val() === '' ? 0 : $("#cbxBuscarCustomerArea").val(),
+                        'ProformaInvoiceLine': displayedData,
 
-            };
+                    };
 
-            var validator = $("#frmSalesOrder").data("kendoValidator");
-            var validator2 = $("#TotalesDocumento").data("kendoValidator");
-            var status = $(".status");
-
-
-            if (Number($("#Total").val()) <= 0 || Number($("#SubTotal").val()) <= 0) {
-                notification.show({
-                    title: "Validación",
-                    message: "No se estan calculando correctamente los totales!!"
-                }, "error");
-
-                return;
-
-            }
+                    var validator = $("#frmSalesOrder").data("kendoValidator");
+                    var validator2 = $("#TotalesDocumento").data("kendoValidator");
+                    var status = $(".status");
 
 
-            //   console.log(displayedData);
-            //for (var i = 0; i < displayedData.length; i++) {
-            //    console.log(displayedData[i].TaxCode);
-            //    if (displayedData[i].TaxCode === '' || displayedData[i].TaxCode === null
-            //        || displayedData[i].TaxCode === undefined
-            //        || displayedData[i].Total === undefined
-            //    ) {
-            //        $.toast({
-            //            heading: 'Advertencia ',
-            //            text: '\n Actualice los datos del detalle.',
-            //            position: 'top-right',
-            //            loaderBg: '#ff6849',
-            //            icon: 'warning',
-            //            hideAfter: 30000,
-            //            stack: 6
-            //        });
-            //        $("#btnSaveCotizacion").show();
-            //        $("#btnSaveCotizacion").prop("disabled", false);
-            //        return;
-            //    }
-            //}
+                    if (Number($("#Total").val()) <= 0 || Number($("#SubTotal").val()) <= 0) {
+                        notification.show({
+                            title: "Validación",
+                            message: "No se estan calculando correctamente los totales!!"
+                        }, "error");
+                        $("#btnSaveCotizacion").show();
+                        $("#btnSaveCotizacion").prop("disabled", false);
+
+                        return;
+
+                    }
 
 
-            if (displayedData.length > 0) {
-                if (validator.validate() && validator2.validate()) {
+                    //   console.log(displayedData);
+                    //for (var i = 0; i < displayedData.length; i++) {
+                    //    console.log(displayedData[i].TaxCode);
+                    //    if (displayedData[i].TaxCode === '' || displayedData[i].TaxCode === null
+                    //        || displayedData[i].TaxCode === undefined
+                    //        || displayedData[i].Total === undefined
+                    //    ) {
+                    //        $.toast({
+                    //            heading: 'Advertencia ',
+                    //            text: '\n Actualice los datos del detalle.',
+                    //            position: 'top-right',
+                    //            loaderBg: '#ff6849',
+                    //            icon: 'warning',
+                    //            hideAfter: 30000,
+                    //            stack: 6
+                    //        });
+                    //        $("#btnSaveCotizacion").show();
+                    //        $("#btnSaveCotizacion").prop("disabled", false);
+                    //        return;
+                    //    }
+                    //}
 
-                    $.ajax({
-                        url: '@Url.Action("SaveProformaInvoice", "ProformaInvoice")',
-                        method: 'POST',
-                        datatype: "json",
-                        //  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-                        contentType: 'application/json',
-                        async: false,
-                        data: JSON.stringify(dataObject),
-                        success: function (data) {
-                            RefreshCotizaciones();
-                            $("#ProformaId").val(data.ProformaId);
+
+                    if (displayedData.length > 0) {
+                        if (validator.validate() && validator2.validate()) {
+
+                            $.ajax({
+                                url: '@Url.Action("SaveProformaInvoice", "ProformaInvoice")',
+                                method: 'POST',
+                                datatype: "json",
+                                //  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                                contentType: 'application/json',
+                                async: false,
+                                data: JSON.stringify(dataObject),
+                                success: function (data) {
+                                    RefreshCotizaciones();
+                                    $("#ProformaId").val(data.ProformaId);
+                                    $.toast({
+                                        heading: 'Satisfactorio',
+                                        text: 'Datos guardados correctamente.',
+                                        position: 'top-right',
+                                        loaderBg: '#ff6849',
+                                        icon: 'success',
+                                        hideAfter: 7000,
+                                        stack: 6
+                                    });
+                                    //notification.show({
+                                    //    message: "Guardado correctamente!"
+                                    //}, "upload-success");
+
+
+                                    $('#myModalSalesOrder').modal('hide');
+
+                                },
+                                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                    $("#btnSaveCotizacion").show();
+                                    $("#btnSaveCotizacion").prop("disabled", false);
+                                    notification.show({
+                                        title: "Validación",
+                                        message: textStatus + ": " + XMLHttpRequest.responseText
+                                    }, "error");
+
+                                }
+                            });
+
+                        }
+                        else {
+
+                            $("#btnSaveCotizacion").show();
+                            $("#btnSaveCotizacion").prop("disabled", false);
+                            //notification.show({
+                            //    title: "Validación",
+                            //    message: "Datos incorrectos en el formulario!"
+                            //}, "error");
                             $.toast({
-                                heading: 'Satisfactorio',
-                                text: 'Datos guardados correctamente.',
+                                heading: 'Validación',
+                                text: '<br/><br/>Datos incorrectos en el formulario!',
                                 position: 'top-right',
                                 loaderBg: '#ff6849',
-                                icon: 'success',
+                                icon: 'error',
                                 hideAfter: 7000,
                                 stack: 6
                             });
-                            //notification.show({
-                            //    message: "Guardado correctamente!"
-                            //}, "upload-success");
 
-
-                            $('#myModalSalesOrder').modal('hide');
-
-                        },
-                        error: function (XMLHttpRequest, textStatus, errorThrown) {
-                            $("#btnSaveCotizacion").show();
-                            $("#btnSaveCotizacion").prop("disabled", false);
-                            notification.show({
-                                title: "Validación",
-                                message: textStatus + ": " + XMLHttpRequest.responseText
-                            }, "error");
 
                         }
-                    });
+                    }
+                    else {
 
+                        $("#btnSaveCotizacion").show();
+                        $("#btnSaveCotizacion").prop("disabled", false);
+                        //notification.show({
+                        //    title: "Validación",
+                        //    message: "Debe agregar los productos!"
+                        //}, "error");
+                        $.toast({
+                            heading: 'Validación',
+                            text: '<br/><br/>Debe agregar los productos!',
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 7000,
+                            stack: 6
+                        });
+
+                    }
                 }
                 else {
-
                     $("#btnSaveCotizacion").show();
                     $("#btnSaveCotizacion").prop("disabled", false);
-                    //notification.show({
-                    //    title: "Validación",
-                    //    message: "Datos incorrectos en el formulario!"
-                    //}, "error");
-                    $.toast({
-                        heading: 'Validación',
-                        text: '<br/><br/>Datos incorrectos en el formulario!',
-                        position: 'top-right',
-                        loaderBg: '#ff6849',
-                        icon: 'error',
-                        hideAfter: 7000,
-                        stack: 6
-                    });
-
-
                 }
+
             }
             else {
-
-                $("#btnSaveCotizacion").show();
-                $("#btnSaveCotizacion").prop("disabled", false);
-                //notification.show({
-                //    title: "Validación",
-                //    message: "Debe agregar los productos!"
-                //}, "error");
                 $.toast({
                     heading: 'Validación',
-                    text: '<br/><br/>Debe agregar los productos!',
+                    text: '<br/><br/>La Fecha Fin no debe de ser menor que la Fecha de Inicio!',
                     position: 'top-right',
                     loaderBg: '#ff6849',
                     icon: 'error',
@@ -1565,23 +1589,17 @@
 
             }
         }
-        else {
-            $("#btnSaveCotizacion").show();
-            $("#btnSaveCotizacion").prop("disabled", false);
-        }
-
-        }
-        else {
+        else
+        {
             $.toast({
                 heading: 'Validación',
-                text: '<br/><br/>La Fecha Fin no debe de ser menor que la Fecha de Inicio!',
+                text: '<br/><br/>Debe llenar las Fechas!',
                 position: 'top-right',
                 loaderBg: '#ff6849',
                 icon: 'error',
                 hideAfter: 7000,
                 stack: 6
             });
-
         }
 
     }

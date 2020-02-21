@@ -111,7 +111,42 @@ namespace ERPMVC.Controllers
 
         }
 
-        
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> GetCustomerContractbySalesorderId([FromBody] CustomerContract  idsalesorder)
+        {
+            List<CustomerContract> _CustomerContract = new List<CustomerContract>();
+            CustomerContract _CustomerContractp = new CustomerContract();
+
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CustomerContract/GetCustomerContract");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CustomerContract = JsonConvert.DeserializeObject<List<CustomerContract>>(valorrespuesta);
+                    _CustomerContractp = _CustomerContract.Where(x => x.SalesOrderId == idsalesorder.SalesOrderId).FirstOrDefault();
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return await Task.Run(() => Ok(_CustomerContractp));
+
+        }
+
 
         [HttpGet("[controller]/[action]")]
         public async Task<DataSourceResult> GetCustomerContractByCustomerId([DataSourceRequest]DataSourceRequest request,Int64 CustomerId)
@@ -247,6 +282,49 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _CustomerContract }, Total = 1 });
         }
 
+
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<CustomerContract>> Anular([FromBody]CustomerContract _CustomerContract)
+        {
+            CustomerContract _cc = new CustomerContract();
+            if (_CustomerContract != null)
+            {
+                try
+                {
+                    string baseadress = config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
+
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/CustomerContract/GetCustomerContractById/" + _CustomerContract.CustomerContractId);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _cc = JsonConvert.DeserializeObject<CustomerContract>(valorrespuesta);
+                        _cc.IdEstado = 7;
+                        _cc.Estado = "Rechazado";
+                        _cc.Observcion = _CustomerContract.Observcion;
+                        var resultcustomerc = await Update(_cc.CustomerContractId, _cc);
+
+                        var value = (resultcustomerc.Result as ObjectResult).Value;
+                        //CustomerContract resultado = ((CustomerContract)(value));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                    throw ex;
+                }
+            }
+            else
+            {
+                return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+            }
+
+            return await Task.Run(() => Ok(_cc));
+        }
+
+
         [HttpPost("[action]")]
         public async Task<ActionResult<CustomerContract>> Delete([FromBody]CustomerContract _CustomerContract)
         {
@@ -365,6 +443,16 @@ namespace ERPMVC.Controllers
 
                 using (FileStream file = new FileStream(completepath, FileMode.Create, System.IO.FileAccess.Write))
                     outputStream.WriteTo(file);
+
+                //if (System.IO.File.Exists(_CustomerDocument.Path))
+                //{
+                    var stream1 = new FileStream(completepath, FileMode.Open);
+                    return new FileStreamResult(stream1, "application/pdf");
+                
+                //else
+                //{
+                //    return await Task.Run(() => BadRequest($"No se encontro el archivo."));
+                //}
 
                 ViewBag.pathcontrato = completepath; //$"/ContratosTemplate/Contrato_Cliente_{_customercontract.CustomerName}_ContratoNumero_{_customercontract.CustomerContractId}.pdf";//_SFPrintContract.path = completepath;
 

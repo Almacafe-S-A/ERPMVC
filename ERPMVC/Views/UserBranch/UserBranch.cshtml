@@ -1,0 +1,281 @@
+﻿
+@using Kendo.Mvc.UI
+@{
+    ViewData["Title"] = "Sucursales por Usuaio";
+
+
+}
+
+
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Sucursales por Usuario</h4>
+              
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmUserBracnh" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="UserBranch"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                      
+                                        <div class="form-group">
+                                            <kendo-dropdownlist name="GetUsuarios"
+                                                                option-label="Seleccionar el Usuario"
+                                                                datatextfield="UserName"
+                                                                datavaluefield="Id"
+                                                                onchange="readlisbox(); CargadoData();"
+                                                                style="width: 100%;">
+                                                <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="990000">
+                                                    <transport>
+                                                        <read url="@Url.Action("GetUsuarios", "UserBranch")" />
+                                                    </transport>
+                                                </datasource>
+                                            </kendo-dropdownlist>
+                                        </div>
+                                        <hr>
+                                        <div class="row">
+                                            
+                                             <div class="col-md-2" ></div>
+                                            <div class="col-md-4">
+                                                <div id="Listas">
+                                                    <div class="demo-section k-content" >
+                                                        <label style="width:100%">Sucursales no Asignadas </label>
+                                                        @(Html.Kendo().ListBox()
+                                                                                              .Name("listbox1")
+                                                                                              .DataValueField("BranchId")
+                                                                                              .DataTextField("BranchName")
+                                                                                              .Draggable(true)
+                                                                                              .DropSources("listbox2")
+                                                                                              //.Events(ev => ev
+                                                                                              //.Add("function(e){setDiscontinued(e, true)}")
+                                                                                              //.Remove("function(e){setDiscontinued(e, false)}"))
+                                                                                              .DataSource(source => source
+                                                                                          .Custom()
+                                                                                          .Transport(transport => transport
+                                                                                              .Read(read => read.Action("SucursalesNo", "UserBranch").Data("CargarPermisos"))
+                                                                                          )
+                                                                                          .PageSize(99999999)
+                                                                                          )
+
+
+
+                                                                                             .ConnectWith("listbox2")
+                                                                                             .BindTo(new List<string>())
+                                                                                             .Selectable(ListBoxSelectable.Single))
+
+
+                                                    </div>
+                                                </div>
+                                            </div>
+
+
+
+                                            <div class="col-md-4">
+                                                <div class="col-md-4">
+                                                    <div id="Listas" role="application">
+                                                        <div id="Progres2" class="demo-section k-content">
+                                                            <label style="width:100%">Sucursales Asignadas </label>
+                                                            @(Html.Kendo().ListBox()
+                                                                                  .Name("listbox2")
+                                                                                  .Draggable(true)
+                                                                                  .DropSources("listbox1")
+                                                                                  .DataValueField("BranchId")
+                                                                                  .DataTextField("BranchName")
+                                                                                  .DataSource(source => source
+                                                                                  .Custom()
+                                                                                  .Transport(transport => transport
+                                                                                      .Read(read => read.Action("Sucursales", "UserBranch").Data("CargarPermisos"))
+                                                                                  )
+                                                                                  .PageSize(99999999)
+                                                                                  )
+                                                                                  .ConnectWith("listbox1")
+                                                                                  .BindTo(new List<string>())
+                                                                                  .Selectable(ListBoxSelectable.Single))
+
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+
+
+
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                @*//<button id="btnTax" onclick="opnertneritems();" class="form-control btn-miboton" type="submit"> Guardar </button>*@
+                                                <button id="btnUserBrach" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+<script>
+
+    function opnertneritems() {
+
+        UserBranch()
+       
+    }
+
+
+
+    function CargadoData() {
+       
+        kendo.ui.progress($("#Listas"), true);
+        setTimeout(function () {
+            kendo.ui.progress($("#Listas"), false);
+        }, 1000);
+        kendo.ui.progress($("#Progres2"), true);
+        setTimeout(function () {
+            kendo.ui.progress($("#Progres2"), false);
+        }, 1000);
+
+       
+
+    }
+
+
+    function UserBranch() {     
+
+        var Insert_And_Delete = false;
+
+        var UsuarioId = $("#GetUsuarios").data("kendoDropDownList").value();     
+        var SucursalesAsignadas = $("#listbox2").data("kendoListBox").dataSource;
+        var rawsi = SucursalesAsignadas._data;
+        for (i = SucursalesAsignadas._data.length - 1; i >= 0; i--) {
+            var BranchId = rawsi[i].BranchId;
+            var BranchName = rawsi[i].BranchName;            
+              $.ajax({
+                          url: '@Url.Action("InsertAndDelete", "UserBranch")',
+                          method: 'GET',
+                          datatype: "json",
+                          contentType: 'application/json; charset=utf-8',
+                          async: false,
+                          data: { 'UsuarioId': UsuarioId, BranchId: BranchId, 'BranchName': BranchName, Accion: true },
+                          success: function (result) {
+                              Insert_And_Delete = true;
+                      },
+                      error: function (XMLHttpRequest, textStatus, errorThrown) {
+                      notification.show({
+                      title: "Validación",
+                      message: textStatus + ": " + XMLHttpRequest.responseText
+                     }, "error");
+                  }
+            });
+
+                       
+        }
+
+
+        var SucursalesNoAsignadas = $("#listbox1").data("kendoListBox").dataSource; 
+        var raw = SucursalesNoAsignadas._data;
+        for (i = SucursalesNoAsignadas._data.length - 1; i >= 0; i--) {
+            var BranchId = raw[i].BranchId;
+            var BranchName = raw[i].BranchName;
+              $.ajax({
+                          url: '@Url.Action("InsertAndDelete", "UserBranch")',
+                          method: 'GET',
+                          datatype: "json",
+                          contentType: 'application/json; charset=utf-8',
+                          async: false,
+                          data: { 'UsuarioId': UsuarioId, BranchId: BranchId, 'BranchName': BranchName, Accion: false },
+                          success: function (result) {
+                              Insert_And_Delete = true;
+                      },
+                      error: function (XMLHttpRequest, textStatus, errorThrown) {
+                      notification.show({
+                      title: "Validación",
+                      message: textStatus + ": " + XMLHttpRequest.responseText
+                     }, "error");
+                  }
+            });
+        }     
+
+        if (Insert_And_Delete == true) {
+            CargadoData()
+            $.toast({
+                heading: 'Satisfactorio',
+                text: 'Datos guardados correctamente.',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'success',
+                showHideTransition: 'slide',
+                hideAfter: 6000,
+                stack: 6
+            });
+        }
+
+    }
+
+
+   
+    
+
+
+    function readlisbox() {
+        var listBox = $("#listbox2").getKendoListBox();
+        listBox.dataSource.read();
+
+        var listBox1 = $("#listbox1").getKendoListBox();
+        listBox1.dataSource.read();
+    }
+
+
+    function CargarPermisos() {      
+       
+        var UserParametrp =  $("#GetUsuarios").data("kendoDropDownList").value();       
+        return {
+            'UserParametrp': UserParametrp,
+        }        
+
+    }
+
+</script>
+
+
+<style>
+    #Listas .k-listbox .k-item {
+        cursor: move;
+    }
+
+    #Listas .arrow {
+        padding: 8px 0 5px 238px;
+    }
+
+    #button {
+        float: right;
+        margin-top: 20px;
+    }
+
+    #Listas .demo-section {
+        max-width: none;
+        width: 555px;
+    }
+
+    #Listas .k-listbox {
+        width: 275px;
+        height: 310px;
+    }
+</style>

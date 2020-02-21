@@ -35,6 +35,16 @@ namespace ERPMVC.Models
         public string NoFinal { get; set; }
 
         public string NumeroActual { get; set; }
+
+
+        public Int64? IdEstado { get; set; }
+
+        [ForeignKey("IdEstado")]
+        public Estados Estados { get; set; }
+
+        public string Estado { get; set; }
+
+
         [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy}")]
         [Display(Name = "Fecha de ingreso")]
         public DateTime FechaIngreso { get; set; }

@@ -197,6 +197,7 @@ namespace ERPMVC.Controllers
                     _InsurancesP.CreatedDate = DateTime.Now;
                     _InsurancesP.DocumentName = file.FileName;
                     _InsurancesP.CreatedUser = HttpContext.Session.GetString("user");
+                    _InsurancesP.DocumentTypeId = 53;
                     _InsurancesP.DocumentTypeName = "Foto";
                     var insertresult = await Insert(_InsurancesP);
                     var value = (insertresult.Result as ObjectResult).Value;
@@ -234,6 +235,10 @@ namespace ERPMVC.Controllers
                     }
 
                     _InsurancesP.Path = filePath;
+                    _InsurancesP.DocumentName = file.FileName;
+                    _InsurancesP.DocumentTypeId = 53;
+                    _InsurancesP.DocumentTypeName = "Foto";
+
                     //_InsurancesP.CreatedUser = _Insurances1.CreatedUser;
                     var updateresult2 = await Update(_Insurances.InsurancesId, _InsurancesP);
                 }
@@ -250,9 +255,6 @@ namespace ERPMVC.Controllers
 
                     _InsurancesP.CreatedDate = _Insurances.CreatedDate;
                     _InsurancesP.CreatedUser = _Insurances.CreatedUser;
-                    _InsurancesP.DocumentName = _Insurances.DocumentName;
-                    _InsurancesP.DocumentTypeName = _Insurances.DocumentTypeName;
-
 
 
                     var updateresult = await Update(_InsurancesP.InsurancesId, _InsurancesP);
@@ -320,6 +322,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                _InsurancesDocument.CreatedUser = HttpContext.Session.GetString("user");
                 _InsurancesDocument.ModifiedDate = DateTime.Now;
                 _InsurancesDocument.ModifiedUser = HttpContext.Session.GetString("user");
                 var result = await _client.PutAsJsonAsync(baseadress + "api/Insurances/Update", _InsurancesDocument);

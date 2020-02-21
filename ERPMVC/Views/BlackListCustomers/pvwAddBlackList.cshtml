@@ -54,9 +54,59 @@
 
                                             <div class="col-md-4">
                                                 <div class="form-group">
+                                                    <script>
+                                                        function SetCustomerName(e) {
+                                                           // console.log(e);
+                                                            if ($("#CustomerId").val() > 0) {
+                                                                var dataObject = { CustomerId: $("#CustomerId").val()};
+                                                                  $.ajax({
+                                                                     url: '@Url.Action("GetCustomerById", "Customer")',
+                                                                     method: 'GET',
+                                                                     datatype: "json",
+                                                                     contentType: 'application/json',
+                                                                     async: false,
+                                                                     data: dataObject,
+                                                                      success: function (result) {
+                                                                          $("#RTN").val(result.RTN);
+                                                                          $("#Alias").val(result.Alias);
+                                                                          $("#Identidad").val(result.Identidad);
+                                                                          $("#Referencia").val(result.Referencia);
+                                                                     },
+                                                                      error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                                                          $.toast({
+                                                                              heading: 'Error',
+                                                                              text: '<br/><br/> Error al seleccionar el cliente',
+                                                                              position: 'top-right',
+                                                                              loaderBg: '#ff6849',
+                                                                              icon: 'error',
+                                                                              hideAfter: 30000,
+                                                                              stack: 6
+                                                                          });
+                                                                       }
+                                                                  });
+                                                            }
+                                                            else {
+                                                                $("#SalesOrderName").prop('disabled', false);
+                                                            }
+                                                        }
+                                                    </script>
                                                     <label asp-for="CustomerId" class="control-label">Nombre</label>
-                                                    <input type="text" asp-for="CustomerName" name="CustomerName" class="form-control" required style="min-width:100%" maxlength="60"   data-required-msg="Nombre es requerido" />
-
+                                                    @*<input type="text" asp-for="CustomerName" name="CustomerName" class="form-control" required style="min-width:100%" maxlength="60"   data-required-msg="Nombre es requerido" />*@
+                                                    <kendo-dropdownlist name="CustomerId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione el cliente"
+                                                                        datatextfield="CustomerName"
+                                                                        datavaluefield="CustomerId"
+                                                                        enable="true"
+                                                                        class="form-control-line"
+                                                                        onchange="SetCustomerName();"
+                                                                        required data-required-msg="El Cliente es requerido"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetCustomer", "Common")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
                                                 </div>
                                             </div>
 
@@ -340,8 +390,10 @@
         //var displayedData = $("#gridBlackListCustomers").data().kendoGrid.dataSource.view();
 
         var dataObject = {  'BlackListId': $("#BlackListId").val()===""?"0":$("#BlackListId").val(),
-                           //'CustomerId': $("#CustomerId").val(),
-                           'CustomerName': $("#CustomerName").val(), //$("#CustomerId").data("kendoDropDownList").text(),
+                           ////'CustomerId': $("#CustomerId").val(),
+                           //'CustomerName': $("#CustomerName").val(), //$("#CustomerId").data("kendoDropDownList").text(),
+            'CustomerId': $("#CustomerId").val(),
+            'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
                            'CustomerReference': $("#CustomerReference").val(),
                            'DocumentDate': $("#DocumentDate").getKendoDateTimePicker().value().toJSON(),
                            'StateId': $("#StateId").val(),

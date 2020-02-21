@@ -122,6 +122,8 @@ namespace ERPMVC.Models
         public string Estado { get; set; }
 
         public string Impreso { get; set; }
+        [Display(Name = "Observación")]
+        public string Observacion { get; set; }
 
         public List<SalesOrderLine> SalesOrderLines { get; set; } = new List<SalesOrderLine>();
 
