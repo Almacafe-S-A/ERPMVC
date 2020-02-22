@@ -282,5 +282,40 @@ namespace ERPMVC.Controllers
             return Json(_clientes.ToDataSourceResult(request));
         }
 
+
+        [HttpGet]
+        public async Task<JsonResult> GetProduct(Int64 CustomerProductId, Int64 CustomerId, Int64 SubProductId)
+        {
+            Int32 Existe = 0;
+
+            CustomerProduct Contiene = new CustomerProduct();
+
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                Contiene.CustomerProductId = CustomerProductId;
+                Contiene.CustomerId = CustomerId;
+                Contiene.SubProductId = SubProductId;
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/CustomerProduct/GetProducto", Contiene);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    Existe = JsonConvert.DeserializeObject<Int32>(valorrespuesta);
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(Existe);
+        }
+
+
     }
 }

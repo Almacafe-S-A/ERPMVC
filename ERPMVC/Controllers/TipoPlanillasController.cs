@@ -277,6 +277,32 @@ namespace ERPMVC.Controllers
         }
 
 
+        //--------------------------------------------------------------------------------------
+
+        [HttpPost]
+        public async Task<ActionResult<TipoPlanillas>> Delete([FromBody]TipoPlanillas _TipoPlanillasP)
+        {
+            TipoPlanillas _TipoPlanillas = _TipoPlanillasP;
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/TipoPlanillas/Delete", _TipoPlanillas);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _TipoPlanillas = JsonConvert.DeserializeObject<TipoPlanillas>(valorrespuesta);
+                }
+            }
+            catch (Exception ex)
+            {
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+            return new ObjectResult(new DataSourceResult { Data = new[] { _TipoPlanillas }, Total = 1 });
+        }
 
     }
 }

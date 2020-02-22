@@ -274,6 +274,38 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpGet]
+        public async Task<JsonResult> GetPhone(string PhoneCPhones, Int32 CustomerId, Int32 CustomerPhoneId)
+        {
+            Int32 Existe = 0;
+
+            CustomerPhones Contiene = new CustomerPhones();
+
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                Contiene.Phone = PhoneCPhones;
+                Contiene.CustomerId = CustomerId;
+                Contiene.CustomerPhoneId = CustomerPhoneId;
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/CustomerPhones/GetPhone", Contiene);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    Existe = JsonConvert.DeserializeObject<Int32>(valorrespuesta);
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(Existe);
+        }
 
 
 

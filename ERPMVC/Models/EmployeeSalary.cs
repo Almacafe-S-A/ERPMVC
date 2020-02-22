@@ -22,6 +22,7 @@ namespace ERPMVC.Models
         [Display(Name = "Id de Frecuencia")]
         public Int64 IdFrequency { get; set; }
         [Display(Name = "Dia de Aplicacición")]
+        [DisplayFormat(DataFormatString = "{0:dd/MM/yyyy}")]
         [Required(ErrorMessage = "El dia de Aplicación es Requerido")]
         public DateTime DayApplication { get; set; }
 
