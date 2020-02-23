@@ -35,7 +35,9 @@ namespace ERPMVC.Controllers
       
         {
             ViewData["Cuentas"] = await ObtenerCuentas();
-            return View();
+            Presupuesto presupuesto = new Presupuesto();
+            
+            return View(presupuesto);
         }
 
         [HttpPost("[action]")]
@@ -106,40 +108,39 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult<PresupuestoDTO>> SaveProduct([FromBody]PresupuestoDTO _PresupuestoS)
+        [HttpPost("savepresupuesto")]
+        public async Task<ActionResult<Presupuesto>> savepresupuesto(PresupuestoDTO _PresupuestoS)
         {
-            Presupuesto _Presupuesto = _PresupuestoS;
             try
             {
-                Presupuesto _listPresupuesto = new Presupuesto();
+               
+                if(_PresupuestoS.AccountigId == 0)
+                {
+
+
+
+                    //return await Task.Run(() => BadRequest("Seleccione una cuenta"));
+                    return BadRequest($"Seleccione una cuenta");
+
+                }
+
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Product/GetProductById/" + _Presupuesto.Id);
+                _PresupuestoS.FechaCreacion = DateTime.Now;
+                _PresupuestoS.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _PresupuestoS.FechaModificacion = DateTime.Now;
+                _PresupuestoS.UsuarioModificacion = HttpContext.Session.GetString("user");
+                //_PresupuestoS.AccountigId = _PresupuestoS.Accounting.AccountId;
+                //_PresupuestoS.AccountName = _PresupuestoS.Accounting.AccountName;
+                //_PresupuestoS.Accounting = null;
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Presupuesto/Insert", _PresupuestoS);
                 string valorrespuesta = "";
-                _Presupuesto.FechaModificacion = DateTime.Now;
-                _Presupuesto.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Presupuesto = JsonConvert.DeserializeObject<PresupuestoDTO>(valorrespuesta);
-                }
-
-                if (_Presupuesto == null) { _Presupuesto = new Models.Presupuesto(); }
-                //_ProductS.UnitOfMeasureId = null;
-                if (_PresupuestoS.Id == 0)
-                {
-                    _PresupuestoS.FechaCreacion = DateTime.Now;
-                    _PresupuestoS.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_Presupuesto);
-                }
-                else
-                {
-                    _PresupuestoS.UsuarioCreacion = _Presupuesto.UsuarioCreacion;
-                    _PresupuestoS.FechaCreacion = _Presupuesto.FechaCreacion;
-                    var updateresult = await Update(_Presupuesto.Id, _PresupuestoS);
+                    _PresupuestoS = JsonConvert.DeserializeObject<PresupuestoDTO>(valorrespuesta);
                 }
 
             }
@@ -149,7 +150,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_Presupuesto);
+            return new ObjectResult(new DataSourceResult { Data = new[] { _PresupuestoS }, Total = 1 });
         }
 
         [HttpPost]
@@ -184,43 +185,51 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpPut("{ProductId}")]
-        public async Task<ActionResult<Presupuesto>> Update(Int64 Id, Presupuesto _Presupuestop)
+        [HttpPost("Update")]
+        public async Task<ActionResult<Presupuesto>> Update(/*Int64 Id,*/ PresupuestoDTO _PresupuestoS)
         {
-            Presupuesto _Presupuesto = _Presupuestop;
             try
             {
+                // TODO: Add insert logic here
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
+                _PresupuestoS.FechaCreacion = DateTime.Now;
+                _PresupuestoS.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _PresupuestoS.FechaModificacion = DateTime.Now;
+                _PresupuestoS.UsuarioModificacion = HttpContext.Session.GetString("user");
+                //_PresupuestoS.AccountigId = _PresupuestoS.Accounting.AccountId;
+                //_PresupuestoS.AccountName = _PresupuestoS.Accounting.AccountName;
+                //_PresupuestoS.Accounting = null;
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _Presupuesto.FechaModificacion = DateTime.Now;
-                _Presupuesto.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PutAsJsonAsync(baseadress + "api/Presupuesto/Update", _Presupuesto);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/Presupuesto/Update", _PresupuestoS);
                 string valorrespuesta = "";
+
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Presupuesto = JsonConvert.DeserializeObject<Presupuesto>(valorrespuesta);
+                    _PresupuestoS = JsonConvert.DeserializeObject<PresupuestoDTO>(valorrespuesta);
                 }
 
             }
             catch (Exception ex)
             {
-                return BadRequest($"Ocurrio un error{ex.Message}");
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return await Task.Run(() => BadRequest($"Ocurrio un error{ex.Message}"));
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _Presupuesto }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _PresupuestoS }, Total = 1 });
+
         }
 
-        [HttpPost]
-        public async Task<ActionResult<Presupuesto>> Delete(Int64 ProductId, Presupuesto _Presupuesto)
+        //[HttpPost("Delete")]
+        [AcceptVerbs("Post")]
+        public async Task<ActionResult<Presupuesto>> Delete(Presupuesto _Presupuesto)
         {
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-
                 var result = await _client.PostAsJsonAsync(baseadress + "api/Presupuesto/Delete", _Presupuesto);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
