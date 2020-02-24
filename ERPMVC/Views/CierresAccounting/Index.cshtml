@@ -1,0 +1,163 @@
+﻿
+@model ERPMVC.Models.CierresAccounting
+@using Kendo.Mvc.UI
+@{
+    ViewData["Title"] = "Históricos de consulta del Catalogo Contable";
+}
+
+<script>
+
+    function onsave(e) {
+        //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+        // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+    //function caidata(data) {
+    //  data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+    //data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+    //}
+
+
+
+</script>
+
+<h3 class="text-themecolor">Históricos de consulta del Catalogo Contable</h3>
+
+
+
+<div class="card" id="divClasificacionCuentas">
+    <div class="card-body">
+        <h4 class="card-title">Clasificación de cuentas</h4>
+
+        <hr />
+        <div class="row">
+            <div class="col-md-4">
+                <label class="control-label" style="width: 100%;">Mostrar Cuentas de Tipo</label>
+                <kendo-dropdownlist name="TypeAccountIdPadre"
+                                    filter="Kendo.Mvc.UI.FilterType.Contains"
+                                    onchange="TypeAccounting(this.value)"
+                                    option-label="Todos"
+                                    datatextfield="TypeAccountName"
+                                    datavaluefield="TypeAccountId"
+                                    style="min-width: 100%;">
+                    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                        <transport>
+                            <read url="@Url.Action("GetTypeAccount", "TypeAccount")" />
+                        </transport>
+                    </datasource>
+                </kendo-dropdownlist>
+            </div>
+            <div class="col-md-3">
+                <label class="control-label" style="width: 100%;">Mostrar Cuentas de Estado</label>
+                <kendo-dropdownlist name="IdEstadoAccounting"
+                                    filter="Kendo.Mvc.UI.FilterType.Contains"
+                                    option-label="Todos"
+                                    datatextfield="NombreEstado"
+                                    datavaluefield="IdEstado"
+                                    style="min-width: 40%;"
+                                    require
+                                    onchange="DropchangeEstado();"
+                                    value="1">
+                    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                        <transport>
+                            <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                        </transport>
+                    </datasource>
+                </kendo-dropdownlist>
+            </div>
+            <div class="col-md-4">
+                <label asp-for="FechaCierre" class=" control-label" style="width:100%">Fecha</label>
+                <kendo-datepicker name="OpeningDate"
+                                  format="dd/MM/yyyy"
+                                  max="@DateTime.Now"
+                                  style="min-width:100%;"
+                                  data-val-required="La fecha es requerida" />
+                <span asp-validation-for="FechaCierre" class="text-danger"></span>
+        </div>
+            @*<div class="col-md-4">
+                <label class="control-label" style="width: 100%;">Mostrar Cuentas de Estado</label>
+                <kendo-dropdownlist name="FechaCierre"
+                                    filter="Kendo.Mvc.UI.FilterType.Contains"
+                                    option-label="Todos"
+                                    datatextfield="NombreEstado"
+                                    datavaluefield="IdEstado"
+                                    style="min-width: 40%;"
+                                    require
+                                    onchange="DropchangeEstado();"
+                                    value="1">
+                    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                        <transport>
+                            <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                        </transport>
+                    </datasource>
+                </kendo-dropdownlist>
+            </div>*@
+
+
+        </div>
+
+
+    </div>
+</div>
+
+<div id="Filtrados" class="card">
+    @await Html.PartialAsync("pvwTreeCierresAccounting")
+</div>
+@*<div id="NumAccounting">
+    @await Html.PartialAsync("pvwAddAccounting", new ERPMVC.DTO.AccountingDTO { AccountId = 0, ParentAccountId = 0 })
+</div>*@
+
+
+
+<script type="text/javascript">
+     function reloadTab(e) {
+       // console.log(e.item);
+         $('#tabstrip-right').data('kendoTabStrip').reload(e.item);
+
+
+        var tabToReload = 2;
+        var tabstrip = $("#tabstrip-right").data("kendoTabStrip");
+        loadTabStripTab($(tabstrip.contentElement(tabToReload)), '@Url.Action("pvwTreeAccounting", "Accounting")', 2);
+
+         tabstrip = $('#tabstrip-right').getKendoTabStrip();
+        tabstrip.reload("li:first");
+    }
+</script>
+
+<script>
+    function DropchangeEstado() {
+        var treelist = $("#AccountingTreelist").data("kendoTreeList");
+        treelist.dataSource.read();
+    }
+
+
+
+    function loadTabStripTab(tab, actionUrl, someID) {
+        //console.log('Llega a loadTabStripTab ');
+        $.ajax({
+            type: "GET",
+            url: actionUrl,
+            datatype: "json",
+            traditional: true,
+            data: { TypeAccountId: someID },
+            success: function (data, status, xhr) {
+               // console.log(data);
+                $($("#tabstrip-right").data("kendoTabStrip").contentElement(0)).html(data);
+            },
+            error: function (xhr, status, error) {
+                $($("#tabstrip-right").data("kendoTabStrip").contentElement(0)).html(error);
+            }
+        });
+    }
+
+    function onSelect(e)
+    {
+
+        // console.log(e);
+        $(e.contentElement).html("");
+
+        onActivate();
+    }
+
+</script>
+
