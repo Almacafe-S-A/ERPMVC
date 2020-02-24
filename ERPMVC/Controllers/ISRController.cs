@@ -43,6 +43,7 @@ namespace ERPMVC.Controllers
                 var resultado = JsonConvert.DeserializeObject<List<ISR>>(contenido);
                 return Ok(resultado);
             }
+            
             return BadRequest();
         }
 

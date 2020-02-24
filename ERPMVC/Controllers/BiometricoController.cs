@@ -171,14 +171,56 @@ namespace ERPMVC.Controllers
                     return RedirectToAction("Index");
                 }
 
-                ViewData["Errores"]=respuesta.RequestMessage;
+                TempData["Errores"]= await respuesta.Content.ReadAsStringAsync();
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
             {
                 logger.LogError(ex,"Error al guardar el registro biometrico");
-                ViewData["Errores"] = ex.Message;
+                TempData["Errores"] = ex.Message;
                 return RedirectToAction("Index");
+            }
+        }
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> AprobarBiometrico(long IdBiometrico)
+        {
+            try
+            {
+                var respuesta = await Utils.HttpPostAsync(HttpContext.Session.GetString("token"),
+                    config.Value.urlbase + $"api/Biometrico/AprobarBiometrico/{IdBiometrico}", null);
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    return Ok();
+                }
+                var contenido = await respuesta.Content.ReadAsStringAsync();
+                return BadRequest(contenido);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex,"Ocurrio un erro al aprobar el archivo biometrico.");
+                return BadRequest(ex);
+            }
+        }
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> RechazarBiometrico(long IdBiometrico)
+        {
+            try
+            {
+                var respuesta = await Utils.HttpPostAsync(HttpContext.Session.GetString("token"),
+                    config.Value.urlbase + $"api/Biometrico/RechazarBiometrico/{IdBiometrico}", null);
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    return Ok();
+                }
+                var contenido = await respuesta.Content.ReadAsStringAsync();
+                return BadRequest(contenido);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Ocurrio un erro al rechazar el archivo biometrico.");
+                return BadRequest(ex);
             }
         }
     }
