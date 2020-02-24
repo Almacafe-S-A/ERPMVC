@@ -46,8 +46,7 @@ namespace ERPMVC.Controllers
                 return RedirectToAction("Index");
             }
         }
-
-        [HttpGet("[action]")]
+[HttpGet("[action]")]
         public async Task<ActionResult> GetHorasExtra(DateTime fecha, bool todos)
         {
             try
