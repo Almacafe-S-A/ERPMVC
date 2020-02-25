@@ -120,7 +120,7 @@ namespace ERPMVC.Controllers
 
 
                     //return await Task.Run(() => BadRequest("Seleccione una cuenta"));
-                    return BadRequest($"Seleccione una cuenta");
+                    return await Task.Run(() => BadRequest($"Por favor seleccione una cuenta."));
 
                 }
 
@@ -150,7 +150,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return new ObjectResult(new DataSourceResult { Data = new[] { _PresupuestoS }, Total = 1 });
+            return Json(_PresupuestoS);
         }
 
         [HttpPost]
@@ -160,6 +160,12 @@ namespace ERPMVC.Controllers
             Presupuesto _Presupuesto = _Presupuestop;
             try
             {
+                if (_Presupuesto.AccountName == "")
+                {
+                    return await Task.Run(() => BadRequest($"Ya éxiste una bodega registrada con este nombre esta Sucursal."));
+                }
+
+
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
