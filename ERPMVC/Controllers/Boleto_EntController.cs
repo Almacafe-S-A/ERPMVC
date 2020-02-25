@@ -105,7 +105,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet("[controller]/[action]")]
-        public async Task<ActionResult> GetBoleto_EntById([DataSourceRequest]DataSourceRequest request, Boleto_Ent _Boleto_Entp)
+        public async Task<ActionResult> GetBoleto_EntById([DataSourceRequest]DataSourceRequest request, Boleto_EntDTO _Boleto_Entp)
        {
             Boleto_EntDTO _Boleto_Ent = new Boleto_EntDTO();
             try
@@ -135,11 +135,39 @@ namespace ERPMVC.Controllers
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _subproduct = JsonConvert.DeserializeObject<SubProduct>(valorrespuesta);
+
+                       
+
+
                         if (_subproduct != null)
                         {
-                            _Boleto_Ent.ProductId = _subproduct.SubproductId;
-                            _Boleto_Ent.UnitOfMeasureId = _subproduct.UnitOfMeasureId.Value;
+                           
+
+                         int ProductAsignado = 0;
+                        var ProductoAsignadoCliente = await GetProductbyCsutomer(_subproduct.SubproductId, _Boleto_Entp.Customer);
+                        ProductAsignado = Convert.ToInt32(ProductoAsignadoCliente.Value);
+
+                        if (ProductAsignado == 0)
+                        {
+                            return Json(ProductAsignado);
+                            }
+                            else
+                            {
+                                _Boleto_Ent.ProductId = _subproduct.SubproductId;
+                                _Boleto_Ent.UnitOfMeasureId = _subproduct.UnitOfMeasureId.Value;
+                            }
+                            
                         }
+
+                        if (_subproduct == null)
+                        {
+                            var NoContieneProducto = "NoContienProducto";
+
+                            return Json(NoContieneProducto);
+                        }
+
+
+
                     }
 
 
@@ -498,7 +526,38 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpGet]
+        public async Task<JsonResult> GetProductbyCsutomer( Int64 Subprodut, Int64 Customer)
+        {
+            Int32 Existe = 0;
 
+            CustomerProduct Contiene = new CustomerProduct();            
+
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+               
+                Contiene.CustomerId = Customer;
+                Contiene.SubProductId = Subprodut;
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/CustomerProduct/GetProductbyCsutomer", Contiene);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    Existe = JsonConvert.DeserializeObject<Int32>(valorrespuesta);
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(Existe);
+        }
 
 
     }

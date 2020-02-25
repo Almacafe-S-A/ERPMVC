@@ -71,7 +71,28 @@ namespace ERPMVC.Controllers
             return PartialView(_ElementoConfiguracion);
 
         }
+        
+        public async Task<ActionResult> GetElementoConfiguracionById(long Id)
+        {
+            try
+            {
+                var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
+                    config.Value.urlbase + "api/ElementoConfiguracion/GetElementoConfiguracionById/"+Id);
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    var contenido = await respuesta.Content.ReadAsStringAsync();
+                    var resultado = JsonConvert.DeserializeObject<ElementoConfiguracion>(contenido);
+                    return Ok(resultado);
+                }
 
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,"Error al cargar elemento configuracion por Id");
+                return BadRequest(ex);
+            }
+        }
 
         [HttpGet("[controller]/[action]")]
         public async Task<ActionResult> GetElementoByIdConfiguracion([DataSourceRequest]DataSourceRequest request,Int64 Id,string Estado="Activo")
@@ -160,6 +181,33 @@ namespace ERPMVC.Controllers
 
             return Json(_ElementosConfiguracion.ToDataSourceResult(request));
         }
+
+        public async Task<ActionResult> GetElementoByGrupoConfiguracionV2(int GrupoConfiguracionId)
+        {
+            List<ElementoConfiguracion> _ElementosConfiguracion = new List<ElementoConfiguracion>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                var result = await _client.GetAsync(baseadress + "api/ElementoConfiguracion/GetElementosConfiguracionByGrupoConfiguracion/" + GrupoConfiguracionId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _ElementosConfiguracion = JsonConvert.DeserializeObject<List<ElementoConfiguracion>>(valorrespuesta);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return Ok(_ElementosConfiguracion);
+        }
+
         //public async Task<ActionResult<ElementoConfiguracion>> SaveElementoConfiguracion([FromBody]ElementoConfiguracion _ElementoConfiguracion)
         //[HttpPost("[action]")]
         //public async Task<ActionResult<ElementoConfiguracion>> SaveProduct([FromBody]ElementoConfiguracionDTO _ElementoConfiguracionS)
@@ -327,6 +375,31 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _ElementoConfiguracion }, Total = 1 });
         }
 
+        public async Task<ActionResult> Guardar([DataSourceRequest] DataSourceRequest request, ElementoConfiguracion _ElementoConfiguracion)
+        {
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                var result = await _client.PutAsJsonAsync(baseadress + "api/ElementoConfiguracion/Update", _ElementoConfiguracion);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _ElementoConfiguracion = JsonConvert.DeserializeObject<ElementoConfiguracion>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+            return Json(new[] { _ElementoConfiguracion }.ToDataSourceResult(request, ModelState));
+        }
+
         [HttpPost]
         public async Task<ActionResult<ElementoConfiguracion>> Delete(Int64 Id, ElementoConfiguracion _ElementoConfiguracionP)
         {
@@ -354,9 +427,37 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _ElementoConfiguracion }, Total = 1 });
         }
 
+        public async Task<ActionResult> ActualizarElementoConfiguracionValorDecimal(long id, double valor)
+        {
+            try
+            {
+                var respuesta = await Utils.HttpPostAsync(HttpContext.Session.GetString("token"),
+                    config.Value.urlbase + $"api/ElementoConfiguracion/UpdateElementoConfiguracionValorDecimal/{id}/{valor}/{HttpContext.Session.GetString("user")}",null);
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    var contenido = await respuesta.Content.ReadAsStringAsync();
+                    var resultado = JsonConvert.DeserializeObject<ElementoConfiguracion>(contenido);
+                    return Ok(resultado);
+                }
 
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex,"Error al actualizar el elemento configuración " + id);
+                return BadRequest(ex);
+            }
+        }
 
+        public IActionResult ConfiguracionRap()
+        {
+            return View("ConfiguracionRAP");
+        }
 
+        public IActionResult ConfiguracionIHSS()
+        {
+            return View("ConfiguracionIHSS");
+        }
 
     }
 }

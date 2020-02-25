@@ -1,0 +1,177 @@
+﻿@using Kendo.Mvc.UI
+<h3 class="text-themecolor">Configuración ISR</h3>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <div class="row">
+                <div class="form-group">
+                    <label for="cntCuotas">Cuotas de ISR</label>
+                    <input id="cntCuotas" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="form-group">
+                    <button type="button" class="btn btn-success" onclick="GuardarCuotas();">Guardar</button>
+                </div>
+            </div>
+            <div class="row">
+                <hr>
+            </div>
+            <div class="row">
+                <h4>Tablas de Rangos de ISR</h4>
+                <div id="grdConfiguracion"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        CrearGrid();
+        EditorCuotas();
+        CargarCuotas();
+    });
+
+    function CargarCuotas() {
+
+        $.ajax({
+            url: '@Url.Action("GetElementoConfiguracionById", "ElementoConfiguracion")',
+            method: 'GET',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: {Id:123},
+            success: function (result) {
+                //debugger;
+                var cuotas = result.Valordecimal;
+                $("#cntCuotas").data("kendoNumericTextBox").value(cuotas);
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+
+    function GuardarCuotas() {
+        var cantCuotas = $("#cntCuotas").data("kendoNumericTextBox").value();
+        $.ajax({
+            url: '@Url.Action("ActualizarElementoConfiguracionValorDecimal", "ElementoConfiguracion")',
+            method: 'POST',
+            datatype: "json",
+            async: false,
+            data: {id:123, valor:cantCuotas},
+            success: function (data) {
+                debugger;
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: '<br/><br/>Datos guardados correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $.toast({
+                    heading: 'Error',
+                    text: '<br/><br/> ' + textStatus + ": " + XMLHttpRequest.responseText,
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 2000,
+                    stack: 6
+                });
+            }
+        });
+    }
+
+    function EditorCuotas() {
+        $("#cntCuotas").kendoNumericTextBox({
+            decimals: 0,
+            restrictDecimals: true,
+            spinners: false,
+            format:"##"
+        });
+    }
+
+    function CrearGrid() {
+        $("#grdConfiguracion").kendoGrid({
+            dataSource: {
+                transport: {
+                    read: "@Url.Action("GetConfiguracion", "ISR")",
+                    update: "@Url.Action("Guardar", "ISR")",
+                    create: "@Url.Action("Guardar", "ISR")",
+                    destroy: "@Url.Action("Borrar", "ISR")"
+                },
+                schema: {
+                    model: {
+                        id:"Id",
+                        fields: {
+                            Id: { type: "number", editable: true },
+                            De: { type: "number", editable: true },
+                            Hasta: { type: "number", editable: true },
+                            Tramo: { type: "string", editable: true },
+                            Porcentaje: { type: "number", editable: true }
+                        }
+                    }
+                },
+                requestEnd: function(e) {
+                    if (e.type !== "read") {
+                        $("#grdConfiguracion").data("kendoGrid").dataSource.read();
+                    }
+                }
+            },
+            toolbar: [
+                { name: "create", text: "Nueva Configuración" }
+            ],
+            columns: [
+                {
+                    command: [
+                        { name: "edit", text: {edit:"Editar", update:"Actualizar", cancel:"Cancelar"}},//,  iconClass: "fa fa-edit", text:"" }
+                        { name: "destroy", text:"Quitar"}//, iconClass: "fa fa-list-alt", text:"" }
+                    ],
+                    width:100
+                },
+                { field: "Id", title: "Id. ", width: 80, hidden: true },
+                { field: "De", title: "De", width: 100, editor: editorNumerico, format:"{0:#,##0.00}" },
+                { field: "Hasta", title: "Hasta", width: 100, editor: editorNumerico, format: "{0:#,##0.00}" },
+                { field: "Tramo", title: "Tramo", width: 100},
+                { field: "Porcentaje", title: "%", width: 100, editor: editorNumerico}
+            ],
+            noRecords: {
+                template:"No hay configuraciones activas."
+            },
+            //height: 400,
+            scrollable: true,
+            editable: "inline",
+            save: ValidarIngreso
+        });
+
+        function ValidarIngreso(e) {
+            debugger;
+            var configuracion = e.model;
+            if (configuracion.De < 0 || configuracion.Hasta < 0 || configuracion.Porcentaje < 0) {
+                alert('Montos no pueden ser negativos');
+                e.preventDefault();
+                return false;
+            }
+            if (configuracion.Tramo === "") {
+                alert('Debe ingresar un valor para la descripción del tramo');
+                e.preventDefault();
+                return false;
+            }
+            if (configuracion.Porcentaje > 100) {
+                alert('Porcentaje no puede ser mayor a 100');
+                e.preventDefault();
+                return false;
+            }
+            debugger;
+        }
+
+        function editorNumerico(contenedor, opciones) {
+            $('<input data-bind="value:' + opciones.field + '"/>')
+                .appendTo(contenedor)
+                .kendoNumericTextBox({ spinners: false });
+        }
+    }
+</script>

@@ -16,7 +16,7 @@ namespace ERPMVC.DTO
         public string Description { get; set; }
         [Required(ErrorMessage = "La categoría de deducción es requerida")]
         [Display(Name = "Categoría de Deducción")]
-        [Range(1,2,ErrorMessage = "La categoría de deducción puede ser: Por Ley o Eventual")]
+        [Range(1,3,ErrorMessage = "La categoría de deducción puede ser: Por Ley, Eventual o Colegiación")]
         public Int64 DeductionTypeId { get; set; }
         public string DeductionType { get; set; }
         [Required(ErrorMessage = "El valor es requerido")]
@@ -31,5 +31,9 @@ namespace ERPMVC.DTO
         public DateTime FechaModificacion { get; set; }
         public string UsuarioModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
+
+        public string EtiquetaDropDown =>
+            (DeductionTypeId == 1 ? "(L)" : "(E)") + (EsPorcentaje ? "(F:%)" : "(F:V)") +
+            ((int) Fortnight == 1 ? "(Q:1)" : "(Q:2)") + Description;
     }
 }
