@@ -308,7 +308,7 @@
                             <PaddingTop>2pt</PaddingTop>
                             <PaddingBottom>2pt</PaddingBottom>
                             <Border>
-                              <Color>Gray</Color>
+                              <Color>#808080</Color>
                               <Style>Solid</Style>
                             </Border>
                           </Style>
@@ -318,7 +318,7 @@
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!CreatedDate.Value</Value>
+                                  <Value>=Fields!DatePosted.Value</Value>
                                   <Style>
                                     <FontSize>9.75pt</FontSize>
                                     <Format>d</Format>
@@ -609,7 +609,7 @@
               <Paragraph>
                 <TextRuns>
                   <TextRun>
-                    <Value>=First(Fields!SaldoAnterior.Value, "SaldoAnterior") - (Sum(Fields!Debit.Value, "MovimientoHistorico") - Sum(Fields!Credit.Value, "MovimientoHistorico"))</Value>
+                    <Value>= First(Fields!SaldoAnterior.Value, "SaldoAnterior") +( (Sum(Fields!Debit.Value, "MovimientoHistorico") - Sum(Fields!Credit.Value, "MovimientoHistorico")))</Value>
                     <Style>
                       <FontFamily>Arial</FontFamily>
                       <Format>'L'#,0.00;('L'#,0.00)</Format>
@@ -648,7 +648,7 @@
             <KeepTogether>true</KeepTogether>
           </Rectangle>
         </ReportItems>
-        <Height>2.0009in</Height>
+        <Height>2.3542in</Height>
       </Body>
       <Width>8.549in</Width>
       <Page>
@@ -977,38 +977,6 @@
                 </Paragraph>
               </Paragraphs>
             </Textbox>
-            <Textbox Name="TextBox8">
-              <Left>1.5698in</Left>
-              <Top>1.89282in</Top>
-              <Height>0.31250in</Height>
-              <Width>4.42708in</Width>
-              <Style>
-                <PaddingLeft>2pt</PaddingLeft>
-                <PaddingRight>2pt</PaddingRight>
-                <PaddingTop>2pt</PaddingTop>
-                <PaddingBottom>2pt</PaddingBottom>
-                <Border />
-              </Style>
-              <CanGrow>true</CanGrow>
-              <KeepTogether>true</KeepTogether>
-              <Paragraphs>
-                <Paragraph>
-                  <TextRuns>
-                    <TextRun>
-                      <Value>=First(Fields!SaldoAnterior.Value, "SaldoAnterior")</Value>
-                      <Style>
-                        <FontFamily>Arial</FontFamily>
-                        <Format>'L'#,0.00;('L'#,0.00)</Format>
-                      </Style>
-                    </TextRun>
-                  </TextRuns>
-                  <Style>
-                    <TextAlign>Left</TextAlign>
-                    <LineHeight>10pt</LineHeight>
-                  </Style>
-                </Paragraph>
-              </Paragraphs>
-            </Textbox>
             <Image Name="Image1">
               <Left>0.20521in</Left>
               <Top>0.33032in</Top>
@@ -1053,6 +1021,40 @@
                 </Paragraph>
               </Paragraphs>
             </Textbox>
+            <Textbox Name="TextBox8">
+              <Left>1.75in</Left>
+              <Top>1.875in</Top>
+              <Height>0.25000in</Height>
+              <Width>5.875in</Width>
+              <Style>
+                <VerticalAlign>Top</VerticalAlign>
+                <PaddingLeft>2pt</PaddingLeft>
+                <PaddingRight>2pt</PaddingRight>
+                <PaddingTop>2pt</PaddingTop>
+                <PaddingBottom>2pt</PaddingBottom>
+                <Border>
+                  <Color>#000000</Color>
+                </Border>
+              </Style>
+              <CanGrow>true</CanGrow>
+              <KeepTogether>true</KeepTogether>
+              <Paragraphs>
+                <Paragraph>
+                  <TextRuns>
+                    <TextRun>
+                      <Value>=Sum(Fields!SaldoAnterior.Value, "SaldoAnterior")</Value>
+                      <Style>
+                        <Format>'L'#,0.00;('L'#,0.00)</Format>
+                      </Style>
+                    </TextRun>
+                  </TextRuns>
+                  <Style>
+                    <TextAlign>Center</TextAlign>
+                    <LineHeight>10pt</LineHeight>
+                  </Style>
+                </Paragraph>
+              </Paragraphs>
+            </Textbox>
           </ReportItems>
         </PageHeader>
         <PageFooter>
@@ -1080,9 +1082,10 @@
     <DataSource Name="ERP">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=DESKTOP-I3BGF47\MSSQL2017;Initial Catalog=ERP</ConnectString>
+        <ConnectString>Data Source=fenrir;Initial Catalog=ERP-PRODUCCION2</ConnectString>
+        <IntegratedSecurity>true</IntegratedSecurity>
       </ConnectionProperties>
-      <rd:SecurityType>DataBase</rd:SecurityType>
+      <rd:SecurityType>Integrated</rd:SecurityType>
     </DataSource>
   </DataSources>
   <DataSets>
@@ -1096,9 +1099,14 @@
       <Query>
         <DataSourceName>ERP</DataSourceName>
         <CommandType>Text</CommandType>
-        <CommandText>SELECT SUM([JournalEntryLine].[Debit]) - SUM([JournalEntryLine].[Credit]) AS 'SaldoAnterior'
-FROM [dbo].[JournalEntryLine]
-WHERE [JournalEntryLine].[AccountId] = @AccountID AND [JournalEntryLine].[CreatedDate] &lt; @FechaInicio</CommandText>
+        <CommandText>SELECT CASE WHEN Act.DeudoraAcreedora = 'D' THEN SUM([JournalEntryLine].[Debit]) - SUM([JournalEntryLine].[Credit]) 
+ELSE SUM([JournalEntryLine].[Credit]) - SUM([JournalEntryLine].[Debit]) END AS 'SaldoAnterior'
+FROM [dbo].[JournalEntryLine] 
+INNER JOIN [dbo].[JournalEntry] ON [dbo].[JournalEntryLine].[JournalentryId] = [dbo].[JournalEntry].[JournalentryId] 
+JOIN [dbo].[Accounting] Act ON Act.AccountId = [dbo].[JournalEntryLine].AccountId
+WHERE [JournalEntryLine].[AccountId] = @AccountID AND [JournalEntry].[DatePosted] &lt; @FechaInicio AND 
+[JournalEntry].[EstadoId]= 6
+GROUP BY Act.DeudoraAcreedora</CommandText>
         <QueryParameters>
           <QueryParameter Name="@AccountID">
             <Value>=Parameters!AccountID.Value</Value>
@@ -1195,6 +1203,18 @@ WHERE [JournalEntryLine].[AccountId] = @AccountID AND [JournalEntryLine].[Create
           <DataField>NombreCuenta</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
+        <Field Name="DatePosted">
+          <DataField>DatePosted</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="Date">
+          <DataField>Date</DataField>
+          <rd:TypeName>System.DateTime</rd:TypeName>
+        </Field>
+        <Field Name="DeudoraAcreedora">
+          <DataField>DeudoraAcreedora</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
       </Fields>
       <Query>
         <DataSourceName>ERP</DataSourceName>
@@ -1218,14 +1238,18 @@ WHERE [JournalEntryLine].[AccountId] = @AccountID AND [JournalEntryLine].[Create
  ,[JournalEntryLine].[Memo]
  ,[JournalEntryLine].[ModifiedDate]
  ,[JournalEntryLine].[ModifiedUser]
+,[JournalEntry].[DatePosted]
+,[JournalEntry].[Date]
                ,[Accounting].[AccountCode]
                ,[Accounting].[AccountName] as NombreCuenta
                ,[JournalEntry].[JournalEntryId] as DocumentId
+ ,[Accounting].[DeudoraAcreedora]
  FROM 
  [dbo].[JournalEntryLine] INNER JOIN [dbo].[Accounting] ON [JournalEntryLine].[AccountId] = [Accounting].[AccountId]
                INNER JOIN [dbo].[JournalEntry] ON [JournalEntryLine].[JournalEntryId] = [JournalEntry].[JournalEntryId]
+
 WHERE
-              [JournalEntry].[Date] &gt;= @FechaInicio AND [JournalEntry].[Date] &lt;= @FechaFinal + CAST('23:59:59.000' AS datetime) AND [JournalEntryLine].[AccountId] = @AccountID</CommandText>
+              [JournalEntry].[Date] &gt;= @FechaInicio AND [JournalEntry].[Date] &lt;= @FechaFinal + CAST('23:59:59.000' AS datetime) AND [JournalEntryLine].[AccountId] = @AccountID AND  [JournalEntry].[EstadoId] = 6</CommandText>
         <QueryParameters>
           <QueryParameter Name="@AccountID">
             <Value>=Parameters!AccountID.Value</Value>
@@ -1251,11 +1275,15 @@ WHERE
           <DataField>AccountName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
+        <Field Name="DeudoraAcreedora">
+          <DataField>DeudoraAcreedora</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
       </Fields>
       <Query>
         <DataSourceName>ERP</DataSourceName>
         <CommandType>Text</CommandType>
-        <CommandText>select AccountId , AccountCode + '-' +AccountName  as AccountName from Accounting</CommandText>
+        <CommandText>select AccountId , AccountCode + '-' +AccountName  as AccountName, DeudoraAcreedora from  Accounting</CommandText>
       </Query>
     </DataSet>
   </DataSets>
