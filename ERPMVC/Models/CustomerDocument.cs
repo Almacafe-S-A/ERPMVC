@@ -16,6 +16,8 @@ namespace ERPMVC.Models
         [Display(Name = "Cliente")]
         public Int64 CustomerId { get; set; }
 
+        public Int64 CustomerParametrosave { get; set; }
+
         [Display(Name = "Documento")]
         public Int64 DocumentTypeId { get; set; }
 

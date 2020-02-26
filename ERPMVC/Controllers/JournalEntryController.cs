@@ -231,7 +231,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _JournalEntry = JsonConvert.DeserializeObject<List<JournalEntry>>(valorrespuesta);
-                    _JournalEntry = _JournalEntry.OrderByDescending(q => q.JournalEntryId).ToList();
+                    _JournalEntry = _JournalEntry.OrderByDescending(q => q.DatePosted).ToList();
                 }
 
 

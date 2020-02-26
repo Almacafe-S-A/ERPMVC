@@ -104,19 +104,46 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpPost("[controller]/[action]")]
+        [HttpGet("[controller]/[action]")]
+        public async Task<DataSourceResult> GetEndososLiberacionByEndososId([DataSourceRequest]DataSourceRequest request, int EndososCertificadosId)
+        {
+            List<EndososLiberacion> _EndososLiberacion = new List<EndososLiberacion>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/EndososLiberacion/GetEndososLiberacion");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _EndososLiberacion = JsonConvert.DeserializeObject<List<EndososLiberacion>>(valorrespuesta);
+                    _EndososLiberacion = _EndososLiberacion.Where(p => p.EndososId == EndososCertificadosId).ToList();
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return _EndososLiberacion.ToDataSourceResult(request);
+        }
+
+        [HttpPost("[action]")]
         public async Task<ActionResult<EndososLiberacion>> SaveEndososLiberacion([FromBody]EndososLiberacion _EndososLiberacion)
         {
 
             try
             {
 
-                if(_EndososLiberacion.Quantity >_EndososLiberacion.Saldo)
+                if(_EndososLiberacion.Quantity < _EndososLiberacion.Saldo)
                 {
-                    return await Task.Run(() => BadRequest("La cantidad no puede ser mayor que el saldo disponible"));
+                    return await Task.Run(() => BadRequest("El saldo a Liberar no puede ser mayor que la cantidad endosada"));
                 }
 
-                _EndososLiberacion.Saldo = _EndososLiberacion.Saldo - _EndososLiberacion.Quantity;
+                //_EndososLiberacion.Saldo = _EndososLiberacion.Saldo - _EndososLiberacion.Quantity;
 
                 EndososLiberacion _listEndososLiberacion = new EndososLiberacion();
                 string baseadress = config.Value.urlbase;
@@ -140,9 +167,13 @@ namespace ERPMVC.Controllers
 
                 if (_listEndososLiberacion.EndososLiberacionId == 0)
                 {
-                    _EndososLiberacion.FechaCreacion = DateTime.Now;
-                    _EndososLiberacion.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_EndososLiberacion);
+                    if (_EndososLiberacion.Saldo > 0)
+                    {
+                        _EndososLiberacion.FechaLiberacion = DateTime.Now;
+                        _EndososLiberacion.FechaCreacion = DateTime.Now;
+                        _EndososLiberacion.UsuarioCreacion = HttpContext.Session.GetString("user");
+                        var insertresult = await Insert(_EndososLiberacion);
+                    }
                 }
                 else
                 {
