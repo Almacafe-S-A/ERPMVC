@@ -409,7 +409,7 @@ namespace ERPMVC.Controllers
                     __customers = (from c in __customers.OrderBy(q => q.AccountCode)
                                    select new CierresAccounting
                                    {
-                                       CierreAccountingId = c.CierreAccountingId,
+                                       //CierreAccountingId = c.CierreAccountingId,
                                        AccountId = c.AccountId,
                                        AccountName = c.AccountCode + "--" + c.AccountName,
                                        AccountCode = c.AccountCode,
@@ -458,7 +458,7 @@ namespace ERPMVC.Controllers
                     _accounting = (from c in _accounting
                                    select new CierresAccounting
                                    {
-                                       CierreAccountingId = c.CierreAccountingId,
+                                       //CierreAccountingId = c.CierreAccountingId,
                                        AccountId = c.AccountId,
                                        AccountName = c.AccountCode + "--" + c.AccountName,
                                        AccountCode = c.AccountCode,
@@ -499,7 +499,7 @@ namespace ERPMVC.Controllers
                     _customers = JsonConvert.DeserializeObject<List<CierresAccounting>>(valorrespuesta);
                     _customers = _customers.Select(c => new CierresAccounting
                     {
-                        CierreAccountingId = c.CierreAccountingId,
+                        //CierreAccountingId = c.CierreAccountingId,
                         AccountId = c.AccountId,
                         AccountName = c.AccountCode + "--" + c.AccountName,
                         AccountCode = c.AccountCode,
