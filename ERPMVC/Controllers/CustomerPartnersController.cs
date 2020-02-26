@@ -304,6 +304,48 @@ namespace ERPMVC.Controllers
 
 
 
+       
+
+
+
+        [HttpGet]
+        public async Task<JsonResult> GetRTNValidationDuplicate(string RTN, Int32 CustomerId, Int32 PartnerId)
+        {
+            Int32 Existe = 0;
+
+            CustomerPartners Contiene = new CustomerPartners();
+
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                Contiene.Identidad = RTN;
+                Contiene.CustomerId = CustomerId;
+                Contiene.PartnerId = PartnerId;
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/CustomerPartners/GetClienteRTN", Contiene);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    Existe = JsonConvert.DeserializeObject<Int32>(valorrespuesta);
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(Existe);
+        }
+
+
+
+       
+
+
 
     }
 }

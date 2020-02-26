@@ -126,7 +126,10 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _DebitNote = JsonConvert.DeserializeObject<List<DebitNote>>(valorrespuesta);
-
+                    foreach (var item in _DebitNote)
+                    {
+                        item.NoSAG = $"{item.Sucursal}-{item.Caja}-{item.TipoDocumento}-{item.NúmeroDEI.ToString().PadLeft(8, '0')} ";
+                    }
                 }
 
 

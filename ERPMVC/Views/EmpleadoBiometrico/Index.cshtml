@@ -1,0 +1,83 @@
+﻿<h3 class="text-themecolor">Asignación de Empleados a Biometrico</h3>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <div class="row">
+                <div id="grdConfiguracion"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        CrearGrid();
+    });
+
+    function CrearGrid() {
+        $("#grdConfiguracion").kendoGrid({
+            dataSource: {
+                transport: {
+                    read: "@Url.Action("GetAsignacionesBiometrico", "EmpleadoBiometrico")",
+                    update: "@Url.Action("Guardar", "EmpleadoBiometrico")",
+                    create: "@Url.Action("Guardar", "EmpleadoBiometrico")"
+                },
+                schema: {
+                    model: {
+                        id:"EmpleadoId",
+                        fields: {
+                            EmpleadoId: { type: "number", editable: false },
+                            BiometricoId: { type: "number", editable: true },
+                            NombreEmpleado: { type:"string", editable: false }
+                        }
+                    }
+                },
+                requestEnd: function(e) {
+                    if (e.type !== "read") {
+                        $("#grdConfiguracion").data("kendoGrid").dataSource.read();
+                    }
+                }
+            },
+            columns: [
+                {
+                    command: [
+                        { name: "edit", text: { edit: "", update: "", cancel: "" }}
+                    ],
+                    width:60
+                },
+                { field: "EmpleadoId", title: "Código Empleado", width: 100},
+                { field: "NombreEmpleado", title: "Empleado", width: 300},
+                { field: "BiometricoId", title: "Código Biometrico", width: 100, editor:editorNumerico}
+            ],
+            noRecords: {
+                template:"No hay empleados"
+            },
+            //height: 400,
+            scrollable: true,
+            editable: "inline",
+            save: ValidarIngreso
+        });
+    }
+    function editorNumerico(contenedor, opciones) {
+        $('<input data-bind="value:' + opciones.field + '"/>')
+            .appendTo(contenedor)
+            .kendoNumericTextBox({ spinners: false , format:"###"});
+    }
+    function ValidarIngreso(e) {
+        var registro = e.model;
+        var datos = e.sender.dataSource.data().filter(r=>r.EmpleadoId !== registro.EmpleadoId);
+        if (registro.BiometricoId == 0) {
+            alert('Código biometrico no puede ser 0');
+            e.preventDefault();
+            return false;
+        }
+        datos = datos.filter(r => r.BiometricoId === registro.BiometricoId);
+        if (datos.length > 0) {
+            alert('Código biometrico duplicado');
+            e.preventDefault();
+            return false;
+        }
+        
+        debugger;
+    }
+</script>

@@ -40,6 +40,6 @@ namespace ERPMVC.Models
         [Display(Name = "Valor endoso")]
         public double ValorEndoso { get; set; }
 
-
+        public double Saldo { get; set; }
     }
 }

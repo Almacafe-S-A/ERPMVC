@@ -209,6 +209,8 @@ namespace ERPMVC.Controllers
 
                     if (_listEndososCertificados.EndososCertificadosId == 0)
                     {
+                        _EndososCertificados.FechaLiberacion = DateTime.Now;
+                        _EndososCertificados.FechaCancelacion = DateTime.Now;
                         _EndososCertificados.FechaCreacion = DateTime.Now;
                         _EndososCertificados.UsuarioCreacion = HttpContext.Session.GetString("user");
                         var insertresult = await Insert(_EndososCertificados);
