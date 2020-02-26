@@ -9,8 +9,8 @@ namespace ERPMVC.Models
 {
     public class ApplicationUser : IdentityUser<Guid>
     {
-        [Display(Name = "Sucursal")]
-        public int BranchId { get; set; }
+        //[Display(Name = "Sucursal")]
+        //public int BranchId { get; set; }
 
         [Display(Name = "Habilitado")]
         [DataType("Boolean")]
@@ -31,8 +31,8 @@ namespace ERPMVC.Models
         public string UsuarioModificacion { get; set; }
 
         public virtual List<PasswordHistory> PasswordHistory { get; set; } = new List<PasswordHistory>();
-        [UIHint("Branches")]
-        public virtual Branch Branch { get; set; }
+        //[UIHint("Branches")]
+        //public virtual Branch Branch { get; set; }
 
 
     }

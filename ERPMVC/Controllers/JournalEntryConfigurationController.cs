@@ -136,6 +136,8 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
+                    _JournalEntryConfiguration.FechaCreacion = _listJournalEntryConfiguration.FechaCreacion;
+                    _JournalEntryConfiguration.UsuarioCreacion = _listJournalEntryConfiguration.UsuarioCreacion;
                     var updateresult = await Update(_JournalEntryConfiguration.JournalEntryConfigurationId, _JournalEntryConfiguration);
                 }
 

@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Http;
+using NPOI.SS.UserModel;
 
 namespace ERPMVC.Helpers
 {
@@ -33,5 +34,106 @@ namespace ERPMVC.Helpers
             cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + token);
             return await cliente.PutAsJsonAsync(url, valor);
         }
+
+        public static DateTime GetFechaXLS(ICell celda)
+        {
+            if (celda.CellType == CellType.Blank || 
+                celda.CellType == CellType.Unknown ||
+                celda.CellType == CellType.Error || 
+                celda.CellType == CellType.Boolean || 
+                celda.CellType == CellType.Formula)
+            {
+                return DateTime.MinValue;
+            }
+
+            try
+            {
+                return celda.DateCellValue;
+            }
+            catch (Exception)
+            {
+                var cadena = celda.StringCellValue;
+                try
+                {
+                    string formato = celda.CellStyle.GetDataFormatString();
+                    return DateTime.ParseExact(cadena, formato, null);
+                }
+                catch (Exception)
+                {
+                    return DateTime.MinValue;
+                }
+            }
+        }
+
+        public static DateTime GetHoraXLS(ICell celda)
+        {
+            if (celda.CellType == CellType.Blank ||
+                celda.CellType == CellType.Unknown ||
+                celda.CellType == CellType.Error ||
+                celda.CellType == CellType.Boolean ||
+                celda.CellType == CellType.Formula)
+            {
+                return DateTime.MinValue;
+            }
+
+            try
+            {
+                return celda.DateCellValue;
+            }
+            catch (Exception)
+            {
+                var cadena = celda.StringCellValue;
+                try
+                {
+                    cadena = cadena.ToLower().Replace("a.m.", "AM");
+                    cadena = cadena.ToLower().Replace("p.m.", "PM");
+                    cadena = cadena.ToLower().Replace("am.", "AM");
+                    cadena = cadena.ToLower().Replace("pm.", "PM");
+                    cadena = cadena.ToLower().Replace("a.m", "AM");
+                    cadena = cadena.ToLower().Replace("p.m", "PM");
+                    cadena = cadena.ToLower().Replace("am", "AM");
+                    cadena = cadena.ToLower().Replace("pm", "PM");
+                    if (cadena.Contains("AM") || cadena.Contains("PM"))
+                    {
+                        return DateTime.ParseExact(cadena, "hh:mm tt", null);
+                    }
+                    return DateTime.ParseExact(cadena, "hh:mm", null);
+                }
+                catch (Exception)
+                {
+                    return DateTime.MinValue;
+                }
+            }
+        }
+
+        public static double? GetNumeroXLS(ICell celda)
+        {
+            if (celda.CellType == CellType.Blank ||
+                celda.CellType == CellType.Unknown ||
+                celda.CellType == CellType.Error ||
+                celda.CellType == CellType.Boolean ||
+                celda.CellType == CellType.Formula)
+            {
+                return null;
+            }
+
+            try
+            {
+                return celda.NumericCellValue;
+            }
+            catch (Exception)
+            {
+                var cadena = celda.StringCellValue;
+                try
+                {
+                    return double.Parse(cadena);
+                }
+                catch (Exception)
+                {
+                    return null;
+                }
+            }
+        }
+
     }
 }

@@ -89,7 +89,10 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CreditNote = JsonConvert.DeserializeObject<List<CreditNote>>(valorrespuesta);
-
+                    foreach (var item in _CreditNote)
+                    {
+                        item.NoSAG = $"{item.Sucursal}-{item.Caja}-{item.TipoDocumento}-{item.NúmeroDEI.ToString().PadLeft(8, '0')} ";
+                    }
                 }
 
 

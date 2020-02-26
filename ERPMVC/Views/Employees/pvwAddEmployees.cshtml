@@ -244,7 +244,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Empleados</h4>
+                <h4 class="modal-title">Empleado</h4>
                 <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
             </div>
             <div class="modal-body">
@@ -259,7 +259,6 @@
                                       data-ajax-failure="onFailed" data-ajax-success="onSuccess"
                                       class="validation-wizard wizard-circle">
                                     <div class="form-body">
-                                        <hr>
 
                                         <div class="row">
                                             <div class="col-sm-4 col-md-4">
@@ -555,7 +554,14 @@
                                                 <div class="form-group">
                                                     <label asp-for="Salario" class=" control-label" style="width:100%">Salario</label>
                                                     <div class="input-group">
-                                                        <input type="text" asp-for="Salario" name="Salario" required data-required-msg="El Salario es requerido." readonly autocomplete="off" class="form-control" style="min-width:80%" />
+                                                        @*<input type="text" asp-for="Salario" name="Salario" required data-required-msg="El Salario es requerido." readonly autocomplete="off" class="form-control" style="min-width:80%" />*@
+                                                        <kendo-numerictextbox name="Salario" class="readonly"
+                                                                              format="n2" spinners="false" decimals="2" tabindex="-1" enable="false"
+                                                                              min="0" data-val-required="El Salario es requerido." data-min-msg="El Salario no puede ser negativo."
+                                                                              style="min-width: 80%;text-align:right;padding-right: 3px;color:black;font-weight:500"
+                                                                              max="999999999"
+                                                                              step="1"
+                                                                              value="Convert.ToDouble(Model.Salario)" />
                                                         <span class="input-group-btn">
                                                             <button type="button" class="btn btn-info" onclick="AddSalarioEmpleado()">AÑADIR</button>
                                                         </span>
@@ -567,7 +573,7 @@
                                             <input asp-for="QtySalary" type="number" name="QtySalary" data-validate="false" id="QtySalaryFrm" class="form-control" style="min-width:100%" hidden="hidden" />
                                             <input asp-for="DayApplication" type="datetime" name="DayApplication" data-validate="false" id="DayApplicationFrm" class="form-control" style="min-width:100%" hidden="hidden" />
                                             @*<kendo-datepicker name="DayApplication" asp-for="ay" style="min-width: 100%;"
-                                                format="dd/MM/yyyy hh:mm"/>*@
+        format="dd/MM/yyyy hh:mm"/>*@
 
                                             <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
@@ -780,18 +786,24 @@
 
                                                 </div>
                                             </div>
-
-
-
                                             <div class="col-md-4" hidden>
                                                 <div class="form-group">
                                                     @(Html.Kendo().Upload()
-                                                                                        .Name("file")
-                                                                                        .HtmlAttributes(new { aria_label = "Foto Empleado" })
+                                                                                                        .Name("file")
+                                                                                                        .HtmlAttributes(new { aria_label = "Foto Empleado" })
                                                     )
                                                 </div>
                                             </div>
-
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="HorasExtra" class=" control-label" style="width:100%"></label>
+                                                    @(Html.Kendo().SwitchFor(m => m.HorasExtra).Name("HoraExtraSwitch").Events(e => e.Change("HorasExtrasChange")).Messages(msg =>msg.Checked("Si").Unchecked("No")))
+                                                    <span asp-validation-for="HorasExtra" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <input type="text" id="HorasExtra" asp-for="HorasExtra" hidden/>
+                                        </div>
+                                        <div class="row">
                                             <div class="col-sm-4 col-md-4">
                                                 <div class="card">
                                                     <div class="card-body">
@@ -840,6 +852,15 @@
     </div>
 </div>
 <script>
+    function HorasExtrasChange() {
+        if ($("#HoraExtraSwitch").is(':checked')) {
+            $("#HorasExtra").val(true);
+        }
+        else {
+            $("#HorasExtra").val(false);
+        }
+    }
+
     function validarTelefono() {
         var cadena = $("#Telefono").val();
         var cadenaContacto = $("#TelefonoContacto").val();
@@ -881,7 +902,15 @@
                     }
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                    $.toast({
+                        heading: 'Error',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
                 }
             });
         }
@@ -913,7 +942,15 @@
                     }
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                    $.toast({
+                        heading: 'Error',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
                 }
             });
         }
@@ -923,27 +960,51 @@
     }
 
     function GenerarEdad() {
-		var fecha = $("#FechaNacimiento").getKendoDatePicker().value().toJSON()
-		var fecha_value = new Date(fecha).getFullYear(fecha);
-        var fecha_valuem = new Date(fecha).getMonth(fecha) + 1;
-        var fecha_valued = new Date(fecha).getDate(fecha);
-        const fechaActual = new Date().getFullYear();
-        const fechaActualm = new Date().getMonth() + 1;
-        const fechaActuald = new Date().getDate();
+        //if () {
+        debugger;
+        if ($("#FechaNacimiento").val() != "") {
+            console.log("Fecha N", $("#FechaNacimiento").getKendoDatePicker().value());
+            //if ($("#FechaNacimiento").getKendoDatePicker().value() != null) {
+            //    var fecha = $("#FechaNacimiento").getKendoDatePicker().value().toJSON()
+            //}
+            //else {
+                var fechaN = $("#FechaNacimiento").val() // 10/11/2009
+                var anio = String(fechaN).substring(6, 10); //2009
+                var dia = String(fechaN).substring(0, 2); //10
+                var mes = String(fechaN).substring(3, 5); //11
 
-        let edad = fechaActual - fecha_value;
+                var FechaFormatiada = mes + '/' + dia + '/' + anio 
+                var fecha = new Date(FechaFormatiada).toJSON();
+            //}
+            var fecha_value = new Date(fecha).getFullYear(fecha);
+            var fecha_valuem = new Date(fecha).getMonth(fecha) + 1;
+            var fecha_valued = new Date(fecha).getDate(fecha);
+            const fechaActual = new Date().getFullYear();
+            const fechaActualm = new Date().getMonth() + 1;
+            const fechaActuald = new Date().getDate();
 
-        if ((fecha_valuem == fechaActualm) && (fecha_valued > fechaActuald)) {
-            edad = (edad - 1);
-        } else
-            if (fecha_valuem > fechaActualm) {
+            let edad = fechaActual - fecha_value;
+
+            if ((fecha_valuem == fechaActualm) && (fecha_valued > fechaActuald)) {
                 edad = (edad - 1);
-			}
-		$("#edadcalculada").val(edad);
+            } else
+                if (fecha_valuem > fechaActualm) {
+                    edad = (edad - 1);
+                }
+            $("#edadcalculada").val(edad);
+        }
+        else {
+            $("#edadcalculada").val(null);
+        }
 	}
 
     function ValidacionFinContrato() {
-        if ($("#IdTipoContrato").data("kendoDropDownList").text() === "CONTRATO TEMPORAL") {
+        if ($("#IdTipoContrato").data("kendoDropDownList").text() === "CONTRATO TEMPORAL"
+            || $("#IdTipoContrato").data("kendoDropDownList").text() === "Temporal"
+            || $("#IdTipoContrato").data("kendoDropDownList").text() === "Contrato Temporal"
+            || $("#IdTipoContrato").data("kendoDropDownList").text() === "temporal"
+            || $("#IdTipoContrato").data("kendoDropDownList").text() === "Contrato temporal"
+            || $("#IdTipoContrato").data("kendoDropDownList").text() === "contrato temporal") {
             $("#FechaFinContrato").attr("data-required-msg", "La Fecha Fin de Contrato es requerida.");
             $("#FechaFinContrato").attr("required", "required");
         }
@@ -1150,7 +1211,6 @@
                                     'IdTipoContrato': $("#IdTipoContrato").val(),
                                     'Notas': $("#Notas").val(),
                                     'IdBranch': $("#IdBranch").val(),
-
                                     //temporal
                                     'ApplicationUserId': 'FC405B7D-9FE3-43C9-97B5-D87A174CAB8A',
                                     'RTN': $("#RTN").val(),
@@ -1190,10 +1250,15 @@
                                         },
                                         error: function (XMLHttpRequest, textStatus, errorThrown) {
 
-                                            notification.show({
-                                                title: "Validación",
-                                                message: textStatus + ": " + XMLHttpRequest.responseText
-                                            }, "error");
+                                            $.toast({
+                                                heading: 'Error',
+                                                text: textStatus + ": " + XMLHttpRequest.responseText,
+                                                position: 'top-right',
+                                                loaderBg: '#ff6849',
+                                                icon: 'error',
+                                                hideAfter: 30000,
+                                                stack: 6
+                                            });
 
                                         }
                                     });
@@ -1213,6 +1278,7 @@
 
 
     $(document).ready(function () {
+        HorasExtrasChange();
         $("#btnEmployees").click(function (event) {
             if ($('#TelefonoContactoAlert').is(':hidden') && $('#TelefonoAlert').is(':hidden')) {
                 return true;
@@ -1422,10 +1488,15 @@
             },
             error: function (XMLHttpRequest, textStatus, errorThrown) {
 
-                notification.show({
-                    title: "Validación",
-                    message: textStatus + ": " + XMLHttpRequest.responseText
-                }, "error");
+                $.toast({
+                    heading: 'Validación',
+                    text: textStatus + ": " + XMLHttpRequest.responseText,
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 30000,
+                    stack: 6
+                });
 
             }
         });
@@ -1479,10 +1550,15 @@
             },
             error: function (XMLHttpRequest, textStatus, errorThrown) {
 
-                notification.show({
-                    title: "Validación",
-                    message: textStatus + ": " + XMLHttpRequest.responseText
-                }, "error");
+                $.toast({
+                    heading: 'Validación',
+                    text: textStatus + ": " + XMLHttpRequest.responseText,
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 30000,
+                    stack: 6
+                });
 
             }
         });
@@ -1537,10 +1613,15 @@
             },
             error: function (XMLHttpRequest, textStatus, errorThrown) {
 
-                notification.show({
-                    title: "Validación",
-                    message: textStatus + ": " + XMLHttpRequest.responseText
-                }, "error");
+                $.toast({
+                    heading: 'Validación',
+                    text: textStatus + ": " + XMLHttpRequest.responseText,
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 30000,
+                    stack: 6
+                });
 
             }
         });
@@ -1595,10 +1676,15 @@
             },
             error: function (XMLHttpRequest, textStatus, errorThrown) {
 
-                notification.show({
-                    title: "Validación",
-                    message: textStatus + ": " + XMLHttpRequest.responseText
-                }, "error");
+                $.toast({
+                    heading: 'Validación',
+                    text: textStatus + ": " + XMLHttpRequest.responseText,
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 30000,
+                    stack: 6
+                });
 
             }
         });
@@ -1628,10 +1714,15 @@
                                         },
                                         error: function (XMLHttpRequest, textStatus, errorThrown) {
 
-                                            notification.show({
-                                                title: "Validación",
-                                                message: textStatus + ": " + XMLHttpRequest.responseText
-                                            }, "error");
+                                            $.toast({
+                                                heading: 'Validación',
+                                                text: textStatus + ": " + XMLHttpRequest.responseText,
+                                                position: 'top-right',
+                                                loaderBg: '#ff6849',
+                                                icon: 'error',
+                                                hideAfter: 30000,
+                                                stack: 6
+                                            });
 
                                         }
                                     });

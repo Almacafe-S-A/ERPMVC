@@ -427,6 +427,10 @@ namespace ERPMVC.Controllers
                         {
                             _JournalEntryP.PartyTypeId = item.PartyTypeId;
                             _JournalEntryP.PartyTypeName = item.PartyTypeName;
+                            if(item.PartyName == "Otros")
+                            {
+                                item.PartyId = 0;
+                            }
                             _JournalEntryP.PartyId = item.PartyId;
                             _JournalEntryP.PartyName = item.PartyName;
                             

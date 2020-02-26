@@ -48,6 +48,20 @@ namespace ERPMVC.Controllers
             }
         }
 
+        [HttpGet]
+        public async Task<ActionResult> SFVoucherCheque(int id)
+        {
+            try
+            {
+                CheckAccountLines _check = new CheckAccountLines { Id = id, };
+                return await Task.Run(() => View(_check));
+            }
+            catch (Exception)
+            {
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+        }
+
         public async Task<ActionResult> pvwAddCheck([FromBody]CheckAccountLinesDTO _pCheque)
         {
             //CheckAccountLines _Check = new CheckAccountLines();
@@ -390,12 +404,11 @@ namespace ERPMVC.Controllers
                     _CheckAccountS.FechaCreacion = DateTime.Now;
                     _CheckAccountS.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_CheckAccountS);
-                    //var status = (insertresult.Result as StatusCodeResult).StatusCode;
-                    if (insertresult.Value == null)
+                    if (insertresult.Result is BadRequestObjectResult)
                     {
                         return BadRequest(((BadRequestObjectResult)insertresult.Result).Value);
                     }
-                    
+
                 }
                 else
                 {
@@ -438,6 +451,10 @@ namespace ERPMVC.Controllers
                 else
                 {
                     string error = await result.Content.ReadAsStringAsync();
+                    if (error.Length>100)
+                    {
+                        error = "Error al Guardar";
+                    }
                     return BadRequest($"{error}");
                 }
 
@@ -536,6 +553,10 @@ namespace ERPMVC.Controllers
                     _Check.FechaCreacion = DateTime.Now;
                     _Check.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await InsertCheck(_Check);
+                    if (insertresult.Result is BadRequestObjectResult)
+                    {
+
+                    }
                 }
                 else
                 {
