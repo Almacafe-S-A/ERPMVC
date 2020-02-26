@@ -115,6 +115,7 @@ namespace ERPMVC.Controllers
         [HttpPost]
         public async Task<ActionResult<Periodo>> SavePeriodos([FromBody]PeriodoDTO _PeriodosP)
         {
+            List<Periodo> Periodo = new List<Periodo>();
             Periodo _Periodos = _PeriodosP;
             try
             {
@@ -122,7 +123,7 @@ namespace ERPMVC.Controllers
                 string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Periodo/GetPeriodoById/" + _Periodos.Id);
+                var result = await _client.GetAsync(baseadress + "api/Periodo/GetPeriodo/");
                 string valorrespuesta = "";
                 _Periodos.FechaModificacion = DateTime.Now;
                 _Periodos.UsuarioModificacion = HttpContext.Session.GetString("user");
@@ -130,16 +131,20 @@ namespace ERPMVC.Controllers
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Periodos = JsonConvert.DeserializeObject<Periodo>(valorrespuesta);
+                    Periodo = JsonConvert.DeserializeObject<List<Periodo>>(valorrespuesta);
+                    Periodo = Periodo.Where(x => x.Anio == _PeriodosP.Anio).ToList();
                 }
 
                 if (_Periodos == null) { _Periodos = new Models.Periodo(); }
 
-                if (_Periodos.Id > 0)
+                if (Periodo.Count > 0)
                 {
-                    if (_Periodos.Id != _PeriodosP.Id)
+                    foreach (var period in Periodo) { 
+                        if (period.Id != _PeriodosP.Id)
                     {
                         return await Task.Run(() => BadRequest($"Ya existe el Año ingresado."));
+                    }
+
                     }
                 }
 
