@@ -178,7 +178,7 @@ namespace ERPMVC.Controllers
                     string baseadress = _config.Value.urlbase;
                     HttpClient _client = new HttpClient();
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    string apidir = "api/Branch/GetBranch";
+                    string apidir = "api/Branch/GetBranchUserAssignement";
                     var result = await _client.GetAsync(baseadress + apidir);
                     string valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
