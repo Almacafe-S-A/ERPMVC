@@ -319,14 +319,23 @@ namespace ERPMVC.Controllers
                     {
                         DocumentDate = DateTime.Now,
                         editar = 1,
-                        EsIngreso = _ControlPalletsId.EsIngreso
+                        EsIngreso = _ControlPalletsId.EsIngreso,
+                        EsSalida = _ControlPalletsId.EsSalida
                    ,
                         BranchId = Convert.ToInt64(HttpContext.Session.GetString("BranchId"))
                     };
                 }
                 else
                 {
-                    _ControlPallets.editar = 0; _ControlPallets.EsIngreso = _ControlPalletsId.EsIngreso;
+                    //_ControlPallets.editar = 0; _ControlPallets.EsIngreso = _ControlPalletsId.EsIngreso;
+                    if (_ControlPalletsId.EsSalida == 1)
+                    {
+                        _ControlPallets.editar = 0; _ControlPallets.EsSalida = _ControlPalletsId.EsSalida;
+                    }
+                    else
+                    {
+                        _ControlPallets.editar = 0; _ControlPallets.EsIngreso = _ControlPalletsId.EsIngreso;
+                    }
                 }
 
             }
