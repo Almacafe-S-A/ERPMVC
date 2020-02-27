@@ -27,7 +27,7 @@
 
          var dataObject = {
              ControlPalletsId: 0,
-             EsIngreso : 0,
+             EsSalida: 1,
              editar : 1
         };
 
@@ -54,7 +54,7 @@
 
     }
 
-    function EditControlPallet(e) {
+    @*function EditControlPallet(e) {
         e.preventDefault();
 
         clearsession();
@@ -62,7 +62,7 @@
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         var dataObject = {
             ControlPalletsId: dataItem.ControlPalletsId,
-            EsIngreso: 0,
+            EsSalida: 1,
             editar : 0
         };
 
@@ -85,13 +85,72 @@
                     alert(textStatus + ": " + XMLHttpRequest.responseText);
               }
         });
+    }*@
+
+
+     function EditControlPallet(e) {
+        e.preventDefault();
+
+        clearsession();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            ControlPalletsId: dataItem.ControlPalletsId,
+            EsSalida: 1,
+            editar : 0
+        };
+
+        var subproducto = '';
+        $.ajax({
+            url: '@Url.Action("pvwControlPallets", "ControlPallets")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#controlpallets").html('');
+                $("#controlpallets").html(result);
+
+                var txt = $(result);
+                var found = $("#SubProductId", txt);
+                subproducto = $(found).val();
+
+
+                var customer = $("#CustomerId").val();
+                $("#CustomerId").data("kendoDropDownList").value(customer);
+                hcustom = customer;
+                $("#SubProductId").data("kendoDropDownList").dataSource.read();
+
+                $('#myModalControlPallets').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+
+        $("#SubProductId").data("kendoDropDownList").dataSource.read();
+        $("#SubProductId").data("kendoDropDownList").value(subproducto);
+
+        $("#CustomerId").data("kendoDropDownList").enable(false);
+        $("#ProductId").data("kendoDropDownList").enable(false);
+        $("#SubProductId").data("kendoDropDownList").enable(false);
+        $("#UnitOfMeasureId").data("kendoDropDownList").enable(false);
+        var dropdownlist = $("#WarehouseId").data("kendoDropDownList");
+        dropdownlist.enable(false);
+        $("#Marca").prop("disabled", "disabled");
+        $("#PalletId").data("kendoNumericTextBox").enable(false);
+
+
     }
+
+
+
 
     function onChange(CustomerId) {
         $("#CustomerId").val(CustomerId);
     }
 
-    function ImprimirControlPallet(e) {
+    @*function ImprimirControlPallet(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
           var url = '@Url.Action("SFControlPallets", "ControlPallets")/' + dataItem.ControlPalletsId;
@@ -99,8 +158,25 @@
            win.focus();
 
        // window.location.href = '@Url.Action("SFControlPallets", "ControlPallets")/' + dataItem.ControlPalletsId;
-    }
+    }*@
+      function ImprimirControlPallet(e,id) {
+     //   console.log(e);
+        var dataItem;
+        if (e != null) {
+            e.preventDefault();
+            dataItem=  this.dataItem($(e.currentTarget).closest("tr"));
+        }
+        else {
+            dataItem = { ControlPalletsId: $("#ControlPalletsId").val() };
+        }
 
+
+        var url = '@Url.Action("SFControlPallets", "ControlPallets")/' + dataItem.ControlPalletsId;
+           var win = window.open(url, '_blank');
+           win.focus();
+
+        //window.location.href = '@Url.Action("SFControlPallets", "ControlPallets")/' + dataItem.ControlPalletsId;
+    }
 
     function closecondition() {
         $('#myModalConditions').modal('hide');
@@ -117,20 +193,20 @@
                                   {
                                       columns.Command(command =>
                                       {
-                                          command.Custom("Editar").Click("EditControlPallet");
-                                          command.Custom("Imprimir").Click("ImprimirControlPallet");
+                                          command.Custom("Editar").Text(" ").IconClass("far fa-list-alt").Click("EditControlPallet");
+                                          command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirControlPallet");
                               //  command.Edit(); command.Destroy();
                           }).Title("Acciones").Width(100);
 
                                       columns.Bound(p => p.ControlPalletsId).Title("Id").Width(150);
                                       columns.Bound(p => p.DocumentDate).Format("{0:dd/MM/yyyy}").Title("Fecha Documento").Width(200);
                                       columns.Bound(p => p.CustomerName).Title("Cliente").Width(150);
-                                      columns.Bound(p => p.ProductId).Title("Producto").Width(150);
+                                      columns.Bound(p => p.ProductName).Title("Producto").Width(150);
                                       columns.Bound(p => p.DescriptionProduct).Title("Descripcion").Width(150);
                           //columns.Bound(p => p.BranchId).Title("Branch Id").Width(150);
                           columns.Bound(p => p.Placa).Title("Placa").Width(150);
                                       columns.Bound(p => p.Marca).Title("Marca").Width(150);
-                                      columns.Bound(p => p.EsIngreso).Title("Es Ingreso").Width(150);
+                                      //columns.Bound(p => p.EsIngreso).Title("Es Ingreso").Width(150);
                                       columns.Bound(p => p.SubTotal).Title("SubTotal").Width(150);
                                       columns.Bound(p => p.TotalSacos).Title("Total Sacos").Width(150);
                                   })
