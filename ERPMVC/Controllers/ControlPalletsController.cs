@@ -319,14 +319,23 @@ namespace ERPMVC.Controllers
                     {
                         DocumentDate = DateTime.Now,
                         editar = 1,
-                        EsIngreso = _ControlPalletsId.EsIngreso
+                        EsIngreso = _ControlPalletsId.EsIngreso,
+                        EsSalida = _ControlPalletsId.EsSalida
                    ,
                         BranchId = Convert.ToInt64(HttpContext.Session.GetString("BranchId"))
                     };
                 }
                 else
                 {
-                    _ControlPallets.editar = 0; _ControlPallets.EsIngreso = _ControlPalletsId.EsIngreso;
+                    //_ControlPallets.editar = 0; _ControlPallets.EsIngreso = _ControlPalletsId.EsIngreso;
+                    if (_ControlPalletsId.EsSalida == 1)
+                    {
+                        _ControlPallets.editar = 0; _ControlPallets.EsSalida = _ControlPalletsId.EsSalida;
+                    }
+                    else
+                    {
+                        _ControlPallets.editar = 0; _ControlPallets.EsIngreso = _ControlPalletsId.EsIngreso;
+                    }
                 }
 
             }
@@ -495,6 +504,45 @@ namespace ERPMVC.Controllers
         }
 
 
+
+        [HttpGet]
+        private async Task<List<ControlPallets>> GetControlPalletbyIdandCustomerid(int BoletaId, int CustomerId)
+        {
+            List<ControlPallets> _ControlPallets = new List<ControlPallets>();
+
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPalletsNoSelected");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _ControlPallets = JsonConvert.DeserializeObject<List<ControlPallets>>(valorrespuesta);
+
+                    _ControlPallets = (from c in _ControlPallets
+                                       .Where(q => q.EsIngreso == 1)
+                                       select new ControlPallets
+                                       {
+                                           ControlPalletsId = c.ControlPalletsId,
+                                           CustomerName = "Id:" + c.ControlPalletsId + " || Control de ingresos:" + c.PalletId
+                                              + " || Nombre:" + c.CustomerName + " || Placa:" + c.Placa + " || Motorista:" + c.Motorista + " || Fecha: " + c.DocumentDate + " || Total:" + c.TotalSacos,
+                                           DocumentDate = c.DocumentDate,
+
+                                       }
+                                      ).ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+
+            // return Json(_CustomerConditions.ToDataSourceResult(request));
+            return _ControlPallets;
+        }
 
 
 

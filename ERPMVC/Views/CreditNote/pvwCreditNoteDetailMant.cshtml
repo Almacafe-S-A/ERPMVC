@@ -50,22 +50,25 @@
                 totalimpuesto = totalimpuesto + t["TaxAmount"];
             }
 
-            if (t["TaxCode"] == "I.S.C") {
+            else if (t["TaxCode"] == "I.S.C") {
                 TotalGravado = TotalGravado + (t["Total"] - t["TaxAmount"]);
                 totalimpuesto = totalimpuesto + t["TaxAmount"];
             }
 
-            if (t["TaxCode"] == "I.V.A") {
+            else if (t["TaxCode"] == "I.V.A") {
                 TotalGravado18 = TotalGravado18 + (t["Total"] - t["TaxAmount"]);
                 totalimpuesto18 = totalimpuesto18 + t["TaxAmount"];
             }
 
-            if (t["TaxCode"] == "EXE") {
+            else if (t["TaxCode"] == "EXE") {
                  TotalExento = TotalExento + t["Total"];
             }
 
-            if (t["TaxCode"] == "EXO") {
+            else if (t["TaxCode"] == "EXO") {
                 TotalExonerado = TotalExonerado + t["Total"];
+            }
+            else {
+                TotalExento = TotalExento + t["Total"];
             }
 
         });
@@ -134,22 +137,28 @@
     function GetPercentage()
     {
         if ($("#TaxId").val() != null) {
-            var dataObject = { TaxId: $("#TaxId").val() };
-            $.ajax({
-                url: '@Url.Action("GetTaxById","Tax")',
-                method: 'GET',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: dataObject,
-                success: function (result) {
-                    setearvalor("TaxPercentage", result.TaxPercentage);
-                    CalcularTotal();
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
-                }
-            });
+            if ($("#TaxId").data("kendoDropDownList").value() != 0) {
+                var dataObject = { TaxId: $("#TaxId").val() };
+                $.ajax({
+                    url: '@Url.Action("GetTaxById","Tax")',
+                    method: 'GET',
+                    datatype: "json",
+                    contentType: 'application/json',
+                    async: false,
+                    data: dataObject,
+                    success: function (result) {
+                        setearvalor("TaxPercentage", result.TaxPercentage);
+                        CalcularTotal();
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        alert(textStatus + ": " + XMLHttpRequest.responseText);
+                    }
+                });
+            }
+            else {
+                setearvalor("TaxPercentage", 0);
+                CalcularTotal();
+            }
         }
 
     }
@@ -498,7 +507,7 @@
                                                                                 datatextfield="ProductName"
                                                                                 datavaluefield="SubproductId"
                                                                                 on-select="setsubproductname" enable="false"
-                                                                                data-val-required="El Sub Producto es requerido."
+                                                                                data-val-required="El SubProducto es requerido."
                                                                                 style="width: 100%;color:black;font-weight:600">
                                                                 <datasource type="DataSourceTagHelperType.WebApi">
                                                                     <transport>
@@ -516,7 +525,7 @@
                                                                                 datatextfield="ProductName"
                                                                                 datavaluefield="SubproductId"
                                                                                 on-select="setsubproductname"
-                                                                                data-val-required="El Sub Producto es requerido."
+                                                                                data-val-required="El SubProducto es requerido."
                                                                                 style="width: 100%;">
                                                                 <datasource type="DataSourceTagHelperType.WebApi">
                                                                     <sorts>
@@ -542,11 +551,11 @@
                                                     <label asp-for="Description" class="control-label" style="width:100%"></label>
                                                     @if (Model.CreditNoteId > 0)
                                                     {
-                                                        <input type="text"disabled id="DescriptionDetail" asp-for="Description" class="form-control" style="min-width:100%;color:black;font-weight:500" />
+                                                        <input type="text" disabled id="DescriptionDetail" asp-for="Description" class="form-control" required data-required-msg="La Descripción es requerida." style="min-width:100%;color:black;font-weight:500" />
                                                     }
                                                     else
                                                     {
-                                                        <input type="text" id="DescriptionDetail" asp-for="Description" class="form-control" style="min-width:100%" />
+                                                        <input type="text" id="DescriptionDetail" asp-for="Description" required data-required-msg="La Descripción es requerida." class="form-control" style="min-width:100%" />
 
                                                     }
 
@@ -739,7 +748,7 @@
                                                                             for="TaxId"
                                                                             option-label="Seleccione el Impuestos"
                                                                             datatextfield="TaxCode"
-                                                                            datavaluefield="TaxId" enable="false"
+                                                                            datavaluefield="TaxId" enable="false" data-validate="false"
                                                                             onchange="GetPercentage();" data-val-required="El Impuesto es requerido."
                                                                             style="width: 100%;color:black;font-weight:600">
                                                             <datasource type="DataSourceTagHelperType.WebApi">
@@ -755,7 +764,7 @@
                                                                             for="TaxId"
                                                                             option-label="Seleccione el Impuestos"
                                                                             datatextfield="TaxCode"
-                                                                            datavaluefield="TaxId"
+                                                                            datavaluefield="TaxId" data-validate="false"
                                                                             onchange="GetPercentage();" data-val-required="El Impuesto es requerido."
                                                                             style="width: 100%;">
                                                             <datasource type="DataSourceTagHelperType.WebApi">

@@ -125,6 +125,139 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet("[controller]/[action]")]
+        public async Task<JsonResult> GetQuantityJournalEntriesAprovement()
+        {
+            Int32 _users = 0;
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Dashboard/GetQuantityJournalEntriesAprovement");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _users = JsonConvert.DeserializeObject<Int32>(valorrespuesta);
+
+                }
+
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw (new Exception(ex.Message));
+            }
+            return Json(_users);
+        }
+
+
+        [HttpGet("[controller]/[action]")]
+        public async Task<JsonResult> GetQuantityCheckAccountLines()
+        {
+            Int32 _users = 0;
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Dashboard/GetQuantityCheckAccountLines");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _users = JsonConvert.DeserializeObject<Int32>(valorrespuesta);
+
+                }
+
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw (new Exception(ex.Message));
+            }
+            return Json(_users);
+        }
+        [HttpGet("[controller]/[action]")]
+        public async Task<JsonResult> GetQuantityJournalEntriestotaldehoy()
+        {
+            Int32 _users = 0;
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Dashboard/GetQuantityJournalEntriestotaldehoy");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _users = JsonConvert.DeserializeObject<Int32>(valorrespuesta);
+
+                }
+
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw (new Exception(ex.Message));
+            }
+            return Json(_users);
+        }
+        [HttpGet("[controller]/[action]")]
+        public async Task<JsonResult> GetQuantityFacturasproveedor()
+        {
+            Int32 _users = 0;
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Dashboard/GetQuantityFacturasproveedor");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _users = JsonConvert.DeserializeObject<Int32>(valorrespuesta);
+
+                }
+
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw (new Exception(ex.Message));
+            }
+            return Json(_users);
+        }
+        [HttpGet("[controller]/[action]")]
+        public async Task<JsonResult> GetQuantityJournalPendientes()
+        {
+            Int32 _users = 0;
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Dashboard/GetQuantityJournalPendientes");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _users = JsonConvert.DeserializeObject<Int32>(valorrespuesta);
+
+                }
+
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw (new Exception(ex.Message));
+            }
+            return Json(_users);
+        }
+
+        [HttpGet("[controller]/[action]")]
         public async Task<JsonResult> GetQuantityInvoices()
         {
             Int32 _users = 0;
