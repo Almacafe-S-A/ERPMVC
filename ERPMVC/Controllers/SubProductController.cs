@@ -401,7 +401,7 @@ namespace ERPMVC.Controllers
                 if (_SubProduct.SubproductId > 0)
                 {
                     if (_SubProduct.SubproductId != _SubProductS.SubproductId)
-                        return await Task.Run(() => BadRequest($"Ya existe un SubServicio con el mismo Nombre."));
+                        return await Task.Run(() => BadRequest($"Ya existe un Producto con el mismo Nombre."));
                 }
 
                 if (_SubProductS.SubproductId == 0)
