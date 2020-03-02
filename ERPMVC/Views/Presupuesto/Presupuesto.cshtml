@@ -5,18 +5,24 @@
     var cuentas = ViewData["Cuentas"] as IEnumerable<ERPMVC.Models.Accounting>;
 }
 
+@*@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+{"required","Valor requerido" }
+};
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}*@
+
 
 <style>
 
-     
 
-        .k-checkbox + .k-checkbox-label {
-            border-color: #ff6358;
-            color: #fff;
-            background-color: #fff;
-            margin-left: 50px;
-        }
 
+    .k-checkbox + .k-checkbox-label {
+        border-color: #ff6358;
+        color: #fff;
+        background-color: #fff;
+        margin-left: 50px;
+    }
 </style>
 
 <div class="row">
@@ -181,7 +187,7 @@
         if ($("#PeriodoId").val() === '' || $("#CostCenterId").val() === '') {
 
 
-            
+
             $.toast({
                 heading: 'Error',
                 text: '<br/><br/> Debe seleccionar un Periodo y Centro de Costo!',
@@ -190,11 +196,11 @@
                 icon: 'error',
                 hideAfter: 30000,
                 stack: 6
-               
+
             });
             grids.hideColumn(0);
-        
-            
+
+
         }
 
         else {
@@ -202,7 +208,116 @@
             grids.showColumn(0);
 
         }
+
+        Presupuestofijo()
     }
+
+
+    function Presupuestofijo() {
+        if (confirm('¿Desea agregar un monto fijo para todos los meses?')) {
+
+            //var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        //$("#AnularCotizacion").val(dataItem.SalesOrderId)
+            var noEdit = false;
+            var siEdit = true;
+                 $("#btnSaveCotizacion").show();
+        $('#ModalAnular').modal('show');
+
+            var len = $("#gridPresupuesto").length;
+            for (var i = 0; i <= len; i++) {
+                var model = $("#gridPresupuesto").data("kendoGrid").dataSource.at(i);
+                if (model) {
+
+                    model.fields["PresupuestoFebrero"].editable = siEdit;
+
+
+                    }
+
+
+                }
+            }
+    }
+
+     function GetPresupuesto() {
+         if ($("#Presupuesto").val() > 0) {
+            var displayedData = $("#gridPresupuesto").data().kendoGrid.dataSource.view();
+            var id = -999999;
+             console.log(displayedData.length)
+
+            debugger;
+             //if (Number($("#PresupuestoEnero").val()) === 0) {
+                if (displayedData.length > 0) {
+                    for (var i = 0; i < displayedData.length; i++) {
+                        //console.log('Linea:' + displayedData[i].InvoiceLineId);
+                        //console.log('Linea:' + id);
+                        if (displayedData[i].id > id)
+                            id = displayedData[i].id;
+
+                    }
+
+                    id = id + 1;
+                }
+                //else if ($("#Id").val() > 0) {
+                //    id = 1;
+                //}
+            }
+            //else {
+            //    id = $("#Id").val();
+            //}
+
+
+            return {
+                Id: 0,
+                PresupuestoEnero: $("#Presupuesto").val(),
+               
+               
+            }
+        }
+        //else {
+        //    return;
+        //}
+    //}
+
+
+
+
+
+
+
+
+
+
+
+            //e.preventDefault();
+            //var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            //var dataObject = {
+
+            //};
+
+            @*$.ajax({
+                url: '@Url.Action("Delete", "Employees")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    RefrescarGrid();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $.toast({
+                        heading: 'Error',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                }
+            });*@
+    //    }
+    //}
 
 
 
@@ -210,208 +325,253 @@
 
 
 
+<div id="ModalAnular" style="padding-left:50%; padding-bottom:50%;" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+    <div class="modal-dialog" role="document">
+
+        <!-- Modal content-->
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Observaciones</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+
+                <div class="col-md-12">
+                    <div class="form-group">
+                        <form id="frmObservacion" @*kendo-validator="true" kendo-messages="messages" kendo-rules="rules"*@
+                              data-ajax="true"
+                              data-ajax-method="post"
+                              data-ajax-begin="GetPresupuesto"
+                              class="validation-wizard wizard-circle">
+                            <label asp-for="PresupuestoEnero" class="control-label" style="width:100%"></label>
+                            <input type="number" id="Presupuesto" required class="form-control required " style="min-width: 100%" />
+                            <input type="text" id="Presupuesto" hidden />
+                            <span asp-validation-for="PresupuestoEnero" class="text-danger"></span>
+
+
+                            <label asp-for="EjecucionEnero" class="control-label" style="width:100%"></label>
+                            <input type="number" id="EjecucionEnero" required class="form-control required " style="min-width: 100%" />
+                            <input type="text" id="EjecucionEnero" hidden />
+                            <span asp-validation-for="EjecucionEnero" class="text-danger"></span>
+
+                            <button id="btnobservacion" type="submit" class="form-control btn-miboton">Guardar</button>
+                        </form>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
 @(Html.Kendo().Grid<ERPMVC.Models.Presupuesto>
-    ()
-    .Name("gridPresupuesto")
-    .Columns(columns =>
-    {
-        columns.Command(command =>
-        {
-            command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText(" ").CancelText(" ");
-            command.Destroy().Text(" ").IconClass("fa fa-trash");
-        }).Width(120)/*.Locked(true)*/.Title("Acciones");
-        columns.Bound(p => p.Id).Width(100).Visible(false);
-        //columns.Bound(p => p.Accounting).ClientTemplate("#=Accounting.AccountName#").Sortable(false).Width(180).Title("Cuentas");
-        columns.ForeignKey(p => p.AccountigId, (System.Collections.IEnumerable)ViewData["Cuentas"], "AccountId", "AccountName").Title("Cuentas").Width(170);
-        columns.Bound(p => p.PresupuestoEnero).Title("PresupuestoEnero").Width(200);
-        columns.Bound(p => p.EjecucionEnero).Title("EjecucionEnero ").Width(150);
-        columns.Bound(p => p.PresupuestoFebrero).Title("PresupuestoFebrero").Width(170);
-        columns.Bound(p => p.EjecucionFebrero).Title("EjecucionFebrero").Width(170);
-        columns.Bound(p => p.PresupuestoMarzo).Title("PresupuestoMarzo").Width(170);
-        columns.Bound(p => p.EjecucionMarzo).Title("EjecucionMarzo").Width(170);
-        columns.Bound(p => p.PresupuestoAbril).Title("PresupuestoAbril").Width(170);
-        columns.Bound(p => p.EjecucionAbril).Title("EjecucionAbril").Width(170);
-        columns.Bound(p => p.PresupuestoMayo).Title("PresupuestoMayo").Width(170);
-        columns.Bound(p => p.EjecucionMayo).Title("EjecucionMayo").Width(170);
-        columns.Bound(p => p.PresupuestoJunio).Title("PresupuestoJunio").Width(170);
-        columns.Bound(p => p.EjecucionJunio).Title("EjecucionJunio").Width(170);
-        columns.Bound(p => p.PresupuestoJulio).Title("PresupuestoJulio").Width(170);
-        columns.Bound(p => p.EjecucionJulio).Title("EjecucionJulio").Width(170);
-        columns.Bound(p => p.PresupuestoAgosto).Title("PresupuestoAgosto").Width(170);
-        columns.Bound(p => p.EjecucionAgosto).Title("EjecucionAgosto").Width(170);
-        columns.Bound(p => p.PresupuestoSeptiembre).Title("PresupuestoSeptiembre").Width(170);
-        columns.Bound(p => p.EjecucionSeptiembre).Title("EjecucionSeptiembre").Width(170);
-        columns.Bound(p => p.PresupuestoOctubre).Title("PresupuestoOctubre").Width(170);
-        columns.Bound(p => p.EjecucionOctubre).Title("EjecucionOctubre").Width(170);
-        columns.Bound(p => p.PresupuestoNoviembre).Title("PresupuestoNoviembre").Width(170);
-        columns.Bound(p => p.EjecucionNoviembre).Title("EjecucionNoviembre").Width(170);
-        columns.Bound(p => p.PresupuestoDiciembre).Title("PresupuestoDiciembre").Width(170);
-        columns.Bound(p => p.EjecucionDiciembre).Title("EjecucionDiciembre").Width(170);
-        columns.Bound(p => p.TotalMontoPresupuesto).Title("TotalMontoPresupuesto").Width(170);
-        columns.Bound(p => p.TotalMontoEjecucion).Title("TotalMontoEjecucion").Width(170);
+            ()
+            .Name("gridPresupuesto")
+            .Columns(columns =>
+            {
+                columns.Command(command =>
+                {
+                    command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText(" ").CancelText(" ");
+                    command.Destroy().Text(" ").IconClass("fa fa-trash");
+                }).Width(120)/*.Locked(true)*/.Title("Acciones");
+                columns.Bound(p => p.Id).Width(100).Visible(false);
+    //columns.Bound(p => p.Accounting).ClientTemplate("#=Accounting.AccountName#").Sortable(false).Width(180).Title("Cuentas");
+    columns.ForeignKey(p => p.AccountigId, (System.Collections.IEnumerable)ViewData["Cuentas"], "AccountId", "AccountName").Title("Cuentas").Width(170);
+                columns.Bound(p => p.PresupuestoEnero).Title("PresupuestoEnero").Width(200);
+                columns.Bound(p => p.EjecucionEnero).Title("EjecucionEnero ").Width(150);
+                columns.Bound(p => p.PresupuestoFebrero).Title("PresupuestoFebrero").Width(170);
+                columns.Bound(p => p.EjecucionFebrero).Title("EjecucionFebrero").Width(170);
+                columns.Bound(p => p.PresupuestoMarzo).Title("PresupuestoMarzo").Width(170);
+                columns.Bound(p => p.EjecucionMarzo).Title("EjecucionMarzo").Width(170);
+                columns.Bound(p => p.PresupuestoAbril).Title("PresupuestoAbril").Width(170);
+                columns.Bound(p => p.EjecucionAbril).Title("EjecucionAbril").Width(170);
+                columns.Bound(p => p.PresupuestoMayo).Title("PresupuestoMayo").Width(170);
+                columns.Bound(p => p.EjecucionMayo).Title("EjecucionMayo").Width(170);
+                columns.Bound(p => p.PresupuestoJunio).Title("PresupuestoJunio").Width(170);
+                columns.Bound(p => p.EjecucionJunio).Title("EjecucionJunio").Width(170);
+                columns.Bound(p => p.PresupuestoJulio).Title("PresupuestoJulio").Width(170);
+                columns.Bound(p => p.EjecucionJulio).Title("EjecucionJulio").Width(170);
+                columns.Bound(p => p.PresupuestoAgosto).Title("PresupuestoAgosto").Width(170);
+                columns.Bound(p => p.EjecucionAgosto).Title("EjecucionAgosto").Width(170);
+                columns.Bound(p => p.PresupuestoSeptiembre).Title("PresupuestoSeptiembre").Width(170);
+                columns.Bound(p => p.EjecucionSeptiembre).Title("EjecucionSeptiembre").Width(170);
+                columns.Bound(p => p.PresupuestoOctubre).Title("PresupuestoOctubre").Width(170);
+                columns.Bound(p => p.EjecucionOctubre).Title("EjecucionOctubre").Width(170);
+                columns.Bound(p => p.PresupuestoNoviembre).Title("PresupuestoNoviembre").Width(170);
+                columns.Bound(p => p.EjecucionNoviembre).Title("EjecucionNoviembre").Width(170);
+                columns.Bound(p => p.PresupuestoDiciembre).Title("PresupuestoDiciembre").Width(170);
+                columns.Bound(p => p.EjecucionDiciembre).Title("EjecucionDiciembre").Width(170);
+                columns.Bound(p => p.TotalMontoPresupuesto).Title("TotalMontoPresupuesto").Width(170);
+                columns.Bound(p => p.TotalMontoEjecucion).Title("TotalMontoEjecucion").Width(170);
 
-    })
-    //.Events(e => e.Edit("addmaskpassword"))
-    .Filterable(f => f.Operators(o => o.ForString(s => s
-    .Clear()
-    .Contains("Contiene")
-    .DoesNotContain("No contiene")
-    .EndsWith("Termina con")
-    .IsEqualTo("Es igual a")
-    .IsNotEqualTo("No es igual a")
-    .IsNull("Es nulo")
-    .StartsWith("Inicia con")
-
-
-    )
-    .ForNumber(n => n
-    .Clear()
-    .IsEqualTo("Es igual a")
-    .IsGreaterThan("Es mayor que")
-    .IsLessThan("Es menor que")
-    .IsNull("Es nulo")
-    .IsLessThanOrEqualTo("Es menor o igual que")
-    .IsGreaterThanOrEqualTo("Es mayor o igual que")
-    )
-    .ForDate(d => d
-    .Clear()
-    .IsEqualTo("Es igual que")
-    .IsGreaterThan("Es mayor que")
-    .IsLessThan("Es menor que")
-    .IsLessThanOrEqualTo("Es menor o igual que")
-    .IsGreaterThanOrEqualTo("Es mayor o igual que")
-    .IsNotEqualTo("No es igual que")
-    )
-    ))
-    .ToolBar(tools =>
-    {
-        tools.Create().Text("Agregar").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddPresupuesto();" });
-        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a excel");
-        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a pdf");
+            })
+            //.Events(e => e.Edit("addmaskpassword"))
+            .Filterable(f => f.Operators(o => o.ForString(s => s
+            .Clear()
+            .Contains("Contiene")
+            .DoesNotContain("No contiene")
+            .EndsWith("Termina con")
+            .IsEqualTo("Es igual a")
+            .IsNotEqualTo("No es igual a")
+            .IsNull("Es nulo")
+            .StartsWith("Inicia con")
 
 
-    })
-
-    .Editable(e => e.Mode(GridEditMode.InLine))
-    .Events(e=> e.Save("Guardar"))
-    .Sortable()
-    .Pageable()
-    .Filterable()
-    .Scrollable()
-    .Pdf(pdf => pdf.FileName("UsuariosReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-    .ProxyURL(Url.Action("Export", "Home")).AllPages())
-    .Excel(excel => excel.FileName("UsuariosReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-    .DataSource(dataSource =>
-    dataSource
-
-    .WebApi()
-    .ServerOperation(true)
-    .Model(model =>
-    {
-    model.Id(p => p.Id);
-    model.Field(p => p.Id).Editable(false);
-        @*model.Field(p => p.Accounting).DefaultValue(*@
-        //ViewData["defaultaccount"] as ERPMVC.Models.Accounting);
-        model.Field(p => p.AccountigId).Editable(true);
-        model.Field(p => p.PresupuestoEnero).Editable(true);
-        model.Field(p => p.EjecucionEnero).Editable(true);
-        model.Field(p => p.PresupuestoFebrero).Editable(true);
-        model.Field(p => p.EjecucionFebrero).Editable(true);
-        model.Field(p => p.PresupuestoMarzo).Editable(true);
-        model.Field(p => p.EjecucionMarzo).Editable(true);
-        model.Field(p => p.PresupuestoAbril).Editable(true);
-        model.Field(p => p.EjecucionAbril).Editable(true);
-        model.Field(p => p.PresupuestoMayo).Editable(true);
-        model.Field(p => p.EjecucionMayo).Editable(true);
-        model.Field(p => p.PresupuestoJunio).Editable(true);
-        model.Field(p => p.EjecucionJunio).Editable(true);
-        model.Field(p => p.PresupuestoJulio).Editable(true);
-        model.Field(p => p.EjecucionJulio).Editable(true);
-        model.Field(p => p.PresupuestoAgosto).Editable(true);
-        model.Field(p => p.EjecucionAgosto).Editable(true);
-        model.Field(p => p.PresupuestoSeptiembre).Editable(true);
-        model.Field(p => p.EjecucionSeptiembre).Editable(true);
-        model.Field(p => p.PresupuestoOctubre).Editable(true);
-        model.Field(p => p.EjecucionOctubre).Editable(true);
-        model.Field(p => p.PresupuestoNoviembre).Editable(true);
-        model.Field(p => p.EjecucionNoviembre).Editable(true);
-        model.Field(p => p.PresupuestoDiciembre).Editable(true);
-        model.Field(p => p.EjecucionDiciembre).Editable(true);
-        model.Field(p => p.TotalMontoPresupuesto).Editable(false);
-        model.Field(p => p.TotalMontoEjecucion).Editable(false);
-        model.Field(p => p.FechaModificacion).Editable(false);
-        model.Field(p => p.FechaCreacion).Editable(false);
-        model.Field(p => p.UsuarioCreacion).Editable(false);
-        model.Field(p => p.UsuarioModificacion).Editable(false);
-        model.Field(p => p.CostCenterId).Editable(true);
-        model.Field(p => p.PeriodoId).Editable(true);
+            )
+            .ForNumber(n => n
+            .Clear()
+            .IsEqualTo("Es igual a")
+            .IsGreaterThan("Es mayor que")
+            .IsLessThan("Es menor que")
+            .IsNull("Es nulo")
+            .IsLessThanOrEqualTo("Es menor o igual que")
+            .IsGreaterThanOrEqualTo("Es mayor o igual que")
+            )
+            .ForDate(d => d
+            .Clear()
+            .IsEqualTo("Es igual que")
+            .IsGreaterThan("Es mayor que")
+            .IsLessThan("Es menor que")
+            .IsLessThanOrEqualTo("Es menor o igual que")
+            .IsGreaterThanOrEqualTo("Es mayor o igual que")
+            .IsNotEqualTo("No es igual que")
+            )
+            ))
+            .ToolBar(tools =>
+            {
+                tools.Create().Text("Agregar").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddPresupuesto();" });
+                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a excel");
+                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a pdf");
 
 
-    })
-    .Events(events => events.Error("error_handler"))
-    .Read(read => read.Action("Get", "Presupuesto"))
-    .Create(create => create.Action("savepresupuesto", "Presupuesto"))
-    .Update(update => update.Action("Update", "Presupuesto", new { id = "{0}" }).Type(HttpVerbs.Post))
-    .Destroy(update => update.Action("Delete", "Presupuesto", new { id = "{0}" }).Type(HttpVerbs.Post))
-    ).Resizable(resize => resize.Columns(true))
+            })
 
-    )
+            .Editable(e => e.Mode(GridEditMode.InLine))
+            .Events(e => e.Save("Guardar"))
+            .Sortable()
+            .Pageable()
+            .Filterable()
+            .Scrollable()
+            .Pdf(pdf => pdf.FileName("UsuariosReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+            .ProxyURL(Url.Action("Export", "Home")).AllPages())
+            .Excel(excel => excel.FileName("UsuariosReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+            .DataSource(dataSource =>
+            dataSource
 
-    <script>
+            .WebApi()
+            .ServerOperation(true)
+            .Model(model =>
+            {
+                model.Id(p => p.Id);
+                model.Field(p => p.Id).Editable(false);
+    /**/
+    /**/
+    @*model.Field(p => p.Accounting).DefaultValue(*@
+    /**/
+    /**/
+    //ViewData["defaultaccount"] as ERPMVC.Models.Accounting);
+    model.Field(p => p.AccountigId).Editable(true);
+                model.Field(p => p.PresupuestoEnero).Editable(true);
+                model.Field(p => p.EjecucionEnero).Editable(true);
+                model.Field(p => p.PresupuestoFebrero).Editable(true);
+                model.Field(p => p.EjecucionFebrero).Editable(true);
+                model.Field(p => p.PresupuestoMarzo).Editable(true);
+                model.Field(p => p.EjecucionMarzo).Editable(true);
+                model.Field(p => p.PresupuestoAbril).Editable(true);
+                model.Field(p => p.EjecucionAbril).Editable(true);
+                model.Field(p => p.PresupuestoMayo).Editable(true);
+                model.Field(p => p.EjecucionMayo).Editable(true);
+                model.Field(p => p.PresupuestoJunio).Editable(true);
+                model.Field(p => p.EjecucionJunio).Editable(true);
+                model.Field(p => p.PresupuestoJulio).Editable(true);
+                model.Field(p => p.EjecucionJulio).Editable(true);
+                model.Field(p => p.PresupuestoAgosto).Editable(true);
+                model.Field(p => p.EjecucionAgosto).Editable(true);
+                model.Field(p => p.PresupuestoSeptiembre).Editable(true);
+                model.Field(p => p.EjecucionSeptiembre).Editable(true);
+                model.Field(p => p.PresupuestoOctubre).Editable(true);
+                model.Field(p => p.EjecucionOctubre).Editable(true);
+                model.Field(p => p.PresupuestoNoviembre).Editable(true);
+                model.Field(p => p.EjecucionNoviembre).Editable(true);
+                model.Field(p => p.PresupuestoDiciembre).Editable(true);
+                model.Field(p => p.EjecucionDiciembre).Editable(true);
+                model.Field(p => p.TotalMontoPresupuesto).Editable(false);
+                model.Field(p => p.TotalMontoEjecucion).Editable(false);
+                model.Field(p => p.FechaModificacion).Editable(false);
+                model.Field(p => p.FechaCreacion).Editable(false);
+                model.Field(p => p.UsuarioCreacion).Editable(false);
+                model.Field(p => p.UsuarioModificacion).Editable(false);
+                model.Field(p => p.CostCenterId).Editable(true);
+                model.Field(p => p.PeriodoId).Editable(true);
 
 
+            })
+            .Events(events => events.Error("error_handler"))
+            .Read(read => read.Action("Get", "Presupuesto"))
+            .Create(create => create.Action("savepresupuesto", "Presupuesto"))
+            .Update(update => update.Action("Update", "Presupuesto", new { id = "{0}" }).Type(HttpVerbs.Post))
+            .Destroy(update => update.Action("Delete", "Presupuesto", new { id = "{0}" }).Type(HttpVerbs.Post))
+            ).Resizable(resize => resize.Columns(true))
 
-        function error_handler(e) {
-            if (e.xhr.responseText == "Por favor seleccione una cuenta.") {
+)
 
-                $.toast({
-                    heading: 'Error',
-                    text: '<br/>Por favor seleccione una cuenta!.<br/>',
-                    position: 'top-right',
-                    loaderBg: '#ff6849',
-                    icon: 'error',
-                    hideAfter: 30000,
-                    stack: 6
-
-                });
-
-
-            }
-
-
-        }
+<script>
 
 
 
-        function setToolbarTooltip(btn_cl, btn_tooltip) {
-            $("#gridPresupuesto").kendoTooltip({
-                filter: btn_cl,
-                content: btn_tooltip
+    function error_handler(e) {
+        if (e.xhr.responseText == "Por favor seleccione una cuenta.") {
+
+            $.toast({
+                heading: 'Error',
+                text: '<br/>Por favor seleccione una cuenta!.<br/>',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+
             });
-        }
 
-        function setRowButtonTooltip(btn_cl, btn_tooltip) {
-            $("#gridPresupuesto").kendoTooltip({
-                filter: btn_cl,
-                content: btn_tooltip
-            });
+
         }
 
 
-        function Guardar(e) {
-            var pres = e.model;
-            var idCentroCosto = $("#CostCenterId").val();
-            var idPeriodo = $("#PeriodoId").val();
-            pres.set("CostCenterId", idCentroCosto);
-            pres.set("PeriodoId", idPeriodo);
-        }
+    }
 
-        setToolbarTooltip(".k-grid-toolbar a.k-grid-add", "Agregar Usuario");
-        setRowButtonTooltip(".k-grid-edit", "Editar Usuario");
-        setRowButtonTooltip(".k-grid-delete", "Eliminar Usuario");
-        setRowButtonTooltip(".k-grid-update", "Guardar");
-        setRowButtonTooltip(".k-grid-cancel", "Cancelar");
-    </script>
+
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridPresupuesto").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridPresupuesto").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+
+    function Guardar(e) {
+        var pres = e.model;
+        var idCentroCosto = $("#CostCenterId").val();
+        var idPeriodo = $("#PeriodoId").val();
+        pres.set("CostCenterId", idCentroCosto);
+        pres.set("PeriodoId", idPeriodo);
+    }
+
+    setToolbarTooltip(".k-grid-toolbar a.k-grid-add", "Agregar Usuario");
+    setRowButtonTooltip(".k-grid-edit", "Editar Usuario");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar Usuario");
+    setRowButtonTooltip(".k-grid-update", "Guardar");
+    setRowButtonTooltip(".k-grid-cancel", "Cancelar");
+</script>
