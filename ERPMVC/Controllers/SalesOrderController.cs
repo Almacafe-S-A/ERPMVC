@@ -63,7 +63,7 @@ namespace ERPMVC.Controllers
             try
             {
                 ViewData["permisoAprobar"] = _principal.HasClaim("Ventas.Cotizaciones", "true");
-
+                ViewData["permisos"] = _principal;
             }
             catch (Exception ex)
             {
@@ -108,7 +108,7 @@ namespace ERPMVC.Controllers
                     };
                 }
                 _salesorderf.editar = _salesorder.editar;
-
+                ViewData["permisos"] = _principal;
 
 
             }

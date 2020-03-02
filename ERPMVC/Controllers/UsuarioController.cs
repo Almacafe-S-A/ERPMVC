@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -27,12 +28,14 @@ namespace ERPMVC.Controllers
 
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
+        private readonly ClaimsPrincipal _principal;
 
         public UsuarioController(ILogger<UserRolController> logger,
-            IOptions<MyConfig> config)
+            IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
 
@@ -40,6 +43,10 @@ namespace ERPMVC.Controllers
         public async Task<IActionResult> Usuarios()
         {
             //ViewData["Branches"] = await ObtenerBranches();
+            ViewData["permisoAgregar"] = _principal.HasClaim("Seguridad.Usuarios.Agregar Usuario", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Seguridad.Usuarios.Editar Usuario", "true");
+            ViewData["permisoDesbloquear"] = _principal.HasClaim("Seguridad.Usuarios.Desbloquear Usuario", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Seguridad.Usuarios.Exportar Usuario", "true");
             return View();
         }
 

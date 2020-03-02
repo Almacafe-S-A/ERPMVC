@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -23,14 +24,17 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public InvoiceController(ILogger<InvoiceController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public InvoiceController(ILogger<InvoiceController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         public IActionResult Index()
         {
+            ViewData["permisos"] = _principal;
             return View();
         }
 
@@ -67,7 +71,7 @@ namespace ERPMVC.Controllers
                 {
                     _Invoice.NumeroDEIString = $"{_Invoice.Sucursal}-{_Invoice.Caja}-01-{_Invoice.NumeroDEI.ToString().PadLeft(8, '0')} ";
                 }
-
+                ViewData["permisos"] = _principal;
 
             }
             catch (Exception ex)
@@ -367,6 +371,7 @@ namespace ERPMVC.Controllers
 
         public async Task<ActionResult> InvoiceCustomer()
         {
+            ViewData["permisos"] = _principal;
             return await Task.Run(() => PartialView());
         }
 

@@ -1,8 +1,8 @@
 ﻿@using Kendo.Mvc.UI
-
+@using System.Security.Claims
 @{
     ViewData["Title"] = "Empleado";
-
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 
 <script>
@@ -33,13 +33,13 @@
               }
          });
     }
-        function Detalles(e) {          
+        function Detalles(e) {
     }
 
-    function Editar(e) {          
+    function Editar(e) {
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        window.location.href = "@Url.Action("pvwEditEmployees", "Employees")?IdEmpleado=" + dataItem.IdEmpleado;      
+        window.location.href = "@Url.Action("pvwEditEmployees", "Employees")?IdEmpleado=" + dataItem.IdEmpleado;
     }
 
     function onsave(e) {
@@ -214,85 +214,99 @@
 <h3 class="text-themecolor">Empleado</h3>
 
 @(Html.Kendo().Grid<ERPMVC.Models.Employees>
-                  ()
+                      ()
 
-                    .Name("gridEmployees")
+                        .Name("gridEmployees")
 
-                    .Columns(columns =>
-                    {
-                        columns.Command(command =>
+                        .Columns(columns =>
                         {
-                            //command.Custom("Ver detalles").Click("Detalles");
-                            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("Editar");
-                            //command.Destroy();
-                            command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("DeleteEmployees");
-                            //command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                            if (permisos.HasClaim("RRHH.Empleados.Editar Empleados", "true")
+                                || permisos.HasClaim("RRHH.Empleados.Eliminar Empleados", "true"))
+                            {
+                                columns.Command(command =>
+                                {
+                                    //command.Custom("Ver detalles").Click("Detalles");
+                                    if (permisos.HasClaim("RRHH.Empleados.Editar Empleados", "true"))
+                                    {
+                                        command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("Editar");
+                                    }
+                                    //command.Destroy();
+                                    if (permisos.HasClaim("RRHH.Empleados.Eliminar Empleados", "true"))
+                                    {
+                                        command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("DeleteEmployees");
+                                    }
+                                    //command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
 
-                        }).Width(120).Title("Acciones");
-                        columns.Bound(p => p.IdEmpleado).Width(100);
-                        columns.Bound(p => p.NombreEmpleado).Width(250).Title("Nombre Empleado");
-                        //columns.Bound(p => p.Correo).Width(250);
-                        columns.Bound(p => p.Puesto.NombrePuesto).Width(250).Title("Nombre de Puesto");
-                        columns.Bound(p => p.Genero).Width(150).Title("Género");
-                        columns.Bound(p => p.NombreContacto).Width(250).Title("Contacto de Emergencia");
-                        columns.Bound(p => p.TelefonoContacto).Width(250).Title("Teléfono de Emergencia");
-                        columns.Bound(p => p.FechaIngreso).Title("Fecha Ingreso").Format("{0:dd/MM/yyyy HH:mm}").Width(200);
-                        columns.Bound(p => p.IdEstado).ClientTemplate("#if (IdEstado == '1') {#Activo#} else {#Inactivo#} #").Width(150).Title("Estado");
+                                }).Width(120).Title("Acciones");
+                            }
+                            columns.Bound(p => p.IdEmpleado).Width(100);
+                            columns.Bound(p => p.NombreEmpleado).Width(250).Title("Nombre Empleado");
+                            //columns.Bound(p => p.Correo).Width(250);
+                            columns.Bound(p => p.Puesto.NombrePuesto).Width(250).Title("Nombre de Puesto");
+                            columns.Bound(p => p.Genero).Width(150).Title("Género");
+                            columns.Bound(p => p.NombreContacto).Width(250).Title("Contacto de Emergencia");
+                            columns.Bound(p => p.TelefonoContacto).Width(250).Title("Teléfono de Emergencia");
+                            columns.Bound(p => p.FechaIngreso).Title("Fecha Ingreso").Format("{0:dd/MM/yyyy HH:mm}").Width(200);
+                            columns.Bound(p => p.IdEstado).ClientTemplate("#if (IdEstado == '1') {#Activo#} else {#Inactivo#} #").Width(150).Title("Estado");
 
-                    })
-
-
-                    .ToolBar(tools =>
-                    {
-
-                        //tools.Create();
-
-                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                       .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddEmployees()"});
-                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                        })
 
 
+                        .ToolBar(tools =>
+                        {
 
-                    })
-                    .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
-                    .Sortable()
-                    .Pageable(s => s
-                    .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
-                    .Empty("No hay datos."))
-                    )
-                    .Filterable()
-                    .Scrollable()
-                    .Pdf(pdf => pdf.FileName("EmployeesReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                    .Excel(excel => excel.FileName("EmployeesReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                    .DataSource(dataSource =>
-                    dataSource
-                    .WebApi()
+                            //tools.Create();
+                            if (permisos.HasClaim("RRHH.Empleados.Agregar Empleados", "true"))
+                            {
+                                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                           .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddEmployees()" });
+                            }
+                            if (permisos.HasClaim("RRHH.Empleados.Exportar Empleados", "true"))
+                            {
+                                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                            }
 
-                    .ServerOperation(true)
-                    .Model(model =>
-                    {
-                        model.Id(p => p.IdEmpleado);
-                        model.Field(p => p.IdEmpleado).Editable(false);
 
-                    })
-                    .Sort(s => s.Add(m => m.FechaCreacion).Descending())
-                    .Events(events => events.Error("error_handler"))
-                    .Read(read => read.Action("Get", "Employees"))
-                    //.Create(create => create.Action("Insert", "Employees").Type(HttpVerbs.Post))
-                    //.Update(update => update.Action("Update", "Employees").Type(HttpVerbs.Post))
-                    .Destroy(destroy => destroy.Action("Delete", "Employees").Type(HttpVerbs.Post))
-                    //.Destroy(destroy => destroy.Action("Delete", "Employees", new { IdEmpleado = "{0}" }).Type(HttpVerbs.Delete))
-                    )
-.Events(e =>
-{
-    e.Save("onsave");
+                        })
+                        .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                        .Sortable()
+                        .Pageable(s => s
+                        .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+                        .Empty("No hay datos."))
+                        )
+                        .Filterable()
+                        .Scrollable()
+                        .Pdf(pdf => pdf.FileName("EmployeesReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                        .Excel(excel => excel.FileName("EmployeesReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                        .DataSource(dataSource =>
+                        dataSource
+                        .WebApi()
 
-})
+                        .ServerOperation(true)
+                        .Model(model =>
+                        {
+                            model.Id(p => p.IdEmpleado);
+                            model.Field(p => p.IdEmpleado).Editable(false);
+
+                        })
+                        .Sort(s => s.Add(m => m.FechaCreacion).Descending())
+                        .Events(events => events.Error("error_handler"))
+                        .Read(read => read.Action("Get", "Employees"))
+                        //.Create(create => create.Action("Insert", "Employees").Type(HttpVerbs.Post))
+                        //.Update(update => update.Action("Update", "Employees").Type(HttpVerbs.Post))
+                        .Destroy(destroy => destroy.Action("Delete", "Employees").Type(HttpVerbs.Post))
+                        //.Destroy(destroy => destroy.Action("Delete", "Employees", new { IdEmpleado = "{0}" }).Type(HttpVerbs.Delete))
+                        )
+    .Events(e =>
+    {
+        e.Save("onsave");
+
+    })
 )
 
 <div id="numEmployees">

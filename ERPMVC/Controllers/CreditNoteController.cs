@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -23,14 +24,17 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public CreditNoteController(ILogger<CreditNoteController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public CreditNoteController(ILogger<CreditNoteController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         public IActionResult Index()
         {
+            ViewData["permisos"] = _principal;
             return View();
         }
 
@@ -59,6 +63,7 @@ namespace ERPMVC.Controllers
                 {
                     _CreditNote.NumeroDEIString = $"{_CreditNote.Sucursal}-{_CreditNote.Caja}-{_CreditNote.TipoDocumento}-{_CreditNote.NúmeroDEI.ToString().PadLeft(8, '0')} ";
                 }
+                ViewData["permisos"] = _principal;
             }
             catch (Exception ex)
             {

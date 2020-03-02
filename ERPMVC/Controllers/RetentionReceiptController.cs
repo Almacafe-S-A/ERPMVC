@@ -34,7 +34,8 @@ namespace ERPMVC.Controllers
         }
         public IActionResult Index()
         {
-            ViewData["permisoAprobar"] = _principal.HasClaim("Proveedores.Comprobante de Retencion.Aprobar", "true");
+            ViewData["permisoAprobar"] = _principal.HasClaim("Proveedores.Comprobante de Retencion.Aprobar Comprobante de Retencion", "true");
+            ViewData["permisos"] = _principal;
             return View();
         }
 

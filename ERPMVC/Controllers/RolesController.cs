@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
@@ -25,15 +26,20 @@ namespace ERPMVC.Controllers
     {
          private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
+        private readonly ClaimsPrincipal _principal;
 
-        public RolesController(ILogger<RolesController> logger, IOptions<MyConfig> config)
+        public RolesController(ILogger<RolesController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         public IActionResult Roles()
         {
+            ViewData["permisoAgregar"] = _principal.HasClaim("Seguridad.Roles.Agregar Roles", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Seguridad.Roles.Editar Roles", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Seguridad.Roles.Exportar Roles", "true");
             return View();
         }
 

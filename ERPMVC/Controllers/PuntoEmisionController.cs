@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -24,16 +25,22 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
+        private readonly ClaimsPrincipal _principal;
 
-        public PuntoEmisionController(ILogger<PuntoEmisionController> logger, IOptions<MyConfig> config)
+        public PuntoEmisionController(ILogger<PuntoEmisionController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         // GET: PuntoEmision
         public ActionResult Index()
         {
+            ViewData["permisoAgregar"] = _principal.HasClaim("Administracion.Puntos Emision.Agregar Punto Emision", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Administracion.Puntos Emision.Editar Punto Emision", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Administracion.Puntos Emision.Eliminar Punto Emision", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Administracion.Puntos Emision.Exportar Punto Emision", "true");
             return View();
         }
 
