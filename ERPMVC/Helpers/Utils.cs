@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -93,11 +94,12 @@ namespace ERPMVC.Helpers
                     cadena = cadena.ToLower().Replace("p.m", "PM");
                     cadena = cadena.ToLower().Replace("am", "AM");
                     cadena = cadena.ToLower().Replace("pm", "PM");
+                    cadena = cadena.ToUpper();
                     if (cadena.Contains("AM") || cadena.Contains("PM"))
                     {
-                        return DateTime.ParseExact(cadena, "hh:mm tt", null);
+                        return DateTime.ParseExact(cadena, "hh:mm tt", CultureInfo.InvariantCulture);
                     }
-                    return DateTime.ParseExact(cadena, "hh:mm", null);
+                    return DateTime.ParseExact(cadena, "hh:mm", CultureInfo.InvariantCulture);
                 }
                 catch (Exception)
                 {

@@ -42,6 +42,8 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult> Index()
         {
             ViewData["permisos"] = _principal;
+            ViewData["CustomerType"] = await CustomerTypeList();
+
             return await Task.Run(() => View());
         }
 
@@ -533,5 +535,37 @@ namespace ERPMVC.Controllers
                 return View();
             }
         }
+
+
+        async Task<IEnumerable<CustomerType>> CustomerTypeList()
+        {
+            IEnumerable<CustomerType> CustomerTypeList = null;
+            try
+            {
+                string baseadress = config.Value.urlbase;
+               
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CustomerType/Get");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    CustomerTypeList = JsonConvert.DeserializeObject<IEnumerable<CustomerType>>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            ViewData["CustomerType"] = CustomerTypeList;
+            return CustomerTypeList;
+
+        }
+
+
     }
 }
