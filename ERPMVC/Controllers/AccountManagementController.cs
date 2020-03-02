@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -24,13 +25,19 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public AccountManagementController(ILogger<AccountManagementController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public AccountManagementController(ILogger<AccountManagementController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
         public IActionResult Index()
         {
+            ViewData["permisoAgregar"] = _principal.HasClaim("Bancos.Cuentas Bancarias.Agregar Cuentas Bancarias", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Bancos.Cuentas Bancarias.Editar Cuentas Bancarias", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Bancos.Cuentas Bancarias.Eliminar Cuentas Bancarias", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Bancos.Cuentas Bancarias.Exportar Cuentas Bancarias", "true");
             return View();
         }
         public async Task<JsonResult> GetAccountManagementById(Int64 AccountManagementId)

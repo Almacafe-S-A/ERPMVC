@@ -2,6 +2,11 @@
 
 @{
     ViewData["Title"] = "Bancos";
+    bool permisoAgregar, permisoEditar, permisoEliminar, permisoExportar;
+    permisoAgregar = (bool)ViewData["permisoAgregar"];
+    permisoEditar = (bool)ViewData["permisoEditar"];
+    permisoEliminar = (bool)ViewData["permisoEliminar"];
+    permisoExportar = (bool)ViewData["permisoExportar"];
 }
 
 
@@ -67,18 +72,25 @@
                         .Name("gridBank")
                         .Columns(columns =>
                         {
-
-                            columns.Command(command =>
+                            if (permisoEditar == true || permisoEliminar == true)
                             {
-                    //command.Custom("Ver detalles").Click("Detalles");
-                    command.Custom("Editar").Click("EditBank").Text(" ").IconClass("fa fa-edit");
-                                command.Destroy().Text(" ").IconClass("fa fa-trash");
-                            }).Width(150).Title("Acciones");
-
+                                columns.Command(command =>
+                                {
+                                    //command.Custom("Ver detalles").Click("Detalles");
+                                    if (permisoEditar)
+                                    {
+                                        command.Custom("Editar").Click("EditBank").Text(" ").IconClass("fa fa-edit");
+                                    }
+                                    if (permisoEliminar)
+                                    {
+                                        command.Destroy().Text(" ").IconClass("fa fa-trash");
+                                    }
+                                }).Width(150).Title("Acciones");
+                            }
                             columns.Bound(p => p.BankId).Width(100);
                             columns.Bound(p => p.BankName).Width(200);
                             columns.Bound(p => p.Description).Width(250);
-                          
+
 
 
 
@@ -117,14 +129,17 @@
                                            ))
                         .ToolBar(tools =>
                         {
-                // tools.Create();
-                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                   .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddBank()" });
-                            tools.Excel().HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a Excel");
-                            tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a PDF");
-
-
-
+                            // tools.Create();
+                            if (permisoAgregar)
+                            {
+                                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                               .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddBank()" });
+                            }
+                            if (permisoExportar)
+                            {
+                                tools.Excel().HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a Excel");
+                                tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a PDF");
+                            }
                         })
                         .Editable(e => e.Mode(GridEditMode.PopUp))
                         .Sortable()

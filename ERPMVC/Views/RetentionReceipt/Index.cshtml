@@ -4,6 +4,7 @@
     ViewData["Title"] = "Comprobante de Retención";
     bool permiso;
     permiso = (bool)ViewData["permisoAprobar"];
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 
 <h3 class="text-themecolor">Comprobante de Retención</h3>
@@ -12,17 +13,32 @@
                         .Name("gridComprobanteRetencion")
                         .Columns(columns =>
                         {
-                            columns.Command(command =>
+                            if (permisos.HasClaim("Proveedores.Comprobante de Retencion.Editar Comprobante de Retencion", "true")
+                            || permisos.HasClaim("Proveedores.Comprobante de Retencion.Eliminar Comprobante de Retencion", "true")
+                            || permisos.HasClaim("Proveedores.Comprobante de Retencion.Imprimir Comprobante de Retencion", "true")
+                            || permisos.HasClaim("Proveedores.Comprobante de Retencion.Aprobar Comprobante de Retencion", "true"))
                             {
-                                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditComprobanteRetencion");
-                                command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("DeleteComprobanteRetencion");
-                                command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirComprobanteRetencion");
-                                if (permiso)
+                                columns.Command(command =>
                                 {
-                                    command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("AprobarComprobante");
-                                    command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("RechazarComprobante");
-                                }
-                            }).Width(175).Title("Acciones");
+                                    if (permisos.HasClaim("Proveedores.Comprobante de Retencion.Editar Comprobante de Retencion", "true"))
+                                    {
+                                        command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditComprobanteRetencion");
+                                    }
+                                    if (permisos.HasClaim("Proveedores.Comprobante de Retencion.Eliminar Comprobante de Retencion", "true"))
+                                    {
+                                        command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("DeleteComprobanteRetencion");
+                                    }
+                                    if (permisos.HasClaim("Proveedores.Comprobante de Retencion.Imprimir Comprobante de Retencion", "true"))
+                                    {
+                                        command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirComprobanteRetencion");
+                                    }
+                                    if (permisos.HasClaim("Proveedores.Comprobante de Retencion.Aprobar Comprobante de Retencion", "true"))
+                                    {
+                                        command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("AprobarComprobante");
+                                        command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("RechazarComprobante");
+                                    }
+                                }).Width(175).Title("Acciones");
+                            }
                             columns.Bound(p => p.RetentionReceiptId).Width(100);
                             columns.Bound(p => p.NoCorrelativo).Title("No. Correlativo").Width(300);
                             columns.Bound(p => p.FechaEmision).Title("Fecha Emisión").Format("{0:dd/MM/yyyy}").Width(250);
@@ -61,9 +77,15 @@
                         ))
                         .ToolBar(tools =>
                         {
-                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddComprobanteRetencion()" });
-                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                            if (permisos.HasClaim("Proveedores.Comprobante de Retencion.Agregar Comprobante de Retencion", "true"))
+                            {
+                                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddComprobanteRetencion()" });
+                            }
+                            if (permisos.HasClaim("Proveedores.Comprobante de Retencion.Exportar Comprobante de Retencion", "true"))
+                            {
+                                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                            }
                         })
                         .Editable(e => e.Mode(GridEditMode.PopUp))
                         .Sortable()

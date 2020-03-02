@@ -19,6 +19,8 @@ using Microsoft.Extensions.Logging;
 using ERPMVC.DTO;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
+using System.Security.Claims;
+
 namespace ERPMVC.Controllers
 {
     [Authorize]
@@ -28,15 +30,18 @@ namespace ERPMVC.Controllers
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
         private IHostingEnvironment _hostingEnvironment;
-        public EmployeesController(IHostingEnvironment hostingEnvironment, ILogger<EmployeesController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public EmployeesController(IHostingEnvironment hostingEnvironment, ILogger<EmployeesController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
             _hostingEnvironment = hostingEnvironment;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         public IActionResult Index()
         {
+            ViewData["permisos"] = _principal;
             return View();
         }
 
@@ -70,6 +75,7 @@ namespace ERPMVC.Controllers
                     _Employees.QtySalary = Convert.ToDecimal(_Employees.Salario);
 
                 }
+                ViewData["permisos"] = _principal;
             }
             catch (Exception ex)
             {
@@ -337,6 +343,7 @@ namespace ERPMVC.Controllers
                 {
                     _Employees = new EmployeesDTO();
                 }
+                ViewData["permisos"] = _principal;
             }
             catch (Exception ex)
             {

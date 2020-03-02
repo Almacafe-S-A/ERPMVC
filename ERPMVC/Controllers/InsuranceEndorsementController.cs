@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Http;
 using System.Net.Http;
 using Kendo.Mvc.Extensions;
 using ERPMVC.DTO;
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -23,14 +24,17 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public InsuranceEndorsementController(ILogger<InsuranceEndorsementController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public InsuranceEndorsementController(ILogger<InsuranceEndorsementController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         public IActionResult InsuranceEndorsement()
         {
+            ViewData["permisos"] = _principal;
             return View();
         }
 

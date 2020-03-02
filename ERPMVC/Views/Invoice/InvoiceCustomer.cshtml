@@ -1,4 +1,7 @@
-﻿
+﻿@using System.Security.Claims
+@{ 
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
 <script>
 
     function ClearSession() {
@@ -77,101 +80,104 @@
 <h3 class="text-themecolor">Facturas</h3>
 
 @(Html.Kendo().Grid<ERPMVC.Models.Invoice>()
-                              .Name("gridInvoices")
-                              .Columns(columns =>
-                              {
-                                  columns.Command(command =>
+                                  .Name("gridInvoices")
+                                  .Columns(columns =>
                                   {
-                                      
-                                      command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
-                                     
-                                  }).Title("Acciones").Width(150);
+                                      if (permisos.HasClaim("Clientes.Datos de Clientes.Imprimir Factura", "true"))
+                                      {
+                                          columns.Command(command =>
+                                          {
 
-                                  columns.Bound(p => p.InvoiceId).Title("Id").Width(150);
-                                  columns.Bound(p => p.OrderDate).Format("{0:dd/MM/yyyy}").Title("Fecha").Width(170);
-                                  columns.Bound(p => p.CustomerName).Title("Cliente").Width(250);
-                                  columns.Bound(p => p.CustomerRefNumber).Title("Código Referencia").Width(250);
-                                  columns.Bound(p => p.Discount).Format("{0:n2}").Title("Descuentos").Width(250);
-                                  //columns.Bound(p => p.BranchId).Title("Branch Id").Width(150);
-                                  columns.Bound(p => p.BranchName).Title("Sucursal").Width(280);
-                                  columns.Bound(p => p.Freight).Format("{0:n2}").Title("Flete").Width(200);
-                                  columns.Bound(p => p.SubTotal).Format("{0:n2}").Title("Sub Total").Width(200);
-                                  columns.Bound(p => p.Tax).Format("{0:n2}").Title("Total Impuesto").Width(250);
-                                  columns.Bound(p => p.Total).Format("{0:n2}").Title("Total").Width(200);
-                              })
-                                  .Filterable(f => f.Operators(o => o.ForString(s => s
+                                              command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
+
+                                          }).Title("Acciones").Width(150);
+                                      }
+                                      columns.Bound(p => p.InvoiceId).Title("Id").Width(150);
+                                      columns.Bound(p => p.OrderDate).Format("{0:dd/MM/yyyy}").Title("Fecha").Width(170);
+                                      columns.Bound(p => p.CustomerName).Title("Cliente").Width(250);
+                                      columns.Bound(p => p.CustomerRefNumber).Title("Código Referencia").Width(250);
+                                      columns.Bound(p => p.Discount).Format("{0:n2}").Title("Descuentos").Width(250);
+                                      //columns.Bound(p => p.BranchId).Title("Branch Id").Width(150);
+                                      columns.Bound(p => p.BranchName).Title("Sucursal").Width(280);
+                                      columns.Bound(p => p.Freight).Format("{0:n2}").Title("Flete").Width(200);
+                                      columns.Bound(p => p.SubTotal).Format("{0:n2}").Title("Sub Total").Width(200);
+                                      columns.Bound(p => p.Tax).Format("{0:n2}").Title("Total Impuesto").Width(250);
+                                      columns.Bound(p => p.Total).Format("{0:n2}").Title("Total").Width(200);
+                                  })
+                                      .Filterable(f => f.Operators(o => o.ForString(s => s
+                                               .Clear()
+                                               .Contains("Contiene")
+                                               .DoesNotContain("No contiene")
+                                               .EndsWith("Termina con")
+                                               .IsEqualTo("Es igual a")
+                                               .IsNotEqualTo("No es igual a")
+                                               .IsNull("Es nulo")
+                                               .StartsWith("Inicia con")
+
+                                         )
+                                         .ForNumber(n => n
                                            .Clear()
-                                           .Contains("Contiene")
-                                           .DoesNotContain("No contiene")
-                                           .EndsWith("Termina con")
                                            .IsEqualTo("Es igual a")
-                                           .IsNotEqualTo("No es igual a")
+                                           .IsGreaterThan("Es mayor que")
+                                           .IsLessThan("Es menor que")
                                            .IsNull("Es nulo")
-                                           .StartsWith("Inicia con")
+                                           .IsLessThanOrEqualTo("Es menor o igual que")
+                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                         )
+                                         .ForDate(d => d
+                                         .Clear()
+                                         .IsEqualTo("Es igual que")
+                                         .IsGreaterThan("Es mayor que")
+                                         .IsLessThan("Es menor que")
+                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                         .IsNotEqualTo("No es igual que")
+                                          )
+                                       ))
+                                  .ToolBar(tools =>
+                                  {
+                                      if (permisos.HasClaim("Clientes.Datos de Clientes.Exportar Factura", "true"))
+                                      {
+                                          tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                          tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                      }
 
-                                     )
-                                     .ForNumber(n => n
-                                       .Clear()
-                                       .IsEqualTo("Es igual a")
-                                       .IsGreaterThan("Es mayor que")
-                                       .IsLessThan("Es menor que")
-                                       .IsNull("Es nulo")
-                                       .IsLessThanOrEqualTo("Es menor o igual que")
-                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                     )
-                                     .ForDate(d => d
-                                     .Clear()
-                                     .IsEqualTo("Es igual que")
-                                     .IsGreaterThan("Es mayor que")
-                                     .IsLessThan("Es menor que")
-                                     .IsLessThanOrEqualTo("Es menor o igual que")
-                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                     .IsNotEqualTo("No es igual que")
-                                      )
-                                   ))
-                              .ToolBar(tools =>
-                              {
-                                  
-                                  tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                  tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                  })
+                                   .Editable(e => e.Mode(GridEditMode.PopUp))
+                                    .Sortable()
+                                    .AutoBind(true)
+                                    .Pageable()
+                                    .Filterable()
+                                    .Scrollable()
+                                    // .ClientDetailTemplateId("template")
+                                    .Pdf(pdf => pdf.FileName("FacturaReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                      .Excel(excel => excel.FileName("FacturaReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                    //.Events(e=>e.Save("onsave"))
+                                    .DataSource(dataSource =>
 
+                                   dataSource
+                                   //.Ajax()
+                                   .WebApi()
+                                    .ServerOperation(true)
+                                    .Model(model =>
+                                    {
+                                        model.Id(p => p.InvoiceId);
+                                        model.Field(p => p.InvoiceName).Editable(true);
+                                        model.Field(p => p.InvoiceId).Editable(true);
+                                    })
+                                    .Events(events =>
+                                    {
+                                        events.Error("error_handler");
+                                        //events.upda("EditHandler");
 
-                              })
-                               .Editable(e => e.Mode(GridEditMode.PopUp))
-                                .Sortable()
-                                .AutoBind(true)
-                                .Pageable()
-                                .Filterable()
-                                .Scrollable()
-                                // .ClientDetailTemplateId("template")
-                                .Pdf(pdf => pdf.FileName("FacturaReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                  .Excel(excel => excel.FileName("FacturaReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                //.Events(e=>e.Save("onsave"))
-                                .DataSource(dataSource =>
+                                    })
+                                    .Read(read => read.Action("GetByCustomer", "Invoice").Data("GetCustomerId"))
 
-                               dataSource
-                               //.Ajax()
-                               .WebApi()
-                                .ServerOperation(true)
-                                .Model(model =>
-                                {
-                                    model.Id(p => p.InvoiceId);
-                                    model.Field(p => p.InvoiceName).Editable(true);
-                                    model.Field(p => p.InvoiceId).Editable(true);
-                                })
-                                .Events(events =>
-                                {
-                                    events.Error("error_handler");
-                                    //events.upda("EditHandler");
-
-                                })
-                                .Read(read => read.Action("GetByCustomer", "Invoice").Data("GetCustomerId"))
-                                
-                          )
+                              )
 )
 
 

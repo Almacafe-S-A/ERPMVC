@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -24,14 +25,19 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public ElementoConfiguracionController(ILogger<ElementoConfiguracionController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public ElementoConfiguracionController(ILogger<ElementoConfiguracionController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         public IActionResult ElementoConfiguracion()
         {
+            ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Elemento Configuracion.Agregar Elemento Configuracion", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Configuracion.Elemento Configuracion.Editar Elemento Configuracion", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Configuracion.Elemento Configuracion.Exportar Elemento Configuracion", "true");
             return View();
         }
 

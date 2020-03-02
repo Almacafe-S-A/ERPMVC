@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -23,14 +24,17 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public EmployeeExtraHoursController(ILogger<EmployeeExtraHoursController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public EmployeeExtraHoursController(ILogger<EmployeeExtraHoursController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         public async  Task<IActionResult> Index()
         {
+            ViewData["permisos"] = _principal;
             return await Task.Run(()=> View());
         }
 

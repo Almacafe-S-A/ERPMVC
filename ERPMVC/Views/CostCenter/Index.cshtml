@@ -1,7 +1,9 @@
 ﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
 
 @{
     ViewData["Title"] = "Centro De Costos";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 
 <script>
@@ -91,108 +93,116 @@
 
 <h3 class="text-themecolor">Centros de Costo</h3>
 @(Html.Kendo().Grid<ERPMVC.Models.CostCenter>
-                            ()
-                            .Name("gridNumeracionCostCenter")
-                            .Columns(columns =>
-                            {
-                                columns.Command(command =>
+                                ()
+                                .Name("gridNumeracionCostCenter")
+                                .Columns(columns =>
                                 {
-                        //command.Custom("Ver detalles").Click("Detalles");
-                        command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCostCenter");
+                                    if (permisos.HasClaim("Contabilidad.Centros de Costos.Editar Centros de Costos", "true"))
+                                    {
+                                        columns.Command(command =>
+                                        {
+                                            //command.Custom("Ver detalles").Click("Detalles");
+                                            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCostCenter");
 
-                        //command.Custom("Editar").Click("EditDimensions");
-                        //  command.Destroy();
-                    }).Title("Acciones").Width(100);
-                                columns.Bound(p => p.CostCenterId).Title("Código").Width(250);
-                                columns.Bound(p => p.CostCenterName).Title("Nombre de Centro").Width(200);
-                                columns.Bound(p => p.Estado).Width(200);
-                                columns.Bound(p => p.BranchName).Title("Sucursal").Width(150);
-                    //columns.Bound(p => p.UsuarioCreacion).Width(250);
-                    //columns.Bound(p => p.UsuarioModificacion).Width(250);
-                    //columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy}").Width(450);
-                    //columns.Bound(p => p.FechaModificacion).Format("{0:dd/MM/yyyy}").Width(450);
+                                            //command.Custom("Editar").Click("EditDimensions");
+                                            //  command.Destroy();
+                                        }).Title("Acciones").Width(100);
+                                    }
+                                    columns.Bound(p => p.CostCenterId).Title("Código").Width(250);
+                                    columns.Bound(p => p.CostCenterName).Title("Nombre de Centro").Width(200);
+                                    columns.Bound(p => p.Estado).Width(200);
+                                    columns.Bound(p => p.BranchName).Title("Sucursal").Width(150);
+                                    //columns.Bound(p => p.UsuarioCreacion).Width(250);
+                                    //columns.Bound(p => p.UsuarioModificacion).Width(250);
+                                    //columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy}").Width(450);
+                                    //columns.Bound(p => p.FechaModificacion).Format("{0:dd/MM/yyyy}").Width(450);
 
 
-                })
-                                .Filterable(f => f.Operators(o => o.ForString(s => s
+                                })
+                                    .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                           .Clear()
+                                                           .Contains("Contiene")
+                                                           .DoesNotContain("No contiene")
+                                                           .EndsWith("Termina con")
+                                                           .IsEqualTo("Es igual a")
+                                                           .IsNotEqualTo("No es igual a")
+                                                           .IsNull("Es nulo")
+                                                           .StartsWith("Inicia con")
+
+
+                                                     )
+                                                     .ForNumber(n => n
                                                        .Clear()
-                                                       .Contains("Contiene")
-                                                       .DoesNotContain("No contiene")
-                                                       .EndsWith("Termina con")
                                                        .IsEqualTo("Es igual a")
-                                                       .IsNotEqualTo("No es igual a")
+                                                       .IsGreaterThan("Es mayor que")
+                                                       .IsLessThan("Es menor que")
                                                        .IsNull("Es nulo")
-                                                       .StartsWith("Inicia con")
-
-
-                                                 )
-                                                 .ForNumber(n => n
-                                                   .Clear()
-                                                   .IsEqualTo("Es igual a")
-                                                   .IsGreaterThan("Es mayor que")
-                                                   .IsLessThan("Es menor que")
-                                                   .IsNull("Es nulo")
-                                                   .IsLessThanOrEqualTo("Es menor o igual que")
-                                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                 )
-                                                 .ForDate(d => d
-                                                 .Clear()
-                                                 .IsEqualTo("Es igual que")
-                                                 .IsGreaterThan("Es mayor que")
-                                                 .IsLessThan("Es menor que")
-                                                 .IsLessThanOrEqualTo("Es menor o igual que")
-                                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                 .IsNotEqualTo("No es igual que")
-                                                  )
-                                               ))
-                            .ToolBar(tools =>
-                            {
-                    // tools.Create();
-                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                                   .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCostCenter()" });
-                                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-
-                            })
-                            .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
-                            .Sortable()
-                            .Pageable()
-                            .Filterable()
-                            .Scrollable()
-                            .Pdf(pdf => pdf.FileName("CostCenterReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                .Excel(excel => excel.FileName("CostCenterReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                            .DataSource(dataSource =>
-                                dataSource
-                                .WebApi()
-
-                                .ServerOperation(true)
-                                .Model(model =>
+                                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                     )
+                                                     .ForDate(d => d
+                                                     .Clear()
+                                                     .IsEqualTo("Es igual que")
+                                                     .IsGreaterThan("Es mayor que")
+                                                     .IsLessThan("Es menor que")
+                                                     .IsLessThanOrEqualTo("Es menor o igual que")
+                                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                     .IsNotEqualTo("No es igual que")
+                                                      )
+                                                   ))
+                                .ToolBar(tools =>
                                 {
-                                    model.Id(p => p.CostCenterId);
-                                    model.Field(p => p.CostCenterName).Editable(false);
-                                    model.Field(p => p.CostCenterName).Editable(true);
-                                    model.Field(p => p.BranchId).Editable(true);
-                                    model.Field(p => p.IdEstado).Editable(true);
-                        // model.Field(p => p.).Editable(true);
-                    })
-                                .Events(events => events.Error("error_handler"))
-                                .Read(read => read.Action("Get", "CostCenter"))
-                                .Create(create => create.Action("Insert", "CostCenter").Type(HttpVerbs.Post))
-                                .Update(update => update.Action("Update", "CostCenter", new { CostCenterId = "{0}" }).Type(HttpVerbs.Put))
-                            //.Destroy(destroy => destroy.Action("Delete", "Dimensions", new { Num = "{1}" }).Type(HttpVerbs.Delete))
+                                    // tools.Create();
+                                    if (permisos.HasClaim("Contabilidad.Centros de Costos.Agregar Centros de Costos", "true"))
+                                    {
+                                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                       .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCostCenter()" });
+                                    }
+                                    if (permisos.HasClaim("Contabilidad.Centros de Costos.Exportar Centros de Costos", "true"))
+                                    {
+                                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                    }
 
-                            )
-                            .Events(e =>
-                            {
-                                e.Save("onsave");
 
-                            })
+                                })
+                                .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                                .Sortable()
+                                .Pageable()
+                                .Filterable()
+                                .Scrollable()
+                                .Pdf(pdf => pdf.FileName("CostCenterReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                    .Excel(excel => excel.FileName("CostCenterReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                .DataSource(dataSource =>
+                                    dataSource
+                                    .WebApi()
+
+                                    .ServerOperation(true)
+                                    .Model(model =>
+                                    {
+                                        model.Id(p => p.CostCenterId);
+                                        model.Field(p => p.CostCenterName).Editable(false);
+                                        model.Field(p => p.CostCenterName).Editable(true);
+                                        model.Field(p => p.BranchId).Editable(true);
+                                        model.Field(p => p.IdEstado).Editable(true);
+                                        // model.Field(p => p.).Editable(true);
+                                    })
+                                    .Events(events => events.Error("error_handler"))
+                                    .Read(read => read.Action("Get", "CostCenter"))
+                                    .Create(create => create.Action("Insert", "CostCenter").Type(HttpVerbs.Post))
+                                    .Update(update => update.Action("Update", "CostCenter", new { CostCenterId = "{0}" }).Type(HttpVerbs.Put))
+                                //.Destroy(destroy => destroy.Action("Delete", "Dimensions", new { Num = "{1}" }).Type(HttpVerbs.Delete))
+
+                                )
+                                .Events(e =>
+                                {
+                                    e.Save("onsave");
+
+                                })
 )
 
 <div id="NumCostCenter">

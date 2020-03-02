@@ -37,15 +37,13 @@ namespace ERPMVC.Controllers
         // GET: Purch
         public ActionResult Index()
         {
-            ViewData["permisoAprobar"] =_principal.HasClaim("Contabilidad.Movimientos.Asiento Contable.Aprobar", "true");
-
-
+            ViewData["permisos"] = _principal;
             return View();
         }
 
         public ActionResult IndexAjustes()
         {
-            ViewData["permisoAprobarAjuste"] = _principal.HasClaim("Contabilidad.Movimientos.Ajustes Contables.Aprobar", "true");
+            ViewData["permisos"] = _principal;
             return View();
         }
         public ActionResult JournalEntryLine()

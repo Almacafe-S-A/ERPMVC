@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -24,15 +25,19 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-
-        public TiposDocumentoController(ILogger<TiposDocumentoController> logger, IOptions<MyConfig> _config)
+        private readonly ClaimsPrincipal _principal;
+        public TiposDocumentoController(ILogger<TiposDocumentoController> logger, IOptions<MyConfig> _config, IHttpContextAccessor httpContextAccessor)
         {
             config = _config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         public ActionResult TiposDocumento()
         {
+            ViewData["permisoAgregar"] = _principal.HasClaim("Administracion.Tipos de Documentos.Agregar Tipo de Documento", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Administracion.Tipos de Documentos.Editar Tipo de Documento", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Administracion.Tipos de Documentos.Exportar Tipo de Documento", "true");
             return View();
         }
 
