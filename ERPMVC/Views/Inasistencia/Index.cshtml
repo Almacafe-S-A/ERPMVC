@@ -1,4 +1,5 @@
 ﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
 @{
     DateTime fecha = DateTime.Today;
     bool todo = false;
@@ -10,6 +11,7 @@
     {
         fecha = (DateTime)ViewData["Fecha"];
     }
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 <h3 class="text-themecolor">Revisión y Aprobación de Inasistencias</h3>
 <div class="container-fluid">
@@ -46,13 +48,13 @@
                         <div class="row">
                             <div class="col">
                                 <label for="txtObservacion">Observación:</label>
-                                <input type="text" id="txtObservacion" value=""/>
+                                <input type="text" id="txtObservacion" value="" />
                             </div>
                         </div>
                         <div class="row">
                             <div class="col">
                                 <label for="cmbTipoInasistencia">Tipo Inasistencia:</label>
-                                <input id="cmbTipoInasistencia"/>
+                                <input id="cmbTipoInasistencia" />
                             </div>
                         </div>
                     </div>
@@ -98,8 +100,8 @@
             columns: [
                 {
                     command: [
-                        { name: "aprobar", iconClass: "fa fa-thumbs-up", text: "", click: Aprobar, visible: function (dataItem) {return dataItem.Estado.IdEstado === 80 } },
-                        { name: "rechazar", iconClass: "fa fa-thumbs-down", text: "", click: Rechazar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 80 } }
+                        PermisoAprobar(),
+                        PermisoRechazar()
                     ],
                     width:150
                 },
@@ -249,4 +251,24 @@
         CrearGrid();
         EditorTipoInasistencia();
     });
+</script>
+<script type="text/javascript">
+    function PermisoAprobar() {
+        var permisos = '@ViewData["permisos"]';
+        if ("@permisos.HasClaim("RRHH.Inasistencias.Aprobar Inasistencias", "true")" == "True") {
+            AprobarInasistencias = {
+                name: "aprobar", iconClass: "fa fa-thumbs-up", text: "", click: Aprobar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 80 }
+            }
+            return AprobarInasistencias
+        }
+    }
+    function PermisoRechazar() {
+        var permisos = '@ViewData["permisos"]';
+        if ("@permisos.HasClaim("RRHH.Inasistencias.Rechazar Inasistencias", "true")" == "True") {
+            RechazarInasistencias = {
+                name: "rechazar", iconClass: "fa fa-thumbs-down", text: "", click: Rechazar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 80 }
+            }
+            return RechazarInasistencias
+        }
+    }
 </script>

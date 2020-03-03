@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
@@ -16,15 +17,18 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger logger;
+        private readonly ClaimsPrincipal _principal;
 
-        public EmpleadoBiometricoController(IOptions<MyConfig> config, ILogger<EmpleadoBiometricoController> logger)
+        public EmpleadoBiometricoController(IOptions<MyConfig> config, ILogger<EmpleadoBiometricoController> logger, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this.logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         public IActionResult Index()
         {
+            ViewData["permisos"] = _principal;
             return View();
         }
 

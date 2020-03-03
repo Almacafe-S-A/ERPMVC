@@ -1,6 +1,9 @@
 ﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
+    
 @{
-    var errores = TempData.Keys.Contains("Errores")? TempData["Errores"].ToString():"";
+    var errores = TempData.Keys.Contains("Errores") ? TempData["Errores"].ToString() : "";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 <h3 class="text-themecolor">Carga de Archivo Biometrico</h3>
 <div class="container-fluid">
@@ -59,9 +62,9 @@
             columns: [
                 {
                     command: [
-                        { name: "ver", iconClass: "fa fa-eye", text: "", click:VerDetalle },
-                        { name: "aprobar", iconClass: "fa fa-thumbs-up", text: "", click: Aprobar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 60 }  },
-                        { name: "rechazar", iconClass: "fa fa-thumbs-down", text: "", click: Rechazar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 60 } }
+                        PermisoVerDetalle(),
+                        PermisoAprobar(),
+                        PermisoRechazar()
                     ],
                     width:150
                 },
@@ -95,7 +98,7 @@
         var parametros = {
             IdBiometrico: registro.Id
         };
-        
+
         $.ajax({
             url: '@Url.Action("VerDetalle", "Biometrico")',
             method: 'GET',
@@ -215,4 +218,33 @@
         EditorFecha();
         CrearGrid();
     });
+</script>
+<script type="text/javascript">
+    function PermisoVerDetalle() {
+        var permisos = '@ViewData["permisos"]';
+        if ("@permisos.HasClaim("RRHH.Carga de Archivo Biometrico.Ver Detalle Archivo Biometrico", "true")" == "True") {
+            Detalle = {
+                name: "ver", iconClass: "fa fa-eye", text: "", click: VerDetalle
+            }
+            return Detalle
+        }
+    }
+    function PermisoAprobar() {
+        var permisos = '@ViewData["permisos"]';
+        if ("@permisos.HasClaim("RRHH.Carga de Archivo Biometrico.Aprobar Archivo Biometrico", "true")" == "True") {
+            AprobarArchivoBiometrico = {
+                name: "aprobar", iconClass: "fa fa-thumbs-up", text: "", click: Aprobar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 60 }
+            }
+            return AprobarArchivoBiometrico
+        }
+    }
+    function PermisoRechazar() {
+        var permisos = '@ViewData["permisos"]';
+        if ("@permisos.HasClaim("RRHH.Carga de Archivo Biometrico.Rechazar Archivo Biometrico", "true")" == "True") {
+            RechazarArchivoBiometrico = {
+                name: "rechazar", iconClass: "fa fa-thumbs-down", text: "", click: Rechazar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 60 }
+            }
+            return RechazarArchivoBiometrico
+        }
+    }
 </script>
