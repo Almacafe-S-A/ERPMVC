@@ -215,6 +215,11 @@ namespace ERPMVC.Controllers
                         _Invoice.FechaCreacion = DateTime.Now;
                         _Invoice.UsuarioCreacion = HttpContext.Session.GetString("user");
                         var insertresult = await Insert(_Invoice);
+                        if ((insertresult.Result as ObjectResult).Value.ToString() == "Ocurrio un error: Error en la Configuración de Asiento Contable Automatico.")
+                        {
+                            return await Task.Run(() => BadRequest("Ocurrio un error: Error en la Configuración de Asiento Contable Automatico."));
+                        }
+
                         var value = (insertresult.Result as ObjectResult).Value;
 
                         InvoiceDTO resultado = ((InvoiceDTO)(value));
@@ -271,8 +276,8 @@ namespace ERPMVC.Controllers
                 else
                 {
                     string d =  await (result.Content.ReadAsStringAsync());
-                    throw  new Exception(d);
-                    //return await Task.Run(() => BadRequest($"Ocurrio un error: {d}"));
+                    //throw  new Exception(d);
+                    return await Task.Run(() => BadRequest($"{d}"));
                 }
 
             }
