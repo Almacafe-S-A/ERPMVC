@@ -32,6 +32,7 @@ namespace ERPMVC.Controllers
         }
 
         // GET: Customer
+        [Authorize(Policy = "Configuracion.Tasa de Cambio")]
         public ActionResult Tax()
         {
             return View();

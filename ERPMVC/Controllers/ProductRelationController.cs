@@ -33,6 +33,7 @@ namespace ERPMVC.Controllers
         }
 
         // GET: ProductRelation
+        [Authorize(Policy = "Catalogos.Relacion Servicio")]
         public ActionResult ProductRelation()
         {
             return View();

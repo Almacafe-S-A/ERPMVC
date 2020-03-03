@@ -30,6 +30,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [Authorize(Policy = "Inventarios.Recibo de Mercaderia")]
         [HttpGet("[controller]/[action]")]
         public IActionResult Index()
         {

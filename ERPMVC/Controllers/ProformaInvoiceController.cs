@@ -32,6 +32,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [Authorize(Policy = "Ventas.Factura Proforma")]
         public IActionResult Index()
         {
             return View();

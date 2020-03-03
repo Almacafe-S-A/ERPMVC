@@ -33,6 +33,7 @@ namespace ERPMVC.Controllers
             
         }
 
+        [Authorize(Policy = "Administracion.Moneda")]
         public ActionResult Currency()
         {
             return View();

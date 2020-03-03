@@ -35,6 +35,7 @@ namespace ERPMVC.Controllers
         //}
 
         //[HttpGet("[controller]/[action]")]
+        [Authorize(Policy = "Monitoreo.Alertas")]
         public IActionResult Alerts()
         {
             return View();
@@ -76,6 +77,7 @@ namespace ERPMVC.Controllers
 
         }
 
+        [Authorize(Policy = "Monitoreo.Paises GAFI")]
         public ActionResult Country()
         {
             return View();

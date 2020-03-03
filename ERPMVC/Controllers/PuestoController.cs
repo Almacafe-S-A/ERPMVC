@@ -32,6 +32,7 @@ namespace ERPMVC.Controllers
         }
 
         // GET: Customer
+        [Authorize(Policy = "RRHH.Puestos")]
         public ActionResult Puesto()
         {
             return View();

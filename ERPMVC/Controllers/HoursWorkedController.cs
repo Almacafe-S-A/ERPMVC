@@ -37,6 +37,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [Authorize(Policy = "RRHH.Horas Trabajadas")]
         public ActionResult Index()
         {
             return View();

@@ -32,11 +32,13 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [Authorize(Policy = "Seguridad.Roles")]
         public IActionResult Roles()
         {
             return View();
         }
 
+        [Authorize(Policy = "Seguridad.Permiso Roles")]
         public IActionResult PermisosRoles()
         {
             return View();

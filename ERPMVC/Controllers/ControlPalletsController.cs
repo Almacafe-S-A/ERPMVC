@@ -30,11 +30,13 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [Authorize(Policy = "Inventarios.Control de Ingresos")]
         public IActionResult Index()
         {
             return View();
         }
 
+        [Authorize(Policy = "Inventarios.Control de Salida")]
         public IActionResult IndexSalida()
         {
 

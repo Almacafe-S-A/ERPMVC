@@ -32,6 +32,7 @@ namespace ERPMVC.Controllers
         }
 
         // GET: PuntoEmision
+        [Authorize(Policy = "Administracion.Puntos Emision")]
         public ActionResult Index()
         {
             return View();

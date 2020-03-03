@@ -32,6 +32,7 @@ namespace ERPMVC.Controllers
         }
 
         // GET: Customer
+        [Authorize(Policy = "RRHH.Tipo de Planilla")]
         public ActionResult TipoPlanillas()
         {
             return View();

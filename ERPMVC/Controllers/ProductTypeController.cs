@@ -29,6 +29,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [Authorize(Policy = "Catalogos.Tipo de Producto")]
         public IActionResult ProductType()
         {
             return View();

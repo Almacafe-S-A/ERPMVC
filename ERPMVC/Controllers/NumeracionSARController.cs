@@ -30,6 +30,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [Authorize(Policy = "Administracion.Numeracion SAR")]
         public IActionResult NumeracionSAR()
         {
             return View();

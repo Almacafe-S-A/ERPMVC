@@ -29,6 +29,8 @@ namespace ERPMVC.Controllers
             this.config = config;
             this._logger = logger;
         }
+
+        [Authorize(Policy = "RRHH.Lineas de Telefono")]
         public IActionResult Index()
         {
             return View();

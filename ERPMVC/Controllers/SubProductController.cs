@@ -37,19 +37,21 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        [Authorize(Policy = "Catalogos.Productos de Cliente")]
         [HttpGet("[controller]/[action]")]
         public IActionResult SubProductClientes()
         {
             return View();
         }
 
+        [Authorize(Policy = "Catalogos.SubServicios")]
         [HttpGet("[controller]/[action]")]
         public IActionResult SubProductPropios()
         {
             return View();
         }
 
-
+        [Authorize(Policy = "Monitoreo.Productos Prohibidos")]
         [HttpGet("[controller]/[action]")]
         public IActionResult SubProductProhibidos()
         {

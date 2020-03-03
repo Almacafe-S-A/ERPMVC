@@ -31,6 +31,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
         // GET: TypeAccount
+        [Authorize(Policy = "Contabilidad.Cuentas.Tipos de Cuentas")]
         public ActionResult TypeAccount()
         {
             return View();

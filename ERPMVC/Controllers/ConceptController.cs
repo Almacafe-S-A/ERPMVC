@@ -30,6 +30,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [Authorize(Policy = "RRHH.Concepto")]
         public IActionResult Concept()
         {
             return View();

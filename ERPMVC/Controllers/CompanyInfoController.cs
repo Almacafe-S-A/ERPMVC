@@ -38,7 +38,7 @@ namespace ERPMVC.Controllers
         //    this.config = config;
         //    this._logger = logger;
         //}
-
+        [Authorize(Policy = "Configuracion.Informacion de la Empresa")]
         public IActionResult CompanyInfo()
         {
             return View();

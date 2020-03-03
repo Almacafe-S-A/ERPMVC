@@ -31,6 +31,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [Authorize(Policy = "Clientes.Subservicios Utilizados")]
         public async Task<IActionResult> Index()
         {
             return await Task.Run(() => View());

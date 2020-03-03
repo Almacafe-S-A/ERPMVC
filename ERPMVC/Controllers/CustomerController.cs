@@ -37,6 +37,7 @@ namespace ERPMVC.Controllers
 
 
         // GET: Customer
+        [Authorize(Policy = "Clientes.Datos de Clientes")]
         public async Task<ActionResult> Index()
         {
             ViewData["CustomerType"] = await CustomerTypeList();

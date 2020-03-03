@@ -39,7 +39,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-
+        [Authorize(Policy = "Contabilidad.Seguros.Polizas")]
         public IActionResult InsurancePolicy()
         {
             return View();

@@ -31,6 +31,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [Authorize(Policy = "Administracion.Tipos de Documentos")]
         public ActionResult TiposDocumento()
         {
             return View();

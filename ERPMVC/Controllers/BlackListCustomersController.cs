@@ -30,6 +30,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [Authorize(Policy = "Monitoreo.Informacion Mediatica")]
         public IActionResult BlackListCustomers()
         {
             return View();

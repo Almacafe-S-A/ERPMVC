@@ -34,7 +34,7 @@ namespace ERPMVC.Controllers
 
         }
 
-
+        [Authorize(Policy = "Seguridad.Sucursales por Usuario")]
         public IActionResult UserBranch()
         {
             return View();

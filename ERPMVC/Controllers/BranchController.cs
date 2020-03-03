@@ -34,6 +34,7 @@ namespace ERPMVC.Controllers
 
 
         // GET: Branch
+        [Authorize(Policy = "Administracion.Sucursales")]
         public async Task<ActionResult> Brach()
         {
             return await Task.Run(() => View());

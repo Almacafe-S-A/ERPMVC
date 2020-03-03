@@ -33,6 +33,7 @@ namespace ERPMVC.Controllers
         }
 
         // GET: Departamento
+        [Authorize(Policy = "RRHH.Departamento")]
         public ActionResult Departamento()
         {
             return View();

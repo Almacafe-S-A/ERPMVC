@@ -31,6 +31,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [Authorize(Policy = "Contabilidad.Activos.Grupo de Activos")]
         public ActionResult FixedAssetGroup()
         {
             return View();

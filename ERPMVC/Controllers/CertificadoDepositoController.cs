@@ -41,6 +41,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [Authorize(Policy = "Inventarios.Solicitud Certificado Deposito")]
         [HttpGet("[controller]/[action]")]
         public IActionResult Index()
         {

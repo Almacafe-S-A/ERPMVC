@@ -29,6 +29,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [Authorize(Policy = "Ventas.Nota de Credito")]
         public IActionResult Index()
         {
             return View();

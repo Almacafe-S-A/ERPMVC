@@ -29,6 +29,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [Authorize(Policy = "Ventas.Factura")]
         public IActionResult Index()
         {
             return View();

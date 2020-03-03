@@ -31,6 +31,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
         // GET: TypeAccount
+        [Authorize(Policy = "Contabilidad.Tipos de Documentos")]
         public ActionResult TypeJournal()
         {
             return View();

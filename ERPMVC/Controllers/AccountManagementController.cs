@@ -29,6 +29,8 @@ namespace ERPMVC.Controllers
             this.config = config;
             this._logger = logger;
         }
+
+        [Authorize(Policy = "Bancos.Cuentas Bancarias")]
         public IActionResult Index()
         {
             return View();

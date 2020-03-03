@@ -29,6 +29,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [Authorize(Policy = "Configuracion.Escala")]
         public IActionResult Escala()
         {
             return View();

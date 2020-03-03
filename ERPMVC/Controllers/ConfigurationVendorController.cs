@@ -30,6 +30,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
         // GET: ConfigurationVendor
+        [Authorize(Policy = "Proveedores.Configuracion de Proveedores")]
         public ActionResult ConfigurationVendor()
         {
             return View();

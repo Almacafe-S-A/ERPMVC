@@ -30,7 +30,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
-
+        [Authorize(Policy = "Contabilidad.Procesos.Cierre Contable Manual")]
         public async Task<IActionResult> CierreContable()
         {
             BitacoraCierreContable ultimocierre = await GetUltimoCierre();

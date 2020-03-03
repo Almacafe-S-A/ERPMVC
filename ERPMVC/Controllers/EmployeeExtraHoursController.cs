@@ -29,6 +29,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [Authorize(Policy = "Clientes.Horas Extra")]
         public async  Task<IActionResult> Index()
         {
             return await Task.Run(()=> View());

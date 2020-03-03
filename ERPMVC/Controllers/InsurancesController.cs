@@ -34,12 +34,14 @@ namespace ERPMVC.Controllers
             _hostingEnvironment = hostingEnvironment;
 
         }
+
+
         public IActionResult Index()
         {
             return View();
         }
 
-
+        [Authorize(Policy = "Contabilidad.Seguros.Aseguradoras")]
         public IActionResult Insurances()
         {
             return View();

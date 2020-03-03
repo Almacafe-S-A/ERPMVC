@@ -30,6 +30,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [Authorize(Policy = "Monitoreo.PEPS")]
         public IActionResult PEPS()
         {
             return View();

@@ -29,6 +29,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [Authorize(Policy = "Contabilidad.Centros de Costos")]
         public ActionResult Index()
         {
             return View();

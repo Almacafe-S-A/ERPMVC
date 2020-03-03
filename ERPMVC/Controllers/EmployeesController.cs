@@ -35,6 +35,7 @@ namespace ERPMVC.Controllers
             _hostingEnvironment = hostingEnvironment;
         }
 
+        [Authorize(Policy = "RRHH.Empleados")]
         public IActionResult Index()
         {
             return View();

@@ -29,6 +29,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [Authorize(Policy = "Configuracion.Estado")]
         public async Task<IActionResult> State()
         {
             ViewData["Pais"] = await ObtenerPais();

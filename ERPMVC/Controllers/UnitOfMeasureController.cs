@@ -46,6 +46,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [Authorize(Policy = "Administracion.Unidades de Medida")]
         public IActionResult UnitOfMeasure()
         {
             return View();

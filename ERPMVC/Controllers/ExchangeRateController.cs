@@ -30,6 +30,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
         // GET: ExchangeRate
+        [Authorize(Policy = "Configuracion.Tasa de Cambio")]
         public ActionResult ExchangeRate()
         {
             return View();

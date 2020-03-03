@@ -32,6 +32,7 @@ namespace ERPMVC.Controllers
         }
 
         // GET: Customer
+        [Authorize(Policy = "Configuracion.Pais")]
         public ActionResult Country()
         {
             return View();
