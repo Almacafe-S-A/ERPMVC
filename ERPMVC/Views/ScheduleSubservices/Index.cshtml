@@ -1,8 +1,8 @@
 ﻿@using Kendo.Mvc.UI
-
+@using System.Security.Claims
 @{
     ViewData["Title"] = "Reglas de cobro";
-
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 
 <script>
@@ -127,81 +127,89 @@
 <h3 class="text-themecolor">Reglas de cobro/Asociar a clientes</h3>
 
 @(Html.Kendo().Grid<ERPMVC.Models.ScheduleSubservices>
-                      ()
+                          ()
 
-                        .Name("gridEmployees")
+                            .Name("gridEmployees")
 
-                        .Columns(columns =>
-                        {
-                            columns.Command(command =>
+                            .Columns(columns =>
                             {
-                                //command.Custom("Ver detalles").Click("Detalles");
-                                //command.Destroy();
-                                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditEmployeeExtraHours");
-                               // command.Destroy().Text("Eliminar");
+                                if (permisos.HasClaim("Clientes.Reglas de Cobro.Editar Reglas de Cobro", "true"))
+                                {
+                                    columns.Command(command =>
+                                    {
+                                        //command.Custom("Ver detalles").Click("Detalles");
+                                        //command.Destroy();
+                                        command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditEmployeeExtraHours");
+                                        // command.Destroy().Text("Eliminar");
 
-                            }).Title("Acciones").Width(150);
-                            columns.Bound(p => p.ScheduleSubservicesId).Width(150);
-                            columns.Bound(p => p.ServiceName).Width(250);
-                            columns.Bound(p => p.SubServiceName).Width(250);
-                           // columns.Bound(p => p.Description).Width(250);
-                            columns.Bound(p => p.StartTime).Format("{0:HH:mm:ss}").Width(180);
-                            columns.Bound(p => p.EndTime).Format("{0:HH:mm:ss}").Width(180);
-                            columns.Bound(p => p.QuantityHours).Width(250);
-                            columns.Bound(p => p.FactorHora).Width(180);
-                            columns.Bound(p => p.Transport).Width(210);
-                            columns.Bound(p => p.Day).Width(110);
-                            columns.Bound(p => p.Condition).Width(180);
-                            columns.Bound(p => p.Estado).Width(120);
+                                    }).Title("Acciones").Width(150);
+                                }
+                                columns.Bound(p => p.ScheduleSubservicesId).Width(150);
+                                columns.Bound(p => p.ServiceName).Width(250);
+                                columns.Bound(p => p.SubServiceName).Width(250);
+                                // columns.Bound(p => p.Description).Width(250);
+                                columns.Bound(p => p.StartTime).Format("{0:HH:mm:ss}").Width(180);
+                                columns.Bound(p => p.EndTime).Format("{0:HH:mm:ss}").Width(180);
+                                columns.Bound(p => p.QuantityHours).Width(250);
+                                columns.Bound(p => p.FactorHora).Width(180);
+                                columns.Bound(p => p.Transport).Width(210);
+                                columns.Bound(p => p.Day).Width(110);
+                                columns.Bound(p => p.Condition).Width(180);
+                                columns.Bound(p => p.Estado).Width(120);
 
-                        })
-                        .ToolBar(tools =>
-                        {
+                            })
+                            .ToolBar(tools =>
+                            {
 
-                            //tools.Create();
-                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                    .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddEmployees()" });
-                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                //tools.Create();
+                                if (permisos.HasClaim("Clientes.Reglas de Cobro.Agregar Reglas de Cobro", "true"))
+                                {
+                                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddEmployees()" });
+                                }
+                                if (permisos.HasClaim("Clientes.Reglas de Cobro.Exportar Reglas de Cobro", "true"))
+                                {
+                                    tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                    tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                }
+                            })
+                            .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                            .Sortable()
+                            .Pageable()
+                            .Filterable()
+                            .Scrollable()
+                            .Pdf(pdf => pdf.FileName("ReglasdeCobroReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                            .Excel(excel => excel.FileName("ReglasdeCobroReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                            .DataSource(dataSource =>
+                            dataSource
+                            .WebApi()
 
-                        })
-                        .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
-                        .Sortable()
-                        .Pageable()
-                        .Filterable()
-                        .Scrollable()
-                        .Pdf(pdf => pdf.FileName("ReglasdeCobroReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                        .Excel(excel => excel.FileName("ReglasdeCobroReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                        .DataSource(dataSource =>
-                        dataSource
-                        .WebApi()
+                            .ServerOperation(true)
+                            .Model(model =>
+                            {
+                                model.Id(p => p.ScheduleSubservicesId);
+                                model.Field(p => p.ScheduleSubservicesId).Editable(false);
+                            })
+                            .Events(events => events.Error("error_handler"))
+                            .Read(read => read.Action("Get", "ScheduleSubservices"))
+                            //.Create(create => create.Action("Insert", "Employees").Type(HttpVerbs.Post))
+                            //.Update(update => update.Action("Update", "Employees").Type(HttpVerbs.Post))
+                            .Destroy(destroy => destroy.Action("Delete", "ScheduleSubservices").Type(HttpVerbs.Post))
+                            //.Destroy(destroy => destroy.Action("Delete", "Employees", new { IdEmpleado = "{0}" }).Type(HttpVerbs.Delete))
+                            )
+                            .Events(e =>
+                            {
+                                e.Save("onsave");
 
-                        .ServerOperation(true)
-                        .Model(model =>
-                        {
-                            model.Id(p => p.ScheduleSubservicesId);
-                            model.Field(p => p.ScheduleSubservicesId).Editable(false);
-                        })
-                        .Events(events => events.Error("error_handler"))
-                        .Read(read => read.Action("Get", "ScheduleSubservices"))
-                        //.Create(create => create.Action("Insert", "Employees").Type(HttpVerbs.Post))
-                        //.Update(update => update.Action("Update", "Employees").Type(HttpVerbs.Post))
-                        .Destroy(destroy => destroy.Action("Delete", "ScheduleSubservices").Type(HttpVerbs.Post))
-                        //.Destroy(destroy => destroy.Action("Delete", "Employees", new { IdEmpleado = "{0}" }).Type(HttpVerbs.Delete))
-                        )
-                        .Events(e =>
-                        {
-                            e.Save("onsave");
-
-                        })
+                            })
 )
 
 <div id="numEmployees">
-    @await Html.PartialAsync("pvwAddScheduleSubServices", new ERPMVC.DTO.ScheduleSubservicesDTO { ScheduleSubservicesId = 0, StartTime = DateTime.Now , EndTime = DateTime.Now })
+    @await Html.PartialAsync("pvwAddScheduleSubServices", new ERPMVC.DTO.ScheduleSubservicesDTO { ScheduleSubservicesId = 0, StartTime = DateTime.Now, EndTime = DateTime.Now })
 </div>
 
 <script>

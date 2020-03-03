@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -24,16 +25,21 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
+        private readonly ClaimsPrincipal _principal;
 
-        public TaxController(ILogger<TaxController> logger, IOptions<MyConfig> config)
+        public TaxController(ILogger<TaxController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         // GET: Customer
         public ActionResult Tax()
         {
+            ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Impuestos.Agregar Impuesto", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Configuracion.Impuestos.Editar Impuesto", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Configuracion.Impuestos.Exportar Impuesto", "true");
             return View();
         }
 

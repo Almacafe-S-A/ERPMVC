@@ -14,7 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -25,16 +25,19 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
+        private readonly ClaimsPrincipal _principal;
 
-        public DependientesController(ILogger<DependientesController> logger, IOptions<MyConfig> config)
+        public DependientesController(ILogger<DependientesController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         // GET: Dependientes
         public ActionResult Index()
         {
+            ViewData["permisos"] = _principal;
             return PartialView();
         }
 

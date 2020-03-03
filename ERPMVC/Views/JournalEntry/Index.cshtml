@@ -3,8 +3,7 @@
 
 @{
     ViewData["Title"] = "Movimientos Financieros";
-    bool permiso;
-    permiso = (bool)ViewData["permisoAprobar"];
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 
 <script>
@@ -275,125 +274,141 @@
 
     }
     @(Html.Kendo().Grid<ERPMVC.Models.JournalEntry>
-                                        ()
-                                        .Name("gridNumeracionJournalEntry")
-                                        .Columns(columns =>
-                                        {
-                                            columns.Command(command =>
-                                            {
-                                                //.Custom("Ver detalles").Text(" ").IconClass("far fa-list-alt").Click("DetallesJournalEntry");
-                                                //command.Custom("Ver detalles").Text(" ").IconClass("fa fa-edit").Click("EditJournalEntry");
-                                                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditJournalEntry");
-                                                command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("Imprimir");
-                                                if (permiso)
-                                                {
-                                                    command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("AprobarAsiento");
-                                                    command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("RechazarAsiento");
+    ()
+    .Name("gridNumeracionJournalEntry")
+    .Columns(columns =>
+    {
+        if (permisos.HasClaim("Contabilidad.Movimientos.Asiento Contable.Editar Asiento Contable", "true")
+        || permisos.HasClaim("Contabilidad.Movimientos.Asiento Contable.Imprimir Asiento Contable", "true")
+        || permisos.HasClaim("Contabilidad.Movimientos.Asiento Contable.Aprobar Asiento Contable", "true"))
+        {
+            columns.Command(command =>
+            {
+                //.Custom("Ver detalles").Text(" ").IconClass("far fa-list-alt").Click("DetallesJournalEntry");
+                //command.Custom("Ver detalles").Text(" ").IconClass("fa fa-edit").Click("EditJournalEntry");
+                if(permisos.HasClaim("Contabilidad.Movimientos.Asiento Contable.Editar Asiento Contable", "true"))
+                {
+                    command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditJournalEntry");
+                }
+                if (permisos.HasClaim("Contabilidad.Movimientos.Asiento Contable.Imprimir Asiento Contable", "true"))
+                {
+                    command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("Imprimir");
+                }
 
-                                                }
+                if (permisos.HasClaim("Contabilidad.Movimientos.Asiento Contable.Aprobar Asiento Contable", "true"))
+                {
+                    command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("AprobarAsiento");
+                    command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("RechazarAsiento");
 
-                                                //  command.Destroy();
-                                            }).Title("Acciones").Width(175);
+                }
 
-                                            columns.Bound(p => p.JournalEntryId).Title("Id Asiento Contable").Width(200);
-                                            columns.Bound(p => p.DatePosted).Title("Fecha de  Transacción").Format("{0:dd/MM/yyyy}").Width(250);
-                                            columns.Bound(p => p.PartyId).Width(150).Hidden(true);
-                                            columns.Bound(p => p.PartyName).Title("Beneficiario").Width(200);
-                                            columns.Bound(p => p.TotalDebit).Width(200).Format("{0:N2}");
-                                            columns.Bound(p => p.TotalCredit).Width(200).Format("{0:N2}");
-                                            columns.Bound(p => p.Memo).Title("Sinopsis").Width(350);
-                                            columns.Bound(p => p.EstadoName).Title("Estado").Width(170);
-                                            columns.Bound(p => p.EstadoId).Hidden().Title("Estado").Width(170);
-                                            columns.Bound(p => p.PartyTypeId).Hidden().Title("").Width(170);
-                                        })
-                                        .Filterable(f => f.Operators(o => o.ForString(s => s
-                                        .Clear()
-                                        .Contains("Contiene")
-                                        .DoesNotContain("No contiene")
-                                        .EndsWith("Termina con")
-                                        .IsEqualTo("Es igual a")
-                                        .IsNotEqualTo("No es igual a")
-                                        .IsNull("Es nulo")
-                                        .StartsWith("Inicia con")
+                //  command.Destroy();
+            }).Title("Acciones").Width(175);
+        }
+        columns.Bound(p => p.JournalEntryId).Title("Id Asiento Contable").Width(200);
+        columns.Bound(p => p.DatePosted).Title("Fecha de  Transacción").Format("{0:dd/MM/yyyy}").Width(250);
+        columns.Bound(p => p.PartyId).Width(150).Hidden(true);
+        columns.Bound(p => p.PartyName).Title("Beneficiario").Width(200);
+        columns.Bound(p => p.TotalDebit).Width(200).Format("{0:N2}");
+        columns.Bound(p => p.TotalCredit).Width(200).Format("{0:N2}");
+        columns.Bound(p => p.Memo).Title("Sinopsis").Width(350);
+        columns.Bound(p => p.EstadoName).Title("Estado").Width(170);
+        columns.Bound(p => p.EstadoId).Hidden().Title("Estado").Width(170);
+        columns.Bound(p => p.PartyTypeId).Hidden().Title("").Width(170);
+    })
+    .Filterable(f => f.Operators(o => o.ForString(s => s
+    .Clear()
+    .Contains("Contiene")
+    .DoesNotContain("No contiene")
+    .EndsWith("Termina con")
+    .IsEqualTo("Es igual a")
+    .IsNotEqualTo("No es igual a")
+    .IsNull("Es nulo")
+    .StartsWith("Inicia con")
 
 
-                                        )
-                                        .ForNumber(n => n
-                                        .Clear()
-                                        .IsEqualTo("Es igual a")
-                                        .IsGreaterThan("Es mayor que")
-                                        .IsLessThan("Es menor que")
-                                        .IsNull("Es nulo")
-                                        .IsLessThanOrEqualTo("Es menor o igual que")
-                                        .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                        )
-                                        .ForDate(d => d
-                                        .Clear()
-                                        .IsEqualTo("Es igual que")
-                                        .IsGreaterThan("Es mayor que")
-                                        .IsLessThan("Es menor que")
-                                        .IsLessThanOrEqualTo("Es menor o igual que")
-                                        .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                        .IsNotEqualTo("No es igual que")
-                                        )
-                                        ))
-                                        .ToolBar(tools =>
-                                        {
-                                            // tools.Create();
-                                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddJournalEntry()" });
-                                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+    )
+    .ForNumber(n => n
+    .Clear()
+    .IsEqualTo("Es igual a")
+    .IsGreaterThan("Es mayor que")
+    .IsLessThan("Es menor que")
+    .IsNull("Es nulo")
+    .IsLessThanOrEqualTo("Es menor o igual que")
+    .IsGreaterThanOrEqualTo("Es mayor o igual que")
+    )
+    .ForDate(d => d
+    .Clear()
+    .IsEqualTo("Es igual que")
+    .IsGreaterThan("Es mayor que")
+    .IsLessThan("Es menor que")
+    .IsLessThanOrEqualTo("Es menor o igual que")
+    .IsGreaterThanOrEqualTo("Es mayor o igual que")
+    .IsNotEqualTo("No es igual que")
+    )
+    ))
+    .ToolBar(tools =>
+    {
+        // tools.Create();
+        if (permisos.HasClaim("Contabilidad.Movimientos.Asiento Contable.Agregar Asiento Contable", "true"))
+        {
+            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddJournalEntry()" });
+        }
+        if (permisos.HasClaim("Contabilidad.Movimientos.Asiento Contable.Exportar Asiento Contable", "true"))
+        {
+            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+        }
+    })
+    .Editable(e => e.Mode(GridEditMode.PopUp))
+    .Sortable()
+    .AutoBind(true)
+    .Pageable(s => s
+    .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+    .Empty("No hay datos."))
+    )
+    .Filterable()
+    .Scrollable()
+    .Pdf(pdf => pdf.FileName("Asiento_Contable_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+    .Excel(excel => excel.FileName("Asiento_Contable_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+    .Events(e => e.DataBound("dataBound"))
+    .DataSource(dataSource =>
+    dataSource
+    .WebApi()
 
-                                        })
-                                        .Editable(e => e.Mode(GridEditMode.PopUp))
-                                        .Sortable()
-                                        .AutoBind(true)
-                                        .Pageable(s => s
-                                            .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
-                                            .Empty("No hay datos."))
-                                        )
-                                        .Filterable()
-                                        .Scrollable()
-                                        .Pdf(pdf => pdf.FileName("Asiento_Contable_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                        .Excel(excel => excel.FileName("Asiento_Contable_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                        .Events(e => e.DataBound("dataBound"))
-                                        .DataSource(dataSource =>
-                                        dataSource
-                                        .WebApi()
+    .ServerOperation(true)
+    .Model(model =>
+    {
+        model.Id(p => p.JournalEntryId);
+        model.Field(p => p.DatePosted).Editable(true);
+        model.Field(p => p.PartyId).Editable(true);
+        model.Field(p => p.TotalDebit).Editable(true);
+        model.Field(p => p.TotalCredit).Editable(true);
+        model.Field(p => p.Memo).Editable(true);
+        model.Field(p => p.EstadoName).Editable(true);
+        model.Field(p => p.EstadoId).Editable(true);
 
-                                        .ServerOperation(true)
-                                        .Model(model =>
-                                        {
-                                            model.Id(p => p.JournalEntryId);
-                                            model.Field(p => p.DatePosted).Editable(true);
-                                            model.Field(p => p.PartyId).Editable(true);
-                                            model.Field(p => p.TotalDebit).Editable(true);
-                                            model.Field(p => p.TotalCredit).Editable(true);
-                                            model.Field(p => p.Memo).Editable(true);
-                                            model.Field(p => p.EstadoName).Editable(true);
-                                            model.Field(p => p.EstadoId).Editable(true);
+    })
+    .Filter(f => f.Add(m => m.TypeOfAdjustmentId).IsEqualTo(65))
+    .Sort(s => s.Add(m => m.JournalEntryId).Descending())
+    .Events(events => events.Error("error_handler"))
+    .Read(read => read.Action("GetJournalEntryAsientos", "JournalEntry"))
+    .Create(create => create.Action("Insert", "JournalEntry"))
+    .Update(update => update.Action("Update", "JournalEntry", new { id = "{0}" }))
+    //.Update(update => update.Action("Update", "JournalEntry", new { JournalEntryId = "{0}" }).Type(HttpVerbs.Put))
+    //.Destroy(destroy => destroy.Action("Delete", "TypeAccount", new { Num = "{1}" }).Type(HttpVerbs.Delete))
 
-                                        })
-                                        .Filter(f => f.Add(m => m.TypeOfAdjustmentId).IsEqualTo(65))
-                                        .Sort(s => s.Add(m => m.JournalEntryId).Descending())
-                                        .Events(events => events.Error("error_handler"))
-                                        .Read(read => read.Action("GetJournalEntryAsientos", "JournalEntry"))
-                                        .Create(create => create.Action("Insert", "JournalEntry"))
-                                         .Update(update => update.Action("Update", "JournalEntry", new { id = "{0}" }))
-                                        //.Update(update => update.Action("Update", "JournalEntry", new { JournalEntryId = "{0}" }).Type(HttpVerbs.Put))
-                                        //.Destroy(destroy => destroy.Action("Delete", "TypeAccount", new { Num = "{1}" }).Type(HttpVerbs.Delete))
+    )
+    .Events(e =>
+    {
+        e.Save("onsave");
 
-                                        )
-                                        .Events(e =>
-                                        {
-                                            e.Save("onsave");
-
-                                        })
+    })
     )
 </div>
 

@@ -35,6 +35,7 @@ namespace ERPMVC.Controllers
         public IActionResult Index()
         {
             ViewData["permisoActualizarRecibido"] = _principal.HasClaim("Compras.Factura Proveedores.Actualizar a Recibido", "true");
+            ViewData["permisos"] = _principal;
             return View();
         }
 
@@ -65,7 +66,7 @@ namespace ERPMVC.Controllers
                    // _VendorInvoice.NumeroDEIString = $"{_VendorInvoice.Sucursal}-{_VendorInvoice.Caja}-01-{_VendorInvoice.NumeroDEI.ToString().PadLeft(8, '0')} ";
                 }
 
-
+                ViewData["permisos"] = _principal;
             }
             catch (Exception ex)
             {

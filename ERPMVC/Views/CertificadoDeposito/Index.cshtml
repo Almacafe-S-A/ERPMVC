@@ -1,7 +1,9 @@
 ﻿@using Microsoft.AspNetCore.Http;
+@using System.Security.Claims
 @using Kendo.Mvc.UI;
 @{
     ViewData["Title"] = "Certificado de Deposito";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 
 <link href="~/admp/assets/plugins/wizard/steps.css" rel="stylesheet">
@@ -179,107 +181,128 @@
 <h3 class="text-themecolor">Certificado de depósito</h3>
 
 @(Html.Kendo().Grid<ERPMVC.Models.CertificadoDeposito>()
-                                  .Name("gridCertificadoDeposito")
-                                  .Columns(columns =>
-                                  {
-                                      columns.Command(command =>
-                                       {
-                                                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCertificadoDeposito");
-                                                command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCertificadoDeposito");
-                                                command.Custom("Anular").Text(" ").IconClass("fa fa-times-circle").Click("AnularCD");
-                                                command.Custom("ImprimirSolicitud").Text(" ").IconClass("mdi mdi-printer").Click("ImprimirSolicitudDeposito");
-                                       }).Width(170).Title("Acciones");
-
-                                      columns.Bound(p => p.IdCD).Title("Id").Width(150);
-                                      columns.Bound(p => p.NoCD).Title("No.CD").Width(150);
-                                      columns.Bound(p => p.FechaCertificado).Format("{0:dd/MM/yyyy}").Title("Fecha Certificado").Width(150);
-                                      columns.Bound(p => p.FechaVencimiento).Format("{0:dd/MM/yyyy}").Title("Fecha de Vencimiento").Width(150);
-                                      columns.Bound(p => p.CustomerName).Title("Cliente").Width(150);
-                                      columns.Bound(p => p.ServicioName).Title("Servicio").Width(150);
-                                      columns.Bound(p => p.NombreEmpresa).Title("Nombre empresa").Width(150);
-                                      columns.Bound(p => p.NoPoliza).Title("NoPoliza").Width(150);
-                                    }).Filterable(f => f.Operators(o => o.ForString(s => s
-                                                                       .Clear()
-                                                                       .Contains("Contiene")
-                                                                       .DoesNotContain("No contiene")
-                                                                       .EndsWith("Termina con")
-                                                                       .IsEqualTo("Es igual a")
-                                                                       .IsNotEqualTo("No es igual a")
-                                                                       .IsNull("Es nulo")
-                                                                       .StartsWith("Inicia con")
-
-
-                                                                 )
-                                                                 .ForNumber(n => n
-                                                                   .Clear()
-                                                                   .IsEqualTo("Es igual a")
-                                                                   .IsGreaterThan("Es mayor que")
-                                                                   .IsLessThan("Es menor que")
-                                                                   .IsNull("Es nulo")
-                                                                   .IsLessThanOrEqualTo("Es menor o igual que")
-                                                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                                 )
-                                                                 .ForDate(d => d
-                                                                 .Clear()
-                                                                 .IsEqualTo("Es igual que")
-                                                                 .IsGreaterThan("Es mayor que")
-                                                                 .IsLessThan("Es menor que")
-                                                                 .IsLessThanOrEqualTo("Es menor o igual que")
-                                                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                                 .IsNotEqualTo("No es igual que")
-                                                                  )
-                                                               ))
-                                      .ToolBar(tools =>
+                                      .Name("gridCertificadoDeposito")
+                                      .Columns(columns =>
                                       {
-                              // tools.Create();
+                                          if (permisos.HasClaim("Inventarios.Solicitud Certificado Deposito.Editar Solicitud Certificado Deposito", "true")
+                                          || permisos.HasClaim("Inventarios.Solicitud Certificado Deposito.Imprimir Certificado Deposito", "true")
+                                          || permisos.HasClaim("Inventarios.Solicitud Certificado Deposito.Anular Solicitud Certificado Deposito", "true")
+                                          || permisos.HasClaim("Inventarios.Solicitud Certificado Deposito.Imprimir Solicitud Certificado Deposito", "true"))
+                                          {
+                                              columns.Command(command =>
+                                              {
+                                                  if (permisos.HasClaim("Inventarios.Solicitud Certificado Deposito.Editar Solicitud Certificado Deposito", "true"))
+                                                  {
+                                                      command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCertificadoDeposito");
+                                                  }
+                                                  if (permisos.HasClaim("Inventarios.Solicitud Certificado Deposito.Imprimir Certificado Deposito", "true"))
+                                                  {
+                                                      command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCertificadoDeposito");
+                                                  }
+                                                  if (permisos.HasClaim("Inventarios.Solicitud Certificado Deposito.Anular Solicitud Certificado Deposito", "true"))
+                                                  {
+                                                      command.Custom("Anular").Text(" ").IconClass("fa fa-times-circle").Click("AnularCD");
+                                                  }
+                                                  if (permisos.HasClaim("Inventarios.Solicitud Certificado Deposito.Imprimir Solicitud Certificado Deposito", "true"))
+                                                  {
+                                                      command.Custom("ImprimirSolicitud").Text(" ").IconClass("mdi mdi-printer").Click("ImprimirSolicitudDeposito");
+                                                  }
+                                              }).Width(170).Title("Acciones");
+                                          }
+                                          columns.Bound(p => p.IdCD).Title("Id").Width(150);
+                                          columns.Bound(p => p.NoCD).Title("No.CD").Width(150);
+                                          columns.Bound(p => p.FechaCertificado).Format("{0:dd/MM/yyyy}").Title("Fecha Certificado").Width(150);
+                                          columns.Bound(p => p.FechaVencimiento).Format("{0:dd/MM/yyyy}").Title("Fecha de Vencimiento").Width(150);
+                                          columns.Bound(p => p.CustomerName).Title("Cliente").Width(150);
+                                          columns.Bound(p => p.ServicioName).Title("Servicio").Width(150);
+                                          columns.Bound(p => p.NombreEmpresa).Title("Nombre empresa").Width(150);
+                                          columns.Bound(p => p.NoPoliza).Title("NoPoliza").Width(150);
+                                      }).Filterable(f => f.Operators(o => o.ForString(s => s
+                                                             .Clear()
+                                                             .Contains("Contiene")
+                                                             .DoesNotContain("No contiene")
+                                                             .EndsWith("Termina con")
+                                                             .IsEqualTo("Es igual a")
+                                                             .IsNotEqualTo("No es igual a")
+                                                             .IsNull("Es nulo")
+                                                             .StartsWith("Inicia con")
 
 
-                                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                     .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCertificadoDeposito();" });
-                                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                                       )
+                                                       .ForNumber(n => n
+                                                         .Clear()
+                                                         .IsEqualTo("Es igual a")
+                                                         .IsGreaterThan("Es mayor que")
+                                                         .IsLessThan("Es menor que")
+                                                         .IsNull("Es nulo")
+                                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                       )
+                                                       .ForDate(d => d
+                                                       .Clear()
+                                                       .IsEqualTo("Es igual que")
+                                                       .IsGreaterThan("Es mayor que")
+                                                       .IsLessThan("Es menor que")
+                                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                       .IsNotEqualTo("No es igual que")
+                                                        )
+                                                     ))
+                                          .ToolBar(tools =>
+                                          {
+                                              // tools.Create();
+
+                                              if (permisos.HasClaim("Inventarios.Solicitud Certificado Deposito.Agregar Solicitud Certificado Deposito", "true"))
+                                              {
+                                                  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                               .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCertificadoDeposito();" });
+                                              }
+                                              if (permisos.HasClaim("Inventarios.Solicitud Certificado Deposito.Exportar Solicitud Certificado Deposito", "true"))
+                                              {
+                                                  tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                  tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                              }
+
+                                          })
+                                       .Editable(e => e.Mode(GridEditMode.PopUp))
+                                        .Sortable()
+                                        .AutoBind(true)
+                                        .Pageable()
+                                        .Filterable()
+                                        .Scrollable()
+                                        // .ClientDetailTemplateId("template")
+                                        .Pdf(pdf => pdf.FileName("CertificadoDepositoReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                          .Excel(excel => excel.FileName("CertificadoDepositoReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                        //.Events(e=>e.Save("onsave"))
+                                        .DataSource(dataSource =>
+
+                                       dataSource
+                                       //.Ajax()
+                                       .WebApi()
+                                        .ServerOperation(true)
+                                        .Model(model =>
+                                        {
+                                            model.Id(p => p.IdCD);
+                                            model.Field(p => p.IdCD).Editable(true);
+                                            model.Field(p => p.IdCD).Editable(true);
 
 
-                                  })
-                                   .Editable(e => e.Mode(GridEditMode.PopUp))
-                                    .Sortable()
-                                    .AutoBind(true)
-                                    .Pageable()
-                                    .Filterable()
-                                    .Scrollable()
-                                    // .ClientDetailTemplateId("template")
-                                    .Pdf(pdf => pdf.FileName("CertificadoDepositoReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                      .Excel(excel => excel.FileName("CertificadoDepositoReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                    //.Events(e=>e.Save("onsave"))
-                                    .DataSource(dataSource =>
+                                        })
+                                        .Events(events =>
+                                        {
+                                            events.Error("error_handler");
+                                            //events.upda("EditHandler");
 
-                                   dataSource
-                                   //.Ajax()
-                                   .WebApi()
-                                    .ServerOperation(true)
-                                    .Model(model =>
-                                    {
-                                        model.Id(p => p.IdCD);
-                                        model.Field(p => p.IdCD).Editable(true);
-                                        model.Field(p => p.IdCD).Editable(true);
-
-
-                                    })
-                                    .Events(events =>
-                                    {
-                                        events.Error("error_handler");
-                            //events.upda("EditHandler");
-
-                        })
-                                    .Read(read => read.Action("GetCertificadoDeposito", "CertificadoDeposito"))
-                                    .Create(create => create.Action("Insert", "CertificadoDeposito"))
-                                    .Update(update => update.Action("Update", "CertificadoDeposito", new { id = "{0}" }))
-                                    .Destroy(destroy => destroy.Action("Delete", "CertificadoDeposito", new { id = "{0}" }))
-                              )
+                                        })
+                                        .Read(read => read.Action("GetCertificadoDeposito", "CertificadoDeposito"))
+                                        .Create(create => create.Action("Insert", "CertificadoDeposito"))
+                                        .Update(update => update.Action("Update", "CertificadoDeposito", new { id = "{0}" }))
+                                        .Destroy(destroy => destroy.Action("Delete", "CertificadoDeposito", new { id = "{0}" }))
+                                  )
 )
 
 <div id="salesorder">

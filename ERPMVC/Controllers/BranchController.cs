@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -24,23 +25,26 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
+        private readonly ClaimsPrincipal _principal;
 
-
-        public BranchController(ILogger<HomeController> logger, IOptions<MyConfig> config)
+        public BranchController(ILogger<HomeController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
 
         // GET: Branch
         public async Task<ActionResult> Brach()
         {
+            ViewData["permisos"] = _principal;
             return await Task.Run(() => View());
         }
 
         public async Task<ActionResult> BranchCustomer()
         {
+            ViewData["permisos"] = _principal;
             return await Task.Run(()=> PartialView());
         }
 
@@ -287,6 +291,7 @@ namespace ERPMVC.Controllers
                 {
                     _Branch = new BranchDTO();
                 }
+                ViewData["permisos"] = _principal;
             }
             catch (Exception ex)
             {
@@ -319,6 +324,7 @@ namespace ERPMVC.Controllers
                 {
                     _Branch = new BranchDTO { CustomerId = _branchpara.CustomerId };
                 }
+                ViewData["permisos"] = _principal;
             }
             catch (Exception ex)
             {

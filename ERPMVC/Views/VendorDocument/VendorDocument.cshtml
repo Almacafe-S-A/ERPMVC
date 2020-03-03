@@ -1,4 +1,7 @@
-﻿
+﻿@using System.Security.Claims
+@{
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
 <h3 class="text-themecolor">Documentos del Proveedor</h3>
 <script>
 
@@ -85,14 +88,14 @@
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         debugger;
-        
+
         var ext = dataItem.DocumentName.substr(dataItem.DocumentName.lastIndexOf('.') + 1);
         console.log(ext);
         if (ext!='pdf') {
             alert("Solo se pueden imprimir documentos de tipo PDF");
             return;
         }
-           
+
         var url = '@Url.Action("SFVendorDocument", "VendorDocument")/' + dataItem.VendorDocumentId;
            var win = window.open(url, '_blank');
            win.focus();
@@ -101,7 +104,7 @@
 
     function Descargar(e) {
         e.preventDefault();
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));       
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
          var dataObject = {
              'tpath': dataItem.Path
         };
@@ -135,99 +138,116 @@
 </script>
 
 @(Html.Kendo().Grid<ERPMVC.Models.VendorDocument>()
-                              .Name("gridVendorDocument")
-                              .Columns(columns =>
-                              {
-                                  columns.Command(command =>
+                                  .Name("gridVendorDocument")
+                                  .Columns(columns =>
                                   {
-                                     // command.Custom("Eliminar").Text(" ").IconClass("fa fa-edit").Click("EditVendorDocument");
-                                   //   command.Custom("Descargar").Text(" ").IconClass("fa fa-download").Click("Descargar");
-                                      command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirVendorDocumento");
+                                      if (permisos.HasClaim("Proveedores.Proveedores.Imprimir Documentos del Proveedor", "true")
+                                      || permisos.HasClaim("Proveedores.Proveedores.Descargar Documentos del Proveedor", "true")
+                                      || permisos.HasClaim("Proveedores.Proveedores.Eliminar Documentos del Proveedor", "true"))
+                                      {
+                                          columns.Command(command =>
+                                          {
+                                              // command.Custom("Eliminar").Text(" ").IconClass("fa fa-edit").Click("EditVendorDocument");
+                                              //   command.Custom("Descargar").Text(" ").IconClass("fa fa-download").Click("Descargar");
+                                              if (permisos.HasClaim("Proveedores.Proveedores.Imprimir Documentos del Proveedor", "true"))
+                                              {
+                                                  command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirVendorDocumento");
+                                              }
+                                              if (permisos.HasClaim("Proveedores.Proveedores.Descargar Documentos del Proveedor", "true"))
+                                              {
+                                                  command.Custom(" ").Click("Descargar").IconClass("fa fa-download");
+                                              }
+                                              if (permisos.HasClaim("Proveedores.Proveedores.Eliminar Documentos del Proveedor", "true"))
+                                              {
+                                                  command.Destroy().Text(" ").IconClass("fa fa-trash");
+                                              }
+                                          }).Width(150);
+                                      }
+                                      columns.Bound(p => p.VendorId).Visible(false).Width(100);
+                                      columns.Bound(p => p.DocumentName).Width(150);
+                                      columns.Bound(p => p.VendorDocumentId).Width(100).Visible(true).Title("Id Documento");
+                                      columns.Bound(p => p.DocumentTypeId).Width(100).Visible(false);
+                                      columns.Bound(p => p.DocumentTypeName).Width(100).Title("Tipo de Documento");
+                                      columns.Bound(p => p.Path).Visible(false).Width(100);
+                                      columns.Bound(p => p.CreatedDate).Format("{0:dd/MM/yyyy}").Width(100);
 
-                                      command.Custom(" ").Click("Descargar").IconClass("fa fa-download");
-                                      command.Destroy().Text(" ").IconClass("fa fa-trash");
-                                  }).Width(150);
-                                  columns.Bound(p => p.VendorId).Visible(false).Width(100);
-                                  columns.Bound(p => p.DocumentName).Width(150);
-                                  columns.Bound(p => p.VendorDocumentId).Width(100).Visible(true).Title("Id Documento");
-                                  columns.Bound(p => p.DocumentTypeId).Width(100).Visible(false);
-                                  columns.Bound(p => p.DocumentTypeName).Width(100).Title("Tipo de Documento");
-                                  columns.Bound(p => p.Path).Visible(false).Width(100);
-                                  columns.Bound(p => p.CreatedDate).Format("{0:dd/MM/yyyy}").Width(100);
+                                  })
+                                      .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                           .Clear()
+                                                           .Contains("Contiene")
+                                                           .DoesNotContain("No contiene")
+                                                           .EndsWith("Termina con")
+                                                           .IsEqualTo("Es igual a")
+                                                           .IsNotEqualTo("No es igual a")
+                                                           .IsNull("Es nulo")
+                                                           .StartsWith("Inicia con")
 
-                              })
-                                  .Filterable(f => f.Operators(o => o.ForString(s => s
+
+                                                     )
+                                                     .ForNumber(n => n
                                                        .Clear()
-                                                       .Contains("Contiene")
-                                                       .DoesNotContain("No contiene")
-                                                       .EndsWith("Termina con")
                                                        .IsEqualTo("Es igual a")
-                                                       .IsNotEqualTo("No es igual a")
+                                                       .IsGreaterThan("Es mayor que")
+                                                       .IsLessThan("Es menor que")
                                                        .IsNull("Es nulo")
-                                                       .StartsWith("Inicia con")
+                                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                     )
+                                                     .ForDate(d => d
+                                                     .Clear()
+                                                     .IsEqualTo("Es igual que")
+                                                     .IsGreaterThan("Es mayor que")
+                                                     .IsLessThan("Es menor que")
+                                                     .IsLessThanOrEqualTo("Es menor o igual que")
+                                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                     .IsNotEqualTo("No es igual que")
+                                                      )
+                                                   ))
+                                  .ToolBar(tools =>
+                                  {
+                                      //tools.Create();
+                                      if (permisos.HasClaim("Proveedores.Proveedores.Agregar Documentos del Proveedor", "true"))
+                                      {
+                                          tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddVendorDocument();" });
+                                      }
+                                      if (permisos.HasClaim("Proveedores.Proveedores.Exportar Documentos del Proveedor", "true"))
+                                      {
+                                          tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                          tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                      }
 
-
-                                                 )
-                                                 .ForNumber(n => n
-                                                   .Clear()
-                                                   .IsEqualTo("Es igual a")
-                                                   .IsGreaterThan("Es mayor que")
-                                                   .IsLessThan("Es menor que")
-                                                   .IsNull("Es nulo")
-                                                   .IsLessThanOrEqualTo("Es menor o igual que")
-                                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                 )
-                                                 .ForDate(d => d
-                                                 .Clear()
-                                                 .IsEqualTo("Es igual que")
-                                                 .IsGreaterThan("Es mayor que")
-                                                 .IsLessThan("Es menor que")
-                                                 .IsLessThanOrEqualTo("Es menor o igual que")
-                                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                 .IsNotEqualTo("No es igual que")
-                                                  )
-                                               ))
-                              .ToolBar(tools =>
-                              {
-                                  //tools.Create();
-                                  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddVendorDocument();" });
-
-                                  tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                  tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-                              })
-                              .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
-                              .Sortable()
-                              .Pageable()
-                              .Filterable()
-                              .Scrollable()
-                              .Pdf(pdf => pdf.FileName("VendorDocumentReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                               + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                               .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                 .Excel(excel => excel.FileName("VendorDocumentReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                               + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                               .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                              .DataSource(dataSource =>
-                                  dataSource
-                                    .WebApi()
-                                    .ServerOperation(true)
-                                    .Model(model =>
+                                  })
+                                  .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                                  .Sortable()
+                                  .Pageable()
+                                  .Filterable()
+                                  .Scrollable()
+                                  .Pdf(pdf => pdf.FileName("VendorDocumentReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                   + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                   .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                     .Excel(excel => excel.FileName("VendorDocumentReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                   + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                   .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                  .DataSource(dataSource =>
+                                      dataSource
+                                        .WebApi()
+                                        .ServerOperation(true)
+                                        .Model(model =>
+                                        {
+                                            model.Id(p => p.VendorDocumentId);
+                                            model.Field(p => p.VendorId).Editable(false);
+                                        })
+                                        .Events(events => events.Error("error_handler"))
+                                        .Read(read => read.Action("GeDocumentByVendorId", "VendorDocument").Data("GetVendorId"))
+                                        .Create(create => create.Action("Insert", "VendorDocument"))
+                                        .Update(update => update.Action("Update", "VendorDocument", new { id = "{0}" }))
+                                        .Destroy(destroy => destroy.Action("Delete", "VendorDocument", new { id = "{0}" }))
+                                  )
+                                    .Events(e =>
                                     {
-                                        model.Id(p => p.VendorDocumentId);
-                                        model.Field(p => p.VendorId).Editable(false);
+                                        //e.Save("onsave");
                                     })
-                                    .Events(events => events.Error("error_handler"))
-                                    .Read(read => read.Action("GeDocumentByVendorId", "VendorDocument").Data("GetVendorId"))
-                                    .Create(create => create.Action("Insert", "VendorDocument"))
-                                    .Update(update => update.Action("Update", "VendorDocument", new { id = "{0}" }))
-                                    .Destroy(destroy => destroy.Action("Delete", "VendorDocument", new { id = "{0}" }))
-                              )
-                                .Events(e =>
-                                {
-                                    //e.Save("onsave");
-                                })
 )
 
 <div id="NumVendorDocument">

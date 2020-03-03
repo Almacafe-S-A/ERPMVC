@@ -1,6 +1,8 @@
 ﻿@model ERPMVC.DTO.ControlPalletsDTO
-
-
+@using System.Security.Claims
+@{    
+        ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisosControlPallets"];
+}
 
 <script>
 
@@ -50,9 +52,9 @@
 
         }
 
-      
 
-       
+
+
         }
 
     function RefreshControlPalletsDetail() {
@@ -282,83 +284,95 @@
     <div class="box-body">
 
         @(Html.Kendo().Grid<ERPMVC.Models.ControlPalletsLine>()
-                                                          .Name("gridControlPalletsDetail")
-                                                          .Columns(columns =>
-                                                          {
-                                                              if (Model.editar == 1)
-                                                              {
-                                                                  columns.Command(command =>
+                                                                  .Name("gridControlPalletsDetail")
+                                                                  .Columns(columns =>
                                                                   {
+                                                                      if (Model.editar == 1)
+                                                                      {
+                                                                          if (permisos.HasClaim("Inventarios.Control de Ingresos.Eliminar Control de Ingresos Detalle", "true")
+                                                                          || permisos.HasClaim("Inventarios.Control de Ingresos.Editar Control de Ingresos Detalle", "true"))
+                                                                          {
+                                                                              columns.Command(command =>
+                                                                              {
+                                                                                  if (permisos.HasClaim("Inventarios.Control de Ingresos.Eliminar Control de Ingresos Detalle", "true"))
+                                                                                  {
+                                                                                      command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+                                                                                  }
+                                                                                  if (permisos.HasClaim("Inventarios.Control de Ingresos.Eliminar Control de Ingresos Detalle", "true"))
+                                                                                  {
+                                                                                      command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditControlPalletDetalle");
+                                                                                  }
+                                                                                  // command.Custom("Imprimir").Click("ImprimirCotizacion");
+                                                                                  //  command.Edit(); command.Destroy();
+                                                                              }).Title("Acciones").Width(100);
+                                                                          }
+                                                                      }
+                                                                      columns.Bound(p => p.ControlPalletsLineId).Title("Id Linea").Width(120);
+                                                                      columns.Bound(p => p.ControlPalletsId).Title("Id Control").Width(150);
+                                                                      columns.Bound(p => p.Alto).Title("Alto").Width(150);
+                                                                      columns.Bound(p => p.Ancho).Title("Ancho").Width(150);
+                                                                      columns.Bound(p => p.Otros).Title("Otros").Width(150);
+                                                                      columns.Bound(p => p.Totallinea).Title("Total Linea").Width(150);
+                                                                      columns.Bound(p => p.cantidadPoliEtileno).Width(240);
+                                                                      columns.Bound(p => p.cantidadYute).Width(240);
+                                                                  })
+                                                                  .ToolBar(tools =>
+                                                                  {
+                                                                      if (Model.editar == 1)
+                                                                      {
+                                                                          if (permisos.HasClaim("Inventarios.Control de Ingresos.Agregar Control de Ingresos Detalle", "true"))
+                                                                          {
+                                                                              tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                          .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacionDetalle();" });
+                                                                          }
+                                                                      }
+                                                                      if (permisos.HasClaim("Inventarios.Control de Ingresos.Exportar Control de Ingresos Detalle", "true"))
+                                                                      {
+                                                                          tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                                          tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                                                      }
 
-                                                                      command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+                                                                  })
+                                                                   .Editable(e => e.Mode(GridEditMode.PopUp))
+                                                                    .Sortable()
+                                                                    .AutoBind(true)
+                                                                    //.Pageable()
 
-                                                                      command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditControlPalletDetalle");
-                                                                      // command.Custom("Imprimir").Click("ImprimirCotizacion");
-                                                                      //  command.Edit(); command.Destroy();
-                                                                  }).Title("Acciones").Width(100);
-                                                              }
-                                                              columns.Bound(p => p.ControlPalletsLineId).Title("Id Linea").Width(120);
-                                                              columns.Bound(p => p.ControlPalletsId).Title("Id Control").Width(150);
-                                                              columns.Bound(p => p.Alto).Title("Alto").Width(150);
-                                                              columns.Bound(p => p.Ancho).Title("Ancho").Width(150);
-                                                              columns.Bound(p => p.Otros).Title("Otros").Width(150);
-                                                              columns.Bound(p => p.Totallinea).Title("Total Linea").Width(150);
-                                                              columns.Bound(p => p.cantidadPoliEtileno).Width(240);
-                                                              columns.Bound(p => p.cantidadYute).Width(240);
-                                                          })
-                                                          .ToolBar(tools =>
-                                                          {
-                                                              if (Model.editar == 1)
-                                                              {
-                                                                  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                                  .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacionDetalle();" });
-                                                              }
+                                                                    .Filterable()
+                                                                    .Scrollable()
+                                                                    // .ClientDetailTemplateId("template")
+                                                                    .Pdf(pdf => pdf.FileName("Control de ingreso detalle Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                                                      .Excel(excel => excel.FileName("Control de ingreso detalle Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                                                    //.Events(e=>e.Save("onsave"))
+                                                                    .DataSource(dataSource =>
 
-                                                              tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                                              tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                                                   dataSource
+                                                                   //.Ajax()
+                                                                   .WebApi()
+                                                                   .PageSize(100)
+                                                                    .ServerOperation(true)
+                                                                    .Model(model =>
+                                                                    {
+                                                                        model.Id(p => p.ControlPalletsLineId);
+                                                                        model.Field(p => p.ControlPalletsLineId).Editable(false);
+                                                                        model.Field(p => p.ControlPalletsId).Editable(false);
 
+                                                                    })
+                                                                    .Events(events =>
+                                                                    {
+                                                                        events.Error("error_handler");
+                                                                        //events.upda("EditHandler");
 
-                                                          })
-                                                           .Editable(e => e.Mode(GridEditMode.PopUp))
-                                                            .Sortable()
-                                                            .AutoBind(true)
-                                                            //.Pageable()
-
-                                                            .Filterable()
-                                                            .Scrollable()
-                                                            // .ClientDetailTemplateId("template")
-                                                            .Pdf(pdf => pdf.FileName("Control de ingreso detalle Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                                              .Excel(excel => excel.FileName("Control de ingreso detalle Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                                            //.Events(e=>e.Save("onsave"))
-                                                            .DataSource(dataSource =>
-
-                                                           dataSource
-                                                           //.Ajax()
-                                                           .WebApi()
-                                                           .PageSize(100)
-                                                            .ServerOperation(true)
-                                                            .Model(model =>
-                                                            {
-                                                                model.Id(p => p.ControlPalletsLineId);
-                                                                model.Field(p => p.ControlPalletsLineId).Editable(false);
-                                                                model.Field(p => p.ControlPalletsId).Editable(false);
-
-                                                            })
-                                                            .Events(events =>
-                                                            {
-                                                                events.Error("error_handler");
-                                                                //events.upda("EditHandler");
-
-                                                            })
-                                                            .Read(read => read.Action("GetControlPalletsLineByControlPalletId", "ControlPalletsLine").Data("GetControlPalletsId"))
-                                                      //.Create(create => create.Action("Insert", "SalesOrderLine"))
-                                                      //.Update(update => update.Action("Update", "SalesOrderLine", new { ControlPalletsLineId = "{0}" }))
-                                                      //.Destroy(destroy => destroy.Action("Delete", "SalesOrderLine", new { ControlPalletsLineId = "{0}" }))
-                                                      )
+                                                                    })
+                                                                    .Read(read => read.Action("GetControlPalletsLineByControlPalletId", "ControlPalletsLine").Data("GetControlPalletsId"))
+                                                              //.Create(create => create.Action("Insert", "SalesOrderLine"))
+                                                              //.Update(update => update.Action("Update", "SalesOrderLine", new { ControlPalletsLineId = "{0}" }))
+                                                              //.Destroy(destroy => destroy.Action("Delete", "SalesOrderLine", new { ControlPalletsLineId = "{0}" }))
+                                                              )
         )
 
     </div>

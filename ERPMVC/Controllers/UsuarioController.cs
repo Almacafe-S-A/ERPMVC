@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -27,12 +28,14 @@ namespace ERPMVC.Controllers
 
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
+        private readonly ClaimsPrincipal _principal;
 
         public UsuarioController(ILogger<UserRolController> logger,
-            IOptions<MyConfig> config)
+            IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
 
@@ -40,6 +43,10 @@ namespace ERPMVC.Controllers
         public async Task<IActionResult> Usuarios()
         {
             //ViewData["Branches"] = await ObtenerBranches();
+            ViewData["permisoAgregar"] = _principal.HasClaim("Seguridad.Usuarios.Agregar Usuario", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Seguridad.Usuarios.Editar Usuario", "true");
+            ViewData["permisoDesbloquear"] = _principal.HasClaim("Seguridad.Usuarios.Desbloquear Usuario", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Seguridad.Usuarios.Exportar Usuario", "true");
             return View();
         }
 
@@ -391,34 +398,26 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpPost("PostUsuario")]
-        public async Task<ActionResult<ApplicationUser>> Desbloquear(ApplicationUserDTO _usuario)
+        [HttpPost("Desbloquear")]
+        public async Task<ActionResult<ApplicationUser>> Desbloquear([FromBody]string Id)
         {
+            ApplicationUser _usuario = new ApplicationUser();
+            _usuario.Id = Guid.Parse(Id);
             try
             {
                 // TODO: Add insert logic here
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _usuario.UsuarioCreacion = HttpContext.Session.GetString("token");
-                _usuario.FechaCreacion = DateTime.Now;
-                _usuario.UsuarioModificacion = HttpContext.Session.GetString("user");
-                _usuario.UserName = _usuario.Email;
-                //_usuario.BranchId = _usuario.Branch.BranchId;
-                _usuario.IsEnabled = true;
-                var result = await _client.PostAsJsonAsync(baseadress + "api/Usuario/PostUsuario", _usuario);
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));               
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Usuario/DesbloqueoUsuario", _usuario);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _usuario = JsonConvert.DeserializeObject<ApplicationUserDTO>(valorrespuesta);
-
-                    _usuario.PasswordHash = "**********************";
+                    _usuario = JsonConvert.DeserializeObject<ApplicationUser>(valorrespuesta);                    
                 }
                 else
-                {
-
-                    _usuario.PasswordHash = await result.Content.ReadAsStringAsync() + " El password debe tener mayusculas y minusculas!";
+                {                    
                     string error = await result.Content.ReadAsStringAsync();
                     return this.Json(new DataSourceResult
                     {
@@ -427,9 +426,6 @@ namespace ERPMVC.Controllers
 
                     });
 
-                    // return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
-                    //return await Task.Run(() => BadRequest($"Ocurrio un error:{result.Content.ReadAsStringAsync()} El password debe tener mayusculas y minusculas!"));
-                    //  throw new Exception($"Ocurrio un error:{result.Content.ReadAsStringAsync()} El password debe tener mayusculas y minusculas!");
                 }
 
             }
@@ -440,9 +436,7 @@ namespace ERPMVC.Controllers
                 throw ex;
 
             }
-
-            _usuario.PasswordHash = "**********************";
-            return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
+            return _usuario;
         }
 
     }

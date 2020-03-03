@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -23,16 +24,19 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> _config;
         private readonly ILogger _logger;
-        public CustomerAreaController(ILogger<CustomerAreaController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public CustomerAreaController(ILogger<CustomerAreaController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this._config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
 
         [HttpGet("[controller]/[action]")]
         public IActionResult Index()
         {
+            ViewData["permisos"] = _principal;
             return View();
         }
 

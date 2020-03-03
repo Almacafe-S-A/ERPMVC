@@ -2,7 +2,11 @@
 
 @{
     ViewData["Title"] = " Productos de clientes";
-
+    bool permisoAgregar, permisoEditar, permisoEliminar, permisoExportar;
+    permisoAgregar = (bool)ViewData["permisoAgregar"];
+    permisoEditar = (bool)ViewData["permisoEditar"];
+    permisoEliminar = (bool)ViewData["permisoEliminar"];
+    permisoExportar = (bool)ViewData["permisoExportar"];
 }
 
 <script>
@@ -56,7 +60,8 @@
                  SubproductId: dataItem.SubproductId,
                  ProductTypeId: 2,
                  IsEnable: false,
-                TituloVentana: 'Productos Clientes',
+                 TituloVentana: 'Productos de clientes',
+                 TipoProducto: 'Clientes',
                 editar : 0
             };
 
@@ -91,24 +96,32 @@
 
                     .Columns(columns =>
                     {
-                        columns.Command(command =>
+                        if (permisoEditar == true || permisoEliminar == true)
                         {
-                            //command.Custom("Ver detalles").Click("Detalles");
-                            //command.Custom("Editar").Click("EditSubProduct");
-                            //command.Destroy().Text("Eliminar");
-                            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditSubProduct");
-                            command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
-
-                        }).Width(250).Title("Acciones").Width(150); ;
+                            columns.Command(command =>
+                            {
+                                //command.Custom("Ver detalles").Click("Detalles");
+                                //command.Custom("Editar").Click("EditSubProduct");
+                                //command.Destroy().Text("Eliminar");
+                                if (permisoEditar)
+                                {
+                                    command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditSubProduct");
+                                }
+                                if (permisoEliminar)
+                                {
+                                    command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                                }
+                            }).Width(250).Title("Acciones").Width(150);
+                        }
                         columns.Bound(p => p.SubproductId).Title("Id").Width(100);
                         columns.Bound(p => p.ProductName).Title("Producto").Width(200);
-                        columns.Bound(p => p.ProductCode).Title("Codigo producto").Width(170);
+                        columns.Bound(p => p.ProductCode).Title("Codigo Bascula").Width(170);
                         //columns.Bound(p => p.Description).Title("Observación").Width(200);
                         //columns.Bound(p => p.Balance).Width(200);
                         //columns.Bound(p => p.BagBalance).Width(200);
                         columns.Bound(p => p.UnitOfMeasureName).Width(200);
-                       // columns.Bound(p => p.ProductTypeName).Width(250);
-                        columns.Bound(p => p.Merma).Width(150);
+                        // columns.Bound(p => p.ProductTypeName).Width(250);
+                        columns.Bound(p => p.Merma).Format("{0:n2}%").Width(150); //format = "#.## '%'"
                         columns.Bound(p => p.Estado).Width(150);
                     })
 
@@ -117,13 +130,16 @@
                     {
 
                         //tools.Create();
-                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                              .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddSubProduct()" });
-                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-
+                        if (permisoAgregar)
+                        {
+                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                          .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddSubProduct()" });
+                        }
+                        if (permisoExportar)
+                        {
+                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                        }
                     })
                     .Editable(e => e.Mode(GridEditMode.PopUp))
                     .Sortable()
