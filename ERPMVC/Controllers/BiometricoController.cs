@@ -15,7 +15,6 @@ using Microsoft.Net.Http.Headers;
 using Newtonsoft.Json;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
-using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -25,17 +24,15 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger logger;
-        private readonly ClaimsPrincipal _principal;
-        public BiometricoController(IOptions<MyConfig> config, ILogger<BiometricoController> logger, IHttpContextAccessor httpContextAccessor)
+
+        public BiometricoController(IOptions<MyConfig> config, ILogger<BiometricoController> logger)
         {
             this.config = config;
             this.logger = logger;
-            _principal = httpContextAccessor.HttpContext.User;
         }
 
         public IActionResult Index()
         {
-            ViewData["permisos"] = _principal;
             return View();
         }
 
