@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -27,18 +26,16 @@ namespace ERPMVC.Controllers
     {
        private readonly IOptions<MyConfig> _config;
        private readonly ILogger _logger;
-        private readonly ClaimsPrincipal _principal;
 
-        public PeriodoController(ILogger<PeriodoController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
+        public PeriodoController(ILogger<PeriodoController> logger, IOptions<MyConfig> config)
         {
             this._config = config;
             this._logger = logger;
-            _principal = httpContextAccessor.HttpContext.User;
+
         }
 
         public IActionResult Periodo()
         {
-            ViewData["permisos"] = _principal;
             return View();
         }
 

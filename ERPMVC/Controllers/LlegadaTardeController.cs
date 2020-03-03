@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
@@ -21,18 +20,15 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger logger;
-        private readonly ClaimsPrincipal _principal;
 
-        public LlegadaTardeController(IOptions<MyConfig> config, ILogger<LlegadaTardeController> logger, IHttpContextAccessor httpContextAccessor)
+        public LlegadaTardeController(IOptions<MyConfig> config, ILogger<LlegadaTardeController> logger)
         {
             this.config = config;
             this.logger = logger;
-            _principal = httpContextAccessor.HttpContext.User;
         }
 
         public IActionResult Index()
         {
-            ViewData["permisos"] = _principal;
             return View();
         }
 

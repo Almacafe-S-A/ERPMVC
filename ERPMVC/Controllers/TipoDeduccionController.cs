@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -21,17 +20,15 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger logger;
-        private readonly ClaimsPrincipal _principal;
-        public TipoDeduccionController(IOptions<MyConfig> config, ILogger<TipoDeduccionController> logger, IHttpContextAccessor httpContextAccessor)
+
+        public TipoDeduccionController(IOptions<MyConfig> config, ILogger<TipoDeduccionController> logger)
         {
             this.config = config;
             this.logger = logger;
-            _principal = httpContextAccessor.HttpContext.User;
         }
 
         public ActionResult Index()
         {
-            ViewData["permisos"] = _principal;
             return View();
         }
 

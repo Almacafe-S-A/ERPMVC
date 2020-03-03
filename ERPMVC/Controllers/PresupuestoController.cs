@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -25,19 +24,16 @@ namespace ERPMVC.Controllers
 
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        private readonly ClaimsPrincipal _principal;
-        public PresupuestoController(ILogger<PresupuestoController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
+        public PresupuestoController(ILogger<PresupuestoController> logger, IOptions<MyConfig> config)
         {
             this.config = config;
             this._logger = logger;
-            _principal = httpContextAccessor.HttpContext.User;
         }
 
         
      public async Task<IActionResult> Presupuesto()
       
         {
-            ViewData["permisos"] = _principal;
             ViewData["Cuentas"] = await ObtenerCuentas();
             Presupuesto presupuesto = new Presupuesto();
             
