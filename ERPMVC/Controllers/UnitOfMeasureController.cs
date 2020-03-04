@@ -49,6 +49,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Administracion.Unidades de Medida")]
         public IActionResult UnitOfMeasure()
         {
             ViewData["permisoAgregar"] = _principal.HasClaim("Administracion.Unidades de Medida.Agregar Unidad de Medida", "true");

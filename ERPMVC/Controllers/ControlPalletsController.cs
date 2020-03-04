@@ -33,12 +33,14 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Inventarios.Control de Ingresos")]
         public IActionResult Index()
         {
             ViewData["permisos"] = _principal;
             return View();
         }
 
+        [Authorize(Policy = "Inventarios.Control de Salida")]
         public IActionResult IndexSalida()
         {
             ViewData["permisos"] = _principal;

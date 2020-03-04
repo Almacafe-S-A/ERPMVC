@@ -36,6 +36,7 @@ namespace ERPMVC.Controllers
 
 
         // GET: Branch
+        [Authorize(Policy = "Administracion.Sucursales")]
         public async Task<ActionResult> Brach()
         {
             ViewData["permisos"] = _principal;

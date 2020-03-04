@@ -33,6 +33,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
         // GET: ExchangeRate
+        [Authorize(Policy = "Configuracion.Tasa de Cambio")]
         public ActionResult ExchangeRate()
         {
             ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Tasa de Cambio.Agregar Tasa de Cambio", "true");

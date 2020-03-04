@@ -27,6 +27,7 @@ namespace ERPMVC.Controllers
             this.logger = logger;
         }
 
+        [Authorize(Policy = "RRHH.Tipo Deduccion")]
         public ActionResult Index()
         {
             return View();

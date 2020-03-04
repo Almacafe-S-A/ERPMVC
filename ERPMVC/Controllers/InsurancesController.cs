@@ -37,12 +37,14 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
 
         }
+
+
         public IActionResult Index()
         {
             return View();
         }
 
-
+        [Authorize(Policy = "Contabilidad.Seguros.Aseguradoras")]
         public IActionResult Insurances()
         {
             ViewData["permisos"] = _principal;

@@ -34,6 +34,7 @@ namespace ERPMVC.Controllers
         }
 
         // GET: Customer
+        [Authorize(Policy = "RRHH.Tipo Contrato")]
         public ActionResult TipoContrato()
         {
             ViewData["permisos"] = _principal;

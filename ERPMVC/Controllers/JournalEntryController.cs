@@ -33,14 +33,16 @@ namespace ERPMVC.Controllers
             this._logger = logger;
             _principal = httpContextAccessor.HttpContext.User;
         }
-      
+
         // GET: Purch
+        [Authorize(Policy = "Contabilidad.Movimientos.Asiento Contable")]
         public ActionResult Index()
         {
             ViewData["permisos"] = _principal;
             return View();
         }
 
+        [Authorize(Policy = "Contabilidad.Movimientos.Asiento Contable.Aprobar")]
         public ActionResult IndexAjustes()
         {
             ViewData["permisos"] = _principal;

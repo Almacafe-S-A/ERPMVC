@@ -33,6 +33,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Bancos.Bancos")]
         public IActionResult Bank()
         {
             ViewData["permisoAgregar"] = _principal.HasClaim("Bancos.Bancos.Agregar Bancos", "true");

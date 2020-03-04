@@ -35,6 +35,7 @@ namespace ERPMVC.Controllers
         }
 
         // GET: Customer
+        [Authorize(Policy = "Administracion.CAI")]
         public ActionResult Index()
         {
             ViewData["permisoAgregar"] = _principal.HasClaim("Administracion.CAI.Agregar CAI", "true");

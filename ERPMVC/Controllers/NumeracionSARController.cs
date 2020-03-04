@@ -33,6 +33,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Administracion.Numeracion SAR")]
         public IActionResult NumeracionSAR()
         {
             ViewData["permisoAgregar"] = _principal.HasClaim("Administracion.Numeracion SAR.Agregar Numeracion SAR", "true");

@@ -32,6 +32,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Contabilidad.Activos.Activos Fijos")]
         public ActionResult FixedAsset()
         {
             ViewData["permisos"] = _principal;

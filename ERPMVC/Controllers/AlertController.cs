@@ -38,6 +38,7 @@ namespace ERPMVC.Controllers
         //}
 
         //[HttpGet("[controller]/[action]")]
+        [Authorize(Policy = "Monitoreo.Alertas")]
         public IActionResult Alerts()
         {
             ViewData["permisos"] = _principal;
@@ -80,6 +81,7 @@ namespace ERPMVC.Controllers
 
         }
 
+        [Authorize(Policy = "Monitoreo.Paises GAFI")]
         public ActionResult Country()
         {
             ViewData["permisos"] = _principal;

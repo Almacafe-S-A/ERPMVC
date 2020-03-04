@@ -35,6 +35,7 @@ namespace ERPMVC.Controllers
         }
 
         // GET: Customer
+        [Authorize(Policy = "Configuracion.Pais")]
         public ActionResult Country()
         {
             ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Pais.Agregar Pais", "true");

@@ -39,6 +39,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "RRHH.Empleados")]
         public IActionResult Index()
         {
             ViewData["permisos"] = _principal;
