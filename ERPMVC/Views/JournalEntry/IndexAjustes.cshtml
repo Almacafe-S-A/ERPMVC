@@ -41,12 +41,13 @@
 
         $('#ModalJournalEntry').find(':input').not(':submit').val('');
         $("#JournalEntryId").val('0');
+        var CierreContableDiaAnterior = EjecucionCierreContableDiaAnterior();
 
-
-        var dataObject = {
-            JournalEntryId: 0,
-            editar: 1,
-        };
+        if (CierreContableDiaAnterior == true) {
+            var dataObject = {
+                JournalEntryId: 0,
+                editar: 1,
+            };
             $.ajax({
                 url: '@Url.Action("pvwAddJournalEntryAjuste", "JournalEntry")',
                 method: 'POST',
@@ -68,17 +69,30 @@
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     alert(textStatus + ": " + XMLHttpRequest.responseText);
                 }
-        });
-        var dataSource = $("#gridNumeracionJournalEntryLine").data("kendoGrid").dataSource;
-        var raw = dataSource._data;
-        console.log(raw);
-        debugger;
-        for (var i = dataSource._data.length - 1; i >= 0; i--) {
-            item = raw[i];
-            dataSource.remove(item);
-        }
+            });
 
-      }
+            var dataSource = $("#gridNumeracionJournalEntryLine").data("kendoGrid").dataSource;
+            var raw = dataSource._data;
+            console.log(raw);
+            debugger;
+            for (var i = dataSource._data.length - 1; i >= 0; i--) {
+                item = raw[i];
+                dataSource.remove(item);
+            }
+
+        }
+        else {
+            $.toast({
+                heading: 'Validación',
+                text: "Ejecute cierre de los días pendientes!",
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+        }
+    }
 
 
     function EditJournalEntry(e) {
@@ -237,6 +251,29 @@
     function RefrescarGrid() {
         var grid = $("#gridNumeracionJournalEntry").getKendoGrid();
         grid.dataSource.read();
+    }
+
+    function EjecucionCierreContableDiaAnterior() {
+        var CierreContableDiaAnterior
+        $.ajax({
+            url: '@Url.Action("CierreContableDiaAnterior", "JournalEntry")',
+            method: 'GET',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            success: function (result) {
+                if (result != null) {
+                    CierreContableDiaAnterior = true;
+                }
+                else {
+                    CierreContableDiaAnterior = false;
+                }
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+        return CierreContableDiaAnterior
     }
 
      function Imprimir(e, id) {
