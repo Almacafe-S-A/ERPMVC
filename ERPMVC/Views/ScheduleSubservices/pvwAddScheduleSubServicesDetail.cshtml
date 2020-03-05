@@ -1,5 +1,9 @@
 ﻿@model ERPMVC.DTO.PaymentScheduleRulesByCustomerDTO
+@using System.Security.Claims
 
+@{
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisosScheduleSubServices"];
+}
 <script>
 
     function onsaveEmployeesHoursDetail(e) {
@@ -82,7 +86,7 @@
                 async: false,
                 data: JSON.stringify(dataItem),
                 success: function (data) {
-                    
+
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     notification.show({
@@ -93,7 +97,7 @@
             });
              grid.dataSource.remove(dataItem);
              RefrescarGridDetalle();
-             
+
         }
     }
 
@@ -122,7 +126,7 @@
                 data: JSON.stringify(dataObject),
                 success: function (data) {
 
-                   
+
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
 
@@ -130,23 +134,23 @@
                         title: "Validacion",
                         message: textStatus + ": " + XMLHttpRequest.responseText
                     }, "error");
-                    
+
                 }
-               
+
         });
         CustomerName: $("#CustomerId").data("kendoDropDownList").value(0),
         $("#btnGuardarDetalle").show();
         $("#btnGuardarDetalle").prop("disabled", true);
-        
-        
+
+
     }
-    
+
     function RefrescarGridDetalle() {
         var grid = $("#gridPaymentScheduleRulesByCustomer").getKendoGrid();
         grid.dataSource.read();
     };
 
-   
+
 </script>
 
 <h3 class="text-themecolor">Detalle de clientes a los que se aplica la regla </h3>
@@ -171,103 +175,111 @@
     </div>
     <div class="col-md-2">
         <div class="form-group">
-            <label class=" control-label" style="width:100%" hidden ="hidden"></label>
-            <br/>
+            <label class=" control-label" style="width:100%" hidden="hidden"></label>
+            <br />
             <button id="btnGuardarDetalle" class="form-control btn-miboton" onclick="SaveDetails(this);" style="width: 100%;" hidden="hidden"> Guardar Detalle </button>
         </div>
     </div>
 </div>
-    <br />
-    @(Html.Kendo().Grid<ERPMVC.Models.PaymentScheduleRulesByCustomer>()
-                   .Name("gridPaymentScheduleRulesByCustomer")
-                   .Columns(columns =>
-                   {
-                       columns.Command(command =>
-                       {
+<br />
+@(Html.Kendo().Grid<ERPMVC.Models.PaymentScheduleRulesByCustomer>()
+                                   .Name("gridPaymentScheduleRulesByCustomer")
+                                   .Columns(columns =>
+                                   {
+                                       if (permisos.HasClaim("Clientes.Reglas de Cobro.Eliminar Reglas de Cobro Detalle", "true"))
+                                       {
+                                           columns.Command(command =>
+                                           {
 
-               //command.Custom("Editar").Click("Editar");
-               //command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText("Actualizar").CancelText("Cancelar");
-                           command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+                                               //command.Custom("Editar").Click("Editar");
+                                               //command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText("Actualizar").CancelText("Cancelar");
+                                               command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
 
-               //command.Destroy().Text("Eliminar");
+                                               //command.Destroy().Text("Eliminar");
 
-           }).Title("Acciones").Width(100);
-                       columns.Bound(p => p.PaymentScheduleRulesByCustomerId).Hidden(true).Width(100);
-                       columns.Bound(p => p.ScheduleSubservicesId).Width(125);
-                       columns.Bound(p => p.CustomerId).EditorTemplateName("Customer").Title("Código Cliente").Width(135);
-                       columns.Bound(p => p.CustomerName).Title("Nombre Cliente").Width(120);
-           //columns.Bound(p => p.).Width(150);
+                                           }).Title("Acciones").Width(100);
+                                       }
+                                       columns.Bound(p => p.PaymentScheduleRulesByCustomerId).Hidden(true).Width(100);
+                                       columns.Bound(p => p.ScheduleSubservicesId).Width(125);
+                                       columns.Bound(p => p.CustomerId).EditorTemplateName("Customer").Title("Código Cliente").Width(135);
+                                       columns.Bound(p => p.CustomerName).Title("Nombre Cliente").Width(120);
+                                       //columns.Bound(p => p.).Width(150);
 
-       })
-                   .ToolBar(tools =>
-                   {
-           //tools.Create().Text("Agregar");
-           tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                           .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "addRowD()" });
-                       tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                       tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                   })
+                                   .ToolBar(tools =>
+                                   {
+                                       //tools.Create().Text("Agregar");
+                                       if (permisos.HasClaim("Clientes.Reglas de Cobro.Agregar Reglas de Cobro Detalle", "true"))
+                                       {
+                                           tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                           .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "addRowD()" });
+                                       }
+                                       if (permisos.HasClaim("Clientes.Reglas de Cobro.Exportar Reglas de Cobro Detalle", "true"))
+                                       {
+                                           tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                           tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                       }
+                                   })
+                                   .Editable(e => e.Mode(GridEditMode.InLine).DisplayDeleteConfirmation("¿Esta seguro que desea eliminar este registro?"))
+                                   .Sortable()
+                                   .Pageable()
+                                   .Filterable()
+                                   .Scrollable()
+                                   .Pdf(pdf => pdf.FileName("CobrosdeSubserviciosReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                   + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                   .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                   .Excel(excel => excel.FileName("CobrosdeSubserviciosReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                   + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                   .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                   .DataSource(dataSource =>
+                                   dataSource
+                                   .WebApi()
 
-                   })
-                   .Editable(e => e.Mode(GridEditMode.InLine).DisplayDeleteConfirmation("¿Esta seguro que desea eliminar este registro?"))
-                   .Sortable()
-                   .Pageable()
-                   .Filterable()
-                   .Scrollable()
-                   .Pdf(pdf => pdf.FileName("CobrosdeSubserviciosReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                   + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                   .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                   .Excel(excel => excel.FileName("CobrosdeSubserviciosReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                   + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                   .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                   .DataSource(dataSource =>
-                   dataSource
-                   .WebApi()
+                                   .ServerOperation(true)
+                                   .Model(model =>
+                                   {
+                                       model.Id(p => p.PaymentScheduleRulesByCustomerId);
+                                       model.Field(p => p.PaymentScheduleRulesByCustomerId).Editable(false);
+                                       model.Field(p => p.ScheduleSubservicesId).Editable(false);
+                                       model.Field(p => p.CustomerName).Editable(false);
+                                       model.Field(p => p.FechaCreacion).Editable(false);
 
-                   .ServerOperation(true)
-                   .Model(model =>
-                   {
-                       model.Id(p => p.PaymentScheduleRulesByCustomerId);
-                       model.Field(p => p.PaymentScheduleRulesByCustomerId).Editable(false);
-                       model.Field(p => p.ScheduleSubservicesId).Editable(false);
-                       model.Field(p => p.CustomerName).Editable(false);
-                       model.Field(p => p.FechaCreacion).Editable(false);
+                                   })
+                                   .Events(events => events.Error("error_handler"))
+                                   .Read(read => read.Action("GetByScheduleId", "PaymentScheduleRulesByCustomer").Data("dataScheduleSubservicesId"))
+                                   .Create(create => create.Action("Insert", "PaymentScheduleRulesByCustomer").Type(HttpVerbs.Post))
+                                   .Update(update => update.Action("Update", "PaymentScheduleRulesByCustomer").Type(HttpVerbs.Post))
+                                   //.Destroy(destroy => destroy.Action("Delete", "PaymentScheduleRulesByCustomer").Type(HttpVerbs.Post))
+                                   )
+                                   .Events(e =>
+                                   {
+                                       e.Save("onsaveEmployeesHoursDetail");
 
-                   })
-                   .Events(events => events.Error("error_handler"))
-                   .Read(read => read.Action("GetByScheduleId", "PaymentScheduleRulesByCustomer").Data("dataScheduleSubservicesId"))
-                   .Create(create => create.Action("Insert", "PaymentScheduleRulesByCustomer").Type(HttpVerbs.Post))
-                   .Update(update => update.Action("Update", "PaymentScheduleRulesByCustomer").Type(HttpVerbs.Post))
-                   //.Destroy(destroy => destroy.Action("Delete", "PaymentScheduleRulesByCustomer").Type(HttpVerbs.Post))
-                   )
-                   .Events(e =>
-                   {
-                       e.Save("onsaveEmployeesHoursDetail");
-
-                   })
-    )
+                                   })
+)
 
 
-    @*<div id="numEmployeesDetail">
-            @await Html.PartialAsync("pvwAddEmployeeExtraHours", new ERPMVC.DTO.EmployeeExtraHoursDTO { EmployeeExtraHoursId = 0, WorkDate = DateTime.Now })
-        </div>*@
+@*<div id="numEmployeesDetail">
+        @await Html.PartialAsync("pvwAddEmployeeExtraHours", new ERPMVC.DTO.EmployeeExtraHoursDTO { EmployeeExtraHoursId = 0, WorkDate = DateTime.Now })
+    </div>*@
 
 
-    <script>
-        function setToolbarTooltip(btn_cl, btn_tooltip) {
-            $("#gridPaymentScheduleRulesByCustomer").kendoTooltip({
-                filter: btn_cl,
-                content: btn_tooltip
-            });
-        }
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridPaymentScheduleRulesByCustomer").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
 
-        function setRowButtonTooltip(btn_cl, btn_tooltip) {
-            $("#gridPaymentScheduleRulesByCustomer").kendoTooltip({
-                filter: btn_cl,
-                content: btn_tooltip
-            });
-        }
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridPaymentScheduleRulesByCustomer").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
 
-        setRowButtonTooltip(".k-grid-edit", "Editar registro");
-        setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
-        setRowButtonTooltip(".k-grid-Agregar", "Agregar nuevo registro");
-    </script>
+    setRowButtonTooltip(".k-grid-edit", "Editar registro");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+</script>

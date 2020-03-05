@@ -33,19 +33,19 @@ namespace ERPMVC.Controllers
             this._logger = logger;
             _principal = httpContextAccessor.HttpContext.User;
         }
-      
+
         // GET: Purch
+        [Authorize(Policy = "Contabilidad.Movimientos.Asiento Contable")]
         public ActionResult Index()
         {
-            ViewData["permisoAprobar"] =_principal.HasClaim("Contabilidad.Movimientos.Asiento Contable.Aprobar", "true");
-
-
+            ViewData["permisos"] = _principal;
             return View();
         }
 
+        [Authorize(Policy = "Contabilidad.Movimientos.Asiento Contable.Aprobar")]
         public ActionResult IndexAjustes()
         {
-            ViewData["permisoAprobarAjuste"] = _principal.HasClaim("Contabilidad.Movimientos.Ajustes Contables.Aprobar", "true");
+            ViewData["permisos"] = _principal;
             return View();
         }
         public ActionResult JournalEntryLine()

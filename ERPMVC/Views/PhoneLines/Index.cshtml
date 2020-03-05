@@ -1,91 +1,112 @@
 ﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
 @{
     ViewData["Title"] = "Líneas de Teléfono";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 
 <h3 class="text-themecolor">Líneas de Teléfono</h3>
 
 @(Html.Kendo().Grid<ERPMVC.Models.PhoneLines>()
-                            .Name("gridPhoneLines")
-                            .Columns(columns =>
-                            {
-                                columns.Command(command =>
+                                .Name("gridPhoneLines")
+                                .Columns(columns =>
                                 {
-                                    command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditPhoneLines");
-                                    command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("DeletePhoneLines");
-                                }).Width(175).Title("Acciones");
-                                columns.Bound(p => p.PhoneLineId).Title("Id").Width(100);
-                                columns.Bound(p => p.NombreEmpleado).Title("Nombre del Empleado").Width(300);
-                                columns.Bound(p => p.CompanyPhone).Title("Teléfono de la Empresa").Width(250);
-                                columns.Bound(p => p.TotalUS).Title("Total Factura US").Format("{0:n2}").Width(250);
-                                columns.Bound(p => p.TotalLps).Title("Total Factura Lps").Format("{0:n2}").Width(250);
-                                columns.Bound(p => p.Branch.BranchName).Title("Sucursal").Width(250);
-                                columns.Bound(p => p.Estado).Title("Estado").Width(125);
-                            })
-                            .Filterable(f => f.Operators(o => o.ForString(s => s
-                                .Clear()
-                                .Contains("Contiene")
-                                .DoesNotContain("No contiene")
-                                .EndsWith("Termina con")
-                                .IsEqualTo("Es igual a")
-                                .IsNotEqualTo("No es igual a")
-                                .IsNull("Es nulo")
-                                .StartsWith("Inicia con"))
-                            .ForNumber(n => n
-                                .Clear()
-                                .IsEqualTo("Es igual a")
-                                .IsGreaterThan("Es mayor que")
-                                .IsLessThan("Es menor que")
-                                .IsNull("Es nulo")
-                                .IsLessThanOrEqualTo("Es menor o igual que")
-                                .IsGreaterThanOrEqualTo("Es mayor o igual que"))
-                            .ForDate(d => d
-                                .Clear()
-                                .IsEqualTo("Es igual que")
-                                .IsGreaterThan("Es mayor que")
-                                .IsLessThan("Es menor que")
-                                .IsLessThanOrEqualTo("Es menor o igual que")
-                                .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                .IsNotEqualTo("No es igual que"))
-                            ))
-                            .ToolBar(tools =>
-                            {
-                                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddPhoneLines()" });
-                                tools.Custom().Text("Reporte").IconClass("").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ImprimirPhoneLines()" });
-                                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-                            })
-                            .Editable(e => e.Mode(GridEditMode.PopUp))
-                            .Sortable()
-                            .Pageable(s => s
-                                .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
-                                .Empty("No hay datos."))
-                            )
-                            .Filterable()
-                            .Scrollable()
-                            .Pdf(pdf => pdf.FileName("Líneas_Telefónicas_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                            .Excel(excel => excel.FileName("Líneas_Telefónicas_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                            .DataSource(dataSource =>
-                            dataSource
-                            .WebApi()
-                            .ServerOperation(true)
-                            .Model(model =>
-                            {
-                                model.Id(p => p.PhoneLineId);
-                                model.Field(p => p.PhoneLineId).Editable(false);
-                            })
-                            .Sort(s => s.Add(m => m.PhoneLineId).Descending())
-                            .Events(events => events.Error("error_handler"))
-                            .Read(read => read.Action("Get", "PhoneLines"))
-                            )
-                            .Events(e =>
-                            {
-                                e.Save("onsave");
-                            })
+                                    if (permisos.HasClaim("RRHH.Lineas de Telefono.Editar Lineas de Telefono", "true")
+                                    || permisos.HasClaim("RRHH.Lineas de Telefono.Eliminar Lineas de Telefono", "true"))
+                                    {
+                                        columns.Command(command =>
+                                        {
+                                            if (permisos.HasClaim("RRHH.Lineas de Telefono.Editar Lineas de Telefono", "true"))
+                                            {
+                                                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditPhoneLines");
+                                            }
+                                            if (permisos.HasClaim("RRHH.Lineas de Telefono.Eliminar Lineas de Telefono", "true"))
+                                            {
+                                                command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("DeletePhoneLines");
+                                            }
+                                        }).Width(175).Title("Acciones");
+                                    }
+                                    columns.Bound(p => p.PhoneLineId).Title("Id").Width(100);
+                                    columns.Bound(p => p.NombreEmpleado).Title("Nombre del Empleado").Width(300);
+                                    columns.Bound(p => p.CompanyPhone).Title("Teléfono de la Empresa").Width(250);
+                                    columns.Bound(p => p.TotalUS).Title("Total Factura US").Format("{0:n2}").Width(250);
+                                    columns.Bound(p => p.TotalLps).Title("Total Factura Lps").Format("{0:n2}").Width(250);
+                                    columns.Bound(p => p.Branch.BranchName).Title("Sucursal").Width(250);
+                                    columns.Bound(p => p.Estado).Title("Estado").Width(125);
+                                })
+                                .Filterable(f => f.Operators(o => o.ForString(s => s
+                                    .Clear()
+                                    .Contains("Contiene")
+                                    .DoesNotContain("No contiene")
+                                    .EndsWith("Termina con")
+                                    .IsEqualTo("Es igual a")
+                                    .IsNotEqualTo("No es igual a")
+                                    .IsNull("Es nulo")
+                                    .StartsWith("Inicia con"))
+                                .ForNumber(n => n
+                                    .Clear()
+                                    .IsEqualTo("Es igual a")
+                                    .IsGreaterThan("Es mayor que")
+                                    .IsLessThan("Es menor que")
+                                    .IsNull("Es nulo")
+                                    .IsLessThanOrEqualTo("Es menor o igual que")
+                                    .IsGreaterThanOrEqualTo("Es mayor o igual que"))
+                                .ForDate(d => d
+                                    .Clear()
+                                    .IsEqualTo("Es igual que")
+                                    .IsGreaterThan("Es mayor que")
+                                    .IsLessThan("Es menor que")
+                                    .IsLessThanOrEqualTo("Es menor o igual que")
+                                    .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                    .IsNotEqualTo("No es igual que"))
+                                ))
+                                .ToolBar(tools =>
+                                {
+                                    if (permisos.HasClaim("RRHH.Lineas de Telefono.Agregar Lineas de Telefono", "true"))
+                                    {
+                                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddPhoneLines()" });
+                                    }
+                                    if (permisos.HasClaim("RRHH.Lineas de Telefono.Reporte Lineas de Telefono", "true"))
+                                    {
+                                        tools.Custom().Text("Reporte").IconClass("").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ImprimirPhoneLines()" });
+                                    }
+                                    if (permisos.HasClaim("RRHH.Lineas de Telefono.Exportar Lineas de Telefono", "true"))
+                                    {
+                                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                    }
+                                })
+                                .Editable(e => e.Mode(GridEditMode.PopUp))
+                                .Sortable()
+                                .Pageable(s => s
+                                    .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+                                    .Empty("No hay datos."))
+                                )
+                                .Filterable()
+                                .Scrollable()
+                                .Pdf(pdf => pdf.FileName("Líneas_Telefónicas_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                .Excel(excel => excel.FileName("Líneas_Telefónicas_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                .DataSource(dataSource =>
+                                dataSource
+                                .WebApi()
+                                .ServerOperation(true)
+                                .Model(model =>
+                                {
+                                    model.Id(p => p.PhoneLineId);
+                                    model.Field(p => p.PhoneLineId).Editable(false);
+                                })
+                                .Sort(s => s.Add(m => m.PhoneLineId).Descending())
+                                .Events(events => events.Error("error_handler"))
+                                .Read(read => read.Action("Get", "PhoneLines"))
+                                )
+                                .Events(e =>
+                                {
+                                    e.Save("onsave");
+                                })
 )
 
 <div id="numPhoneLines">
@@ -216,7 +237,7 @@
         var grid = $("#gridPhoneLines").getKendoGrid();
         grid.dataSource.read();
     }
-    
+
     function ImprimirPhoneLines(e) {
         var url = '@Url.Action("SFPhoneLines", "PhoneLines")';
                        var win = window.open(url, '_blank');

@@ -20,6 +20,7 @@ using Syncfusion.ReportWriter;
 using Syncfusion.Report;
 using Syncfusion.Pdf;
 using Syncfusion.DocIORenderer;
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -31,19 +32,23 @@ namespace ERPMVC.Controllers
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
         private IHostingEnvironment _hostingEnvironment;
+        private readonly ClaimsPrincipal _principal;
         public CertificadoDepositoController(
             IHostingEnvironment hostingEnvironment,
             ILogger<CertificadoDepositoController> logger,
-            IOptions<MyConfig> config)
+            IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             _hostingEnvironment = hostingEnvironment;
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Inventarios.Solicitud Certificado Deposito")]
         [HttpGet("[controller]/[action]")]
         public IActionResult Index()
         {
+            ViewData["permisos"] = _principal;
             return View();
         }
 
@@ -83,6 +88,7 @@ namespace ERPMVC.Controllers
                 {
                     _CertificadoDeposito.editar = 0;
                 }
+                ViewData["permisos"] = _principal;
             }
             catch (Exception ex)
             {
