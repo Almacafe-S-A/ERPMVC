@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -24,15 +25,18 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public CheckAccountController(ILogger<CheckAccountController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public CheckAccountController(ILogger<CheckAccountController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         [Authorize(Policy = "Bancos.Cheques")]
         public IActionResult Index()
         {
+            ViewData["permisos"] = _principal;
             return View();
         }
         [HttpGet]
