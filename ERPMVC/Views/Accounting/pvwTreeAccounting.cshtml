@@ -19,6 +19,8 @@
            var dataItem = e;//this.dataItem($(e.currentTarget).closest("tr"));           
              var dataObject = {
                  AccountId: dataItem.AccountId,
+                 ParentAccountId: dataItem.ParentAccountId,
+
                 editar : 0
            };
         
@@ -36,7 +38,7 @@
 
                     console.log(dataItem.ParentAccountId);
                     if (dataItem.ParentAccountId == null) {
-                        banderadepadre = 1;
+                        banderadepadre = 0;
                     }
                     else {
                         banderadepadre = 1;
@@ -71,12 +73,26 @@
     }
     function RefreshTreeList() {
        // kendo.ui.progress($("#divClasificacionCuentas"), true);
-
-        // TypeAccountId = TypeAccountIdv;
-
+        // TypeAccountId = TypeAccountIdv; 
+        localStorage["toExpand"] = JSON.stringify($.map($("#AccountingTreelist .k-i-collapse").closest("tr"), function (val, idx) { return $(val).index() }));
         var treelist = $("#AccountingTreelist").data("kendoTreeList");
         treelist.dataSource.read();
 
+       
+
+    }
+
+    function onDataBound() {
+            var items = localStorage["toExpand"];
+            if (items) {
+                items = JSON.parse(items);
+                var tl = $("#AccountingTreelist").data("kendoTreeList");
+                $.each(items, function (idx, val) {
+                    var tr = tl.content.find("tr").eq(val);
+                    tl.expand(tr);
+                })
+        }
+        localStorage["toExpand"] = {};
     }
     function DataTypeAccounting() {
         debugger;
@@ -140,6 +156,7 @@
 
                                                             toolbar.Custom().Text("Generar Reporte").Name("ReportAccounts").Click("ImprimirAuxiliarMovimientoPorDia");
                                                             // toolbar.Custom().Text("Cuentas Activas").Name("Activas");
+
                                                         }
                                                              )  .Columns(columns =>
                                                              {
@@ -165,7 +182,7 @@
                                                              })
                                             .Filterable()
                                              .Sortable()
-                                             //.Pageable()
+                                            //.Pageable()
                                             //      .Filterable(true)
 
 
@@ -202,10 +219,17 @@
 
                                             })
 
-                                        ).Height(540)
-    //.Pageable(p => p.PageSize(15)
-      //              .PageSizes(true)
-    //)
+                                        ).Events(events =>
+                                        {
+                                            //events.Edit("onEdit");
+                                            //events.Save("onSave");
+                                            //events.Remove("onRemove");
+                                            //events.DataBinding("onDataBinding");
+                                            events.DataBound("onDataBound");
+                                        }).Height(540)
+                                        //.Pageable(p => p.PageSize(15)
+                                        //              .PageSizes(true)
+                                        //)
                                         .Selectable(true)
         // .HtmlAttributes(new { dblclick = " "})
         /*.Events(events =>
