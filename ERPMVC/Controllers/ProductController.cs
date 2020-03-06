@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -23,14 +24,21 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public ProductController(ILogger<ProductController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public ProductController(ILogger<ProductController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Catalogos.Productos de Cliente")]
         public IActionResult Product()
         {
+            ViewData["permisoAgregar"] = _principal.HasClaim("Catalogos.Servicios.Agregar Servicios", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Catalogos.Servicios.Editar Servicios", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Catalogos.Servicios.Eliminar Servicios", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Catalogos.Servicios.Exportar Servicios", "true");
             return View();
         }
 

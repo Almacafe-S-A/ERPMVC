@@ -1,6 +1,8 @@
 ﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
 @{
-	ViewData["Title"] = "Grupo de Activos Fijos";
+    ViewData["Title"] = "Grupo de Activos Fijos";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 
 <script>
@@ -55,107 +57,123 @@
 <h3 class="text-themecolor">Grupos de Activos Fijos</h3>
 
 @(Html.Kendo().Grid<ERPMVC.Models.FixedAssetGroup>
-        ()
-        .Name("gridFixedAssetGroup")
+            ()
+            .Name("gridFixedAssetGroup")
 
-        .Columns(columns =>
-        {
-            columns.Command(command =>
+            .Columns(columns =>
             {
-                command.Custom("Editar").Text(" ").Click("EditFixedAssetGroup").IconClass("fa fa-edit");
-                command.Destroy().Text(" ").IconClass("fa fa-trash");
-            }).Width(170).Title("Acciones");
-            columns.Bound(p => p.FixedAssetGroupId).Width(100);
-            columns.Bound(p => p.FixedAssetGroupName).Width(100).Title("Grupo");
-            columns.Bound(p => p.FixedAssetGroupDescription).Width(100).Title("Descripción");
-            //columns.Bound(p => p.FixedGroupCode).Width(100).Title("Código de Grupo");
-            columns.Bound(p => p.Estado).Width(100).Title("Estado");
-        })
-
-        .Filterable
-        (f => f.Operators(o => o.ForString(s => s
-                                                .Clear()
-                                                .Contains("Contiene")
-                                                .DoesNotContain("No contiene")
-                                                .EndsWith("Termina con")
-                                                .IsEqualTo("Es igual a")
-                                                .IsNull("Es nulo")
-                                                .StartsWith("Inicia con"))
-                                                .ForNumber(n => n
-                                                .Clear()
-                                                .IsEqualTo("Es igual a")
-                                                .IsGreaterThan("Es mayor que")
-                                                .IsNull("Es nulo")
-                                                .IsLessThanOrEqualTo("Es menor o igual que")
-                                                .IsGreaterThanOrEqualTo("Es mayor o iguak que"))
-                                                .ForDate(d => d
-                                                                .Clear()
-                                                                .IsEqualTo("Es igual a")
-                                                                .IsGreaterThan("Es mayor que")
-                                                                .IsLessThan("Es menor que")
-                                                                .IsLessThanOrEqualTo("Es menor o igual que")
-                                                                .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                                .IsNotEqualTo("No es igual que") )
-                                    )
-        )
-        .ToolBar(tools =>
-        {
-            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddFixedAssetGroup()" });
-            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-        })
-        .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
-        .Sortable()
-        .Pageable()
-        .Filterable()
-        .Scrollable()
-        .Pdf(pdf => pdf.FileName("GrupoActivosFijosReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_" +
-        DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" +
-        DateTime.Now.Second + ".pdf")
-        .ProxyURL(Url.Action("Export", "Home")).AllPages())
-        .Excel(excel => excel.FileName("GrupoActivosFijosReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-        .DataSource(ds => ds
-            .WebApi()
-            .ServerOperation(true)
-            .Model(m =>
-            {
-                m.Id(p => p.FixedAssetGroupId);
-                m.Field(p => p.FixedAssetGroupId).Editable(false);
+                if (permisos.HasClaim("Contabilidad.Activos.Grupo de Activos.Editar Grupo de Activos", "true") || permisos.HasClaim("Contabilidad.Activos.Grupo de Activos.Eliminar Grupo de Activos", "true"))
+                {
+                    columns.Command(command =>
+                    {
+                        if(permisos.HasClaim("Contabilidad.Activos.Grupo de Activos.Editar Grupo de Activos", "true"))
+                        {
+                            command.Custom("Editar").Text(" ").Click("EditFixedAssetGroup").IconClass("fa fa-edit");
+                        }
+                        if(permisos.HasClaim("Contabilidad.Activos.Grupo de Activos.Eliminar Grupo de Activos","true"))
+                        {
+                            command.Destroy().Text(" ").IconClass("fa fa-trash");
+                        }
+                    }).Width(170).Title("Acciones");
+                }
+                columns.Bound(p => p.FixedAssetGroupId).Width(100);
+                columns.Bound(p => p.FixedAssetGroupName).Width(100).Title("Grupo");
+                columns.Bound(p => p.FixedAssetGroupDescription).Width(100).Title("Descripción");
+                //columns.Bound(p => p.FixedGroupCode).Width(100).Title("Código de Grupo");
+                columns.Bound(p => p.Estado).Width(100).Title("Estado");
             })
-            .Events(e => e.Error("error_handler"))
-            .Read(r => r.Action("Get", "FixedAssetGroup"))
-            .Create(c => c.Action("Insert", "FixedAssetGroup").Type(HttpVerbs.Post))
-            .Update(u => u.Action("Update", "FixedAssetGroup").Type(HttpVerbs.Post))
-            .Destroy(destroy => destroy.Action("Delete", "FixedAssetGroup", new { FixedAssetGroupId = "{0}" }).Type(HttpVerbs.Delete))
-        )
-        .Events(e =>
-        { e.Save("onsave");
-        })
-	)
 
-	<div id="numFixedAssetGroup">
-		@await Html.PartialAsync("pvwAddFixedAssetGroup", new ERPMVC.DTO.FixedAssetGroupDTO { FixedAssetGroupId = 0 })
-	</div>
+            .Filterable
+            (f => f.Operators(o => o.ForString(s => s
+                                                    .Clear()
+                                                    .Contains("Contiene")
+                                                    .DoesNotContain("No contiene")
+                                                    .EndsWith("Termina con")
+                                                    .IsEqualTo("Es igual a")
+                                                    .IsNull("Es nulo")
+                                                    .StartsWith("Inicia con"))
+                                                    .ForNumber(n => n
+                                                    .Clear()
+                                                    .IsEqualTo("Es igual a")
+                                                    .IsGreaterThan("Es mayor que")
+                                                    .IsNull("Es nulo")
+                                                    .IsLessThanOrEqualTo("Es menor o igual que")
+                                                    .IsGreaterThanOrEqualTo("Es mayor o iguak que"))
+                                                    .ForDate(d => d
+                                                                    .Clear()
+                                                                    .IsEqualTo("Es igual a")
+                                                                    .IsGreaterThan("Es mayor que")
+                                                                    .IsLessThan("Es menor que")
+                                                                    .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                    .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                    .IsNotEqualTo("No es igual que"))
+                                        )
+            )
+            .ToolBar(tools =>
+            {
+                if (permisos.HasClaim("Contabilidad.Activos.Grupo de Activos.Agregar Grupo de Activos", "true"))
+                {
+                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                    .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddFixedAssetGroup()" });
+                }
+                if (permisos.HasClaim("Contabilidad.Activos.Grupo de Activos.Exportar Grupo de Activos", "true"))
+                {
+                    tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                    tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                }
+            })
+            .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+            .Sortable()
+            .Pageable()
+            .Filterable()
+            .Scrollable()
+            .Pdf(pdf => pdf.FileName("GrupoActivosFijosReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_" +
+            DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" +
+            DateTime.Now.Second + ".pdf")
+            .ProxyURL(Url.Action("Export", "Home")).AllPages())
+            .Excel(excel => excel.FileName("GrupoActivosFijosReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+            .DataSource(ds => ds
+                .WebApi()
+                .ServerOperation(true)
+                .Model(m =>
+                {
+                    m.Id(p => p.FixedAssetGroupId);
+                    m.Field(p => p.FixedAssetGroupId).Editable(false);
+                })
+                .Events(e => e.Error("error_handler"))
+                .Read(r => r.Action("Get", "FixedAssetGroup"))
+                .Create(c => c.Action("Insert", "FixedAssetGroup").Type(HttpVerbs.Post))
+                .Update(u => u.Action("Update", "FixedAssetGroup").Type(HttpVerbs.Post))
+                .Destroy(destroy => destroy.Action("Delete", "FixedAssetGroup", new { FixedAssetGroupId = "{0}" }).Type(HttpVerbs.Delete))
+            )
+            .Events(e =>
+            {
+                e.Save("onsave");
+            })
+)
+
+<div id="numFixedAssetGroup">
+    @await Html.PartialAsync("pvwAddFixedAssetGroup", new ERPMVC.DTO.FixedAssetGroupDTO { FixedAssetGroupId = 0 })
+</div>
 
 
-    <script>
-		function setToolbarTooltip(btn_cl, btn_tooltip) {
-            $("#gridFixedAssetGroup").kendoTooltip({
-                filter: btn_cl,
-                content: btn_tooltip
-            });
-        }
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridFixedAssetGroup").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
 
-        function setRowButtonTooltip(btn_cl, btn_tooltip) {
-            $("#gridFixedAssetGroup").kendoTooltip({
-                filter: btn_cl,
-                content: btn_tooltip
-            });
-        }
-        setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
-        setToolbarTooltip(".k-grid-Editar", "Editar Registro");
-        setToolbarTooltip(".k-grid-delete", "Eliminar Grupo");
-	</script>
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridFixedAssetGroup").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setToolbarTooltip(".k-grid-Editar", "Editar Registro");
+    setToolbarTooltip(".k-grid-delete", "Eliminar Grupo");
+</script>

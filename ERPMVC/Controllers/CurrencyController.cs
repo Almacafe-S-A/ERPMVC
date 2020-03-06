@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -25,16 +26,22 @@ namespace ERPMVC.Controllers
 
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
+        private readonly ClaimsPrincipal _principal;
 
-        public CurrencyController(ILogger<CurrencyController> logger, IOptions<MyConfig> config)
+        public CurrencyController(ILogger<CurrencyController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
-            
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Administracion.Moneda")]
         public ActionResult Currency()
         {
+            ViewData["permisoAgregar"] = _principal.HasClaim("Administracion.Moneda.Agregar Moneda", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Administracion.Moneda.Editar Moneda", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Administracion.Moneda.Eliminar Moneda", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Administracion.Moneda.Exportar Moneda", "true");
             return View();
         }
 

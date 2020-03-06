@@ -35,6 +35,7 @@ namespace ERPMVC.Controllers
         //    return await Task.Run(() => View());
 
         //}
+        [Authorize(Policy = "")]
         [HttpGet]
         public ActionResult SFAuxiliarMovimientos(Int32 id)
         {
@@ -374,7 +375,7 @@ namespace ERPMVC.Controllers
 
         }
 
-
+        [Authorize(Policy = "Contabilidad.Cuentas.Catalogo de Cuentas")]
         [HttpGet]
         public async Task<ActionResult> Index()
         {

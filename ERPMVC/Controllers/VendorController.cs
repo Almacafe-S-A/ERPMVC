@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -24,15 +25,19 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public VendorController(ILogger<VendorController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public VendorController(ILogger<VendorController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         // GET: Vendor
+        [Authorize(Policy = "Proveedores.Proveedores")]
         public ActionResult Index()
         {
+            ViewData["permisos"] = _principal;
             return View();
         }
 
@@ -53,6 +58,7 @@ namespace ERPMVC.Controllers
                     _Vendor = JsonConvert.DeserializeObject<Vendor>(valorrespuesta);
 
                 }
+                ViewData["permisos"] = _principal;
             }
             catch (Exception ex)
             {

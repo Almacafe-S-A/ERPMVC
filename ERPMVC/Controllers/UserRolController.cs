@@ -31,16 +31,19 @@ namespace ERPMVC.Controllers
 
         }
 
+        [Authorize(Policy = "Seguridad.Roles por Usuario")]
         public IActionResult UserRol()
         {
             return View();
         }
 
+        [Authorize(Policy = "Seguridad.Roles por Usuario")]
         public IActionResult PorRol()
         {
             return View();
         }
 
+        [Authorize(Policy = "Seguridad.Roles por Usuario")]
         public IActionResult PorUsuario()
         {
             return View();

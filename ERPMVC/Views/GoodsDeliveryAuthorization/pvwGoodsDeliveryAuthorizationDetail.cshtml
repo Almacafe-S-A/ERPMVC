@@ -1,7 +1,9 @@
 ﻿@model ERPMVC.DTO.GoodsDeliveryAuthorizationDTO
+@using System.Security.Claims
 
-
-
+@{
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisosDeliveryAuthorization"];
+}
 <script>
 
 
@@ -27,8 +29,8 @@
         }
 
         var displayedData = $("#gridGoodsDeliveredAuthorizationLine").data().kendoGrid.dataSource.data();
-      
-      
+
+
 
 
 
@@ -105,7 +107,7 @@
         e.preventDefault();
         var notification = $("#notification").data("kendoNotification");
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-       
+
         if (dataItem.GoodsDeliveryAuthorizationId > 0) {
             var subproducto = 0;
             var dataObject = { 'GoodsDeliveryAuthorizationLineId': dataItem.GoodsDeliveryAuthorizationLineId };
@@ -143,7 +145,7 @@
         }
         else {
             $("#GoodsDeliveryAuthorizationLineId").val(dataItem.GoodsDeliveryAuthorizationLineId);
-            $("#GoodsDeliveryAuthorizationId").val(dataItem.GoodsDeliveryAuthorizationId);           
+            $("#GoodsDeliveryAuthorizationId").val(dataItem.GoodsDeliveryAuthorizationId);
             $("#UnitOfMeasureName").val(dataItem.UnitOfMeasureName);
             $("#UnitOfMeasureId").data("kendoDropDownList").value(dataItem.UnitOfMeasureId);
 
@@ -162,7 +164,7 @@
             valorfinanciado.value(dataItem.valorfinanciado);
             valorfinanciado.trigger('change');
 
-            $("#SubProductId").data("kendoDropDownList").dataSource.read();          
+            $("#SubProductId").data("kendoDropDownList").dataSource.read();
             $("#WarehouseId").data("kendoDropDownList").value(dataItem.WarehouseId);
 
             $("#SubProductId").data("kendoDropDownList").value(dataItem.SubProductId);
@@ -322,106 +324,118 @@
     <div class="box-body">
 
         @(Html.Kendo().Grid<ERPMVC.Models.GoodsDeliveryAuthorizationLineDTO>()
-                                                  .Name("gridGoodsDeliveredAuthorizationLine")
-                                                  .Columns(columns =>
-                                                  {
-                                                      columns.Command(command =>
-                                                      {
-                                                          if (Model.editar == 1)
-                                                          {
-                                                              command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
-                                                          }
-                                                          command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditGoodsDeliveryDetalle");
-                                                          // command.Custom("Imprimir").Click("ImprimirCotizacion");
-                                                          //  command.Edit(); command.Destroy();
-                                                      }).Title("Acciones").Width(100);
+                                                                  .Name("gridGoodsDeliveredAuthorizationLine")
+                                                                  .Columns(columns =>
+                                                                  {
+                                                                      if (permisos.HasClaim("Inventarios.Autorizacion.Eliminar Autorizacion Detalle", "true") 
+                                                                      || permisos.HasClaim("Inventarios.Autorizacion.Editar Autorizacion Detalle", "true"))
+                                                                      {
+                                                                          columns.Command(command =>
+                                                                          {
+                                                                              if (Model.editar == 1)
+                                                                              {
+                                                                                  if (permisos.HasClaim("Inventarios.Autorizacion.Eliminar Autorizacion Detalle", "true"))
+                                                                                  {
+                                                                                      command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+                                                                                  }
+                                                                              }
+                                                                              if (permisos.HasClaim("Inventarios.Autorizacion.Editar Autorizacion Detalle", "true"))
+                                                                              {
+                                                                                  command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditGoodsDeliveryDetalle");
+                                                                              }
+                                                                              // command.Custom("Imprimir").Click("ImprimirCotizacion");
+                                                                              //  command.Edit(); command.Destroy();
+                                                                          }).Title("Acciones").Width(100);
+                                                                      }
+                                                                      columns.Bound(p => p.GoodsDeliveryAuthorizationLineId).Title("Id Línea").Width(100);
+                                                                      columns.Bound(p => p.GoodsDeliveryAuthorizationId).Title("Entrega de Mercaderia").Width(195).Visible(false);
+                                                                      columns.Bound(p => p.NoCertificadoDeposito).Title("Número de certificado").Width(190);
+                                                                      columns.Bound(p => p.SubProductName).Width(160);
+                                                                      columns.Bound(p => p.WarehouseName).Title("Bodega").Width(120).Visible(false);
+                                                                      columns.Bound(p => p.ValorImpuestos).Visible(false).Width(0);
+                                                                      columns.Bound(p => p.ValorImpuestosOriginal).Visible(false).Width(0);
+                                                                      columns.Bound(p => p.QuantityOriginal).Visible(false).Width(0);
+                                                                      columns.Bound(p => p.UnitOfMeasureName).Title("Unidad de medida").Width(170);
+                                                                      columns.Bound(p => p.Quantity).Title("Cantidad").Width(130);
+                                                                      columns.Bound(p => p.Price).Visible(false);
+                                                                      columns.Bound(p => p.valorcertificado).Visible(true).Title("Valor Retiro").Width(170);
+                                                                      columns.Bound(p => p.valorfinanciado).Title("Valor financiado").Width(170);
+                                                                  })
+                                                                      .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                               .Clear()
+                                                               .Contains("Contiene")
+                                                                       .DoesNotContain("No contiene")
+                                                                       .EndsWith("Termina con")
+                                                                       .IsEqualTo("Es igual a")
+                                                                       .IsNotEqualTo("No es igual a")
+                                                                       .IsNull("Es nulo")
+                                                                       .StartsWith("Inicia con")
 
-                                                      columns.Bound(p => p.GoodsDeliveryAuthorizationLineId).Title("Id Línea").Width(100);
-                                                      columns.Bound(p => p.GoodsDeliveryAuthorizationId).Title("Entrega de Mercaderia").Width(195).Visible(false);
-                                                      columns.Bound(p => p.NoCertificadoDeposito).Title("Número de certificado").Width(190);
-                                                      columns.Bound(p => p.SubProductName).Width(160);
-                                                      columns.Bound(p => p.WarehouseName).Title("Bodega").Width(120).Visible(false);
-                                                      columns.Bound(p => p.ValorImpuestos).Visible(false).Width(0);
-                                                      columns.Bound(p => p.ValorImpuestosOriginal).Visible(false).Width(0);
-                                                      columns.Bound(p => p.QuantityOriginal).Visible(false).Width(0);
-                                                      columns.Bound(p => p.UnitOfMeasureName).Title("Unidad de medida").Width(170);
-                                                      columns.Bound(p => p.Quantity).Title("Cantidad").Width(130);
-                                                      columns.Bound(p => p.Price).Visible(false);
-                                                      columns.Bound(p => p.valorcertificado).Visible(true).Title("Valor Retiro").Width(170);
-                                                      columns.Bound(p => p.valorfinanciado).Title("Valor financiado").Width(170);
-                                                  })
-                                                      .Filterable(f => f.Operators(o => o.ForString(s => s
-                                               .Clear()
-                                               .Contains("Contiene")
-                                                       .DoesNotContain("No contiene")
-                                                       .EndsWith("Termina con")
-                                                       .IsEqualTo("Es igual a")
-                                                       .IsNotEqualTo("No es igual a")
-                                                       .IsNull("Es nulo")
-                                                       .StartsWith("Inicia con")
 
+                                                                 )
+                                                                 .ForNumber(n => n
+                                                                   .Clear()
+                                                                   .IsEqualTo("Es igual a")
+                                                                   .IsGreaterThan("Es mayor que")
+                                                                   .IsLessThan("Es menor que")
+                                                                   .IsNull("Es nulo")
+                                                                   .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                 )
+                                                                 .ForDate(d => d
+                                                                 .Clear()
+                                                                 .IsEqualTo("Es igual que")
+                                                                 .IsGreaterThan("Es mayor que")
+                                                                 .IsLessThan("Es menor que")
+                                                                 .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                 .IsNotEqualTo("No es igual que")
+                                                                  )
+                                                               ))
+                                                                  .ToolBar(tools =>
+                                                                  {
+                                                                      if (Model.editar == 1)
+                                                                      {
+                                                                          if (permisos.HasClaim("Inventarios.Autorizacion.Agregar Autorizacion Detalle", "true"))
+                                                                          {
+                                                                              tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                          .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddGoodsDeliveredDetalle();" });
+                                                                          }
+                                                                      }
+                                                                  })
+                                                                   .Editable(e => e.Mode(GridEditMode.PopUp))
+                                                                    .Sortable()
+                                                                    .AutoBind(true)
+                                                                    //.Pageable()
+                                                                    .Filterable()
+                                                                    .Scrollable()
+                                                                    .DataSource(dataSource =>
 
-                                                 )
-                                                 .ForNumber(n => n
-                                                   .Clear()
-                                                   .IsEqualTo("Es igual a")
-                                                   .IsGreaterThan("Es mayor que")
-                                                   .IsLessThan("Es menor que")
-                                                   .IsNull("Es nulo")
-                                                   .IsLessThanOrEqualTo("Es menor o igual que")
-                                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                 )
-                                                 .ForDate(d => d
-                                                 .Clear()
-                                                 .IsEqualTo("Es igual que")
-                                                 .IsGreaterThan("Es mayor que")
-                                                 .IsLessThan("Es menor que")
-                                                 .IsLessThanOrEqualTo("Es menor o igual que")
-                                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                 .IsNotEqualTo("No es igual que")
-                                                  )
-                                               ))
-                                                  .ToolBar(tools =>
-                                                  {
-                                                      if (Model.editar == 1)
-                                                      {
-                                                          tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                          .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddGoodsDeliveredDetalle();" });
-                                                      }
-                                                  })
-                                                   .Editable(e => e.Mode(GridEditMode.PopUp))
-                                                    .Sortable()
-                                                    .AutoBind(true)
-                                                    //.Pageable()
-                                                    .Filterable()
-                                                    .Scrollable()
-                                                    .DataSource(dataSource =>
+                                                                   dataSource
+                                                                   //.Ajax()
+                                                                   .WebApi()
 
-                                                   dataSource
-                                                   //.Ajax()
-                                                   .WebApi()
+                                                                    .ServerOperation(true)
+                                                                    .Model(model =>
+                                                                    {
+                                                                        model.Id(p => p.GoodsDeliveryAuthorizationLineId);
+                                                                        model.Field(p => p.GoodsDeliveryAuthorizationLineId).Editable(false);
+                                                                        model.Field(p => p.GoodsDeliveryAuthorizationId).Editable(false);
+                                                                        // model.Field(p => p.ControlPalletsId).Editable(true);
 
-                                                    .ServerOperation(true)
-                                                    .Model(model =>
-                                                    {
-                                                        model.Id(p => p.GoodsDeliveryAuthorizationLineId);
-                                                        model.Field(p => p.GoodsDeliveryAuthorizationLineId).Editable(false);
-                                                        model.Field(p => p.GoodsDeliveryAuthorizationId).Editable(false);
-                                                        // model.Field(p => p.ControlPalletsId).Editable(true);
+                                                                    })
+                                                                    .Events(events =>
+                                                                    {
+                                                                        events.Sync("CalcularTotalDocumento");
+                                                                        events.Error("error_handler");
+                                                                        //events.upda("EditHandler");
 
-                                                    })
-                                                    .Events(events =>
-                                                    {
-                                                        events.Sync("CalcularTotalDocumento");
-                                                        events.Error("error_handler");
-                                                        //events.upda("EditHandler");
-
-                                                    })
-                                                    .Read(read => read.Action("GetGoodsDeliveryAuthorizationLineById", "GoodsDeliveryAuthorizationLine").Data("GetGoodsDeliveredLineId"))
-                                                    //.Create(create => create.Action("Insert", "SalesOrderLine"))
-                                                    //.Update(update => update.Action("Update", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
-                                                    .Destroy(destroy => destroy.Action("Delete", "GoodsDeliveryAuthorizationLine").Type(HttpVerbs.Post))
-                                              )
+                                                                    })
+                                                                    .Read(read => read.Action("GetGoodsDeliveryAuthorizationLineById", "GoodsDeliveryAuthorizationLine").Data("GetGoodsDeliveredLineId"))
+                                                                    //.Create(create => create.Action("Insert", "SalesOrderLine"))
+                                                                    //.Update(update => update.Action("Update", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
+                                                                    .Destroy(destroy => destroy.Action("Delete", "GoodsDeliveryAuthorizationLine").Type(HttpVerbs.Post))
+                                                              )
         )
 
     </div>

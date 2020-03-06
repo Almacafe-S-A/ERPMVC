@@ -20,6 +20,7 @@ using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 using ERPMVC.DTO;
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -30,15 +31,18 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> _config;
         private readonly ILogger _logger;
-
-        public HoursWorkedController(ILogger<HoursWorkedController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public HoursWorkedController(ILogger<HoursWorkedController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this._config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "RRHH.Horas Trabajadas")]
         public ActionResult Index()
         {
+            ViewData["permisos"] = _principal;
             return View();
         }
 
@@ -98,6 +102,7 @@ namespace ERPMVC.Controllers
                     };
                 }
                 _HoursWorkedF.editar = _HoursWorked.editar;
+                ViewData["permisos"] = _principal;
             }
             catch (Exception ex)
             {

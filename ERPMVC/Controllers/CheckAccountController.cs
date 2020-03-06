@@ -30,6 +30,7 @@ namespace ERPMVC.Controllers
             this._logger = logger;
         }
 
+        [Authorize(Policy = "Bancos.Cheques")]
         public IActionResult Index()
         {
             return View();

@@ -3,8 +3,7 @@
 
 @{
     ViewData["Title"] = "Movimientos Financieros";
-    bool permiso;
-    permiso = (bool)ViewData["permisoAprobarAjuste"];
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 
 <script>
@@ -42,12 +41,13 @@
 
         $('#ModalJournalEntry').find(':input').not(':submit').val('');
         $("#JournalEntryId").val('0');
+        var CierreContableDiaAnterior = EjecucionCierreContableDiaAnterior();
 
-
-        var dataObject = {
-            JournalEntryId: 0,
-            editar: 1,
-        };
+        if (CierreContableDiaAnterior == true) {
+            var dataObject = {
+                JournalEntryId: 0,
+                editar: 1,
+            };
             $.ajax({
                 url: '@Url.Action("pvwAddJournalEntryAjuste", "JournalEntry")',
                 method: 'POST',
@@ -69,17 +69,30 @@
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     alert(textStatus + ": " + XMLHttpRequest.responseText);
                 }
-        });
-        var dataSource = $("#gridNumeracionJournalEntryLine").data("kendoGrid").dataSource;
-        var raw = dataSource._data;
-        console.log(raw);
-        debugger;
-        for (var i = dataSource._data.length - 1; i >= 0; i--) {
-            item = raw[i];
-            dataSource.remove(item);
-        }
+            });
 
-      }
+            var dataSource = $("#gridNumeracionJournalEntryLine").data("kendoGrid").dataSource;
+            var raw = dataSource._data;
+            console.log(raw);
+            debugger;
+            for (var i = dataSource._data.length - 1; i >= 0; i--) {
+                item = raw[i];
+                dataSource.remove(item);
+            }
+
+        }
+        else {
+            $.toast({
+                heading: 'Validación',
+                text: "Ejecute cierre de los días pendientes!",
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+        }
+    }
 
 
     function EditJournalEntry(e) {
@@ -240,6 +253,29 @@
         grid.dataSource.read();
     }
 
+    function EjecucionCierreContableDiaAnterior() {
+        var CierreContableDiaAnterior
+        $.ajax({
+            url: '@Url.Action("CierreContableDiaAnterior", "JournalEntry")',
+            method: 'GET',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            success: function (result) {
+                if (result != null) {
+                    CierreContableDiaAnterior = true;
+                }
+                else {
+                    CierreContableDiaAnterior = false;
+                }
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+        return CierreContableDiaAnterior
+    }
+
      function Imprimir(e, id) {
         debugger;
         var dataItem;
@@ -288,20 +324,30 @@
                                             .Name("gridNumeracionJournalEntry")
                                             .Columns(columns =>
                                             {
-                                                columns.Command(command =>
+                                                if (permisos.HasClaim("Contabilidad.Movimientos.Ajustes Contables.Editar Ajustes Contables", "true")
+                                                    || permisos.HasClaim("Contabilidad.Movimientos.Ajustes Contables.Imprimir Ajustes Contables", "true")
+                                                    || permisos.HasClaim("Contabilidad.Movimientos.Ajustes Contables.Aprobar Ajustes Contables", "true"))
                                                 {
-                                        //command.Custom("Ver detalles").Text(" ").IconClass("far fa-list-alt").Click("DetallesJournalEntry");
-                                        command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditJournalEntry");
-                                                    command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("Imprimir");
-                                        /// command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("AprobarAjuste");
-                                        if (permiso)
+                                                    columns.Command(command =>
                                                     {
-                                                        command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("AprobarAjuste");
-                                                        command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("RechazarAjuste");
-                                                    }
-                                        //  command.Destroy();
-                                    }).Title("Acciones").Width(175);
-
+                                                        //command.Custom("Ver detalles").Text(" ").IconClass("far fa-list-alt").Click("DetallesJournalEntry");
+                                                        if (permisos.HasClaim("Contabilidad.Movimientos.Ajustes Contables.Editar Ajustes Contables", "true"))
+                                                        {
+                                                            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditJournalEntry");
+                                                        }
+                                                        if (permisos.HasClaim("Contabilidad.Movimientos.Ajustes Contables.Imprimir Ajustes Contables", "true"))
+                                                        {
+                                                            command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("Imprimir");
+                                                        }
+                                                        /// command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("AprobarAjuste");
+                                                        if (permisos.HasClaim("Contabilidad.Movimientos.Ajustes Contables.Aprobar Ajustes Contables", "true"))
+                                                        {
+                                                            command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("AprobarAjuste");
+                                                            command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("RechazarAjuste");
+                                                        }
+                                                        //  command.Destroy();
+                                                    }).Title("Acciones").Width(175);
+                                                }
                                                 columns.Bound(p => p.JournalEntryId).Title("Id Asiento Contable").Width(200);
                                                 columns.Bound(p => p.DatePosted).Title("Fecha de  Transacción").Format("{0:dd/MM/yyyy}").Width(250);
                                                 columns.Bound(p => p.PartyId).Title("Beneficiario").Width(200).Hidden(true);
@@ -347,12 +393,17 @@
                                             ))
                                             .ToolBar(tools =>
                                             {
-                                    // tools.Create();
-                                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                                                    .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddJournalEntry()" });
-                                                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
+                                                // tools.Create();
+                                                if (permisos.HasClaim("Contabilidad.Movimientos.Ajustes Contables.Agregar Ajustes Contables", "true"))
+                                                {
+                                                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                                    .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddJournalEntry()" });
+                                                }
+                                                if (permisos.HasClaim("Contabilidad.Movimientos.Ajustes Contables.Exportar Ajustes Contables", "true"))
+                                                {
+                                                    tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                    tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                                }
 
 
                                             })

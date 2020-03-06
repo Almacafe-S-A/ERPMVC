@@ -19,7 +19,7 @@ using Kendo.Mvc.Extensions;
 using Microsoft.AspNetCore.Http;
 using Syncfusion.Pdf;
 using Syncfusion.DocIORenderer;
-
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -28,18 +28,20 @@ namespace ERPMVC.Controllers
         private IHostingEnvironment _hostingEnvironment;
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
+        private readonly ClaimsPrincipal _principal;
         public CustomerContractController(IHostingEnvironment hostingEnvironment
-            , ILogger<CustomerContractController> logger, IOptions<MyConfig> config)
+            , ILogger<CustomerContractController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
 
         {
             _hostingEnvironment = hostingEnvironment;
             this.config = config;
             this._logger = logger;
-
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         public async Task<ActionResult> Index()
         {
+            ViewData["permisos"] = _principal;
             return await Task.Run(() => PartialView());
         }
 
