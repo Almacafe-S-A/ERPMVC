@@ -48,6 +48,12 @@ namespace ERPMVC.Controllers
             return await Task.Run(() => View());
         }
 
+        [Authorize(Policy = "Contabilidad.Notas Estados Financieros")]
+        public async Task<IActionResult> SFNotasEstadosFinancieros()
+        {
+            return await Task.Run(() => View());
+        }
+
         public async Task<JsonResult> GetProfitAndLoss([DataSourceRequest]DataSourceRequest request, Fechas _Fecha)
         {
             List<AccountingDTO> _accounting = new List<AccountingDTO>();
