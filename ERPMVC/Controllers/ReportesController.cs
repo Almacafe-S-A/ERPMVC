@@ -47,6 +47,7 @@ namespace ERPMVC.Controllers
 
         }
 
+        [Authorize(Policy = "Contabilidad.Seguros.Reporte Valores Fisicos")]
         public async Task<IActionResult> SFDetalleValorSeguros()
         {
 

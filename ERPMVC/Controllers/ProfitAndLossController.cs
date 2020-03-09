@@ -42,7 +42,14 @@ namespace ERPMVC.Controllers
             return await Task.Run(()=> View());
         }
 
+        [Authorize(Policy = "Contabilidad.Estado de Situacion Financiera")]
         public async Task<IActionResult> SFEstadoResultados()
+        {
+            return await Task.Run(() => View());
+        }
+
+        [Authorize(Policy = "Contabilidad.Notas Estados Financieros")]
+        public async Task<IActionResult> SFNotasEstadosFinancieros()
         {
             return await Task.Run(() => View());
         }

@@ -32,6 +32,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Contabilidad.Movimientos.Configuracion de Asientos")]
         public IActionResult Index()
         {
             ViewData["permisos"] = _principal;

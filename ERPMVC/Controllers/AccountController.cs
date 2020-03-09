@@ -25,6 +25,7 @@ using Kendo.Mvc.UI;
 
 namespace ERPMVC.Controllers
 {
+    //[Authorize(Policy = "Seguridad.Usuarios")]
     public class AccountController : Controller
     {
         private readonly ILogger _logger;

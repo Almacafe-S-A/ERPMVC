@@ -34,6 +34,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
         // GET: TypeAccount
+        [Authorize(Policy = "Contabilidad.Cuentas.Tipos de Cuentas")]
         public ActionResult TypeAccount()
         {
             ViewData["permisos"] = _principal;

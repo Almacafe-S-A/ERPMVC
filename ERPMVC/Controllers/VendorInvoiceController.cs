@@ -32,6 +32,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Compras.Factura Proveedores")]
         public IActionResult Index()
         {
             ViewData["permisoActualizarRecibido"] = _principal.HasClaim("Compras.Factura Proveedores.Actualizar a Recibido", "true");

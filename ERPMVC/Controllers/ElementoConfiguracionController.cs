@@ -33,6 +33,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Configuracion.Elemento Configuracion")]
         public IActionResult ElementoConfiguracion()
         {
             ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Elemento Configuracion.Agregar Elemento Configuracion", "true");

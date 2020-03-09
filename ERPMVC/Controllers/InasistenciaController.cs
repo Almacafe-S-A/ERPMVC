@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
@@ -17,15 +18,17 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger logger;
-
-        public InasistenciaController(IOptions<MyConfig> config, ILogger<InasistenciaController> logger)
+        private readonly ClaimsPrincipal _principal;
+        public InasistenciaController(IOptions<MyConfig> config, ILogger<InasistenciaController> logger, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this.logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         public IActionResult Index()
         {
+            ViewData["permisos"] = _principal;
             return View();
         }
 

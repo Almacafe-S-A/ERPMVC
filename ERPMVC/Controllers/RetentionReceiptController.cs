@@ -32,6 +32,8 @@ namespace ERPMVC.Controllers
             this._logger = logger;
             _principal = httpContextAccessor.HttpContext.User;
         }
+
+        [Authorize(Policy = "Proveedores.Comprobante de Retencion")]
         public IActionResult Index()
         {
             ViewData["permisoAprobar"] = _principal.HasClaim("Proveedores.Comprobante de Retencion.Aprobar Comprobante de Retencion", "true");

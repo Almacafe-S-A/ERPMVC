@@ -1,7 +1,8 @@
 ﻿@using Kendo.Mvc.UI
-
+@using System.Security.Claims
 @{
     ViewData["Title"] = "Chequeras";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 
 
@@ -73,7 +74,7 @@
         }
         var dataObject = {
             CheckAccountId: dataItem.CheckAccountId,
-            CheckNumber: dataItem.NumeroActual,            
+            CheckNumber: dataItem.NumeroActual,
             id: 0,
             AccountManagement: {
                 AccountManagementId : dataItem.AccountManagementId
@@ -83,7 +84,7 @@
         $('#ModalCheck').find(':input').not(':submit').val('');
         //$('#ModalCheckAccount').modal('show');
         $("#CheckAccountId").val('0');
-        
+
          $.ajax({
                 url: '@Url.Action("pvwAddCheck", "CheckAccount")',
                 method: 'POST',
@@ -107,7 +108,7 @@
     }
 
 
-   
+
 
 
          function EditCheckAccount(e) {
@@ -140,166 +141,192 @@
          }
 
 
-    
-    
+
+
 
 
 </script>
 
 <h3 class="text-themecolor">Chequera</h3>
 @(Html.Kendo().Grid<ERPMVC.Models.CheckAccount>
-                            ()
-                            .Name("gridCheckAccount")
-                            .Columns(columns =>
-                            {
-                                columns.Command(command =>
+                                ()
+                                .Name("gridCheckAccount")
+                                .Columns(columns =>
                                 {
-                                    command.Custom("EmitirCheque").Text(" ").IconClass("fa fa-plus").Click("AddCheck");
-                                    command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCheckAccount");
-                                    //command.Destroy().IconClass("fa fa-trash").Text(" ");
-                                }).Title("Acciones").Width(150);
+                                    if (permisos.HasClaim("Bancos.Cheques.Emitir Cheques", "true")
+                                    || permisos.HasClaim("Bancos.Cheques.Editar Chequeras", "true"))
+                                    {
+                                        columns.Command(command =>
+                                        {
+                                            if (permisos.HasClaim("Bancos.Cheques.Emitir Cheques", "true"))
+                                            {
+                                                command.Custom("EmitirCheque").Text(" ").IconClass("fa fa-plus").Click("AddCheck");
+                                            }
+                                            if (permisos.HasClaim("Bancos.Cheques.Editar Chequeras", "true"))
+                                            {
+                                                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCheckAccount");
+                                            }
+                                            //command.Destroy().IconClass("fa fa-trash").Text(" ");
+                                        }).Title("Acciones").Width(150);
+                                    }
+                                    columns.Bound(p => p.CheckAccountId).Width(100);
+                                    columns.Bound(p => p.CheckAccountNo).Width(200);
+                                    columns.Bound(p => p.BankName).Width(150);
+                                    columns.Bound(p => p.AccountManagementId).Visible(false);
+                                    columns.Bound(p => p.AssociatedAccountNumber).Width(150);
+                                    columns.Bound(p => p.NoInicial).Width(150);
+                                    columns.Bound(p => p.NoFinal).Width(150);
+                                    columns.Bound(p => p.NumeroActual).Width(150);
+                                    columns.Bound(p => p.Estado).Width(150);
+                                })
+                                    .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                           .Clear()
+                                                           .Contains("Contiene")
+                                                           .DoesNotContain("No contiene")
+                                                           .EndsWith("Termina con")
+                                                           .IsEqualTo("Es igual a")
+                                                           .IsNotEqualTo("No es igual a")
+                                                           .IsNull("Es nulo")
+                                                           .StartsWith("Inicia con")
 
-                                columns.Bound(p => p.CheckAccountId).Width(100);
-                                columns.Bound(p => p.CheckAccountNo).Width(200);
-                                columns.Bound(p => p.BankName).Width(150);
-                                columns.Bound(p => p.AccountManagementId).Visible(false);
-                                columns.Bound(p => p.AssociatedAccountNumber).Width(150);
-                                columns.Bound(p => p.NoInicial).Width(150);
-                                columns.Bound(p => p.NoFinal).Width(150);
-                                columns.Bound(p => p.NumeroActual).Width(150);
-                                columns.Bound(p => p.Estado).Width(150);
-                            })
-                                .Filterable(f => f.Operators(o => o.ForString(s => s
+
+                                                     )
+                                                     .ForNumber(n => n
                                                        .Clear()
-                                                       .Contains("Contiene")
-                                                       .DoesNotContain("No contiene")
-                                                       .EndsWith("Termina con")
                                                        .IsEqualTo("Es igual a")
-                                                       .IsNotEqualTo("No es igual a")
+                                                       .IsGreaterThan("Es mayor que")
+                                                       .IsLessThan("Es menor que")
                                                        .IsNull("Es nulo")
-                                                       .StartsWith("Inicia con")
-
-
-                                                 )
-                                                 .ForNumber(n => n
-                                                   .Clear()
-                                                   .IsEqualTo("Es igual a")
-                                                   .IsGreaterThan("Es mayor que")
-                                                   .IsLessThan("Es menor que")
-                                                   .IsNull("Es nulo")
-                                                   .IsLessThanOrEqualTo("Es menor o igual que")
-                                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                 )
-                                                 .ForDate(d => d
-                                                 .Clear()
-                                                 .IsEqualTo("Es igual que")
-                                                 .IsGreaterThan("Es mayor que")
-                                                 .IsLessThan("Es menor que")
-                                                 .IsLessThanOrEqualTo("Es menor o igual que")
-                                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                 .IsNotEqualTo("No es igual que")
-                                                  )
-                                               ))
-                            .ToolBar(tools =>
-                            {
-                                // tools.Create();
-                                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                                   .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCheckAccount()" });
-                                tools.Excel().Text("Exportar a Excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                tools.Pdf().Text("Exportar a PDF").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-
-                            })
-                            .Editable(e => e.Mode(GridEditMode.PopUp))
-                            .Sortable()
-                            .Pageable()
-                            .Filterable()
-                            .AutoBind(true)
-                            .Scrollable()
-                            .ClientDetailTemplateId("GridCheckAccountLines")
-                            .Pdf(pdf => pdf.FileName("CheckAccountReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                .Excel(excel => excel.FileName("CheckAccountReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                            .DataSource(dataSource =>
-                                dataSource
-                                .WebApi()
-
-                                .ServerOperation(true)
-                                .Model(model =>
+                                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                     )
+                                                     .ForDate(d => d
+                                                     .Clear()
+                                                     .IsEqualTo("Es igual que")
+                                                     .IsGreaterThan("Es mayor que")
+                                                     .IsLessThan("Es menor que")
+                                                     .IsLessThanOrEqualTo("Es menor o igual que")
+                                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                     .IsNotEqualTo("No es igual que")
+                                                      )
+                                                   ))
+                                .ToolBar(tools =>
                                 {
-                                    model.Id(p => p.CheckAccountId);
-                                    model.Field(p => p.CheckAccountId).Editable(false);
-                                    model.Field(p => p.FechaCreacion).Editable(true);
-                                    model.Field(p => p.UsuarioCreacion).Editable(false);
-                                    model.Field(p => p.UsuarioModificacion).Editable(false);
+                                    // tools.Create();
+                                    if (permisos.HasClaim("Bancos.Cheques.Agregar Chequeras", "true"))
+                                    {
+                                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                       .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCheckAccount()" });
+                                    }
+                                    tools.Excel().Text("Exportar a Excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                    tools.Pdf().Text("Exportar a PDF").HtmlAttributes(new { @class = "toolbar-field" });
+
+
 
                                 })
-                                .Events(events => events.Error("error_handler"))
-                                .Read(read => read.Action("GetCheckAccount", "CheckAccount"))
-                                .Create(create => create.Action("Insert", "CheckAccount"))
-                                .Update(update => update.Action("Update", "CheckAccount").Type(HttpVerbs.Put))
-                                .Destroy(destroy => destroy.Action("Delete", "CheckAccount").Type(HttpVerbs.Post))
+                                .Editable(e => e.Mode(GridEditMode.PopUp))
+                                .Sortable()
+                                .Pageable()
+                                .Filterable()
+                                .AutoBind(true)
+                                .Scrollable()
+                                .ClientDetailTemplateId("GridCheckAccountLines")
+                                .Pdf(pdf => pdf.FileName("CheckAccountReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                    .Excel(excel => excel.FileName("CheckAccountReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                .DataSource(dataSource =>
+                                    dataSource
+                                    .WebApi()
 
-                            )
-                            )
+                                    .ServerOperation(true)
+                                    .Model(model =>
+                                    {
+                                        model.Id(p => p.CheckAccountId);
+                                        model.Field(p => p.CheckAccountId).Editable(false);
+                                        model.Field(p => p.FechaCreacion).Editable(true);
+                                        model.Field(p => p.UsuarioCreacion).Editable(false);
+                                        model.Field(p => p.UsuarioModificacion).Editable(false);
 
+                                    })
+                                    .Events(events => events.Error("error_handler"))
+                                    .Read(read => read.Action("GetCheckAccount", "CheckAccount"))
+                                    .Create(create => create.Action("Insert", "CheckAccount"))
+                                    .Update(update => update.Action("Update", "CheckAccount").Type(HttpVerbs.Put))
+                                    .Destroy(destroy => destroy.Action("Delete", "CheckAccount").Type(HttpVerbs.Post))
 
-
-<script id="GridCheckAccountLines"  type="text/kendo-tmpl">
-     @(Html.Kendo().Grid<ERPMVC.Models.CheckAccountLines>()
-                    .Name("grid_#=CheckAccountId#")
-                    .Columns(columns =>
-                    {
-                        columns.Command(command =>
-                        {
-                            command.Custom("Anular").Text(" ").IconClass("fa fa-close").Click("AnularCheque");
-                            command.Custom("ImprimirCheque").Text(" ").IconClass("fa fa-print").Click("ImprimirCheque");
-                            command.Custom("ImprimirReporteCheque").Text(" ").IconClass("fa fa-print").Click("ImprimirReporteCheque");
-                        }).Title("Acciones").Width(150);
-                        columns.Bound(o => o.Id).Title("Id").Width(80);
-                        columns.Bound(o => o.CheckNumber).Title("Numero").Width(120);
-                        columns.Bound(o => o.Date).Title("Fecha").Format("{0:dd/MM/yyyy}").Width(120);
-                        columns.Bound(o => o.PaytoOrderOf).Title("A Nombre").Width(250);
-                        columns.Bound(o => o.Ammount).Title("Monto").Format("{0:C}").Width(120);
-                        columns.Bound(o => o.Estado).Title("Estado").Width(120);
-                        columns.Bound(o => o.AmountWords).Title("Cantidad en Letras").Width(250);
-                        //columns.Command(command =>
-                        //{
-                        //    command.Destroy().Text(" ").IconClass("fa fa-trash");
-                        //}).Width(250);
-                    })
-                    .DataSource(dataSource => dataSource
-                       .WebApi()
-                       .PageSize(10)
-                       .Read(read => read.Action("GetCheckAccountLinesByCheckAccountId", "CheckAccountLines", new { CheckAccountId = "#=CheckAccountId#" }))
-                       //.Destroy(destroy => destroy.Action("Delete", "UserRol", new { RoleId = "{0}", UserId = "#=Id#" }))
-                       )
-
-                   .Pageable()
-                   //.ToolBar(tools =>
-                   //         {
-                   //             // tools.Create();
-                   //             //tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                   //               //                                 .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCheckAccountLine()" });
-                   //             tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
-                   //             tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+                                )
+)
 
 
 
-                   //         })
-                   .Sortable()
-                   .ToClientTemplate())
+<script id="GridCheckAccountLines" type="text/kendo-tmpl">
+    @(Html.Kendo().Grid<ERPMVC.Models.CheckAccountLines>()
+                           .Name("grid_#=CheckAccountId#")
+                           .Columns(columns =>
+                           {
+                               if (permisos.HasClaim("Bancos.Cheques.Anular Cheques", "true")
+                               || permisos.HasClaim("Bancos.Cheques.Imprimir Cheques", "true")
+                               || permisos.HasClaim("Bancos.Cheques.Reporte de Cheques", "true"))
+                               {
+                                   columns.Command(command =>
+                                   {
+                                       if (permisos.HasClaim("Bancos.Cheques.Anular Cheques", "true"))
+                                       {
+                                           command.Custom("Anular").Text(" ").IconClass("fa fa-close").Click("AnularCheque");
+                                       }
+                                       if (permisos.HasClaim("Bancos.Cheques.Imprimir Cheques", "true"))
+                                       {
+                                           command.Custom("ImprimirCheque").Text(" ").IconClass("fa fa-print").Click("ImprimirCheque");
+                                       }
+                                       if (permisos.HasClaim("Bancos.Cheques.Reporte de Cheques", "true"))
+                                       {
+                                           command.Custom("ImprimirReporteCheque").Text(" ").IconClass("fa fa-print").Click("ImprimirReporteCheque");
+                                       }
+                                   }).Title("Acciones").Width(150);
+                               }
+                               columns.Bound(o => o.Id).Title("Id").Width(80);
+                               columns.Bound(o => o.CheckNumber).Title("Numero").Width(120);
+                               columns.Bound(o => o.Date).Title("Fecha").Format("{0:dd/MM/yyyy}").Width(120);
+                               columns.Bound(o => o.PaytoOrderOf).Title("A Nombre").Width(250);
+                               columns.Bound(o => o.Ammount).Title("Monto").Format("{0:C}").Width(120);
+                               columns.Bound(o => o.Estado).Title("Estado").Width(120);
+                               columns.Bound(o => o.AmountWords).Title("Cantidad en Letras").Width(250);
+                               //columns.Command(command =>
+                               //{
+                               //    command.Destroy().Text(" ").IconClass("fa fa-trash");
+                               //}).Width(250);
+                           })
+                           .DataSource(dataSource => dataSource
+                              .WebApi()
+                              .PageSize(10)
+                              .Read(read => read.Action("GetCheckAccountLinesByCheckAccountId", "CheckAccountLines", new { CheckAccountId = "#=CheckAccountId#" }))
+                              //.Destroy(destroy => destroy.Action("Delete", "UserRol", new { RoleId = "{0}", UserId = "#=Id#" }))
+                              )
+
+                          .Pageable()
+                          //.ToolBar(tools =>
+                          //         {
+                          //             // tools.Create();
+                          //             //tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                          //               //                                 .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCheckAccountLine()" });
+                          //             tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                          //             tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                          //         })
+                          .Sortable()
+                          .ToClientTemplate())
 
 </script>
 
 
 <script>
     function AnularCheque(e) {
-        debugger;  
+        debugger;
              e.preventDefault();
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
             var dataObject = {
@@ -342,28 +369,28 @@
     }
 
         function ImprimirCheque(e) {
-        debugger;  
+        debugger;
              e.preventDefault();
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-            
+
 
             var url = '@Url.Action("SFCheque", "CheckAccount")/' + dataItem.Id;
                 var win = window.open(url, '_blank');
                 win.focus();
 
-            
+
     }
     function ImprimirReporteCheque(e) {
-        debugger;  
+        debugger;
              e.preventDefault();
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-            
+
 
             var url = '@Url.Action("SFVoucherCheque", "CheckAccount")/' + dataItem.Id;
                 var win = window.open(url, '_blank');
                 win.focus();
 
-            
+
     }
 
 
@@ -381,7 +408,7 @@
             filter: btn_cl,
             content: btn_tooltip
         });
-    } 
+    }
 
     setRowButtonTooltip(".k-grid-Anular", "Anular Cheque");
     setRowButtonTooltip(".k-grid-ImprimirCheque", "Imprimir Cheque");
@@ -394,10 +421,10 @@
 
 
 <div id="NumCheck">
-    @await Html.PartialAsync("pvwAddCheck" , new ERPMVC.DTO.CheckAccountLinesDTO { CheckAccountId = 0 , Id = 0 })
+    @await Html.PartialAsync("pvwAddCheck", new ERPMVC.DTO.CheckAccountLinesDTO { CheckAccountId = 0, Id = 0 })
 
 </div>
-    
+
 <div id="NumCheckAccount">
     @await Html.PartialAsync("pvwAddCheckAccount", new ERPMVC.DTO.CheckAccountDTO { CheckAccountId = 0, FechaIngreso = DateTime.Now })
 </div>

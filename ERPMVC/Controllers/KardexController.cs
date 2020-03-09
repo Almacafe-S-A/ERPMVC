@@ -32,6 +32,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Inventarios.Kardex")]
         public IActionResult Index()
         {
             ViewData["permisos"] = _principal;

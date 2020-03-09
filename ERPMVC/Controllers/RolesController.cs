@@ -35,6 +35,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Seguridad.Roles")]
         public IActionResult Roles()
         {
             ViewData["permisoAgregar"] = _principal.HasClaim("Seguridad.Roles.Agregar Roles", "true");
@@ -43,6 +44,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        [Authorize(Policy = "Seguridad.Permiso Roles")]
         public IActionResult PermisosRoles()
         {
             return View();

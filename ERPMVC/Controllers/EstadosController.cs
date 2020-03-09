@@ -33,6 +33,7 @@ namespace ERPMVC.Controllers
             
         }
 
+        [Authorize(Policy = "Administracion.Estados")]
         public IActionResult Estados()
         {
             return View();

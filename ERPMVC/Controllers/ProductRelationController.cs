@@ -36,6 +36,7 @@ namespace ERPMVC.Controllers
         }
 
         // GET: ProductRelation
+        [Authorize(Policy = "Catalogos.Relacion Servicio")]
         public ActionResult ProductRelation()
         {
             ViewData["permisoAgregar"] = _principal.HasClaim("Catalogos.Relacion Servicio.Agregar Relacion Servicio", "true");

@@ -34,6 +34,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
         // GET: TypeAccount
+        [Authorize(Policy = "Contabilidad.Tipos de Documentos")]
         public ActionResult TypeJournal()
         {
             ViewData["permisos"] = _principal;

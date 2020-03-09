@@ -55,6 +55,7 @@ namespace ERPMVC.Controllers
             this.view = view;
         }
 
+        [Authorize(Policy = "Ventas.Cotizaciones")]
         [CustomAuthorization]
         public IActionResult Index()
         {

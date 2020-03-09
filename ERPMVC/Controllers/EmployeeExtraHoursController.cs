@@ -32,6 +32,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Clientes.Horas Extra")]
         public async  Task<IActionResult> Index()
         {
             ViewData["permisos"] = _principal;

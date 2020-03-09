@@ -41,7 +41,7 @@ namespace ERPMVC.Controllers
         //    this.config = config;
         //    this._logger = logger;
         //}
-
+        [Authorize(Policy = "Configuracion.Informacion de la Empresa")]
         public IActionResult CompanyInfo()
         {
             ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Informacion de la Empresa.Agregar Informacion de la Empresa", "true");

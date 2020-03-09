@@ -33,6 +33,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Monitoreo.PEPS")]
         public IActionResult PEPS()
         {
             ViewData["permisos"] = _principal;

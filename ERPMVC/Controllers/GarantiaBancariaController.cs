@@ -32,6 +32,8 @@ namespace ERPMVC.Controllers
             this._logger = logger;
             _principal = httpContextAccessor.HttpContext.User;
         }
+
+        [Authorize(Policy = "Contabilidad.Garantias Bancarias")]
         public IActionResult Index()
         {
             ViewData["permisos"] = _principal;

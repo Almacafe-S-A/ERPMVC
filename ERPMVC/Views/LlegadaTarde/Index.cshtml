@@ -1,22 +1,25 @@
 ﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
 @{
     DateTime fecha = DateTime.Today;
     bool todo = false;
     if (TempData.ContainsKey("Fecha"))
     {
-        fecha = (DateTime) TempData["Fecha"];
-    }else if (ViewData.ContainsKey("Fecha"))
+        fecha = (DateTime)TempData["Fecha"];
+    }
+    else if (ViewData.ContainsKey("Fecha"))
     {
-        fecha = (DateTime) ViewData["Fecha"];
+        fecha = (DateTime)ViewData["Fecha"];
     }
     if (TempData.ContainsKey("Todos"))
     {
-        todo = (bool) TempData["Todos"];
-    }else if (ViewData.ContainsKey("Todos"))
-    {
-        todo = (bool) TempData["Todos"];
+        todo = (bool)TempData["Todos"];
     }
-
+    else if (ViewData.ContainsKey("Todos"))
+    {
+        todo = (bool)TempData["Todos"];
+    }
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 <h3 class="text-themecolor">Revisión y Aprobación de Llegadas Tarde</h3>
 <div class="container-fluid">
@@ -30,7 +33,7 @@
                     </div>
                     <div class="form-group">
                         <label for="Todos">Mostrar Todos los Estados:</label>
-                        <input type="checkbox" id="Todos" name="Todos" value="true" style="position: relative; left: 0px; opacity: 100;"/>
+                        <input type="checkbox" id="Todos" name="Todos" value="true" style="position: relative; left: 0px; opacity: 100;" />
                     </div>
                     <div class="form-group">
                         <input type="submit" value="Cargar" />
@@ -58,7 +61,7 @@
                             fecha: '@fecha.ToString("yyyy-MM-dd")',
                             todos: @todo.ToString().ToLower()
                         }
-                    } 
+                    }
                 },
                 schema: {
                     model: {
@@ -76,8 +79,8 @@
             columns: [
                 {
                     command: [
-                        { name: "aprobar", iconClass: "fa fa-thumbs-up", text: "", click: Aprobar, visible: function (dataItem) {return dataItem.Estado.IdEstado === 70 } },
-                        { name: "rechazar", iconClass: "fa fa-thumbs-down", text: "", click: Rechazar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 70 } }
+                        PermisoAprobar(),
+                        PermisoRechazar()
                     ],
                     width:150
                 },
@@ -188,4 +191,24 @@
         EditorFecha();
         CrearGrid();
     });
+</script>
+<script type="text/javascript">
+    function PermisoAprobar() {
+        var permisos = '@ViewData["permisos"]';
+        if ("@permisos.HasClaim("RRHH.Llegadas Tarde.Aprobar Llegadas Tarde", "true")" == "True") {
+            AprobarLlegadasTarde = {
+                name: "aprobar", iconClass: "fa fa-thumbs-up", text: "", click: Aprobar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 70 }
+            }
+            return AprobarLlegadasTarde
+        }
+    }
+    function PermisoRechazar() {
+        var permisos = '@ViewData["permisos"]';
+        if ("@permisos.HasClaim("RRHH.Llegadas Tarde.Rechazar Llegadas Tarde", "true")" == "True") {
+            RechazarLlegadasTarde = {
+                name: "rechazar", iconClass: "fa fa-thumbs-down", text: "", click: Rechazar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 70 }
+            }
+            return RechazarLlegadasTarde
+        }
+    }
 </script>

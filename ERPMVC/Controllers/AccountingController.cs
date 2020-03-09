@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -25,16 +26,19 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public AccountingController(ILogger<HomeController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public AccountingController(ILogger<HomeController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
         //public async Task<IActionResult> SFAuxiliarMovimientos()
         //{
         //    return await Task.Run(() => View());
 
         //}
+        [Authorize(Policy = "")]
         [HttpGet]
         public ActionResult SFAuxiliarMovimientos(Int32 id)
         {
@@ -374,15 +378,15 @@ namespace ERPMVC.Controllers
 
         }
 
-
+        [Authorize(Policy = "Contabilidad.Cuentas.Catalogo de Cuentas")]
         [HttpGet]
         public async Task<ActionResult> Index()
         {
             var TypesAccounting = await GetTypeAccount();
             List<TypeAccount> TiposCuentas = ((List<TypeAccount>)TypesAccounting.Value);
             this.ViewBag.ListTypeAccount = TiposCuentas;
+            ViewData["permisos"] = _principal;
 
-           
             return await Task.Run(() => View());
 
         }

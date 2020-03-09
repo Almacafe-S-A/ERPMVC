@@ -35,6 +35,7 @@ namespace ERPMVC.Controllers
         }
 
         //[HttpGet("[controller]/[action]")]
+        [Authorize(Policy = "Configuracion.Ciudad")]
         public async Task<IActionResult> City()
         {
             ViewData["Pais"] = await ObtenerPais();

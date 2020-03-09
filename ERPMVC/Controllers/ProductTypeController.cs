@@ -32,6 +32,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Catalogos.Tipo de Producto")]
         public IActionResult ProductType()
         {
             ViewData["permisoAgregar"] = _principal.HasClaim("Catalogos.Tipo de Producto.Agregar Tipo de Producto", "true");

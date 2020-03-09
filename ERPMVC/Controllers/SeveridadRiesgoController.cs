@@ -33,7 +33,7 @@ namespace ERPMVC.Controllers
         }
 
         //--------------------------------------------------------------------------------------
-
+        [Authorize(Policy = "Monitoreo.Definicion de Severidad")]
         public IActionResult Index()
         {
             ViewData["permisos"] = _principal;

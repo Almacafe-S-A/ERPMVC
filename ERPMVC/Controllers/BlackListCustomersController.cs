@@ -33,6 +33,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Monitoreo.Informacion Mediatica")]
         public IActionResult BlackListCustomers()
         {
             ViewData["permisos"] = _principal;
