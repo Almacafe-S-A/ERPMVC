@@ -65,7 +65,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 var resultLogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = model.Email, Password = model.Password });
-                
+
                 if (resultLogin.IsSuccessStatusCode)
                 {
                     string webtoken = await (resultLogin.Content.ReadAsStringAsync());
@@ -141,6 +141,7 @@ namespace ERPMVC.Controllers
                     {
                         _message.Add(new MessageClassUtil { key = "Login", name = "error", mensaje = "Error en login" });
                         model.Failed = true;
+                        model.LoginError = "Error en login: " + resultLogin.Content.ReadAsStringAsync().GetAwaiter().GetResult();
                         return View(model);
                     }
 
@@ -149,6 +150,7 @@ namespace ERPMVC.Controllers
                 {
                     _message.Add(new MessageClassUtil { key = "Login", name = "error", mensaje = "Error en login" });
                     model.Failed = true;
+                    model.LoginError = "Error en login: " + resultLogin.Content.ReadAsStringAsync().GetAwaiter().GetResult();
                     return View(model);
                 }
 
@@ -158,6 +160,7 @@ namespace ERPMVC.Controllers
             {
                 Console.WriteLine(ex);
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                model.LoginError = "Ocurrio un error: " + ex.Message.ToString();
                 model.Failed = true;
                 return View(model);
                 // throw ex;
