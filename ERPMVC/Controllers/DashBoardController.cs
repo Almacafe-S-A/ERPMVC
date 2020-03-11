@@ -570,6 +570,33 @@ namespace ERPMVC.Controllers
             }
             return Json(_Cantidad);
         }
+
+        [HttpGet("[controller]/[action]")]
+        public async Task<JsonResult> GetSalarioTotal()
+        {
+            decimal _Cantidad = 0;
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Dashboard/GetSalarioTotal");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Cantidad = JsonConvert.DeserializeObject<decimal>(valorrespuesta);
+
+                }
+            }
+            catch (System.Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw (new Exception(ex.Message));
+            }
+            return Json(_Cantidad);
+        }
+
         //===============================FIN RRHH=================================================
 
 
