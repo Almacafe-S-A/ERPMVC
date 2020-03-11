@@ -459,5 +459,9 @@ namespace ERPMVC.Controllers
             return View("ConfiguracionIHSS");
         }
 
+        public IActionResult ConfiguracionPlanilla()
+        {
+            return View("ConfiguracionPlanilla");
+        }
     }
 }

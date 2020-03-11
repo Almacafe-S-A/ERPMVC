@@ -15,6 +15,7 @@ namespace ERPMVC.Models
         public long EstadoId { get; set; }
         public Estados Estado { get; set; }
         public Employees Empleado { get; set; }
+        public TipoBonificacion Tipo { get; set; }
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
         public string UsuarioModificacion { get; set; }
