@@ -399,6 +399,33 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet("[controller]/[action]")]
+        public async Task<ActionResult> GetEstadoByGrupo2(int GrupoEstadoId)
+        {
+            List<Estados> _Estados = new List<Estados>();
+            try
+            {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                var result = await _client.GetAsync(baseadress + "api/Estados/GetEstadosByGrupoEstado/" + GrupoEstadoId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Estados = JsonConvert.DeserializeObject<List<Estados>>(valorrespuesta);
+                }
+
+                return Ok(_Estados);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpGet("[controller]/[action]")]
         public async Task<ActionResult> GetGrupoEstado([DataSourceRequest]DataSourceRequest request)
         {
             List<GrupoEstado> _Estados = new List<GrupoEstado>();
