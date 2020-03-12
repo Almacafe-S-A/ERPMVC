@@ -42,7 +42,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        [Authorize(Policy = "Contabilidad.Movimientos.Asiento Contable.Aprobar")]
+        [Authorize(Policy = "Contabilidad.Movimientos.Ajustes Contables")]
         public ActionResult IndexAjustes()
         {
             ViewData["permisos"] = _principal;

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
@@ -23,11 +24,12 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-
-        public UserRolController(ILogger<UserRolController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public UserRolController(ILogger<UserRolController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
 
         }
 
@@ -40,12 +42,14 @@ namespace ERPMVC.Controllers
         [Authorize(Policy = "Seguridad.Roles por Usuario")]
         public IActionResult PorRol()
         {
+            ViewData["permisos"] = _principal;
             return View();
         }
 
         [Authorize(Policy = "Seguridad.Roles por Usuario")]
         public IActionResult PorUsuario()
         {
+            ViewData["permisos"] = _principal;
             return View();
         }
 
