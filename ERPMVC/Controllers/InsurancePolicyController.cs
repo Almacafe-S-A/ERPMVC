@@ -124,6 +124,42 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpGet("[controller]/[action]")]
+        public async Task<DataSourceResult> GetInsuracesPoliciesByInsuranceId([DataSourceRequest]DataSourceRequest request,int InsuranceId)
+        {
+            List<InsurancePolicy> _InsurancePolicy = new List<InsurancePolicy>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/InsurancePolicy/GetInsurancePolicyByInsuranceId/"+InsuranceId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _InsurancePolicy = JsonConvert.DeserializeObject<List<InsurancePolicy>>(valorrespuesta);
+                    _InsurancePolicy = _InsurancePolicy.OrderByDescending(q => q.InsurancePolicyId).ToList();
+
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _InsurancePolicy.ToDataSourceResult(request);
+
+        }
+
+
+
         /*[HttpGet("[action]")]
         public async Task<DataSourceResult> GeDocumentByCustomerId([DataSourceRequest]DataSourceRequest request, Int64 CustomerId)
         {
