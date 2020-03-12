@@ -1,4 +1,9 @@
-﻿<script>
+﻿@using System.Security.Claims
+
+@{
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisosWarehouse"];
+}
+<script>
     function databranch() {
         return {
             BranchId: $("#BranchId").val()
@@ -6,7 +11,7 @@
     }
 
     function AddWarehouse() {
-        
+
 
         var dataObject = {
             WarehouseId: 0,
@@ -64,7 +69,7 @@
                     $("#divpvwWarehouse").html('');
                     $("#divpvwWarehouse").html(result);
 
-                
+
                     //$("#btnCAI").hide();
                     $('#ModalWareHouse').modal('show');
                 },
@@ -86,72 +91,76 @@
 </script>
 
 @(Html.Kendo().Grid<ERPMVC.Models.Warehouse>()
-            .Name("gridWarehouse")
-            .Columns(columns =>
-            {
-                columns.Command(command =>
+                .Name("gridWarehouse")
+                .Columns(columns =>
                 {
-                    //command.Custom("Ver detalles").Click("Detalles");
-                    //command.Custom("Editar").Click("EditWarehouse");
-                    command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditWarehouse");
-                    //command.Destroy().Text("Eliminar");
-                }).Width(170).Title("Acciones");
+                    if (permisos.HasClaim("Administracion.Sucursales.Editar Almacen", "true"))
+                    {
+                        columns.Command(command =>
+                        {
+                            //command.Custom("Ver detalles").Click("Detalles");
+                            //command.Custom("Editar").Click("EditWarehouse");
+                            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditWarehouse");
+                            //command.Destroy().Text("Eliminar");
+                        }).Width(170).Title("Acciones");
+                    }
+                    columns.Bound(p => p.WarehouseId).Width(150);
+                    columns.Bound(p => p.WarehouseName).Width(170);
+                    columns.Bound(p => p.BranchId).Width(170);
+                    columns.Bound(p => p.Description).Width(170);
+                    columns.Bound(p => p.Estado).Width(170);
+                })
+                .ToolBar(tools =>
+                {
 
-                columns.Bound(p => p.WarehouseId).Width(150);
-                columns.Bound(p => p.WarehouseName).Width(170);
-                columns.Bound(p => p.BranchId).Width(170);
-                columns.Bound(p => p.Description).Width(170);
-                columns.Bound(p => p.Estado).Width(170);
-            })
-            .ToolBar(tools =>
-            {
+                    //tools.Create();
+                    if (permisos.HasClaim("Administracion.Sucursales.Agregar Almacen", "true"))
+                    {
+                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddWarehouse()", @id = "IdBoton" });
+                    }
+                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                })
+                .Editable(e => e.Mode(GridEditMode.InLine))
+                .Sortable()
+                //.Pageable()
+                .Filterable()
+                .Scrollable()
+                .Pdf(pdf => pdf.FileName("WarehouseReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                .Excel(excel => excel.FileName("WarehouseReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                .DataSource(dataSource =>
+                dataSource
+                .WebApi()
 
-                //tools.Create();
-                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddWarehouse()", @id="IdBoton" });
-                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-            })
-            .Editable(e => e.Mode(GridEditMode.InLine))
-            .Sortable()
-            //.Pageable()
-            .Filterable()
-            .Scrollable()
-            .Pdf(pdf => pdf.FileName("WarehouseReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-            .ProxyURL(Url.Action("Export", "Home")).AllPages())
-            .Excel(excel => excel.FileName("WarehouseReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-            .DataSource(dataSource =>
-            dataSource
-            .WebApi()
-
-            .ServerOperation(true)
-            .Model(model =>
-            {
-                model.Id(p => p.WarehouseId);
-                model.Field(p => p.WarehouseId).Editable(false);
+                .ServerOperation(true)
+                .Model(model =>
+                {
+                    model.Id(p => p.WarehouseId);
+                    model.Field(p => p.WarehouseId).Editable(false);
 
 
-            })
-            .Events(events => events.Error("error_handler"))
-            .Read(read => read.Action("Get", "Warehouse").Data("databranch"))
-            .Create(create => create.Action("Insert", "Warehouse").Type(HttpVerbs.Post))
-            .Update(update => update.Action("Update", "Warehouse").Type(HttpVerbs.Post))
-            //.Destroy(destroy => destroy.Action("Delete", "Warehouse").Type(HttpVerbs.Post))
+                })
+                .Events(events => events.Error("error_handler"))
+                .Read(read => read.Action("Get", "Warehouse").Data("databranch"))
+                .Create(create => create.Action("Insert", "Warehouse").Type(HttpVerbs.Post))
+                .Update(update => update.Action("Update", "Warehouse").Type(HttpVerbs.Post))
+                //.Destroy(destroy => destroy.Action("Delete", "Warehouse").Type(HttpVerbs.Post))
 
-            )
-            .Events(e =>
-            {
-                e.Save("onsave");
+                )
+                .Events(e =>
+                {
+                    e.Save("onsave");
 
-            })
+                })
 )
 
 <div id="divpvwWarehouse">
-    @await  Html.PartialAsync("pvwWarehouse.cshtml",new ERPMVC.Models.Warehouse { WarehouseId=0, FechaEmisionPoliza= DateTime.Now, FechaVencimientoPoliza= DateTime.Now} )
+    @await Html.PartialAsync("pvwWarehouse.cshtml", new ERPMVC.Models.Warehouse { WarehouseId = 0, FechaEmisionPoliza = DateTime.Now, FechaVencimientoPoliza = DateTime.Now })
 </div>
 
 <script>

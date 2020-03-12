@@ -16,6 +16,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.IO;
 using Microsoft.AspNetCore.Hosting;
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -26,21 +27,27 @@ namespace ERPMVC.Controllers
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
         private IHostingEnvironment _hostingEnvironment;
+        private readonly ClaimsPrincipal _principal;
         public CompanyInfoController(IHostingEnvironment hostingEnvironment
-            , ILogger<CompanyInfoController> logger, IOptions<MyConfig> config)
+            , ILogger<CompanyInfoController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
             _hostingEnvironment = hostingEnvironment;
+            _principal = httpContextAccessor.HttpContext.User;
         }
         //public CompanyInfoController(ILogger<CompanyInfoController> logger, IOptions<MyConfig> config)
         //{
         //    this.config = config;
         //    this._logger = logger;
         //}
-
+        [Authorize(Policy = "Configuracion.Informacion de la Empresa")]
         public IActionResult CompanyInfo()
         {
+            ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Informacion de la Empresa.Agregar Informacion de la Empresa", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Configuracion.Informacion de la Empresa.Editar Informacion de la Empresa", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Configuracion.Informacion de la Empresa.Eliminar Informacion de la Empresa", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Configuracion.Informacion de la Empresa.Exportar Informacion de la Empresa", "true");
             return View();
         }
 

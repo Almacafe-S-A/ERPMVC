@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -24,11 +25,12 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-
-        public SubProductController(ILogger<HomeController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public SubProductController(ILogger<HomeController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         [HttpGet("[controller]/[action]")]
@@ -37,22 +39,33 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        [Authorize(Policy = "Catalogos.Productos de Cliente")]
         [HttpGet("[controller]/[action]")]
         public IActionResult SubProductClientes()
         {
+            ViewData["permisoAgregar"] = _principal.HasClaim("Catalogos.Productos de Cliente.Agregar Productos de Cliente", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Catalogos.Productos de Cliente.Editar Productos de Cliente", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Catalogos.Productos de Cliente.Eliminar Productos de Cliente", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Catalogos.Productos de Cliente.Exportar Productos de Cliente", "true");
             return View();
         }
 
+        [Authorize(Policy = "Catalogos.SubServicios")]
         [HttpGet("[controller]/[action]")]
         public IActionResult SubProductPropios()
         {
+            ViewData["permisoAgregar"] = _principal.HasClaim("Catalogos.SubServicios.Agregar SubServicios", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Catalogos.SubServicios.Editar SubServicios", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Catalogos.SubServicios.Eliminar SubServicios", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Catalogos.SubServicios.Exportar SubServicios", "true");
             return View();
         }
 
-
+        [Authorize(Policy = "Monitoreo.Productos Prohibidos")]
         [HttpGet("[controller]/[action]")]
         public IActionResult SubProductProhibidos()
         {
+            ViewData["permisos"] = _principal;
             return View();
         }
 
@@ -401,7 +414,7 @@ namespace ERPMVC.Controllers
                 if (_SubProduct.SubproductId > 0)
                 {
                     if (_SubProduct.SubproductId != _SubProductS.SubproductId)
-                        return await Task.Run(() => BadRequest($"Ya existe un SubServicio con el mismo Nombre."));
+                        return await Task.Run(() => BadRequest($"Ya existe un Producto con el mismo Nombre."));
                 }
 
                 if (_SubProductS.SubproductId == 0)

@@ -55,6 +55,7 @@ namespace ERPMVC.Controllers
             this.view = view;
         }
 
+        [Authorize(Policy = "Ventas.Cotizaciones")]
         [CustomAuthorization]
         public IActionResult Index()
         {
@@ -63,7 +64,7 @@ namespace ERPMVC.Controllers
             try
             {
                 ViewData["permisoAprobar"] = _principal.HasClaim("Ventas.Cotizaciones", "true");
-
+                ViewData["permisos"] = _principal;
             }
             catch (Exception ex)
             {
@@ -108,7 +109,7 @@ namespace ERPMVC.Controllers
                     };
                 }
                 _salesorderf.editar = _salesorder.editar;
-
+                ViewData["permisos"] = _principal;
 
 
             }
@@ -303,7 +304,49 @@ namespace ERPMVC.Controllers
 
             return await Task.Run(() => Ok(_so));
         }
+        [HttpPost("[controller]/[action]")]
+        public async Task<ActionResult<SalesOrderDTO>> Vencida([FromBody]SalesOrderDTO _SalesOrder)
+        {
+            SalesOrderDTO _so = new SalesOrderDTO();
+            if (_SalesOrder != null)
+            {
+                try
+                {
+                    string baseadress = _config.Value.urlbase;
+                    HttpClient _client = new HttpClient();
 
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var result = await _client.GetAsync(baseadress + "api/SalesOrder/GetSalesOrderById/" + _SalesOrder.SalesOrderId);
+                    string valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _so = JsonConvert.DeserializeObject<SalesOrderDTO>(valorrespuesta);
+
+
+                        //  _SalesOrder.UsuarioCreacion = HttpContext.Session.GetString("user");
+                        // _SalesOrder.UsuarioModificacion = HttpContext.Session.GetString("user");
+                        _so.IdEstado = 62;
+                        _so.Estado = "Vencida";
+                        var resultsalesorder = await Update(_so.SalesOrderId, _so);
+
+                        var value = (resultsalesorder.Result as ObjectResult).Value;
+                        SalesOrder resultado = ((SalesOrder)(value));
+                    }
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                    throw ex;
+                }
+            }
+            else
+            {
+                return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+            }
+
+            return await Task.Run(() => Ok(_so));
+        }
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<SalesOrderDTO>> Aprobar([FromBody]SalesOrderDTO _SalesOrder)
         {

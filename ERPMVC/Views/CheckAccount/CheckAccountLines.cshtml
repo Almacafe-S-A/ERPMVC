@@ -1,0 +1,388 @@
+﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
+@model ERPMVC.DTO.CheckAccountDTO
+
+
+@{
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+       { "required","Valor requerido" }};
+
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+@{
+    ViewData["Title"] = "Cheques";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
+
+
+<div class="modal-dialog modal-lg">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h4 class="modal-title">Cheques</h4>
+            <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+        </div>
+        <div class="modal-body">
+            <form id="frmCheckAccount" kendo-validator="true" asp-controller="CheckAccount" asp-action="SaveCheckAccount" kendo-messages="messages"
+                  data-ajax="true"
+                  data-ajax-method="post" enctype="multipart/form-data"
+                  data-ajax-begin="onBeginC" data-ajax-complete="onCompleteC"
+                  data-ajax-failure="onFailedC" data-ajax-success="onSuccessC"
+                  class="validation-wizard wizard-circle">
+                <div class="form-body">
+                    <div class="row">
+                        @*<div class="col-md-4">
+            <div class="form-group">
+                <label asp-for="CheckAccountId" class="control-label" style="min-width:100%"></label>
+                <input type="text" asp-for="CheckAccountId" name="CheckAccountId" class="form-control" readonly style="min-width:100%" />
+
+            </div>
+        </div>*@
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <input type="text" asp-for="BankName" hidden />
+                                <label asp-for="BankId" class="control-label" style="min-width:100%"></label>
+                                <kendo-dropdownlist name="BankId"
+                                                    for="BankId"
+                                                    filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                    option-label="Seleccione el banco"
+                                                    datatextfield="BankName"
+                                                    enable="false"
+                                                    datavaluefield="BankId"
+                                                    onchange="refreshCuentas();"
+                                                    data-val-required="El Banco es Requerido"
+                                                    required
+                                                    style="min-width: 100%;">
+                                    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                        <transport>
+                                            <read url="@Url.Action("GetBank", "Bank")" />
+                                        </transport>
+                                    </datasource>
+                                </kendo-dropdownlist>
+                                <span asp-validation-for="BankId" class="text-danger"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <script>
+                                function GetCuentas() {
+
+                                    return { 'BankId': $("#BankId").val(), 'pTypeAccount': 95 }
+                                }
+
+                                function refreshCuentas() {
+                                    $("#AccountManagementId").data("kendoDropDownList").dataSource.read();
+                                    $("#BankName").val($("#BankId").data("kendoDropDownList").text());
+                                }
+                            </script>
+                            <div class="form-group">
+                                <label asp-for="AccountManagementId" class="control-label" style="min-width:100%">Número de Cuenta</label>
+                                <input type="text" asp-for="AssociatedAccountNumber" name="CheckAccountId" class="form-control" readonly style="min-width:100%" />
+                                @*<kendo-dropdownlist name="AccountManagementId"
+                                     for="AccountManagementId"
+                                     filter="Kendo.Mvc.UI.FilterType.Contains"
+                                     option-label="Seleccione una Cuenta"
+                                     datatextfield="AccountNumber"
+                                     enable="false"
+                                     datavaluefield="AccountManagementId"
+                                     data-val-required="La Cuenta es requerida"
+                                     onchange="setAccountNumber()"
+                                     style="min-width: 100%;">
+                    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                        <transport>
+                            <read url="@Url.Action("GetAccountManagementByBankIdByAccountType", "AccountManagement")" data="GetCuentas" />
+                        </transport>
+                    </datasource>
+                </kendo-dropdownlist>
+                <span asp-validation-for="AccountManagementId" class="text-danger"></span>*@
+
+
+                            </div>
+                        </div>
+                        <script>
+                            function setAccountNumber() {
+                                $("#AssociatedAccountNumber").val($("#AccountManagementId").data("kendoDropDownList").text());
+
+                            }
+
+                        </script>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label asp-for="CheckAccountNo" class=" control-label" style="min-width:100%"></label>
+                                <input type="text" asp-for="CheckAccountNo" name="CheckAccountNo" style="min-width: 100%;" class="form-control" readonly maxlength="50" onKeyPress="return soloNumeros(event)" />
+
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="row">
+
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label asp-for="NoInicial" class=" control-label" style="min-width:100%"></label>
+                                <input type="text" asp-for="NoInicial" name="NoInicial" class="form-control" required data-val-required="Número Inicial es requerido" readonly style="min-width:100%" maxlength="35" onKeyPress="return soloNumeros(event)" />
+
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label asp-for="NoFinal" class=" control-label" style="min-width:100%"></label>
+                                <input type="text" asp-for="NoFinal" name="NoFinal" class="form-control" required data-val-required="Número Final es requerido" style="min-width:100%" maxlength="35" readonly onKeyPress="return soloNumeros(event)" />
+
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label asp-for="FechaIngreso" class="control-label" style="width: 100%;"></label>
+                                <kendo-datepicker name="FechaIngreso" for="FechaIngreso"
+                                                  style="width: 100%;"
+                                                  format="dd/MM/yyyy"
+                                                  disabled
+                                                  data-val-required="La fecha es requerida"
+                                                  readonly />
+
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="row">
+                        
+                        <input type="text" hidden asp-for="Estado" />
+                        <input type="text" hidden asp-for="NumeroActual" />
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label asp-for="IdEstado" class="control-label">Estado</label>
+                                <kendo-dropdownlist name="IdEstado"
+                                                    for="@Model.IdEstado"
+                                                    filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                    option-label="Seleccionar Estado"
+                                                    datatextfield="NombreEstado"
+                                                    enable="false"
+                                                    required data-required-msg="El estado es requerido."
+                                                    datavaluefield="IdEstado"
+                                                    style="width: 100%;">
+                                    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                        <transport>
+                                            <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                                        </transport>
+                                    </datasource>
+                                </kendo-dropdownlist>
+                                <span asp-validation-for="IdEstado" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            @(Html.Kendo().Grid<ERPMVC.Models.CheckAccountLines>
+                            ()
+                            .Name("gridCheckAccountLine")
+                            .Columns(columns =>
+                            {
+
+                                if (permisos.HasClaim("Bancos.Cheques.Anular Cheques", "true")
+                               || permisos.HasClaim("Bancos.Cheques.Imprimir Cheques", "true")
+                               || permisos.HasClaim("Bancos.Cheques.Reporte de Cheques", "true"))
+                                {
+                                    columns.Command(command =>
+                                    {
+                                        if (permisos.HasClaim("Bancos.Cheques.Anular Cheques", "true"))
+                                        {
+                                            command.Custom("Anular").Text(" ").IconClass("fa fa-close").Click("AnularCheque");
+                                        }
+                                        if (permisos.HasClaim("Bancos.Cheques.Imprimir Cheques", "true"))
+                                        {
+                                            command.Custom("ImprimirCheque").Text(" ").IconClass("fa fa-print").Click("ImprimirCheque");
+                                        }
+                                        if (permisos.HasClaim("Bancos.Cheques.Reporte de Cheques", "true"))
+                                        {
+                                            command.Custom("ImprimirReporteCheque").Text(" ").IconClass("fa fa-print").Click("ImprimirReporteCheque");
+                                        }
+                                    }).Title("Acciones").Width(150);
+                                }
+                                columns.Bound(o => o.Id).Title("Id").Width(80);
+                                columns.Bound(o => o.CheckNumber).Title("Numero").Width(120);
+                                columns.Bound(o => o.Date).Title("Fecha").Format("{0:dd/MM/yyyy}").Width(120);
+                                columns.Bound(o => o.PaytoOrderOf).Title("A Nombre").Width(250);
+                                columns.Bound(o => o.Ammount).Title("Monto").Format("{0:C}").Width(120);
+                                columns.Bound(o => o.Estado).Title("Estado").Width(120);
+                                columns.Bound(o => o.AmountWords).Title("Cantidad en Letras").Width(250);
+
+
+                            })
+                            .Filterable(f => f.Operators(o => o.ForString(s => s
+                            .Clear()
+                            .Contains("Contiene")
+                            .DoesNotContain("No contiene")
+                            .EndsWith("Termina con")
+                            .IsEqualTo("Es igual a")
+                            .IsNotEqualTo("No es igual a")
+                            .IsNull("Es nulo")
+                            .StartsWith("Inicia con")
+
+
+                            )
+                            .ForNumber(n => n
+                            .Clear()
+                            .IsEqualTo("Es igual a")
+                            .IsGreaterThan("Es mayor que")
+                            .IsLessThan("Es menor que")
+                            .IsNull("Es nulo")
+                            .IsLessThanOrEqualTo("Es menor o igual que")
+                            .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                            )
+                            .ForDate(d => d
+                            .Clear()
+                            .IsEqualTo("Es igual que")
+                            .IsGreaterThan("Es mayor que")
+                            .IsLessThan("Es menor que")
+                            .IsLessThanOrEqualTo("Es menor o igual que")
+                            .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                            .IsNotEqualTo("No es igual que")
+                            )
+                            ))
+                            .ToolBar(tools =>
+                            {
+                              
+                                tools.Excel().HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a Excel");
+                                tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a PDF");
+
+                            })
+                            .Editable(e => e.Mode(GridEditMode.PopUp))
+                            .Sortable()
+                            .Pageable()
+                            .Filterable()
+                            .Scrollable()
+                            .Pdf(pdf => pdf.FileName("ChequesReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                            .Excel(excel => excel.FileName("ChequesReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                            .DataSource(dataSource =>
+                            dataSource
+                            .WebApi()
+
+                            .ServerOperation(true)
+                            .Model(model =>
+                            {
+                                model.Id(o => o.Id);
+
+                            })
+                            .Events(events => events.Error("error_handler"))
+                            .Read(read => read.Action("GetCheckAccountLinesByCheckAccountId", "CheckAccountLines", new { CheckAccountId = Model.CheckAccountId }))
+                           
+
+                            )
+                            .Events(e =>
+                            {
+
+                            })
+                            )
+
+
+                        </div>
+
+                    </div>
+                    
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+
+
+<script>
+     function AnularCheque(e) {
+        debugger;
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                CheckAccountId: dataItem.CheckAccountId,
+                Id: dataItem.Id,
+            };
+
+            $.ajax({
+                url: '@Url.Action("AnularCheque", "CheckAccount")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $.toast({
+                                heading: 'Satisfactorio',
+                                text: 'Cheque Anulado Correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    //alert(textStatus + ": " + XMLHttpRequest.responseText);
+                     $.toast({
+                                heading: 'Error',
+                                text: XMLHttpRequest.responseText,
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'error',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+                }
+            });
+        RefrescarGrid();
+    }
+
+        function ImprimirCheque(e) {
+        debugger;
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+
+            var url = '@Url.Action("SFCheque", "CheckAccount")/' + dataItem.Id;
+                var win = window.open(url, '_blank');
+                win.focus();
+
+
+    }
+    function ImprimirReporteCheque(e) {
+        debugger;
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+
+            var url = '@Url.Action("SFVoucherCheque", "CheckAccount")/' + dataItem.Id;
+                var win = window.open(url, '_blank');
+                win.focus();
+
+
+    }
+
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridCheckAccountLine").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridCheckAccountLine").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setRowButtonTooltip(".k-grid-Anular", "Anular Cheque");
+    setRowButtonTooltip(".k-grid-ImprimirCheque", "Imprimir Cheque");
+    setRowButtonTooltip(".k-grid-ImprimirReporteCheque", "Imprimir reporte de voucher");
+    
+
+
+</script>

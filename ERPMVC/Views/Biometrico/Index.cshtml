@@ -1,4 +1,9 @@
 ﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
+@{
+    var errores = TempData.Keys.Contains("Errores") ? TempData["Errores"].ToString() : "";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
 <h3 class="text-themecolor">Carga de Archivo Biometrico</h3>
 <div class="container-fluid">
     <div class="row">
@@ -56,9 +61,9 @@
             columns: [
                 {
                     command: [
-                        { name: "ver", iconClass: "fa fa-eye", text: "", click:VerDetalle },
-                        { name: "aprobar", iconClass: "fa fa-thumbs-up", text: "", click:Aprobar },
-                        { name: "rechazar", iconClass: "fa fa-thumbs-down", text: "", click:Rechazar }
+                        PermisoVerDetalle(),
+                        PermisoAprobar(),
+                        PermisoRechazar()
                     ],
                     width:150
                 },
@@ -92,7 +97,7 @@
         var parametros = {
             IdBiometrico: registro.Id
         };
-        
+
         $.ajax({
             url: '@Url.Action("VerDetalle", "Biometrico")',
             method: 'GET',
@@ -111,11 +116,85 @@
     }
 
     function Aprobar(e) {
-
+        e.preventDefault();
+        var registro = this.dataItem($(e.currentTarget).closest('tr'));
+        var parametros = {
+            IdBiometrico: registro.Id
+        };
+        debugger;
+        $.ajax({
+            url: '@Url.Action("AprobarBiometrico", "Biometrico")',
+            method: 'POST',
+            datatype: "json",
+            async: false,
+            data: parametros,
+            success: function (result) {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: '<br/><br/>Datos guardados correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                RefreshBiometrico();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                debugger;
+                $.toast({
+                    heading: 'Error',
+                    text: '<br/><br/> ' + textStatus + ": " + XMLHttpRequest.responseText,
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                RefreshBiometrico();
+            }
+        });
     }
 
     function Rechazar(e) {
-
+        e.preventDefault();
+        var registro = this.dataItem($(e.currentTarget).closest('tr'));
+        var parametros = {
+            IdBiometrico: registro.Id
+        };
+        debugger;
+        $.ajax({
+            url: '@Url.Action("RechazarBiometrico", "Biometrico")',
+            method: 'POST',
+            datatype: "json",
+            async: false,
+            data: parametros,
+            success: function (result) {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: '<br/><br/>Datos guardados correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                RefreshBiometrico();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                debugger;
+                $.toast({
+                    heading: 'Error',
+                    text: '<br/><br/> ' + textStatus + ": " + XMLHttpRequest.responseText,
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                RefreshBiometrico();
+            }
+        });
     }
 
     function RefreshBiometrico() {
@@ -123,7 +202,48 @@
     }
 
     $(document).ready(function () {
+        debugger;
+        if ('@errores' !== '') {
+            $.toast({
+                heading: 'Error',
+                text: '<br/><br/> @errores',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 3000,
+                stack: 6
+            });
+        }
         EditorFecha();
         CrearGrid();
     });
+</script>
+<script type="text/javascript">
+    function PermisoVerDetalle() {
+        var permisos = '@ViewData["permisos"]';
+        if ("@permisos.HasClaim("RRHH.Carga de Archivo Biometrico.Ver Detalle Archivo Biometrico", "true")" == "True") {
+            Detalle = {
+                name: "ver", iconClass: "fa fa-eye", text: "", click: VerDetalle
+            }
+            return Detalle
+        }
+    }
+    function PermisoAprobar() {
+        var permisos = '@ViewData["permisos"]';
+        if ("@permisos.HasClaim("RRHH.Carga de Archivo Biometrico.Aprobar Archivo Biometrico", "true")" == "True") {
+            AprobarArchivoBiometrico = {
+                name: "aprobar", iconClass: "fa fa-thumbs-up", text: "", click: Aprobar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 60 }
+            }
+            return AprobarArchivoBiometrico
+        }
+    }
+    function PermisoRechazar() {
+        var permisos = '@ViewData["permisos"]';
+        if ("@permisos.HasClaim("RRHH.Carga de Archivo Biometrico.Rechazar Archivo Biometrico", "true")" == "True") {
+            RechazarArchivoBiometrico = {
+                name: "rechazar", iconClass: "fa fa-thumbs-down", text: "", click: Rechazar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 60 }
+            }
+            return RechazarArchivoBiometrico
+        }
+    }
 </script>

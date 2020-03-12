@@ -3,6 +3,7 @@
     ViewData["Title"] = "Factura de Proveedores";
     bool permiso;
     permiso = (bool)ViewData["permisoActualizarRecibido"];
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 <script>
     function ActualizarRecibido(e) {
@@ -233,18 +234,28 @@
                                   .Name("gridInvoices")
                                   .Columns(columns =>
                                   {
-                                      columns.Command(command =>
+                                      if (permisos.HasClaim("Compras.Factura Proveedores.Ver Detalle Factura Proveedores", "true")
+                                          || permisos.HasClaim("Compras.Factura Proveedores.Imprimir Factura Proveedores", "true")
+                                          || permisos.HasClaim("Compras.Factura Proveedores.Actualizar a Recibido", "true"))
                                       {
-                                          command.Custom("Detalles").Text(" ").IconClass("far fa-list-alt").Click("EditCotizacion");
-                                          command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
-                              //command.Custom("GenerarFactura").Text(" ").IconClass("fa fa-file-import").Click("GenerarFactura");
-                              if (permiso)
+                                          columns.Command(command =>
                                           {
-                                              command.Custom("Recibido").Text(" ").IconClass("fa fa-thumbs-up").Click("ActualizarRecibido");
-                                          }
-                              //  command.Edit(); command.Destroy();
-                          }).Width(150).Title("Acciones");
-
+                                              if (permisos.HasClaim("Compras.Factura Proveedores.Ver Detalle Factura Proveedores", "true"))
+                                              {
+                                                  command.Custom("Detalles").Text(" ").IconClass("far fa-list-alt").Click("EditCotizacion");
+                                              }
+                                              if (permisos.HasClaim("Compras.Factura Proveedores.Imprimir Factura Proveedores", "true"))
+                                              {
+                                                  command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
+                                              }
+                                              //command.Custom("GenerarFactura").Text(" ").IconClass("fa fa-file-import").Click("GenerarFactura");
+                                              if (permisos.HasClaim("Compras.Factura Proveedores.Actualizar a Recibido", "true"))
+                                              {
+                                                  command.Custom("Recibido").Text(" ").IconClass("fa fa-thumbs-up").Click("ActualizarRecibido");
+                                              }
+                                              //  command.Edit(); command.Destroy();
+                                          }).Width(150).Title("Acciones");
+                                      }
                                       columns.Bound(p => p.VendorInvoiceId).Title("Id").Width(125);
 
                                       columns.Bound(p => p.OrderDate).Format("{0:dd/MM/yyyy}").Title("Fecha Factura").Width(250);
@@ -253,8 +264,8 @@
                                       columns.Bound(p => p.VendorName).Title("Proveedor").Width(270);
                                       columns.Bound(p => p.Tefono).Title("Teléfono").Width(200);
                                       columns.Bound(p => p.Discount).Format("{0:n2}").Title("Descuentos").Width(200);
-                          //columns.Bound(p => p.BranchId).Title("Branch Id").Width(150);
-                          columns.Bound(p => p.BranchName).Title("Sucursal").Width(200);
+                                      //columns.Bound(p => p.BranchId).Title("Branch Id").Width(150);
+                                      columns.Bound(p => p.BranchName).Title("Sucursal").Width(200);
                                       columns.Bound(p => p.SubTotal).Format("{0:n2}").Title("Sub Total").Width(200);
                                       columns.Bound(p => p.Tax).Format("{0:n2}").Title("Total Impuesto").Width(200);
                                       columns.Bound(p => p.Total).Format("{0:n2}").Title("Total").Width(200);
@@ -292,15 +303,20 @@
                                        ))
                                   .ToolBar(tools =>
                                   {
-                          // tools.Create();
-                          tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                 .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
-                                      tools.Custom().Text("Reporte").IconClass("")
-                                                 .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ImprimirLibroCompras();" });
-
-                                      tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                      tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
+                                      // tools.Create();
+                                      if (permisos.HasClaim("Compras.Factura Proveedores.Agregar Factura Proveedores", "true"))
+                                      {
+                                          tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                 .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
+                                      }
+                                      if (permisos.HasClaim("Compras.Factura Proveedores.Reporte Libro de Compras", "true"))
+                                      {
+                                          tools.Custom().Text("Reporte").IconClass("")
+                                                     .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ImprimirLibroCompras();" });
+                                      }
+                                          tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                          tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                      
 
                                   })
                                    .Editable(e => e.Mode(GridEditMode.PopUp))
@@ -338,9 +354,9 @@
                                     .Events(events =>
                                     {
                                         events.Error("error_handler");
-                            //events.upda("EditHandler");
+                                        //events.upda("EditHandler");
 
-                        })
+                                    })
                                     .Read(read => read.Action("Get", "VendorInvoice"))
                                     .Create(create => create.Action("Insert", "VendorInvoice"))
                                     .Update(update => update.Action("Update", "VendorInvoice", new { id = "{0}" }))

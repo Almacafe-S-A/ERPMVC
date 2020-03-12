@@ -17,6 +17,7 @@ using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 using ERPMVC.DTO;
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -28,17 +29,22 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-
-        public CustomerController(ILogger<CustomerController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public CustomerController(ILogger<CustomerController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
 
         // GET: Customer
+        [Authorize(Policy = "Clientes.Datos de Clientes")]
         public async Task<ActionResult> Index()
         {
+            ViewData["permisos"] = _principal;
+            ViewData["CustomerType"] = await CustomerTypeList();
+
             return await Task.Run(() => View());
         }
 
@@ -47,22 +53,26 @@ namespace ERPMVC.Controllers
 
         public async Task<ActionResult> SalesOrderCustomer()
         {
+            ViewData["permisos"] = _principal;
             return await Task.Run(() => PartialView());
         }
 
         public ActionResult CustomerProduct()
         {
+            ViewData["permisos"] = _principal;
             return PartialView();
         }
 
 
         public async Task<ActionResult> CertificadoDepositoCustomer()
         {
+            ViewData["permisos"] = _principal;
             return await Task.Run(() => PartialView());
         }
 
         public async Task<ActionResult> ProformaInvoiceCustomer()
         {
+            ViewData["permisos"] = _principal;
             return await Task.Run(() => PartialView());
         }
 
@@ -183,6 +193,7 @@ namespace ERPMVC.Controllers
                     _customers = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
 
                 }
+                ViewData["permisos"] = _principal;
             }
             catch (Exception ex)
             {
@@ -525,5 +536,37 @@ namespace ERPMVC.Controllers
                 return View();
             }
         }
+
+
+        async Task<IEnumerable<CustomerType>> CustomerTypeList()
+        {
+            IEnumerable<CustomerType> CustomerTypeList = null;
+            try
+            {
+                string baseadress = config.Value.urlbase;
+               
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CustomerType/Get");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    CustomerTypeList = JsonConvert.DeserializeObject<IEnumerable<CustomerType>>(valorrespuesta);
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            ViewData["CustomerType"] = CustomerTypeList;
+            return CustomerTypeList;
+
+        }
+
+
     }
 }

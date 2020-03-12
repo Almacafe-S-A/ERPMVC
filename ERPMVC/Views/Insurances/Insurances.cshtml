@@ -1,5 +1,8 @@
-﻿@using Kendo.Mvc.UI
-
+﻿@using System.Security.Claims
+@using Kendo.Mvc.UI
+@{
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
 @*{
         ViewData["Title"] = "ASEGURADORAS";
     }*@
@@ -113,107 +116,119 @@
 </script>
 
 @(Html.Kendo().Grid<ERPMVC.Models.Insurances>()
-                    .Name("gridInsurancesDocument")
-                    .Columns(columns =>
-                    {
-                        columns.Command(command =>
+                        .Name("gridInsurancesDocument")
+                        .Columns(columns =>
                         {
-                            //command.Custom("Ver detalles").Click("Detalles");
-                            //command.Custom("Editar").Click("EditTypeAccount");
-                            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditInsurances");
-                            command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("DeleteInsurances");
+                            if (permisos.HasClaim("Contabilidad.Seguros.Aseguradoras.Editar Aseguradoras", "true") || permisos.HasClaim("Contabilidad.Seguros.Aseguradoras.Eliminar Aseguradoras", "true"))
+                            {
+                                columns.Command(command =>
+                                {
+                                    //command.Custom("Ver detalles").Click("Detalles");
+                                    //command.Custom("Editar").Click("EditTypeAccount");
+                                    if (permisos.HasClaim("Contabilidad.Seguros.Aseguradoras.Editar Aseguradoras", "true"))
+                                    {
+                                        command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditInsurances");
+                                    }
+                                    if (permisos.HasClaim("Contabilidad.Seguros.Aseguradoras.Eliminar Aseguradoras", "true"))
+                                    {
+                                        command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("DeleteInsurances");
+                                    }
+                                }).Title("Acciones").Width(75);
+                            }
+                            columns.Bound(p => p.InsurancesId).Title("Código").Width(50);
+                            columns.Bound(p => p.InsurancesName).Title("Nombre").Width(225);
+                            columns.Bound(p => p.Estado).Title("Estado").Width(75);
+                            columns.Bound(p => p.DocumentTypeId).Hidden();
+                            columns.Bound(p => p.CreatedDate).Title("Fecha Creación").Format("{0:dd/MM/yyyy HH:mm:ss}").Width(100).Hidden();
+                            columns.Bound(p => p.CreatedUser).Title("Usuario Creación").Width(100).Hidden();
+                            columns.Bound(p => p.ModifiedUser).Title("Usuario Modifico").Width(100).Hidden();
+                            columns.Bound(p => p.ModifiedDate).Title("Fecha Modifico").Format("{0:dd/MM/yyyy HH:mm:ss}").Width(100).Hidden();
+                        })
 
-                        }).Title("Acciones").Width(75);
-                        columns.Bound(p => p.InsurancesId).Title("Código").Width(50);
-                        columns.Bound(p => p.InsurancesName).Title("Nombre").Width(225);
-                        columns.Bound(p => p.Estado).Title("Estado").Width(75);
-                        columns.Bound(p => p.DocumentTypeId).Hidden();
-                        columns.Bound(p => p.CreatedDate).Title("Fecha Creación").Format("{0:dd/MM/yyyy HH:mm:ss}").Width(100).Hidden();
-                        columns.Bound(p => p.CreatedUser).Title("Usuario Creación").Width(100).Hidden();
-                        columns.Bound(p => p.ModifiedUser).Title("Usuario Modifico").Width(100).Hidden();
-                        columns.Bound(p => p.ModifiedDate).Title("Fecha Modifico").Format("{0:dd/MM/yyyy HH:mm:ss}").Width(100).Hidden();
-                    })
+                            .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                    .Clear()
+                                                    .Contains("Contiene")
+                                                    .DoesNotContain("No contiene")
+                                                    .EndsWith("Termina con")
+                                                    .IsEqualTo("Es igual a")
+                                                    .IsNotEqualTo("No es igual a")
+                                                    .IsNull("Es nulo")
+                                                    .StartsWith("Inicia con")
 
-                        .Filterable(f => f.Operators(o => o.ForString(s => s
+
+                                                )
+                                                .ForNumber(n => n
                                                 .Clear()
-                                                .Contains("Contiene")
-                                                .DoesNotContain("No contiene")
-                                                .EndsWith("Termina con")
                                                 .IsEqualTo("Es igual a")
-                                                .IsNotEqualTo("No es igual a")
+                                                .IsGreaterThan("Es mayor que")
+                                                .IsLessThan("Es menor que")
                                                 .IsNull("Es nulo")
-                                                .StartsWith("Inicia con")
-
-
-                                            )
-                                            .ForNumber(n => n
-                                            .Clear()
-                                            .IsEqualTo("Es igual a")
-                                            .IsGreaterThan("Es mayor que")
-                                            .IsLessThan("Es menor que")
-                                            .IsNull("Es nulo")
-                                            .IsLessThanOrEqualTo("Es menor o igual que")
-                                            .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                            )
-                                            .ForDate(d => d
-                                            .Clear()
-                                            .IsEqualTo("Es igual que")
-                                            .IsGreaterThan("Es mayor que")
-                                            .IsLessThan("Es menor que")
-                                            .IsLessThanOrEqualTo("Es menor o igual que")
-                                            .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                            .IsNotEqualTo("No es igual que")
-                                            )
-                                        ))
-                    .ToolBar(tools =>
-                    {
-                        // tools.Create();
-                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                                        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddInsurances();" });
-                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-
-                    })
-                    .Editable(e => e.Mode(GridEditMode.PopUp))
-                    .Sortable()
-                    .Pageable(s => s
-                        .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
-                        .Empty("No hay datos."))
-                    )
-                    .Filterable()
-                    .Scrollable()
-                    .Pdf(pdf => pdf.FileName("DocumentosAseguradorasReporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                        .Excel(excel => excel.FileName("DocumentosAseguradorasReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                    .DataSource(dataSource =>
-                        dataSource
-                        .WebApi()
-
-                        .ServerOperation(true)
-                        .Model(model =>
+                                                .IsLessThanOrEqualTo("Es menor o igual que")
+                                                .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                )
+                                                .ForDate(d => d
+                                                .Clear()
+                                                .IsEqualTo("Es igual que")
+                                                .IsGreaterThan("Es mayor que")
+                                                .IsLessThan("Es menor que")
+                                                .IsLessThanOrEqualTo("Es menor o igual que")
+                                                .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                .IsNotEqualTo("No es igual que")
+                                                )
+                                            ))
+                        .ToolBar(tools =>
                         {
-                            model.Id(p => p.InsurancesId);
-                            model.Field(p => p.InsurancesName).Editable(false);
+                            // tools.Create();
+                            if (permisos.HasClaim("Contabilidad.Seguros.Aseguradoras.Agregar Aseguradoras", "true"))
+                            {
+                                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddInsurances();" });
+                            }
+                                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                            
+
+
 
                         })
-                        .Sort(s => s.Add(m => m.CreatedDate).Descending())
-                        .Events(events => events.Error("error_handler"))
-                        .Read(read => read.Action("Get", "Insurances"))
-                        .Create(create => create.Action("Insert", "Insurances"))
-                        .Update(update => update.Action("Update", "Insurances", new { InsurancesId = "{0}" }).Type(HttpVerbs.Put))
-                    //.Destroy(destroy => destroy.Action("Delete", "TypeAccount", new { Num = "{1}" }).Type(HttpVerbs.Delete))
+                        .Editable(e => e.Mode(GridEditMode.PopUp))
+                        .Sortable()
+                        .Pageable(s => s
+                            .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+                            .Empty("No hay datos."))
+                        )
+                        .Filterable()
+                        .Scrollable()
+                        .Pdf(pdf => pdf.FileName("DocumentosAseguradorasReporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                            .Excel(excel => excel.FileName("DocumentosAseguradorasReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                        .DataSource(dataSource =>
+                            dataSource
+                            .WebApi()
 
-                    )
-                        .Events(e =>
-                        {
-                            //  e.Save("onsave");
+                            .ServerOperation(true)
+                            .Model(model =>
+                            {
+                                model.Id(p => p.InsurancesId);
+                                model.Field(p => p.InsurancesName).Editable(false);
 
-                        })
+                            })
+                            .Sort(s => s.Add(m => m.CreatedDate).Descending())
+                            .Events(events => events.Error("error_handler"))
+                            .Read(read => read.Action("Get", "Insurances"))
+                            .Create(create => create.Action("Insert", "Insurances"))
+                            .Update(update => update.Action("Update", "Insurances", new { InsurancesId = "{0}" }).Type(HttpVerbs.Put))
+                        //.Destroy(destroy => destroy.Action("Delete", "TypeAccount", new { Num = "{1}" }).Type(HttpVerbs.Delete))
+
+                        )
+                            .Events(e =>
+                            {
+                                //  e.Save("onsave");
+
+                            })
 )
 
 <div id="InsurancesDocument">
@@ -268,7 +283,7 @@
                 success: function (result) {
                     debugger;
                     RefrescarGrid();
-                
+
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     alert(textStatus + ": " + XMLHttpRequest.responseText);

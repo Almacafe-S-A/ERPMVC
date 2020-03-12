@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -25,14 +26,18 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public TypeAccountController(ILogger<TypeAccountController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public TypeAccountController(ILogger<TypeAccountController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
         // GET: TypeAccount
+        [Authorize(Policy = "Contabilidad.Cuentas.Tipos de Cuentas")]
         public ActionResult TypeAccount()
         {
+            ViewData["permisos"] = _principal;
             return View();
         }
 

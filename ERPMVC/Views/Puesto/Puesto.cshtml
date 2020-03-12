@@ -1,8 +1,9 @@
 ﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
 
 @{
     ViewData["Title"] = "Puesto";
-
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 
 <script>
@@ -83,8 +84,8 @@
                 data: JSON.stringify(dataObject),
                 success: function (result) {
                     RefrescarGrid();
-     
-                    
+
+
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     alert(textStatus + ": " + XMLHttpRequest.responseText);
@@ -104,78 +105,91 @@
 <h3 class="text-themecolor">Puesto</h3>
 
 @(Html.Kendo().Grid<ERPMVC.Models.Puesto>
-                  ()
+                      ()
 
-                    .Name("gridPuesto")
+                        .Name("gridPuesto")
 
-                    .Columns(columns =>
-                    {
-                        columns.Command(command =>
+                        .Columns(columns =>
                         {
-                            //command.Custom("Ver detalles").Click("Detalles");
-                            //command.Custom("Editar").Click("EditPuesto");
-                            //command.Destroy().Text("Eliminar");
-                            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditPuesto");
-                            command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash").Click("DeletePuesto");
-                            //command.Destroy().Text(" ").IconClass("fa fa-trash");
-                        }).Width(200).Title("Acciones");
-                        columns.Bound(p => p.IdPuesto).Width(150);
-                        columns.Bound(p => p.NombrePuesto).Width(170);
-                        columns.Bound(p => p.NombreDepartamento).Width(200);
-                        columns.Bound(p => p.IdEstado).ClientTemplate("#if (IdEstado =='1') {#Activo#} else {#Inactivo#} #").Width(150);
-                        columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy HH:mm:ss}").Width(100).Hidden();
+                            if (permisos.HasClaim("RRHH.Parametros.Puestos.Editar Puestos", "true")
+                            || permisos.HasClaim("RRHH.Parametros.Puestos.Eliminar Puestos", "true"))
+                            {
+                                columns.Command(command =>
+                                {
+                                    //command.Custom("Ver detalles").Click("Detalles");
+                                    //command.Custom("Editar").Click("EditPuesto");
+                                    //command.Destroy().Text("Eliminar");
+                                    if (permisos.HasClaim("RRHH.Parametros.Puestos.Editar Puestos", "true"))
+                                    {
+                                        command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditPuesto");
+                                    }
+                                    if (permisos.HasClaim("RRHH.Parametros.Puestos.Eliminar Puestos", "true"))
+                                    {
+                                        command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash").Click("DeletePuesto");
+                                    }
+                                    //command.Destroy().Text(" ").IconClass("fa fa-trash");
+                                }).Width(200).Title("Acciones");
+                            }
+                            columns.Bound(p => p.IdPuesto).Width(150);
+                            columns.Bound(p => p.NombrePuesto).Width(170);
+                            columns.Bound(p => p.NombreDepartamento).Width(200);
+                            columns.Bound(p => p.IdEstado).ClientTemplate("#if (IdEstado =='1') {#Activo#} else {#Inactivo#} #").Width(150);
+                            columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy HH:mm:ss}").Width(100).Hidden();
 
 
-                    })
+                        })
 
 
-                    .ToolBar(tools =>
-                    {
+                        .ToolBar(tools =>
+                        {
 
-                        //tools.Create();
-                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                              .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddPuesto()" });
-                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-
-                    })
-                    .Editable(e => e.Mode(GridEditMode.PopUp))
-                    .Sortable()
-                    .Pageable()
-                    .Filterable()
-                    .Scrollable()
-                    .Pdf(pdf => pdf.FileName("Reporte-Puesto" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                    .Excel(excel => excel.FileName("Reporte-Puesto_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                    .DataSource(dataSource =>
-                    dataSource
-                    .WebApi()
-
-                    .ServerOperation(true)
-                    .Model(model =>
-                    {
-                        model.Id(p => p.IdPuesto);
-                        model.Field(p => p.IdPuesto).Editable(false);
+                            //tools.Create();
+                            if (permisos.HasClaim("RRHH.Parametros.Puestos.Agregar Puestos", "true"))
+                            {
+                                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                  .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddPuesto()" });
+                            }
+                                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                            
 
 
-                    })
-                    .Sort(s => s.Add(m => m.FechaCreacion).Descending())
-                    .Events(events => events.Error("error_handler"))
-                    .Read(read => read.Action("Get", "Puesto"))
-                   .Create(create => create.Action("Insert", "Puesto").Type(HttpVerbs.Post))
-                   .Update(update => update.Action("Update", "Puesto").Type(HttpVerbs.Post))
-                   .Destroy(destroy => destroy.Action("Delete", "Puesto").Type(HttpVerbs.Post))
-                    )
-                    .Events(e =>
-                    {
-                        e.Save("onsave");
+                        })
+                        .Editable(e => e.Mode(GridEditMode.PopUp))
+                        .Sortable()
+                        .Pageable()
+                        .Filterable()
+                        .Scrollable()
+                        .Pdf(pdf => pdf.FileName("Reporte-Puesto" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                        .Excel(excel => excel.FileName("Reporte-Puesto_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                        .DataSource(dataSource =>
+                        dataSource
+                        .WebApi()
 
-                    })
+                        .ServerOperation(true)
+                        .Model(model =>
+                        {
+                            model.Id(p => p.IdPuesto);
+                            model.Field(p => p.IdPuesto).Editable(false);
+
+
+                        })
+                        .Sort(s => s.Add(m => m.FechaCreacion).Descending())
+                        .Events(events => events.Error("error_handler"))
+                        .Read(read => read.Action("Get", "Puesto"))
+                       .Create(create => create.Action("Insert", "Puesto").Type(HttpVerbs.Post))
+                       .Update(update => update.Action("Update", "Puesto").Type(HttpVerbs.Post))
+                       .Destroy(destroy => destroy.Action("Delete", "Puesto").Type(HttpVerbs.Post))
+                        )
+                        .Events(e =>
+                        {
+                            e.Save("onsave");
+
+                        })
 )
 
 <script>

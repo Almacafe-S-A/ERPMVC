@@ -1,6 +1,8 @@
 ﻿@model ERPMVC.DTO.EndososDTO
-
-
+@using System.Security.Claims
+@{
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisosEndosos"];
+}
 
 <script>
 
@@ -58,7 +60,7 @@
             'Price': $("#Price").val(),
             'ValorEndoso': $("#ValorEndoso").val(),
             'Quantity': $("#QuantityEndosoLine").val(),
-          
+
         }
     }
 
@@ -110,11 +112,11 @@
                 success: function (data) {
                     $("#EndososLineMant").html('');
                     $("#EndososLineMant").html(data);
-                   
+
                     var txt = $(data);
                     var found = $("#SubProductId", txt);
                     subproducto = $(found).val();
-                   
+
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     $.toast({
@@ -133,24 +135,24 @@
             hcustom = $("#CustomerId").val();
             $("#frmEndososCertificadosLine :input").prop("disabled", true);
             //llenarsubproduct();
-        //    $("#SubProductId").data("kendoDropDownList").dataSource.read();    
+        //    $("#SubProductId").data("kendoDropDownList").dataSource.read();
             var combobox = $('#SubProductId').getKendoDropDownList();
             combobox.value(subproducto);
-            combobox.trigger('change'); 
+            combobox.trigger('change');
         }
         else {
             $("#EndososCertificadosLineId").val(dataItem.EndososCertificadosLineId);
             $("#EndososCertificadosId").val(dataItem.EndososCertificadosId);
-           
+
            // $("#UnitOfMeasureName").val(dataItem.UnitOfMeasureName);
             $("#UnitOfMeasureId").data("kendoDropDownList").value(dataItem.UnitOfMeasureId);
-            $("#SubProductId").data("kendoDropDownList").dataSource.read();          
+            $("#SubProductId").data("kendoDropDownList").dataSource.read();
             $("#SubProductId").data("kendoDropDownList").value(dataItem.SubProductId);
             $("#QuantityEndosoLine").data("kendoNumericTextBox").value(dataItem.Quantity);
-            
+
             //$("#SubProductName").val(dataItem.SubProductName);
 
-            var ValorEndoso = $("#ValorEndoso").data("kendoNumericTextBox");   
+            var ValorEndoso = $("#ValorEndoso").data("kendoNumericTextBox");
             ValorEndoso.value(dataItem.ValorEndoso);
             ValorEndoso.trigger('change');
 
@@ -162,7 +164,7 @@
             //Total.value(dataItem.Total);
             //Total.trigger('change');
 
-            //var quantitysacos= $("#QuantitySacos").data("kendoNumericTextBox");          
+            //var quantitysacos= $("#QuantitySacos").data("kendoNumericTextBox");
             //if (quantitysacos !== null && dataItem.QuantitySacos != null)
             //    quantitysacos.value(dataItem.QuantitySacos);
             //    quantitysacos.trigger('change');
@@ -180,10 +182,10 @@
         }
 
 
-     
-           
+
+
         $('#myModalEndososCertificadosLine').modal('show');
-       
+
     }
 
     function Delete(e) {
@@ -218,7 +220,7 @@
                     });
                 }
             });
-            var grid = $("#gridEndososDetail").data("kendoGrid");     
+            var grid = $("#gridEndososDetail").data("kendoGrid");
             grid.dataSource.remove(dataItem);
         }
     }
@@ -230,122 +232,132 @@
     <div class="box-body">
 
         @(Html.Kendo().Grid<ERPMVC.Models.EndososCertificadosLine>()
-                                          .Name("gridEndososDetail")
-                                          .Columns(columns =>
-                                          {
-                                              columns.Command(command =>
-                                              {
-                                                  if (Model.EndososCertificadosId > 0)
-                                                  {
-                                                      command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
-                                                  }
-                                                  else
-                                                  {
-                                                      command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditEndososDetalle");
-                                                      command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
-                                                  }
-                                                  // command.Custom("Imprimir").Click("ImprimirCotizacion");
-                                                  //  command.Edit(); command.Destroy();
-                                              }).Width(100);
+                                                          .Name("gridEndososDetail")
+                                                          .Columns(columns =>
+                                                          {
+                                                              if (permisos.HasClaim("Inventarios.Endosos.Eliminar Endosos Detalle", "true")
+                                                              || permisos.HasClaim("Inventarios.Endosos.Editar Endosos Detalle", "true"))
+                                                              {
+                                                                  columns.Command(command =>
+                                                                  {
+                                                                      if (Model.EndososCertificadosId > 0)
+                                                                      {
+                                                                          if (permisos.HasClaim("Inventarios.Endosos.Eliminar Endosos Detalle", "true"))
+                                                                          {
+                                                                              command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+                                                                          }
+                                                                      }
+                                                                      else
+                                                                      {
+                                                                          if (permisos.HasClaim("Inventarios.Endosos.Editar Endosos Detalle", "true"))
+                                                                          {
+                                                                              command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditEndososDetalle");
+                                                                          }
+                                                                          if (permisos.HasClaim("Inventarios.Endosos.Eliminar Endosos Detalle", "true"))
+                                                                          {
+                                                                              command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+                                                                          }
+                                                                      }
+                                                                      // command.Custom("Imprimir").Click("ImprimirCotizacion");
+                                                                      //  command.Edit(); command.Destroy();
+                                                                  }).Width(100);
+                                                              }
+                                                              columns.Bound(p => p.EndososCertificadosLineId).Title("Id Linea").Width(120);
+                                                              columns.Bound(p => p.EndososCertificadosId).Width(150);
+                                                              columns.Bound(p => p.SubProductName).Width(150);
+                                                              columns.Bound(p => p.UnitOfMeasureName).Width(150);
+                                                              columns.Bound(p => p.UnitOfMeasureId).Visible(false).Title("Unidad de medida").Width(0);
+                                                              // columns.Bound(p => p.SubProductId).Hidden().Title("Producto").Width(0);
+                                                              columns.Bound(p => p.Price).Title("Precio").Visible(false).Width(100);
+                                                              columns.Bound(p => p.SubProductId).Title("Producto").Visible(false).Width(150);
+                                                              columns.Bound(p => p.Quantity).Width(150);
+                                                              columns.Bound(p => p.ValorEndoso).Width(150);
+                                                              columns.Bound(p => p.Price).Width(150);
 
-                                              columns.Bound(p => p.EndososCertificadosLineId).Title("Id Linea").Width(120);
-                                              columns.Bound(p => p.EndososCertificadosId).Width(150);
-                                              columns.Bound(p => p.SubProductName).Width(150);
-                                              columns.Bound(p => p.UnitOfMeasureName).Width(150);
-                                              columns.Bound(p => p.UnitOfMeasureId).Visible(false).Title("Unidad de medida").Width(0);
-                                              // columns.Bound(p => p.SubProductId).Hidden().Title("Producto").Width(0);
-                                              columns.Bound(p => p.Price).Title("Precio").Visible(false).Width(100);
-                                              columns.Bound(p => p.SubProductId).Title("Producto").Visible(false).Width(150);
-                                              columns.Bound(p => p.Quantity).Width(150);
-                                              columns.Bound(p => p.ValorEndoso).Width(150);
-                                              columns.Bound(p => p.Price).Width(150);
-
-                                          })
-                                              .Filterable(f => f.Operators(o => o.ForString(s => s
-                                       .Clear()
-                                       .Contains("Contiene")
-                                               .DoesNotContain("No contiene")
-                                               .EndsWith("Termina con")
-                                               .IsEqualTo("Es igual a")
-                                               .IsNotEqualTo("No es igual a")
-                                               .IsNull("Es nulo")
-                                               .StartsWith("Inicia con")
-
-
-                                         )
-                                         .ForNumber(n => n
-                                           .Clear()
-                                           .IsEqualTo("Es igual a")
-                                           .IsGreaterThan("Es mayor que")
-                                           .IsLessThan("Es menor que")
-                                           .IsNull("Es nulo")
-                                           .IsLessThanOrEqualTo("Es menor o igual que")
-                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                         )
-                                         .ForDate(d => d
-                                         .Clear()
-                                         .IsEqualTo("Es igual que")
-                                         .IsGreaterThan("Es mayor que")
-                                         .IsLessThan("Es menor que")
-                                         .IsLessThanOrEqualTo("Es menor o igual que")
-                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                         .IsNotEqualTo("No es igual que")
-                                          )
-                                       ))
-                                          .ToolBar(tools =>
-                                          {
-                                              //if (Model.EndososCertificadosId == 0)
-                                              //{
-                                              //    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                              //    .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddEndososDetalle();" });
-                                              //}
-
-                                              tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                              tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                                          })
+                                                              .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                       .Clear()
+                                                       .Contains("Contiene")
+                                                               .DoesNotContain("No contiene")
+                                                               .EndsWith("Termina con")
+                                                               .IsEqualTo("Es igual a")
+                                                               .IsNotEqualTo("No es igual a")
+                                                               .IsNull("Es nulo")
+                                                               .StartsWith("Inicia con")
 
 
-                                          })
-                                           .Editable(e => e.Mode(GridEditMode.PopUp))
-                                            .Sortable()
-                                            .AutoBind(true)
-                                            //.Pageable()
-                                            .Filterable()
-                                            .Scrollable()
-                                            // .ClientDetailTemplateId("template")
-                                            .Pdf(pdf => pdf.FileName("Endosos_Detalle_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                              .Excel(excel => excel.FileName("Endosos_Detalle_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                            //.Events(e=>e.Save("onsave"))
-                                            .DataSource(dataSource =>
+                                                         )
+                                                         .ForNumber(n => n
+                                                           .Clear()
+                                                           .IsEqualTo("Es igual a")
+                                                           .IsGreaterThan("Es mayor que")
+                                                           .IsLessThan("Es menor que")
+                                                           .IsNull("Es nulo")
+                                                           .IsLessThanOrEqualTo("Es menor o igual que")
+                                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                         )
+                                                         .ForDate(d => d
+                                                         .Clear()
+                                                         .IsEqualTo("Es igual que")
+                                                         .IsGreaterThan("Es mayor que")
+                                                         .IsLessThan("Es menor que")
+                                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                         .IsNotEqualTo("No es igual que")
+                                                          )
+                                                       ))
+                                                          .ToolBar(tools =>
+                                                          {
+                                                              //if (Model.EndososCertificadosId == 0)
+                                                              //{
+                                                              //    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                              //    .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddEndososDetalle();" });
+                                                              //}
+                                                                  tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                                  tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
 
-                                           dataSource
-                                           //.Ajax()
-                                           .WebApi()
+                                                          })
+                                                           .Editable(e => e.Mode(GridEditMode.PopUp))
+                                                            .Sortable()
+                                                            .AutoBind(true)
+                                                            //.Pageable()
+                                                            .Filterable()
+                                                            .Scrollable()
+                                                            // .ClientDetailTemplateId("template")
+                                                            .Pdf(pdf => pdf.FileName("Endosos_Detalle_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                                              .Excel(excel => excel.FileName("Endosos_Detalle_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                                            //.Events(e=>e.Save("onsave"))
+                                                            .DataSource(dataSource =>
 
-                                            .ServerOperation(true)
-                                            .Model(model =>
-                                            {
-                                                model.Id(p => p.EndososCertificadosLineId);
-                                                model.Field(p => p.EndososCertificadosLineId).Editable(false);
-                                                model.Field(p => p.EndososCertificadosId).Editable(false);
-                                                //  model.Field(p => p.ControlPalletsId).Editable(true);
+                                                           dataSource
+                                                           //.Ajax()
+                                                           .WebApi()
 
-                                            })
-                                            .Sort(s => s.Add(m => m.EndososCertificadosLineId).Descending())
-                                            .Events(events =>
-                                            {
-                                                events.Error("error_handler");
-                                                //events.upda("EditHandler");
+                                                            .ServerOperation(true)
+                                                            .Model(model =>
+                                                            {
+                                                                model.Id(p => p.EndososCertificadosLineId);
+                                                                model.Field(p => p.EndososCertificadosLineId).Editable(false);
+                                                                model.Field(p => p.EndososCertificadosId).Editable(false);
+                                                                //  model.Field(p => p.ControlPalletsId).Editable(true);
 
-                                            })
-                                            .Read(read => read.Action("GetEndososCertificadosLineByEndososCertificadosId", "EndososCertificadosLine").Data("GetEndososCertificadosId"))
-                                            //.Create(create => create.Action("Insert", "SalesOrderLine"))
-                                            //.Update(update => update.Action("Update", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
-                                            //.Destroy(destroy => destroy.Action("Delete", "EndososCertificadosLine").Type(HttpVerbs.Post))
-                                      )
+                                                            })
+                                                            .Sort(s => s.Add(m => m.EndososCertificadosLineId).Descending())
+                                                            .Events(events =>
+                                                            {
+                                                                events.Error("error_handler");
+                                                                //events.upda("EditHandler");
+
+                                                            })
+                                                            .Read(read => read.Action("GetEndososCertificadosLineByEndososCertificadosId", "EndososCertificadosLine").Data("GetEndososCertificadosId"))
+                                                      //.Create(create => create.Action("Insert", "SalesOrderLine"))
+                                                      //.Update(update => update.Action("Update", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
+                                                      //.Destroy(destroy => destroy.Action("Delete", "EndososCertificadosLine").Type(HttpVerbs.Post))
+                                                      )
         )
 
     </div>

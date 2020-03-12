@@ -1,4 +1,7 @@
-﻿
+﻿@using System.Security.Claims
+@{
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
 
 <h3 class="text-themecolor">Contratos de clientes</h3>
 <script>
@@ -24,10 +27,10 @@
      function AnularContrato(e) {
          console.log('id', $("#AnularContrato").val())
         console.log('observacion',$("#ObservacionAnular").val())
-        
-        
+
+
         if (confirm('Esta seguro de anular esta cotización?')) {
-           
+
 
             var dataObject = {
                 CustomerContractId: $("#AnularContrato").val(),
@@ -67,19 +70,19 @@
                     alert(textStatus + ": " + XMLHttpRequest.responseText);
                 }
             });
-            
+
         }
-     
+
         }
 
     function Anular(e) {
-     
-       
+
+
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         $("#AnularContrato").val(dataItem.CustomerContractId)
                 $("#btnSaveCotizacion").show();
                 $('#ModalAnular').modal('show');
-                
+
             }
 
     function AddCustomerContractSignature() {
@@ -151,7 +154,7 @@
 
       function ImprimirContrato(e) {
         e.preventDefault();
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));       
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
           var url = '@Url.Action("SFPrintContract", "CustomerContract")/' + dataItem.CustomerContractId;
            var win = window.open(url, '_blank');
            win.focus();
@@ -161,100 +164,113 @@
 </script>
 
 @(Html.Kendo().Grid<ERPMVC.Models.CustomerContract>()
-                          .Name("gridCustomerContract")
-                          .Columns(columns =>
-                          {
-                              columns.Command(command =>
+                              .Name("gridCustomerContract")
+                              .Columns(columns =>
                               {
-                                  command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCustomerContractSignature");
-                                  command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirContrato");
-                                  command.Custom("Anular").Text(" ").IconClass("fa fa-ban").Click("Anular");
-                                  // command.Custom("Ver detalles").Click("Detalles");
-                                  // command.Edit(); command.Destroy();
-                              }).Title("Acciones").Width(80);
-                              columns.Bound(p => p.CustomerContractId).Width(100);
-                              columns.Bound(p => p.CustomerId).Visible(false).Width(100);
-                              columns.Bound(p => p.CustomerName).Width(100);
-                              columns.Bound(p => p.CustomerManager).Width(150);
-                              columns.Bound(p => p.Manager).Width(100);
-                              columns.Bound(p => p.Estado).Width(100);
-                              columns.Bound(p => p.Observcion).Width(100);
-                              columns.Bound(p => p.StorageTime).Width(100);
+                                  if (permisos.HasClaim("Clientes.Datos de Clientes.Editar Contratos", "true")
+                                  || permisos.HasClaim("Clientes.Datos de Clientes.Imprimir Contratos", "true")
+                                  || permisos.HasClaim("Clientes.Datos de Clientes.Anular Contratos", "true"))
+                                  {
+                                      columns.Command(command =>
+                                      {
+                                          if (permisos.HasClaim("Clientes.Datos de Clientes.Editar Contratos", "true"))
+                                          {
+                                              command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCustomerContractSignature");
+                                          }
+                                          if (permisos.HasClaim("Clientes.Datos de Clientes.Imprimir Contratos", "true"))
+                                          {
+                                              command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirContrato");
+                                          }
+                                          if (permisos.HasClaim("Clientes.Datos de Clientes.Anular Contratos", "true"))
+                                          {
+                                              command.Custom("Anular").Text(" ").IconClass("fa fa-ban").Click("Anular");
+                                          }
+                                          // command.Custom("Ver detalles").Click("Detalles");
+                                          // command.Edit(); command.Destroy();
+                                      }).Title("Acciones").Width(80);
+                                  }
+                                  columns.Bound(p => p.CustomerContractId).Width(100);
+                                  columns.Bound(p => p.CustomerId).Visible(false).Width(100);
+                                  columns.Bound(p => p.CustomerName).Width(100);
+                                  columns.Bound(p => p.CustomerManager).Width(150);
+                                  columns.Bound(p => p.Manager).Width(100);
+                                  columns.Bound(p => p.Estado).Width(100);
+                                  columns.Bound(p => p.Observcion).Width(100);
+                                  columns.Bound(p => p.StorageTime).Width(100);
 
 
-                          })
-                              .Filterable(f => f.Operators(o => o.ForString(s => s
+                              })
+                                  .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                       .Clear()
+                                                       .Contains("Contiene")
+                                                       .DoesNotContain("No contiene")
+                                                       .EndsWith("Termina con")
+                                                       .IsEqualTo("Es igual a")
+                                                       .IsNotEqualTo("No es igual a")
+                                                       .IsNull("Es nulo")
+                                                       .StartsWith("Inicia con")
+
+
+                                                 )
+                                                 .ForNumber(n => n
                                                    .Clear()
-                                                   .Contains("Contiene")
-                                                   .DoesNotContain("No contiene")
-                                                   .EndsWith("Termina con")
                                                    .IsEqualTo("Es igual a")
-                                                   .IsNotEqualTo("No es igual a")
+                                                   .IsGreaterThan("Es mayor que")
+                                                   .IsLessThan("Es menor que")
                                                    .IsNull("Es nulo")
-                                                   .StartsWith("Inicia con")
+                                                   .IsLessThanOrEqualTo("Es menor o igual que")
+                                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                 )
+                                                 .ForDate(d => d
+                                                 .Clear()
+                                                 .IsEqualTo("Es igual que")
+                                                 .IsGreaterThan("Es mayor que")
+                                                 .IsLessThan("Es menor que")
+                                                 .IsLessThanOrEqualTo("Es menor o igual que")
+                                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                 .IsNotEqualTo("No es igual que")
+                                                  )
+                                               ))
+                              .ToolBar(tools =>
+                              {
+                                  //tools.Create();
+                                  //tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                  //                          .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerContractSignature();" });
+                                      tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                      tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                  
 
-
-                                             )
-                                             .ForNumber(n => n
-                                               .Clear()
-                                               .IsEqualTo("Es igual a")
-                                               .IsGreaterThan("Es mayor que")
-                                               .IsLessThan("Es menor que")
-                                               .IsNull("Es nulo")
-                                               .IsLessThanOrEqualTo("Es menor o igual que")
-                                               .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                             )
-                                             .ForDate(d => d
-                                             .Clear()
-                                             .IsEqualTo("Es igual que")
-                                             .IsGreaterThan("Es mayor que")
-                                             .IsLessThan("Es menor que")
-                                             .IsLessThanOrEqualTo("Es menor o igual que")
-                                             .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                             .IsNotEqualTo("No es igual que")
-                                              )
-                                           ))
-                          .ToolBar(tools =>
-                          {
-                              //tools.Create();
-                              //tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                              //                          .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerContractSignature();" });
-
-                              tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                              tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-                          })
-                          .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
-                          .Sortable()
-                          .Pageable()
-                          .Filterable()
-                          .Scrollable()
-                          .Pdf(pdf => pdf.FileName("ClienteAreaReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                           .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                             .Excel(excel => excel.FileName("ClienteAreaReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                           .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                          .DataSource(dataSource =>
-                              dataSource
-                                .WebApi()
-                                .ServerOperation(true)
-                                .Model(model =>
+                              })
+                              .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                              .Sortable()
+                              .Pageable()
+                              .Filterable()
+                              .Scrollable()
+                              .Pdf(pdf => pdf.FileName("ClienteAreaReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                               + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                               .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                 .Excel(excel => excel.FileName("ClienteAreaReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                               + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                               .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                              .DataSource(dataSource =>
+                                  dataSource
+                                    .WebApi()
+                                    .ServerOperation(true)
+                                    .Model(model =>
+                                    {
+                                        model.Id(p => p.CustomerId);
+                                        model.Field(p => p.CustomerId).Editable(false);
+                                    })
+                                    .Events(events => events.Error("error_handler"))
+                                    .Read(read => read.Action("GetCustomerContractByCustomerId", "CustomerContract").Data("GetCustomerId"))
+                                    .Create(create => create.Action("Post", "CustomerContract"))
+                                    .Update(update => update.Action("Put", "CustomerContract", new { id = "{0}" }))
+                                    .Destroy(destroy => destroy.Action("Delete", "CustomerContract", new { id = "{0}" }))
+                              )
+                                .Events(e =>
                                 {
-                                    model.Id(p => p.CustomerId);
-                                    model.Field(p => p.CustomerId).Editable(false);
+                                    //e.Save("onsave");
                                 })
-                                .Events(events => events.Error("error_handler"))
-                                .Read(read => read.Action("GetCustomerContractByCustomerId", "CustomerContract").Data("GetCustomerId"))
-                                .Create(create => create.Action("Post", "CustomerContract"))
-                                .Update(update => update.Action("Put", "CustomerContract", new { id = "{0}" }))
-                                .Destroy(destroy => destroy.Action("Delete", "CustomerContract", new { id = "{0}" }))
-                          )
-                            .Events(e =>
-                            {
-                                //e.Save("onsave");
-                            })
 )
 
 <div id="CustomerContract">

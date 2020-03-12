@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -24,18 +25,24 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
+        private readonly ClaimsPrincipal _principal;
 
-        public CityController(ILogger<HomeController> logger, IOptions<MyConfig> config)
+        public CityController(ILogger<HomeController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         //[HttpGet("[controller]/[action]")]
+        [Authorize(Policy = "Configuracion.Ciudad")]
         public async Task<IActionResult> City()
         {
             ViewData["Pais"] = await ObtenerPais();
-
+            ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Ciudad.Agregar Ciudad", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Configuracion.Ciudad.Editar Ciudad", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Configuracion.Ciudad.Eliminar Ciudad", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Configuracion.Ciudad.Exportar Ciudad", "true");
             return View();
         }
 

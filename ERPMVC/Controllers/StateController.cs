@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -23,16 +24,22 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public StateController(ILogger<StateController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public StateController(ILogger<StateController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Configuracion.Estado")]
         public async Task<IActionResult> State()
         {
             ViewData["Pais"] = await ObtenerPais();
-
+            ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Estado.Agregar Estado", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Configuracion.Estado.Editar Estado", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Configuracion.Estado.Eliminar Estado", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Configuracion.Estado.Exportar Estado", "true");
             return View();
         }
 

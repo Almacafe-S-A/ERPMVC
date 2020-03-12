@@ -1,0 +1,214 @@
+﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
+@{
+    DateTime fecha = DateTime.Today;
+    bool todo = false;
+    if (TempData.ContainsKey("Fecha"))
+    {
+        fecha = (DateTime)TempData["Fecha"];
+    }
+    else if (ViewData.ContainsKey("Fecha"))
+    {
+        fecha = (DateTime)ViewData["Fecha"];
+    }
+    if (TempData.ContainsKey("Todos"))
+    {
+        todo = (bool)TempData["Todos"];
+    }
+    else if (ViewData.ContainsKey("Todos"))
+    {
+        todo = (bool)TempData["Todos"];
+    }
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
+<h3 class="text-themecolor">Revisión y Aprobación de Llegadas Tarde</h3>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <div class="row">
+                <form id="frmBiometrico" kendo-validator="true" method="post" action="@Url.Action("PostFecha","LlegadaTarde")">
+                    <div class="form-group">
+                        <label for="Fecha">Fecha:</label>
+                        <input id="Fecha" name="Fecha" />
+                    </div>
+                    <div class="form-group">
+                        <label for="Todos">Mostrar Todos los Estados:</label>
+                        <input type="checkbox" id="Todos" name="Todos" value="true" style="position: relative; left: 0px; opacity: 100;" />
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" value="Cargar" />
+                    </div>
+                </form>
+            </div>
+            <div class="row">
+                <h4>Llegadas Tarde de @fecha.ToString("dd/MM/yyyy")</h4>
+                <div id="grdConfiguracion"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+
+    function CrearGrid() {
+        $("#grdConfiguracion").kendoGrid({
+            dataSource: {
+                transport: {
+                    read: {
+                        url: "@Url.Action("GetLlegadasTardeDisponibles", "LlegadaTarde")",
+                        data: {
+                            fecha: '@fecha.ToString("yyyy-MM-dd")',
+                            todos: @todo.ToString().ToLower()
+                        }
+                    }
+                },
+                schema: {
+                    model: {
+                        id:"Id",
+                        fields: {
+                            Id: { type: "number", editable: false },
+                            Empleado: { defaultValue: {IdEmpleado:0,NombreEmpleado:''}, editable: false },
+                            Horas: { type: "number", editable: false },
+                            Minutos: { type: "number", editable: false },
+                            Estado: { defaultValue: {IdEstado:0,NombreEstado:""}, editable: false }
+                        }
+                    }
+                }
+            },
+            columns: [
+                {
+                    command: [
+                        PermisoAprobar(),
+                        PermisoRechazar()
+                    ],
+                    width:150
+                },
+                { field: "Id", title: "Id. ", width: 80, hidden: true },
+                { field: "Empleado", title: "Empleado", width: 200, template: '#= Empleado.NombreEmpleado #' },
+                { field: "Horas", title: "Horas", width: 100},
+                { field: "Minutos", title: "Minutos"},
+                { field: "Estado", title: "Estado", width: 100, template: "#= Estado.NombreEstado #"}
+            ],
+            noRecords: {
+                template:"No hay llegadas tarde disponibles"
+            },
+            //height: 400,
+            scrollable: true,
+            editable: false
+        });
+    }
+
+    function EditorFecha() {
+        $("#Fecha").kendoDatePicker({ dateInput: true, format: "dd/MM/yyyy" });
+    }
+
+    function Aprobar(e) {
+        e.preventDefault();
+        var registro = this.dataItem($(e.currentTarget).closest('tr'));
+        var parametros = {
+            idLlegadaTarde: registro.Id
+        };
+        debugger;
+        $.ajax({
+            url: '@Url.Action("AprobarLlegadaTarde", "LlegadaTarde")',
+            method: 'POST',
+            datatype: "json",
+            async: false,
+            data: parametros,
+            success: function (result) {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: '<br/><br/>Datos guardados correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                RefreshGrid();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $.toast({
+                    heading: 'Error',
+                    text: '<br/><br/> ' + textStatus + ": " + XMLHttpRequest.responseText,
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                RefreshGrid();
+            }
+        });
+    }
+
+    function Rechazar(e) {
+        e.preventDefault();
+        var registro = this.dataItem($(e.currentTarget).closest('tr'));
+        var parametros = {
+            idLlegadaTarde: registro.Id
+        };
+        debugger;
+        $.ajax({
+            url: '@Url.Action("RechazarLlegadaTarde", "LlegadaTarde")',
+            method: 'POST',
+            datatype: "json",
+            async: false,
+            data: parametros,
+            success: function (result) {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: '<br/><br/>Datos guardados correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                RefreshGrid();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $.toast({
+                    heading: 'Error',
+                    text: '<br/><br/> ' + textStatus + ": " + XMLHttpRequest.responseText,
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                RefreshGrid();
+            }
+        });
+    }
+
+    function RefreshGrid() {
+        $("#grdConfiguracion").getKendoGrid().dataSource.read();
+    }
+
+    $(document).ready(function () {
+        EditorFecha();
+        CrearGrid();
+    });
+</script>
+<script type="text/javascript">
+    function PermisoAprobar() {
+        var permisos = '@ViewData["permisos"]';
+        if ("@permisos.HasClaim("RRHH.Llegadas Tarde.Aprobar Llegadas Tarde", "true")" == "True") {
+            AprobarLlegadasTarde = {
+                name: "aprobar", iconClass: "fa fa-thumbs-up", text: "", click: Aprobar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 70 }
+            }
+            return AprobarLlegadasTarde
+        }
+    }
+    function PermisoRechazar() {
+        var permisos = '@ViewData["permisos"]';
+        if ("@permisos.HasClaim("RRHH.Llegadas Tarde.Rechazar Llegadas Tarde", "true")" == "True") {
+            RechazarLlegadasTarde = {
+                name: "rechazar", iconClass: "fa fa-thumbs-down", text: "", click: Rechazar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 70 }
+            }
+            return RechazarLlegadasTarde
+        }
+    }
+</script>

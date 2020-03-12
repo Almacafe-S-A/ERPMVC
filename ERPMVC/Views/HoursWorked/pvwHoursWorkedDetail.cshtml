@@ -1,5 +1,9 @@
 ﻿@model ERPMVC.DTO.HoursWorkedDTO
+@using System.Security.Claims
 
+@{
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisosHoursWorked"];
+}
 <script>
     function SoloNumeros(e) {
         key = e.keyCode || e.which;
@@ -21,7 +25,7 @@
     }
 
     function GetIdHorasTrabajadas() {
-        
+
         var Horaentrada = '', Horasalida = '', Multiplicahoras = '', IdDetallehorastrabajadas;
         Multiplicahoras = $("#Multiplicahoras").val();
         IdDetallehorastrabajadas = $("#IdDetallehorastrabajadas").val();
@@ -43,7 +47,7 @@
 
     function onSave(e) {
         //IdDetallehorastrabajadas
-        
+
     }
 
 </script>
@@ -51,113 +55,126 @@
 <div class="box">
     <div class="box-body">
         @(Html.Kendo().Grid<ERPMVC.Models.HoursWorkedDetail>()
-                                .Name("gridHWD")
-                                .Columns(columns =>
-                                {
-                                    columns.Command(command =>
-                                    {
-                                        //if (Model.editar == 1)
-                                        //{
-                                        //command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
-                                        //}
-                                        //command.Custom("Ver detalles").Click("Detalles");
-                                        //command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditHoursWorkedDetail()");
-                                        command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText("Actualizar").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "" }).CancelText("Cancelar"); ; command.Destroy().Text("Eliminar");
+                                                .Name("gridHWD")
+                                                .Columns(columns =>
+                                                {
+                                                    if (permisos.HasClaim("RRHH.Horas Trabajadas.Editar Horas Trabajadas Detalle", "true")
+                                                    || permisos.HasClaim("RRHH.Horas Trabajadas.Eliminar Horas Trabajadas Detalle", "true"))
+                                                    {
+                                                        columns.Command(command =>
+                                                        {
+                                                            //if (Model.editar == 1)
+                                                            //{
+                                                            //command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+                                                            //}
+                                                            //command.Custom("Ver detalles").Click("Detalles");
+                                                            //command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditHoursWorkedDetail()");
+                                                            if (permisos.HasClaim("RRHH.Horas Trabajadas.Editar Horas Trabajadas Detalle", "true"))
+                                                            {
+                                                                command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText("Actualizar").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "" }).CancelText("Cancelar");
+                                                            }
+                                                            if (permisos.HasClaim("RRHH.Horas Trabajadas.Eliminar Horas Trabajadas Detalle", "true"))
+                                                            {
+                                                                command.Destroy().Text("Eliminar");
+                                                            }
+                                                            //command.Destroy().Text("Eliminar");
 
-                                        //command.Destroy().Text("Eliminar");
+                                                        }).Width(100).Title("Acciones");
+                                                    }
+                                                    columns.Bound(p => p.IdDetallehorastrabajadas).Width(80).Title("Id").Hidden(true);
+                                                    //columns.Bound(p => p.Horaentrada).ClientTemplate("#=kendo.toString(Horaentrada,'MM-dd-yyyy')#").Title("Entrada").Width(150);
+                                                    columns.Bound(p => p.Horaentrada).Format("{0:dd/MM/yyyy HH:mm:ss}").Title("Entrada").Width(150);
+                                                    columns.Bound(p => p.Horasalida).Format("{0:dd/MM/yyyy HH:mm:ss}").Title("Salida").Width(150);
+                                                    columns.Bound(p => p.Multiplicahoras).Title("Multiplicar por").Width(150);
 
-                                    }).Width(100).Title("Acciones");
-                                    columns.Bound(p => p.IdDetallehorastrabajadas).Width(80).Title("Id").Hidden(true);
-                                    //columns.Bound(p => p.Horaentrada).ClientTemplate("#=kendo.toString(Horaentrada,'MM-dd-yyyy')#").Title("Entrada").Width(150);
-                                    columns.Bound(p => p.Horaentrada).Format("{0:dd/MM/yyyy HH:mm:ss}").Title("Entrada").Width(150);
-                                    columns.Bound(p => p.Horasalida).Format("{0:dd/MM/yyyy HH:mm:ss}").Title("Salida").Width(150);
-                                    columns.Bound(p => p.Multiplicahoras).Title("Multiplicar por").Width(150);
+                                                })
+                                                    .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                                               .Clear()
+                                                                               .Contains("Contiene")
+                                                                               .DoesNotContain("No contiene")
+                                                                               .EndsWith("Termina con")
+                                                                               .IsEqualTo("Es igual a")
+                                                                               .IsNotEqualTo("No es igual a")
+                                                                               .IsNull("Es nulo")
+                                                                               .StartsWith("Inicia con")
+                                                                         )
+                                                                         .ForNumber(n => n
+                                                                           .Clear()
+                                                                           .IsEqualTo("Es igual a")
+                                                                           .IsGreaterThan("Es mayor que")
+                                                                           .IsLessThan("Es menor que")
+                                                                           .IsNull("Es nulo")
+                                                                           .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                         )
+                                                                         .ForDate(d => d
+                                                                         .Clear()
+                                                                         .IsEqualTo("Es igual que")
+                                                                         .IsGreaterThan("Es mayor que")
+                                                                         .IsLessThan("Es menor que")
+                                                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                         .IsNotEqualTo("No es igual que")
+                                                                          )
+                                                                       ))
 
-                                })
-                                    .Filterable(f => f.Operators(o => o.ForString(s => s
-                                                               .Clear()
-                                                               .Contains("Contiene")
-                                                               .DoesNotContain("No contiene")
-                                                               .EndsWith("Termina con")
-                                                               .IsEqualTo("Es igual a")
-                                                               .IsNotEqualTo("No es igual a")
-                                                               .IsNull("Es nulo")
-                                                               .StartsWith("Inicia con")
-                                                         )
-                                                         .ForNumber(n => n
-                                                           .Clear()
-                                                           .IsEqualTo("Es igual a")
-                                                           .IsGreaterThan("Es mayor que")
-                                                           .IsLessThan("Es menor que")
-                                                           .IsNull("Es nulo")
-                                                           .IsLessThanOrEqualTo("Es menor o igual que")
-                                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                         )
-                                                         .ForDate(d => d
-                                                         .Clear()
-                                                         .IsEqualTo("Es igual que")
-                                                         .IsGreaterThan("Es mayor que")
-                                                         .IsLessThan("Es menor que")
-                                                         .IsLessThanOrEqualTo("Es menor o igual que")
-                                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                         .IsNotEqualTo("No es igual que")
-                                                          )
-                                                       ))
+                                                .ToolBar(tools =>
+                                                {
 
-                                .ToolBar(tools =>
-                                {
-
-                                    //tools.Create();
-                                    //if (Model.editar == 1)
-                                    //{
-                                    //tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                    //                                      .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddHoursWorkedDetail()" });
-                                    //}
-                                    tools.Create().Text("Agregar").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "" });
-                                    //tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                    //tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                                    //tools.Create();
+                                                    //if (Model.editar == 1)
+                                                    //{
+                                                    //tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                    //                                      .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddHoursWorkedDetail()" });
+                                                    //}
+                                                    if (permisos.HasClaim("RRHH.Horas Trabajadas.Agregar Horas Trabajadas Detalle", "true"))
+                                                    {
+                                                        tools.Create().Text("Agregar").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "" });
+                                                    }
+                                                    //tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                    //tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
 
 
 
-                                })
-                                .Events(e =>
-                                {
-                                    e.Save("onSave");
-                                })
+                                                })
+                                                .Events(e =>
+                                                {
+                                                    e.Save("onSave");
+                                                })
 
-                                .Editable(e => e.Mode(GridEditMode.InLine))
-                                .Sortable()
-                                //.Pageable()
-                                .Filterable()
-                                .Scrollable()
-                                .Pdf(pdf => pdf.FileName("HoursWorkedReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                .Excel(excel => excel.FileName("CAIReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                .DataSource(dataSource =>
-                                dataSource
-                                .WebApi()
+                                                .Editable(e => e.Mode(GridEditMode.InLine))
+                                                .Sortable()
+                                                //.Pageable()
+                                                .Filterable()
+                                                .Scrollable()
+                                                .Pdf(pdf => pdf.FileName("HoursWorkedReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                                .Excel(excel => excel.FileName("CAIReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                                .DataSource(dataSource =>
+                                                dataSource
+                                                .WebApi()
 
-                                .ServerOperation(true)
-                                .Model(model =>
-                                {
+                                                .ServerOperation(true)
+                                                .Model(model =>
+                                                {
 
-                                    model.Id(p => p.IdDetallehorastrabajadas);
-                                    model.Field(p => p.IdDetallehorastrabajadas).Editable(false);
-                                    model.Field(p => p.IdHorasTrabajadas).Editable(false);
-                                    model.Field(p => p.Horaentrada).Editable(true);
-                                    model.Field(p => p.Horasalida).Editable(true);
-                                    model.Field(p => p.Multiplicahoras).Editable(true);
+                                                    model.Id(p => p.IdDetallehorastrabajadas);
+                                                    model.Field(p => p.IdDetallehorastrabajadas).Editable(false);
+                                                    model.Field(p => p.IdHorasTrabajadas).Editable(false);
+                                                    model.Field(p => p.Horaentrada).Editable(true);
+                                                    model.Field(p => p.Horasalida).Editable(true);
+                                                    model.Field(p => p.Multiplicahoras).Editable(true);
 
-                                })
-                                .Events(events => events.Error("error_handler"))
-                                .Read(read => read.Action("GetHoursWorkedDetailByIdHorasTrabajadas", "HoursWorkedDetail").Data("GetIdHorasTrabajadas()"))
-                                .Create(create => create.Action("PostHoursWorkedDetail", "HoursWorkedDetail").Type(HttpVerbs.Post).Data("GetData"))
-                                .Update(update => update.Action("PutHoursWorkedDetail", "HoursWorkedDetail", new { id = "{0}" }).Type(HttpVerbs.Put).Data("GetDataUpdate"))
-                                .Destroy(destroy => destroy.Action("DeleteHoursWorkedDetail", "HoursWorkedDetail", new { id = "{0}" }).Type(HttpVerbs.Delete))
-                                    )
+                                                })
+                                                .Events(events => events.Error("error_handler"))
+                                                .Read(read => read.Action("GetHoursWorkedDetailByIdHorasTrabajadas", "HoursWorkedDetail").Data("GetIdHorasTrabajadas()"))
+                                                .Create(create => create.Action("PostHoursWorkedDetail", "HoursWorkedDetail").Type(HttpVerbs.Post).Data("GetData"))
+                                                .Update(update => update.Action("PutHoursWorkedDetail", "HoursWorkedDetail", new { id = "{0}" }).Type(HttpVerbs.Put).Data("GetDataUpdate"))
+                                                .Destroy(destroy => destroy.Action("DeleteHoursWorkedDetail", "HoursWorkedDetail", new { id = "{0}" }).Type(HttpVerbs.Delete))
+                                                    )
         )
     </div>
 </div>

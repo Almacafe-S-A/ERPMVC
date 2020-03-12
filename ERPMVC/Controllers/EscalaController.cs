@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -23,14 +24,21 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public EscalaController(ILogger<EscalaController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public EscalaController(ILogger<EscalaController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Configuracion.Escala")]
         public IActionResult Escala()
         {
+            ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Escala.Agregar Escala", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Configuracion.Escala.Editar Escala", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Configuracion.Escala.Eliminar Escala", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Configuracion.Escala.Exportar Escala", "true");
             return View();
         }
 

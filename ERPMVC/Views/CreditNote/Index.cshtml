@@ -1,6 +1,7 @@
-﻿@{
+﻿@using System.Security.Claims
+@{
     ViewData["Title"] = "Nota de Crédito";
-
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 <script>
 
@@ -127,110 +128,121 @@
 <h3 class="text-themecolor">Notas Crédito</h3>
 
 @(Html.Kendo().Grid<ERPMVC.Models.CreditNote>()
-                              .Name("gridCreditNotes")
-                              .Columns(columns =>
-                              {
-                                  columns.Command(command =>
+                                  .Name("gridCreditNotes")
+                                  .Columns(columns =>
                                   {
-                                      command.Custom("Editar").Text(" ").IconClass("far fa-list-alt").Click("EditCotizacion");
-                                      command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
+                                      if (permisos.HasClaim("Ventas.Nota de Credito.Ver Detalle Nota de Credito", "true")
+                                          || permisos.HasClaim("Ventas.Nota de Credito.Imprimir Nota de Credito", "true"))
+                                      {
+                                          columns.Command(command =>
+                                          {
+                                              if (permisos.HasClaim("Ventas.Nota de Credito.Ver Detalle Nota de Credito", "true"))
+                                              {
+                                                  command.Custom("Editar").Text(" ").IconClass("far fa-list-alt").Click("EditCotizacion");
+                                              }
+                                              if (permisos.HasClaim("Ventas.Nota de Credito.Imprimir Nota de Credito", "true"))
+                                              {
+                                                  command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
+                                              }
 
-                                  }).Width(130).Title("Acciones");
+                                          }).Width(130).Title("Acciones");
+                                      }
+                                      columns.Bound(p => p.CreditNoteId).Width(100).Visible(false);
+                                      columns.Bound(p => p.FechaCreacion).Title("Fecha de Creación").Format("{0:dd/MM/yyyy}").Width(210);
+                                      columns.Bound(p => p.NoSAG).Title("Numeración SAR").Width(200);
+                                      columns.Bound(p => p.CreditNoteName).Width(250);
+                                      columns.Bound(p => p.CreditNoteDate).Format("{0:dd/MM/yyyy}").Width(270);
+                                      columns.Bound(p => p.ExpirationDate).Format("{0:dd/MM/yyyy}").Width(250);
+                                      columns.Bound(p => p.IdPuntoEmision).Width(200);
+                                      columns.Bound(p => p.Fiscal).ClientTemplate("#= Fiscal ? 'Si' : 'No' #").Width(150).Visible(false);
+                                  })
+                                      .Filterable(f => f.Operators(o => o.ForString(s => s
+                                               .Clear()
+                                               .Contains("Contiene")
+                                               .DoesNotContain("No contiene")
+                                               .EndsWith("Termina con")
+                                               .IsEqualTo("Es igual a")
+                                               .IsNotEqualTo("No es igual a")
+                                               .IsNull("Es nulo")
+                                               .StartsWith("Inicia con")
 
-                                  columns.Bound(p => p.CreditNoteId).Width(100).Visible(false);
-                                  columns.Bound(p => p.FechaCreacion).Title("Fecha de Creación").Format("{0:dd/MM/yyyy}").Width(210);
-                                  columns.Bound(p => p.NoSAG).Title("Numeración SAR").Width(200);
-                                  columns.Bound(p => p.CreditNoteName).Width(250);
-                                  columns.Bound(p => p.CreditNoteDate).Format("{0:dd/MM/yyyy}").Width(270);
-                                  columns.Bound(p => p.ExpirationDate).Format("{0:dd/MM/yyyy}").Width(250);
-                                  columns.Bound(p => p.IdPuntoEmision).Width(200);
-                                  columns.Bound(p => p.Fiscal).ClientTemplate("#= Fiscal ? 'Si' : 'No' #").Width(150).Visible(false);
-                              })
-                                  .Filterable(f => f.Operators(o => o.ForString(s => s
+
+                                         )
+                                         .ForNumber(n => n
                                            .Clear()
-                                           .Contains("Contiene")
-                                           .DoesNotContain("No contiene")
-                                           .EndsWith("Termina con")
                                            .IsEqualTo("Es igual a")
-                                           .IsNotEqualTo("No es igual a")
+                                           .IsGreaterThan("Es mayor que")
+                                           .IsLessThan("Es menor que")
                                            .IsNull("Es nulo")
-                                           .StartsWith("Inicia con")
+                                           .IsLessThanOrEqualTo("Es menor o igual que")
+                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                         )
+                                         .ForDate(d => d
+                                         .Clear()
+                                         .IsEqualTo("Es igual que")
+                                         .IsGreaterThan("Es mayor que")
+                                         .IsLessThan("Es menor que")
+                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                         .IsNotEqualTo("No es igual que")
+                                          )
+                                       ))
+                                  .ToolBar(tools =>
+                                  {
+                                      // tools.Create();
+                                      if (permisos.HasClaim("Ventas.Nota de Credito.Agregar Nota de Credito", "true"))
+                                      {
+                                          tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                 .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
+                                      }
+                                          tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                          tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                      
+
+                                  })
+                                   .Editable(e => e.Mode(GridEditMode.PopUp))
+                                    .Sortable()
+                                    .AutoBind(true)
+                                    .Pageable(s => s
+                                    .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+                                    .Empty("No hay datos."))
+                                    )
+                                    .Filterable()
+                                    .Scrollable()
+                                    // .ClientDetailTemplateId("template")
+                                    .Pdf(pdf => pdf.FileName("Nota_Crédito_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                      .Excel(excel => excel.FileName("Nota_Crédito_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                    //.Events(e => e.DataBound("dataBound"))
+                                    .DataSource(dataSource =>
+
+                                   dataSource
+                                   //.Ajax()
+                                   .WebApi()
+                                    .ServerOperation(true)
+                                    .Model(model =>
+                                    {
+                                        model.Id(p => p.CreditNoteId);
+                                        model.Field(p => p.CreditNoteName).Editable(true);
+                                        model.Field(p => p.CreditNoteId).Editable(true);
 
 
-                                     )
-                                     .ForNumber(n => n
-                                       .Clear()
-                                       .IsEqualTo("Es igual a")
-                                       .IsGreaterThan("Es mayor que")
-                                       .IsLessThan("Es menor que")
-                                       .IsNull("Es nulo")
-                                       .IsLessThanOrEqualTo("Es menor o igual que")
-                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                     )
-                                     .ForDate(d => d
-                                     .Clear()
-                                     .IsEqualTo("Es igual que")
-                                     .IsGreaterThan("Es mayor que")
-                                     .IsLessThan("Es menor que")
-                                     .IsLessThanOrEqualTo("Es menor o igual que")
-                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                     .IsNotEqualTo("No es igual que")
-                                      )
-                                   ))
-                              .ToolBar(tools =>
-                              {
-                                  // tools.Create();
-                                  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                             .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
+                                    })
+                                    .Sort(s => s.Add(m => m.FechaCreacion).Descending())
+                                    .Events(events =>
+                                    {
+                                        events.Error("error_handler");
+                                        //events.upda("EditHandler");
 
-                                  tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                  tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-                              })
-                               .Editable(e => e.Mode(GridEditMode.PopUp))
-                                .Sortable()
-                                .AutoBind(true)
-                                .Pageable(s => s
-                                .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
-                                .Empty("No hay datos."))
-                                )
-                                .Filterable()
-                                .Scrollable()
-                                // .ClientDetailTemplateId("template")
-                                .Pdf(pdf => pdf.FileName("Nota_Crédito_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                  .Excel(excel => excel.FileName("Nota_Crédito_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                //.Events(e => e.DataBound("dataBound"))
-                                .DataSource(dataSource =>
-
-                               dataSource
-                               //.Ajax()
-                               .WebApi()
-                                .ServerOperation(true)
-                                .Model(model =>
-                                {
-                                    model.Id(p => p.CreditNoteId);
-                                    model.Field(p => p.CreditNoteName).Editable(true);
-                                    model.Field(p => p.CreditNoteId).Editable(true);
-
-
-                                })
-                                .Sort(s => s.Add(m => m.FechaCreacion).Descending())
-                                .Events(events =>
-                                {
-                                    events.Error("error_handler");
-                                    //events.upda("EditHandler");
-
-                                })
-                                .Read(read => read.Action("Get", "CreditNote"))
-                                .Create(create => create.Action("Insert", "CreditNote"))
-                                .Update(update => update.Action("Update", "CreditNote", new { id = "{0}" }))
-                                .Destroy(destroy => destroy.Action("Delete", "CreditNote", new { id = "{0}" }))
-                          )
+                                    })
+                                    .Read(read => read.Action("Get", "CreditNote"))
+                                    .Create(create => create.Action("Insert", "CreditNote"))
+                                    .Update(update => update.Action("Update", "CreditNote", new { id = "{0}" }))
+                                    .Destroy(destroy => destroy.Action("Delete", "CreditNote", new { id = "{0}" }))
+                              )
 )
 
 <div id="divCreditNote">

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -25,16 +26,22 @@ namespace ERPMVC.Controllers
 
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
+        private readonly ClaimsPrincipal _principal;
 
-        public ProductRelationController(ILogger<ProductRelationController> logger, IOptions<MyConfig> config)
+        public ProductRelationController(ILogger<ProductRelationController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         // GET: ProductRelation
+        [Authorize(Policy = "Catalogos.Relacion Servicio")]
         public ActionResult ProductRelation()
         {
+            ViewData["permisoAgregar"] = _principal.HasClaim("Catalogos.Relacion Servicio.Agregar Relacion Servicio", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Catalogos.Relacion Servicio.Editar Relacion Servicio", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Catalogos.Relacion Servicio.Exportar Relacion Servicio", "true");
             return View();
         }
 

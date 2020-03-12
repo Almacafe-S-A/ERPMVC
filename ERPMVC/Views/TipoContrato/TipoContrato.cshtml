@@ -1,8 +1,8 @@
 ﻿@using Kendo.Mvc.UI
-
+@using System.Security.Claims
 @{
     ViewData["Title"] = "TipoContrato";
-
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 
 <script>
@@ -73,73 +73,86 @@
 <h3 class="text-themecolor">Tipo de Contrato</h3>
 
 @(Html.Kendo().Grid<ERPMVC.Models.TipoContrato>
-                  ()
+                      ()
 
-                    .Name("gridTipoContrato")
+                        .Name("gridTipoContrato")
 
-                    .Columns(columns =>
-                    {
-                        columns.Command(command =>
+                        .Columns(columns =>
                         {
-                            //command.Custom("Ver detalles").Click("Detalles");
-                            //command.Custom("Editar").Click("EditTipoContrato");
-                            //command.Destroy().Text("Eliminar");
-                            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditTipoContrato");
-                            command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
-                        }).Width(100).Title("Acciones");
-                        columns.Bound(p => p.IdTipoContrato).Width(150);
-                        columns.Bound(p => p.NombreTipoContrato).Width(170);
-                        columns.Bound(p => p.IdEstado).ClientTemplate("#if (IdEstado =='1') {#Activo#} else {#Inactivo#} #").Width(150);
-                        columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy HH:mm:ss}").Width(100).Hidden();
+                            if (permisos.HasClaim("RRHH.Parametros.Tipo Contrato.Editar Tipo Contrato", "true")
+                                || permisos.HasClaim("RRHH.Parametros.Tipo Contrato.Eliminar Tipo Contrato", "true"))
+                            {
+                                columns.Command(command =>
+                                {
+                                    //command.Custom("Ver detalles").Click("Detalles");
+                                    //command.Custom("Editar").Click("EditTipoContrato");
+                                    //command.Destroy().Text("Eliminar");
+                                    if (permisos.HasClaim("RRHH.Parametros.Tipo Contrato.Editar Tipo Contrato", "true"))
+                                    {
+                                        command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditTipoContrato");
+                                    }
+                                    if (permisos.HasClaim("RRHH.Parametros.Tipo Contrato.Eliminar Tipo Contrato", "true"))
+                                    {
+                                        command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                                    }
+                                }).Width(100).Title("Acciones");
+                            }
+                            columns.Bound(p => p.IdTipoContrato).Width(150);
+                            columns.Bound(p => p.NombreTipoContrato).Width(170);
+                            columns.Bound(p => p.IdEstado).ClientTemplate("#if (IdEstado =='1') {#Activo#} else {#Inactivo#} #").Width(150);
+                            columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy HH:mm:ss}").Width(100).Hidden();
 
 
-                    })
+                        })
 
 
-                    .ToolBar(tools =>
-                    {
-                        //tools.Create();
-                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                              .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddTipoContrato()" });
-                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                        .ToolBar(tools =>
+                        {
+                            //tools.Create();
+                            if (permisos.HasClaim("RRHH.Parametros.Tipo Contrato.Agregar Tipo Contrato", "true"))
+                            {
+                                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                  .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddTipoContrato()" });
+                            }
+                                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                            
+                        })
+                        .Editable(e => e.Mode(GridEditMode.PopUp))
+                        .Sortable()
+                        .Pageable()
+                        .Filterable()
+                        .Scrollable()
+                        .Pdf(pdf => pdf.FileName("TipoContratoReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                        .Excel(excel => excel.FileName("TipoContratoReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                        .DataSource(dataSource =>
+                        dataSource
+                        .WebApi()
 
-                    })
-                    .Editable(e => e.Mode(GridEditMode.PopUp))
-                    .Sortable()
-                    .Pageable()
-                    .Filterable()
-                    .Scrollable()
-                    .Pdf(pdf => pdf.FileName("TipoContratoReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                    .Excel(excel => excel.FileName("TipoContratoReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                    .DataSource(dataSource =>
-                    dataSource
-                    .WebApi()
-
-                    .ServerOperation(true)
-                    .Model(model =>
-                    {
-                        model.Id(p => p.IdTipoContrato);
-                        model.Field(p => p.IdTipoContrato).Editable(false);
+                        .ServerOperation(true)
+                        .Model(model =>
+                        {
+                            model.Id(p => p.IdTipoContrato);
+                            model.Field(p => p.IdTipoContrato).Editable(false);
 
 
-                    })
-                    .Sort(s => s.Add(m => m.FechaCreacion).Descending())
-                    .Events(events => events.Error("error_handler"))
-                    .Read(read => read.Action("Get", "TipoContrato"))
-                   .Create(create => create.Action("Insert", "TipoContrato").Type(HttpVerbs.Post))
-                   .Update(update => update.Action("Update", "TipoContrato").Type(HttpVerbs.Post))
-                   .Destroy(destroy => destroy.Action("Delete", "TipoContrato").Type(HttpVerbs.Post))
-                    )
-                    .Events(e =>
-                    {
-                        e.Save("onsave");
+                        })
+                        .Sort(s => s.Add(m => m.FechaCreacion).Descending())
+                        .Events(events => events.Error("error_handler"))
+                        .Read(read => read.Action("Get", "TipoContrato"))
+                       .Create(create => create.Action("Insert", "TipoContrato").Type(HttpVerbs.Post))
+                       .Update(update => update.Action("Update", "TipoContrato").Type(HttpVerbs.Post))
+                       .Destroy(destroy => destroy.Action("Delete", "TipoContrato").Type(HttpVerbs.Post))
+                        )
+                        .Events(e =>
+                        {
+                            e.Save("onsave");
 
-                    })
+                        })
 )
 
 <script>

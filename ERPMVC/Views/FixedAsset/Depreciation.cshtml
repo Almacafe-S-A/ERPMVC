@@ -1,80 +1,84 @@
-﻿
-@(Html.Kendo().Grid<ERPMVC.Models.DepreciationFixedAsset>()
-            .Name("gridDepreciation")
-            .Columns(c =>
-            {
-                c.Bound(p => p.Year).Width(150);
-                c.Bound(p => p.January).Width(150).Format("{0:C}");
-                c.Bound(p => p.February).Width(150).Format("{0:C}");
-                c.Bound(p => p.March).Width(150).Format("{0:C}");
-                c.Bound(p => p.April).Width(150).Format("{0:C}");
-                c.Bound(p => p.May).Width(150).Format("{0:C}");
-                c.Bound(p => p.June).Width(150).Format("{0:C}");
-                c.Bound(p => p.July).Width(150).Format("{0:C}");
-                c.Bound(p => p.August).Width(150).Format("{0:C}");
-                c.Bound(p => p.September).Width(170).Format("{0:C}");
-                c.Bound(p => p.October).Width(150).Format("{0:C}");
-                c.Bound(p => p.November).Width(150).Format("{0:C}");
-                c.Bound(p => p.December).Width(150).Format("{0:C}");
-                c.Bound(p => p.TotalDepreciated).Width(210).Format("{0:C}").ClientGroupHeaderColumnTemplate("Sum: #=sum#");
+﻿@using System.Security.Claims
 
-            })
-            .Filterable(f => f.Operators(o => o.ForString(s => s.Clear()
-                                                                .Contains("Contiene")
-                                                                .DoesNotContain("No contiene")
-                                                                .EndsWith("Termina con")
-                                                                .IsEqualTo("Es igual a")
-                                                                .IsNull("Es nulo")
-                                                                .StartsWith("Inicia con"))
-                                                                .ForNumber(n => n.Clear()
+@{
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisosDepreciation"];
+}
+@(Html.Kendo().Grid<ERPMVC.Models.DepreciationFixedAsset>()
+                .Name("gridDepreciation")
+                .Columns(c =>
+                {
+                    c.Bound(p => p.Year).Width(150);
+                    c.Bound(p => p.January).Width(150).Format("{0:C}");
+                    c.Bound(p => p.February).Width(150).Format("{0:C}");
+                    c.Bound(p => p.March).Width(150).Format("{0:C}");
+                    c.Bound(p => p.April).Width(150).Format("{0:C}");
+                    c.Bound(p => p.May).Width(150).Format("{0:C}");
+                    c.Bound(p => p.June).Width(150).Format("{0:C}");
+                    c.Bound(p => p.July).Width(150).Format("{0:C}");
+                    c.Bound(p => p.August).Width(150).Format("{0:C}");
+                    c.Bound(p => p.September).Width(170).Format("{0:C}");
+                    c.Bound(p => p.October).Width(150).Format("{0:C}");
+                    c.Bound(p => p.November).Width(150).Format("{0:C}");
+                    c.Bound(p => p.December).Width(150).Format("{0:C}");
+                    c.Bound(p => p.TotalDepreciated).Width(210).Format("{0:C}").ClientGroupHeaderColumnTemplate("Sum: #=sum#");
+
+                })
+                .Filterable(f => f.Operators(o => o.ForString(s => s.Clear()
+                                                                    .Contains("Contiene")
+                                                                    .DoesNotContain("No contiene")
+                                                                    .EndsWith("Termina con")
+                                                                    .IsEqualTo("Es igual a")
+                                                                    .IsNull("Es nulo")
+                                                                    .StartsWith("Inicia con"))
+                                                                    .ForNumber(n => n.Clear()
+                                                                                        .IsEqualTo("Es igual a")
+                                                                                        .IsGreaterThan("Es mayor que")
+                                                                                        .IsNull("Es nulo")
+                                                                                        .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                                        .IsGreaterThanOrEqualTo("Es mayor o igual que"))
+                                                                    .ForDate(d => d.Clear()
                                                                                     .IsEqualTo("Es igual a")
                                                                                     .IsGreaterThan("Es mayor que")
-                                                                                    .IsNull("Es nulo")
+                                                                                    .IsLessThan("Es menor que")
                                                                                     .IsLessThanOrEqualTo("Es menor o igual que")
-                                                                                    .IsGreaterThanOrEqualTo("Es mayor o igual que"))
-                                                                .ForDate(d => d.Clear()
-                                                                                .IsEqualTo("Es igual a")
-                                                                                .IsGreaterThan("Es mayor que")
-                                                                                .IsLessThan("Es menor que")
-                                                                                .IsLessThanOrEqualTo("Es menor o igual que")
-                                                                                .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                                                .IsNotEqualTo("No es igual que"))
-                                        )
-            )
-            .ToolBar(tools =>
-            {
-                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-            })
-            .Sortable()
-            //.Pageable(s => s
-            //.Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")))
-
-            .Filterable()
-            .Scrollable()
-            .Pdf(pdf => pdf.FileName("Detalle-Activos_Fijos-Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_" +
-                                    DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
-            .Excel(excel => excel.FileName("Detalle-Activos_Fijos-Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_" +
-                                    DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx")
-                            .Filterable(true)
-                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-            .DataSource(ds => ds.WebApi()
-            .Aggregates(aggregates =>
-            {
-
-                aggregates.Add(p => p.TotalDepreciated).Sum();
-            })
-                                .ServerOperation(true)
-                                .Model(model =>
-                                {
-                                    model.Id(p => p.FixedAssetId);
-                                    model.Field(p => p.FixedAssetId).Editable(false);
-                                })
-                                .Events(e => e.Error("error_handler"))
-                                .Group(groups => groups.Add(p => p.FixedAssetId))
-                                .Read(r => r.Action("GetByFixedAssetId", "DepreciationFixedAsset")
+                                                                                    .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                                    .IsNotEqualTo("No es igual que"))
                                             )
-                        )
+                )
+                .ToolBar(tools =>
+                {
+                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                })
+                .Sortable()
+                //.Pageable(s => s
+                //.Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")))
+
+                .Filterable()
+                .Scrollable()
+                .Pdf(pdf => pdf.FileName("Detalle-Activos_Fijos-Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_" +
+                                        DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                .Excel(excel => excel.FileName("Detalle-Activos_Fijos-Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_" +
+                                        DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx")
+                                .Filterable(true)
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                .DataSource(ds => ds.WebApi()
+                .Aggregates(aggregates =>
+                {
+
+                    aggregates.Add(p => p.TotalDepreciated).Sum();
+                })
+                                    .ServerOperation(true)
+                                    .Model(model =>
+                                    {
+                                        model.Id(p => p.FixedAssetId);
+                                        model.Field(p => p.FixedAssetId).Editable(false);
+                                    })
+                                    .Events(e => e.Error("error_handler"))
+                                    .Group(groups => groups.Add(p => p.FixedAssetId))
+                                    .Read(r => r.Action("GetByFixedAssetId", "DepreciationFixedAsset")
+                                                )
+                            )
 )
 

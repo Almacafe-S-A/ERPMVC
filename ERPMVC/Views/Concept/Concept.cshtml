@@ -1,7 +1,8 @@
 ﻿@using Kendo.Mvc.UI
-
+@using System.Security.Claims
 @{
     ViewData["Title"] = "Conceptos";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 
 
@@ -19,7 +20,7 @@
         $("#TypeId").data('kendoDropDownList').value(0);
       }
 
-    
+
     function EditConcept(e) {
              e.preventDefault();
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
@@ -53,99 +54,112 @@
 
 <h3 class="text-themecolor">Conceptos</h3>
 @(Html.Kendo().Grid<ERPMVC.Models.Concept>
-                            ()
-                            .Name("gridConcept")
-                            .Columns(columns =>
-                            {
-                                columns.Command(command =>
+                                ()
+                                .Name("gridConcept")
+                                .Columns(columns =>
                                 {
-                                    command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditConcept");
-                                    command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
-                                }).Title("Acciones").Width(200);
-                                columns.Bound(p => p.ConceptId).Width(100);
-                                columns.Bound(p => p.ConceptName).Width(200);
-                                columns.Bound(p => p.TypeName).Width(200);
-                                columns.Bound(p => p.Calculation).Width(200);
-                                columns.Bound(p => p.Value).Width(200);
-                            })
-                                .Filterable(f => f.Operators(o => o.ForString(s => s
+                                    if (permisos.HasClaim("RRHH.Concepto.Editar Concepto", "true")
+                                    || permisos.HasClaim("RRHH.Concepto.Eliminar Concepto", "true"))
+                                    {
+                                        columns.Command(command =>
+                                        {
+                                            if (permisos.HasClaim("RRHH.Concepto.Editar Concepto", "true"))
+                                            {
+                                                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditConcept");
+                                            }
+                                            if (permisos.HasClaim("RRHH.Concepto.Eliminar Concepto", "true"))
+                                            {
+                                                command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                                            }
+                                        }).Title("Acciones").Width(200);
+                                    }
+                                    columns.Bound(p => p.ConceptId).Width(100);
+                                    columns.Bound(p => p.ConceptName).Width(200);
+                                    columns.Bound(p => p.TypeName).Width(200);
+                                    columns.Bound(p => p.Calculation).Width(200);
+                                    columns.Bound(p => p.Value).Width(200);
+                                })
+                                    .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                           .Clear()
+                                                           .Contains("Contiene")
+                                                           .DoesNotContain("No contiene")
+                                                           .EndsWith("Termina con")
+                                                           .IsEqualTo("Es igual a")
+                                                           .IsNotEqualTo("No es igual a")
+                                                           .IsNull("Es nulo")
+                                                           .StartsWith("Inicia con")
+                                                     )
+                                                     .ForNumber(n => n
                                                        .Clear()
-                                                       .Contains("Contiene")
-                                                       .DoesNotContain("No contiene")
-                                                       .EndsWith("Termina con")
                                                        .IsEqualTo("Es igual a")
-                                                       .IsNotEqualTo("No es igual a")
+                                                       .IsGreaterThan("Es mayor que")
+                                                       .IsLessThan("Es menor que")
                                                        .IsNull("Es nulo")
-                                                       .StartsWith("Inicia con")
-                                                 )
-                                                 .ForNumber(n => n
-                                                   .Clear()
-                                                   .IsEqualTo("Es igual a")
-                                                   .IsGreaterThan("Es mayor que")
-                                                   .IsLessThan("Es menor que")
-                                                   .IsNull("Es nulo")
-                                                   .IsLessThanOrEqualTo("Es menor o igual que")
-                                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                 )
-                                                 .ForDate(d => d
-                                                 .Clear()
-                                                 .IsEqualTo("Es igual que")
-                                                 .IsGreaterThan("Es mayor que")
-                                                 .IsLessThan("Es menor que")
-                                                 .IsLessThanOrEqualTo("Es menor o igual que")
-                                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                 .IsNotEqualTo("No es igual que")
-                                                  )
-                                               ))
-                            .ToolBar(tools =>
-                            {
-                                // tools.Create();
-                                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus") .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddConcept()" });
-                                tools.Excel().Text("Exportar a Excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                tools.Pdf().Text("Exportar a PDF").HtmlAttributes(new { @class = "toolbar-field" });
-
-                            })
-                            .Editable(e => e.Mode(GridEditMode.PopUp))
-                            .Sortable()
-                            .Pageable()
-                            .Filterable()
-                            .Scrollable()
-                                //.Pdf(pdf => pdf.FileName("BankReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                //+ DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                //.ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                //    .Excel(excel => excel.FileName("BankReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                //+ DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                //.ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                .DataSource(dataSource =>
-                                dataSource
-                                .WebApi()
-                                .ServerOperation(true)
-                                .Model(model =>
+                                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                     )
+                                                     .ForDate(d => d
+                                                     .Clear()
+                                                     .IsEqualTo("Es igual que")
+                                                     .IsGreaterThan("Es mayor que")
+                                                     .IsLessThan("Es menor que")
+                                                     .IsLessThanOrEqualTo("Es menor o igual que")
+                                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                     .IsNotEqualTo("No es igual que")
+                                                      )
+                                                   ))
+                                .ToolBar(tools =>
                                 {
-                                    model.Id(p => p.ConceptId);
-                                    model.Field(p => p.ConceptName).Editable(false);
-                                    model.Field(p => p.TypeName).Editable(true);
-                                    model.Field(p => p.Calculation).Editable(false);
-                                    model.Field(p => p.Value).Editable(false);
+                                    // tools.Create();
+                                    if (permisos.HasClaim("RRHH.Concepto.Agregar Concepto", "true"))
+                                    {
+                                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddConcept()" });
+                                    }
+                                        tools.Excel().Text("Exportar a Excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                        tools.Pdf().Text("Exportar a PDF").HtmlAttributes(new { @class = "toolbar-field" });
+                                    
+                                })
+                                .Editable(e => e.Mode(GridEditMode.PopUp))
+                                .Sortable()
+                                .Pageable()
+                                .Filterable()
+                                .Scrollable()
+                                    //.Pdf(pdf => pdf.FileName("BankReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    //+ DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                    //.ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                    //    .Excel(excel => excel.FileName("BankReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    //+ DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                    //.ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                    .DataSource(dataSource =>
+                                    dataSource
+                                    .WebApi()
+                                    .ServerOperation(true)
+                                    .Model(model =>
+                                    {
+                                        model.Id(p => p.ConceptId);
+                                        model.Field(p => p.ConceptName).Editable(false);
+                                        model.Field(p => p.TypeName).Editable(true);
+                                        model.Field(p => p.Calculation).Editable(false);
+                                        model.Field(p => p.Value).Editable(false);
+
+                                    })
+                                    .Events(events => events.Error("error_handler"))
+                                    .Read(read => read.Action("GetConcept", "Concept"))
+                                    .Create(create => create.Action("Insert", "Concept"))
+                                    .Update(update => update.Action("Update", "Concept").Type(HttpVerbs.Put))
+                                    .Destroy(destroy => destroy.Action("Delete", "Concept").Type(HttpVerbs.Post))
+                                // .Destroy(destroy => destroy.Action("Delete", "Concept", new { ConceptId = "{0}" }).Type(HttpVerbs.Delete))
+
+                                )
+                                .Events(e =>
+                                {
+                                    e.Save("onsave");
 
                                 })
-                                .Events(events => events.Error("error_handler"))
-                                .Read(read => read.Action("GetConcept", "Concept"))
-                                .Create(create => create.Action("Insert", "Concept"))
-                                .Update(update => update.Action("Update", "Concept").Type(HttpVerbs.Put))
-                                .Destroy(destroy => destroy.Action("Delete", "Concept").Type(HttpVerbs.Post))
-                            // .Destroy(destroy => destroy.Action("Delete", "Concept", new { ConceptId = "{0}" }).Type(HttpVerbs.Delete))
-
-                            )
-                            .Events(e =>
-                            {
-                                e.Save("onsave");
-
-                            })
 )
 
 <div id="NumConcept">
-    @await Html.PartialAsync("pvwAddConcept", new ERPMVC.DTO.ConceptDTO{ ConceptId = 0 })
+    @await Html.PartialAsync("pvwAddConcept", new ERPMVC.DTO.ConceptDTO { ConceptId = 0 })
 </div>
 
 <script>

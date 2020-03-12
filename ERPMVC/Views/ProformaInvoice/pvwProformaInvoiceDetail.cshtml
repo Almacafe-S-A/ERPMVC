@@ -1,6 +1,9 @@
 ﻿@model ERPMVC.DTO.ProformaInvoiceDTO
+@using System.Security.Claims
 
-
+@{
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisosProformaInvoice"];
+}
 
 <script>
 
@@ -92,8 +95,8 @@
 
             llenarsubproduct();
             $("#frmSalesOrderLine :input").not('#ProformaLineId').prop("disabled", false);
-            $('#ProformaLineId').val(0);   
-            $('#TaxId').data("kendoDropDownList").value(0);           
+            $('#ProformaLineId').val(0);
+            $('#TaxId').data("kendoDropDownList").value(0);
             $('#SubProductId').data("kendoDropDownList").value(0);
             $("#Quantity").data("kendoNumericTextBox").value(0);
             $("#Price").data("kendoNumericTextBox").value(0);
@@ -117,7 +120,6 @@
                 hideAfter: 7000,
                 stack: 6
             });
-
         }
 
     }
@@ -176,13 +178,13 @@
                 success: function (data) {
                     $("#SalesOrderLineMant").html('');
                     $("#SalesOrderLineMant").html(data);
-                    
+
                     $("#DiscountPercentage").data("kendoNumericTextBox").value(dataItem.DiscountPercentage);
                     $("#DiscountAmount").data("kendoNumericTextBox").value(dataItem.DiscountAmount);
                     $("#TaxAmount").data("kendoNumericTextBox").value(dataItem.TaxAmount);
-                    $("#DescriptionDetail").val(dataItem.DescriptionDetail);
+                    $("#Description").val(dataItem.Description);
                     $("#TaxPercentage").data("kendoNumericTextBox").value(dataItem.TaxPercentage);
-                    //$('#SubProductId').data("kendoDropDownList").value(dataItem.SubProductId);
+                    $('#SubProductId').data("kendoDropDownList").value(dataItem.SubProductId);
                  //   var txt = $(data);
 
 
@@ -192,7 +194,7 @@
                     }
                     else {
 
-                    }        
+                    }
 
                     $("#SubProductId").data("kendoDropDownList").dataSource.read();
 
@@ -210,7 +212,7 @@
                         message: textStatus + ": " + XMLHttpRequest.responseText
                     }, "error");
 
-                }
+               }
             });
 
 
@@ -218,11 +220,11 @@
 
             $("#btnActualizarCotizacionLinea").prop("disabled", false);
             $("#ProformaLineId").val(dataItem.ProformaLineId);
-          
+
             hcustom = $("#CustomerId").val();
-          
-         
-        
+
+
+
             $("#UnitOfMeasureId").data("kendoDropDownList").value(dataItem.UnitOfMeasureId);
            // $("#UnitOfMeasureId").data("kendoDropDownList").value(dataItem.UnitOfMeasureId);
             $("#TaxId").data("kendoDropDownList").value(dataItem.TaxId);
@@ -291,133 +293,149 @@
 
 <div class="box">
     <h3 class="text-themecolor">Detalle Factura Proforma</h3>
-    <br/>
+    <br />
     <div class="box-body">
 
         @(Html.Kendo().Grid<ERPMVC.Models.ProformaInvoiceLine>()
-                                                          .Name("gridProformaInvoiceDetail")
-                                                          .Columns(columns =>
-                                                          {
-                                                              columns.Command(command =>
-                                                              {
-                                                                  if (Model.ProformaId == 0)
-                                                                  {
-                                                                      command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCotizacionDetalle");
-                                                                      command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
-                                                                  }
-                                                                  else
-                                                                  {
-                                                                      command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCotizacionDetalle");
-                                                                  }
+                                                                                  .Name("gridProformaInvoiceDetail")
+                                                                                  .Columns(columns =>
+                                                                                  {
+                                                                                      if (permisos.HasClaim("Ventas.Factura Proforma.Editar Factura Proforma Detalle", "true")
+                                                                                      || permisos.HasClaim("Ventas.Factura Proforma.Eliminar Factura Proforma Detalle", "true"))
+                                                                                      {
+                                                                                          columns.Command(command =>
+                                                                                          {
+                                                                                              if (Model.ProformaId == 0)
+                                                                                              {
+                                                                                                  if (permisos.HasClaim("Ventas.Factura Proforma.Editar Factura Proforma Detalle", "true"))
+                                                                                                  {
+                                                                                                      command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCotizacionDetalle");
+                                                                                                  }
+                                                                                                  if (permisos.HasClaim("Ventas.Factura Proforma.Eliminar Factura Proforma Detalle", "true"))
+                                                                                                  {
+                                                                                                      command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+                                                                                                  }
+
+                                                                                              }
+                                                                                              else
+                                                                                              {
+                                                                                                  if (permisos.HasClaim("Ventas.Factura Proforma.Editar Factura Proforma Detalle", "true"))
+                                                                                                  {
+                                                                                                      command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCotizacionDetalle");
+                                                                                                  }
+                                                                                              }
 
 
-                                                                  // command.Custom("Imprimir").Click("ImprimirCotizacion");
-                                                                  //  command.Edit(); command.Destroy();
-                                                              }).Title("Acciones").Width(200);
+                                                                                              // command.Custom("Imprimir").Click("ImprimirCotizacion");
+                                                                                              //  command.Edit(); command.Destroy();
+                                                                                          }).Title("Acciones").Width(200);
+                                                                                      }
+                                                                                      columns.Bound(p => p.ProformaLineId).Title("Id Línea").Width(150);
+                                                                                      columns.Bound(p => p.ProformaInvoiceId).Title("Proforma Id").Width(200);
+                                                                                      columns.Bound(p => p.SubProductId).Title("IdProducto").Visible(false);
+                                                                                      columns.Bound(p => p.SubProductName).Title("Producto").Width(250);
+                                                                                      // columns.Bound(p => p.Description).Title("Descripcion").Width(150);
+                                                                                      columns.Bound(p => p.Quantity).Format("{0:n2}").Title("Cantidad").Width(250);
+                                                                                      columns.Bound(p => p.Price).Format("{0:n2}").Title("Precio").Format("{0:n2}").Width(250);
+                                                                                      columns.Bound(p => p.UnitOfMeasureId).Title("Unidad de medida").Visible(false);
+                                                                                      //  columns.Bound(p => p.TaxPercentage).Title("Porcentaje impuestos").Width(150);
+                                                                                      columns.Bound(p => p.Amount).Format("{0:n2}").Width(250);
+                                                                                      columns.Bound(p => p.DiscountAmount).Format("{0:n2}").Title("Monto Descuentos").Width(250);
+                                                                                      columns.Bound(p => p.DiscountPercentage).Format("{0:n2}").Title("Descuentos").Width(250);
+                                                                                      columns.Bound(p => p.SubTotal).Format("{0:n2}").Title("Sub Total").Width(200);
+                                                                                      columns.Bound(p => p.TaxCode).Title("Tipo Impuesto").Width(250);
+                                                                                      // columns.Bound(p => p.tax).Title("Tipo Impuesto").Width(150);
+                                                                                      columns.Bound(p => p.TaxAmount).Format("{0:n2}").Title("Monto Impuesto").Width(250);
+                                                                                      columns.Bound(p => p.Total).Format("{0:n2}").Title("Total").Width(250);
 
-                                                              columns.Bound(p => p.ProformaLineId).Title("Id Línea").Width(150);
-                                                              columns.Bound(p => p.ProformaInvoiceId).Title("Proforma Id").Width(200);
-                                                              columns.Bound(p => p.SubProductId).Title("IdProducto").Visible(false);
-                                                              columns.Bound(p => p.SubProductName).Title("Producto").Width(250);
-                                                              // columns.Bound(p => p.Description).Title("Descripcion").Width(150);
-                                                              columns.Bound(p => p.Quantity).Format("{0:n2}").Title("Cantidad").Width(250);
-                                                              columns.Bound(p => p.Price).Format("{0:n2}").Title("Precio").Format("{0:n2}").Width(250);
-                                                              columns.Bound(p => p.UnitOfMeasureId).Title("Unidad de medida").Visible(false);
-                                                              //  columns.Bound(p => p.TaxPercentage).Title("Porcentaje impuestos").Width(150);
-                                                              columns.Bound(p => p.Amount).Format("{0:n2}").Width(250);
-                                                              columns.Bound(p => p.DiscountAmount).Format("{0:n2}").Title("Monto Descuentos").Width(250);
-                                                              columns.Bound(p => p.DiscountPercentage).Format("{0:n2}").Title("Descuentos").Width(250);
-                                                              columns.Bound(p => p.SubTotal).Format("{0:n2}").Title("Sub Total").Width(200);
-                                                              columns.Bound(p => p.TaxCode).Title("Tipo Impuesto").Width(250);
-                                                              // columns.Bound(p => p.tax).Title("Tipo Impuesto").Width(150);
-                                                              columns.Bound(p => p.TaxAmount).Format("{0:n2}").Title("Monto Impuesto").Width(250);
-                                                              columns.Bound(p => p.Total).Format("{0:n2}").Title("Total").Width(250);
-
-                                                          })
-                                                              .Filterable(f => f.Operators(o => o.ForString(s => s
-                                                       .Clear()
-                                                       .Contains("Contiene")
-                                                       .DoesNotContain("No contiene")
-                                                       .EndsWith("Termina con")
-                                                       .IsEqualTo("Es igual a")
-                                                       .IsNotEqualTo("No es igual a")
-                                                       .IsNull("Es nulo")
-                                                       .StartsWith("Inicia con")
-
-
-                                                 )
-                                                 .ForNumber(n => n
-                                                   .Clear()
-                                                   .IsEqualTo("Es igual a")
-                                                   .IsGreaterThan("Es mayor que")
-                                                   .IsLessThan("Es menor que")
-                                                   .IsNull("Es nulo")
-                                                   .IsLessThanOrEqualTo("Es menor o igual que")
-                                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                 )
-                                                 .ForDate(d => d
-                                                 .Clear()
-                                                 .IsEqualTo("Es igual que")
-                                                 .IsGreaterThan("Es mayor que")
-                                                 .IsLessThan("Es menor que")
-                                                 .IsLessThanOrEqualTo("Es menor o igual que")
-                                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                 .IsNotEqualTo("No es igual que")
-                                                  )
-                                               ))
-                                                          .ToolBar(tools =>
-                                                          {
-                                                              if (Model.editar == 1)
-                                                              {
-                                                                  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                                  .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacionDetalle();" });
-                                                              }
-
-                                                              tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                                              tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                                                                  })
+                                                                                      .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                                               .Clear()
+                                                                               .Contains("Contiene")
+                                                                               .DoesNotContain("No contiene")
+                                                                               .EndsWith("Termina con")
+                                                                               .IsEqualTo("Es igual a")
+                                                                               .IsNotEqualTo("No es igual a")
+                                                                               .IsNull("Es nulo")
+                                                                               .StartsWith("Inicia con")
 
 
-                                                          })
-                                                           .Editable(e => e.Mode(GridEditMode.PopUp))
-                                                            .Sortable()
-                                                            .AutoBind(true)
-                                                            //.Pageable()
-                                                            .Filterable()
-                                                            .Scrollable()
-                                                            // .ClientDetailTemplateId("template")
-                                                            .Pdf(pdf => pdf.FileName("CotizacionDetalleReporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                                              .Excel(excel => excel.FileName("CotizacionDetalleReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                                            //.Events(e=>e.Save("onsave"))
-                                                            .DataSource(dataSource =>
+                                                                         )
+                                                                         .ForNumber(n => n
+                                                                           .Clear()
+                                                                           .IsEqualTo("Es igual a")
+                                                                           .IsGreaterThan("Es mayor que")
+                                                                           .IsLessThan("Es menor que")
+                                                                           .IsNull("Es nulo")
+                                                                           .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                         )
+                                                                         .ForDate(d => d
+                                                                         .Clear()
+                                                                         .IsEqualTo("Es igual que")
+                                                                         .IsGreaterThan("Es mayor que")
+                                                                         .IsLessThan("Es menor que")
+                                                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                         .IsNotEqualTo("No es igual que")
+                                                                          )
+                                                                       ))
+                                                                                  .ToolBar(tools =>
+                                                                                  {
+                                                                                      if (Model.editar == 1)
+                                                                                      {
+                                                                                          if (permisos.HasClaim("Ventas.Factura Proforma.Agregar Factura Proforma Detalle", "true"))
+                                                                                          {
+                                                                                              tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                          .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacionDetalle();" });
+                                                                                          }
+                                                                                      }
+                                                                                          tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                                                          tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                                                                      
 
-                                                           dataSource
-                                                           //.Ajax()
-                                                           .WebApi()
+                                                                                  })
+                                                                                   .Editable(e => e.Mode(GridEditMode.PopUp))
+                                                                                    .Sortable()
+                                                                                    .AutoBind(true)
+                                                                                    //.Pageable()
+                                                                                    .Filterable()
+                                                                                    .Scrollable()
+                                                                                    // .ClientDetailTemplateId("template")
+                                                                                    .Pdf(pdf => pdf.FileName("CotizacionDetalleReporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                                                                      .Excel(excel => excel.FileName("CotizacionDetalleReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                                                                    //.Events(e=>e.Save("onsave"))
+                                                                                    .Events(e => e.DataBound("CalcularTotalDocumento"))
+                                                                                    .DataSource(dataSource =>
 
-                                                            .ServerOperation(true)
-                                                            .Model(model =>
-                                                            {
-                                                                model.Id(p => p.ProformaLineId);
-                                                                model.Field(p => p.ProformaLineId).Editable(false);
-                                                                model.Field(p => p.ProformaInvoiceId).Editable(false);
+                                                                                   dataSource
+                                                                                   //.Ajax()
+                                                                                   .WebApi()
 
-                                                            })
-                                                            .Events(events =>
-                                                            {
-                                                                events.Error("error_handler");
-                                                                //events.upda("EditHandler");
+                                                                                    .ServerOperation(true)
+                                                                                    .Model(model =>
+                                                                                    {
+                                                                                        model.Id(p => p.ProformaLineId);
+                                                                                        model.Field(p => p.ProformaLineId).Editable(false);
+                                                                                        model.Field(p => p.ProformaInvoiceId).Editable(false);
 
-                                                            })
-                                                            .Sort(s => s.Add(m => m.ProformaLineId).Descending())
-                                                            .Read(read => read.Action("GetProformaInvoiceLineByProformaInvoiceId", "ProformaInvoiceLine").Data("GetSalesOrderId"))
-                                                      //.Create(create => create.Action("Insert", "SalesOrderLine"))
-                                                      //.Update(update => update.Action("Update", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
-                                                      //.Destroy(destroy => destroy.Action("Delete", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
-                                                      )
+                                                                                    })
+                                                                                    .Events(events =>
+                                                                                    {
+                                                                                        events.Error("error_handler");
+                                                                                        //events.upda("EditHandler");
+
+                                                                                    })
+                                                                                    .Sort(s => s.Add(m => m.ProformaLineId).Descending())
+                                                                                    .Read(read => read.Action("GetProformaInvoiceLineByProformaInvoiceId", "ProformaInvoiceLine").Data("GetSalesOrderId"))
+                                                                              //.Create(create => create.Action("Insert", "SalesOrderLine"))
+                                                                              //.Update(update => update.Action("Update", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
+                                                                              //.Destroy(destroy => destroy.Action("Delete", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
+                                                                              )
         )
 
     </div>
@@ -444,7 +462,7 @@
     setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
 
 
-        setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
 
     setRowButtonTooltip(".k-grid-Agregar", "Agregar nuevo registro");
 </script>

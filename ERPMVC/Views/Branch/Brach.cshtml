@@ -1,7 +1,9 @@
 ﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
 
 @{
     ViewData["Title"] = "Sucursales";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 
 <script>
@@ -50,7 +52,7 @@
 
     }
 
-    
+
     function EditBranch(e) {
         e.preventDefault();
         var notification = $("#notification").data("kendoNotification");
@@ -96,118 +98,131 @@
 
 <h3 class="text-themecolor">Sucursales</h3>
 @(Html.Kendo().Grid<ERPMVC.Models.Branch>
-            ()
-            .Name("gridNumeracionBranch")
-            .Columns(columns =>
-            {
-                columns.Command(command =>
+                ()
+                .Name("gridNumeracionBranch")
+                .Columns(columns =>
                 {
-                    //command.Custom("Ver detalles").Click("Detalles");
-                    command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditBranch");
-                    command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
-                }).Title("Acciones").Width(150);
-                columns.Bound(p => p.BranchId).Width(100);
-                columns.Bound(p => p.BranchName).Width(200);
-                columns.Bound(p => p.Description).Width(250);
-                columns.Bound(p => p.CurrencyName).Width(150);
-                columns.Bound(p => p.ZipCode).Width(150);
-                columns.Bound(p => p.Phone).Width(200);
-                columns.Bound(p => p.Email).Width(250);
-                columns.Bound(p => p.ContactPerson).Width(200);
-                columns.Bound(p => p.Estado).Width(150);
-                columns.Bound(p => p.Address).Width(300);
-                columns.Bound(p => p.City).Width(200);
-                columns.Bound(p => p.CustomerId).Width(200);
-                columns.Bound(p => p.CustomerName).Width(200);
-                columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy HH:mm:ss}").Width(100).Hidden();
-                //columns.Bound(p => p.UsuarioCreacion).Width(250);
-                //columns.Bound(p => p.UsuarioModificacion).Width(250);
-                //columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy}").Width(450);
-                //columns.Bound(p => p.FechaModificacion).Format("{0:dd/MM/yyyy}").Width(450);
+                    if (permisos.HasClaim("Administracion.Sucursales.Editar Sucursal", "true") || permisos.HasClaim("Administracion.Sucursales.Eliminar Sucursal", "true"))
+                    {
+                        columns.Command(command =>
+                        {
+                            //command.Custom("Ver detalles").Click("Detalles");
+                            if (permisos.HasClaim("Administracion.Sucursales.Editar Sucursal", "true"))
+                            {
+                                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditBranch");
+                            }
+                            if (permisos.HasClaim("Administracion.Sucursales.Eliminar Sucursal", "true"))
+                            {
+                                command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                            }
+
+                        }).Title("Acciones").Width(150);
+                    }
+                    columns.Bound(p => p.BranchId).Width(100);
+                    columns.Bound(p => p.BranchName).Width(200);
+                    columns.Bound(p => p.Description).Width(250);
+                    columns.Bound(p => p.CurrencyName).Width(150);
+                    columns.Bound(p => p.ZipCode).Width(150);
+                    columns.Bound(p => p.Phone).Width(200);
+                    columns.Bound(p => p.Email).Width(250);
+                    columns.Bound(p => p.ContactPerson).Width(200);
+                    columns.Bound(p => p.Estado).Width(150);
+                    columns.Bound(p => p.Address).Width(300);
+                    columns.Bound(p => p.City).Width(200);
+                    columns.Bound(p => p.CustomerId).Width(200);
+                    columns.Bound(p => p.CustomerName).Width(200);
+                    columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy HH:mm:ss}").Width(100).Hidden();
+                    //columns.Bound(p => p.UsuarioCreacion).Width(250);
+                    //columns.Bound(p => p.UsuarioModificacion).Width(250);
+                    //columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy}").Width(450);
+                    //columns.Bound(p => p.FechaModificacion).Format("{0:dd/MM/yyyy}").Width(450);
 
 
-
-            })
-                .Filterable(f => f.Operators(o => o.ForString(s => s
-                                       .Clear()
-                                       .Contains("Contiene")
-                                       .DoesNotContain("No contiene")
-                                       .EndsWith("Termina con")
-                                       .IsEqualTo("Es igual a")
-                                       .IsNotEqualTo("No es igual a")
-                                       .IsNull("Es nulo")
-                                       .StartsWith("Inicia con")
-
-
-                                 )
-                                 .ForNumber(n => n
-                                   .Clear()
-                                   .IsEqualTo("Es igual a")
-                                   .IsGreaterThan("Es mayor que")
-                                   .IsLessThan("Es menor que")
-                                   .IsNull("Es nulo")
-                                   .IsLessThanOrEqualTo("Es menor o igual que")
-                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                 )
-                                 .ForDate(d => d
-                                 .Clear()
-                                 .IsEqualTo("Es igual que")
-                                 .IsGreaterThan("Es mayor que")
-                                 .IsLessThan("Es menor que")
-                                 .IsLessThanOrEqualTo("Es menor o igual que")
-                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                 .IsNotEqualTo("No es igual que")
-                                  )
-                               ))
-            .ToolBar(tools =>
-            {
-                // tools.Create();
-                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                           .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddBranch()" });
-                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-
-            })
-            .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
-            .Sortable()
-            .Pageable()
-            .Filterable()
-            .Scrollable()
-            .Pdf(pdf => pdf.FileName("BranchReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-            .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                .Excel(excel => excel.FileName("BranchReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-            .DataSource(dataSource =>
-                dataSource
-                .WebApi()
-
-                .ServerOperation(true)
-                .Model(model =>
-                {
-                    model.Id(p => p.BranchId);
-                    model.Field(p => p.BranchId).Editable(false);
-                    model.Field(p => p.FechaCreacion).Editable(true);
-                    model.Field(p => p.UsuarioCreacion).Editable(false);
-                    model.Field(p => p.UsuarioModificacion).Editable(false);
 
                 })
-                .Sort(s => s.Add(m => m.FechaCreacion).Descending())
-                .Events(events => events.Error("error_handler"))
-                .Read(read => read.Action("GetBranch", "Branch"))
-                .Create(create => create.Action("Insert", "Branch"))
-                .Update(update => update.Action("Update", "Branch", new { BranchId = "{0}" }).Type(HttpVerbs.Put))
-                .Destroy(destroy => destroy.Action("Delete", "Branch", new { BranchId = "{0}" }).Type(HttpVerbs.Delete))
+                    .Filterable(f => f.Operators(o => o.ForString(s => s
+                                           .Clear()
+                                           .Contains("Contiene")
+                                           .DoesNotContain("No contiene")
+                                           .EndsWith("Termina con")
+                                           .IsEqualTo("Es igual a")
+                                           .IsNotEqualTo("No es igual a")
+                                           .IsNull("Es nulo")
+                                           .StartsWith("Inicia con")
 
-            )
-            .Events(e =>
-            {
-                e.Save("onsave");
 
-            })
+                                     )
+                                     .ForNumber(n => n
+                                       .Clear()
+                                       .IsEqualTo("Es igual a")
+                                       .IsGreaterThan("Es mayor que")
+                                       .IsLessThan("Es menor que")
+                                       .IsNull("Es nulo")
+                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                     )
+                                     .ForDate(d => d
+                                     .Clear()
+                                     .IsEqualTo("Es igual que")
+                                     .IsGreaterThan("Es mayor que")
+                                     .IsLessThan("Es menor que")
+                                     .IsLessThanOrEqualTo("Es menor o igual que")
+                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                     .IsNotEqualTo("No es igual que")
+                                      )
+                                   ))
+                .ToolBar(tools =>
+                {
+                    // tools.Create();
+                    if (permisos.HasClaim("Administracion.Sucursales.Agregar Sucursal", "true"))
+                    {
+                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                               .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddBranch()" });
+                    }
+                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                })
+                .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                .Sortable()
+                .Pageable()
+                .Filterable()
+                .Scrollable()
+                .Pdf(pdf => pdf.FileName("BranchReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                    .Excel(excel => excel.FileName("BranchReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                .DataSource(dataSource =>
+                    dataSource
+                    .WebApi()
+
+                    .ServerOperation(true)
+                    .Model(model =>
+                    {
+                        model.Id(p => p.BranchId);
+                        model.Field(p => p.BranchId).Editable(false);
+                        model.Field(p => p.FechaCreacion).Editable(true);
+                        model.Field(p => p.UsuarioCreacion).Editable(false);
+                        model.Field(p => p.UsuarioModificacion).Editable(false);
+
+                    })
+                    .Sort(s => s.Add(m => m.FechaCreacion).Descending())
+                    .Events(events => events.Error("error_handler"))
+                    .Read(read => read.Action("GetBranch", "Branch"))
+                    .Create(create => create.Action("Insert", "Branch"))
+                    .Update(update => update.Action("Update", "Branch", new { BranchId = "{0}" }).Type(HttpVerbs.Put))
+                    .Destroy(destroy => destroy.Action("Delete", "Branch", new { BranchId = "{0}" }).Type(HttpVerbs.Delete))
+
+                )
+                .Events(e =>
+                {
+                    e.Save("onsave");
+
+                })
 )
 
 <script>

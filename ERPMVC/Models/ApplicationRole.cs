@@ -26,7 +26,7 @@ namespace ERPMVC.Models
         public string Estado { get; set; }
 
         [Required]
-        [UIHint("Estados")]
+        [UIHint("EstadosList")]
         public int IdEstado { get; set; }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -24,13 +25,18 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public GarantiaBancariaController(ILogger<HomeController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public GarantiaBancariaController(ILogger<HomeController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
+
+        [Authorize(Policy = "Contabilidad.Garantias Bancarias")]
         public IActionResult Index()
         {
+            ViewData["permisos"] = _principal;
             return View();
         }
 
@@ -215,7 +221,7 @@ namespace ERPMVC.Controllers
 
         //--------------------------------------------------------------------------------------
 
-        [HttpPost("[action]")]
+        [HttpPost/*("[action]")*/]
         public async Task<ActionResult> ValidacionTipoMoneda([FromBody]GarantiaBancaria _GarantiaBancariaP)
         {
             ExchangeRate _ExchangeRate = new ExchangeRate();
@@ -223,7 +229,6 @@ namespace ERPMVC.Controllers
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 _ExchangeRate.CurrencyId = _GarantiaBancariaP.CurrencyId;
                 _ExchangeRate.DayofRate = DateTime.Now;
                 _ExchangeRate.ExchangeRateValue = 0;
@@ -233,6 +238,7 @@ namespace ERPMVC.Controllers
                 _ExchangeRate.CreatedUser = HttpContext.Session.GetString("user");
                 _ExchangeRate.ModifiedUser = HttpContext.Session.GetString("user");
 
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.PostAsJsonAsync(baseadress + "api/ExchangeRate/GetExchangeRateByFecha", _ExchangeRate);  
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)

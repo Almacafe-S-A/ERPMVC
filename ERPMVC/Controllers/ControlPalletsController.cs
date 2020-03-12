@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -24,20 +25,25 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public ControlPalletsController(ILogger<ControlPalletsController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public ControlPalletsController(ILogger<ControlPalletsController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Inventarios.Control de Ingresos")]
         public IActionResult Index()
         {
+            ViewData["permisos"] = _principal;
             return View();
         }
 
+        [Authorize(Policy = "Inventarios.Control de Salida")]
         public IActionResult IndexSalida()
         {
-
+            ViewData["permisos"] = _principal;
             return View();
         }
 
@@ -319,16 +325,25 @@ namespace ERPMVC.Controllers
                     {
                         DocumentDate = DateTime.Now,
                         editar = 1,
-                        EsIngreso = _ControlPalletsId.EsIngreso
+                        EsIngreso = _ControlPalletsId.EsIngreso,
+                        EsSalida = _ControlPalletsId.EsSalida
                    ,
                         BranchId = Convert.ToInt64(HttpContext.Session.GetString("BranchId"))
                     };
                 }
                 else
                 {
-                    _ControlPallets.editar = 0; _ControlPallets.EsIngreso = _ControlPalletsId.EsIngreso;
+                    //_ControlPallets.editar = 0; _ControlPallets.EsIngreso = _ControlPalletsId.EsIngreso;
+                    if (_ControlPalletsId.EsSalida == 1)
+                    {
+                        _ControlPallets.editar = 0; _ControlPallets.EsSalida = _ControlPalletsId.EsSalida;
+                    }
+                    else
+                    {
+                        _ControlPallets.editar = 0; _ControlPallets.EsIngreso = _ControlPalletsId.EsIngreso;
+                    }
                 }
-
+                ViewData["permisos"] = _principal;
             }
             catch (Exception ex)
             {

@@ -2,6 +2,10 @@
 @{
     ViewData["Title"] = "Usuarios";
     //var branches = ViewData["Branches"] as IEnumerable<ERPMVC.Models.Branch>;
+    bool permisoAgregar, permisoEditar, permisoDesbloquear, permisoExportar;
+    permisoAgregar = (bool)ViewData["permisoAgregar"];
+    permisoEditar = (bool)ViewData["permisoEditar"];
+    permisoDesbloquear = (bool)ViewData["permisoDesbloquear"];
 }
 
 <h3 class="text-themecolor">Usuarios</h3>
@@ -78,13 +82,23 @@
                                           .Name("gridUser")
                                           .Columns(columns =>
                                           {
-                                              columns.Command(command =>
+                                              if (permisoEditar == true || permisoDesbloquear == true)
                                               {
-                                      //   command.Custom("Ver detalles").Click("Detalles");
-                                                  command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText(" ").CancelText(" ");
-                                                  command.Custom("Desbloquear").Text(" ").IconClass("fa fa-unlock").Click("Desbloquear");
-                                                 //command.Destroy().Text(" ").IconClass("fa fa-trash");
-                                              }).Width(120).Locked(true).Title("Acciones");
+                                                  columns.Command(command =>
+                                                  {
+                                                      //   command.Custom("Ver detalles").Click("Detalles");
+                                                      if (permisoEditar)
+                                                      {
+                                                          command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText(" ").CancelText(" ");
+                                                      }
+                                                      if (permisoDesbloquear)
+                                                      {
+                                                          command.Custom("Desbloquear").Text(" ").IconClass("fa fa-unlock").Click("Desbloquear");
+                                                      }
+
+                                                      //command.Destroy().Text(" ").IconClass("fa fa-trash");
+                                                  }).Width(120).Locked(true).Title("Acciones");
+                                              }
                                               columns.Bound(p => p.Id).Width(100).Visible(false);
                                               columns.Bound(p => p.UserName).Title("Nombre de usuario").Width(250).Visible(false);
                                               columns.Bound(p => p.Email).Title("Usuario ID").Width(200);
@@ -93,11 +107,11 @@
                                               columns.Bound(p => p.IsBlocked).Width(150).ClientTemplate("#= LockoutEnd!=null ? 'SI' : 'NO' #");
                                               columns.Bound(p => p.LockoutEnd).Title("Finaliza Bloqueo").Format("{0:dd/MM/yyyy}").Width(250);
                                               columns.Bound(p => p.FechaCreacion).Title("Creado").Format("{0:dd/MM/yyyy}").Width(150);
-                                  // columns.Bound(p => p.NormalizedEmail).Title("Correo").Width(150);
-                                  columns.Bound(p => p.PhoneNumber).Title("Teléfono").Width(150);
+                                              // columns.Bound(p => p.NormalizedEmail).Title("Correo").Width(150);
+                                              columns.Bound(p => p.PhoneNumber).Title("Teléfono").Width(150);
                                               columns.Bound(p => p.IsEnabled).Width(150).ClientTemplate("#= IsEnabled ? 'SI' : 'NO' #");
-                                  //columns.Bound(p => p.BranchId).Width(150);
-                                  //columns.Bound(p => p.Branch).ClientTemplate("#=Branch.BranchName#").Sortable(false).Width(180).Title("Sucursal");
+                                              //columns.Bound(p => p.BranchId).Width(150);
+                                              //columns.Bound(p => p.Branch).ClientTemplate("#=Branch.BranchName#").Sortable(false).Width(180).Title("Sucursal");
 
 
                                           })
@@ -135,11 +149,13 @@
                                                        ))
                                           .ToolBar(tools =>
                                           {
-                                              tools.Create().Text("Agregar Usuario");
-                                              tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a excel");
-                                              tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a pdf");
-
-
+                                              if (permisoAgregar)
+                                              {
+                                                  tools.Create().Text("Agregar Usuario");
+                                              }
+                                                  tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a excel");
+                                                  tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a pdf");
+                                              
                                           })
 
                                            .Editable(e => e.Mode(GridEditMode.InLine))
@@ -172,13 +188,13 @@
                                                     model.Field(p => p.FechaModificacion).Editable(false);
                                                     model.Field(p => p.FechaCreacion).Editable(false);
                                                     model.Field(p => p.UsuarioCreacion).Editable(false);
-                                                     model.Field(p => p.LockoutEnd).Editable(false);
+                                                    model.Field(p => p.LockoutEnd).Editable(false);
                                                     model.Field(p => p.IsBlocked).Editable(false);
-                                                    
+
 
                                                     model.Field(p => p.UsuarioModificacion).Editable(false);
-                                                   // model.Field(p => p.Branch).DefaultValue(
-                                                     //               ViewData["defaultbranch"] as ERPMVC.Models.Branch);
+                                                    // model.Field(p => p.Branch).DefaultValue(
+                                                    //               ViewData["defaultbranch"] as ERPMVC.Models.Branch);
 
 
                                                 })
@@ -187,7 +203,7 @@
                                                 .Create(create => create.Action("PostUsuario", "Usuario"))
                                                 .Update(update => update.Action("PutUsuario", "Usuario", new { id = "{0}" }))
                                                 .Destroy(destroy => destroy.Action("DeleteUsuario", "Usuario", new { id = "{0}" }))
-                                                
+
                                           ).Resizable(resize => resize.Columns(true))
 )
 

@@ -1,7 +1,8 @@
 ﻿@using Kendo.Mvc.UI
-
+@using System.Security.Claims
 @{
     ViewData["Title"] = "Configuración de Proveedores";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 
 <script>
@@ -64,103 +65,109 @@
 
 <h3 class="text-themecolor">Configuracion de Proveedores</h3>
 @(Html.Kendo().Grid<ERPMVC.Models.ConfigurationVendor>
-                                ()
-                                .Name("gridNumeracionConfigurationVendor")
-                                .Columns(columns =>
-                                {
-                                    columns.Command(command =>
+                                    ()
+                                    .Name("gridNumeracionConfigurationVendor")
+                                    .Columns(columns =>
                                     {
-                                        //command.Custom("Ver detalles").Click("Detalles");
-                                        //command.Custom("Editar").Click("EditTypeAccount");
-                                        command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditConfigurationVendor");
+                                        if (permisos.HasClaim("Proveedores.Configuracion de Proveedores.Editar Configuracion de Proveedores", "true"))
+                                        {
+                                            columns.Command(command =>
+                                            {
+                                                //command.Custom("Ver detalles").Click("Detalles");
+                                                //command.Custom("Editar").Click("EditTypeAccount");
+                                                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditConfigurationVendor");
 
-                                        //  command.Destroy();
-                                    }).Title("Acciones").Width(100);
-                                    columns.Bound(p => p.ConfigurationVendorId).Title("Código").Width(150);
-                                    columns.Bound(p => p.QtyMonth).Title("Limite Mensual Permitido").Width(200);
-                                    columns.Bound(p => p.Estado).Title("Estado").Width(200);
-
-
-
-
-                                })
-                                    .Filterable(f => f.Operators(o => o.ForString(s => s
-                                                           .Clear()
-                                                           .Contains("Contiene")
-                                                           .DoesNotContain("No contiene")
-                                                           .EndsWith("Termina con")
-                                                           .IsEqualTo("Es igual a")
-                                                           .IsNotEqualTo("No es igual a")
-                                                           .IsNull("Es nulo")
-                                                           .StartsWith("Inicia con")
-
-
-                                                     )
-                                                     .ForNumber(n => n
-                                                       .Clear()
-                                                       .IsEqualTo("Es igual a")
-                                                       .IsGreaterThan("Es mayor que")
-                                                       .IsLessThan("Es menor que")
-                                                       .IsNull("Es nulo")
-                                                       .IsLessThanOrEqualTo("Es menor o igual que")
-                                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                     )
-                                                     .ForDate(d => d
-                                                     .Clear()
-                                                     .IsEqualTo("Es igual que")
-                                                     .IsGreaterThan("Es mayor que")
-                                                     .IsLessThan("Es menor que")
-                                                     .IsLessThanOrEqualTo("Es menor o igual que")
-                                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                     .IsNotEqualTo("No es igual que")
-                                                      )
-                                                   ))
-                                .ToolBar(tools =>
-                                {
-                                    // tools.Create();
-                                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                                                   .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddConfigurationVendor();" });
-                                    tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                    tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                                //  command.Destroy();
+                                            }).Title("Acciones").Width(100);
+                                        }
+                                        columns.Bound(p => p.ConfigurationVendorId).Title("Código").Width(150);
+                                        columns.Bound(p => p.QtyMonth).Title("Limite Mensual Permitido").Width(200);
+                                        columns.Bound(p => p.Estado).Title("Estado").Width(200);
 
 
 
-                                })
-                                .Editable(e => e.Mode(GridEditMode.PopUp))
-                                .Sortable()
-                                .Pageable()
-                                .Filterable()
-                                .Scrollable()
-                                .Pdf(pdf => pdf.FileName("ConfigurationVendorReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                    .Excel(excel => excel.FileName("ConfigurationVendorReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                .DataSource(dataSource =>
-                                    dataSource
-                                    .WebApi()
-
-                                    .ServerOperation(true)
-                                    .Model(model =>
-                                    {
-                                        model.Id(p => p.ConfigurationVendorId);
-                                        model.Field(p => p.Estado).Editable(true) ;
-                                        model.Field(p =>p.IdEstado).Editable(true);
 
                                     })
-                                    .Events(events => events.Error("error_handler"))
-                                    .Read(read => read.Action("GetConfigurationVendor", "ConfigurationVendor"))
-                                    .Create(create => create.Action("Insert", "ConfigurationVendor"))
-                                    .Update(update => update.Action("Update", "ConfigurationVendor", new { ConfigurationVendorId = "{0}" }).Type(HttpVerbs.Put))
-                                //.Destroy(destroy => destroy.Action("Delete", "TypeAccount", new { Num = "{1}" }).Type(HttpVerbs.Delete))
+                                        .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                               .Clear()
+                                                               .Contains("Contiene")
+                                                               .DoesNotContain("No contiene")
+                                                               .EndsWith("Termina con")
+                                                               .IsEqualTo("Es igual a")
+                                                               .IsNotEqualTo("No es igual a")
+                                                               .IsNull("Es nulo")
+                                                               .StartsWith("Inicia con")
 
-                                )
-                                .Events(e =>
-                                {
-                                    e.Save("onsave");
 
-                                })
+                                                         )
+                                                         .ForNumber(n => n
+                                                           .Clear()
+                                                           .IsEqualTo("Es igual a")
+                                                           .IsGreaterThan("Es mayor que")
+                                                           .IsLessThan("Es menor que")
+                                                           .IsNull("Es nulo")
+                                                           .IsLessThanOrEqualTo("Es menor o igual que")
+                                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                         )
+                                                         .ForDate(d => d
+                                                         .Clear()
+                                                         .IsEqualTo("Es igual que")
+                                                         .IsGreaterThan("Es mayor que")
+                                                         .IsLessThan("Es menor que")
+                                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                         .IsNotEqualTo("No es igual que")
+                                                          )
+                                                       ))
+                                    .ToolBar(tools =>
+                                    {
+                                        // tools.Create();
+                                        if (permisos.HasClaim("Proveedores.Configuracion de Proveedores.Agregar Configuracion de Proveedores", "true"))
+                                        {
+                                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                                       .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddConfigurationVendor();" });
+                                        }
+                                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                        
+
+
+                                    })
+                                    .Editable(e => e.Mode(GridEditMode.PopUp))
+                                    .Sortable()
+                                    .Pageable()
+                                    .Filterable()
+                                    .Scrollable()
+                                    .Pdf(pdf => pdf.FileName("ConfigurationVendorReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                        .Excel(excel => excel.FileName("ConfigurationVendorReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                    .DataSource(dataSource =>
+                                        dataSource
+                                        .WebApi()
+
+                                        .ServerOperation(true)
+                                        .Model(model =>
+                                        {
+                                            model.Id(p => p.ConfigurationVendorId);
+                                            model.Field(p => p.Estado).Editable(true);
+                                            model.Field(p => p.IdEstado).Editable(true);
+
+                                        })
+                                        .Events(events => events.Error("error_handler"))
+                                        .Read(read => read.Action("GetConfigurationVendor", "ConfigurationVendor"))
+                                        .Create(create => create.Action("Insert", "ConfigurationVendor"))
+                                        .Update(update => update.Action("Update", "ConfigurationVendor", new { ConfigurationVendorId = "{0}" }).Type(HttpVerbs.Put))
+                                    //.Destroy(destroy => destroy.Action("Delete", "TypeAccount", new { Num = "{1}" }).Type(HttpVerbs.Delete))
+
+                                    )
+                                    .Events(e =>
+                                    {
+                                        e.Save("onsave");
+
+                                    })
 )
 
 <div id="NumConfigurationVendor">

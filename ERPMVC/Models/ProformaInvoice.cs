@@ -69,7 +69,13 @@ namespace ERPMVC.Models
         public DateTime DeliveryDate { get; set; }
 
         [Display(Name = "Moneda")]
-        public int CurrencyId { get; set; }       
+        public int CurrencyId { get; set; }
+
+        [Display(Name = "Moneda")]
+        public string CurrencyName { get; set; }
+
+        [Display(Name = "Moneda tasa")]
+        public double Currency { get; set; }
 
         [Display(Name = "Número de referencia de cliente")]
         public string CustomerRefNumber { get; set; }
