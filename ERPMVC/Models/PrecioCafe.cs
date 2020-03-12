@@ -21,6 +21,7 @@ namespace ERPMVC.Models
 
         public decimal TotalUSD { get; set; }
 
+        [UIHint("Tasadecambiodrop")]
         public Int64 ExchangeRateId { get; set; }
         [ForeignKey("ExchangeRateId")]
         public ExchangeRate ExchangeRate { get; set; }

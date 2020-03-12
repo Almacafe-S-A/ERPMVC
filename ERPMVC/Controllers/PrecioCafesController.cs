@@ -30,8 +30,9 @@ namespace ERPMVC.Controllers
         }
 
 
-        public IActionResult PrecioCafe()
+        public async Task<IActionResult> PrecioCafe()
         {
+            ViewData["Tasacambio"] = await Obtenertasadecambio();
             return View();
         }
 
@@ -46,7 +47,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/PrecioCafes/GetPrecioCafe");
+                var result = await _client.GetAsync(baseadress + "api/PrecioCafe/GetPrecioCafe");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -73,7 +74,17 @@ namespace ERPMVC.Controllers
         {
             try
             {
-                
+
+                if (_Preciocafes.ExchangeRateId == 0)
+                {
+
+
+
+                    //return await Task.Run(() => BadRequest("Seleccione una cuenta"));
+                    return await Task.Run(() => BadRequest($"Por favor seleccione la tasa de cambio."));
+
+                }
+
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
@@ -82,7 +93,7 @@ namespace ERPMVC.Controllers
                 _Preciocafes.UsuarioCreacion = HttpContext.Session.GetString("user");
                 _Preciocafes.FechaModificacion = DateTime.Now;
                 _Preciocafes.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/PrecioCafes/Insert", _Preciocafes);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/PrecioCafe/Insert", _Preciocafes);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -102,7 +113,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpPost("Update")]
+        [AcceptVerbs("Post")]
         public async Task<ActionResult<PrecioCafe>> Update(/*Int64 Id,*/ PrecioCafeDTO _Preciocafes)
         {
             try
@@ -115,7 +126,7 @@ namespace ERPMVC.Controllers
                 _Preciocafes.FechaModificacion = DateTime.Now;
                 _Preciocafes.UsuarioModificacion = HttpContext.Session.GetString("user");
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PutAsJsonAsync(baseadress + "api/PrecioCafes/Update", _Preciocafes);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/PrecioCafe/Update", _Preciocafes);
                 string valorrespuesta = "";
 
                 if (result.IsSuccessStatusCode)
@@ -144,7 +155,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/PrecioCafes/Delete", _PrecioCafe);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/PrecioCafe/Delete", _PrecioCafe);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -163,6 +174,78 @@ namespace ERPMVC.Controllers
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _PrecioCafe }, Total = 1 });
         }
+
+
+        async Task<IEnumerable<ExchangeRate>> Obtenertasadecambio()
+        {
+            IEnumerable<ExchangeRate> tasacambio = null;
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/ExchangeRate/GetExchangeRate");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    tasacambio = JsonConvert.DeserializeObject<IEnumerable<ExchangeRate>>(valorrespuesta);
+                    
+                    DateTime tasacambioactual = DateTime.Now;
+                    tasacambio = tasacambio.Where(x => x.DayofRate.ToString("yyyy-MM-dd") == tasacambioactual.ToString("yyyy-MM-dd"));
+
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            ViewData["defaultasadecambio"] = tasacambio.FirstOrDefault();
+            return tasacambio;
+
+        }
+
+
+        [HttpGet]
+        public async Task<JsonResult> Tasadecambio()
+        {
+            Int32 Existe = 0;
+
+            ExchangeRate Contiene = new ExchangeRate();
+
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+                Contiene.DayofRate = DateTime.Now;
+                
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/ExchangeRate/GetTasadecambio", Contiene);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    Existe = JsonConvert.DeserializeObject<Int32>(valorrespuesta);
+                }
+
+
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(Existe);
+        }
+
+
+
     }
 
    
