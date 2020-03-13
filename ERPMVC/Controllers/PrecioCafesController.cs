@@ -213,25 +213,35 @@ namespace ERPMVC.Controllers
         public async Task<JsonResult> Tasadecambio()
         {
             Int32 Existe = 0;
+            DateTime cd = DateTime.Now;
 
-            ExchangeRate Contiene = new ExchangeRate();
-
+            List<ExchangeRate> _ExchangeRate = new List<ExchangeRate>();
             try
             {
+
+                
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
 
-                Contiene.DayofRate = DateTime.Now;
-                
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/ExchangeRate/GetTasadecambio", Contiene);
+                var result = await _client.GetAsync(baseadress + "api/ExchangeRate/GetExchangeRate");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    Existe = JsonConvert.DeserializeObject<Int32>(valorrespuesta);
+                    _ExchangeRate = JsonConvert.DeserializeObject<List<ExchangeRate>>(valorrespuesta);
+                    _ExchangeRate = _ExchangeRate.Where(x => x.DayofRate.ToString("yyyy-MM-dd") == cd.ToString("yyyy-MM-dd")).ToList();
+
                 }
 
+                if(_ExchangeRate.Count == 0)
+                {
+                    Existe = 0;
+                }
+                else
+                {
+                    Existe = 1;
+                }
 
 
 
