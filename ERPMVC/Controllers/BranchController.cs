@@ -98,14 +98,14 @@ namespace ERPMVC.Controllers
                     _branchs = JsonConvert.DeserializeObject<List<Branch>>(valorrespuesta);
              
 
-                    if(_Branchp.ServicioId==2 && _Branchp.CustomerId>0)
-                    {
-                        _branchs = _branchs.Where(q => q.CustomerId == _Branchp.CustomerId).ToList();
-                    }
-                    else
-                    {
-                        _branchs = _branchs.Where(q => q.CustomerId == null).ToList();
-                    }
+                    //if(_Branchp.ServicioId==2 && _Branchp.CustomerId>0)
+                    //{
+                    //    _branchs = _branchs.Where(q => q.CustomerId == _Branchp.CustomerId).ToList();
+                    //}
+                    //else
+                    //{
+                    //    _branchs = _branchs.Where(q => q.CustomerId == null).ToList();
+                    //}
                 }
             }
             catch (Exception ex)

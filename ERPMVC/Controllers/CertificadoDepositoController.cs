@@ -376,7 +376,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[controller]/[action]")]
-       // public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]CertificadoDepositoDTO _CertificadoDeposito)
+       // public async Task<ActionResult<CertificadoDeposito>>      CertificadoDeposito([FromBody]CertificadoDepositoDTO _CertificadoDeposito)
          public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]dynamic dto)
         {
              CertificadoDepositoDTO _CertificadoDeposito = new CertificadoDepositoDTO(); 
