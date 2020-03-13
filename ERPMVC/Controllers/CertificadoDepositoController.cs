@@ -705,6 +705,12 @@ namespace ERPMVC.Controllers
                 List<ReportParameter> parameters = new List<ReportParameter>();
                 parameters.Add(new ReportParameter() { Name = "IdCD", Labels = new List<string>() { _CertificadoDepositoDTO.IdCD.ToString() }, Values = new List<string>() { _CertificadoDepositoDTO.IdCD.ToString() } });
                 reportWriter.SetParameters(parameters);
+                Syncfusion.Report.DataSourceCredentials[] dscarray = new Syncfusion.Report.DataSourceCredentials[1];
+                Syncfusion.Report.DataSourceCredentials dsc = new Syncfusion.Report.DataSourceCredentials();
+                dsc.ConnectionString = Utils.ConexionReportes;
+                dsc.Name = "ERP";
+                dscarray[0] = dsc;
+                reportWriter.SetDataSourceCredentials(dscarray);
                 var format = Syncfusion.ReportWriter.WriterFormat.PDF;
                 string completepath = basePath + $"/CertificadosDeposito/CertificadoDeDeposito{id}.pdf";
                 MemoryStream ms = new MemoryStream();
