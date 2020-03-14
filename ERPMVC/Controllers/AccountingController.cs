@@ -964,7 +964,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet("[action]")]
-        public async Task<DataSourceResult> GetCuentasDiariasPatron([DataSourceRequest]DataSourceRequest request, [FromQuery(Name = "Patron")] string patron)
+        public async Task<DataSourceResult> GetCuentasDiariasPatron([DataSourceRequest]DataSourceRequest request, [FromQuery(Name = "Patron")] string patron, [FromQuery(Name = "Patron1")] string patron1)
         {
             try
             {
@@ -972,7 +972,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + $"api/Accounting/GetCuentasDiariasPatron?Patron={patron}");
+                var result = await _client.GetAsync(baseadress + $"api/Accounting/GetCuentasDiariasPatron?Patron={patron}&&Patron1={patron1}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
