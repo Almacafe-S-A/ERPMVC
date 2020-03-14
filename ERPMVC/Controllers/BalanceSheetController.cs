@@ -18,14 +18,14 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        [Authorize(Policy = "Contabilidad.Estado de Resultado")]
+        [Authorize(Policy = "Contabilidad.Estados Finacieros.Estado de Resultado")]
         public async Task<IActionResult> SFBalance()
         {
             return await Task.Run(() => View());
 
         }
 
-        [Authorize(Policy = "Contabilidad.Balanza de Comprobacion")]
+        [Authorize(Policy = "Contabilidad.Estados Finacieros.Balanza de Comprobacion")]
         public async Task<IActionResult> BalanceSaldos()
         {
             return await Task.Run(() => View());

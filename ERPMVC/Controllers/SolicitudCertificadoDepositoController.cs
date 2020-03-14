@@ -14,6 +14,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.IO;
+using Microsoft.AspNetCore.Hosting;
+using Syncfusion.ReportWriter;
+using Syncfusion.Report;
+using Syncfusion.Pdf;
+using Syncfusion.DocIORenderer;
 
 namespace ERPMVC.Controllers
 {
@@ -24,10 +30,12 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public SolicitudCertificadoDepositoController(ILogger<SolicitudCertificadoDepositoController> logger, IOptions<MyConfig> config)
+        private readonly IHostingEnvironment _hostingEnvironment;
+        public SolicitudCertificadoDepositoController(ILogger<SolicitudCertificadoDepositoController> logger, IOptions<MyConfig> config, IHostingEnvironment hostingEnvironment)
         {
             this.config = config;
             this._logger = logger;
+            _hostingEnvironment = hostingEnvironment;
         }
 
         public IActionResult Index()
@@ -251,9 +259,45 @@ namespace ERPMVC.Controllers
         public ActionResult SFSolicitudCertificadoDeposito(Int64 id)
         {
 
-            SolicitudCertificadoDepositoDTO _SolicitudCertificadoDepositoDTO = new SolicitudCertificadoDepositoDTO { NoCD = id, };
+            //SolicitudCertificadoDepositoDTO _SolicitudCertificadoDepositoDTO = new SolicitudCertificadoDepositoDTO { NoCD = id, };
 
-            return View(_SolicitudCertificadoDepositoDTO);
+            //return View(_SolicitudCertificadoDepositoDTO);
+
+            SolicitudCertificadoDepositoDTO _SolicitudCertificadoDepositoDTO = new SolicitudCertificadoDepositoDTO { NoCD = id, };
+            try
+            {
+
+                string basePath = _hostingEnvironment.WebRootPath;
+                FileStream inputStream = new FileStream(basePath + "/ReportsTemplate/SolicitudCertificadoDeposito.rdl", FileMode.Open, FileAccess.Read);
+                ReportWriter reportWriter = new ReportWriter(inputStream);
+                List<ReportParameter> parameters = new List<ReportParameter>();
+                parameters.Add(new ReportParameter() { Name = "NoCD", Labels = new List<string>() { _SolicitudCertificadoDepositoDTO.NoCD.ToString() }, Values = new List<string>() { _SolicitudCertificadoDepositoDTO.NoCD.ToString() } });
+                reportWriter.SetParameters(parameters);
+                Syncfusion.Report.DataSourceCredentials[] dscarray = new Syncfusion.Report.DataSourceCredentials[1];
+                Syncfusion.Report.DataSourceCredentials dsc = new Syncfusion.Report.DataSourceCredentials();
+                dsc.ConnectionString = Utils.ConexionReportes;
+                dsc.Name = "ERP";
+                dscarray[0] = dsc;
+                reportWriter.SetDataSourceCredentials(dscarray);
+                var format = Syncfusion.ReportWriter.WriterFormat.PDF;
+                string completepath = basePath + $"/SolicitudesCertificados/Solicitud{id}.pdf";
+                MemoryStream ms = new MemoryStream();
+
+                reportWriter.Save(ms, format);
+                ms.Position = 0;
+
+                using (FileStream file = new FileStream(completepath, FileMode.Create, System.IO.FileAccess.Write))
+                    ms.WriteTo(file);
+
+                ViewBag.pathcontrato = completepath;
+                var stream = new FileStream(completepath, FileMode.Open);
+                return new FileStreamResult(stream, "application/pdf");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
         }
 
 
