@@ -49,6 +49,13 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+
+        public IActionResult Forbidden()
+        {
+            return View();
+        }
+
+
         public async Task<ActionResult> ChangePassword()
         {
             return await Task.Run(() => View());
