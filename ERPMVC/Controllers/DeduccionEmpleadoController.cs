@@ -94,6 +94,29 @@ namespace ERPMVC.Controllers
             }
         }
 
+
+        public async Task<ActionResult> CalcularISR(long empleadoId)
+        {
+            try
+            {
+                var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
+                    config.Value.urlbase + "api/DeduccionEmpleado/GetISREmpleado/" + empleadoId);
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    var contenido = await respuesta.Content.ReadAsStringAsync();
+                    var resultado = JsonConvert.DeserializeObject<decimal>(contenido);
+                    return Ok(resultado);
+                }
+
+                return BadRequest(await respuesta.Content.ReadAsStringAsync());
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error al calcular el ISR del empleado");
+                return BadRequest();
+            }
+        }
+
         public async Task<ActionResult> GuardarDeduccionEmpleado([DataSourceRequest] DataSourceRequest request, DeduccionEmpleado deduccionGuardar)
         {
             try

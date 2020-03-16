@@ -99,7 +99,7 @@ namespace ERPMVC.Controllers
         {
             if (ModelState.IsValid)
             {
-                deduccion.DeductionType = deduccion.DeductionTypeId == 1 ? "Por Ley" : deduccion.DeductionTypeId == 2 ? "Eventual" : "Colegiación";
+                deduccion.DeductionType = deduccion.DeductionTypeId == 1 ? "Por Ley" : deduccion.DeductionTypeId == 2 ? "Eventual" : deduccion.DeductionTypeId == 3 ? "Colegiación" : "Fondo Pensión / AFP";
 
                 HttpResponseMessage respuesta;
                 if (deduccion.DeductionId == 0)
