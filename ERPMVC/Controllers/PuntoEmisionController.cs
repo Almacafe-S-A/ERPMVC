@@ -35,6 +35,7 @@ namespace ERPMVC.Controllers
         }
 
         // GET: PuntoEmision
+        [Authorize(Policy = "Administracion.Puntos Emision")]
         public ActionResult Index()
         {
             ViewData["permisoAgregar"] = _principal.HasClaim("Administracion.Puntos Emision.Agregar Punto Emision", "true");

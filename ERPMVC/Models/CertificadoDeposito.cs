@@ -20,20 +20,13 @@ namespace ERPMVC.Models
         [Display(Name = "Cliente")]
         public string CustomerName { get; set; }
 
-        [Display(Name = "Estado")]
-        public Int64 IdEstado { get; set; }
-        public string Estado { get; set; }
-
         [Display(Name = "Sucursal")]
         public Int64 BranchId { get; set; }
         [Display(Name = "Sucursal")]
         public string BranchName { get; set; }
 
-        [Display(Name = "Bodega")]
-        public Int64 WarehouseId { get; set; }
-        [Display(Name = "Bodega")]
-        public string WarehouseName { get; set; }
-        [Display(Name = "Servicio")]
+
+        [Display(Name = "Tipo Servicio")]
         public Int64 ServicioId { get; set; }
 
         [Display(Name = "Servicio")]
@@ -47,9 +40,18 @@ namespace ERPMVC.Models
         [Display(Name = "Empresa")]
         public string NombreEmpresa { get; set; }
 
-        [Display(Name = "Empresa Seguro")]
+        public Int64 IdEstado { get; set; }
+        public string Estado { get; set; }
+        public int? InsuranceId { get; set; }
+        [ForeignKey("InsuranceId")]
+        public Insurances Insurances { get; set; }
+
+        [Display(Name = "Seguro")]
         public string EmpresaSeguro { get; set; }
 
+        public Int64? InsurancePolicyId { get; set; }
+        [ForeignKey("InsurancePolicyId")]
+        public InsurancePolicy InsurancePolicy { get; set; }
         [Display(Name = "No. Poliza")]
         public string NoPoliza { get; set; }
         [Display(Name = "Sujetos a pago")]
@@ -104,24 +106,30 @@ namespace ERPMVC.Models
 
         [Display(Name = "Nombre prestatario")]
         public string NombrePrestatario { get; set; }
+
+
         /// <summary>
         /// Totales de Detalle de Linea
         /// </summary>
-        [Display(Name = "Total Cantidad")]
+        [Display(Name = "Suma Cantidad")]
         public double Quantitysum { get; set; }
 
-        [Display(Name = "Total Valor")]
+        [Display(Name = "Total")]
         public double Total { get; set; }
 
         /// <summary>
         /// Totales de Detalle de Linea
         /// </summary>
-        public string Impreso { get; set; }
-        public List<CertificadoLine> _CertificadoLine { get; set; } = new List<CertificadoLine>();
+
+
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
         public string UsuarioModificacion { get; set; }
+
+        public string Impreso { get; set; }
+
+        public List<CertificadoLine> _CertificadoLine { get; set; } = new List<CertificadoLine>();
 
     }
 }

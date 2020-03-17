@@ -32,6 +32,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Configuracion.Escala")]
         public IActionResult Escala()
         {
             ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Escala.Agregar Escala", "true");

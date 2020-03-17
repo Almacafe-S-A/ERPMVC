@@ -33,6 +33,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Administracion.Tipos de Documentos")]
         public ActionResult TiposDocumento()
         {
             ViewData["permisoAgregar"] = _principal.HasClaim("Administracion.Tipos de Documentos.Agregar Tipo de Documento", "true");

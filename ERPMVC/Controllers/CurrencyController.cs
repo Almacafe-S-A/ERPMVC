@@ -35,6 +35,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Administracion.Moneda")]
         public ActionResult Currency()
         {
             ViewData["permisoAgregar"] = _principal.HasClaim("Administracion.Moneda.Agregar Moneda", "true");

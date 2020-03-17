@@ -32,6 +32,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Configuracion.Estado")]
         public async Task<IActionResult> State()
         {
             ViewData["Pais"] = await ObtenerPais();

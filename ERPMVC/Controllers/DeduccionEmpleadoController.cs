@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
@@ -21,20 +22,23 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger logger;
-
-        public DeduccionEmpleadoController(IOptions<MyConfig> config, ILogger<DeduccionEmpleadoController> logger)
+        private readonly ClaimsPrincipal _principal;
+        public DeduccionEmpleadoController(IOptions<MyConfig> config, ILogger<DeduccionEmpleadoController> logger, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this.logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         public ActionResult Index()
         {
+            ViewData["permisos"] = _principal;
             return View();
         }
 
         public ActionResult EditarDeducciones(long codigoEmpleado, string nombreEmpleado, double salarioEmpleado)
         {
+            ViewData["permisos"] = _principal;
             ViewData["Editar"] = 1;
             ViewData["CodigoEmpleado"] = codigoEmpleado;
             ViewData["NombreEmpleado"] = nombreEmpleado;
@@ -44,6 +48,7 @@ namespace ERPMVC.Controllers
 
         public ActionResult VerDeducciones(long codigoEmpleado, string nombreEmpleado, double salarioEmpleado)
         {
+            ViewData["permisos"] = _principal;
             ViewData["Editar"] = 0;
             ViewData["CodigoEmpleado"] = codigoEmpleado;
             ViewData["NombreEmpleado"] = nombreEmpleado;

@@ -33,14 +33,16 @@ namespace ERPMVC.Controllers
             this._logger = logger;
             _principal = httpContextAccessor.HttpContext.User;
         }
-      
+
         // GET: Purch
+        [Authorize(Policy = "Contabilidad.Movimientos.Asiento Contable")]
         public ActionResult Index()
         {
             ViewData["permisos"] = _principal;
             return View();
         }
 
+        [Authorize(Policy = "Contabilidad.Movimientos.Ajustes Contables")]
         public ActionResult IndexAjustes()
         {
             ViewData["permisos"] = _principal;
@@ -605,6 +607,38 @@ namespace ERPMVC.Controllers
                     return await Task.Run(() => View(_customers));
                 }
           */
+        [HttpGet("[action]")]
+        public async Task<ActionResult> CierreContableDiaAnterior()
+        {
+            List<BitacoraCierreContable> _BitacoraCierreContable = new List<BitacoraCierreContable>();
+            BitacoraCierreContable _EjecucionDiaAnteriorCierreContable = new BitacoraCierreContable();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/BitacoraCierreContable/GetBitacoraCierreContable");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    var DateCierreAnterior = DateTime.Now.Date.AddDays(-1);
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _BitacoraCierreContable = JsonConvert.DeserializeObject<List<BitacoraCierreContable>>(valorrespuesta);
+                    _EjecucionDiaAnteriorCierreContable = _BitacoraCierreContable.Where(p => p.FechaCierre == DateCierreAnterior).FirstOrDefault();
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return await Task.Run(() => Json(_EjecucionDiaAnteriorCierreContable));
+        }
+
         [HttpGet("[action]")]
         public async Task<ActionResult> GetJournalEntryById(Int64 JournalEntryId)
         {

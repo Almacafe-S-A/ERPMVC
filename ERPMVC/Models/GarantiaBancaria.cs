@@ -34,9 +34,12 @@ namespace ERPMVC.Models
         public Currency Currency { get; set; }
         [Display(Name = "Ajuste")]
         public double Ajuste { get; set; }
-        [Display(Name = "Estado")]
+
         public Int64 IdEstado { get; set; }
-        public Estados Estado { get; set; }
+        [ForeignKey("IdEstado")]
+        public Estados Estados { get; set; }
+        public string NombreEstado { get; set; }
+
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }

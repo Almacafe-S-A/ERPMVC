@@ -44,6 +44,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Inventarios.Solicitud Certificado Deposito")]
         [HttpGet("[controller]/[action]")]
         public IActionResult Index()
         {
@@ -375,7 +376,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[controller]/[action]")]
-       // public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]CertificadoDepositoDTO _CertificadoDeposito)
+       // public async Task<ActionResult<CertificadoDeposito>>      CertificadoDeposito([FromBody]CertificadoDepositoDTO _CertificadoDeposito)
          public async Task<ActionResult<CertificadoDeposito>> SaveCertificadoDeposito([FromBody]dynamic dto)
         {
              CertificadoDepositoDTO _CertificadoDeposito = new CertificadoDepositoDTO(); 
@@ -704,6 +705,12 @@ namespace ERPMVC.Controllers
                 List<ReportParameter> parameters = new List<ReportParameter>();
                 parameters.Add(new ReportParameter() { Name = "IdCD", Labels = new List<string>() { _CertificadoDepositoDTO.IdCD.ToString() }, Values = new List<string>() { _CertificadoDepositoDTO.IdCD.ToString() } });
                 reportWriter.SetParameters(parameters);
+                Syncfusion.Report.DataSourceCredentials[] dscarray = new Syncfusion.Report.DataSourceCredentials[1];
+                Syncfusion.Report.DataSourceCredentials dsc = new Syncfusion.Report.DataSourceCredentials();
+                dsc.ConnectionString = Utils.ConexionReportes;
+                dsc.Name = "ERP";
+                dscarray[0] = dsc;
+                reportWriter.SetDataSourceCredentials(dscarray);
                 var format = Syncfusion.ReportWriter.WriterFormat.PDF;
                 string completepath = basePath + $"/CertificadosDeposito/CertificadoDeDeposito{id}.pdf";
                 MemoryStream ms = new MemoryStream();

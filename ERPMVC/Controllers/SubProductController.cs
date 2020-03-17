@@ -39,6 +39,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        [Authorize(Policy = "Catalogos.Productos de Cliente")]
         [HttpGet("[controller]/[action]")]
         public IActionResult SubProductClientes()
         {
@@ -49,6 +50,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        [Authorize(Policy = "Catalogos.SubServicios")]
         [HttpGet("[controller]/[action]")]
         public IActionResult SubProductPropios()
         {
@@ -59,7 +61,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-
+        [Authorize(Policy = "Monitoreo.Productos Prohibidos")]
         [HttpGet("[controller]/[action]")]
         public IActionResult SubProductProhibidos()
         {
@@ -412,7 +414,7 @@ namespace ERPMVC.Controllers
                 if (_SubProduct.SubproductId > 0)
                 {
                     if (_SubProduct.SubproductId != _SubProductS.SubproductId)
-                        return await Task.Run(() => BadRequest($"Ya existe un SubServicio con el mismo Nombre."));
+                        return await Task.Run(() => BadRequest($"Ya existe un Producto con el mismo Nombre."));
                 }
 
                 if (_SubProductS.SubproductId == 0)

@@ -44,6 +44,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        [Authorize(Policy = "")]
         public async Task<IActionResult> InsurancesCertificate()
         {
             ViewData["Insurances"] = await ObtenerInsurances();

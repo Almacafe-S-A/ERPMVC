@@ -34,6 +34,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Inventarios.Entrega de Mercaderia")]
         [HttpGet("[controller]/[action]")]
         public IActionResult Index()
         {
@@ -85,7 +86,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpGet("[controller]/[action]")]
+        [HttpGet/*("[controller]/[action]")*/]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
             List<GoodsDelivered> _GoodsDelivered = new List<GoodsDelivered>();
@@ -374,6 +375,119 @@ namespace ERPMVC.Controllers
             return View(_GoodsDelivered);
         }
 
+
+        public async Task<ActionResult> Virtualization_ReadSalida([DataSourceRequest] DataSourceRequest request, Customer _customerp)
+        {
+            var res = await GetBoletaEntradaSalida(_customerp);
+            return Json(res.ToDataSourceResult(request));
+        }
+
+        public async Task<ActionResult> Orders_ValueMapperSalida(Int64[] values, Customer _customerp)
+        {
+            var indices = new List<Int64>();
+
+            if (values != null && values.Any())
+            {
+                var index = 0;
+
+                foreach (var order in await GetBoletaEntradaSalida(_customerp))
+                {
+                    if (values.Contains(order.clave_e))
+                    {
+                        indices.Add(index);
+                    }
+
+                    index += 1;
+                }
+            }
+
+            return Json(indices);
+        }
+
+        private async Task<List<Boleto_Ent>> GetBoletaEntradaSalida(Customer _customerp)
+        {
+            List<Boleto_Ent> _Boleto_Ent = new List<Boleto_Ent>();
+
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Boleto_Sal/GetBoletoSalida");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Boleto_Ent = JsonConvert.DeserializeObject<List<Boleto_Ent>>(valorrespuesta);
+
+                    Customer _customer = new Customer();
+
+                    _client = new HttpClient();
+                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    result = await _client.GetAsync(baseadress + "api/Customer/GetCustomerById/" + _customerp.CustomerId);
+                    valorrespuesta = "";
+                    if (result.IsSuccessStatusCode)
+                    {
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _customer = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
+                    }
+
+                    if (_customer != null)
+                    {
+                        if (_customerp.CustomerTypeId == 1)
+                        {          
+                            _Boleto_Ent = (from c in _Boleto_Ent
+                                           .Where(q => q.clave_C == _customer.CustomerRefNumber)                               
+                                            .Where(q => q.completo == false)
+                                            .OrderByDescending(q => q.clave_e)
+                                           select new Boleto_Ent
+                                           {
+                                               clave_e = c.clave_e,
+                                               observa_e = "Placas:" + c.placas + " || Boleta de peso No.:" + c.clave_e + "  || Conductor:" + c.conductor + "|| Fecha:" + c.fecha_e + "|| Hora:" + c.hora_e,
+                                               Boleto_Sal = c.Boleto_Sal,
+                                               peso_e = c.peso_e
+                                           }).ToList();
+
+                            _client = new HttpClient();
+                            _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                            List<Int64> _boletapeso = new List<long>();
+                            result = await _client.GetAsync(baseadress + "api/GoodsDelivered/GetGoodsDelivered/");
+                            if (result.IsSuccessStatusCode)
+                            {
+                                valorrespuesta = await (result.Content.ReadAsStringAsync());
+                                List<GoodsDelivered> _controlpallets = JsonConvert.DeserializeObject<List<GoodsDelivered>>(valorrespuesta);
+                                _boletapeso = _controlpallets.Select(q => q.WeightBallot).ToList();
+                                _Boleto_Ent = _Boleto_Ent.Where(q => !_boletapeso.Contains(q.clave_e)).ToList();
+                            }        
+                        }
+                        else
+                        {
+                            _Boleto_Ent = (from c in _Boleto_Ent
+
+                                            .Where(q => q.completo == false)
+                                            .Where(q => q.clave_C == _customer.CustomerRefNumber)
+
+                                             .OrderByDescending(q => q.clave_e)
+                                           select new Boleto_Ent
+                                           {
+                                               clave_e = c.clave_e,
+                                               observa_e = "Placas:" + c.placas + " || Boleta de peso No.:" + c.clave_e + "  || Conductor:" + c.conductor + "|| Fecha:" + c.fecha_e + "|| Hora:" + c.hora_e,
+                                               Boleto_Sal = c.Boleto_Sal,
+                                               peso_e = c.peso_e
+                                           }).ToList();
+                        }
+                    }
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+            return _Boleto_Ent;
+        }
 
 
 

@@ -35,6 +35,7 @@ namespace ERPMVC.Controllers
         }
 
         // GET: Customer
+        [Authorize(Policy = "Configuracion.Tasa de Cambio")]
         public ActionResult Tax()
         {
             ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Impuestos.Agregar Impuesto", "true");

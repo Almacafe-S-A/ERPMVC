@@ -34,6 +34,7 @@ namespace ERPMVC.Controllers
         }
 
         // GET: Vendor
+        [Authorize(Policy = "Proveedores.Proveedores")]
         public ActionResult Index()
         {
             ViewData["permisos"] = _principal;
