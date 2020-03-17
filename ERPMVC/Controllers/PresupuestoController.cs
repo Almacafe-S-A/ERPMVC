@@ -265,7 +265,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccount");
+                var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountstartwith5y6");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
