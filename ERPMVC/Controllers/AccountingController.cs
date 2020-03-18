@@ -963,8 +963,9 @@ namespace ERPMVC.Controllers
            // return new ObjectResult(new DataSourceResult { Data = new[] { _Account }, Total = 1 });
         }
 
+
         [HttpGet("[action]")]
-        public async Task<DataSourceResult> GetCuentasDiariasPatron([DataSourceRequest]DataSourceRequest request, [FromQuery(Name = "Patron")] string patron, [FromQuery(Name = "Patron1")] string patron1)
+        public async Task<DataSourceResult> GetCuentasDiariasPatron([DataSourceRequest]DataSourceRequest request, [FromQuery(Name = "Patron")] string patron)
         {
             try
             {
@@ -972,7 +973,43 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + $"api/Accounting/GetCuentasDiariasPatron?Patron={patron}&&Patron1={patron1}");
+                var result = await _client.GetAsync(baseadress + $"api/Accounting/GetCuentasDiariasPatron?Patron={patron}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    cuentas = JsonConvert.DeserializeObject<List<Accounting>>(valorrespuesta);
+                    cuentas = (from c in cuentas
+                               select new Accounting
+                               {
+                                   AccountId = c.AccountId,
+                                   AccountName = c.AccountCode + "--" + c.AccountName,
+                                   AccountCode = c.AccountCode,
+                                   Description = c.Description,
+                                   Estado = c.Estado,
+                                   IdEstado = c.IdEstado,
+                               }
+                                   ).ToList();
+                }
+                return cuentas.ToDataSourceResult(request);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: {ex}");
+                throw ex;
+            }
+        }
+
+        [HttpGet("[action]")]
+        public async Task<DataSourceResult> GetCuentasDiariasPatron2([DataSourceRequest]DataSourceRequest request, [FromQuery(Name = "Patron")] string patron, [FromQuery(Name = "Patron1")] string patron1)
+        {
+            try
+            {
+                List<Accounting> cuentas = new List<Accounting>();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/Accounting/GetCuentasDiariasPatron2?Patron={patron}&&Patron1={patron1}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
