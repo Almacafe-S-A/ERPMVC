@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Net.Http;
+using System.Net.Mail;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
@@ -93,6 +95,8 @@ namespace ERPMVC.Controllers
         public async Task<DataSourceResult> PostEmployeeSalary([DataSourceRequest]DataSourceRequest request, EmployeeSalary _EmployeeSalaryP)
         {
             List<EmployeeSalary> _EmployeeSalary = new List<EmployeeSalary>();
+            Employees _Employees = new Employees();
+            List<ElementoConfiguracion> elementoConfiguracion = new List<ElementoConfiguracion>();
             //HoursWorkedDetail _HoursWorkedDetailP = new HoursWorkedDetail();
             if (_EmployeeSalaryP.IdEmpleado == 0)
             {
@@ -170,6 +174,24 @@ namespace ERPMVC.Controllers
                     _EmployeeSalaryP.CreatedDate = DateTime.Now;
                     _EmployeeSalaryP.ModifiedDate = DateTime.Now;
                     _EmployeeSalaryP.ModifiedUser = HttpContext.Session.GetString("user");
+
+                    var result1 = await _client.GetAsync(baseadress + "api/Employees/GetEmployeesById/" + _EmployeeSalaryP.IdEmpleado);
+                    string valorrespuesta1 = "";
+                    if (result1.IsSuccessStatusCode)
+                    {
+                        valorrespuesta1 = await (result1.Content.ReadAsStringAsync());
+                        _Employees = JsonConvert.DeserializeObject<Employees>(valorrespuesta1);
+                    }
+
+                    var result2 = await _client.GetAsync(baseadress + "api/ElementoConfiguracion/GetElementoConfiguracionByIdConfiguracion/" + 81);
+                    string valorrespuesta2 = "";
+                    if (result2.IsSuccessStatusCode)
+                    {
+                        valorrespuesta2 = await (result2.Content.ReadAsStringAsync());
+                        elementoConfiguracion = JsonConvert.DeserializeObject<List<ElementoConfiguracion>>(valorrespuesta2);
+                        elementoConfiguracion = elementoConfiguracion.Where(q => q.IdEstado == 1).ToList();
+                    }
+
                     var result = await _client.PostAsJsonAsync(baseadress + "api/EmployeeSalary/Insert", _EmployeeSalaryP);
                     string valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
@@ -177,7 +199,30 @@ namespace ERPMVC.Controllers
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _EmployeeSalaryP = JsonConvert.DeserializeObject<EmployeeSalary>(valorrespuesta);
                         _EmployeeSalary.Add(_EmployeeSalaryP);
+
+                      if(elementoConfiguracion.Count > 0) {  
+
+                            foreach (var item in elementoConfiguracion) {  
+                        MailMessage correo = new MailMessage();
+                        // correo.From = new MailAddress("cumplimiento@almacafehn.com", "Actualización de Salario", System.Text.Encoding.UTF8);//Correo de salida
+                        correo.From = new MailAddress(config.Value.emailsender);//Correo de salida
+                        correo.To.Add(item.Nombre); //Correo destino?
+                        correo.Subject = "Gestión de Salario de Empleado"; //Asunto
+                        correo.Body = "Se modifico el Salario de " + _Employees.NombreEmpleado + " a : " + _EmployeeSalaryP.QtySalary + " Lps."; //Mensaje del correo
+                        correo.IsBodyHtml = true;
+                        correo.Priority = MailPriority.Normal;
+                        SmtpClient smtp = new SmtpClient();
+                        smtp.UseDefaultCredentials = false;
+                        smtp.Host = config.Value.smtp; //Host del servidor de correo
+                        smtp.Port = Convert.ToInt32(config.Value.port); //Puerto de salida
+                        smtp.Credentials = new NetworkCredential(config.Value.emailsender, config.Value.passwordsmtp);
+                        System.Net.ServicePointManager.ServerCertificateValidationCallback = new System.Net.Security.RemoteCertificateValidationCallback(RemoteServerCertificateValidationCallback);
+                        smtp.EnableSsl = true;//True si el servidor de correo permite ssl
+                        smtp.Send(correo);
+                            }
+                        }
                     }
+
 
                 }
                 catch (Exception ex)
@@ -188,12 +233,19 @@ namespace ERPMVC.Controllers
 
                 return _EmployeeSalary.ToDataSourceResult(request);
             }
+
+        }
+        private bool RemoteServerCertificateValidationCallback(object sender, System.Security.Cryptography.X509Certificates.X509Certificate certificate, System.Security.Cryptography.X509Certificates.X509Chain chain, System.Net.Security.SslPolicyErrors sslPolicyErrors)
+        {
+            //Console.WriteLine(certificate);
+            return true;
         }
 
         [HttpPut("PutEmployeeSalary")]
         public async Task<IActionResult> PutEmployeeSalary(Int64 Id, EmployeeSalary _EmployeeSalary)
         {
             List<EmployeeSalary> _EmployeeSalaryP = new List<EmployeeSalary>();
+            Employees _Employees = new Employees();
 
             try
             {
@@ -218,6 +270,7 @@ namespace ERPMVC.Controllers
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _EmployeeSalary = JsonConvert.DeserializeObject<EmployeeSalary>(valorrespuesta);
                     }
+                   
                 }
             }
             catch (Exception ex)

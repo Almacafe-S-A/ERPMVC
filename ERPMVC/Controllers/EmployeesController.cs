@@ -279,28 +279,7 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Employees = JsonConvert.DeserializeObject<EmployeesDTO>(valorrespuesta);
                 }
-                if(_EmployeesDTO.QtySalary > 0)
-                {
-                    MailMessage correo = new MailMessage();
-                    // correo.From = new MailAddress("cumplimiento@almacafehn.com", "Actualización de Salario", System.Text.Encoding.UTF8);//Correo de salida
-                    correo.From = new MailAddress(config.Value.emailsender);//Correo de salida
-                    correo.To.Add("xxxxxxxxxxx.com"); //Correo destino?
-                    correo.Subject = "Gestión de Salario de Empleado"; //Asunto
-                    correo.Body = "Se modifico el Salario de "+ _Employees.NombreEmpleado + " a : "+ _EmployeesDTO.QtySalary + " Lps."; //Mensaje del correo
-                    correo.IsBodyHtml = true;
-                    correo.Priority = MailPriority.Normal;
-                    SmtpClient smtp = new SmtpClient();
-                    smtp.UseDefaultCredentials = false;
-                    smtp.Host = config.Value.smtp; //Host del servidor de correo
-                    smtp.Port = Convert.ToInt32(config.Value.port); //Puerto de salida
-                    smtp.Credentials = new NetworkCredential(config.Value.emailsender, config.Value.passwordsmtp);
-                    System.Net.ServicePointManager.ServerCertificateValidationCallback = new System.Net.Security.RemoteCertificateValidationCallback(RemoteServerCertificateValidationCallback);
-                    smtp.EnableSsl = true;//True si el servidor de correo permite ssl
-                    smtp.Send(correo);
-
-
-
-                }
+               
 
             }
             catch (Exception ex)
@@ -313,11 +292,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        private bool RemoteServerCertificateValidationCallback(object sender, System.Security.Cryptography.X509Certificates.X509Certificate certificate, System.Security.Cryptography.X509Certificates.X509Chain chain, System.Net.Security.SslPolicyErrors sslPolicyErrors)
-        {
-            //Console.WriteLine(certificate);
-            return true;
-        }
+        
 
         [HttpPost]
         public async Task<ActionResult<Employees>> Delete([FromBody]Employees _Employeesp)
