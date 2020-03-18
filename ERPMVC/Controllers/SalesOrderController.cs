@@ -137,9 +137,29 @@ namespace ERPMVC.Controllers
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
+
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _SalesOrders = JsonConvert.DeserializeObject<List<SalesOrder>>(valorrespuesta);
                     _SalesOrders = _SalesOrders.OrderByDescending(q => q.SalesOrderId).ToList();
+                    DateTime fecAcutal = DateTime.Now;
+
+                    List<SalesOrder> ListaEstado = new List<SalesOrder>();
+
+                    foreach (var itemss in _SalesOrders)
+                    {
+
+                        if (itemss.ExpirationDate < fecAcutal)
+                        {
+                            itemss.Estado = "Vencida";
+                        }
+                        else
+                        {
+
+                        }
+                        ListaEstado.Add(itemss);
+
+                    }
+                    _SalesOrders = ListaEstado;
                 }
                 //else if(result.StatusCode== 401)
                 //{
