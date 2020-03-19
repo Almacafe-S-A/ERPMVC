@@ -34,7 +34,7 @@ namespace ERPMVC.Controllers
         }
 
         // GET: Customer
-        [Authorize(Policy = "RRHH.Tipo de Planilla")]
+        [Authorize(Policy = "RRHH.Parametros Tipo de Planilla")]
         public ActionResult TipoPlanillas()
         {
             ViewData["permisos"] = _principal;
