@@ -276,6 +276,16 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     cuentas = JsonConvert.DeserializeObject<IEnumerable<Accounting>>(valorrespuesta);
 
+                    cuentas = cuentas.Select(c => new Accounting
+                    {
+                        AccountId = c.AccountId,
+                        AccountName = c.AccountCode + "--" + c.AccountName,
+                        AccountCode = c.AccountCode,
+                        Description = c.Description,
+                        Estado = c.Estado,
+                        IdEstado = c.IdEstado,
+                    }).ToList();
+
                 }
             }
             catch (Exception ex)
