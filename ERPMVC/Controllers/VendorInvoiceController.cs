@@ -219,7 +219,7 @@ namespace ERPMVC.Controllers
             return _VendorInvoice.ToDataSourceResult(request);
         }
 
-        [HttpPost("[action]")]
+        [HttpPost/*("[action]")*/]
         public async Task<ActionResult<VendorInvoiceDTO>> SaveVendorInvoice([FromBody]VendorInvoiceDTO _VendorInvoice)
         {
 
