@@ -245,8 +245,8 @@ namespace ERPMVC.Controllers
                 {
                     _VendorInvoice.FechaCreacion = DateTime.Now;
                     _VendorInvoice.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    _VendorInvoice.IdEstado = 1;
-                    _VendorInvoice.Estado = "Activo";
+                    _VendorInvoice.IdEstado = 86;
+                    _VendorInvoice.Estado = "Pendiente de pago";
                     var insertresult = await Insert(_VendorInvoice);
                     var value = (insertresult.Result as ObjectResult).Value;
                     

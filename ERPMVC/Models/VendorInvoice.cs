@@ -29,8 +29,8 @@ namespace ERPMVC.Models
         public int VendorInvoiceTypeId { get; set; }
 
      
-        [Display(Name = "Sucursal")]
-        public string Sucursal { get; set; }
+        //[Display(Name = "Sucursal")]
+        //public string Sucursal { get; set; }
 
 
         [Display(Name = "Número de Factura")]
@@ -64,9 +64,9 @@ namespace ERPMVC.Models
         public string RTN { get; set; }
         [Display(Name = "Teléfono")]
 
-        public Int64 CostCenterId { get; set; }
-        [ForeignKey("CostCenterId")]
-        public CostCenter CostCenter { get; set; }
+        //public Int64 CostCenterId { get; set; }
+        //[ForeignKey("CostCenterId")]
+        //public CostCenter CostCenter { get; set; }
         public string Tefono { get; set; }
 
         [Display(Name = "Correo")]
