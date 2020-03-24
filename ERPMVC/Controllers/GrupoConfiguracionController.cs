@@ -118,10 +118,25 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _GrupoConfiguracion = JsonConvert.DeserializeObject<List<GrupoConfiguracion>>(valorrespuesta);
                     _GrupoConfiguracion = _GrupoConfiguracion.OrderByDescending(q => q.IdConfiguracion).ToList();
+                    _GrupoConfiguracion = (from c
+                                           in _GrupoConfiguracion
+                                           select new GrupoConfiguracion
+                                           {
+
+                                               IdConfiguracion = c.IdConfiguracion,
+                                               IdConfiguraciondestino = c.IdConfiguraciondestino,
+                                               IdConfiguracionorigen = c.IdConfiguracionorigen,
+                                               IdZona = c.IdZona,
+                                               Nombreconfiguracion = c.Nombreconfiguracion + "--" + c.Tipoconfiguracion,
+                                               Tipoconfiguracion = c.Nombreconfiguracion + "--" + c.Tipoconfiguracion,
+
+                                           }).ToList();
                 }
 
-
             }
+
+
+            
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
