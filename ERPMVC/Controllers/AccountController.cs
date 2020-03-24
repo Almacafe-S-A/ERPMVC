@@ -87,6 +87,20 @@ namespace ERPMVC.Controllers
                             HttpContext.Session.SetString("token", _userToken.Token);
                             HttpContext.Session.SetString("user", model.Email);
                             HttpContext.Session.SetString("Expiration", _userToken.Expiration.ToString());
+                            HttpClient cliente = new HttpClient();
+                            var resultadoCierre = await cliente.GetAsync(baseadress + "api/CierreContable/UltimoCierre");
+                            string ultimoCierre = await resultadoCierre.Content.ReadAsStringAsync();
+                            BitacoraCierreContable cierre = JsonConvert.DeserializeObject<BitacoraCierreContable>(ultimoCierre);
+                            if (cierre != null)
+                            {
+                                DateTime fechaactual = DateTime.Now;
+                                fechaactual = fechaactual.AddDays(-1);
+                                Utils.Cerrado = cierre.FechaCierre.Date >= fechaactual.Date;
+                            }
+                            else
+                            {
+                                Utils.Cerrado = true;
+                            }
                             return RedirectToAction("ChangePassword", "Account");
                         }
                     }
