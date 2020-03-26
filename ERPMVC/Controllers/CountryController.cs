@@ -180,7 +180,7 @@ namespace ERPMVC.Controllers
                     //string baseadress = config.Value.urlbase;
                     HttpClient _client2 = new HttpClient();
                     _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var resultado = await _client.GetAsync(baseadress + "api/Country/GetCountryByName/" + _Country.Name);
+                    var resultado = await _client.GetAsync(baseadress + "api/Country/GetCountryByName/" + _Country.Name + "/" + _Country.GAFI);
                     string valorrespuesta2 = "";
                     if (resultado.IsSuccessStatusCode)
                     {
@@ -193,11 +193,11 @@ namespace ERPMVC.Controllers
                     {
 
                         string error = await result.Content.ReadAsStringAsync();
-                        if (_CountryDuplicate.GAFI == true)
+                        if (_CountryDuplicate.GAFI && _Country.GAFI)
                         {
                             return await Task.Run(() => BadRequest($"El nombre del país ya esta registrado... como país GAFI ."));
                         }
-                        else
+                        else if (!_CountryDuplicate.GAFI && !_Country.GAFI)
                         {
                             return await Task.Run(() => BadRequest($"El nombre del país ya esta registrado... como país no GAFI "));
                         }
@@ -212,7 +212,7 @@ namespace ERPMVC.Controllers
                     //string baseadress = config.Value.urlbase;
                     HttpClient _client2 = new HttpClient();
                     _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var resultado = await _client.GetAsync(baseadress + "api/Country/GetCountryByName/" + _Country.Name);
+                    var resultado = await _client.GetAsync(baseadress + "api/Country/GetCountryByName/" + _Country.Name + "/" + _Country.GAFI);
                     string valorrespuesta2 = "";
 
                     if (resultado.IsSuccessStatusCode)
@@ -228,11 +228,11 @@ namespace ERPMVC.Controllers
                         {
                             string error = await result.Content.ReadAsStringAsync();
 
-                            if (_CountryDuplicated.GAFI == true)
+                            if (_CountryDuplicated.GAFI && _Country.GAFI)
                             {
                                 return await Task.Run(() => BadRequest($"El nombre del país ya esta registrado... como país GAFI ."));
                             }
-                            else
+                            else if (!_CountryDuplicated.GAFI && !_Country.GAFI)
                             {
                                 return await Task.Run(() => BadRequest($"El nombre del país ya esta registrado... como país no GAFI "));
                             }
