@@ -1,0 +1,178 @@
+﻿@model ERPMVC.DTO.ProbabilidadRiesgoDTO
+
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Probabilidad de Riesgos";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
+
+<h3 class="text-themecolor">Probabilidad de Riesgos</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.ProbabilidadRiesgo>()
+                                          .Name("gridProbabilidadRiesgo")
+                                          .Events(events => events
+                                                    //.DataBound("onDataBound")
+                                                    .DataBinding("onDataBinding")
+                                                    )
+                                          .Columns(columns =>
+                                          {
+                                              if (permisos.HasClaim("Monitoreo.Probabilidad de Riesgos.Editar Probabilidad de Riesgo", "true"))
+                                              {
+                                                  columns.Command(command =>
+                                                  {
+                                                      command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditProbabilidadRiesgo");
+                                                      //command.Destroy().Text("Eliminar");
+                                                  }).Title("Acciones").Width(70);
+                                              }
+                                              columns.Bound(p => p.Nivel).Title("Nivel").Width(70);
+                                              columns.Bound(p => p.Descriptor).HtmlAttributes(new { @style = "background:#=ColorHexadecimal#;color:black;" }).Title("Descriptor").Width(100);
+                                              columns.Bound(p => p.Descripcion).Title("Descripción").Width(250);
+                                              columns.Bound(p => p.Frecuencia).Title("Frecuencia").Width(120);
+                                          })
+                                                        .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                                        .Clear()
+                                                                        .Contains("Contiene")
+                                                                        .DoesNotContain("No contiene")
+                                                                        .EndsWith("Termina con")
+                                                                        .IsEqualTo("Es igual a")
+                                                                        .IsNotEqualTo("No es igual a")
+                                                                        .IsNull("Es nulo")
+                                                                        .StartsWith("Inicia con")
+                                                                    )
+                                                                    .ForNumber(n => n
+                                                                    .Clear()
+                                                                    .IsEqualTo("Es igual a")
+                                                                    .IsGreaterThan("Es mayor que")
+                                                                    .IsLessThan("Es menor que")
+                                                                    .IsNull("Es nulo")
+                                                                    .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                    .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                    )
+                                                                    .ForDate(d => d
+                                                                    .Clear()
+                                                                    .IsEqualTo("Es igual que")
+                                                                    .IsGreaterThan("Es mayor que")
+                                                                    .IsLessThan("Es menor que")
+                                                                    .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                    .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                    .IsNotEqualTo("No es igual que")
+                                                                    )
+                                                                ))
+                                                    .ToolBar(tools =>
+                                                    {
+                                                        if (permisos.HasClaim("Monitoreo.Probabilidad de Riesgos.Agregar Probabilidad de Riesgo", "true"))
+                                                        {
+                                                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @id = "ProbabilidadRiesgo_Add", @class = "k-i-plus-sm", onclick = "AddProbabilidadRiesgo()" });
+                                                        }
+                                                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                                    })
+                                                    .Editable(e => e.Mode(GridEditMode.PopUp))
+                                                    .Sortable()
+                                                    .Pageable(s => s
+                                                        .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+                                                        .Empty("No hay datos."))
+                                                    )
+                                                    .Filterable()
+                                                    .Scrollable()
+                                                    .Pdf(pdf => pdf.FileName("Probabilidad Riesgo Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                                        .Excel(excel => excel.FileName("Probabilidad Riesgo Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                                    .DataSource(dataSource =>
+                                                        dataSource
+                                                        .WebApi()
+                                                        .ServerOperation(true)
+                                                        .Model(model =>
+                                                        {
+                                                            model.Id(p => p.Id);
+                                                            model.Field(p => p.Id).Editable(false);
+                                                        })
+                                                        .Sort(s => s.Add(m => m.Nivel).Descending())
+                                                        .Events(events => events.Error("error_handler"))
+                                                        .Read(read => read.Action("GetProbabilidadRiesgo", "ProbabilidadRiesgo"))
+                                                    )
+)
+
+<div id="numProbabilidadRiesgo">
+    @await Html.PartialAsync("pvwAddProbabilidadRiesgo", new ERPMVC.DTO.ProbabilidadRiesgoDTO { Id = 0 })
+</div>
+
+<script>
+    $(document).ready(function () {
+        
+    });
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridProbabilidadRiesgo").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridProbabilidadRiesgo").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+
+    function onDataBinding(e) {
+        var displayedData = $("#gridProbabilidadRiesgo").data().kendoGrid.dataSource.view();
+        if (displayedData.length == 4) {
+            $("#ProbabilidadRiesgo_Add").hide();
+        }
+        else {
+            $("#ProbabilidadRiesgo_Add").show();
+        }
+    }
+
+    function RefrescarGrid() {
+        var grid = $("#gridProbabilidadRiesgo").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+    function AddProbabilidadRiesgo() {
+        var validator = $("#frmProbabilidadRiesgo").data("kendoValidator");
+        validator.hideMessages();
+        var x = document.getElementsByClassName("k-invalid");
+        if (x.length > 0) {
+            $("span").removeClass("k-invalid");
+        }
+        $('#ModalProbabilidadRiesgo').find(':input').not(':submit').val('');
+        $('#ModalProbabilidadRiesgo').modal('show');
+        $("#Descriptor").data("kendoDropDownList").value(0);
+        $("#Id").val('0');
+    }
+
+    function EditProbabilidadRiesgo(e) {
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        var dataObject = {
+            Id: dataItem.Id,
+            editar : 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwAddProbabilidadRiesgo", "ProbabilidadRiesgo")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#numProbabilidadRiesgo").html('');
+                $("#numProbabilidadRiesgo").html(result);
+                $('#ModalProbabilidadRiesgo').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+</script>

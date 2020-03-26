@@ -1,0 +1,319 @@
+﻿@model ERPMVC.DTO.ProbabilidadRiesgoDTO
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+   // {"required","Valor requerido" }
+};
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<div id="ModalProbabilidadRiesgo" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Probabilidad de Riesgo</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmProbabilidadRiesgo" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveProbabilidadRiesgo"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <hr>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Id" class=" control-label" style="min-width:100%">Id</label>
+                                                    <input type="text" asp-for="Id" name="Id" class="form-control" disabled="disabled" style="min-width:100%" />
+                                                    <span asp-validation-for="Id" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Nivel" class=" control-label" style="min-width:100%">Nivel</label>
+                                                    <input type="number" min="1" max="999" data-max-msg="El Nivel debe ser Menor o Igual a 999." data-min-msg="El Nivel no puede ser Negativo." data-val-required="El Nivel es Requerido." asp-for="Nivel" name="Nivel" class="form-control" style="min-width:100%" />
+                                                    <span asp-validation-for="Nivel" class="text-danger"></span>
+                                                    <span id="NivelAlert" class="k-widget k-tooltip k-tooltip-validation k-invalid-msg field-validation-error"><span role="alert" class="k-icon k-i-warning"></span> Este nivel ya esta creado.</span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <script>
+                                                    function GetNiveles() {
+                                                        return { 'Id': 14 }
+                                                    }
+                                                </script>
+                                                <div class="form-group">
+                                                    <label asp-for="Descriptor" class="control-label"></label>
+                                                    <kendo-dropdownlist name="Descriptor" required data-required-msg="El Descriptor es Requerido."
+                                                                        for="@Model.Descriptor"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione Nivel de Riesgo!"
+                                                                        datatextfield="Nombre"
+                                                                        datavaluefield="Nombre"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetElementoByIdConfiguracion", "ElementoConfiguracion")" data="GetNiveles" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="Descriptor" class="text-danger"></span>
+                                                    <span id="DescriptorAlert" class="k-widget k-tooltip k-tooltip-validation k-invalid-msg field-validation-error"><span role="alert" class="k-icon k-i-warning"></span> Este descriptor ya esta creado.</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Descripcion" class=" control-label" style="min-width:100%"></label>
+                                                    <textarea type="text" id="Descripcion" class="form-control" maxlength="250" onKeyPress="return CaracterCampoDescripcion(event)" required data-required-msg="La Descripción es requerida." style="min-width:100%;" rows="4" cols="40" asp-for="Descripcion"></textarea>
+                                                    @*<input type="text" asp-for="Descripcion" required data-required-msg="La Descripcion es Requerido." name="Descripcion" class="form-control" autocomplete="off" style="min-width:100%" />*@
+                                                    <span asp-validation-for="Descripcion" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label asp-for="Frecuencia" class=" control-label" style="min-width:100%"></label>
+                                                    <input type="text" asp-for="Frecuencia" maxlength="60" required data-required-msg="La Frecuencia es Requerida." onKeyPress="return CaracterCampoDescripcion(event)" name="Frecuencia" class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <span asp-validation-for="Frecuencia" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button id="btnProbabilidadRiesgo" class="form-control btn-miboton" onclick="SaveProbabilidadRiesgo(this)" type="button"> Guardar </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#DescriptorAlert").hide();
+        $("#NivelAlert").hide();
+        $("#Descripcion").on('paste', function (e) {
+            e.preventDefault();
+        })
+        $("#Frecuencia").on('paste', function (e) {
+            e.preventDefault();
+        })
+    })
+
+    function CaracterCampoDescripcion(e) {
+        key = e.keyCode || e.which;
+        tecla = String.fromCharCode(key).toLowerCase();
+        letras = " áéíóúabcdefghijklmnñopqrstuvwxyz0123456789.,#";
+        especiales = "8-37-39-46";
+
+        tecla_especial = false
+        for (var i in especiales) {
+            if (key == especiales[i]) {
+                tecla_especial = true;
+                break;
+            }
+        }
+
+        if (letras.indexOf(tecla) == -1 && !tecla_especial) {
+            return false;
+        }
+    }
+
+    function SoloNumeros(e) {
+        key = e.keyCode || e.which;
+        tecla = String.fromCharCode(key).toLowerCase();
+        letras = "1234567890";
+        especiales = "8-37-39-46";
+
+        tecla_especial = false
+        for (var i in especiales) {
+            if (key == especiales[i]) {
+                tecla_especial = true;
+                break;
+            }
+        }
+
+        if (letras.indexOf(tecla) == -1 && !tecla_especial) {
+            return false;
+        }
+    }
+
+    function customFunction(input) {
+        if (input.attr('name') === "Id" && input.val() === "0") {
+            return false;
+        }
+    }
+
+    function SaveProbabilidadRiesgo(e) {
+        var displayedData = $("#gridProbabilidadRiesgo").data().kendoGrid.dataSource.view();
+        var notification = $("#notification").data("kendoNotification");
+
+        $("#btnProbabilidadRiesgo").hide();
+        $("#btnProbabilidadRiesgo").prop("disabled", true);
+
+        var setColorHexadecimal = "";
+        if ($("#Descriptor").data("kendoDropDownList").text() == "Bajo") {
+            setColorHexadecimal = "#008F39";
+        }
+        else if ($("#Descriptor").data("kendoDropDownList").text() == "Medio") {
+            setColorHexadecimal = "#FFFF00";
+        }
+        else if ($("#Descriptor").data("kendoDropDownList").text() == "Alto") {
+            setColorHexadecimal = "#FF8000";
+        }
+        else if ($("#Descriptor").data("kendoDropDownList").text() == "Muy Alto") {
+            setColorHexadecimal = "#FF0000";
+        }
+
+        var dataObject = {
+            'Id': $("#Id").val() === "" ? "0" : $("#Id").val(),
+            'Descriptor': $("#Descriptor").val(),
+            'Descripcion': $("#Descripcion").val(),
+            'Frecuencia': $("#Frecuencia").val(),
+            'ColorHexadecimal': setColorHexadecimal,
+            'Nivel': $("#Nivel").val(),
+        };
+
+        var validator = $("#frmProbabilidadRiesgo").data("kendoValidator");
+        var status = $(".status");
+
+        if (validator.validate()) {
+            if ($('#NivelAlert').is(':hidden')) {
+                if ($('#DescriptorAlert').is(':hidden')) {
+                    $.ajax({
+                        url: '@Url.Action("SaveProbabilidadRiesgo", "ProbabilidadRiesgo")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: '<br/>Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+                            RefrescarGrid();
+                            $('#ModalProbabilidadRiesgo').modal('hide');
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                            $.toast({
+                                heading: 'Validación',
+                                text: textStatus + ": " + XMLHttpRequest.responseText,
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'error',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+                        }
+                    });
+                }
+                else {
+                    $.toast({
+                        heading: 'Validación',
+                        text: "No se puede duplicar el Descriptor!",
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                }
+            }
+            else {
+                $.toast({
+                    heading: 'Validación',
+                    text: "No se puede duplicar el Nivel!",
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 30000,
+                    stack: 6
+                });
+            }
+        }
+        else {
+            $.toast({
+                heading: 'Validación',
+                text: "Ingrese todos los datos en el formulario!",
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+        }
+
+    $("#btnProbabilidadRiesgo").show();
+    $("#btnProbabilidadRiesgo").prop("disabled", false);
+    }
+
+
+    $("#Nivel").change(function (e) {
+        debugger;
+        var Id = $("#Id").val();
+        var Nivel1 = $("#Nivel").val()
+        var displayedData = $("#gridProbabilidadRiesgo").data().kendoGrid.dataSource.view();
+        var NivelExisten = "";
+        if (displayedData.length > 0) {
+            for (var i = 0; i < displayedData.length; i++) {
+                NivelExisten = displayedData[i]
+                if (NivelExisten.Nivel != Number(Nivel1)) {
+                    $("#NivelAlert").hide();
+                }
+                if (NivelExisten.Nivel == Number(Nivel1) && NivelExisten.Id != Id) {
+                    $("#NivelAlert").show();
+                    break;
+                }
+                else if (Nivel1 == "@Model.Nivel" && NivelExisten.Id == Id) {
+                    $("#NivelAlert").hide();
+                }
+            }
+        }
+    });
+    
+    $("#Descriptor").change(function (e) {
+        var Id = $("#Id").val();
+        var Descriptor = $("#Descriptor").data("kendoDropDownList").value();
+        var displayedData = $("#gridProbabilidadRiesgo").data().kendoGrid.dataSource.view();
+        var DescriptorExisten = "";
+        if (displayedData.length > 0) {
+            for (var i = 0; i < displayedData.length; i++) {
+                DescriptorExisten = displayedData[i]
+                if (DescriptorExisten.Descriptor != Descriptor) {
+                    $("#DescriptorAlert").hide();
+                }
+                if (DescriptorExisten.Descriptor == Descriptor && DescriptorExisten.Id != Id) {
+                    $("#DescriptorAlert").show();
+                    break;
+                }
+                else if (Descriptor == "@Model.Descriptor" && DescriptorExisten.Id == Id) {
+                    $("#DescriptorAlert").hide();
+                }
+            }
+        }
+    });
+</script>

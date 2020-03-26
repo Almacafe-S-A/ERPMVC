@@ -20,12 +20,12 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
-    public class ContextoRiesgoController : Controller
+    public class ProbabilidadRiesgoController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
         private readonly ClaimsPrincipal _principal;
-        public ContextoRiesgoController(ILogger<ContextoRiesgoController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
+        public ProbabilidadRiesgoController(ILogger<ProbabilidadRiesgoController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
@@ -33,7 +33,7 @@ namespace ERPMVC.Controllers
         }
 
         //--------------------------------------------------------------------------------------
-        [Authorize(Policy = "Monitoreo.Contexto de Riesgos")]
+        [Authorize(Policy = "Monitoreo.Probabilidad de Riesgos")]
         public IActionResult Index()
         {
             ViewData["permisos"] = _principal;
@@ -43,20 +43,20 @@ namespace ERPMVC.Controllers
         //--------------------------------------------------------------------------------------
 
         [HttpGet]
-        public async Task<DataSourceResult> GetContextoRiesgo([DataSourceRequest]DataSourceRequest request)
+        public async Task<DataSourceResult> GetProbabilidadRiesgo([DataSourceRequest]DataSourceRequest request)
         {
-            List<ContextoRiesgo> _ContextoRiesgo = new List<ContextoRiesgo>();
+            List<ProbabilidadRiesgo> _ProbabilidadRiesgo = new List<ProbabilidadRiesgo>();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ContextoRiesgo/GetContextoRiesgo");
+                var result = await _client.GetAsync(baseadress + "api/ProbabilidadRiesgo/GetProbabilidadRiesgo");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ContextoRiesgo = JsonConvert.DeserializeObject<List<ContextoRiesgo>>(valorrespuesta);
+                    _ProbabilidadRiesgo = JsonConvert.DeserializeObject<List<ProbabilidadRiesgo>>(valorrespuesta);
                 }
             }
             catch (Exception ex)
@@ -64,31 +64,31 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-            return _ContextoRiesgo.ToDataSourceResult(request);
+            return _ProbabilidadRiesgo.ToDataSourceResult(request);
         }
 
         //--------------------------------------------------------------------------------------
 
         [HttpPost("[action]")]
-        public async Task<ActionResult> pvwAddContextoRiesgo([FromBody]ContextoRiesgoDTO _sarpara)
+        public async Task<ActionResult> pvwAddProbabilidadRiesgo([FromBody]ProbabilidadRiesgoDTO _sarpara)
         {
-            ContextoRiesgoDTO _ContextoRiesgo = new ContextoRiesgoDTO();
+            ProbabilidadRiesgoDTO _ProbabilidadRiesgo = new ProbabilidadRiesgoDTO();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ContextoRiesgo/GetContextoRiesgoById/" + _sarpara.IdContextoRiesgo);
+                var result = await _client.GetAsync(baseadress + "api/ProbabilidadRiesgo/GetProbabilidadRiesgoById/" + _sarpara.Id);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ContextoRiesgo = JsonConvert.DeserializeObject<ContextoRiesgoDTO>(valorrespuesta);
+                    _ProbabilidadRiesgo = JsonConvert.DeserializeObject<ProbabilidadRiesgoDTO>(valorrespuesta);
                 }
 
-                if (_ContextoRiesgo == null)
+                if (_ProbabilidadRiesgo == null)
                 {
-                    _ContextoRiesgo = new ContextoRiesgoDTO();
+                    _ProbabilidadRiesgo = new ProbabilidadRiesgoDTO();
                 }
             }
             catch (Exception ex)
@@ -96,46 +96,46 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-            return PartialView(_ContextoRiesgo);
+            return PartialView(_ProbabilidadRiesgo);
         }
 
         //--------------------------------------------------------------------------------------
 
         [HttpPost]
-        public async Task<ActionResult<ContextoRiesgo>> SaveContextoRiesgo([FromBody]ContextoRiesgoDTO _ContextoRiesgoP)
+        public async Task<ActionResult<ProbabilidadRiesgo>> SaveProbabilidadRiesgo([FromBody]ProbabilidadRiesgoDTO _ProbabilidadRiesgoP)
         {
-            ContextoRiesgo _ContextoRiesgo = _ContextoRiesgoP;
+            ProbabilidadRiesgo _ProbabilidadRiesgo = _ProbabilidadRiesgoP;
             try
             {
                 // DTO_NumeracionSAR _liNumeracionSAR = new DTO_NumeracionSAR();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ContextoRiesgo/GetContextoRiesgoById/" + _ContextoRiesgo.IdContextoRiesgo);
+                var result = await _client.GetAsync(baseadress + "api/ProbabilidadRiesgo/GetProbabilidadRiesgoById/" + _ProbabilidadRiesgo.Id);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ContextoRiesgo = JsonConvert.DeserializeObject<ContextoRiesgoDTO>(valorrespuesta);
+                    _ProbabilidadRiesgo = JsonConvert.DeserializeObject<ProbabilidadRiesgoDTO>(valorrespuesta);
                 }
 
-                if (_ContextoRiesgo == null) { _ContextoRiesgo = new Models.ContextoRiesgo(); }
+                if (_ProbabilidadRiesgo == null) { _ProbabilidadRiesgo = new Models.ProbabilidadRiesgo(); }
 
-                if (_ContextoRiesgoP.IdContextoRiesgo == 0)
+                if (_ProbabilidadRiesgoP.Id == 0)
                 {
-                    _ContextoRiesgoP.FechaCreacion = DateTime.Now;
-                    _ContextoRiesgoP.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    _ContextoRiesgoP.FechaModificacion = DateTime.Now;
-                    _ContextoRiesgoP.UsuarioModificacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_ContextoRiesgoP);
+                    _ProbabilidadRiesgoP.FechaCreacion = DateTime.Now;
+                    _ProbabilidadRiesgoP.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    _ProbabilidadRiesgoP.FechaModificacion = DateTime.Now;
+                    _ProbabilidadRiesgoP.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_ProbabilidadRiesgoP);
                 }
                 else
                 {
-                    _ContextoRiesgoP.FechaCreacion = _ContextoRiesgo.FechaCreacion;
-                    _ContextoRiesgoP.UsuarioCreacion = _ContextoRiesgo.UsuarioCreacion;
-                    _ContextoRiesgoP.FechaModificacion = DateTime.Now;
-                    _ContextoRiesgoP.UsuarioModificacion = HttpContext.Session.GetString("user");
-                    var updateresult = await Update(_ContextoRiesgo.IdContextoRiesgo, _ContextoRiesgoP);
+                    _ProbabilidadRiesgoP.FechaCreacion = _ProbabilidadRiesgo.FechaCreacion;
+                    _ProbabilidadRiesgoP.UsuarioCreacion = _ProbabilidadRiesgo.UsuarioCreacion;
+                    _ProbabilidadRiesgoP.FechaModificacion = DateTime.Now;
+                    _ProbabilidadRiesgoP.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    var updateresult = await Update(_ProbabilidadRiesgo.Id, _ProbabilidadRiesgoP);
                 }
             }
             catch (Exception ex)
@@ -143,86 +143,86 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-            return Json(_ContextoRiesgo);
+            return Json(_ProbabilidadRiesgo);
         }
 
         //--------------------------------------------------------------------------------------
 
         [HttpPost]
-        public async Task<ActionResult> Insert(ContextoRiesgo _ContextoRiesgoS)
+        public async Task<ActionResult> Insert(ProbabilidadRiesgo _ProbabilidadRiesgoS)
         {
-            ContextoRiesgo _ContextoRiesgo = _ContextoRiesgoS;
+            ProbabilidadRiesgo _ProbabilidadRiesgo = _ProbabilidadRiesgoS;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/ContextoRiesgo/Insert", _ContextoRiesgoS);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/ProbabilidadRiesgo/Insert", _ProbabilidadRiesgoS);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ContextoRiesgoS = JsonConvert.DeserializeObject<ContextoRiesgo>(valorrespuesta);
+                    _ProbabilidadRiesgoS = JsonConvert.DeserializeObject<ProbabilidadRiesgo>(valorrespuesta);
                 }
             }
             catch (Exception ex)
             {
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-            return new ObjectResult(new DataSourceResult { Data = new[] { _ContextoRiesgoS }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _ProbabilidadRiesgoS }, Total = 1 });
         }
 
         //--------------------------------------------------------------------------------------
 
         [HttpPut("{id}")]
-        public async Task<IActionResult> Update(Int64 IdContextoRiesgo, ContextoRiesgo _ContextoRiesgoP)
+        public async Task<IActionResult> Update(Int64 IdProbabilidadRiesgo, ProbabilidadRiesgo _ProbabilidadRiesgoP)
         {
-            ContextoRiesgo _ContextoRiesgo = _ContextoRiesgoP;
+            ProbabilidadRiesgo _ProbabilidadRiesgo = _ProbabilidadRiesgoP;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PutAsJsonAsync(baseadress + "api/ContextoRiesgo/Update", _ContextoRiesgo);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/ProbabilidadRiesgo/Update", _ProbabilidadRiesgo);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ContextoRiesgo = JsonConvert.DeserializeObject<ContextoRiesgo>(valorrespuesta);
+                    _ProbabilidadRiesgo = JsonConvert.DeserializeObject<ProbabilidadRiesgo>(valorrespuesta);
                 }
             }
             catch (Exception ex)
             {
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-            return new ObjectResult(new DataSourceResult { Data = new[] { _ContextoRiesgo }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _ProbabilidadRiesgo }, Total = 1 });
         }
 
         //--------------------------------------------------------------------------------------
 
         [HttpPost]
-        public async Task<ActionResult<ContextoRiesgo>> Delete(Int64 Id, [FromBody]ContextoRiesgo _ContextoRiesgoP)
+        public async Task<ActionResult<ProbabilidadRiesgo>> Delete(Int64 Id, [FromBody]ProbabilidadRiesgo _ProbabilidadRiesgoP)
         {
-            ContextoRiesgo _ContextoRiesgo = _ContextoRiesgoP;
+            ProbabilidadRiesgo _ProbabilidadRiesgo = _ProbabilidadRiesgoP;
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/ContextoRiesgo/Delete", _ContextoRiesgo);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/ProbabilidadRiesgo/Delete", _ProbabilidadRiesgo);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ContextoRiesgo = JsonConvert.DeserializeObject<ContextoRiesgo>(valorrespuesta);
+                    _ProbabilidadRiesgo = JsonConvert.DeserializeObject<ProbabilidadRiesgo>(valorrespuesta);
                 }
             }
             catch (Exception ex)
             {
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
-            return new ObjectResult(new DataSourceResult { Data = new[] { _ContextoRiesgo }, Total = 1 });
+            return new ObjectResult(new DataSourceResult { Data = new[] { _ProbabilidadRiesgo }, Total = 1 });
         }
     }
 }
