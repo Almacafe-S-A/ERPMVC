@@ -1,0 +1,178 @@
+﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Tipo Acciones de Riesgos";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
+
+
+<script>
+
+    function AddTipodeAccionderiesgo() {
+        $('#ModalTipodeAccionderiesgo').find(':input').not(':submit').val('');
+        $('#ModalTipodeAccionderiesgo').modal('show');
+        $("#TipodeAccionderiesgoId").val('0');
+
+        var validator = $("#frmTipodeAccionderiesgo").data("kendoValidator");
+        validator.hideMessages();
+    }
+
+
+    function EditTipodeAccionderiesgo(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                TipodeAccionderiesgoId: dataItem.TipodeAccionderiesgoId,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddTipodeAccionesRiesgos", "TipodeAccionderiesgo")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumTipodeAccionderiesgo").html('');
+                    $("#NumTipodeAccionderiesgo").html(result);
+
+                    $("#TipodeAccionderiesgoId").val(dataItem.TipodeAccionderiesgoId)
+                    $("#Tipodeaccion").val(dataItem.Tipodeaccion)
+                    $("#Description").val(dataItem.Description)
+                    $('#ModalTipodeAccionderiesgo').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+         }
+
+
+
+</script>
+
+<h3 class="text-themecolor">Tipo Acciones de Riesgos</h3>
+@(Html.Kendo().Grid<ERPMVC.Models.TipodeAccionderiesgo>
+                                    ()
+                                    .Name("gridTipodeAccionderiesgo")
+                                    .Columns(columns =>
+                                    {
+                                        if (permisos.HasClaim("Monitoreo.Tipo de accion de riesgo.Editar Tipo de accion de riesgo", "true")
+                                        || permisos.HasClaim("Monitoreo.Tipo de accion de riesgo.Eliminar Tipo de accion de riesgo", "true"))
+                                        {
+
+                                            columns.Command(command =>
+                                            {
+                                                if (permisos.HasClaim("Monitoreo.Tipo de accion de riesgo.Editar Tipo de accion de riesgo", "true"))
+                                                {
+                                                    command.Custom("Editar").Click("EditTipodeAccionderiesgo").Text(" ").IconClass("fa fa-edit");
+                                                }
+                                                if (permisos.HasClaim("Monitoreo.Tipo de accion de riesgo.Eliminar Tipo de accion de riesgo", "true"))
+                                                {
+
+                                                    command.Destroy().Text(" ").IconClass("fa fa-trash");
+                                                }
+                                            }).Width(150).Title("Acciones");
+                                        }
+                                        columns.Bound(p => p.TipodeAccionderiesgoId).Width(100);
+                                        columns.Bound(p => p.Tipodeaccion).Width(200);
+                                        columns.Bound(p => p.Description).Width(250);
+                                    })
+                                        .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                               .Clear()
+                                                               .Contains("Contiene")
+                                                               .DoesNotContain("No contiene")
+                                                               .EndsWith("Termina con")
+                                                               .IsEqualTo("Es igual a")
+                                                               .IsNotEqualTo("No es igual a")
+                                                               .IsNull("Es nulo")
+                                                               .StartsWith("Inicia con")
+
+
+                                                         )
+                                                         .ForNumber(n => n
+                                                           .Clear()
+                                                           .IsEqualTo("Es igual a")
+                                                           .IsGreaterThan("Es mayor que")
+                                                           .IsLessThan("Es menor que")
+                                                           .IsNull("Es nulo")
+                                                           .IsLessThanOrEqualTo("Es menor o igual que")
+                                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                         )
+                                                         .ForDate(d => d
+                                                         .Clear()
+                                                         .IsEqualTo("Es igual que")
+                                                         .IsGreaterThan("Es mayor que")
+                                                         .IsLessThan("Es menor que")
+                                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                         .IsNotEqualTo("No es igual que")
+                                                          )
+                                                       ))
+                                    .ToolBar(tools =>
+                                    {
+                                        //tools.Create();
+                                        if (permisos.HasClaim("Monitoreo.Tipo de accion de riesgo.Agregar Tipo de accion de riesgo ", "true"))
+                                        {
+                                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                               .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddTipodeAccionderiesgo()" });
+                                        }
+                                        tools.Excel().HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a Excel");
+                                        tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a PDF");
+
+                                    })
+                                    .Editable(e => e.Mode(GridEditMode.PopUp))
+                                    .Sortable()
+                                    .Pageable()
+                                    .Filterable()
+                                    .Scrollable()
+                                    .Pdf(pdf => pdf.FileName("TipodeAccionderiesgoReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                        .Excel(excel => excel.FileName("TipodeAccionderiesgoReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                    .DataSource(dataSource =>
+                                        dataSource
+                                        .WebApi()
+
+                                        .ServerOperation(true)
+                                        .Model(model =>
+                                        {
+                                            model.Id(p => p.TipodeAccionderiesgoId);
+
+
+                                        })
+                                        .Events(events => events.Error("error_handler"))
+                                        .Read(read => read.Action("GetTipodeAccionderiesgo", "TipodeAccionderiesgo"))
+                                        .Create(create => create.Action("Insert", "TipodeAccionderiesgo"))
+                                        .Update(update => update.Action("Update", "TipodeAccionderiesgo").Type(HttpVerbs.Put))
+                                        .Destroy(destroy => destroy.Action("Delete", "TipodeAccionderiesgo").Type(HttpVerbs.Post))
+
+                                    )
+)
+
+
+<div id="NumBank">
+    @await Html.PartialAsync("pvwAddTipodeAccionesRiesgos", new ERPMVC.DTO.TipodeAccionderiesgoDTO { TipodeAccionderiesgoId = 0 })
+</div>
+
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridTipodeAccionderiesgo").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridTipodeAccionderiesgo").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+</script>
