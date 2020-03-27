@@ -333,9 +333,10 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<CompanyInfoDTO>> SaveCompanyInfo(IEnumerable<IFormFile> files, CompanyInfoDTO _CompanyInfoS)
+        public async Task<ActionResult<CompanyInfoDTO>> SaveCompanyInfo(/*IEnumerable<IFormFile> files, */CompanyInfoDTO _CompanyInfoS)
         {
             CompanyInfo _CompanyInfo = _CompanyInfoS;
+            List<CompanyInfo> _listCompanyInfoValidation = new List<CompanyInfo>();
             try
             {               
                 CompanyInfo _listCompanyInfo = new CompanyInfo();
@@ -346,58 +347,84 @@ namespace ERPMVC.Controllers
                 string valorrespuesta = "";            
                 _CompanyInfo.FechaModificacion = DateTime.Now;
                 _CompanyInfo.UsuarioModificacion = HttpContext.Session.GetString("user");
-                IFormFile file = files.FirstOrDefault();
+                //IFormFile file = files.FirstOrDefault();
                 
-                    if (result.IsSuccessStatusCode)
-                    {
-                      valorrespuesta = await (result.Content.ReadAsStringAsync());
-                      _CompanyInfo = JsonConvert.DeserializeObject<CompanyInfo>(valorrespuesta);
-                    }
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _CompanyInfo = JsonConvert.DeserializeObject<CompanyInfo>(valorrespuesta);
+                }
 
-                   if (_CompanyInfo == null) { _CompanyInfo = new Models.CompanyInfo(); }
-               
+                if (_CompanyInfo == null) {
+                    _CompanyInfo = new Models.CompanyInfo();
+                }
+                
+                var resultValidacion = await _client.GetAsync(baseadress + "api/CompanyInfo/GetCompanyInfo");
+                string valorrespuestaValidacion = "";
+                if (resultValidacion.IsSuccessStatusCode)
+                {
+                    valorrespuestaValidacion = await (resultValidacion.Content.ReadAsStringAsync());
+                    _listCompanyInfoValidation = JsonConvert.DeserializeObject<List<CompanyInfo>>(valorrespuestaValidacion);
                     if (_CompanyInfoS.CompanyInfoId == 0)
                     {
-                        if (file != null)
+                        _listCompanyInfoValidation = _listCompanyInfoValidation.Where(q => q.Company_Name == _CompanyInfoS.Company_Name).ToList();
+                        if (_listCompanyInfoValidation.Count > 0)
                         {
-                            _CompanyInfoS.FechaCreacion = DateTime.Now;
-                            _CompanyInfoS.UsuarioCreacion = HttpContext.Session.GetString("user");
-                            var insertresult = await Insert(_CompanyInfoS);
-                            if (insertresult != null)
-                            {
-                                CompanyInfo comp = (CompanyInfo)insertresult.Value;
-                                _CompanyInfoS.CompanyInfoId = comp.CompanyInfoId;
-                            }
-                        }
-                        else
-                        {
-                            return await Task.Run(() => BadRequest($"Seleccione una Imagen."));
+                            return await Task.Run(() => BadRequest("Ya existe una Empresa creada con el mismo Nombre."));
                         }
                     }
                     else
                     {
-                        if (System.IO.File.Exists(_CompanyInfo.image))
+                        _listCompanyInfoValidation = _listCompanyInfoValidation.Where(q => q.Company_Name == _CompanyInfoS.Company_Name && q.CompanyInfoId != _CompanyInfoS.CompanyInfoId).ToList();
+                        if (_listCompanyInfoValidation.Count > 0)
                         {
-                            System.IO.File.Delete(_CompanyInfo.image);
+                            return await Task.Run(() => BadRequest("Ya existe una Empresa creada con el mismo Nombre."));
                         }
-                        //_CompanyInfoS.image = file.FileName;
-                        _CompanyInfoS.UsuarioCreacion = _CompanyInfo.UsuarioCreacion;
-                        _CompanyInfoS.FechaCreacion = _CompanyInfo.FechaCreacion;
-                        var updateresult = await Update(_CompanyInfo.CompanyInfoId, _CompanyInfoS);
                     }
+                }
 
-                   if (file != null)
-                   {
-                     FileInfo info = new FileInfo(file.FileName);
-                     var filename = _CompanyInfoS.CompanyInfoId + "_" + _CompanyInfoS.Company_Name + info.Extension;
-                     var filePath = _hostingEnvironment.WebRootPath + "/CompanyImages/" + filename;
-                     using (var stream = new FileStream(filePath, FileMode.Create))
-                     {
-                        await file.CopyToAsync(stream);
-                     }
-                     _CompanyInfoS.image = filename;
-                     var updateresult2 = await Update(_CompanyInfo.CompanyInfoId, _CompanyInfoS);
-                   }              
+                if (_CompanyInfoS.CompanyInfoId == 0)
+                {
+                    //if (file != null)
+                    //{
+                        _CompanyInfoS.FechaCreacion = DateTime.Now;
+                        _CompanyInfoS.UsuarioCreacion = HttpContext.Session.GetString("user");
+                        var insertresult = await Insert(_CompanyInfoS);
+                        if (insertresult != null)
+                        {
+                            CompanyInfo comp = (CompanyInfo)insertresult.Value;
+                            _CompanyInfoS.CompanyInfoId = comp.CompanyInfoId;
+                        }
+                    //}
+                    //else
+                    //{
+                    //    return await Task.Run(() => BadRequest($"Seleccione una Imagen."));
+                    //}
+                }
+                else
+                {
+                    //if (System.IO.File.Exists(_CompanyInfo.image))
+                    //{
+                    //    System.IO.File.Delete(_CompanyInfo.image);
+                    //}
+                    //_CompanyInfoS.image = file.FileName;
+                    _CompanyInfoS.UsuarioCreacion = _CompanyInfo.UsuarioCreacion;
+                    _CompanyInfoS.FechaCreacion = _CompanyInfo.FechaCreacion;
+                    var updateresult = await Update(_CompanyInfo.CompanyInfoId, _CompanyInfoS);
+                }
+
+                //if (file != null)
+                //{
+                //  FileInfo info = new FileInfo(file.FileName);
+                //  var filename = _CompanyInfoS.CompanyInfoId + "_" + _CompanyInfoS.Company_Name + info.Extension;
+                //  var filePath = _hostingEnvironment.WebRootPath + "/CompanyImages/" + filename;
+                //  using (var stream = new FileStream(filePath, FileMode.Create))
+                //  {
+                //     await file.CopyToAsync(stream);
+                //  }
+                //  _CompanyInfoS.image = filename;
+                //  var updateresult2 = await Update(_CompanyInfo.CompanyInfoId, _CompanyInfoS);
+                //}              
             }
             catch (Exception ex)
             {
@@ -496,9 +523,41 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult { Data = new[] { _CompanyInfo }, Total = 1 });
         }
 
-
-
-
-
+        [HttpPost("[action]")]
+        public async Task<ActionResult> ValidacionCompanyName([FromBody]CompanyInfo CompanyInfo)
+        {
+            List<CompanyInfo> _companyInfo = new List<CompanyInfo>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/CompanyInfo/GetCompanyInfo");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _companyInfo = JsonConvert.DeserializeObject<List<CompanyInfo>>(valorrespuesta);
+                    if (CompanyInfo.CompanyInfoId > 0)
+                    {
+                        _companyInfo = _companyInfo.Where(q => q.Company_Name == CompanyInfo.Company_Name && q.CompanyInfoId != CompanyInfo.CompanyInfoId).ToList();
+                    }
+                    else
+                    {
+                        _companyInfo = _companyInfo.Where(q => q.Company_Name == CompanyInfo.Company_Name).ToList();
+                    }
+                    if (_companyInfo.Count > 0)
+                    {
+                        return await Task.Run(() => BadRequest("Ya existe una Empresa creada con el mismo Nombre."));
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return await Task.Run(() => Ok(_companyInfo));
+        }
     }
 }
