@@ -17,10 +17,13 @@ namespace ERPMVC.Models
         [Display(Name = "Descripción")]
         public string Descripcion { get; set; }
         [Display(Name = "Estado")]
-        public string Estado { get; set; }
-        [Display(Name = "Estado")]
         public long EstadoId { get; set; }
+        [Display(Name = "Categoria")]
+        public long CategoriaId { get; set; }
 
+        public Estados Estado { get; set; }
+
+        public CategoriaPlanilla Categoria { get; set; }
 
         [Display(Name = "Usuario de creación")]
         public string Usuariocreacion { get; set; }
