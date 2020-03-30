@@ -76,42 +76,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        /// <summary>
-        /// Obitiene el listado de los estados!
-        /// </summary>
-        /// <param name="request"></param>
-        /// <returns></returns>
-        [HttpGet]
-        public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
-        {
-            List<Estados> _Estados = new List<Estados>();
-            try
-            {
-
-                string baseadress = _config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Estados/Get");
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Estados = JsonConvert.DeserializeObject<List<Estados>>(valorrespuesta);
-                    _Estados = _Estados.OrderByDescending(q => q.IdEstado).ToList();
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-
-            return _Estados.ToDataSourceResult(request);
-
-        }
+    
 
         [HttpPost]
         public async Task<ActionResult<Estados>> SaveEstados([FromBody]EstadoDTO _EstadosP)
