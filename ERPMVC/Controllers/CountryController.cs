@@ -199,7 +199,7 @@ namespace ERPMVC.Controllers
                         }
                         else if (!_CountryDuplicate.GAFI && !_Country.GAFI)
                         {
-                            return await Task.Run(() => BadRequest($"El nombre del país ya esta registrado... como país no GAFI "));
+                            return await Task.Run(() => BadRequest($"El nombre del país ya esta registrado."));
                         }
 
                     }
@@ -234,7 +234,7 @@ namespace ERPMVC.Controllers
                             }
                             else if (!_CountryDuplicated.GAFI && !_Country.GAFI)
                             {
-                                return await Task.Run(() => BadRequest($"El nombre del país ya esta registrado... como país no GAFI "));
+                                return await Task.Run(() => BadRequest($"El nombre del país ya esta registrado."));
                             }
                         }
 
