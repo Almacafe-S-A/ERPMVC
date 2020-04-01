@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
@@ -40,14 +41,21 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> _config;
         private readonly ILogger _logger;
-        public UnitOfMeasureController(ILogger<UnitOfMeasureController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public UnitOfMeasureController(ILogger<UnitOfMeasureController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this._config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Administracion.Unidades de Medida")]
         public IActionResult UnitOfMeasure()
         {
+            ViewData["permisoAgregar"] = _principal.HasClaim("Administracion.Unidades de Medida.Agregar Unidad de Medida", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Administracion.Unidades de Medida.Editar Unidad de Medida", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Administracion.Unidades de Medida.Eliminar Unidad de Medida", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Administracion.Unidades de Medida.Exportar Unidad de Medida", "true");
             return View();
         }
 

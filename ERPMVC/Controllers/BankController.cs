@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -24,14 +25,21 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public BankController(ILogger<BankController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public BankController(ILogger<BankController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Bancos.Bancos")]
         public IActionResult Bank()
         {
+            ViewData["permisoAgregar"] = _principal.HasClaim("Bancos.Bancos.Agregar Bancos", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Bancos.Bancos.Editar Bancos", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Bancos.Bancos.Eliminar Bancos", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Bancos.Bancos.Exportar Bancos", "true");
             return View();
         }
 

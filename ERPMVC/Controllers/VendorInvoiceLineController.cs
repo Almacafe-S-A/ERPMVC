@@ -139,18 +139,18 @@ namespace ERPMVC.Controllers
                         if (obj != null)
                         {
                             obj.Description = _InvoiceLinep.Description;
-                            obj.Price = _InvoiceLinep.Price;
-                            obj.Quantity = _InvoiceLinep.Quantity;
-                            obj.Amount = _InvoiceLinep.Amount;
-                            obj.SubTotal = _InvoiceLinep.SubTotal;
+                            //obj.Price = _InvoiceLinep.Price;
+                            //obj.Quantity = _InvoiceLinep.Quantity;
+                            //obj.Amount = _InvoiceLinep.Amount;
+                            //obj.SubTotal = _InvoiceLinep.SubTotal;
                             obj.TaxAmount = _InvoiceLinep.TaxAmount;
                             obj.TaxId = _InvoiceLinep.TaxId;
                             obj.TaxCode = _InvoiceLinep.TaxCode;
                             obj.TaxPercentage = _InvoiceLinep.TaxPercentage;
-                            obj.UnitOfMeasureId = _InvoiceLinep.UnitOfMeasureId;
-                            obj.UnitOfMeasureName = _InvoiceLinep.UnitOfMeasureName;
-                            obj.DiscountAmount = _InvoiceLinep.DiscountAmount;
-                            obj.DiscountPercentage = _InvoiceLinep.DiscountPercentage;
+                            //obj.UnitOfMeasureId = _InvoiceLinep.UnitOfMeasureId;
+                            //obj.UnitOfMeasureName = _InvoiceLinep.UnitOfMeasureName;
+                            //obj.DiscountAmount = _InvoiceLinep.DiscountAmount;
+                            //obj.DiscountPercentage = _InvoiceLinep.DiscountPercentage;
                             obj.Total = _InvoiceLinep.Total;
                             obj.AccountId = _InvoiceLinep.AccountId;
                             obj.CostCenterId = _InvoiceLinep.CostCenterId;

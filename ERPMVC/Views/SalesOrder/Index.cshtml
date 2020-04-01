@@ -6,6 +6,7 @@
     ViewData["Title"] = "Cotización";
     bool permiso;
     permiso = (bool)ViewData["permisoAprobar"];
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 @*@using Microsoft.AspNetCore.Authorization
     @inject IAuthorizationService AuthorizationService*@
@@ -144,9 +145,14 @@
     }
 
     function ImprimirCotizacion(e) {
+       
         e.preventDefault();
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
 
+        var Prueba = $(e.currentTarget).closest("tr").context;
+       
+
+        console.log(Prueba);
         var url =  '@Url.Action("SFCotizacion", "SalesOrder")/' + dataItem.SalesOrderId;
         var win = window.open(url, '_blank');
         win.focus();
@@ -156,7 +162,10 @@
     function closecondition() {
         $('#myModalConditions').modal('hide');
     }
-
+   
+    
+        
+    
 
 
     //$("#gridCotizaciones").kendoTooltip({
@@ -234,13 +243,13 @@
         
         
         if (confirm('Esta seguro de anular esta cotización?')) {
-           
-
+         
             var dataObject = {
                 SalesOrderId: $("#AnularCotizacion").val(),
                 Observacion: $("#ObservacionAnular").val(),
 
                 editar: 0
+                   
             };
 
             $.ajax({
@@ -464,25 +473,39 @@
                                                                                                   .Name("gridCotizaciones")
                                                                                                   .Columns(columns =>
                                                                                                   {
-                                                                                                      columns.Command(command =>
+                                                                                                      if (permisos.HasClaim("Ventas.Cotizaciones.Editar Cotizaciones", "true")
+                                                                                                      || permisos.HasClaim("Ventas.Cotizaciones.Imprimir Cotizaciones", "true")
+                                                                                                      || permisos.HasClaim("Ventas.Cotizaciones.Generar Contrato", "true")
+                                                                                                      || permisos.HasClaim("Ventas.Cotizaciones.Crear Cliente", "true")
+                                                                                                      || permisos.HasClaim("Ventas.Cotizaciones.Aprobar Cotizaciones", "true"))
                                                                                                       {
-                                                                                                          command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCotizacion");
-                                                                                                          command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
-                                                                                                          command.Custom("GenerarContrato").Text(" ").IconClass("fa fa-file-import").Click("GenerarContrato");
-
-                                                                                                          command.Custom("CrearCliente").Text(" ").IconClass("fa fa-address-card").Click("CreateCustomer");
-
-                                                                                                          if (permiso)
+                                                                                                          columns.Command(command =>
                                                                                                           {
-                                                                                                              command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("AprobarCotizacion");
-                                                                                                              
-                                                                                                              command.Custom("Anular").Text(" ").IconClass("fa fa-ban").Click("Anular");
-                                                                                                          }
+                                                                                                              if (permisos.HasClaim("Ventas.Cotizaciones.Editar Cotizaciones", "true"))
+                                                                                                              {
+                                                                                                                  command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCotizacion");
+                                                                                                              }
+                                                                                                              if (permisos.HasClaim("Ventas.Cotizaciones.Imprimir Cotizaciones", "true"))
+                                                                                                              {
+                                                                                                                  command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
+                                                                                                              }
+                                                                                                              if (permisos.HasClaim("Ventas.Cotizaciones.Generar Contrato", "true"))
+                                                                                                              {
+                                                                                                                  command.Custom("GenerarContrato").Text(" ").IconClass("fa fa-file-import").Click("GenerarContrato");
+                                                                                                              }
+                                                                                                              if (permisos.HasClaim("Ventas.Cotizaciones.Crear Cliente", "true"))
+                                                                                                              {
+                                                                                                                  command.Custom("CrearCliente").Text(" ").IconClass("fa fa-address-card").Click("CreateCustomer");
+                                                                                                              }
+                                                                                                              if (permisos.HasClaim("Ventas.Cotizaciones.Aprobar Cotizaciones", "true"))
+                                                                                                              {
+                                                                                                                  command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("AprobarCotizacion");
+                                                                                                                  command.Custom("Anular").Text(" ").IconClass("fa fa-ban").Click("Anular");
+                                                                                                              }
 
-
-                                                                                              //  command.Edit(); command.Destroy();
-                                                                                          }).Width(220).Title("Acciones");
-
+                                                                                                              //  command.Edit(); command.Destroy();
+                                                                                                          }).Width(220).Title("Acciones");
+                                                                                                      }
                                                                                                       columns.Bound(p => p.SalesOrderId).Title("Id").Width(180);
                                                                                                       columns.Bound(p => p.OrderDate).Format("{0:dd/MM/yyyy}").Title("Fecha Cotización").Width(180);
                                                                                                       columns.Bound(p => p.CustomerName).Title("Cliente").Width(150);
@@ -490,15 +513,15 @@
                                                                                                       columns.Bound(p => p.Estado).Title("Estado").Width(170);
                                                                                                       columns.Bound(p => p.BranchName).Title("Sucursal").Width(170);
                                                                                                       columns.Bound(p => p.ProductName).Title("Servicio").Width(170);
-                                                                                          // columns.Bound(p => p.IdEstado).Hidden().Title("Estado").Width(170);
-                                                                                          columns.Bound(p => p.Amount).Format("{0:n2}").Width(300);
-                                                                                                      columns.Bound(p => p.Discount).Format("{0:n2}").Title("Descuentos").Width(180);
-                                                                                                      columns.Bound(p => p.SubTotal).Title("Sub Total").Format("{0:n2}").Width(170);
-                                                                                          //columns.Bound(p => p.BranchId).Title("Branch Id").Width(150);
+                                                                                                      // columns.Bound(p => p.IdEstado).Hidden().Title("Estado").Width(170);
+                                                                                                      columns.Bound(p => p.Amount).Format("{0:n2}").Width(300).HtmlAttributes(new { @style = "text-align:right" });
+                                                                                                      columns.Bound(p => p.Discount).Format("{0:n2}").Title("Descuentos").Width(180).HtmlAttributes(new { @style = "text-align:right" });
+                                                                                                      columns.Bound(p => p.SubTotal).Title("Sub Total").Format("{0:n2}").Width(170).HtmlAttributes(new { @style = "text-align:right" });
+                                                                                                      //columns.Bound(p => p.BranchId).Title("Branch Id").Width(150);
 
-                                                                                          columns.Bound(p => p.Tax).Title("Total Impuesto").Format("{0:n2}").Width(170);
-                                                                                                      columns.Bound(p => p.Freight).Title("Flete").Format("{0:n2}").Width(170);
-                                                                                                      columns.Bound(p => p.Total).Title("Total").Format("{0:n2}").Width(170);
+                                                                                                      columns.Bound(p => p.Tax).Title("Total Impuesto").Format("{0:n2}").Width(170).HtmlAttributes(new { @style = "text-align:right" });
+                                                                                                      columns.Bound(p => p.Freight).Title("Flete").Format("{0:n2}").Width(170).HtmlAttributes(new { @style = "text-align:right" });
+                                                                                                      columns.Bound(p => p.Total).Title("Total").Format("{0:n2}").Width(170).HtmlAttributes(new { @style = "text-align:right" });
                                                                                                   })
                                                                                           .Filterable(f => f.Operators(o => o.ForString(s => s
                                                                                                    .Clear()
@@ -531,13 +554,15 @@
                                                                                            ))
                                                                                       .ToolBar(tools =>
                                                                                       {
-                                                                              // tools.Create();
-                                                                              tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                                                                                                         .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
-
-                                                                                          tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                                                                          tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
+                                                                                          // tools.Create();
+                                                                                          if (permisos.HasClaim("Ventas.Cotizaciones.Agregar Cotizaciones", "true"))
+                                                                                          {
+                                                                                              tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                                                                                         .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
+                                                                                          }
+                                                                                              tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                                                              tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                                                                          
 
                                                                                       })
 
@@ -574,9 +599,9 @@
                                                                                         {
 
                                                                                             events.Error("error_handler");
-                                                                                //events.upda("EditHandler");
+                                                                                            //events.upda("EditHandler");
 
-                                                                            })
+                                                                                        })
                                                                                         .Read(read => read.Action("GetSalesOrder", "SalesOrder"))
                                                                                         .Create(create => create.Action("Insert", "SalesOrder"))
                                                                                         .Update(update => update.Action("Update", "SalesOrder", new { id = "{0}" }))

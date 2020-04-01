@@ -1,4 +1,7 @@
-﻿
+﻿@using System.Security.Claims
+@{ 
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
 <script>
     function AddCotizacion() {
        // $('#myModalSalesOrder').find(':input').not(':submit').val('');
@@ -98,78 +101,79 @@
 </script>
 
 @(Html.Kendo().Grid<ERPMVC.Models.SalesOrder>()
-                                  .Name("gridCotizaciones")
-                                  .Columns(columns =>
-                                  {
-                                      columns.Command(command =>
+                                      .Name("gridCotizaciones")
+                                      .Columns(columns =>
                                       {
-                              // command.Custom("Editar").Click("EditCotizacion");
-                              command.Custom("Imprimir").Click("ImprimirCotizacion").Text(" ").IconClass("fa fa-print");
-                              //  command.Edit(); command.Destroy();
-                          }).Width(150).Title("Acciones");
+                                          if (permisos.HasClaim("Clientes.Datos de Clientes.Imprimir Cotizacion", "true"))
+                                          {
+                                              columns.Command(command =>
+                                              {
+                                                  // command.Custom("Editar").Click("EditCotizacion");
+                                                  command.Custom("Imprimir").Click("ImprimirCotizacion").Text(" ").IconClass("fa fa-print");
+                                                  //  command.Edit(); command.Destroy();
+                                              }).Width(150).Title("Acciones");
+                                          }
+                                          columns.Bound(p => p.SalesOrderId).Title("Id").Width(150);
+                                          columns.Bound(p => p.OrderDate).Format("{0:dd/MM/yyyy}").Title("Fecha Cotizacion").Width(200);
+                                          columns.Bound(p => p.CustomerName).Title("Cliente").Width(150);
+                                          columns.Bound(p => p.CustomerRefNumber).Title("Codigo referencia").Width(200);
+                                          columns.Bound(p => p.Discount).Title("Descuentos").Width(150);
+                                          //columns.Bound(p => p.BranchId).Title("Branch Id").Width(150);
+                                          columns.Bound(p => p.BranchName).Title("Sucursal").Width(150);
+                                          columns.Bound(p => p.Freight).Title("Flete").Width(150);
+                                          columns.Bound(p => p.SubTotal).Title("Sub Total").Width(150);
+                                          columns.Bound(p => p.Tax).Title("Total Impuesto").Width(150);
+                                          columns.Bound(p => p.Total).Title("Total").Width(150);
+                                      })
+                                      .ToolBar(tools =>
+                                      {
+                                          //tools.Create();
+                                          //  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                          //             .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
+                                              tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
+                                              tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+                                          
 
-                                      columns.Bound(p => p.SalesOrderId).Title("Id").Width(150);
-                                      columns.Bound(p => p.OrderDate).Format("{0:dd/MM/yyyy}").Title("Fecha Cotizacion").Width(200);
-                                      columns.Bound(p => p.CustomerName).Title("Cliente").Width(150);
-                                      columns.Bound(p => p.CustomerRefNumber).Title("Codigo referencia").Width(200);
-                                      columns.Bound(p => p.Discount).Title("Descuentos").Width(150);
-                          //columns.Bound(p => p.BranchId).Title("Branch Id").Width(150);
-                          columns.Bound(p => p.BranchName).Title("Sucursal").Width(150);
-                                      columns.Bound(p => p.Freight).Title("Flete").Width(150);
-                                      columns.Bound(p => p.SubTotal).Title("Sub Total").Width(150);
-                                      columns.Bound(p => p.Tax).Title("Total Impuesto").Width(150);
-                                      columns.Bound(p => p.Total).Title("Total").Width(150);
-                                  })
-                                  .ToolBar(tools =>
-                                  {
-                          //tools.Create();
-                          //  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                          //             .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
+                                      })
+                                       .Editable(e => e.Mode(GridEditMode.PopUp))
+                                        .Sortable()
+                                        .AutoBind(true)
+                                        .Pageable()
+                                        .Filterable()
+                                        .Scrollable()
+                                        // .ClientDetailTemplateId("template")
+                                        .Pdf(pdf => pdf.FileName("CotizacionReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                          .Excel(excel => excel.FileName("CotizacionReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                        //.Events(e=>e.Save("onsave"))
+                                        .DataSource(dataSource =>
 
-                          tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
-                                      tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
-
-
-                                  })
-                                   .Editable(e => e.Mode(GridEditMode.PopUp))
-                                    .Sortable()
-                                    .AutoBind(true)
-                                    .Pageable()
-                                    .Filterable()
-                                    .Scrollable()
-                                    // .ClientDetailTemplateId("template")
-                                    .Pdf(pdf => pdf.FileName("CotizacionReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                      .Excel(excel => excel.FileName("CotizacionReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                    //.Events(e=>e.Save("onsave"))
-                                    .DataSource(dataSource =>
-
-                                   dataSource
-                                   //.Ajax()
-                                   .WebApi()
-                                    .ServerOperation(true)
-                                    .Model(model =>
-                                    {
-                                        model.Id(p => p.SalesOrderId);
-                                        model.Field(p => p.SalesOrderId).Editable(true);
-                                        model.Field(p => p.SalesOrderId).Editable(true);
+                                       dataSource
+                                       //.Ajax()
+                                       .WebApi()
+                                        .ServerOperation(true)
+                                        .Model(model =>
+                                        {
+                                            model.Id(p => p.SalesOrderId);
+                                            model.Field(p => p.SalesOrderId).Editable(true);
+                                            model.Field(p => p.SalesOrderId).Editable(true);
 
 
-                                    })
-                                    .Events(events =>
-                                    {
-                                        events.Error("error_handler");
-                            //events.upda("EditHandler");
+                                        })
+                                        .Events(events =>
+                                        {
+                                            events.Error("error_handler");
+                                            //events.upda("EditHandler");
 
-                        })
-                                    .Read(read => read.Action("GetSalesOrderByCustomerId", "SalesOrder").Data("GetCustomerId"))
-                                    .Create(create => create.Action("Insert", "SalesOrder"))
-                                    .Update(update => update.Action("Update", "SalesOrder", new { id = "{0}" }))
-                                    .Destroy(destroy => destroy.Action("Delete", "SalesOrder", new { id = "{0}" }))
-                              )
+                                        })
+                                        .Read(read => read.Action("GetSalesOrderByCustomerId", "SalesOrder").Data("GetCustomerId"))
+                                        .Create(create => create.Action("Insert", "SalesOrder"))
+                                        .Update(update => update.Action("Update", "SalesOrder", new { id = "{0}" }))
+                                        .Destroy(destroy => destroy.Action("Delete", "SalesOrder", new { id = "{0}" }))
+                                  )
 )
 
 <div id="salesorder">
@@ -191,7 +195,7 @@
 
 <script>
 
-    
+
 
     function setRowButtonTooltip(btn_cl, btn_tooltip) {
         $("#gridCotizaciones").kendoTooltip({

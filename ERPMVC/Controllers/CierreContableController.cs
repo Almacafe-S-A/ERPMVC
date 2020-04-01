@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -24,13 +25,15 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public CierreContableController(ILogger<CierreContableController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public CierreContableController(ILogger<CierreContableController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
-
+        [Authorize(Policy = "Contabilidad.Procesos.Cierre Contable Manual")]
         public async Task<IActionResult> CierreContable()
         {
             BitacoraCierreContable ultimocierre = await GetUltimoCierre();
@@ -43,7 +46,7 @@ namespace ERPMVC.Controllers
             {
                 NuevoCierre.FechaCierre = DateTime.Now;
             }
-            
+            ViewData["permisos"] = _principal;
             return View(NuevoCierre);
         }
 

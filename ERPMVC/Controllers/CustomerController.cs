@@ -17,6 +17,7 @@ using System.Net.Http.Headers;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.Extensions.Logging;
 using ERPMVC.DTO;
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -28,17 +29,20 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-
-        public CustomerController(ILogger<CustomerController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public CustomerController(ILogger<CustomerController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
 
         // GET: Customer
+        [Authorize(Policy = "Clientes.Datos de Clientes")]
         public async Task<ActionResult> Index()
         {
+            ViewData["permisos"] = _principal;
             ViewData["CustomerType"] = await CustomerTypeList();
 
             return await Task.Run(() => View());
@@ -49,22 +53,26 @@ namespace ERPMVC.Controllers
 
         public async Task<ActionResult> SalesOrderCustomer()
         {
+            ViewData["permisos"] = _principal;
             return await Task.Run(() => PartialView());
         }
 
         public ActionResult CustomerProduct()
         {
+            ViewData["permisos"] = _principal;
             return PartialView();
         }
 
 
         public async Task<ActionResult> CertificadoDepositoCustomer()
         {
+            ViewData["permisos"] = _principal;
             return await Task.Run(() => PartialView());
         }
 
         public async Task<ActionResult> ProformaInvoiceCustomer()
         {
+            ViewData["permisos"] = _principal;
             return await Task.Run(() => PartialView());
         }
 
@@ -185,6 +193,7 @@ namespace ERPMVC.Controllers
                     _customers = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
 
                 }
+                ViewData["permisos"] = _principal;
             }
             catch (Exception ex)
             {

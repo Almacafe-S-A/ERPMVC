@@ -25,6 +25,7 @@ using Kendo.Mvc.UI;
 
 namespace ERPMVC.Controllers
 {
+    //[Authorize(Policy = "Seguridad.Usuarios")]
     public class AccountController : Controller
     {
         private readonly ILogger _logger;
@@ -48,6 +49,13 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+
+        public IActionResult Forbidden()
+        {
+            return View();
+        }
+
+
         public async Task<ActionResult> ChangePassword()
         {
             return await Task.Run(() => View());
@@ -64,7 +72,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 var resultLogin = await _client.PostAsJsonAsync(baseadress + "api/cuenta/login", new UserInfo { Email = model.Email, Password = model.Password });
-                
+
                 if (resultLogin.IsSuccessStatusCode)
                 {
                     string webtoken = await (resultLogin.Content.ReadAsStringAsync());
@@ -79,6 +87,20 @@ namespace ERPMVC.Controllers
                             HttpContext.Session.SetString("token", _userToken.Token);
                             HttpContext.Session.SetString("user", model.Email);
                             HttpContext.Session.SetString("Expiration", _userToken.Expiration.ToString());
+                            HttpClient cliente = new HttpClient();
+                            var resultadoCierre = await cliente.GetAsync(baseadress + "api/CierreContable/UltimoCierre");
+                            string ultimoCierre = await resultadoCierre.Content.ReadAsStringAsync();
+                            BitacoraCierreContable cierre = JsonConvert.DeserializeObject<BitacoraCierreContable>(ultimoCierre);
+                            if (cierre != null)
+                            {
+                                DateTime fechaactual = DateTime.Now;
+                                fechaactual = fechaactual.AddDays(-1);
+                                Utils.Cerrado = cierre.FechaCierre.Date >= fechaactual.Date;
+                            }
+                            else
+                            {
+                                Utils.Cerrado = true;
+                            }
                             return RedirectToAction("ChangePassword", "Account");
                         }
                     }
@@ -140,6 +162,7 @@ namespace ERPMVC.Controllers
                     {
                         _message.Add(new MessageClassUtil { key = "Login", name = "error", mensaje = "Error en login" });
                         model.Failed = true;
+                        model.LoginError = "Error en login: " + resultLogin.Content.ReadAsStringAsync().GetAwaiter().GetResult();
                         return View(model);
                     }
 
@@ -148,6 +171,7 @@ namespace ERPMVC.Controllers
                 {
                     _message.Add(new MessageClassUtil { key = "Login", name = "error", mensaje = "Error en login" });
                     model.Failed = true;
+                    model.LoginError = "Error en login: " + resultLogin.Content.ReadAsStringAsync().GetAwaiter().GetResult();
                     return View(model);
                 }
 
@@ -157,6 +181,7 @@ namespace ERPMVC.Controllers
             {
                 Console.WriteLine(ex);
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                model.LoginError = "Ocurrio un error: " + ex.Message.ToString();
                 model.Failed = true;
                 return View(model);
                 // throw ex;

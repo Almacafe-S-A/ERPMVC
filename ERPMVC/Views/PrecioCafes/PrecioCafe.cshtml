@@ -1,0 +1,276 @@
+﻿@model ERPMVC.Models.PrecioCafe
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Precio Café";
+    var cuentas = ViewData["Tasacambio"] as IEnumerable<ERPMVC.Models.ExchangeRate>;
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+
+
+
+}
+
+<script>
+
+
+
+    $(window).load(function () {
+
+
+
+
+            $.ajax({
+                          url: '@Url.Action("Tasadecambio", "PrecioCafes")',
+                          method: 'GET',
+                          datatype: "json",
+                          contentType: 'application/json',
+                          async: false,
+
+                success: function (result) {
+
+                    if (result == 0) {
+
+
+                        $('a.k-grid-add').hide();
+
+
+
+
+
+                                  $.toast({
+                                      heading: 'error',
+                                      text: 'Debe agregar una tasa de cambio actuaizada!',
+                                      position: 'top-right',
+                                      loaderBg: '#ff6849',
+                                      icon: 'error',
+                                      showHideTransition: 'slide',
+                                      hideAfter: 6000,
+                                      stack: 6
+                                  });
+
+                              }
+                      },
+                  //    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                  //    notification.show({
+                  //    title: "Validación",
+                  //    message: textStatus + ": " + XMLHttpRequest.responseText
+                  //   }, "error");
+                  //}
+               });
+
+
+
+
+
+
+    });
+
+
+
+</script>
+
+
+
+
+@(Html.Kendo().Grid<ERPMVC.Models.PrecioCafe>
+                    ()
+                    .Name("gridPrecioCafe")
+                    .Columns(columns =>
+                    {
+
+                        if (permisos.HasClaim("Administracion.PrecioCafe.Editar Precio Cafe", "true")
+                   || permisos.HasClaim("Administracion.PrecioCafe.Eliminar Precio Cafe", "true"))
+                        {
+                            columns.Command(command =>
+                            {
+                                //command.Custom("Ver detalles").Click("Detalles");
+                                if(permisos.HasClaim("Administracion.PrecioCafe.Editar Precio Cafe", "true")) {
+                                    command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText(" ").CancelText(" ");
+                                }
+
+                                if(permisos.HasClaim("Administracion.PrecioCafe.Eliminar Precio Cafe", "true"))
+                                {
+                                    command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                                }
+                            }).Title("Acciones").Width(120);
+                        }
+
+                        columns.Bound(p => p.Id).Width(130).Visible(false);
+                        columns.Bound(p => p.Fecha).Width(200).EditorTemplateName("DayApplicationSalary");
+                        columns.Bound(p => p.PrecioBolsaUSD).Width(240).EditorTemplateName("Presupuesto");
+                        columns.Bound(p => p.DiferencialesUSD).Width(240).EditorTemplateName("Presupuesto");
+                        columns.Bound(p => p.TotalUSD).Width(200).EditorTemplateName("Presupuesto");
+                        columns.ForeignKey(p => p.ExchangeRateId, (System.Collections.IEnumerable)ViewData["Tasacambio"], "ExchangeRateId", "ExchangeRateValueCompra").Title("Tasa de cambio").Width(170);
+                        columns.Bound(p => p.BrutoLPSIngreso).Width(200);
+                        columns.Bound(p => p.PorcentajeIngreso).Width(200).EditorTemplateName("Presupuesto");
+                        columns.Bound(p => p.NetoLPSIngreso).Width(200).EditorTemplateName("Presupuesto");
+                        columns.Bound(p => p.BrutoLPSConsumoInterno).Width(200).EditorTemplateName("Presupuesto");
+                        columns.Bound(p => p.PorcentajeConsumoInterno).Width(200).EditorTemplateName("Presupuesto");
+                        columns.Bound(p => p.NetoLPSConsumoInterno).Width(200).EditorTemplateName("Presupuesto");
+                        columns.Bound(p => p.TotalLPSIngreso).Width(200).EditorTemplateName("Presupuesto");
+                        columns.Bound(p => p.BeneficiadoUSD).Width(200).EditorTemplateName("Presupuesto");
+                        columns.Bound(p => p.FideicomisoUSD).Width(200).EditorTemplateName("Presupuesto");
+                        columns.Bound(p => p.UtilidadUSD).Width(200).EditorTemplateName("Presupuesto");
+                        columns.Bound(p => p.PermisoExportacionUSD).Width(200).EditorTemplateName("Presupuesto");
+                        columns.Bound(p => p.TotalUSDEgreso).Width(200).EditorTemplateName("Presupuesto");
+                        columns.Bound(p => p.TotalLPSEgreso).Width(200).EditorTemplateName("Presupuesto");
+                        columns.Bound(p => p.PrecioQQOro).Width(200).EditorTemplateName("Presupuesto");
+                        columns.Bound(p => p.PercioQQPergamino).Width(200).EditorTemplateName("Presupuesto");
+
+
+
+                    })
+                        .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                       .Clear()
+                                                       .Contains("Contiene")
+                                                       .DoesNotContain("No contiene")
+                                                       .EndsWith("Termina con")
+                                                       .IsEqualTo("Es igual a")
+                                                       .IsNotEqualTo("No es igual a")
+                                                       .IsNull("Es nulo")
+                                                       .StartsWith("Inicia con")
+
+
+                                                 )
+                                                 .ForNumber(n => n
+                                                   .Clear()
+                                                   .IsEqualTo("Es igual a")
+                                                   .IsGreaterThan("Es mayor que")
+                                                   .IsLessThan("Es menor que")
+                                                   .IsNull("Es nulo")
+                                                   .IsLessThanOrEqualTo("Es menor o igual que")
+                                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                 )
+                                                 .ForDate(d => d
+                                                 .Clear()
+                                                 .IsEqualTo("Es igual que")
+                                                 .IsGreaterThan("Es mayor que")
+                                                 .IsLessThan("Es menor que")
+                                                 .IsLessThanOrEqualTo("Es menor o igual que")
+                                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                 .IsNotEqualTo("No es igual que")
+                                                  )
+                                               ))
+                    .ToolBar(tools =>
+                    {
+                        // tools.Create();
+
+                        if (permisos.HasClaim("Administracion.PrecioCafe.Agregar Precio Cafe", "true"))
+                        {
+                            tools.Create().Text("Agregar").IconClass("k-icon k-i-plus")
+                            .HtmlAttributes(new { @class = "k-i-plus-sm" });
+                        }
+                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+                    })
+                    .Editable(e => e.Mode(GridEditMode.InLine).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                     .Events(e => e.Save("onsave"))
+                    .Sortable()
+                    .Pageable()
+                    .Filterable()
+                    .Scrollable()
+                    .Pdf(pdf => pdf.FileName("Estados_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                        .Excel(excel => excel.FileName("Estados_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                    .DataSource(dataSource =>
+                        dataSource
+                        .WebApi()
+
+                        .ServerOperation(true)
+                        .Model(model =>
+                        {
+                            model.Id(p => p.Id);
+                            model.Field(p => p.Id).Editable(false);
+                            model.Field(p => p.Fecha).Editable(true);
+                            model.Field(p => p.PrecioBolsaUSD).Editable(true);
+                            model.Field(p => p.DiferencialesUSD).Editable(true);
+                            model.Field(p => p.TotalUSD).Editable(false);
+                            model.Field(p => p.ExchangeRateId).Editable(true);
+                            model.Field(p => p.BrutoLPSIngreso).Editable(false);
+                            model.Field(p => p.PorcentajeIngreso).Editable(true);
+                            model.Field(p => p.NetoLPSIngreso).Editable(false);
+                            model.Field(p => p.BrutoLPSConsumoInterno).Editable(true);
+                            model.Field(p => p.PorcentajeConsumoInterno).Editable(true);
+                            model.Field(p => p.NetoLPSConsumoInterno).Editable(false);
+                            model.Field(p => p.TotalLPSIngreso).Editable(false);
+                            model.Field(p => p.BeneficiadoUSD).Editable(true);
+                            model.Field(p => p.FideicomisoUSD).Editable(true);
+                            model.Field(p => p.UtilidadUSD).Editable(true);
+                            model.Field(p => p.PermisoExportacionUSD).Editable(true);
+                            model.Field(p => p.TotalUSDEgreso).Editable(false);
+                            model.Field(p => p.TotalLPSEgreso).Editable(false);
+                            model.Field(p => p.PrecioQQOro).Editable(false);
+                            model.Field(p => p.PercioQQPergamino).Editable(false);
+                            model.Field(p => p.FechaCreacion).Editable(false);
+                            model.Field(p => p.UsuarioCreacion).Editable(false);
+                            model.Field(p => p.UsuarioModificacion).Editable(false);
+                            model.Field(p => p.FechaModificacion).Editable(false);
+
+                        })
+                        .Events(events => events.Error("error_handler"))
+                        .Read(read => read.Action("Get", "PrecioCafes"))
+                        .Create(create => create.Action("savepreciocafes", "PrecioCafes").Type(HttpVerbs.Post))
+                        .Update(update => update.Action("Update", "PrecioCafes", new { Id = "{0}" }).Type(HttpVerbs.Post))
+                        .Destroy(destroy => destroy.Action("Delete", "PrecioCafes", new { Id = "{0}" }).Type(HttpVerbs.Post))
+
+                    )
+                    .Events(e =>
+                    {
+                        //e.Save("onsave");
+
+                    })
+)
+
+<script>
+
+    function onsave(e) {
+     
+        location.reload();
+    }
+
+    function error_handler(e) {
+        if (e.xhr.responseText == "Por favor seleccione la tasa de cambio.") {
+
+            $.toast({
+                heading: 'Error',
+                text: '<br/>Por favor seleccione la tasa de cambio!.<br/>',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+
+            });
+
+
+        }
+
+
+    }
+
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridPrecioCafe").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridPrecioCafe").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-toolbar a.k-grid-add", "Agregar Nuevo Registro");
+    setRowButtonTooltip(".k-grid-edit", "Editar Registro");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar Registro");
+    setRowButtonTooltip(".k-grid-update", "Guardar");
+    setRowButtonTooltip(".k-grid-cancel", "Cancelar");
+
+</script>

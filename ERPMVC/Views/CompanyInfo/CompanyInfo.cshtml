@@ -2,6 +2,10 @@
 
 @{
     ViewData["Title"] = "Información de la empresa";
+    bool permisoAgregar, permisoEditar, permisoEliminar, permisoExportar;
+    permisoAgregar = (bool)ViewData["permisoAgregar"];
+    permisoEditar = (bool)ViewData["permisoEditar"];
+    permisoEliminar = (bool)ViewData["permisoEliminar"];
 }
 
 <script>
@@ -110,13 +114,21 @@
                     .Name("gridCompanyInfo")
                     .Columns(columns =>
                     {
-
-                        columns.Command(command =>
+                        if (permisoEditar == true || permisoEliminar == true)
                         {
-                            //command.Custom("Ver detalles").Click("Detalles");
-                            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCompanyInfo");
-                            command.Destroy().IconClass("fa fa-trash-alt").Text(" ");
-                        }).Title("Acciones").Width(200);
+                            columns.Command(command =>
+                            {
+                                //command.Custom("Ver detalles").Click("Detalles");
+                                if (permisoEditar)
+                                {
+                                    command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCompanyInfo");
+                                }
+                                if (permisoEliminar)
+                                {
+                                    command.Destroy().IconClass("fa fa-trash-alt").Text(" ");
+                                }
+                            }).Title("Acciones").Width(200);
+                        }
                         columns.Bound(p => p.CompanyInfoId).Title("Id Empresa").Width(150);
                         columns.Bound(p => p.Company_Name).Width(300);
                         columns.Bound(p => p.Address).Width(300);
@@ -126,9 +138,8 @@
                         columns.Bound(p => p.Tax_Id).Width(250);
                         columns.Bound(p => p.image).Width(200);
                         columns.Bound(p => p.CountryName).Title("País").Width(200);
-                        columns.Bound(p => p.Address).Width(300);
-                        columns.Bound(p => p.Manager).Title("Director General").Width(200);
-                        columns.Bound(p => p.RTNMANAGER).Title("RTN Director General").Width(250);
+                        columns.Bound(p => p.Manager).Title("Gerente General").Width(200);
+                        columns.Bound(p => p.RTNMANAGER).Title("RTN Gerente General").Width(250);
                         columns.Bound(p => p.PostalCode).Width(200);
                         //columns.Bound(p => p.PrintHeader).Width(300);                       
                         //columns.Bound(p => p.RevOffice).Width(200);
@@ -167,10 +178,14 @@
                     .ToolBar(tools =>
                     {
                         // tools.Create();
-                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                           .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCompanyInfo()" });
-                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                        if (permisoAgregar)
+                        {
+                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                       .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCompanyInfo()" });
+                        }
+                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
                     })
                     .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
                     .Sortable()

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -26,22 +27,24 @@ namespace ERPMVC.Controllers
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
         private IHostingEnvironment _hostingEnvironment;
+        private readonly ClaimsPrincipal _principal;
         public InsurancePolicyController(IHostingEnvironment hostingEnvironment
-            , ILogger<InsurancePolicyController> logger, IOptions<MyConfig> config)
+            , ILogger<InsurancePolicyController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
             _hostingEnvironment = hostingEnvironment;
-
+            _principal = httpContextAccessor.HttpContext.User;
         }
         public IActionResult Index()
         {
             return View();
         }
 
-
+        [Authorize(Policy = "Contabilidad.Seguros.Polizas")]
         public IActionResult InsurancePolicy()
         {
+            ViewData["permisos"] = _principal;
             return View();
         }
 
@@ -119,6 +122,42 @@ namespace ERPMVC.Controllers
             return _InsurancePolicy.ToDataSourceResult(request);
 
         }
+
+
+        [HttpGet("[controller]/[action]")]
+        public async Task<DataSourceResult> GetInsuracesPoliciesByInsuranceId([DataSourceRequest]DataSourceRequest request,int InsuranceId)
+        {
+            List<InsurancePolicy> _InsurancePolicy = new List<InsurancePolicy>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/InsurancePolicy/GetInsurancePolicyByInsuranceId/"+InsuranceId);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _InsurancePolicy = JsonConvert.DeserializeObject<List<InsurancePolicy>>(valorrespuesta);
+                    _InsurancePolicy = _InsurancePolicy.OrderByDescending(q => q.InsurancePolicyId).ToList();
+
+
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _InsurancePolicy.ToDataSourceResult(request);
+
+        }
+
 
 
         /*[HttpGet("[action]")]

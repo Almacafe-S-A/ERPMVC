@@ -166,16 +166,16 @@
 
         }
 
-        if  ($("#TypeContractId").data("kendoDropDownList").text() === "Seguro") {
-            $("#Valor").data("kendoNumericTextBox").enable(true);
+        //if  ($("#TypeContractId").data("kendoDropDownList").text() === "Seguro") {
+        //    $("#Valor").data("kendoNumericTextBox").enable(true);
            
-        }
+        //}
 
-        else {
-            $("#Valor").data("kendoNumericTextBox").enable(false);
-            $("#Valor").removeAttr("required");
-            $("#Valor").text("");
-        }
+        //else {
+        //    $("#Valor").data("kendoNumericTextBox").enable(false);
+        //    $("#Valor").removeAttr("required");
+        //    $("#Valor").text("");
+        //}
 
         if ($("#TypeContractId").data("kendoDropDownList").text() === "Comisión Arancelaria") {
             $("#Porcentaje").data("kendoNumericTextBox").enable(true);
@@ -374,6 +374,7 @@
                                                                         for="SubProductId"
                                                                         datatextfield="ProductName"
                                                                         datavaluefield="SubproductId"
+                                                                        onchange="CampoValor();"
                                                                         auto-bind="false"
                                                                         on-select="setsubproductname"
                                                                         data-val-required="El Subservicio es requerido."
@@ -385,7 +386,42 @@
                                                         </datasource>
 
                                                     </kendo-dropdownlist>
+
+                                                    
+
                                                     <span asp-validation-for="SubProductId" class="text-danger"></span>
+
+                                                    <script>
+
+                                                        var Seguro = false;
+
+                                                        function CampoValor() {
+                                                            debugger;
+
+                                                            var SubProductIdvalor = $("#SubProductId").data("kendoDropDownList").text()
+                                                            var continue_button = document.getElementById('Valor');                                                          
+                                                            var labeldevalor = document.getElementById('vallabel')
+
+                                                            if (SubProductIdvalor == "Seguro" || SubProductIdvalor == "SEGURO" || SubProductIdvalor == "Seguro") {
+                                                                continue_button.style.visibility = 'visible';
+                                                                Seguro = true;
+                                                                document.getElementById("vallabel").style.visibility = "visible";
+
+                                                            }
+                                                            else {
+                                                                continue_button.style.visibility = 'hidden';
+                                                                Seguro = false;
+                                                                
+                                                                document.getElementById("vallabel").style.visibility = "hidden";
+                                                            }
+
+                                                            
+
+                                                        }
+
+
+                                                    </script>
+
                                                 </div>
                                             </div>
 
@@ -424,20 +460,110 @@
                                                     <span asp-validation-for="UnitOfMeasureId" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                            <div class="col-md-4">
+                                            <div class="col-md-2">
+
                                                 <div class="form-group">
+
                                                     <label asp-for="Quantity" class="control-label" style="width:100%"></label>
+
                                                     <kendo-numerictextbox name="Quantity"
                                                                           format="n2"
                                                                           min="0"
+                                                                          onchange="Calcular();"
                                                                           step="1"
                                                                           data-val-required="La Cantidad es requerida."
-                                                                          onchange="CalcularTotal();"
-                                                                          style="width:48%"
+                                                                          style="width:100%"
                                                                           value="Model.Quantity" />
+
+
+
+                                                    <script>
+
+
+
+                                                        function Calcular() {
+                                                            //var SubProductIdvalor = $("#SubProductId").data("kendoDropDownList").text()
+                                                            //var tipocontratos = $("#TypeContractId").data("kendoDropDownList").text()
+
+                                                            if (Seguro == true && comisiónarancelaria == false) {
+                                                                var resultado = ($("#Quantity").val() * $("#Valor").val()) / 1000;
+                                                                var numeric = $("#Price").data("kendoNumericTextBox");
+                                                                numeric.value(resultado);
+                                                            }
+
+
+                                                            if (Seguro == false && comisiónarancelaria == true) {
+                                                                var resultado = ($("#Quantity").val() * $("#Porcentaje").val()) / 100;
+                                                                var numeric = $("#Price").data("kendoNumericTextBox");
+                                                                numeric.value(resultado);
+                                                            }
+
+                                                            if (Seguro == true && comisiónarancelaria == true) {
+                                                                var resultado = ($("#Quantity").val() * $("#Valor").val()) / 1000;
+                                                                var totales = resultado / 100
+                                                                var numeric = $("#Price").data("kendoNumericTextBox");
+                                                                numeric.value(totales);
+                                                            }
+
+                                                            if (Seguro == false && comisiónarancelaria == false) {
+
+                                                            }
+
+
+
+                                                            //if (tipocontratos == "comisión arancelaria" || tipocontratos == " COMISIÓN ARANCELARIO" || tipocontratos == "Comisión Arancelaria") {
+
+                                                            //}
+
+                                                            //if (SubProductIdvalor == "Seguro" || SubProductIdvalor == "SEGURO" || SubProductIdvalor == "Seguro") {
+
+
+                                                            //    alert(resultado)
+                                                            //}
+                                                            //else {
+
+                                                            //}
+
+
+
+                                                        }
+
+
+                                                    </script>
                                                     <span asp-validation-for="Quantity" class="text-danger"></span>
+
+
+
+
                                                 </div>
                                             </div>
+
+
+                                            
+                                            <div class="col-md-2" >
+                                                <div class="form-group">
+                                                    <label asp-for="Valor" class="control-label" style="width:100%; visibility: hidden;"  id="vallabel"></label>
+                                                    <input type="number" id="Valor" min="0" style="visibility: hidden; width:100%" class="form-control" onchange="Calcular();" />
+
+                                                </div>
+                                            </div>
+
+
+                                            <div class="col-md-4" id="porciento">
+                                                <div class="form-group">
+                                                    <label asp-for="Porcentaje" class="control-label" style="width:100%"></label>
+                                                    <kendo-numerictextbox decimals="3" name="Porcentaje"
+                                                                          format="n3"
+                                                                          onchange="Calcular();"
+                                                                          min="0"
+                                                                          step="1"
+                                                                          style="width:48%" />
+                                                    <span asp-validation-for="Porcentaje" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+
+
 
 
                                             <div class="col-md-4">
@@ -455,49 +581,19 @@
                                                 </div>
                                             </div>
 
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label asp-for="Porcentaje" class="control-label" style="width:100%"></label>
-                                                    <kendo-numerictextbox decimals="3" name="Porcentaje"
-                                                                          format="n3"
-                                                                          min="0"
-                                                                          step="1"
-                                                                          style="width:48%" />
-                                                    <span asp-validation-for="Porcentaje" class="text-danger"></span>
-                                                </div>
-                                            </div>
 
+                                            @*<div class="col-md-4">
+            <div class="form-group">
+                <label asp-for="Valor" class="control-label" style="width:100%"></label>
+                <kendo-numerictextbox decimals="3" name="Valor"
+                                      format="n3"
+                                      min="0"
+                                      step="1"
+                                      style="width:48%" />
+                <span asp-validation-for="Valor" class="text-danger"></span>
+            </div>
+        </div>*@
 
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label asp-for="Valor" class="control-label" style="width:100%"></label>
-                                                    <kendo-numerictextbox decimals="3" name="Valor"
-                                                                          format="n3"
-                                                                          min="0"
-                                                                          step="1"
-                                                                          style="width:48%" />
-                                                    <span asp-validation-for="Valor" class="text-danger"></span>
-                                                </div>
-                                            </div>
-
-                                            <div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label asp-for="TaxPercentage" class="control-label" style="width:100%"></label>
-                                                    <kendo-numerictextbox name="TaxPercentage"
-                                                                          format="#.## '%'"
-                                                                          min="0"
-                                                                          decimals="2"
-                                                                          required
-                                                                          disabled enable="false" tabindex="-1"
-                                                                          max="100"
-                                                                          maxlength="3"
-                                                                          step="0.01"
-                                                                          onchange="CalcularTotal();"
-                                                                          style="width:48%"
-                                                                          value="Model.TaxPercentage" />
-                                                    <span asp-validation-for="TaxPercentage" class="text-danger"></span>
-                                                </div>
-                                            </div>
 
                                         </div>
 
@@ -516,7 +612,7 @@
                                                                           disabled enable="false" tabindex="-1"
                                                                           step="1"
                                                                           style="width:100%"
-                                                                          value="Model.Amount"/>
+                                                                          value="Model.Amount" />
 
                                                     <span asp-validation-for="Amount" class="text-danger"></span>
                                                 </div>
@@ -532,10 +628,11 @@
                                                                           maxlength="3" data-val-required="El Porcentaje de Descuento es requerido."
                                                                           onchange="CalcularTotal();"
                                                                           style="width:48%"
-                                                                          value="Model.DiscountPercentage"/>
+                                                                          value="Model.DiscountPercentage" />
                                                     <span asp-validation-for="DiscountPercentage" class="text-danger"></span>
                                                 </div>
                                             </div>
+
 
 
                                             <div class="col-md-4">
@@ -549,7 +646,7 @@
                                                                           readonly
                                                                           disabled enable="false" tabindex="-1"
                                                                           style="width:48%"
-                                                                          value="Model.DiscountAmount"/>
+                                                                          value="Model.DiscountAmount" />
                                                     <span asp-validation-for="DiscountAmount" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -571,7 +668,7 @@
                                                                           required
                                                                           disabled enable="false" tabindex="-1"
                                                                           style="width:48%"
-                                                                          value="Model.SubTotal"/>
+                                                                          value="Model.SubTotal" />
                                                     <span asp-validation-for="SubTotal" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -596,8 +693,26 @@
                                                     <span asp-validation-for="TaxId" class="text-danger"></span>
                                                 </div>
                                             </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="TaxPercentage" class="control-label" style="width:100%"></label>
+                                                    <kendo-numerictextbox name="TaxPercentage"
+                                                                          format="#.## '%'"
+                                                                          min="0"
+                                                                          decimals="2"
+                                                                          required
+                                                                          disabled enable="false" tabindex="-1"
+                                                                          max="100"
+                                                                          maxlength="3"
+                                                                          step="0.01"
+                                                                          onchange="CalcularTotal();"
+                                                                          style="width:48%"
+                                                                          value="Model.TaxPercentage" />
+                                                    <span asp-validation-for="TaxPercentage" class="text-danger"></span>
+                                                </div>
+                                            </div>
 
-                                           
+
                                         </div>
 
                                         <div class="row">

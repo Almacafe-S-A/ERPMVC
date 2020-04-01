@@ -1,4 +1,7 @@
-﻿
+﻿@using System.Security.Claims
+@{
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
 <script>
 
     function ClearSession() {
@@ -21,7 +24,7 @@
 
     function AddCotizacion() {
        // $('#myModalSalesOrder').find(':input').not(':submit').val('');
-         //$('#myModalSalesOrder').modal('show');      
+         //$('#myModalSalesOrder').modal('show');
         ClearSession();
          var dataObject = {
             SalesOrderId: 0,
@@ -84,7 +87,7 @@
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         var url = '@Url.Action("SFProformaInvoice", "ProformaInvoice")/' + dataItem.ProformaId;
         var win = window.open(url, '_blank');
-        win.focus();         
+        win.focus();
     }
 
     function GenerarFactura(e) {
@@ -130,110 +133,128 @@
 <h3 class="text-themecolor">Facturas proforma</h3>
 
 @(Html.Kendo().Grid<ERPMVC.Models.ProformaInvoice>()
-                          .Name("gridCotizaciones")
-                          .Columns(columns =>
-                          {
-                              columns.Command(command =>
+                              .Name("gridCotizaciones")
+                              .Columns(columns =>
                               {
-                                  command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditProforma");
-                                  command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirProforma");
-                                  command.Custom("GenerarFactura").Text(" ").IconClass("fa fa-file-import").Click("GenerarFactura");                                               
-                                  //  command.Edit(); command.Destroy();
-                              }).Title("Acciones").Width(250);
-                              columns.Bound(p => p.ProformaId).Title("Id").Width(150);
-                              columns.Bound(p => p.OrderDate).Format("{0:dd/MM/yyyy}").Title("Fecha proforma").Width(210);
-                              columns.Bound(p => p.CustomerName).Title("Cliente").Width(250);
-                              columns.Bound(p => p.CustomerRefNumber).Title("Código referencia").Width(250);
-                              columns.Bound(p => p.Discount).Format("{0:n2}").Title("Descuentos").Width(200);
-                              //columns.Bound(p => p.BranchId).Title("Branch Id").Width(150);
-                              columns.Bound(p => p.BranchName).Title("Sucursal").Width(250);
-                              columns.Bound(p => p.Freight).Title("Flete").Format("{0:n2}").Width(200);
-                              columns.Bound(p => p.SubTotal).Title("Sub Total").Format("{0:n2}").Width(200);
-                              columns.Bound(p => p.Tax).Title("Total Impuesto").Format("{0:n2}").Width(250);
-                              columns.Bound(p => p.Total).Title("Total").Format("{0:n2}").Width(150);
-                          })
-                              .Filterable(f => f.Operators(o => o.ForString(s => s
+                                  if (permisos.HasClaim("Ventas.Factura Proforma.Editar Factura Proforma", "true")
+                                  || permisos.HasClaim("Ventas.Factura Proforma.Imprimir Factura Proforma", "true")
+                                  || permisos.HasClaim("Ventas.Factura Proforma.Generar Factura Fiscal", "true"))
+                                  {
+                                      columns.Command(command =>
+                                      {
+                                          if (permisos.HasClaim("Ventas.Factura Proforma.Editar Factura Proforma", "true"))
+                                          {
+                                              command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditProforma");
+                                          }
+                                          if (permisos.HasClaim("Ventas.Factura Proforma.Imprimir Factura Proforma", "true"))
+                                          {
+                                              command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirProforma");
+                                          }
+                                          if (permisos.HasClaim("Ventas.Factura Proforma.Generar Factura Fiscal", "true"))
+                                          {
+                                              command.Custom("GenerarFactura").Text(" ").IconClass("fa fa-file-import").Click("GenerarFactura");
+                                          }
+                                          //  command.Edit(); command.Destroy();
+                                      }).Title("Acciones").Width(250);
+                                  }
+                                  columns.Bound(p => p.ProformaId).Title("Id").Width(150);
+                                  columns.Bound(p => p.OrderDate).Format("{0:dd/MM/yyyy}").Title("Fecha proforma").Width(210);
+                                  columns.Bound(p => p.CustomerName).Title("Cliente").Width(250);
+                                  columns.Bound(p => p.CustomerRefNumber).Title("Código referencia").Width(250);
+                                  columns.Bound(p => p.Discount).Format("{0:n2}").Title("Descuentos").Width(200);
+                                  //columns.Bound(p => p.BranchId).Title("Branch Id").Width(150);
+                                  columns.Bound(p => p.BranchName).Title("Sucursal").Width(250);
+                                  columns.Bound(p => p.Freight).Title("Flete").Format("{0:n2}").Width(200);
+                                  columns.Bound(p => p.SubTotal).Title("Sub Total").Format("{0:n2}").Width(200);
+                                  columns.Bound(p => p.Tax).Title("Total Impuesto").Format("{0:n2}").Width(250);
+                                  columns.Bound(p => p.Total).Title("Total").Format("{0:n2}").Width(150);
+                              })
+                                  .Filterable(f => f.Operators(o => o.ForString(s => s
+                                           .Clear()
+                                           .Contains("Contiene")
+                                           .DoesNotContain("No contiene")
+                                           .EndsWith("Termina con")
+                                           .IsEqualTo("Es igual a")
+                                           .IsNotEqualTo("No es igual a")
+                                           .IsNull("Es nulo")
+                                           .StartsWith("Inicia con")
+
+
+                                     )
+                                     .ForNumber(n => n
                                        .Clear()
-                                       .Contains("Contiene")
-                                       .DoesNotContain("No contiene")
-                                       .EndsWith("Termina con")
                                        .IsEqualTo("Es igual a")
-                                       .IsNotEqualTo("No es igual a")
+                                       .IsGreaterThan("Es mayor que")
+                                       .IsLessThan("Es menor que")
                                        .IsNull("Es nulo")
-                                       .StartsWith("Inicia con")
+                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                     )
+                                     .ForDate(d => d
+                                     .Clear()
+                                     .IsEqualTo("Es igual que")
+                                     .IsGreaterThan("Es mayor que")
+                                     .IsLessThan("Es menor que")
+                                     .IsLessThanOrEqualTo("Es menor o igual que")
+                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                     .IsNotEqualTo("No es igual que")
+                                      )
+                                   ))
+                              .ToolBar(tools =>
+                              {
+                                  // tools.Create();
+                                  if (permisos.HasClaim("Ventas.Factura Proforma.Agregar Factura Proforma", "true"))
+                                  {
+                                      tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                 .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
+                                  }
+                                      tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                      tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                  
+                              })
+                               .Editable(e => e.Mode(GridEditMode.PopUp))
+                                .Sortable()
+                                .AutoBind(true)
+                                .Pageable()
+                                .Filterable()
+                                .Scrollable()
+                                // .ClientDetailTemplateId("template")
+                                .Pdf(pdf => pdf.FileName("FacturaProformaReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                  .Excel(excel => excel.FileName("FacturaProformaReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                //.Events(e=>e.Save("onsave"))
+                                .DataSource(dataSource =>
+
+                               dataSource
+                               //.Ajax()
+                               .WebApi()
+                                .ServerOperation(true)
+                                .Model(model =>
+                                {
+                                    model.Id(p => p.ProductId);
+                                    model.Field(p => p.ProductId).Editable(true);
+                                    model.Field(p => p.ProductId).Editable(true);
 
 
-                                 )
-                                 .ForNumber(n => n
-                                   .Clear()
-                                   .IsEqualTo("Es igual a")
-                                   .IsGreaterThan("Es mayor que")
-                                   .IsLessThan("Es menor que")
-                                   .IsNull("Es nulo")
-                                   .IsLessThanOrEqualTo("Es menor o igual que")
-                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                 )
-                                 .ForDate(d => d
-                                 .Clear()
-                                 .IsEqualTo("Es igual que")
-                                 .IsGreaterThan("Es mayor que")
-                                 .IsLessThan("Es menor que")
-                                 .IsLessThanOrEqualTo("Es menor o igual que")
-                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                 .IsNotEqualTo("No es igual que")
-                                  )
-                               ))
-                          .ToolBar(tools =>
-                          {
-                              // tools.Create();
-                              tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                             .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
-                              tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                              tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-                          })
-                           .Editable(e => e.Mode(GridEditMode.PopUp))
-                            .Sortable()
-                            .AutoBind(true)
-                            .Pageable()
-                            .Filterable()
-                            .Scrollable()
-                            // .ClientDetailTemplateId("template")
-                            .Pdf(pdf => pdf.FileName("FacturaProformaReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                              .Excel(excel => excel.FileName("FacturaProformaReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                            //.Events(e=>e.Save("onsave"))
-                            .DataSource(dataSource =>
+                                })
+                                .Events(events =>
+                                {
+                                    events.Error("error_handler");
+                                    //events.upda("EditHandler");
 
-                           dataSource
-                           //.Ajax()
-                           .WebApi()
-                            .ServerOperation(true)
-                            .Model(model =>
-                            {
-                                model.Id(p => p.ProductId);
-                                model.Field(p => p.ProductId).Editable(true);
-                                model.Field(p => p.ProductId).Editable(true);
-
-
-                            })
-                            .Events(events =>
-                            {
-                                events.Error("error_handler");
-                                //events.upda("EditHandler");
-
-                            })
-                            .Read(read => read.Action("GetProformaInvoice", "ProformaInvoice") )
-                            .Create(create => create.Action("Insert", "ProformaInvoice"))
-                            .Update(update => update.Action("Update", "ProformaInvoice", new { id = "{0}" }))
-                            .Destroy(destroy => destroy.Action("Delete", "ProformaInvoice", new { id = "{0}" }))
-                      )
+                                })
+                                .Read(read => read.Action("GetProformaInvoice", "ProformaInvoice"))
+                                .Create(create => create.Action("Insert", "ProformaInvoice"))
+                                .Update(update => update.Action("Update", "ProformaInvoice", new { id = "{0}" }))
+                                .Destroy(destroy => destroy.Action("Delete", "ProformaInvoice", new { id = "{0}" }))
+                          )
 )
 
 <div id="salesorder">
-    @await Html.PartialAsync("pvwProformaInvoice", new ERPMVC.DTO.ProformaInvoiceDTO { ProformaId = 0, OrderDate = DateTime.Now,  DeliveryDate = DateTime.Now , ExpirationDate =DateTime.Now.AddDays(30) })
+    @await Html.PartialAsync("pvwProformaInvoice", new ERPMVC.DTO.ProformaInvoiceDTO { ProformaId = 0, OrderDate = DateTime.Now, DeliveryDate = DateTime.Now, ExpirationDate = DateTime.Now.AddDays(30) })
 </div>
 
 

@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -24,16 +25,23 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
+        private readonly ClaimsPrincipal _principal;
 
-        public CountryController(ILogger<CountryController> logger, IOptions<MyConfig> config)
+        public CountryController(ILogger<CountryController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         // GET: Customer
+        [Authorize(Policy = "Configuracion.Pais")]
         public ActionResult Country()
         {
+            ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Pais.Agregar Pais", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Configuracion.Pais.Editar Pais", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Configuracion.Pais.Eliminar Pais", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Configuracion.Pais.Exportar Pais", "true");
             return View();
         }
 
@@ -172,7 +180,7 @@ namespace ERPMVC.Controllers
                     //string baseadress = config.Value.urlbase;
                     HttpClient _client2 = new HttpClient();
                     _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var resultado = await _client.GetAsync(baseadress + "api/Country/GetCountryByName/" + _Country.Name);
+                    var resultado = await _client.GetAsync(baseadress + "api/Country/GetCountryByName/" + _Country.Name + "/" + _Country.GAFI);
                     string valorrespuesta2 = "";
                     if (resultado.IsSuccessStatusCode)
                     {
@@ -185,13 +193,13 @@ namespace ERPMVC.Controllers
                     {
 
                         string error = await result.Content.ReadAsStringAsync();
-                        if (_CountryDuplicate.GAFI == true)
+                        if (_CountryDuplicate.GAFI && _Country.GAFI)
                         {
                             return await Task.Run(() => BadRequest($"El nombre del país ya esta registrado... como país GAFI ."));
                         }
-                        else
+                        else if (!_CountryDuplicate.GAFI && !_Country.GAFI)
                         {
-                            return await Task.Run(() => BadRequest($"El nombre del país ya esta registrado... como país no GAFI "));
+                            return await Task.Run(() => BadRequest($"El nombre del país ya esta registrado."));
                         }
 
                     }
@@ -204,7 +212,7 @@ namespace ERPMVC.Controllers
                     //string baseadress = config.Value.urlbase;
                     HttpClient _client2 = new HttpClient();
                     _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var resultado = await _client.GetAsync(baseadress + "api/Country/GetCountryByName/" + _Country.Name);
+                    var resultado = await _client.GetAsync(baseadress + "api/Country/GetCountryByName/" + _Country.Name + "/" + _Country.GAFI);
                     string valorrespuesta2 = "";
 
                     if (resultado.IsSuccessStatusCode)
@@ -220,13 +228,13 @@ namespace ERPMVC.Controllers
                         {
                             string error = await result.Content.ReadAsStringAsync();
 
-                            if (_CountryDuplicated.GAFI == true)
+                            if (_CountryDuplicated.GAFI && _Country.GAFI)
                             {
                                 return await Task.Run(() => BadRequest($"El nombre del país ya esta registrado... como país GAFI ."));
                             }
-                            else
+                            else if (!_CountryDuplicated.GAFI && !_Country.GAFI)
                             {
-                                return await Task.Run(() => BadRequest($"El nombre del país ya esta registrado... como país no GAFI "));
+                                return await Task.Run(() => BadRequest($"El nombre del país ya esta registrado."));
                             }
                         }
 

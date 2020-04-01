@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -23,14 +24,18 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public JournalEntryConfigurationController(ILogger<JournalEntryConfigurationController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public JournalEntryConfigurationController(ILogger<JournalEntryConfigurationController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Contabilidad.Movimientos.Configuracion de Asientos")]
         public IActionResult Index()
         {
+            ViewData["permisos"] = _principal;
             return View();
         }
 
@@ -56,6 +61,7 @@ namespace ERPMVC.Controllers
                 {
                     _JournalEntryConfiguration = new JournalEntryConfigurationDTO();
                 }
+                ViewData["permisos"] = _principal;
             }
             catch (Exception ex)
             {

@@ -1,6 +1,8 @@
 ﻿@model ERPMVC.DTO.CreditNoteDTO
-
-
+@using System.Security.Claims
+@{
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisosCreditNote"];
+}
 
 <script>
 
@@ -232,7 +234,7 @@
                 success: function (data) {
                     $("#SalesOrderLineMant").html('');
                     $("#SalesOrderLineMant").html(data);
-                    
+
                     GetPercentage();
                     //console.log(data)
                     llenarsubproduct();
@@ -323,7 +325,7 @@
             //console.log(hcustom);
             //if(Number($("#IdCD").val()) === 0)
             //{
-            //    
+            //
             //}
             llenarsubproduct();
             $("#AccountId").data("kendoDropDownList").value(dataItem.AccountId);
@@ -409,142 +411,156 @@
     <h3 class="text-themecolor">Detalle de Nota de Crédito</h3>
     <div class="box-body">
         @(Html.Kendo().Grid<ERPMVC.Models.CreditNoteLine>()
-                                                                  .Name("gridCreditNoteDetail")
-                                                                  .Columns(columns =>
-                                                                  {
-                                                                      columns.Command(command =>
-                                                                      {
+                                                                                  .Name("gridCreditNoteDetail")
+                                                                                  .Columns(columns =>
+                                                                                  {
+                                                                                      if (permisos.HasClaim("Ventas.Nota de Credito.Editar Nota de Credito Detalle", "true")
+                                                                                      || permisos.HasClaim("Ventas.Nota de Credito.Eliminar Nota de Credito Detalle", "true"))
+                                                                                      {
+                                                                                          columns.Command(command =>
+                                                                                          {
 
-                                                                          if (Model.CreditNoteId == 0)
-                                                                          {
-                                                                              command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCotizacionDetalle");
-                                                                              command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
-                                                                              //command.Destroy().Text("Eliminar");
-                                                                          }
-                                                                          else
-                                                                          {
-                                                                              command.Custom("Editar").Text(" ").IconClass("far fa-list-alt").Click("EditCotizacionDetalle");
-                                                                          }
+                                                                                              if (Model.CreditNoteId == 0)
+                                                                                              {
+                                                                                                  if (permisos.HasClaim("Ventas.Nota de Credito.Editar Nota de Credito Detalle", "true"))
+                                                                                                  {
+                                                                                                      command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCotizacionDetalle");
+                                                                                                  }
+                                                                                                  if (permisos.HasClaim("Ventas.Nota de Credito.Eliminar Nota de Credito Detalle", "true"))
+                                                                                                  {
+                                                                                                      command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+                                                                                                  }
+                                                                                                  //command.Destroy().Text("Eliminar");
+                                                                                              }
+                                                                                              else
+                                                                                              {
+                                                                                                  if (permisos.HasClaim("Ventas.Nota de Credito.Editar Nota de Credito Detalle", "true"))
+                                                                                                  {
+                                                                                                      command.Custom("Editar").Text(" ").IconClass("far fa-list-alt").Click("EditCotizacionDetalle");
+                                                                                                  }
+                                                                                              }
 
-                                                                          // command.Custom("Imprimir").Click("ImprimirCotizacion");
-                                                                          //  command.Edit(); command.Destroy();
-                                                                      }).Width(150).Title("Acciones");
+                                                                                              // command.Custom("Imprimir").Click("ImprimirCotizacion");
+                                                                                              //  command.Edit(); command.Destroy();
+                                                                                          }).Width(150).Title("Acciones");
+                                                                                      }
+                                                                                      columns.Bound(p => p.CreditNoteLineId).Title("Id Línea").Width(150);
+                                                                                      //columns.Bound(p => p.CreditNoteId).Title("Id Maestro").Width(150);
+                                                                                      columns.Bound(p => p.AccountId).Title("Cuenta").Width(150).Hidden(true);
+                                                                                      columns.Bound(p => p.AccountName).Title("Nombre Cuenta").Width(250);
+                                                                                      columns.Bound(p => p.SubProductId).Title("IdProducto").Width(150).Hidden(true);
+                                                                                      columns.Bound(p => p.SubProductName).Title("SubServicio").Width(150);
+                                                                                      columns.Bound(p => p.Description).Title("Descripción").Width(250);
+                                                                                      //columns.Bound(p => p.UnitOfMeasureId).Title("Unidad de medida").Width(150);
+                                                                                      columns.Bound(p => p.Quantity).Format("{0:n2}").Title("Cantidad").Width(150);
+                                                                                      columns.Bound(p => p.Price).Format("{0:n2}").Title("Precio").Format("{0:n2}").Width(150);
+                                                                                      columns.Bound(p => p.Amount).Format("{0:n2}").Title("Monto").Width(150);
+                                                                                      //  columns.Bound(p => p.TaxPercentage).Title("Porcentaje impuestos").Width(150);
+                                                                                      columns.Bound(p => p.DiscountPercentage).Format("{0:n2}").Title("Porcentaje Descuento").Width(250);
+                                                                                      columns.Bound(p => p.DiscountAmount).Format("{0:n2}").Title("Descuentos").Width(200);
+                                                                                      columns.Bound(p => p.SubTotal).Format("{0:n2}").Title("Sub Total").Width(150);
+                                                                                      columns.Bound(p => p.TaxId).Format("{0:n2}").Title("Impuesto").Width(150);
+                                                                                      columns.Bound(p => p.TaxCode).Title("Tipo Impuesto").Width(200);
+                                                                                      columns.Bound(p => p.TaxPercentage).Format("{0:n2}").Title("Porcentaje Impuesto").Width(250);
+                                                                                      // columns.Bound(p => p.tax).Title("Tipo Impuesto").Width(150);
+                                                                                      columns.Bound(p => p.TaxAmount).Format("{0:n2}").Title("Impuestos").Width(150);
 
-                                                                      columns.Bound(p => p.CreditNoteLineId).Title("Id Línea").Width(150);
-                                                                      //columns.Bound(p => p.CreditNoteId).Title("Id Maestro").Width(150);
-                                                                      columns.Bound(p => p.AccountId).Title("Cuenta").Width(150).Hidden(true);
-                                                                      columns.Bound(p => p.AccountName).Title("Nombre Cuenta").Width(250);
-                                                                      columns.Bound(p => p.SubProductId).Title("IdProducto").Width(150).Hidden(true);
-                                                                      columns.Bound(p => p.SubProductName).Title("SubServicio").Width(150);
-                                                                      columns.Bound(p => p.Description).Title("Descripción").Width(250);
-                                                                      //columns.Bound(p => p.UnitOfMeasureId).Title("Unidad de medida").Width(150);
-                                                                      columns.Bound(p => p.Quantity).Format("{0:n2}").Title("Cantidad").Width(150);
-                                                                      columns.Bound(p => p.Price).Format("{0:n2}").Title("Precio").Format("{0:n2}").Width(150);
-                                                                      columns.Bound(p => p.Amount).Format("{0:n2}").Title("Monto").Width(150);
-                                                                      //  columns.Bound(p => p.TaxPercentage).Title("Porcentaje impuestos").Width(150);
-                                                                      columns.Bound(p => p.DiscountPercentage).Format("{0:n2}").Title("Porcentaje Descuento").Width(250);
-                                                                      columns.Bound(p => p.DiscountAmount).Format("{0:n2}").Title("Descuentos").Width(200);
-                                                                      columns.Bound(p => p.SubTotal).Format("{0:n2}").Title("Sub Total").Width(150);
-                                                                      columns.Bound(p => p.TaxId).Format("{0:n2}").Title("Impuesto").Width(150);
-                                                                      columns.Bound(p => p.TaxCode).Title("Tipo Impuesto").Width(200);
-                                                                      columns.Bound(p => p.TaxPercentage).Format("{0:n2}").Title("Porcentaje Impuesto").Width(250);
-                                                                      // columns.Bound(p => p.tax).Title("Tipo Impuesto").Width(150);
-                                                                      columns.Bound(p => p.TaxAmount).Format("{0:n2}").Title("Impuestos").Width(150);
+                                                                                      columns.Bound(p => p.Total).Format("{0:n2}").Title("Total").Width(150);
 
-                                                                      columns.Bound(p => p.Total).Format("{0:n2}").Title("Total").Width(150);
-
-                                                                  })
-                                                                      .Filterable(f => f.Operators(o => o.ForString(s => s
-                                                               .Clear()
-                                                               .Contains("Contiene")
-                                                               .DoesNotContain("No contiene")
-                                                               .EndsWith("Termina con")
-                                                               .IsEqualTo("Es igual a")
-                                                               .IsNotEqualTo("No es igual a")
-                                                               .IsNull("Es nulo")
-                                                               .StartsWith("Inicia con")
-
-
-                                                         )
-                                                         .ForNumber(n => n
-                                                           .Clear()
-                                                           .IsEqualTo("Es igual a")
-                                                           .IsGreaterThan("Es mayor que")
-                                                           .IsLessThan("Es menor que")
-                                                           .IsNull("Es nulo")
-                                                           .IsLessThanOrEqualTo("Es menor o igual que")
-                                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                         )
-                                                         .ForDate(d => d
-                                                         .Clear()
-                                                         .IsEqualTo("Es igual que")
-                                                         .IsGreaterThan("Es mayor que")
-                                                         .IsLessThan("Es menor que")
-                                                         .IsLessThanOrEqualTo("Es menor o igual que")
-                                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                         .IsNotEqualTo("No es igual que")
-                                                          )
-                                                       ))
-                                                                  .ToolBar(tools =>
-                                                                  {
-                                                                      if (Model.CreditNoteId == 0)
-                                                                      {
-                                                                          tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                                          .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacionDetalle();" });
-                                                                      }
-
-                                                                      tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                                                      tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                                                                  })
+                                                                                      .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                                               .Clear()
+                                                                               .Contains("Contiene")
+                                                                               .DoesNotContain("No contiene")
+                                                                               .EndsWith("Termina con")
+                                                                               .IsEqualTo("Es igual a")
+                                                                               .IsNotEqualTo("No es igual a")
+                                                                               .IsNull("Es nulo")
+                                                                               .StartsWith("Inicia con")
 
 
-                                                                  })
-                                                                   .Editable(e => e.Mode(GridEditMode.PopUp))
-                                                                    .Sortable()
-                                                                    .AutoBind(true)
-                                                                    .Pageable(s => s
-                                                                    .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
-                                                                    .Empty("No hay datos."))
-                                                                    .Enabled(false))
-                                                                    //.Events(e => e.DataBound("CalcularTotalDocumento"))
-                                                                    .Filterable()
-                                                                    .Scrollable()
-                                                                    // .ClientDetailTemplateId("template")
-                                                                    .Pdf(pdf => pdf.FileName("Nota_Crédito_Detalle_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                                                      .Excel(excel => excel.FileName("Nota_Crédito_Detalle_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                                                    //.Events(e=>e.Save("onsave"))
-                                                                    .DataSource(dataSource =>
+                                                                         )
+                                                                         .ForNumber(n => n
+                                                                           .Clear()
+                                                                           .IsEqualTo("Es igual a")
+                                                                           .IsGreaterThan("Es mayor que")
+                                                                           .IsLessThan("Es menor que")
+                                                                           .IsNull("Es nulo")
+                                                                           .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                         )
+                                                                         .ForDate(d => d
+                                                                         .Clear()
+                                                                         .IsEqualTo("Es igual que")
+                                                                         .IsGreaterThan("Es mayor que")
+                                                                         .IsLessThan("Es menor que")
+                                                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                         .IsNotEqualTo("No es igual que")
+                                                                          )
+                                                                       ))
+                                                                                  .ToolBar(tools =>
+                                                                                  {
+                                                                                      if (Model.CreditNoteId == 0)
+                                                                                      {
+                                                                                          if (permisos.HasClaim("Ventas.Nota de Credito.Agregar Nota de Credito Detalle", "true"))
+                                                                                          {
+                                                                                              tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                          .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacionDetalle();" });
+                                                                                          }
+                                                                                      }
+                                                                                          tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                                                          tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                                                                      
 
-                                                                   dataSource
-                                                                   //.Ajax()
-                                                                   .WebApi()
+                                                                                  })
+                                                                                   .Editable(e => e.Mode(GridEditMode.PopUp))
+                                                                                    .Sortable()
+                                                                                    .AutoBind(true)
+                                                                                    .Pageable(s => s
+                                                                                    .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+                                                                                    .Empty("No hay datos."))
+                                                                                    .Enabled(false))
+                                                                                    //.Events(e => e.DataBound("CalcularTotalDocumento"))
+                                                                                    .Filterable()
+                                                                                    .Scrollable()
+                                                                                    // .ClientDetailTemplateId("template")
+                                                                                    .Pdf(pdf => pdf.FileName("Nota_Crédito_Detalle_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                                                                      .Excel(excel => excel.FileName("Nota_Crédito_Detalle_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                                                                    //.Events(e=>e.Save("onsave"))
+                                                                                    .DataSource(dataSource =>
 
-                                                                    .ServerOperation(true)
-                                                                    .Model(model =>
-                                                                    {
-                                                                        model.Id(p => p.CreditNoteLineId);
-                                                                        model.Field(p => p.CreditNoteLineId).Editable(false);
-                                                                        model.Field(p => p.CreditNoteId).Editable(false);
+                                                                                   dataSource
+                                                                                   //.Ajax()
+                                                                                   .WebApi()
 
-                                                                    })
-                                                                    .Sort(s => s.Add(m => m.CreditNoteLineId).Descending())
-                                                                    .Events(events =>
-                                                                    {
-                                                                        events.Error("error_handler");
-                                                                        //events.upda("EditHandler");
+                                                                                    .ServerOperation(true)
+                                                                                    .Model(model =>
+                                                                                    {
+                                                                                        model.Id(p => p.CreditNoteLineId);
+                                                                                        model.Field(p => p.CreditNoteLineId).Editable(false);
+                                                                                        model.Field(p => p.CreditNoteId).Editable(false);
 
-                                                                    })
-                                                                    .Read(read => read.Action("GetCreditNoteLineByCreditNoteId", "CreditNoteLine").Data("GetInvoiceId"))
-                                                              //.Destroy(destroy => destroy.Action("Delete", "CreditNoteLine").Type(HttpVerbs.Post))
-                                                              //.Create(create => create.Action("Insert", "SalesOrderLine"))
-                                                              //.Update(update => update.Action("Update", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
-                                                              //.Destroy(destroy => destroy.Action("Delete", "CreditNoteLine", new { CreditNoteLineId = "{0}" }))
-                                                              //.Destroy(destroy => destroy.Action("Delete", "CreditNoteLine", new { CreditNoteLineId = "{0}" }).Type(HttpVerbs.Delete))
+                                                                                    })
+                                                                                    .Sort(s => s.Add(m => m.CreditNoteLineId).Descending())
+                                                                                    .Events(events =>
+                                                                                    {
+                                                                                        events.Error("error_handler");
+                                                                                        //events.upda("EditHandler");
 
-                                                              )
+                                                                                    })
+                                                                                    .Read(read => read.Action("GetCreditNoteLineByCreditNoteId", "CreditNoteLine").Data("GetInvoiceId"))
+                                                                              //.Destroy(destroy => destroy.Action("Delete", "CreditNoteLine").Type(HttpVerbs.Post))
+                                                                              //.Create(create => create.Action("Insert", "SalesOrderLine"))
+                                                                              //.Update(update => update.Action("Update", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
+                                                                              //.Destroy(destroy => destroy.Action("Delete", "CreditNoteLine", new { CreditNoteLineId = "{0}" }))
+                                                                              //.Destroy(destroy => destroy.Action("Delete", "CreditNoteLine", new { CreditNoteLineId = "{0}" }).Type(HttpVerbs.Delete))
+
+                                                                              )
         )
 
     </div>

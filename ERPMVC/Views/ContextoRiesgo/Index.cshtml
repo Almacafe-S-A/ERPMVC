@@ -1,0 +1,206 @@
+﻿@model ERPMVC.DTO.ContextoRiesgoDTO
+
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Contexto de Riesgo";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
+
+@(Html.Kendo().Grid<ERPMVC.Models.ContextoRiesgo>()
+                                              .Name("gridContextoRiesgo")
+                                              .Columns(columns =>
+                                              {
+                                                  if (permisos.HasClaim("Monitoreo.Contexto de Riesgos.Editar Contexto de Riesgo", "true") ||
+                                                      permisos.HasClaim("Monitoreo.Contexto de Riesgos.Eliminar Contexto de Riesgo", "true"))
+                                                  {
+                                                      columns.Command(command =>
+                                                      {
+                                                          if (permisos.HasClaim("Monitoreo.Contexto de Riesgos.Editar Contexto de Riesgo", "true"))
+                                                          {
+                                                              command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditContextoRiesgo");
+                                                          }
+                                                          if (permisos.HasClaim("Monitoreo.Contexto de Riesgos.Eliminar Contexto de Riesgo", "true"))
+                                                          {
+                                                              command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("DeleteContextoRiesgo");
+                                                          }
+                                                      }).Title("Acciones").Width(50);
+                                                  }
+                                                  columns.Bound(p => p.IdContextoRiesgo).Width(75);
+                                                  columns.Bound(p => p.TipoContexto).Width(120);
+                                                  columns.Bound(p => p.Descripcion).Width(300);
+                                              })
+                                                            .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                                            .Clear()
+                                                                            .Contains("Contiene")
+                                                                            .DoesNotContain("No contiene")
+                                                                            .EndsWith("Termina con")
+                                                                            .IsEqualTo("Es igual a")
+                                                                            .IsNotEqualTo("No es igual a")
+                                                                            .IsNull("Es nulo")
+                                                                            .StartsWith("Inicia con")
+                                                                        )
+                                                                        .ForNumber(n => n
+                                                                        .Clear()
+                                                                        .IsEqualTo("Es igual a")
+                                                                        .IsGreaterThan("Es mayor que")
+                                                                        .IsLessThan("Es menor que")
+                                                                        .IsNull("Es nulo")
+                                                                        .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                        .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                        )
+                                                                        .ForDate(d => d
+                                                                        .Clear()
+                                                                        .IsEqualTo("Es igual que")
+                                                                        .IsGreaterThan("Es mayor que")
+                                                                        .IsLessThan("Es menor que")
+                                                                        .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                        .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                        .IsNotEqualTo("No es igual que")
+                                                                        )
+                                                                    ))
+                                                        .ToolBar(tools =>
+                                                        {
+                                                            if (permisos.HasClaim("Monitoreo.Contexto de Riesgos.Agregar Contexto de Riesgo", "true"))
+                                                            {
+                                                                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @id = "ContextoRiesgo_Add", @class = "k-i-plus-sm", onclick = "AddContextoRiesgo()" });
+                                                            }
+                                                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                                        })
+                                                        .Editable(e => e.Mode(GridEditMode.PopUp))
+                                                        .Sortable()
+                                                        .Pageable(s => s
+                                                            .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+                                                            .Empty("No hay datos."))
+                                                        )
+                                                        .Filterable()
+                                                        .Scrollable()
+                                                        .Pdf(pdf => pdf.FileName("ContextoRiesgoReporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                                            .Excel(excel => excel.FileName("ContextoRiesgoReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                                        .DataSource(dataSource =>
+                                                            dataSource
+                                                            .WebApi()
+                                                            .ServerOperation(true)
+                                                            .Model(model =>
+                                                            {
+                                                                model.Id(p => p.IdContextoRiesgo);
+                                                                model.Field(p => p.IdContextoRiesgo).Editable(false);
+                                                                model.Field(p => p.TipoContexto).Editable(false);
+                                                                model.Field(p => p.Descripcion).Editable(false);
+                                                            })
+                                                            .Sort(s => s.Add(m => m.FechaCreacion).Descending())
+                                                            .Events(events => events.Error("error_handler"))
+                                                            .Read(read => read.Action("GetContextoRiesgo", "ContextoRiesgo"))
+                                                        )
+)
+
+<div id="numContextoRiesgo">
+    @await Html.PartialAsync("pvwAddContextoRiesgo", new ERPMVC.DTO.ContextoRiesgoDTO { IdContextoRiesgo = 0 })
+</div>
+
+<script>
+    $(document).ready(function () {
+
+    });
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridContextoRiesgo").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridContextoRiesgo").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
+
+    function RefrescarGrid() {
+        var grid = $("#gridContextoRiesgo").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+    function AddContextoRiesgo() {
+        var validator = $("#frmContextoRiesgo").data("kendoValidator");
+        validator.hideMessages();
+        $('#ModalContextoRiesgo').find(':input').not(':submit').val('');
+        $('#ModalContextoRiesgo').modal('show');
+        $("#IdContextoRiesgo").val('0');
+    }
+
+    function EditContextoRiesgo(e) {
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        var dataObject = {
+            IdContextoRiesgo: dataItem.IdContextoRiesgo,
+            editar : 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwAddContextoRiesgo", "ContextoRiesgo")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#numContextoRiesgo").html('');
+                $("#numContextoRiesgo").html(result);
+                $('#ModalContextoRiesgo').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $.toast({
+                    heading: 'Error',
+                    text: textStatus + ": " + XMLHttpRequest.responseText,
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 30000,
+                    stack: 6
+                });
+            }
+        });
+    }
+
+    function DeleteContextoRiesgo(e) {
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        var dataObject = {
+            IdContextoRiesgo: dataItem.IdContextoRiesgo,
+            editar : 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("Delete", "ContextoRiesgo")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                RefrescarGrid();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $.toast({
+                    heading: 'Error',
+                    text: textStatus + ": " + XMLHttpRequest.responseText,
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 30000,
+                    stack: 6
+                });
+            }
+        });
+    }
+</script>

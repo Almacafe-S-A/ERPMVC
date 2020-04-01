@@ -1,21 +1,23 @@
 ﻿@model ERPMVC.DTO.VendorInvoiceDTO
+@using System.Security.Claims
 
 @{ Layout = null;
     var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
-                                {"required","Valor requerido" }
-                            };
+                        {"required","Valor requerido" }
+                    };
     var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 
 
 
 
-    
+
 <script>
 
     $(document).ready(function () {
         $("#TefonoAlert").hide();
-        
+
         $("#Tefono").on('paste', function (e) {
             e.preventDefault();
         })
@@ -73,7 +75,7 @@
                         <form id="frmSalesOrder" kendo-validator="true" kendo-messages="messages" kendo-rules="rules"
                               data-ajax="true"
                               data-ajax-method="post"
-                              method="post" class="validation-wizard wizard-circle">
+                              @*method="post"*@ class="validation-wizard wizard-circle">
 
                             <div class="row">
                                 <div class="col-sm-4 col-md-4">
@@ -85,7 +87,7 @@
                                     </div>
 
                                 </div>
-                                
+
 
                                 <div class="col-md-4">
                                     <div class="form-group">
@@ -177,7 +179,7 @@
 
 
                             <div class="row">
-                                
+
                                 <div class="col-sm-4 col-md-4">
                                     <div class="form-group">
                                         <script>
@@ -225,7 +227,7 @@
                                                                 data-val-required="El Proveedor es requerido."
                                                                 datavaluefield="VendorId"
                                                                 class="form-control-line"
-                                                                 enable="false"
+                                                                enable="false"
                                                                 style="width: 100%;color:black;font-weight:600">
                                                 <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
                                                     <transport>
@@ -259,7 +261,7 @@
                                 </div>
                                 <div class="col-md-4">
                                     <div class="form-group">
-                                        <label asp-for="AccountId" class="control-label">Cuenta</label>
+                                        <label asp-for="AccountId" class="control-label">Cuenta crédito</label>
                                         @if (Model.VendorInvoiceId > 0)
                                         {
                                             <kendo-dropdownlist name="AccountId" for="AccountId" filter="Kendo.Mvc.UI.FilterType.Contains"
@@ -298,7 +300,7 @@
                                         <span asp-validation-for="AccountId" class="text-danger"></span>
                                     </div>
                                 </div>
-                                <div class="col-md-4">
+                                @*<div class="col-md-4">
                                     <div class="form-group">
                                         <label asp-for="BranchId" class="control-label"></label>
                                         @if (Model.VendorInvoiceId > 0)
@@ -336,8 +338,8 @@
                                         }
                                         <span asp-validation-for="BranchId" class="text-danger"></span>
                                     </div>
-                                </div>
-                                <div class="col-md-4" hidden>
+                                </div>*@
+                                @*<div class="col-md-4" hidden>
                                     <script>
                                         function GetBranchId() {
                                             return {
@@ -346,7 +348,7 @@
                                         }
                                     </script>
 
-                                </div>
+                                </div>*@
 
                                 <div class="col-md-4">
                                     <script>
@@ -385,11 +387,11 @@
                                         <label asp-for="NumeroDEI" class="control-label"></label>
                                         @if (Model.VendorInvoiceId > 0)
                                         {
-                                            <input type="text" asp-for="NumeroDEI" disabled data-val-required="El Número de Factura es requerido." maxlength="20" onKeyPress="return soloNumeros(event)" class="form-control" style="min-width: 100%;color:black;font-weight:500" />
+                                            <input type="text" asp-for="NumeroDEI" @*disabled data-val-required="El Número de Factura es requerido."*@ maxlength="20" onKeyPress="return soloNumeros(event)" class="form-control" style="min-width: 100%;color:black;font-weight:500" />
                                         }
                                         else
                                         {
-                                            <input type="text" asp-for="NumeroDEI" data-val-required="El Número de Factura es requerido." maxlength="20" onKeyPress="return soloNumeros(event)" class="form-control" style="min-width: 100%" />
+                                            <input type="text" asp-for="NumeroDEI" @*data-val-required="El Número de Factura es requerido."*@ maxlength="20" onKeyPress="return soloNumeros(event)" class="form-control" style="min-width: 100%" />
 
                                         }
                                     </div>
@@ -468,7 +470,7 @@
 
 
                             </div>
-                            <div class="row">
+                            @*<div class="row">
                                 <div class="col-md-4">
                                     <div class="form-group">
                                         <label id="CostCenterLbl">Centro de Costos</label>
@@ -487,7 +489,7 @@
                                         <span id="Span3" class="text-danger"></span>
                                     </div>
                                 </div>
-                            </div>
+                            </div>*@
 
 
 
@@ -497,7 +499,7 @@
                     <div class="card">
                         <div class="card-body">
                             <div id="salesorderdetail">
-                                @await Html.PartialAsync("pvwVendorInvoiceDetail", Model)
+                                @await Html.PartialAsync("pvwVendorInvoiceDetail", Model, new ViewDataDictionary(ViewData) { { "permisosVendorInvoice", permisos } })
                             </div>
 
                             <div id="SalesOrderLineMant">
@@ -752,7 +754,7 @@
                         </div>
                     </div>
                 </div>
-                
+
             </div>
         </div>
     </div>
@@ -786,7 +788,6 @@
     }
 
      function SaveFacturaProveedores(e) {
-        debugger;
         //var notification = $("#notification").data("kendoNotification");
         // e.preventDefault();
         //$("#btnSaveVendorInvoice").hide();
@@ -797,7 +798,7 @@
         for (var i = 0; i < displayedData.length; i++) {
             displayedData[i].VendorInvoiceLineId = 0;
             if (displayedData[i].TaxCode === '' || displayedData[i].TaxCode === null
-                || displayedData[i].Total === 0) {
+                /*|| displayedData[i].Total === 0*/) {
                             $.toast({
                                 heading: 'Error',
                                 text: '<br/><br/>No Ingreso el Impuesto.',
@@ -813,24 +814,26 @@
         }
 
          if (validadetalle) {
-             
+
              var _orderDate = "0001-01-01";
              var _expirationDate = "0001-01-01";
-             
+
              if ($("#OrderDate").getKendoDateTimePicker().value() != null || $("#OrderDate").getKendoDateTimePicker().value() != undefined) {
                  _orderDate = $("#OrderDate").getKendoDateTimePicker().value().toJSON()
              }
              if ($("#ExpirationDate").getKendoDatePicker().value() != null || $("#ExpirationDate").getKendoDatePicker().value() != undefined) {
                  _expirationDate = $("#ExpirationDate").getKendoDatePicker().value().toJSON()
              }
+             var displayedData = $("#gridInvoiceDetail").data().kendoGrid.dataSource.view();
+             console.log(displayedData)
             var dataObject = {
                 'VendorInvoiceId': $("#VendorInvoiceId").val() === "" ? "0" : $("#VendorInvoiceId").val(),
                 'VendorInvoiceName': $("#VendorInvoiceName").val(),
                 //'PurchaseOrderId': $("#PurchaseOrderId").val(),
-                'BranchId': $("#BranchId").val(),
-                'CostCenterId': $("#CostCenterId").val(),
+                //'BranchId': $("#BranchId").val(),
+                //'CostCenterId': $("#CostCenterId").val(),
 
-                'BranchName': $("#BranchId").data("kendoDropDownList").text(),
+                //'BranchName': $("#BranchId").data("kendoDropDownList").text(),
                 'VendorId': $("#VendorId").val(),
                 'VendorName': $("#VendorId").data("kendoDropDownList").text(),
                 'OrderDate': _orderDate,
@@ -873,7 +876,6 @@
 
             if (displayedData.length > 0) {
                 if (validator.validate() && validator2.validate()) {
-                    debugger;
                     $.ajax({
                         url: '@Url.Action("SaveVendorInvoice", "VendorInvoice")',
                         method: 'POST',
@@ -883,7 +885,6 @@
                         async: false,
                         data: JSON.stringify(dataObject),
                         success: function (data) {
-                            debugger;
                             $("#VendorInvoiceId").val(data.VendorInvoiceId);
                             //$("#NumeroDEIString").val(data.NumeroDEIString);
 
@@ -907,10 +908,10 @@
 
                             $("#btnSaveVendorInvoice").show();
                             $("#btnSaveVendorInvoice").prop("disabled", false);
-                            notification.show({
-                                title: "Validación",
-                                message: textStatus + ": " + XMLHttpRequest.responseText
-                            }, "error");
+                            //notification.show({
+                            //    title: "Validación",
+                            //    message: textStatus + ": " + XMLHttpRequest.responseText
+                            //}, "error");
 
                         }
                     });
@@ -941,7 +942,6 @@
     }
 
     function SaveCotizacion(e) {
-        debugger;
         var notification = $("#notification").data("kendoNotification");
         // e.preventDefault();
         //$("#btnSaveVendorInvoice").hide();
@@ -1017,10 +1017,11 @@
 
                                 $("#btnSaveVendorInvoice").show();
                                 $("#btnSaveVendorInvoice").prop("disabled", false);
-                                notification.show({
-                                    title: "Validación",
-                                    message: textStatus + ": " + XMLHttpRequest.responseText
-                                }, "error");
+                                //notification.show({
+                                //    title: "Validación",
+                                //    message: textStatus + ": " + XMLHttpRequest.responseText
+                                //}
+                                //    , "error");
 
                             }
                         });

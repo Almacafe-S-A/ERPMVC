@@ -19,6 +19,10 @@ using Microsoft.Extensions.Logging;
 using ERPMVC.DTO;
 using Microsoft.AspNetCore.Hosting;
 using System.IO;
+using System.Security.Claims;
+using System.Net.Mail;
+using System.Net;
+
 namespace ERPMVC.Controllers
 {
     [Authorize]
@@ -28,15 +32,19 @@ namespace ERPMVC.Controllers
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
         private IHostingEnvironment _hostingEnvironment;
-        public EmployeesController(IHostingEnvironment hostingEnvironment, ILogger<EmployeesController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public EmployeesController(IHostingEnvironment hostingEnvironment, ILogger<EmployeesController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
             _hostingEnvironment = hostingEnvironment;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "RRHH.Empleados")]
         public IActionResult Index()
         {
+            ViewData["permisos"] = _principal;
             return View();
         }
 
@@ -70,6 +78,7 @@ namespace ERPMVC.Controllers
                     _Employees.QtySalary = Convert.ToDecimal(_Employees.Salario);
 
                 }
+                ViewData["permisos"] = _principal;
             }
             catch (Exception ex)
             {
@@ -261,8 +270,8 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _EmployeesDTO.FechaModificacion = DateTime.Now;
-                _EmployeesDTO.Usuariomodificacion = HttpContext.Session.GetString("user");
+                _Employees.FechaModificacion = DateTime.Now;
+                _Employees.Usuariomodificacion = HttpContext.Session.GetString("user");
                 var result = await _client.PutAsJsonAsync(baseadress + "api/Employees/Update", _EmployeesDTO);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -270,6 +279,7 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Employees = JsonConvert.DeserializeObject<EmployeesDTO>(valorrespuesta);
                 }
+               
 
             }
             catch (Exception ex)
@@ -282,6 +292,7 @@ namespace ERPMVC.Controllers
         }
 
 
+        
 
         [HttpPost]
         public async Task<ActionResult<Employees>> Delete([FromBody]Employees _Employeesp)
@@ -337,6 +348,7 @@ namespace ERPMVC.Controllers
                 {
                     _Employees = new EmployeesDTO();
                 }
+                ViewData["permisos"] = _principal;
             }
             catch (Exception ex)
             {

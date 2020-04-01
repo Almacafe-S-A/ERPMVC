@@ -1,7 +1,9 @@
 ﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
 
 @{
     ViewData["Title"] = "Boleta de Salida";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 
 }
 <h3 class="text-themecolor">Boleta de Salida</h3>
@@ -104,113 +106,125 @@
            win.focus();
     }
 
-    
-   
+
+
 
 </script>
 
 
 @(Html.Kendo().Grid<ERPMVC.Models.BoletaDeSalida>()
-                      .Name("gridBoletaDeSalida")
-                      .Columns(columns =>
-                      {
-                          columns.Command(command =>
+                          .Name("gridBoletaDeSalida")
+                          .Columns(columns =>
                           {
-                              command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditBoletaDeSalida");
-                              command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirBoletaDeSalida");
-                              // command.Custom("Ver detalles").Click("Detalles");
-                              // command.Edit(); command.Destroy();
-                          }).Title("Acciones").Width(170);
-                          columns.Bound(p => p.FechaCreacion).Title("Fecha Creación").Format("{0:dd/MM/yyyy HH:mm:ss}").Width(100).Hidden();
-                          columns.Bound(p => p.BoletaDeSalidaId).Width(170);
-                          columns.Bound(p => p.CustomerId).Visible(false).Width(150);
-                          columns.Bound(p => p.CustomerName).Width(150);
-                          columns.Bound(p => p.GoodsDeliveredId).Width(150);
-                          columns.Bound(p => p.BranchName).Width(150);
-                          columns.Bound(p => p.DocumentDate).Format("{0:dd/MM/yyyy}").Width(150);
-                          columns.Bound(p => p.Cargadoname).Width(150);
-                          columns.Bound(p => p.Quantity).Width(150);
-                          columns.Bound(p => p.UnitOfMeasureName).Width(180);
+                              if (permisos.HasClaim("Inventarios.Boleta de Salida.Editar Boleta de Salida", "true")
+                              || permisos.HasClaim("Inventarios.Boleta de Salida.Imprimir Boleta de Salida", "true"))
+                              {
+                                  columns.Command(command =>
+                                  {
+                                      if (permisos.HasClaim("Inventarios.Boleta de Salida.Editar Boleta de Salida", "true"))
+                                      {
+                                          command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditBoletaDeSalida");
+                                      }
+                                      if (permisos.HasClaim("Inventarios.Boleta de Salida.Imprimir Boleta de Salida", "true"))
+                                      {
+                                          command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirBoletaDeSalida");
+                                      }
+                                      // command.Custom("Ver detalles").Click("Detalles");
+                                      // command.Edit(); command.Destroy();
+                                  }).Title("Acciones").Width(170);
+                              }
+                              columns.Bound(p => p.FechaCreacion).Title("Fecha Creación").Format("{0:dd/MM/yyyy HH:mm:ss}").Width(100).Hidden();
+                              columns.Bound(p => p.BoletaDeSalidaId).Width(170);
+                              columns.Bound(p => p.CustomerId).Visible(false).Width(150);
+                              columns.Bound(p => p.CustomerName).Width(150);
+                              columns.Bound(p => p.GoodsDeliveredId).Width(150);
+                              columns.Bound(p => p.BranchName).Width(150);
+                              columns.Bound(p => p.DocumentDate).Format("{0:dd/MM/yyyy}").Width(150);
+                              columns.Bound(p => p.Cargadoname).Width(150);
+                              columns.Bound(p => p.Quantity).Width(150);
+                              columns.Bound(p => p.UnitOfMeasureName).Width(180);
 
 
-                      })
+                          })
 
-                          .Filterable(f => f.Operators(o => o.ForString(s => s
+                              .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                   .Clear()
+                                                   .Contains("Contiene")
+                                                   .DoesNotContain("No contiene")
+                                                   .EndsWith("Termina con")
+                                                   .IsEqualTo("Es igual a")
+                                                   .IsNotEqualTo("No es igual a")
+                                                   .IsNull("Es nulo")
+                                                   .StartsWith("Inicia con")
+
+
+                                             )
+                                             .ForNumber(n => n
                                                .Clear()
-                                               .Contains("Contiene")
-                                               .DoesNotContain("No contiene")
-                                               .EndsWith("Termina con")
                                                .IsEqualTo("Es igual a")
-                                               .IsNotEqualTo("No es igual a")
+                                               .IsGreaterThan("Es mayor que")
+                                               .IsLessThan("Es menor que")
                                                .IsNull("Es nulo")
-                                               .StartsWith("Inicia con")
+                                               .IsLessThanOrEqualTo("Es menor o igual que")
+                                               .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                             )
 
+                                             .ForDate(d => d
+                                             .Clear()
+                                             .IsEqualTo("Es igual que")
+                                             .IsGreaterThan("Es mayor que")
+                                             .IsLessThan("Es menor que")
+                                             .IsLessThanOrEqualTo("Es menor o igual que")
+                                             .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                             .IsNotEqualTo("No es igual que")
+                                              )
+                                           ))
+                          .ToolBar(tools =>
+                          {
+                              //tools.Create();
+                              if (permisos.HasClaim("Inventarios.Boleta de Salida.Agregar Boleta de Salida", "true"))
+                              {
+                                  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddBoletaDeSalida();" });
+                              }
+                                  tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                  tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                              
 
-                                         )
-                                         .ForNumber(n => n
-                                           .Clear()
-                                           .IsEqualTo("Es igual a")
-                                           .IsGreaterThan("Es mayor que")
-                                           .IsLessThan("Es menor que")
-                                           .IsNull("Es nulo")
-                                           .IsLessThanOrEqualTo("Es menor o igual que")
-                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                         )
+                          })
+                          .Editable(e => e.Mode(GridEditMode.PopUp))
+                          .Sortable()
+                          .Pageable(s => s
+                          .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")))
 
-                                         .ForDate(d => d
-                                         .Clear()
-                                         .IsEqualTo("Es igual que")
-                                         .IsGreaterThan("Es mayor que")
-                                         .IsLessThan("Es menor que")
-                                         .IsLessThanOrEqualTo("Es menor o igual que")
-                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                         .IsNotEqualTo("No es igual que")
-                                          )
-                                       ))
-                      .ToolBar(tools =>
-                      {
-                          //tools.Create();
-                          tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddBoletaDeSalida();" });
-
-                          tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                          tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-                      })
-                      .Editable(e => e.Mode(GridEditMode.PopUp))
-                      .Sortable()
-                      .Pageable(s => s
-                      .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")))
-
-                      .Filterable()
-                      .Scrollable()
-                      .Pdf(pdf => pdf.FileName("BoletaDeSalidaReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                       + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                       .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                         .Excel(excel => excel.FileName("BoletaDeSalidaReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                       + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                       .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                      .DataSource(dataSource =>
-                          dataSource
-                            .WebApi()
-                            .ServerOperation(true)
-                            .Model(model =>
+                          .Filterable()
+                          .Scrollable()
+                          .Pdf(pdf => pdf.FileName("BoletaDeSalidaReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                           .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                             .Excel(excel => excel.FileName("BoletaDeSalidaReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                           .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                          .DataSource(dataSource =>
+                              dataSource
+                                .WebApi()
+                                .ServerOperation(true)
+                                .Model(model =>
+                                {
+                                    model.Id(p => p.CustomerId);
+                                    model.Field(p => p.CustomerId).Editable(false);
+                                })
+                                .Events(events => events.Error("error_handler"))
+                                .Read(read => read.Action("Get", "BoletaDeSalida"))
+                                .Create(create => create.Action("Post", "BoletaDeSalida"))
+                                .Update(update => update.Action("Put", "BoletaDeSalida", new { id = "{0}" }))
+                                .Destroy(destroy => destroy.Action("Delete", "BoletaDeSalida", new { id = "{0}" }))
+                                .Sort(s => s.Add(m => m.FechaCreacion).Descending())
+                          )
+                            .Events(e =>
                             {
-                                model.Id(p => p.CustomerId);
-                                model.Field(p => p.CustomerId).Editable(false);
+                                //e.Save("onsave");
                             })
-                            .Events(events => events.Error("error_handler"))
-                            .Read(read => read.Action("Get", "BoletaDeSalida"))
-                            .Create(create => create.Action("Post", "BoletaDeSalida"))
-                            .Update(update => update.Action("Put", "BoletaDeSalida", new { id = "{0}" }))
-                            .Destroy(destroy => destroy.Action("Delete", "BoletaDeSalida", new { id = "{0}" }))
-                            .Sort(s => s.Add(m => m.FechaCreacion).Descending())
-                      )
-                        .Events(e =>
-                        {
-                            //e.Save("onsave");
-                        })
 )
 
 <div id="salesorder">

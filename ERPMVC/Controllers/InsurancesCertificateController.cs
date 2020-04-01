@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -25,10 +26,12 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public InsurancesCertificateController( ILogger<InsurancesCertificateController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public InsurancesCertificateController( ILogger<InsurancesCertificateController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         public IActionResult Index()
@@ -41,10 +44,11 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        [Authorize(Policy = "")]
         public async Task<IActionResult> InsurancesCertificate()
         {
             ViewData["Insurances"] = await ObtenerInsurances();
-
+            ViewData["permisos"] = _principal;
             return View();
         }
 
@@ -74,7 +78,7 @@ namespace ERPMVC.Controllers
                     _InsurancesCertificate.EndDateofInsurance = DateTime.Now.AddMonths(1);
 
                 }
-
+                ViewData["permisos"] = _principal;
             }
             catch (Exception ex)
             {

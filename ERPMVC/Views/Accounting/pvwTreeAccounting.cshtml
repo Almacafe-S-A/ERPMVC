@@ -1,4 +1,5 @@
-﻿@{ 
+﻿@using System.Security.Claims
+@{
     ViewData["Title"] = "Catalogo Contable";
     Layout = null;
     var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
@@ -7,6 +8,7 @@
 
     var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
     var typesAccount = ViewData["TypeAccounts"] as IEnumerable<ERPMVC.Models.TypeAccount>;
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 
 
@@ -16,12 +18,14 @@
 
        function EditAccount(e) {
           //   e.preventDefault();
-           var dataItem = e;//this.dataItem($(e.currentTarget).closest("tr"));           
+           var dataItem = e;//this.dataItem($(e.currentTarget).closest("tr"));
              var dataObject = {
                  AccountId: dataItem.AccountId,
+                 ParentAccountId: dataItem.ParentAccountId,
+
                 editar : 0
            };
-        
+
 
             $.ajax({
                 url: '@Url.Action("pvwAddAccounting", "Accounting")',
@@ -36,7 +40,7 @@
 
                     console.log(dataItem.ParentAccountId);
                     if (dataItem.ParentAccountId == null) {
-                        banderadepadre = 1;
+                        banderadepadre = 0;
                     }
                     else {
                         banderadepadre = 1;
@@ -71,17 +75,31 @@
     }
     function RefreshTreeList() {
        // kendo.ui.progress($("#divClasificacionCuentas"), true);
-
-        // TypeAccountId = TypeAccountIdv;
-
+        // TypeAccountId = TypeAccountIdv; 
+        localStorage["toExpand"] = JSON.stringify($.map($("#AccountingTreelist .k-i-collapse").closest("tr"), function (val, idx) { return $(val).index() }));
         var treelist = $("#AccountingTreelist").data("kendoTreeList");
         treelist.dataSource.read();
 
+       
+
+    }
+
+    function onDataBound() {
+            var items = localStorage["toExpand"];
+            if (items) {
+                items = JSON.parse(items);
+                var tl = $("#AccountingTreelist").data("kendoTreeList");
+                $.each(items, function (idx, val) {
+                    var tr = tl.content.find("tr").eq(val);
+                    tl.expand(tr);
+                })
+        }
+        localStorage["toExpand"] = {};
     }
     function DataTypeAccounting() {
         debugger;
         var bandera = true;
-        
+
         //if ($("#IdEstadoAccounting").data("kendoDropDownList").select() == -1
         console.log($("#IdEstadoAccounting").data("kendoDropDownList").text());
         if ($("#IdEstadoAccounting").data("kendoDropDownList").text() === "Todos")
@@ -98,8 +116,8 @@
         if (firstload == 0) {
             bandera = true;
         }
-      
-      
+
+
         firstload++;
        // console.log('TypeAccountId' + TypeAccountId);
         //console.log('bandera' + bandera);
@@ -120,7 +138,7 @@
            var win = window.open(url, '_blank');
            win.focus();
     }
-    function ImprimirAuxiliarMovimientoPorDia(e) {       
+    function ImprimirAuxiliarMovimientoPorDia(e) {
         e.preventDefault();
        // console.log(e);
            var dataItem = $(e.currentTarget).closest("tr");
@@ -130,16 +148,20 @@
     }
 </script>
 
-        @(Html.Kendo().TreeList<ERPMVC.DTO.AccountingDTO>()
+@(Html.Kendo().TreeList<ERPMVC.DTO.AccountingDTO>()
                                                         .Name("AccountingTreelist")
                                                         .Toolbar(toolbar =>
                                                         {
-                                                            toolbar.Custom().Text("Agregar Cuenta").Name("AddAccounting").Click("AddAccounting");
+                                                            if (permisos.HasClaim("Contabilidad.Cuentas.Catalogo de Cuentas.Agregar Cuentas", "true"))
+                                                            {
+                                                                toolbar.Custom().Text("Agregar Cuenta").Name("AddAccounting").Click("AddAccounting");
+                                                            }
                                                             //toolbar.Custom().Text("Editar Cuenta").Name("EditAccount").Click("EditAccount");
                                                             //toolbar.Custom().Text("Agregar Padre").Name("AddFatherAccounting").Click("AddFatherAccounting");
 
                                                             toolbar.Custom().Text("Generar Reporte").Name("ReportAccounts").Click("ImprimirAuxiliarMovimientoPorDia");
                                                             // toolbar.Custom().Text("Cuentas Activas").Name("Activas");
+
                                                         }
                                                              )  .Columns(columns =>
                                                              {
@@ -164,8 +186,8 @@
 
                                                              })
                                             .Filterable()
-                                             .Sortable()
-                                             //.Pageable()
+                                             .Sortable( )
+                                            //.Pageable()
                                             //      .Filterable(true)
 
 
@@ -200,42 +222,49 @@
                                                 m.Expanded(false);
 
 
-                                            })
+                                            }).Sort(s => s.Add(m => m.AccountName).Ascending())
 
-                                        ).Height(540)
-    //.Pageable(p => p.PageSize(15)
-      //              .PageSizes(true)
-    //)
+                                        ).Events(events =>
+                                        {
+                                            //events.Edit("onEdit");
+                                            //events.Save("onSave");
+                                            //events.Remove("onRemove");
+                                            //events.DataBinding("onDataBinding");
+                                            events.DataBound("onDataBound");
+                                        }).Height(540)
+                                        //.Pageable(p => p.PageSize(15)
+                                        //              .PageSizes(true)
+                                        //)
                                         .Selectable(true)
-        // .HtmlAttributes(new { dblclick = " "})
-        /*.Events(events =>
-        {
-            events.Edit("onEdit");
-        })*/
+// .HtmlAttributes(new { dblclick = " "})
+/*.Events(events =>
+{
+    events.Edit("onEdit");
+})*/
 
-        )
+)
 
-        @*<div id="div" class="modal-header">
-            <button id="btnAccounting" class="btn waves-effect waves-light btn-lg btn-rounded btn-primary" type="button" onclick="AddAccounting()">Agregar Cuenta </button>
+@*<div id="div" class="modal-header">
+        <button id="btnAccounting" class="btn waves-effect waves-light btn-lg btn-rounded btn-primary" type="button" onclick="AddAccounting()">Agregar Cuenta </button>
 
-        </div>*@
+    </div>*@
 
 
-        <style>
+<style>
 
-            #div {
-                background-color: #0094ff;
-                width: 100%;
+    #div {
+        background-color: #0094ff;
+        width: 100%;
         height: 50px;
-                line-height: 50px;
-                position: absolute;
-                top: 0;
-                left: 0;
-            }
-        </style>
+        line-height: 50px;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+</style>
 
 
-    <script type="text/javascript">
+<script type="text/javascript">
     var padre;
 
 
@@ -295,7 +324,7 @@
             $("#AccountingTreelist").data("kendoTreeList").clearSelection();
 
 
-          
+
         });
 
     });
@@ -326,7 +355,7 @@
                     alert(textStatus + ": " + XMLHttpRequest.responseText);
                 }
             });
-           
+
     }
 
     function AddAccounting() {
@@ -406,7 +435,7 @@
 
         }
         else {
-            
+
 
             $.toast({
                 heading: 'Informacion',
@@ -422,4 +451,4 @@
         }
 
     }
-    </script>
+</script>

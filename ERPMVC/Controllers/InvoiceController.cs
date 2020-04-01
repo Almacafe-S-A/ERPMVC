@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -23,14 +24,18 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public InvoiceController(ILogger<InvoiceController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public InvoiceController(ILogger<InvoiceController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Ventas.Factura")]
         public IActionResult Index()
         {
+            ViewData["permisos"] = _principal;
             return View();
         }
 
@@ -67,7 +72,7 @@ namespace ERPMVC.Controllers
                 {
                     _Invoice.NumeroDEIString = $"{_Invoice.Sucursal}-{_Invoice.Caja}-01-{_Invoice.NumeroDEI.ToString().PadLeft(8, '0')} ";
                 }
-
+                ViewData["permisos"] = _principal;
 
             }
             catch (Exception ex)
@@ -211,6 +216,11 @@ namespace ERPMVC.Controllers
                         _Invoice.FechaCreacion = DateTime.Now;
                         _Invoice.UsuarioCreacion = HttpContext.Session.GetString("user");
                         var insertresult = await Insert(_Invoice);
+                        if ((insertresult.Result as ObjectResult).Value.ToString() == "Ocurrio un error: Error en la Configuración de Asiento Contable Automatico.")
+                        {
+                            return await Task.Run(() => BadRequest("Ocurrio un error: Error en la Configuración de Asiento Contable Automatico."));
+                        }
+
                         var value = (insertresult.Result as ObjectResult).Value;
 
                         InvoiceDTO resultado = ((InvoiceDTO)(value));
@@ -267,8 +277,8 @@ namespace ERPMVC.Controllers
                 else
                 {
                     string d =  await (result.Content.ReadAsStringAsync());
-                    throw  new Exception(d);
-                    //return await Task.Run(() => BadRequest($"Ocurrio un error: {d}"));
+                    //throw  new Exception(d);
+                    return await Task.Run(() => BadRequest($"{d}"));
                 }
 
             }
@@ -367,6 +377,7 @@ namespace ERPMVC.Controllers
 
         public async Task<ActionResult> InvoiceCustomer()
         {
+            ViewData["permisos"] = _principal;
             return await Task.Run(() => PartialView());
         }
 

@@ -1,7 +1,8 @@
 ﻿@using Kendo.Mvc.UI
-
+@using System.Security.Claims
 @{
     ViewData["Title"] = "Horas Extras Empleado por Cliente";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 
 }
 
@@ -51,7 +52,7 @@
     function AddEmployees() {
         debugger;
         ClearSession();
-       
+
         var dataObject = {
             EmployeeExtraHoursId: 0,
             editar: 0
@@ -123,20 +124,23 @@
 
 <h3 class="text-themecolor">Horas Extras Empleado por Cliente</h3>
 
-        @(Html.Kendo().Grid<ERPMVC.Models.EmployeeExtraHours>
+@(Html.Kendo().Grid<ERPMVC.Models.EmployeeExtraHours>
                       ()
                     .Name("gridEmployees")
 
                         .Columns(columns =>
                         {
-                            columns.Command(command =>
+                            if (permisos.HasClaim("Clientes.Horas Extra.Editar Horas Extra", "true"))
                             {
-                                //command.Custom("Ver detalles").Click("Detalles");
-                                //command.Destroy();
-                                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditEmployeeExtraHours");
-                                // command.Destroy().Text(" ").IconClass("fa fa-trash");
+                                columns.Command(command =>
+                                {
+                                    //command.Custom("Ver detalles").Click("Detalles");
+                                    //command.Destroy();
+                                    command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditEmployeeExtraHours");
+                                    // command.Destroy().Text(" ").IconClass("fa fa-trash");
 
-                            }).Width(140).Title("Acciones");
+                                }).Width(140).Title("Acciones");
+                            }
                             columns.Bound(p => p.EmployeeExtraHoursId).Width(150);
                             columns.Bound(p => p.EmployeeId).Width(130);
                             columns.Bound(p => p.EmployeeName).Width(170);
@@ -150,11 +154,14 @@
                         {
 
                             //tools.Create();
-                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddEmployees()" });
-                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
+                            if (permisos.HasClaim("Clientes.Horas Extra.Agregar Horas Extra", "true"))
+                            {
+                                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddEmployees()" });
+                            }
+                                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                            
                         })
                         .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
                         .Sortable()
@@ -191,7 +198,7 @@
                             e.Save("onsave");
 
                         })
-                    )
+)
 <script>
     function setToolbarTooltip(btn_cl, btn_tooltip) {
         $("#gridEmployees").kendoTooltip({
@@ -216,6 +223,6 @@
     setRowButtonTooltip(".k-grid-Editar", "Editar registro");
 </script>
 <div id="numEmployees">
-    @await Html.PartialAsync("pvwAddEmployeeExtraHours", new ERPMVC.DTO.EmployeeExtraHoursDTO { EmployeeExtraHoursId = 0 , WorkDate=DateTime.Now })
+    @await Html.PartialAsync("pvwAddEmployeeExtraHours", new ERPMVC.DTO.EmployeeExtraHoursDTO { EmployeeExtraHoursId = 0, WorkDate = DateTime.Now })
 </div>
 

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
 using ERPMVC.Helpers;
@@ -26,16 +27,19 @@ namespace ERPMVC.Controllers
         private readonly IOptions<MyConfig> _config;
         private readonly IMapper mapper;
         private readonly ILogger _logger;
+        private readonly ClaimsPrincipal _principal;
 
-        public CustomerProductController(ILogger<CustomerProductController> logger, IOptions<MyConfig> config, IMapper mapper)
+        public CustomerProductController(ILogger<CustomerProductController> logger, IOptions<MyConfig> config, IMapper mapper, IHttpContextAccessor httpContextAccessor)
         {
             this._config = config;
             this.mapper = mapper;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         public IActionResult Index()
         {
+            ViewData["permisos"] = _principal;
             return PartialView();
         }
 

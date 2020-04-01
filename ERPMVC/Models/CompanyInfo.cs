@@ -64,6 +64,10 @@ namespace ERPMVC.Models
         public Int64? IdEstado { get; set; }
         [Display(Name = "Estado")]
         public string Estado { get; set; }
+        [Display(Name = "Redes Sociales")]
+        public string SocialNetworks { get; set; }
+        [Display(Name = "Página Web")]
+        public string WebPage { get; set; }
 
         [Display(Name = "Fecha de Creación")]
         public DateTime FechaCreacion { get; set; }

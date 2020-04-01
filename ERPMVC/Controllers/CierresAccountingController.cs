@@ -389,7 +389,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpGet("[action]")]
+        [HttpGet("[Controller]/[action]")]
         public async Task<JsonResult> GetAccount([DataSourceRequest]DataSourceRequest request)
         {
             List<CierresAccounting> __customers = new List<CierresAccounting>();

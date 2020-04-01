@@ -46,7 +46,14 @@ namespace ERPMVC.Controllers
             return await Task.Run(() => View());
 
         }
+        public async Task<IActionResult> SFTabladeConversionPeso()
+        {
 
+            return await Task.Run(() => View());
+
+        }
+
+        [Authorize(Policy = "Contabilidad.Seguros.Reporte Valores Fisicos")]
         public async Task<IActionResult> SFDetalleValorSeguros()
         {
 

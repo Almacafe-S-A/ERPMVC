@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -24,16 +25,23 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
+        private readonly ClaimsPrincipal _principal;
 
-        public CAIController(ILogger<CAIController> logger, IOptions<MyConfig> config)
+        public CAIController(ILogger<CAIController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         // GET: Customer
+        [Authorize(Policy = "Administracion.CAI")]
         public ActionResult Index()
         {
+            ViewData["permisoAgregar"] = _principal.HasClaim("Administracion.CAI.Agregar CAI", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Administracion.CAI.Editar CAI", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Administracion.CAI.Eliminar CAI", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Administracion.CAI.Exportar CAI", "true");
             return View();
         }
 

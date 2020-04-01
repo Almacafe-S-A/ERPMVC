@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -14,6 +15,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using Microsoft.AspNetCore.Hosting;
+using Syncfusion.ReportWriter;
+using Syncfusion.Report;
+using Syncfusion.Pdf;
+using Syncfusion.DocIORenderer;
+using System.IO;
 
 namespace ERPMVC.Controllers
 {
@@ -24,16 +31,22 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public GoodsDeliveryAuthorizationController(ILogger<GoodsDeliveryAuthorizationController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        private readonly IHostingEnvironment _hostingEnvironment;
+        public GoodsDeliveryAuthorizationController(ILogger<GoodsDeliveryAuthorizationController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor, IHostingEnvironment hostingEnvironment)
         {
             this.config = config;
             this._logger = logger;
+            _hostingEnvironment = hostingEnvironment;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Inventarios.Entrega de Mercaderia")]
         [HttpGet("[controller]/[action]")]
         [HttpGet("[action]")]
         public IActionResult Index()
         {
+            ViewData["permisos"] = _principal;
             return View();
         }
 
@@ -108,7 +121,7 @@ namespace ERPMVC.Controllers
 
                 }
 
-
+                ViewData["permisos"] = _principal;
 
             }
             catch (Exception ex)
@@ -461,9 +474,45 @@ namespace ERPMVC.Controllers
         public ActionResult SFGoodsDeliveryAuthorization(Int64 id)
         {
 
-            GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorizationDTO { GoodsDeliveryAuthorizationId = id, };
+            
 
-            return View(_GoodsDeliveryAuthorization);
+            //return View(_GoodsDeliveryAuthorization);
+
+            GoodsDeliveryAuthorizationDTO _GoodsDeliveryAuthorization = new GoodsDeliveryAuthorizationDTO { GoodsDeliveryAuthorizationId = id, };
+            try
+            {
+
+                string basePath = _hostingEnvironment.WebRootPath;
+                FileStream inputStream = new FileStream(basePath + "/ReportsTemplate/GoodsDeliveryAuthorization.rdl", FileMode.Open, FileAccess.Read);
+                ReportWriter reportWriter = new ReportWriter(inputStream);
+                List<ReportParameter> parameters = new List<ReportParameter>();
+                parameters.Add(new ReportParameter() { Name = "IdCD", Labels = new List<string>() { _GoodsDeliveryAuthorization.GoodsDeliveryAuthorizationId.ToString() }, Values = new List<string>() { _GoodsDeliveryAuthorization.GoodsDeliveryAuthorizationId.ToString() } });
+                reportWriter.SetParameters(parameters);
+                Syncfusion.Report.DataSourceCredentials[] dscarray = new Syncfusion.Report.DataSourceCredentials[1];
+                Syncfusion.Report.DataSourceCredentials dsc = new Syncfusion.Report.DataSourceCredentials();
+                dsc.ConnectionString = Utils.ConexionReportes;
+                dsc.Name = "ERP";
+                dscarray[0] = dsc;
+                reportWriter.SetDataSourceCredentials(dscarray);
+                var format = Syncfusion.ReportWriter.WriterFormat.PDF;
+                string completepath = basePath + $"/AutorizacionesEntregas/Autorizacion_{id}.pdf";
+                MemoryStream ms = new MemoryStream();
+
+                reportWriter.Save(ms, format);
+                ms.Position = 0;
+
+                using (FileStream file = new FileStream(completepath, FileMode.Create, System.IO.FileAccess.Write))
+                    ms.WriteTo(file);
+
+                ViewBag.pathcontrato = completepath;
+                var stream = new FileStream(completepath, FileMode.Open);
+                return new FileStreamResult(stream, "application/pdf");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
         }
 
 

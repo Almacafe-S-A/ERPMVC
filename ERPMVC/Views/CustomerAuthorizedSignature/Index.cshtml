@@ -1,5 +1,8 @@
-﻿
+﻿@using System.Security.Claims
 
+@{ 
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
 <h3 class="text-themecolor">Firmas Autorizadas</h3>
 <script>
 
@@ -91,96 +94,101 @@
 </script>
 
 @(Html.Kendo().Grid<ERPMVC.Models.CustomerAuthorizedSignature>()
-                      .Name("gridCustomerAuthorizedSignature")
-                      .Columns(columns =>
-                      {
-                          columns.Command(command =>
+                          .Name("gridCustomerAuthorizedSignature")
+                          .Columns(columns =>
                           {
-                              command.Custom("Editar").Text(" ").Click("EditCustomerAuthorizedSignature").IconClass("fa fa-edit");
-                              // command.Custom("Ver detalles").Click("Detalles");
-                              // command.Edit(); command.Destroy();
-                          }).Width(170).Title("Acciones");
-                          columns.Bound(p => p.CustomerAuthorizedSignatureId).Width(100);
-                          columns.Bound(p => p.CustomerId).Visible(false).Width(100);
-                          columns.Bound(p => p.Nombre).Width(100);
-                          columns.Bound(p => p.Correo).Width(200);
-                          columns.Bound(p => p.RTN).Width(150);
-                          columns.Bound(p => p.Telefono).Width(100);
-                          //columns.Bound(p => p.Listados).Width(200);
+                              if (permisos.HasClaim("Clientes.Datos de Clientes.Editar Firmas Autorizadas", "true"))
+                              {
+                                  columns.Command(command =>
+                                  {
+                                      command.Custom("Editar").Text(" ").Click("EditCustomerAuthorizedSignature").IconClass("fa fa-edit");
+                                      // command.Custom("Ver detalles").Click("Detalles");
+                                      // command.Edit(); command.Destroy();
+                                  }).Width(170).Title("Acciones");
+                              }
+                              columns.Bound(p => p.CustomerAuthorizedSignatureId).Width(100);
+                              columns.Bound(p => p.CustomerId).Visible(false).Width(100);
+                              columns.Bound(p => p.Nombre).Width(100);
+                              columns.Bound(p => p.Correo).Width(200);
+                              columns.Bound(p => p.RTN).Width(150);
+                              columns.Bound(p => p.Telefono).Width(100);
+                              //columns.Bound(p => p.Listados).Width(200);
 
-                      })
-                          .Filterable(f => f.Operators(o => o.ForString(s => s
+                          })
+                              .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                   .Clear()
+                                                   .Contains("Contiene")
+                                                   .DoesNotContain("No contiene")
+                                                   .EndsWith("Termina con")
+                                                   .IsEqualTo("Es igual a")
+                                                   .IsNotEqualTo("No es igual a")
+                                                   .IsNull("Es nulo")
+                                                   .StartsWith("Inicia con")
+
+
+                                             )
+                                             .ForNumber(n => n
                                                .Clear()
-                                               .Contains("Contiene")
-                                               .DoesNotContain("No contiene")
-                                               .EndsWith("Termina con")
                                                .IsEqualTo("Es igual a")
-                                               .IsNotEqualTo("No es igual a")
+                                               .IsGreaterThan("Es mayor que")
+                                               .IsLessThan("Es menor que")
                                                .IsNull("Es nulo")
-                                               .StartsWith("Inicia con")
+                                               .IsLessThanOrEqualTo("Es menor o igual que")
+                                               .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                             )
+                                             .ForDate(d => d
+                                             .Clear()
+                                             .IsEqualTo("Es igual que")
+                                             .IsGreaterThan("Es mayor que")
+                                             .IsLessThan("Es menor que")
+                                             .IsLessThanOrEqualTo("Es menor o igual que")
+                                             .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                             .IsNotEqualTo("No es igual que")
+                                              )
+                                           ))
+                          .ToolBar(tools =>
+                          {
+                              //tools.Create();
+                              if (permisos.HasClaim("Clientes.Datos de Clientes.Agregar Firmas Autorizadas", "true"))
+                              {
+                                  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerAuthorizedSignature();" });
+                              }
+                                  tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                  tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                              
 
-
-                                         )
-                                         .ForNumber(n => n
-                                           .Clear()
-                                           .IsEqualTo("Es igual a")
-                                           .IsGreaterThan("Es mayor que")
-                                           .IsLessThan("Es menor que")
-                                           .IsNull("Es nulo")
-                                           .IsLessThanOrEqualTo("Es menor o igual que")
-                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                         )
-                                         .ForDate(d => d
-                                         .Clear()
-                                         .IsEqualTo("Es igual que")
-                                         .IsGreaterThan("Es mayor que")
-                                         .IsLessThan("Es menor que")
-                                         .IsLessThanOrEqualTo("Es menor o igual que")
-                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                         .IsNotEqualTo("No es igual que")
-                                          )
-                                       ))
-                      .ToolBar(tools =>
-                      {
-                          //tools.Create();
-                          tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerAuthorizedSignature();" });
-
-                          tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                          tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-                      })
-                      .Editable(e => e.Mode(GridEditMode.PopUp))
-                      .Sortable()
-                      .Pageable()
-                      .Filterable()
-                      .Scrollable()
-                      .Pdf(pdf => pdf.FileName("ClienteAreaReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                       + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                       .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                         .Excel(excel => excel.FileName("ClienteAreaReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                       + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                       .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                      .DataSource(dataSource =>
-                          dataSource
-                            .WebApi()
-                            .ServerOperation(true)
-                            .Model(model =>
+                          })
+                          .Editable(e => e.Mode(GridEditMode.PopUp))
+                          .Sortable()
+                          .Pageable()
+                          .Filterable()
+                          .Scrollable()
+                          .Pdf(pdf => pdf.FileName("ClienteAreaReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                           .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                             .Excel(excel => excel.FileName("ClienteAreaReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                           .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                          .DataSource(dataSource =>
+                              dataSource
+                                .WebApi()
+                                .ServerOperation(true)
+                                .Model(model =>
+                                {
+                                    model.Id(p => p.CustomerId);
+                                    model.Field(p => p.CustomerId).Editable(false);
+                                })
+                                .Events(events => events.Error("error_handler"))
+                                .Read(read => read.Action("GetSignatureByCustomerId", "CustomerAuthorizedSignature").Data("GetCustomerId"))
+                                .Create(create => create.Action("Post", "CustomerAuthorizedSignature"))
+                                .Update(update => update.Action("Put", "CustomerAuthorizedSignature", new { id = "{0}" }))
+                                .Destroy(destroy => destroy.Action("Delete", "CustomerAuthorizedSignature", new { id = "{0}" }))
+                          )
+                            .Events(e =>
                             {
-                                model.Id(p => p.CustomerId);
-                                model.Field(p => p.CustomerId).Editable(false);
+                                //e.Save("onsave");
                             })
-                            .Events(events => events.Error("error_handler"))
-                            .Read(read => read.Action("GetSignatureByCustomerId", "CustomerAuthorizedSignature").Data("GetCustomerId"))
-                            .Create(create => create.Action("Post", "CustomerAuthorizedSignature"))
-                            .Update(update => update.Action("Put", "CustomerAuthorizedSignature", new { id = "{0}" }))
-                            .Destroy(destroy => destroy.Action("Delete", "CustomerAuthorizedSignature", new { id = "{0}" }))
-                      )
-                        .Events(e =>
-                        {
-                            //e.Save("onsave");
-                        })
 )
 
 <div id="customerauthorized">

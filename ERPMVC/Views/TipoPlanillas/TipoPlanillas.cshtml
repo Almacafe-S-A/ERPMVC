@@ -1,8 +1,8 @@
 ﻿@using Kendo.Mvc.UI
-
+@using System.Security.Claims
 @{
     ViewData["Title"] = "Tipo Planillas";
-
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 
 <script>
@@ -108,62 +108,71 @@
 <h3 class="text-themecolor">Tipo de Planillas</h3>
 
 @(Html.Kendo().Grid<ERPMVC.Models.TipoPlanillas>
-        ()
+            ()
 
-        .Name("gridTipoPlanillas")
+            .Name("gridTipoPlanillas")
 
-        .Columns(columns =>
-        {
-
-            columns.Command(command =>
+            .Columns(columns =>
             {
-                //command.Custom("Ver detalles").Click("Detalles");
+                if (permisos.HasClaim("RRHH.Parametros Tipo de Planilla.Editar Tipo de Planilla", "true")
+                    || permisos.HasClaim("RRHH.Parametros Tipo de Planilla.Eliminar Tipo de Planilla", "true"))
+                {
+                    columns.Command(command =>
+                    {
+                        //command.Custom("Ver detalles").Click("Detalles");
+
+                        if (permisos.HasClaim("RRHH.Parametros Tipo de Planilla.Editar Tipo de Planilla", "true"))
+                        {
+                            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditTipoPlanillas");
+                        }
+                        if (permisos.HasClaim("RRHH.Parametros Tipo de Planilla.Eliminar Tipo de Planilla", "true"))
+                        {
+                            command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("DeleteTipoPlanillas");
+                        }
+                        //command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                    }).Title("Acciones").Width(70);
+                }
+                columns.Bound(p => p.IdTipoPlanilla).Width(150);
+                columns.Bound(p => p.TipoPlanilla).Title("Nombre Tipo de Planillas").Width(170);
+                columns.Bound(p => p.Descripcion).Title("Descripción").Width(170);
+                columns.Bound(p => p.Estado).Title("Estado").Width(170);
 
 
-                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditTipoPlanillas");
-                command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("DeleteTipoPlanillas");
-                //command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
-            }).Title("Acciones").Width(70);
-
-            columns.Bound(p => p.IdTipoPlanilla).Width(150);
-            columns.Bound(p => p.TipoPlanilla).Title("Nombre Tipo de Planillas").Width(170);
-            columns.Bound(p => p.Descripcion).Title("Descripción").Width(170);
-            columns.Bound(p => p.Categoria.Nombre).Title("Categoria").Width(170);
-            columns.Bound(p => p.Estado.NombreEstado).Title("Estado").Width(170);
+            })
 
 
-        })
+            .ToolBar(tools =>
+            {
+
+                //tools.Create();
+                if (permisos.HasClaim("RRHH.Parametros Tipo de Planilla.Agregar Tipo de Planilla", "true"))
+                {
+                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddTipoPlanillas()" });
+                }
+                    tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                    tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                
 
 
-        .ToolBar(tools =>
-        {
-
-            //tools.Create();
-            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddTipoPlanillas()" });
-            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-
-        })
-        .Editable(e => e.Mode(GridEditMode.PopUp))
-        .Sortable()
-        .Pageable(s => s
-            .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
-            .Empty("No hay datos."))
-        )
-        .Filterable()
-        .Scrollable()
-        .Pdf(pdf => pdf.FileName("Tipo_Planillas_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-        .ProxyURL(Url.Action("Export", "Home")).AllPages())
-        .Excel(excel => excel.FileName("Tipo_Planillas_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-        .DataSource(dataSource =>
-        dataSource
-        .WebApi()
+            })
+            .Editable(e => e.Mode(GridEditMode.PopUp))
+            .Sortable()
+            .Pageable(s => s
+                .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+                .Empty("No hay datos."))
+            )
+            .Filterable()
+            .Scrollable()
+            .Pdf(pdf => pdf.FileName("Tipo_Planillas_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+            .ProxyURL(Url.Action("Export", "Home")).AllPages())
+            .Excel(excel => excel.FileName("Tipo_Planillas_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+            .DataSource(dataSource =>
+            dataSource
+            .WebApi()
 
         .ServerOperation(true)
         .Model(model =>
@@ -172,19 +181,19 @@
             model.Field(p => p.IdTipoPlanilla).Editable(false);
             
 
-        })
-        .Events(events => events.Error("error_handler"))
-        .Read(read => read.Action("Get", "TipoPlanillas").Data("EsGafi"))
-        .Create(create => create.Action("Insert", "TipoPlanillas").Type(HttpVerbs.Post))
-        .Update(update => update.Action("Update", "TipoPlanillas").Type(HttpVerbs.Post))
-        .Destroy(destroy => destroy.Action("Delete", "TipoPlanillas").Type(HttpVerbs.Post))
+            })
+            .Events(events => events.Error("error_handler"))
+            .Read(read => read.Action("Get", "TipoPlanillas").Data("EsGafi"))
+            .Create(create => create.Action("Insert", "TipoPlanillas").Type(HttpVerbs.Post))
+            .Update(update => update.Action("Update", "TipoPlanillas").Type(HttpVerbs.Post))
+            .Destroy(destroy => destroy.Action("Delete", "TipoPlanillas").Type(HttpVerbs.Post))
 
-        )
-        .Events(e =>
-        {
-            e.Save("onsave");
+            )
+            .Events(e =>
+            {
+                e.Save("onsave");
 
-        })
+            })
 )
 
 <div id="numTipoPlanillas">

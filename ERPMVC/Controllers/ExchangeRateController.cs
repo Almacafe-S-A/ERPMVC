@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using AutoMapper;
 using ERPMVC.DTO;
@@ -24,14 +25,20 @@ namespace ERPMVC.Controllers
         private readonly IOptions<MyConfig> config;
        // private readonly IMapper mapper;
         private readonly ILogger _logger;
-        public ExchangeRateController(ILogger<ExchangeRateController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public ExchangeRateController(ILogger<ExchangeRateController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
         // GET: ExchangeRate
+        [Authorize(Policy = "Configuracion.Tasa de Cambio")]
         public ActionResult ExchangeRate()
         {
+            ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Tasa de Cambio.Agregar Tasa de Cambio", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Configuracion.Tasa de Cambio.Editar Tasa de Cambio", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Configuracion.Tasa de Cambio.Exportar Tasa de Cambio", "true");
             return View();
         }
 

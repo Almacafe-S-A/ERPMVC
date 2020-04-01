@@ -14,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -24,16 +25,19 @@ namespace ERPMVC.Controllers
 
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public PresupuestoController(ILogger<PresupuestoController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public PresupuestoController(ILogger<PresupuestoController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
         
      public async Task<IActionResult> Presupuesto()
       
         {
+            ViewData["permisos"] = _principal;
             ViewData["Cuentas"] = await ObtenerCuentas();
             Presupuesto presupuesto = new Presupuesto();
             
@@ -265,12 +269,22 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccount");
+                var result = await _client.GetAsync(baseadress + "api/Accounting/GetAccountstartwith5y6");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     cuentas = JsonConvert.DeserializeObject<IEnumerable<Accounting>>(valorrespuesta);
+
+                    cuentas = cuentas.Select(c => new Accounting
+                    {
+                        AccountId = c.AccountId,
+                        AccountName = c.AccountCode + "--" + c.AccountName,
+                        AccountCode = c.AccountCode,
+                        Description = c.Description,
+                        Estado = c.Estado,
+                        IdEstado = c.IdEstado,
+                    }).ToList();
 
                 }
             }
