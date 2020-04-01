@@ -39,7 +39,10 @@ namespace ERPMVC.Controllers
 
         public ActionResult CalculoGeneralISR()
         {
-            return View();
+            PeriodoDTO periodo = new PeriodoDTO();
+            periodo.Periodo = DateTime.Now.Year;
+
+            return View(periodo);
         }
 
         public ActionResult EditarDeducciones(long codigoEmpleado, string nombreEmpleado, double salarioEmpleado)
@@ -61,6 +64,7 @@ namespace ERPMVC.Controllers
             ViewData["SalarioEmpleado"] = salarioEmpleado;
             return PartialView("pvwAgregarDeduccionEmpleado");
         }
+
 
         public async Task<ActionResult<List<DeduccionesEmpleadoDTO>>> GetEmpleadosDeducciones()
         {
