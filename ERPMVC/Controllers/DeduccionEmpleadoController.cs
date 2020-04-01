@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -199,5 +200,33 @@ namespace ERPMVC.Controllers
                 return BadRequest(ex.Message);
             }
         }
+
+
+        [HttpPost]
+        public async Task<ActionResult> CalculoISR(PeriodoDTO pPeriodo)
+        {
+            try
+            {
+
+                var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
+                    config.Value.urlbase + $"api/DeduccionEmpleado/CalcularISRGeneral/{pPeriodo.Periodo}/{pPeriodo.Mes}");
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    var contenido = await respuesta.Content.ReadAsStringAsync();
+                    var resultado = JsonConvert.DeserializeObject<List<PagosISRDTO>>(contenido);
+                    return Ok(resultado);
+                }
+                return BadRequest(await respuesta.Content.ReadAsStringAsync());
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Error al cargar el ISR para los empleados en periodo {pPeriodo.Periodo} y mes {pPeriodo.Mes}");
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+
+
     }
 }
