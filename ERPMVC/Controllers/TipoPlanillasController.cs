@@ -89,7 +89,6 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _TipoPlanillas = JsonConvert.DeserializeObject<List<TipoPlanillas>>(valorrespuesta);
-                    _TipoPlanillas = _TipoPlanillas.Where(q => q.Estado == "Activo").ToList();
                 }
 
 
@@ -180,7 +179,6 @@ namespace ERPMVC.Controllers
             TipoPlanillas _TipoPlanillas = _TipoPlanillasP;
             try
             {
-                // DTO_NumeracionSAR _liNumeracionSAR = new DTO_NumeracionSAR();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -194,7 +192,10 @@ namespace ERPMVC.Controllers
                     _TipoPlanillas = JsonConvert.DeserializeObject<TipoPlanillasDTO>(valorrespuesta);
                 }
 
-                if (_TipoPlanillas == null) { _TipoPlanillas = new Models.TipoPlanillas(); }
+                if (_TipoPlanillas == null)
+                {
+                    _TipoPlanillas = new Models.TipoPlanillas();
+                }
 
                 if (_TipoPlanillasP.IdTipoPlanilla == 0)
                 {
@@ -242,6 +243,8 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                _TipoPlanillas.Estado = null;
+                _TipoPlanillas.Categoria = null;
                 _TipoPlanillas.Usuariocreacion = HttpContext.Session.GetString("user");
                 _TipoPlanillas.Usuariomodificacion = HttpContext.Session.GetString("user");
                 _TipoPlanillas.FechaCreacion = DateTime.Now;
@@ -272,6 +275,8 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                _TipoPlanillas.Estado = null;
+                _TipoPlanillas.Categoria = null;
                 _TipoPlanillas.FechaModificacion = DateTime.Now;
                 _TipoPlanillas.Usuariomodificacion = HttpContext.Session.GetString("user");
                 var result = await _client.PutAsJsonAsync(baseadress + "api/TipoPlanillas/Update", _TipoPlanillas);

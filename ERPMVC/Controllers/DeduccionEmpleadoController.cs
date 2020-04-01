@@ -4,6 +4,7 @@ using System.Linq;
 using System.Net;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
@@ -33,6 +34,11 @@ namespace ERPMVC.Controllers
         public ActionResult Index()
         {
             ViewData["permisos"] = _principal;
+            return View();
+        }
+
+        public ActionResult CalculoGeneralISR()
+        {
             return View();
         }
 
@@ -99,6 +105,29 @@ namespace ERPMVC.Controllers
             }
         }
 
+
+        public async Task<ActionResult> CalcularISR(long empleadoId)
+        {
+            try
+            {
+                var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
+                    config.Value.urlbase + "api/DeduccionEmpleado/GetISREmpleado/" + empleadoId);
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    var contenido = await respuesta.Content.ReadAsStringAsync();
+                    var resultado = JsonConvert.DeserializeObject<decimal>(contenido);
+                    return Ok(resultado);
+                }
+
+                return BadRequest(await respuesta.Content.ReadAsStringAsync());
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error al calcular el ISR del empleado");
+                return BadRequest();
+            }
+        }
+
         public async Task<ActionResult> GuardarDeduccionEmpleado([DataSourceRequest] DataSourceRequest request, DeduccionEmpleado deduccionGuardar)
         {
             try
@@ -135,5 +164,74 @@ namespace ERPMVC.Controllers
                 return BadRequest();
             }
         }
+
+
+        public async Task<ActionResult> CalcularISRGeneral(int periodo, int mes)
+        {
+            try
+            {
+                var respuesta = await Utils.HttpPostAsync(HttpContext.Session.GetString("token"),
+                    config.Value.urlbase + $"api/DeduccionEmpleado/CalcularISRGeneral/{periodo}/{mes}/{HttpContext.Session.GetString("user")}",null);
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    return Ok();
+                }
+                return BadRequest(await respuesta.Content.ReadAsStringAsync());
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex,$"Error al calcular el ISR para los empleados en periodo {periodo} y mes {mes}");
+                return BadRequest(ex.Message);
+            }
+        }
+
+        public async Task<ActionResult> GetPagosISRPeriodo(int periodo, int mes)
+        {
+            try
+            {
+                var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
+                    config.Value.urlbase + $"api/DeduccionEmpleado/GetPagosISRPeriodo/{periodo}/{mes}");
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    var contenido = await respuesta.Content.ReadAsStringAsync();
+                    var resultado = JsonConvert.DeserializeObject<List<PagosISRDTO>>(contenido);
+                    return Ok(resultado);
+                }
+                return BadRequest(await respuesta.Content.ReadAsStringAsync());
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Error al cargar el ISR para los empleados en periodo {periodo} y mes {mes}");
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+        [HttpPost]
+        public async Task<ActionResult> CalculoISR(PeriodoDTO pPeriodo)
+        {
+            try
+            {
+
+                var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
+                    config.Value.urlbase + $"api/DeduccionEmpleado/CalcularISRGeneral/{pPeriodo.Periodo}/{pPeriodo.Mes}");
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    var contenido = await respuesta.Content.ReadAsStringAsync();
+                    var resultado = JsonConvert.DeserializeObject<List<PagosISRDTO>>(contenido);
+                    return Ok(resultado);
+                }
+                return BadRequest(await respuesta.Content.ReadAsStringAsync());
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Error al cargar el ISR para los empleados en periodo {pPeriodo.Periodo} y mes {pPeriodo.Mes}");
+                return BadRequest(ex.Message);
+            }
+        }
+
+
+
+
     }
 }

@@ -98,12 +98,39 @@ namespace ERPMVC.Controllers
             }
         }
 
+        public async Task<ActionResult<List<DeduccionDTO>>> GetDeduccionesSinLey()
+        {
+            try
+            {
+                string direccionBase = config.Value.urlbase;
+                HttpClient cliente = new HttpClient();
+                cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var respuesta = await cliente.GetAsync(direccionBase + "api/Deduction/GetDeduction");
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    var contenido = await respuesta.Content.ReadAsStringAsync();
+                    var resultado = JsonConvert.DeserializeObject<List<DeduccionDTO>>(contenido);
+                    resultado = resultado.Where(r => r.DeductionId > 4).ToList();
+                    return Ok(resultado);
+                }
+                else
+                {
+                    return Ok(new List<DeduccionDTO>());
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex.StackTrace);
+                return BadRequest("Error al cargar tipos de deducciones");
+            }
+        }
+
         [HttpPost]
         public async Task<ActionResult> GuardarDeduccion([FromBody] DeduccionDTO deduccion)
         {
             if (ModelState.IsValid)
             {
-                deduccion.DeductionType = deduccion.DeductionTypeId == 1 ? "Por Ley" : deduccion.DeductionTypeId == 2 ? "Eventual" : "Colegiación";
+                deduccion.DeductionType = deduccion.DeductionTypeId == 1 ? "Por Ley" : deduccion.DeductionTypeId == 2 ? "Eventual" : deduccion.DeductionTypeId == 3 ? "Colegiación" : "Fondo Pensión / AFP";
 
                 HttpResponseMessage respuesta;
                 if (deduccion.DeductionId == 0)
