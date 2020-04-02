@@ -142,7 +142,7 @@ namespace ERPMVC.Controllers
 
                     if (_TipodeAccionderiesgo.TipodeAccionderiesgoId > 0)
                     {
-                        return await Task.Run(() => BadRequest($"Ya existe un banco registrado con ese nombre."));
+                        return await Task.Run(() => BadRequest($"Ya existe un Tipo de acción de riesgo registrado con ese nombre."));
                     }
                 }
 
