@@ -239,8 +239,8 @@ namespace ERPMVC.Controllers
                         }
 
                     }
-                    _CountryP.Usuariocreacion = _Country.Usuariocreacion;
-                    _CountryP.FechaCreacion = _Country.FechaCreacion;
+                    _CountryP.Usuariocreacion = _Paises.Usuariocreacion;
+                    _CountryP.FechaCreacion = _Paises.FechaCreacion;
                     var updateresult = await Update(_Country.Id, _CountryP);
                 }
 
