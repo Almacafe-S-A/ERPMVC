@@ -62,6 +62,7 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _country = JsonConvert.DeserializeObject<List<Country>>(valorrespuesta);
                     _country = _country.Where(q => q.GAFI == GAFI).OrderBy(q=>q.Name).ToList();
+                    _country = _country.OrderByDescending(q => q.Id).ToList();
                 }
 
 
