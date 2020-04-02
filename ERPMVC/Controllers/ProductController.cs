@@ -111,7 +111,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpPost("[action]")]
+        [HttpPost]
         public async Task<ActionResult<Product>> SaveProduct([FromBody]ProductDTO _ProductS)
         {
             Product _Product = _ProductS;
@@ -129,15 +129,36 @@ namespace ERPMVC.Controllers
                 {
 
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _Product = JsonConvert.DeserializeObject<ProductDTO>(valorrespuesta);
+                    _listProduct = JsonConvert.DeserializeObject<ProductDTO>(valorrespuesta);
                 }
 
-                if (_Product == null) { _Product = new Models.Product(); }
-                _ProductS.UnitOfMeasureId = null;
-                if (_ProductS.ProductId == 0)
+                if (_listProduct == null) { _listProduct = new Models.Product(); }
+                _ProductS.UnitOfMeasureId = 1;
+                if (_listProduct.ProductId == 0)
                 {
-                    _ProductS.FechaCreacion = DateTime.Now;
-                    _ProductS.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    _Product.FechaCreacion = DateTime.Now;
+                    _Product.UsuarioCreacion = HttpContext.Session.GetString("user");
+
+                    ProductDTO _ProducDuplicated = new ProductDTO();
+                    HttpClient _client2 = new HttpClient();
+                    _client2.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                    var resultado = await _client.GetAsync(baseadress + "api/Product/GetProductName/" + _Product.ProductName);
+                    string valorrespuesta2 = "";
+                    if (resultado.IsSuccessStatusCode)
+                    {
+                        valorrespuesta2 = await (resultado.Content.ReadAsStringAsync());
+                        _ProducDuplicated = JsonConvert.DeserializeObject<ProductDTO>(valorrespuesta2);
+
+                    }
+
+                    if (_ProducDuplicated != null)
+                    {
+
+                        string error = await result.Content.ReadAsStringAsync();
+                        return await Task.Run(() => BadRequest($"El nombre del Servicio ya esta ingresado."));
+
+                    }
+
                     var insertresult = await Insert(_ProductS);
                 }
                 else

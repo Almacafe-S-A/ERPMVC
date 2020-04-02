@@ -510,9 +510,9 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult<SubProduct>> Delete(SubProduct _SubProductp)
+        public async Task<ActionResult<SubProduct>> Delete(Int64 productid, SubProduct _subproduct)
         {
-            SubProduct _SubProduct = _SubProductp;
+            SubProduct _SubProduct = new SubProduct();
             List<InvoiceLine> _InvoiceLine = new List<InvoiceLine>();
             List<ProformaInvoiceLine> _ProformaInvoiceLine = new List<ProformaInvoiceLine>();
             try
@@ -521,7 +521,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result1 = await _client.GetAsync(baseadress + "api/SubProduct/ValidationDelete/" + _SubProduct.SubproductId);
+                var result1 = await _client.GetAsync(baseadress + "api/SubProduct/ValidationDelete/" + _subproduct);
                 string valorrespuesta1 = "";
 
                 if (result1.IsSuccessStatusCode)
@@ -531,7 +531,7 @@ namespace ERPMVC.Controllers
                 }
                 if (valorrespuesta1 == "0")
                 {
-                    var result = await _client.PostAsJsonAsync(baseadress + "api/SubProduct/Delete", _SubProduct);
+                    var result = await _client.PostAsJsonAsync(baseadress + "api/SubProduct/Delete", _subproduct);
                     string valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
