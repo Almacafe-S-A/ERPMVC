@@ -10,7 +10,7 @@ namespace ERPMVC.Models
     public class SeveridadRiesgo
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Display(Name = "Codigó Severidad")]
+        [Display(Name = "Código Severidad")]
         public Int64 IdSeveridad { get; set; }
         [Display(Name = "Impacto")]
         [Required]
@@ -21,7 +21,7 @@ namespace ERPMVC.Models
         [Display(Name = "Límite Calidad Inferior")]
         [Required]
         public Int64 LimiteCalidadInferior { get; set; }
-        [Display(Name = "Límete Calidad Superior")]
+        [Display(Name = "Límite Calidad Superior")]
         [Required]
         public Int64 LimeteCalidadSuperir { get; set; }
         [Display(Name = "Rango Inferior de Severidad")]
@@ -34,11 +34,11 @@ namespace ERPMVC.Models
         public string ColorHexadecimal { get; set; }
         [Display(Name = "Fecha Creación")]
         public DateTime FechaCreacion { get; set; }
-        [Display(Name = "Fecha Modifico")]
+        [Display(Name = "Fecha Modificación")]
         public DateTime FechaModificacion { get; set; }
         [Display(Name = "Usuario Creación")]
         public string UsuarioCreacion { get; set; }
-        [Display(Name = "Usuario Modifico")]
+        [Display(Name = "Usuario Modificación")]
         public string UsuarioModificacion { get; set; }
     }
 }
