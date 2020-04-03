@@ -82,13 +82,15 @@ namespace ERPMVC.Controllers
         public async Task<ActionResult<Estados>> SaveEstados([FromBody]EstadoDTO _EstadosP)
         {
             Estados _Estados = _EstadosP;
+            Estados _EstadosNombre = _EstadosP;
             try
             {
                 Estados _listEstados = new Estados();
                 string baseadress = _config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Estados/GetEstadoByNombreEstado/" + _Estados.NombreEstado + "/" + _Estados.IdGrupoEstado);
+
+                var result = await _client.GetAsync(baseadress + "api/Estados/GetEstadosById/" + _Estados.IdEstado);
                 string valorrespuesta = "";
                 _Estados.FechaModificacion = DateTime.Now;
                 _Estados.UsuarioModificacion = HttpContext.Session.GetString("user");
@@ -99,30 +101,39 @@ namespace ERPMVC.Controllers
                     _Estados = JsonConvert.DeserializeObject<Estados>(valorrespuesta);
                 }
 
-                if (_Estados == null) { _Estados = new Models.Estados(); }
+                var result1 = await _client.GetAsync(baseadress + "api/Estados/GetEstadoByNombreEstado/" + _EstadosP.NombreEstado + "/" + _EstadosP.IdGrupoEstado);
 
-                if (_Estados.IdEstado > 0)
+                if (result1.IsSuccessStatusCode)
                 {
-                    if (_Estados.IdEstado != _EstadosP.IdEstado)
-                        return NotFound($"Ya éxiste un Estado registrado con este nombre para el grupo seleccionado.");
+
+                    valorrespuesta = await (result1.Content.ReadAsStringAsync());
+                    _EstadosNombre = JsonConvert.DeserializeObject<Estados>(valorrespuesta);
                 }
 
+                if (_EstadosNombre == null) { _EstadosNombre = new Models.Estados(); }
 
-                if (_Estados.IdEstado == 0)
-                {
+                if (_Estados == null) 
+                { 
+                    _Estados = new Models.Estados();
+
+                    if (_EstadosNombre.IdEstado > 0)
+                    {
+                        if (_EstadosNombre.IdEstado != _EstadosP.IdEstado)
+                            return NotFound($"Ya éxiste un Estado registrado con este nombre para el grupo seleccionado.");
+                    }
+
                     _EstadosP.FechaCreacion = DateTime.Now;
                     _EstadosP.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_EstadosP);
                 }
                 else
                 {
-                    var result2 = await _client.GetAsync(baseadress + "api/Estados/GetEstadosById/" + _Estados.IdEstado);
-                    string valorrespuesta2 = "";
-                    if (result2.IsSuccessStatusCode)
+                    if (_EstadosNombre.IdEstado > 0)
                     {
-                        valorrespuesta2 = await (result2.Content.ReadAsStringAsync());
-                        _Estados = JsonConvert.DeserializeObject<Estados>(valorrespuesta2);
+                        if (_EstadosNombre.IdEstado != _EstadosP.IdEstado)
+                            return NotFound($"Ya éxiste un Estado registrado con este nombre para el grupo seleccionado.");
                     }
+
                     _EstadosP.UsuarioCreacion = _Estados.UsuarioCreacion;
                     _EstadosP.FechaCreacion = _Estados.FechaCreacion;
                     var updateresult = await Update(_Estados.IdEstado, _EstadosP);
