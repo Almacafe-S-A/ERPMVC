@@ -12,7 +12,6 @@ using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -197,6 +196,13 @@ namespace ERPMVC.Controllers
         {
             try
             {
+                if (_usuario.PasswordHash.Equals(_usuario.UserName))
+                {
+                    return this.Json(new DataSourceResult
+                    {
+                        Errors = $"Error: La contraseña no puede ser igual que el usuario!"
+                    });
+                }
                 // TODO: Add insert logic here
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
@@ -301,6 +307,14 @@ namespace ERPMVC.Controllers
         {
             try
             {
+                if (_usuario.PasswordHash.Equals(_usuario.UserName))
+                {
+                    return this.Json(new DataSourceResult
+                    {
+                        Errors = $"Error: La contraseña no puede ser igual que el usuario!"
+                    });
+                }
+
                 // TODO: Add insert logic here
                 string baseadress = config.Value.urlbase;
                 _usuario.UserName = _usuario.Email;
