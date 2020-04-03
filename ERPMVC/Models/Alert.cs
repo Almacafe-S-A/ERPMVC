@@ -24,6 +24,9 @@ namespace ERPMVC.Models
         [Display(Name = "Descripción")]
         public string Description { get; set; }
 
+        [Display(Name = "Nivel de riesgo del Cliente")]
+        public string NivelRiesgoCliente { get; set; }
+
         [Display(Name = "Id Acción tomada")]
         public Int64 ActionTakenId { get; set; }
 

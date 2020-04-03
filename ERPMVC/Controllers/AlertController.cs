@@ -217,10 +217,20 @@ namespace ERPMVC.Controllers
                 {
                     _Alert.FechaCreacion = DateTime.Now;
                     _Alert.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    _Alert.ActionTakenId = 44;
+                    _Alert.ActionTakenName = "Pendiente de Análisis";
+                    _Alert.IdEstado = 55;
+                    _Alert.Estado = "Abierta";
                     var insertresult = await Insert(_Alert);
                 }
                 else
                 {
+                    if (_Alert.IdEstado == 42)
+                    {
+                        _Alert.CloseDate = DateTime.Now;
+                    }
+                    _Alert.UsuarioCreacion = _listAlert.UsuarioCreacion;
+                    _Alert.FechaCreacion = _listAlert.FechaCreacion;
                     var updateresult = await Update(_Alert.AlertId, _Alert);
                 }
 
@@ -355,10 +365,20 @@ namespace ERPMVC.Controllers
                 {
                     _Alert.FechaCreacion = DateTime.Now;
                     _Alert.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    _Alert.ActionTakenId = 44;
+                    _Alert.ActionTakenName = "Pendiente de Análisis";
+                    _Alert.IdEstado = 55;
+                    _Alert.Estado = "Abierta";
                     var insertresult = await Insert(_Alert);
                 }
                 else
                 {
+                    if(_Alert.IdEstado == 42)
+                    {
+                        _Alert.CloseDate = DateTime.Now;
+                    }
+                    _Alert.UsuarioCreacion = _listAlert.UsuarioCreacion;
+                    _Alert.FechaCreacion = _listAlert.FechaCreacion;
                     var updateresult = await Update(_Alert.AlertId, _Alert);
                 }
 
