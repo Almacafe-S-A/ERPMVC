@@ -244,6 +244,10 @@ namespace ERPMVC.Controllers
                     _InsurancePolicyS.FechaCreacion = DateTime.Now;
                     _InsurancePolicyS.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_InsurancePolicyS);
+                    if ((insertresult.Result as ObjectResult).Value.ToString() == "Ocurrio un error: Error en la Configuración de Asiento Contable Automatico.")
+                    {
+                        return await Task.Run(() => BadRequest("Ocurrio un error: Error en la Configuración de Asiento Contable Automatico."));
+                    }
                     var value = (insertresult.Result as ObjectResult).Value;
                     _InsurancePolicyS = ((InsurancePolicy)(value));
                 }
@@ -283,6 +287,12 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _custo = JsonConvert.DeserializeObject<InsurancePolicy>(valorrespuesta);
+                }
+                else
+                {
+                    string d = await (result.Content.ReadAsStringAsync());
+                    //throw  new Exception(d);
+                    return await Task.Run(() => BadRequest($"{d}"));
                 }
 
             }
