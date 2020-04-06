@@ -254,5 +254,12 @@ namespace ERPMVC.Controllers
             }
             return new ObjectResult(new DataSourceResult { Data = new[] { _MatrizRiesgoCustomers }, Total = 1 });
         }
+
+        //--------------------------------------------------------------------------------------
+
+        public async Task<IActionResult> SFResumenRiesgosClientes()
+        {
+            return await Task.Run(() => View());
+        }
     }
 }
