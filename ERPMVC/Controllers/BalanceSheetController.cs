@@ -25,7 +25,7 @@ namespace ERPMVC.Controllers
 
         }
 
-        [Authorize(Policy = "Contabilidad.Estados Finacieros.Balanza de Comprobacion")]
+        [Authorize(Policy = "Contabilidad.Estados Finacieros.Balance de Saldos")]
         public async Task<IActionResult> BalanceSaldos()
         {
             return await Task.Run(() => View());
