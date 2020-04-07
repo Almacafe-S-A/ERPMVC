@@ -353,7 +353,7 @@ namespace ERPMVC.Controllers
         
         
         [HttpPost]
-        public async Task<ActionResult<Country>> Delete(Int64 Id, Country _CountryP)
+        public async Task<ActionResult<Country>> Delete(Int64 Id, [FromBody]Country _CountryP)
         {
             Country _Country = _CountryP;
             try
@@ -368,6 +368,16 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Country = JsonConvert.DeserializeObject<Country>(valorrespuesta);
+                }
+                else
+                {
+                    string d = await (result.Content.ReadAsStringAsync());
+                    if (d == "No se puede eliminar este registro porque está siendo utilizado.")
+                    {
+                        return await Task.Run(() => BadRequest("No se puede eliminar este registro porque está siendo utilizado."));
+                    }
+                    //throw  new Exception(d);
+                    return await Task.Run(() => BadRequest($"{d}"));
                 }
 
             }

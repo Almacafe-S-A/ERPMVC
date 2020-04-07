@@ -67,6 +67,53 @@
             }
         });
     }
+
+    function DeleteState(e) {
+        if (confirm('¿Esta seguro que desea eliminar este registro?')) {
+            e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                Id: dataItem.Id,
+                CountryId: dataItem.CountryId,
+                editar: 0
+            };
+            $.ajax({
+                url: '@Url.Action("Delete", "State")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    RefrescarGrid();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    if (XMLHttpRequest.responseText == "No se puede eliminar este registro porque está siendo utilizado.") {
+                        $.toast({
+                            heading: 'Validación',
+                            text: "No se puede eliminar este registro porque está siendo utilizado.",
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 30000,
+                            stack: 6
+                        });
+                    }
+                    else {
+                        $.toast({
+                            heading: 'Error',
+                            text: textStatus + ": " + XMLHttpRequest.responseText,
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 30000,
+                            stack: 6
+                        });
+                    }
+                }
+            });
+        }
+    }
     function RefrescarGrid() {
         var grid = $("#gridState").getKendoGrid();
         grid.dataSource.read();
@@ -95,7 +142,7 @@
                         }
                         if (permisoEliminar)
                         {
-                            command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                            command.Custom("Eliminar").Text(" ").Click("DeleteState").IconClass("fa fa-trash-alt");
                         }
 
                     }).Width(170).Title("Acciones");
@@ -148,7 +195,7 @@
             .Read(read => read.Action("Get", "State"))
             .Create(create => create.Action("Insert", "State").Type(HttpVerbs.Post))
             .Update(update => update.Action("Update", "State").Type(HttpVerbs.Post))
-            .Destroy(destroy => destroy.Action("Delete", "State").Type(HttpVerbs.Post))
+            //.Destroy(destroy => destroy.Action("Delete", "State").Type(HttpVerbs.Post))
 
             )
             .Events(e =>
@@ -180,6 +227,6 @@
     }
 
     setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
-    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
     setRowButtonTooltip(".k-grid-Editar", "Editar registro");
 </script>

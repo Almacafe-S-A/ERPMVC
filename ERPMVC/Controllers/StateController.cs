@@ -312,7 +312,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult<State>> Delete(Int64 Id, State _Statep)
+        public async Task<ActionResult<State>> Delete(Int64 Id, [FromBody]State _Statep)
         {
             State _State = _Statep;
             try
@@ -328,7 +328,16 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _State = JsonConvert.DeserializeObject<State>(valorrespuesta);
                 }
-
+                else
+                {
+                    string d = await (result.Content.ReadAsStringAsync());
+                    if (d == "No se puede eliminar este registro porque está siendo utilizado.")
+                    {
+                        return await Task.Run(() => BadRequest("No se puede eliminar este registro porque está siendo utilizado."));
+                    }
+                    //throw  new Exception(d);
+                    return await Task.Run(() => BadRequest($"{d}"));
+                }
             }
             catch (Exception ex)
             {
