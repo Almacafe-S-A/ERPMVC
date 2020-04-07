@@ -57,6 +57,39 @@
             });
     }
 
+    function Delete(e) {
+        if (confirm('¿Esta seguro que desea eliminar este registro?')) {
+            e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                'MantenimientoImpactoId': dataItem.MantenimientoImpactoId,
+            };
+
+            $.ajax({
+                url: '@Url.Action("Delete", "MantenimientoImpacto")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    RefrescarGrid();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $.toast({
+                        heading: 'Error',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                }
+            });
+        }
+    }
+
     function RefrescarGrid() {
 
         var grid = $("#gridMantenimientoImpacto").getKendoGrid();
@@ -84,15 +117,15 @@
 
                         if (permisos.HasClaim("Monitoreo.MantenimientoImpacto.Eliminar MantenimientoImpacto", "true"))
                         {
-                            command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                            command.Custom("Eliminar").Click("Delete").Text(" ").IconClass("fa fa-trash-alt");
                         }
-                    }).Title("Acciones").Width(100);
+                    }).Title("Acciones").Width(80);
                 }
 
                 //columns.Bound(p => p.MantenimientoImpactoId).Width(130);
-                columns.Bound(p => p.NoImpacto).Width(50);
+                columns.Bound(p => p.NoImpacto).Width(125);
                 columns.Bound(p => p.Rango).Width(100).HtmlAttributes(new { @style = "background:#=color#;color:black;" });
-                columns.Bound(p => p.Description).Width(200).Visible(true);
+                columns.Bound(p => p.Description).Width(300).Visible(true);
                 //columns.Bound(p => p.UsuarioCreacion).Width(230);
                 //columns.Bound(p => p.UsuarioModificacion).Width(230);
                 //columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy}").Width(190);
@@ -198,7 +231,7 @@
 
     setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
     setRowButtonTooltip(".k-grid-Editar", "Editar registro");
-    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
 
 </script>
 

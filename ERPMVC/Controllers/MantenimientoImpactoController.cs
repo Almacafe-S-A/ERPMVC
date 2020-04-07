@@ -264,8 +264,8 @@ namespace ERPMVC.Controllers
             return new ObjectResult(new DataSourceResult {Data = new[] { _MantenimientoImpacto } });
         }
 
-        [HttpDelete("MantenimientoImpactoId")]
-        public async Task<ActionResult<MantenimientoImpacto>> Delete(MantenimientoImpacto _MantenimientoImpacto)
+        [HttpPost]
+        public async Task<ActionResult<MantenimientoImpacto>> Delete([FromBody]MantenimientoImpacto _MantenimientoImpacto)
         {
             try
             {
