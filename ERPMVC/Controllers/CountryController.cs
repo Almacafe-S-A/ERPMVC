@@ -391,8 +391,35 @@ namespace ERPMVC.Controllers
 
 
 
-
-
-
+        [HttpPost("[action]")]
+        public async Task<ActionResult> PaisesGAFIByName([FromBody]Country country)
+        {
+            List<Country> _ListPaisesGafi = new List<Country>();
+            Country _PaisGafi = new Country();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Country/GetCountry");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _ListPaisesGafi = JsonConvert.DeserializeObject<List<Country>>(valorrespuesta);
+                    _ListPaisesGafi = _ListPaisesGafi.Where(p => p.GAFI == true).ToList();
+                }
+                if(_ListPaisesGafi.Count > 0)
+                {
+                    _PaisGafi = _ListPaisesGafi.Where(p => p.Name == country.Name).FirstOrDefault();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return await Task.Run(() => Ok(_PaisGafi));
+        }
     }
 }
