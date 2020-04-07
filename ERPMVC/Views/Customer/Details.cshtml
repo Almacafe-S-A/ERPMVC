@@ -118,7 +118,7 @@
                                         @*<input type="text" class="form-control" id="IdFacturaInterna" onKeyPress="return soloNumeros(event)" style="min-width:80%" />*@
 
                                         <span class="input-group-btn">
-                                            <button type="button" id="btnApoderado" style="min-width:15%;" onclick=" ValidarBusqueda(); return RefreshOFAC();" class="btn btn-info"><span class="glyphicon glyphicon-search"></span>LISTADOS</button>
+                                            <button type="button" id="btnApoderado" style="min-width:15%;" onclick=" ValidarBusqueda(); return PeronIlicitas();" class="btn btn-info"><span class="glyphicon glyphicon-search"></span>LISTADOS</button>
                                         </span>
 
                                        
@@ -132,9 +132,15 @@
 
 
                                             function ValidarBusqueda() {
-                                                if ($("#SalesOrderName").val() == '') {
-                                                    alert("LLenar el campo Nombre Gerente/Apoderado para vee el listados")
-
+                                                if ($("#SalesOrderName").val() == '' && $("#CountryId").val() == 0) {
+                                                    alert("LLenar el campo Nombre Gerente/Apoderado y seleccione el país para ver el listado")
+                                                    return false;
+                                                } else if ($("#SalesOrderName").val() == '') {
+                                                    alert("LLenar el campo Nombre Gerente/Apoderado para ver el listado")
+                                                    return false;
+                                                } else if ($("#CountryId").val() == 0) {
+                                                    alert("Seleccione el país para ver el listado")
+                                                    return false;
                                                 } else {
                                                     $("#restsino").val('1');
                                                 }
@@ -739,6 +745,485 @@ debugger
     //$("#tabDetalleCliente").width($("#tabDetalleCliente").innerWidth());
 
     console.log($("#tabDetalleCliente").innerWidth());
+
+
+</script>
+<script>
+    //Buscar en las listas
+
+        function DataONUListilicitas(nombre) {
+
+
+        debugger;
+            var mfirstname = $("#SalesOrderName").val();
+            var mlastName = $("#SalesOrderName").val();
+            var thirtname = $("#SalesOrderName").val();
+
+
+        return {
+            FIRST_NAME: mfirstname,
+        SECOND_NAME: mlastName,
+        THIRD_NAME: thirtname,
+    };
+
+    }
+
+
+    function DataPEPSlist(nombre) {
+
+        debugger;
+        var mfirstname = $("#SalesOrderName").val();
+
+
+        return {
+            Funcionario: mfirstname,
+        };
+
+    }
+
+
+    function DataBlackListilicitas(nombre) {
+        var mfirstname = $("#SalesOrderName").val();
+
+
+
+        return {
+            CustomerName: mfirstname,
+
+        };
+
+    }
+
+    function DataOFAClist(nombre) {
+        debugger;
+        var mfirstname = $("#SalesOrderName").val();
+        var mlastName = $("#SalesOrderName").val();
+
+
+        return {
+            firstName: mfirstname,
+            lastName: mlastName
+        };
+
+    }
+
+
+    function PeronIlicitas(nombre) {
+        debugger;
+        if ($("#CountryId").val() != 0) {
+
+            var generar_alertas = false;
+
+            $.ajax({
+                url: '@Url.Action("GetBlackListByParams", "BlackListCustomers")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: DataBlackListilicitas(nombre),
+                success: function (GetBlackListByParams) {
+
+                    var gridListaNegra = $("#gridListaNegra").getKendoGrid();
+                    var datasource = gridListaNegra.dataSource;
+
+                    var raw = datasource._data;
+                    for (i = datasource._data.length - 1; i >= 0; i--) {
+                        var item = raw[i];
+                        datasource.remove(item);
+                    }
+
+                    for (var i = 0; i < GetBlackListByParams.Data.length; i++) {
+                        datasource.insert(GetBlackListByParams.Data[i]);
+                    }
+
+                    var gridListalengthNegra = $("#gridListaNegra").data().kendoGrid.dataSource.data();
+
+                    if (gridListalengthNegra.length > 0) {
+                        $("#myModalListaNegra").modal('show');
+
+                        generar_alertas = true;
+                    }
+                    else {
+                        $("#myModalListaNegra").modal('hide');
+
+                        if (AlertaBusca.val() == '1') {
+                            $.toast({
+                                heading: 'En la Busqueda',
+                                text: '<br/><br/> No se encuentran resultados en la Lista Negra.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                showHideTransition: 'slide',
+                                hideAfter: 6000,
+                                stack: 6
+                            });
+                        }
+
+
+                    }
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+
+                }
+            });
+
+
+            $.ajax({
+                url: '@Url.Action("GetPersonByName", "OFAC")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: DataOFAClist(nombre),
+                success: function (data) {
+
+                    var grid = $("#gridListaOFAC").getKendoGrid();
+                    var datasource = grid.dataSource;
+                    var raw = datasource._data;
+                    for (i = datasource._data.length - 1; i >= 0; i--) {
+                        var item = raw[i];
+                        datasource.remove(item);
+                    }
+
+                    for (var i = 0; i < data.Data.length; i++) {
+                        datasource.insert(data.Data[i]);
+                        generar_alertas = true;
+                    }
+
+                    var gridListaOFAClen = $("#gridListaOFAC").data().kendoGrid.dataSource.data();
+
+                    if (gridListaOFAClen.length > 0) {
+                        $("#myModalOFAC").modal('show');
+                    }
+                    else {
+                        $("#myModalOFAC").modal('hide');
+
+
+                        if (AlertaBusca.val() == '1') {
+                            $.toast({
+                                heading: 'En la Busqueda',
+                                text: '<br/><br/> No se encuentran resultados en OFAC.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                showHideTransition: 'slide',
+                                hideAfter: 6000,
+                                stack: 6
+                            });
+                        }
+                    }
+
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+
+                }
+            });
+
+
+            $.ajax({
+                url: '@Url.Action("GetByParams", "PEPS")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: DataPEPSlist(nombre),
+                success: function (data) {
+
+
+                    var gridListaPEPS = $("#gridListaPEPS").getKendoGrid();
+                    var datasource = gridListaPEPS.dataSource;
+
+                    var raw = datasource._data;
+                    for (i = datasource._data.length - 1; i >= 0; i--) {
+                        var item = raw[i];
+                        datasource.remove(item);
+                    }
+
+                    for (var i = 0; i < data.Data.length; i++) {
+                        datasource.insert(data.Data[i]);
+                    }
+
+                    var gridListalengthpeps = $("#gridListaPEPS").data().kendoGrid.dataSource.data();
+
+
+                    if (gridListalengthpeps.length > 0) {
+                        $("#myModalPEPS").modal('show');
+                        generar_alertas = true;
+                    }
+                    else {
+                        $("#myModalPEPS").modal('hide');
+                        if (AlertaBusca.val() == '1') {
+                            $.toast({
+                                heading: 'En la Busqueda',
+                                text: '<br/><br/> No se encuentran resultados en PEPS.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                showHideTransition: 'slide',
+                                hideAfter: 6000,
+                                stack: 6
+                            });
+                        }
+
+                    }
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+
+                }
+            });
+
+            $.ajax({
+                url: '@Url.Action("GetONUPersonByName", "ONU")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: DataONUListilicitas(nombre),
+                success: function (data) {
+
+                    var gridListaONU = $("#gridListaONU").getKendoGrid();
+                    var datasource = gridListaONU.dataSource;
+
+                    var raw = datasource._data;
+                    for (i = datasource._data.length - 1; i >= 0; i--) {
+                        var item = raw[i];
+                        datasource.remove(item);
+                    }
+
+                    for (var i = 0; i < data.Data.length; i++) {
+                        datasource.insert(data.Data[i]);
+                    }
+
+
+                    var gridListalengthONU = $("#gridListaONU").data().kendoGrid.dataSource.data();
+
+                    if (gridListalengthONU.length > 0) {
+                        $("#myModalListaONU").modal('show');
+                        generar_alertas = true;
+                    }
+                    else {
+                        $("#myModalListaONU").modal('hide');
+
+                        if (AlertaBusca.val() == '1') {
+                            $.toast({
+                                heading: 'En la Busqueda',
+                                text: '<br/><br/> No se encuentran resultados en ONU.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                showHideTransition: 'slide',
+                                hideAfter: 6000,
+                                stack: 6
+                            });
+                        }
+
+
+                    }
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+
+                }
+            });
+
+            debugger;
+            dataCustomer = {
+                'CustomerId': $("#CustomerId").val(),
+            }
+            var _NivelRiesgoCliente = "";
+            $.ajax({
+                    url: '@Url.Action("GetMatrizRiesgoCustomersByCustomerId", "MatrizRiesgoCustomers")',
+                    method: 'POST',
+                    datatype: "json",
+                    contentType: "application/json",
+                    async: false,
+                    data: JSON.stringify(dataCustomer),
+                success: function (data) {
+                    debugger;
+                        if (data != undefined) {
+                            _NivelRiesgoCliente = data.RiesgoResidualNivel;
+                        }
+                        else {
+                            _NivelRiesgoCliente = "";
+                        }
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                        $.toast({
+                            heading: 'Validación',
+                            text: textStatus + ": " + XMLHttpRequest.responseText,
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 30000,
+                            stack: 6
+                        });
+
+                    }
+                });
+
+            if (generar_alertas == true && AlertaBusca.val() == '1') {
+
+                var dataAlerta = {
+
+                    'DocumentId': 1,
+                    'DocumentName': 'CLIENTE',
+                    'NivelRiesgoCliente': _NivelRiesgoCliente,
+                    'CloseDate': '0001-01-01',
+
+                };
+
+                $.ajax({
+                    url: '@Url.Action("GenerarAlerta", "Alert")',
+                    method: 'POST',
+                    datatype: "json",
+                    contentType: "application/json",
+                    async: false,
+                    data: JSON.stringify(dataAlerta),
+                    success: function (data) {
+
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                        $.toast({
+                            heading: 'Validación',
+                            text: textStatus + ": " + XMLHttpRequest.responseText,
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 30000,
+                            stack: 6
+                        });
+
+                    }
+                });
+
+
+
+            }
+            var generar_alertasPaisGAFI = false;
+            var Pais = $("#CountryId").data("kendoDropDownList").text();
+            dataCountry = {
+                'Name' : Pais,
+            }
+
+            $.ajax({
+                    url: '@Url.Action("PaisesGAFIByName", "Country")',
+                    method: 'POST',
+                    datatype: "json",
+                    contentType: "application/json",
+                    async: false,
+                    data: JSON.stringify(dataCountry),
+                    success: function (data) {
+                        if (data != undefined) {
+                            generar_alertasPaisGAFI = true;
+                        }
+                        else {
+                            generar_alertasPaisGAFI = false;
+                        }
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                        $.toast({
+                            heading: 'Validación',
+                            text: textStatus + ": " + XMLHttpRequest.responseText,
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 30000,
+                            stack: 6
+                        });
+
+                    }
+            });
+
+            if (generar_alertasPaisGAFI == true) {
+                var SalesOrderName = $("#SalesOrderName").val();
+                var dataAlertaPaisGAFI = {
+
+                    'DocumentId': 1,
+                    'DocumentName': 'CLIENTE',
+                    'AlertName': 'País GAFI',
+                    'Description': "El país seleccionado para el cliente: " + SalesOrderName + ", esta dentro del listado de paises GAFI",
+                    'CloseDate': '0001-01-01',
+
+                };
+
+                $.ajax({
+                    url: '@Url.Action("GenerarAlerta", "Alert")',
+                    method: 'POST',
+                    datatype: "json",
+                    contentType: "application/json",
+                    async: false,
+                    data: JSON.stringify(dataAlertaPaisGAFI),
+                    success: function (data) {
+
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                        $.toast({
+                            heading: 'Validación',
+                            text: textStatus + ": " + XMLHttpRequest.responseText,
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 30000,
+                            stack: 6
+                        });
+
+                    }
+                });
+            }
+        }
+    }
+
+
+
+
+
 
 
 </script>

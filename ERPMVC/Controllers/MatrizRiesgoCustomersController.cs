@@ -261,5 +261,34 @@ namespace ERPMVC.Controllers
         {
             return await Task.Run(() => View());
         }
+
+        //--------------------------------------------------------------------------------------
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult> GetMatrizRiesgoCustomersByCustomerId([FromBody]MatrizRiesgoCustomers MatrizRiesgoCustomers)
+        {
+            List<MatrizRiesgoCustomers> _ListMatrizRiesgoCustomers = new List<MatrizRiesgoCustomers>();
+            MatrizRiesgoCustomers _MatrizRiesgoCustomers = new MatrizRiesgoCustomers();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/MatrizRiesgoCustomers/GetMatrizRiesgoCustomers");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _ListMatrizRiesgoCustomers = JsonConvert.DeserializeObject<List<MatrizRiesgoCustomers>>(valorrespuesta);
+                    _MatrizRiesgoCustomers = _ListMatrizRiesgoCustomers.Where(p => p.CustomerId == MatrizRiesgoCustomers.CustomerId).FirstOrDefault();
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return await Task.Run(() => Ok(_MatrizRiesgoCustomers));
+        }
     }
 }
