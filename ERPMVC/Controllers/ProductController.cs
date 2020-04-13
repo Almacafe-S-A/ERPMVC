@@ -163,8 +163,8 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    _ProductS.UsuarioCreacion = _Product.UsuarioCreacion;
-                    _ProductS.FechaCreacion = _Product.FechaCreacion;
+                    _ProductS.UsuarioCreacion = _listProduct.UsuarioCreacion;
+                    _ProductS.FechaCreacion = _listProduct.FechaCreacion;
                     var updateresult = await Update(_Product.ProductId, _ProductS);
                 }
 

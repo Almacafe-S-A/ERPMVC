@@ -491,6 +491,7 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 _SubProduct.FechaModificacion = DateTime.Now;
                 _SubProduct.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _SubProduct.ProductName = _SubProduct.ProductName.ToUpper();
                 var result = await _client.PostAsJsonAsync(baseadress + "api/SubProduct/Update", _SubProduct);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
@@ -510,7 +511,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost]
-        public async Task<ActionResult<SubProduct>> Delete(Int64 productid, SubProduct _subproduct)
+        public async Task<ActionResult<SubProduct>> Delete(Int64 productid, [FromBody]SubProduct _subproduct)
         {
             SubProduct _SubProduct = new SubProduct();
             List<InvoiceLine> _InvoiceLine = new List<InvoiceLine>();
