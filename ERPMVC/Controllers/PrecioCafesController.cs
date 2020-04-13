@@ -32,7 +32,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
-
+        [Authorize(Policy = "Administracion.PrecioCafe")]
         public async Task<IActionResult> PrecioCafe()
         {
             ViewData["Tasacambio"] = await Obtenertasadecambio();
