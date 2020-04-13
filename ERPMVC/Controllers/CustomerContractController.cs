@@ -395,6 +395,11 @@ namespace ERPMVC.Controllers
                     default:
                         break;
                 }
+
+                if (String.IsNullOrEmpty(Contrato))
+                {
+                    return await Task.Run(() => BadRequest($"No se encontro producto : " + _customercontract.ProductName + " para el archivo a imprimir."));
+                }
                 //FileStream fs = System.IO.File.OpenRead(basePath+ "/ContratosTemplate/Test.docx");
                 FileStream fs = new FileStream(basePath + "/ContratosTemplate/"+Contrato, FileMode.Open, FileAccess.Read);
 
