@@ -110,6 +110,10 @@ namespace ERPMVC.Models
         [Display(Name = "Articulos pertenecen a la empresa u otra organización")]
         public string PerteneceEmpresa { get; set; }
 
+        public decimal? ValorSeveridadRiesgo { get; set; }
+
+        public string ColorHexadecimal { get; set; }
+
         [Display(Name = "Confirmación por correo")]
         public bool ConfirmacionCorreo { get; set; }
 

@@ -76,6 +76,13 @@ namespace ERPMVC.Controllers
             return await Task.Run(() => PartialView());
         }
 
+        [Authorize(Policy = "Monitoreo.Riesgo Clientes")]
+        public async Task<ActionResult> CustomerRisk() {
+            return await Task.Run(() => View());
+
+        
+        }
+
         [HttpGet("[action]")]
         public async Task<ActionResult> GetCustomerById(Int64 CustomerId)
         {
@@ -216,7 +223,7 @@ namespace ERPMVC.Controllers
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<Customer> _customers = new List<Customer>();
+            List<CustomerDTO> _customers = new List<CustomerDTO>();
             try
             {
 
@@ -228,7 +235,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _customers = JsonConvert.DeserializeObject<List<Customer>>(valorrespuesta);
+                    _customers = JsonConvert.DeserializeObject<List<CustomerDTO>>(valorrespuesta);
                     _customers = _customers.OrderByDescending(q => q.CustomerId).ToList();
                 }
 
@@ -244,6 +251,8 @@ namespace ERPMVC.Controllers
             return await Task.Run(() => _customers.ToDataSourceResult(request));
 
         }
+
+       
 
         [HttpGet("[action]")]
         public async Task<DataSourceResult> GetUsuario([DataSourceRequest]DataSourceRequest request)
@@ -461,6 +470,66 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 result = await _client.PostAsJsonAsync(baseadress + "api/Customer/Update", _customer);
                  valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _customer = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
+
+                    _customer.CityId = _customer.CityId == null ? 0 : _customer.CityId;
+                    _customer.CountryId = _customer.CountryId == null ? 0 : _customer.CountryId;
+                    _customer.StateId = _customer.StateId == null ? 0 : _customer.StateId;
+                    _customer.IdEstado = _customer.IdEstado == null ? 0 : _customer.IdEstado;
+                    _customer.CustomerTypeId = _customer.CustomerTypeId == null ? 0 : _customer.CustomerTypeId;
+
+                }
+                else
+                {
+                    return BadRequest($"Ocurrio un error: {result.Content.ReadAsStringAsync()}");
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
+
+            return await Task.Run(() => new ObjectResult(new DataSourceResult { Data = new[] { _customer }, Total = 1 }));
+        }
+
+
+        [HttpPost]
+        public async Task<IActionResult> PutRiesgo(Customer _customer, int fromsave = 0)
+        {
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+
+                Customer _listCustomer = new Customer();
+                var result = await _client.GetAsync(baseadress + "api/Customer/GetCustomerById/" + _customer.CustomerId);
+                string valorrespuesta = "";
+
+                
+                if (fromsave == 0)
+                {
+                    if (result.IsSuccessStatusCode)
+                    {
+
+                        valorrespuesta = await (result.Content.ReadAsStringAsync());
+                        _listCustomer = JsonConvert.DeserializeObject<Customer>(valorrespuesta);
+                    }
+                    _listCustomer.ValorSeveridadRiesgo = _customer.ValorSeveridadRiesgo;
+                    _listCustomer.FechaModificacion = DateTime.Now;
+                    _listCustomer.UsuarioModificacion = HttpContext.Session.GetString("user");
+
+                }
+
+                _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                result = await _client.PostAsJsonAsync(baseadress + "api/Customer/Update", _listCustomer);
+                valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
