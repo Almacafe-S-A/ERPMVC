@@ -35,6 +35,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Clientes.Tipo de Cliente")]
         public ActionResult CustomerType()
         {
             ViewData["permisos"] = _principal;

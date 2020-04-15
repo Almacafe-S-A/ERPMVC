@@ -47,18 +47,22 @@ namespace ERPMVC.Controllers
 
             return View(_accountingdto);
         }
+
+        [Authorize(Policy = "Contabilidad.Reportes.Historico de movimientos por cuenta por dia")]
         public async Task<IActionResult> SFAuxiliarMovimientosPorDia()
         {
             return await Task.Run(() => View());
 
         }
 
+        [Authorize(Policy = "Contabilidad.Reportes.Movimientos Historicos")]
         public async Task<IActionResult> SFMovimientosHistoricos()
         {
             return await Task.Run(() => View());
 
         }
 
+        [Authorize(Policy = "Contabilidad.Estados Finacieros.Cambios Patrimonio")]
         public async Task<IActionResult> SFCambiosPatrimonio()
         {
             return await Task.Run(() => View());

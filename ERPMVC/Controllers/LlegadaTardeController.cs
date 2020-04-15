@@ -30,6 +30,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "RRHH.Asistencia.Aprobar Llegadas Tarde")]
         public IActionResult Index()
         {
             ViewData["permisos"] = _principal;

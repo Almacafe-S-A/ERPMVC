@@ -18,6 +18,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        [Authorize(Policy = "Reportes.Kardex detallado por producto")]
         public async  Task<IActionResult> SFDetalladoPorProducto()
         {
 
@@ -25,13 +26,14 @@ namespace ERPMVC.Controllers
 
         }
 
-
+        [Authorize(Policy = "Reportes.Ingresos")]
         public async Task<IActionResult> SFIngresos()
         {
             return await Task.Run(() => View());
 
         }
 
+        [Authorize(Policy = "Reportes.Recibo de mercaderia")]
         public async Task<IActionResult> SFReciboMercaderia()
         {
 
@@ -39,13 +41,15 @@ namespace ERPMVC.Controllers
 
         }
 
-
+        [Authorize(Policy = "Reportes.Areas")]
         public async Task<IActionResult> SFAreas()
         {
 
             return await Task.Run(() => View());
 
         }
+
+        [Authorize(Policy = "Reportes.Tabla de Conversion de Peso")]
         public async Task<IActionResult> SFTabladeConversionPeso()
         {
 
