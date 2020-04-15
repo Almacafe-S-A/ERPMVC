@@ -32,6 +32,7 @@ namespace ERPMVC.Controllers
 
         }
 
+        [Authorize(Policy = "Contabilidad.Reportes.Historico de movimientos por cuenta")]
         public async Task<IActionResult> SFAuxiliarMovimientos()
         {
             return await Task.Run(() => View());

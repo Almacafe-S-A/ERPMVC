@@ -31,12 +31,14 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "RRHH.Bonos y Deducciones.Deducciones por Empleado")]
         public ActionResult Index()
         {
             ViewData["permisos"] = _principal;
             return View();
         }
 
+        [Authorize(Policy = "RRHH.Planillas y Operaciones.Calculo General ISR")]
         public ActionResult CalculoGeneralISR()
         {
             PeriodoDTO periodo = new PeriodoDTO();
