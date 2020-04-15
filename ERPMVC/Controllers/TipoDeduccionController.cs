@@ -29,7 +29,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
-        [Authorize(Policy = "RRHH.Tipo Deduccion")]
+        //[Authorize(Policy = "RRHH.Tipo Deduccion")]
         public ActionResult Index()
         {
             ViewData["permisos"] = _principal;
