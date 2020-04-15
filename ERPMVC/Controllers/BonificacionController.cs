@@ -26,6 +26,7 @@ namespace ERPMVC.Controllers
             this.logger = logger;
         }
 
+        [Authorize(Policy = "RRHH.Bonos y Deducciones.Bonificaciones")]
         public IActionResult Index()
         {
             return View();

@@ -112,6 +112,8 @@ namespace ERPMVC.Models
 
         public decimal? ValorSeveridadRiesgo { get; set; }
 
+        public string NivelSeveridad { get; set; }
+
         public string ColorHexadecimal { get; set; }
 
         [Display(Name = "Confirmación por correo")]

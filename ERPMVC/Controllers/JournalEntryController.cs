@@ -48,10 +48,14 @@ namespace ERPMVC.Controllers
             ViewData["permisos"] = _principal;
             return View();
         }
+
+        [Authorize(Policy = "Contabilidad.Movimientos.Asiento Contable")]
         public ActionResult JournalEntryLine()
         {
             return View();
         }
+
+        [Authorize(Policy = "Contabilidad.Movimientos.Ajustes Contables")]
         public ActionResult JournalEntryLineAjuste()
         {
             return View();
