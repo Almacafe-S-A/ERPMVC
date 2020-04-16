@@ -34,7 +34,7 @@ namespace ERPMVC.Controllers
         }
 
         // GET: Departamento
-        [Authorize(Policy = "RRHH.Parametros Departamento")]
+        //[Authorize(Policy = "RRHH.Parametros Departamento")]
         public ActionResult Departamento()
         {
             ViewData["permisos"] = _principal;
