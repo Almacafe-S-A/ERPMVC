@@ -36,9 +36,8 @@ namespace ERPMVC.Controllers
         [Authorize(Policy = "Administracion.Tipos de Documentos")]
         public ActionResult TiposDocumento()
         {
-            ViewData["permisoAgregar"] = _principal.HasClaim("Administracion.Tipos de Documentos.Agregar Tipo de Documento", "true");
-            ViewData["permisoEditar"] = _principal.HasClaim("Administracion.Tipos de Documentos.Editar Tipo de Documento", "true");
-            ViewData["permisoExportar"] = _principal.HasClaim("Administracion.Tipos de Documentos.Exportar Tipo de Documento", "true");
+            ViewData["permisoAgregar"] = _principal.HasClaim("Administracion.Tipos de Documentos.Agregar", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Administracion.Tipos de Documentos.Editar", "true");
             return View();
         }
 

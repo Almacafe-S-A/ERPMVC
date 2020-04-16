@@ -38,10 +38,9 @@ namespace ERPMVC.Controllers
         [Authorize(Policy = "Administracion.Puntos Emision")]
         public ActionResult Index()
         {
-            ViewData["permisoAgregar"] = _principal.HasClaim("Administracion.Puntos Emision.Agregar Punto Emision", "true");
-            ViewData["permisoEditar"] = _principal.HasClaim("Administracion.Puntos Emision.Editar Punto Emision", "true");
-            ViewData["permisoEliminar"] = _principal.HasClaim("Administracion.Puntos Emision.Eliminar Punto Emision", "true");
-            ViewData["permisoExportar"] = _principal.HasClaim("Administracion.Puntos Emision.Exportar Punto Emision", "true");
+            ViewData["permisoAgregar"] = _principal.HasClaim("Administracion.Puntos Emision.Agregar", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Administracion.Puntos Emision.Editar", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Administracion.Puntos Emision.Eliminar", "true");
             return View();
         }
 

@@ -38,10 +38,9 @@ namespace ERPMVC.Controllers
         [Authorize(Policy = "Administracion.CAI")]
         public ActionResult Index()
         {
-            ViewData["permisoAgregar"] = _principal.HasClaim("Administracion.CAI.Agregar CAI", "true");
-            ViewData["permisoEditar"] = _principal.HasClaim("Administracion.CAI.Editar CAI", "true");
-            ViewData["permisoEliminar"] = _principal.HasClaim("Administracion.CAI.Eliminar CAI", "true");
-            ViewData["permisoExportar"] = _principal.HasClaim("Administracion.CAI.Exportar CAI", "true");
+            ViewData["permisoAgregar"] = _principal.HasClaim("Administracion.CAI.Agregar", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Administracion.CAI.Editar", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Administracion.CAI.Eliminar", "true");
             return View();
         }
 
