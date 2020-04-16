@@ -38,9 +38,8 @@ namespace ERPMVC.Controllers
         [Authorize(Policy = "Configuracion.Tasa de Cambio")]
         public ActionResult Tax()
         {
-            ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Impuestos.Agregar Impuesto", "true");
-            ViewData["permisoEditar"] = _principal.HasClaim("Configuracion.Impuestos.Editar Impuesto", "true");
-            ViewData["permisoExportar"] = _principal.HasClaim("Configuracion.Impuestos.Exportar Impuesto", "true");
+            ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Impuestos.Agregar", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Configuracion.Impuestos.Editar", "true");
             return View();
         }
 

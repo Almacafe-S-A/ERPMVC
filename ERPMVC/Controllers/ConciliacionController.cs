@@ -51,7 +51,7 @@ namespace ERPMVC.Controllers
 
         // GET: Conciliacion
         [Authorize(Policy = "Bancos.Conciliacion Bancaria")]
-        public async Task<IActionResult> Conciliacion()
+        public ActionResult Conciliacion()
         {
             ViewData["permisos"] = _principal;
             return View();

@@ -36,9 +36,8 @@ namespace ERPMVC.Controllers
         [Authorize(Policy = "Configuracion.Elemento Configuracion")]
         public IActionResult ElementoConfiguracion()
         {
-            ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Elemento Configuracion.Agregar Elemento Configuracion", "true");
-            ViewData["permisoEditar"] = _principal.HasClaim("Configuracion.Elemento Configuracion.Editar Elemento Configuracion", "true");
-            ViewData["permisoExportar"] = _principal.HasClaim("Configuracion.Elemento Configuracion.Exportar Elemento Configuracion", "true");
+            ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Elemento Configuracion.Agregar", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Configuracion.Elemento Configuracion.Editar", "true");
             return View();
         }
 

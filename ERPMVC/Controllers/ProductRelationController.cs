@@ -39,9 +39,9 @@ namespace ERPMVC.Controllers
         [Authorize(Policy = "Catalogos.Relacion Servicio")]
         public ActionResult ProductRelation()
         {
-            ViewData["permisoAgregar"] = _principal.HasClaim("Catalogos.Relacion Servicio.Agregar Relacion Servicio", "true");
-            ViewData["permisoEditar"] = _principal.HasClaim("Catalogos.Relacion Servicio.Editar Relacion Servicio", "true");
-            ViewData["permisoExportar"] = _principal.HasClaim("Catalogos.Relacion Servicio.Exportar Relacion Servicio", "true");
+            ViewData["permisoAgregar"] = _principal.HasClaim("Catalogos.Relacion Servicio.Agregar", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Catalogos.Relacion Servicio.Editar", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Catalogos.Relacion Servicio.Exportar", "true");
             return View();
         }
 

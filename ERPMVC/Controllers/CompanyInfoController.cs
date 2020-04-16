@@ -44,10 +44,9 @@ namespace ERPMVC.Controllers
         [Authorize(Policy = "Configuracion.Informacion de la Empresa")]
         public IActionResult CompanyInfo()
         {
-            ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Informacion de la Empresa.Agregar Informacion de la Empresa", "true");
-            ViewData["permisoEditar"] = _principal.HasClaim("Configuracion.Informacion de la Empresa.Editar Informacion de la Empresa", "true");
-            ViewData["permisoEliminar"] = _principal.HasClaim("Configuracion.Informacion de la Empresa.Eliminar Informacion de la Empresa", "true");
-            ViewData["permisoExportar"] = _principal.HasClaim("Configuracion.Informacion de la Empresa.Exportar Informacion de la Empresa", "true");
+            ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Informacion de la Empresa.Agregar", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Configuracion.Informacion de la Empresa.Editar", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Configuracion.Informacion de la Empresa.Eliminar", "true");
             return View();
         }
 

@@ -38,10 +38,9 @@ namespace ERPMVC.Controllers
         [Authorize(Policy = "Configuracion.Pais")]
         public ActionResult Country()
         {
-            ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Pais.Agregar Pais", "true");
-            ViewData["permisoEditar"] = _principal.HasClaim("Configuracion.Pais.Editar Pais", "true");
-            ViewData["permisoEliminar"] = _principal.HasClaim("Configuracion.Pais.Eliminar Pais", "true");
-            ViewData["permisoExportar"] = _principal.HasClaim("Configuracion.Pais.Exportar Pais", "true");
+            ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Pais.Agregar", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Configuracion.Pais.Editar", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Configuracion.Pais.Eliminar", "true");
             return View();
         }
 
