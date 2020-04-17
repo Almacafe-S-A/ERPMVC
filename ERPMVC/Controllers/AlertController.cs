@@ -45,6 +45,10 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+        public ActionResult SFAlertReport()
+        {
+            return View();
+        }
 
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> pvwAlert([FromBody]Alert _AlertP)
