@@ -821,7 +821,7 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            _Account.hasChildren = _sarpara.hasChildren;
+            //_Account.hasChildren = _sarpara.hasChildren;
             return await Task.Run(() => PartialView(_Account));
 
             // return PartialView(_Account);
