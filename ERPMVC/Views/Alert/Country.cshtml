@@ -74,6 +74,52 @@
         });
     }
 
+        function DeleteCountry(e) {
+        if (confirm('¿Esta seguro que desea eliminar este registro?')) {
+            e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                Id: dataItem.Id,
+                editar: 0
+            };
+            $.ajax({
+                url: '@Url.Action("Delete", "Country")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    RefrescarGrid();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    if (XMLHttpRequest.responseText == "No se puede eliminar este registro porque está siendo utilizado.") {
+                        $.toast({
+                            heading: 'Validación',
+                            text: "No se puede eliminar este registro porque está siendo utilizado.",
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 30000,
+                            stack: 6
+                        });
+                    }
+                    else {
+                        $.toast({
+                            heading: 'Error',
+                            text: textStatus + ": " + XMLHttpRequest.responseText,
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 30000,
+                            stack: 6
+                        });
+                    }
+                }
+            });
+        }
+    }
+
     function RefrescarGrid() {
         var grid = $("#gridCountry").getKendoGrid();
         grid.dataSource.read();
@@ -105,7 +151,8 @@
                     }
                     if (permisos.HasClaim("Monitoreo.Paises GAFI.Eliminar Paises GAFI", "true"))
                     {
-                        command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                        command.Custom("Eliminar").Text(" ").Click("DeleteCountry").IconClass("fa fa-trash-alt");
+                        //command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
                     }
                 }).Width(150).Title("Acciones");
             }
