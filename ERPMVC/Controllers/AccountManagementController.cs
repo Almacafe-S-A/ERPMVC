@@ -36,10 +36,10 @@ namespace ERPMVC.Controllers
         [Authorize(Policy = "Bancos.Cuentas Bancarias")]
         public IActionResult Index()
         {
-            ViewData["permisoAgregar"] = _principal.HasClaim("Bancos.Cuentas Bancarias.Agregar Cuentas Bancarias", "true");
-            ViewData["permisoEditar"] = _principal.HasClaim("Bancos.Cuentas Bancarias.Editar Cuentas Bancarias", "true");
-            ViewData["permisoEliminar"] = _principal.HasClaim("Bancos.Cuentas Bancarias.Eliminar Cuentas Bancarias", "true");
-            ViewData["permisoExportar"] = _principal.HasClaim("Bancos.Cuentas Bancarias.Exportar Cuentas Bancarias", "true");
+            ViewData["permisoAgregar"] = _principal.HasClaim("Bancos.Cuentas Bancarias.Agregar", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Bancos.Cuentas Bancarias.Editar", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Bancos.Cuentas Bancarias.Eliminar", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Bancos.Cuentas Bancarias.Exportar", "true");
             return View();
         }
         public async Task<JsonResult> GetAccountManagementById(Int64 AccountManagementId)
