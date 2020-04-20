@@ -25,7 +25,7 @@
                                                 )
                                       .Columns(columns =>
                                       {
-                                          if (permisos.HasClaim("Monitoreo.Definicion de Severidad.Editar", "true"))
+                                          if (permisos.HasClaim("Monitoreo.Severidad de Riesgo.Editar", "true"))
                                           {
                                               columns.Command(command =>
                                               {
@@ -43,7 +43,7 @@
                                           columns.Bound(p => p.RangoSuperiorSeveridad).Width(100).Hidden(true);
                                           columns.Template("#=RangoInferiorSeveridad# - #=RangoSuperiorSeveridad#").Title("Valor").Width(100);
                                           columns.Bound(p => p.ColorHexadecimal).Hidden(true);
-                                          columns.Bound(p => p.Nivel).Width(100).HtmlAttributes(new { @style = "background:#=ColorHexadecimal#;color:white;" });
+                                          columns.Bound(p => p.Nivel).Width(100).HtmlAttributes(new { @style = "background:#=ColorHexadecimal#;color:black;" });
                                       })
                                                     .Filterable(f => f.Operators(o => o.ForString(s => s
                                                                     .Clear()
@@ -76,12 +76,12 @@
                                                             ))
                                                 .ToolBar(tools =>
                                                 {
-                                                    if (permisos.HasClaim("Monitoreo.Definicion de Severidad.Agregar", "true"))
+                                                    if (permisos.HasClaim("Monitoreo.Severidad de Riesgo.Agregar", "true"))
                                                     {
                                                         tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @id = "SeveridadRiesgo_Add", @class = "k-i-plus-sm", onclick = "AddSeveridadRiesgo()" });
                                                     }
-                                                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                                    tools.Custom().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field", onclick = "exportToExcel()" });
+                                                    tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
                                                 })
                                                 .Editable(e => e.Mode(GridEditMode.PopUp))
                                                 .Sortable()
@@ -90,7 +90,7 @@
                                                     .Empty("No hay datos."))
                                                 )
                                                 .Filterable()
-                                                
+
                                                 .Pdf(pdf => pdf.FileName("SeveridadRiesgoReporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                                                 + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
                                                 .ProxyURL(Url.Action("Export", "Home")).AllPages())
@@ -350,12 +350,12 @@
 
 
         var displayedData = $("#gridSeveridadRiesgo").data().kendoGrid.dataSource.view();
-        if (displayedData.length == 4) {
-            $("#SeveridadRiesgo_Add").hide();
-        }
-        else {
-            $("#SeveridadRiesgo_Add").show();
-        }
+        //if (displayedData.length == 4) {
+        //    $("#SeveridadRiesgo_Add").hide();
+        //}
+        //else {
+        //    $("#SeveridadRiesgo_Add").show();
+        //}
 
         if (displayedData.length == 0) {
             $("#LimeteCalidadSuperir").prop("disabled", true);
@@ -486,4 +486,92 @@
             }
         });
     }
+
+
+    var exportFlag = false;
+$("#gridSeveridadRiesgo").data("kendoGrid").bind("excelExport", function (e) {
+    if (!exportFlag) {
+        debugger;
+        e.sender.showColumn(4);
+        //e.sender.hideColumn(4);
+        e.preventDefault();
+        exportFlag = true;
+        setTimeout(function () {
+            e.sender.saveAsExcel();
+        });
+    } else {
+        //e.sender.showColumn(4);
+        e.sender.hideColumn(4);
+        exportFlag = false;
+    }
+});
+
+    function exportToExcel() {
+       const grid = $('#gridSeveridadRiesgo').data('kendoGrid');
+
+        grid.showColumn("LimeteCalidadSuperir");
+        grid.showColumn("LimiteCalidadInferior");
+        grid.showColumn("RangoInferiorSeveridad");
+        grid.showColumn("RangoSuperiorSeveridad");
+
+        
+        grid.saveAsExcel();
+        
+
+        setTimeout(function ()
+        {
+            hideColumns();
+        }, 500);
+    };
+
+    function hideColumns() {
+       const grid = $('#gridSeveridadRiesgo').data('kendoGrid');
+
+        grid.hideColumn("LimeteCalidadSuperir");
+        grid.hideColumn("LimiteCalidadInferior");
+        grid.hideColumn("RangoInferiorSeveridad");
+        grid.hideColumn("RangoSuperiorSeveridad");
+
+        resetColumSize();
+
+        //var cols = grid.columns;
+        //cols["Impacto"].width = 100;
+        //cols["Probabilidad"].width = 120;
+        //cols["#=LimeteCalidadSuperir# <br> #=LimiteCalidadInferior#"].width = 100;
+        //cols["#=RangoInferiorSeveridad# - #=RangoSuperiorSeveridad#"].width = 100;
+
+
+                                          //columns.Template("#=LimeteCalidadSuperir# <br> #=LimiteCalidadInferior#").Title("Calificación").Width(100);
+                                          
+                                          //columns.Template("#=RangoInferiorSeveridad# - #=RangoSuperiorSeveridad#").Title("Valor").Width(100);
+        //setGridWidth(grid);
+    };
+
+    function resetColumSize() {
+    var grid = $("#gridSeveridadRiesgo").getKendoGrid();
+        grid.columns[1].width = 100;
+        grid.columns[2].width = 120;
+        grid.columns[5].width = 100;
+        grid.columns[8].width = 100;
+        grid.columns[10].width = 100;
+    grid.setOptions({columns: grid.columns});
+    }
+
+    var initialGridWidth;
+          function setGridWidth(e){
+            var cols = e.sender.columns;
+            var currentColWidth = cols.reduce(function(prev, cur){
+              if(!cur.hidden){
+                return prev += cur.width;
+              } else {
+                return prev;
+              }
+            }, 0);
+
+            if(currentColWidth > initialGridWidth){
+              e.sender.wrapper.width(initialGridWidth);
+            } else {
+              e.sender.wrapper.width(currentColWidth + kendo.support.scrollbar());
+            }
+          }
 </script>

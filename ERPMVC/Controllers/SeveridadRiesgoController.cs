@@ -33,7 +33,7 @@ namespace ERPMVC.Controllers
         }
 
         //--------------------------------------------------------------------------------------
-        [Authorize(Policy = "Monitoreo.Definicion de Severidad")]
+        [Authorize(Policy = "Monitoreo.Severidad de Riesgo")]
         public IActionResult Index()
         {
             ViewData["permisos"] = _principal;
@@ -57,6 +57,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _SeveridadRiesgo = JsonConvert.DeserializeObject<List<SeveridadRiesgo>>(valorrespuesta);
+                    _SeveridadRiesgo = _SeveridadRiesgo.OrderByDescending(e => e.RangoInferiorSeveridad).ToList();
                 }
             }
             catch (Exception ex)
