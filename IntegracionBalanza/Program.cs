@@ -112,7 +112,7 @@ namespace IntegracionBalanza
 
 
             _timer = new Timer(moduleSettings.interval) { AutoReset = true };
-            _timer.Elapsed += (sender, eventArgs) => GuardarData();
+            _timer.Elapsed += (sender, eventArgs) =>  GuardarData();
 
             _timerproductos = new Timer(moduleSettings.interval3) { AutoReset = true };
             _timerproductos.Elapsed += (sender, eventArgs) => GuardarProductos();

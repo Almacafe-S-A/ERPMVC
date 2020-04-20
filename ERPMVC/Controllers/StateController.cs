@@ -32,14 +32,14 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
-        [Authorize(Policy = "Configuracion.Estado")]
+        [Authorize(Policy = "Configuracion.Depto")]
         public async Task<IActionResult> State()
         {
             ViewData["Pais"] = await ObtenerPais();
-            ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Estado.Agregar Estado", "true");
-            ViewData["permisoEditar"] = _principal.HasClaim("Configuracion.Estado.Editar Estado", "true");
-            ViewData["permisoEliminar"] = _principal.HasClaim("Configuracion.Estado.Eliminar Estado", "true");
-            ViewData["permisoExportar"] = _principal.HasClaim("Configuracion.Estado.Exportar Estado", "true");
+            ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Depto.Agregar", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Configuracion.Depto.Editar", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Configuracion.Depto.Eliminar", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Configuracion.Depto.Exportar", "true");
             return View();
         }
 

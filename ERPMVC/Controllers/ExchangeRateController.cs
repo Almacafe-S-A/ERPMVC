@@ -36,9 +36,8 @@ namespace ERPMVC.Controllers
         [Authorize(Policy = "Configuracion.Tasa de Cambio")]
         public ActionResult ExchangeRate()
         {
-            ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Tasa de Cambio.Agregar Tasa de Cambio", "true");
-            ViewData["permisoEditar"] = _principal.HasClaim("Configuracion.Tasa de Cambio.Editar Tasa de Cambio", "true");
-            ViewData["permisoExportar"] = _principal.HasClaim("Configuracion.Tasa de Cambio.Exportar Tasa de Cambio", "true");
+            ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Tasa de Cambio.Agregar", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Configuracion.Tasa de Cambio.Editar", "true");
             return View();
         }
 
@@ -127,7 +126,7 @@ namespace ERPMVC.Controllers
                     ExchangeRate resultado = ((ExchangeRate)(value));
                     if (resultado.ExchangeRateId <= 0)
                     {
-                        return await Task.Run(() => BadRequest($"No se guardo la tasa de cambio."));
+                        return await Task.Run(() => BadRequest($"No se guardo la."));
                     }
                 }
                 else

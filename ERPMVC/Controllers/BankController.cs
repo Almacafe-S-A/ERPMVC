@@ -36,10 +36,10 @@ namespace ERPMVC.Controllers
         [Authorize(Policy = "Bancos.Bancos")]
         public IActionResult Bank()
         {
-            ViewData["permisoAgregar"] = _principal.HasClaim("Bancos.Bancos.Agregar Bancos", "true");
-            ViewData["permisoEditar"] = _principal.HasClaim("Bancos.Bancos.Editar Bancos", "true");
-            ViewData["permisoEliminar"] = _principal.HasClaim("Bancos.Bancos.Eliminar Bancos", "true");
-            ViewData["permisoExportar"] = _principal.HasClaim("Bancos.Bancos.Exportar Bancos", "true");
+            ViewData["permisoAgregar"] = _principal.HasClaim("Bancos.Bancos.Agregar", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Bancos.Bancos.Editar", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Bancos.Bancos.Eliminar", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Bancos.Bancos.Exportar", "true");
             return View();
         }
 

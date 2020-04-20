@@ -39,10 +39,9 @@ namespace ERPMVC.Controllers
         public async Task<IActionResult> City()
         {
             ViewData["Pais"] = await ObtenerPais();
-            ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Ciudad.Agregar Ciudad", "true");
-            ViewData["permisoEditar"] = _principal.HasClaim("Configuracion.Ciudad.Editar Ciudad", "true");
-            ViewData["permisoEliminar"] = _principal.HasClaim("Configuracion.Ciudad.Eliminar Ciudad", "true");
-            ViewData["permisoExportar"] = _principal.HasClaim("Configuracion.Ciudad.Exportar Ciudad", "true");
+            ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Ciudad.Agregar", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Configuracion.Ciudad.Editar", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Configuracion.Ciudad.Eliminar", "true");
             return View();
         }
 

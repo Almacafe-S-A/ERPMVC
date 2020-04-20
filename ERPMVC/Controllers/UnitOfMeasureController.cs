@@ -15,22 +15,6 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
-//using System;
-//using System.Collections.Generic;
-//using System.Linq;
-//using System.Net.Http;
-//using System.Threading.Tasks;
-//using ERPMVC.DTO;
-//using ERPMVC.Helpers;
-//using ERPMVC.Models;
-//using Kendo.Mvc.Extensions;
-//using Kendo.Mvc.UI;
-//using Microsoft.AspNetCore.Authorization;
-//using Microsoft.AspNetCore.Http;
-//using Microsoft.AspNetCore.Mvc;
-//using Microsoft.Extensions.Logging;
-//using Microsoft.Extensions.Options;
-//using Newtonsoft.Json;
 
 namespace ERPMVC.Controllers
 {
@@ -52,10 +36,9 @@ namespace ERPMVC.Controllers
         [Authorize(Policy = "Administracion.Unidades de Medida")]
         public IActionResult UnitOfMeasure()
         {
-            ViewData["permisoAgregar"] = _principal.HasClaim("Administracion.Unidades de Medida.Agregar Unidad de Medida", "true");
-            ViewData["permisoEditar"] = _principal.HasClaim("Administracion.Unidades de Medida.Editar Unidad de Medida", "true");
-            ViewData["permisoEliminar"] = _principal.HasClaim("Administracion.Unidades de Medida.Eliminar Unidad de Medida", "true");
-            ViewData["permisoExportar"] = _principal.HasClaim("Administracion.Unidades de Medida.Exportar Unidad de Medida", "true");
+            ViewData["permisoAgregar"] = _principal.HasClaim("Administracion.Unidades de Medida.Agregar", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Administracion.Unidades de Medida.Editar", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Administracion.Unidades de Medida.Eliminar", "true");
             return View();
         }
 

@@ -36,10 +36,10 @@ namespace ERPMVC.Controllers
         [Authorize(Policy = "Administracion.Numeracion SAR")]
         public IActionResult NumeracionSAR()
         {
-            ViewData["permisoAgregar"] = _principal.HasClaim("Administracion.Numeracion SAR.Agregar Numeracion SAR", "true");
-            ViewData["permisoEditar"] = _principal.HasClaim("Administracion.Numeracion SAR.Editar Numeracion SAR", "true");
-            ViewData["permisoEliminar"] = _principal.HasClaim("Administracion.Numeracion SAR.Eliminar Numeracion SAR", "true");
-            ViewData["permisoExportar"] = _principal.HasClaim("Administracion.Numeracion SAR.Exportar Numeracion SAR", "true");
+            ViewData["permisoAgregar"] = _principal.HasClaim("Administracion.Numeracion SAR.Agregar", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Administracion.Numeracion SAR.Editar", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Administracion.Numeracion SAR.Eliminar", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Administracion.Numeracion SAR.Exportar", "true");
             return View();
         }
    

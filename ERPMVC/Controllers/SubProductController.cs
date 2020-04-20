@@ -43,10 +43,10 @@ namespace ERPMVC.Controllers
         [HttpGet("[controller]/[action]")]
         public IActionResult SubProductClientes()
         {
-            ViewData["permisoAgregar"] = _principal.HasClaim("Catalogos.Productos de Cliente.Agregar Productos de Cliente", "true");
-            ViewData["permisoEditar"] = _principal.HasClaim("Catalogos.Productos de Cliente.Editar Productos de Cliente", "true");
-            ViewData["permisoEliminar"] = _principal.HasClaim("Catalogos.Productos de Cliente.Eliminar Productos de Cliente", "true");
-            ViewData["permisoExportar"] = _principal.HasClaim("Catalogos.Productos de Cliente.Exportar Productos de Cliente", "true");
+            ViewData["permisoAgregar"] = _principal.HasClaim("Catalogos.Productos de Cliente.Agregar", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Catalogos.Productos de Cliente.Editar", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Catalogos.Productos de Cliente.Eliminar", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Catalogos.Productos de Cliente.Exportar", "true");
             return View();
         }
 
@@ -54,10 +54,10 @@ namespace ERPMVC.Controllers
         [HttpGet("[controller]/[action]")]
         public IActionResult SubProductPropios()
         {
-            ViewData["permisoAgregar"] = _principal.HasClaim("Catalogos.SubServicios.Agregar SubServicios", "true");
-            ViewData["permisoEditar"] = _principal.HasClaim("Catalogos.SubServicios.Editar SubServicios", "true");
-            ViewData["permisoEliminar"] = _principal.HasClaim("Catalogos.SubServicios.Eliminar SubServicios", "true");
-            ViewData["permisoExportar"] = _principal.HasClaim("Catalogos.SubServicios.Exportar SubServicios", "true");
+            ViewData["permisoAgregar"] = _principal.HasClaim("Catalogos.SubServicios.Agregar", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Catalogos.SubServicios.Editar", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Catalogos.SubServicios.Eliminar", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Catalogos.SubServicios.Exportar", "true");
             return View();
         }
 

@@ -38,10 +38,9 @@ namespace ERPMVC.Controllers
         [Authorize(Policy = "Administracion.Moneda")]
         public ActionResult Currency()
         {
-            ViewData["permisoAgregar"] = _principal.HasClaim("Administracion.Moneda.Agregar Moneda", "true");
-            ViewData["permisoEditar"] = _principal.HasClaim("Administracion.Moneda.Editar Moneda", "true");
-            ViewData["permisoEliminar"] = _principal.HasClaim("Administracion.Moneda.Eliminar Moneda", "true");
-            ViewData["permisoExportar"] = _principal.HasClaim("Administracion.Moneda.Exportar Moneda", "true");
+            ViewData["permisoAgregar"] = _principal.HasClaim("Administracion.Moneda.Agregar", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Administracion.Moneda.Editar", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Administracion.Moneda.Eliminar", "true");
             return View();
         }
 

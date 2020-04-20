@@ -35,10 +35,9 @@ namespace ERPMVC.Controllers
         [Authorize(Policy = "Catalogos.Productos de Cliente")]
         public IActionResult Product()
         {
-            ViewData["permisoAgregar"] = _principal.HasClaim("Catalogos.Servicios.Agregar Servicios", "true");
-            ViewData["permisoEditar"] = _principal.HasClaim("Catalogos.Servicios.Editar Servicios", "true");
-            ViewData["permisoEliminar"] = _principal.HasClaim("Catalogos.Servicios.Eliminar Servicios", "true");
-            ViewData["permisoExportar"] = _principal.HasClaim("Catalogos.Servicios.Exportar Servicios", "true");
+            ViewData["permisoAgregar"] = _principal.HasClaim("Catalogos.Servicios.Agregar", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Catalogos.Servicios.Editar", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Catalogos.Servicios.Eliminar", "true");
             return View();
         }
 

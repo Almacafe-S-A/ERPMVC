@@ -35,10 +35,10 @@ namespace ERPMVC.Controllers
         [Authorize(Policy = "Configuracion.Escala")]
         public IActionResult Escala()
         {
-            ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Escala.Agregar Escala", "true");
-            ViewData["permisoEditar"] = _principal.HasClaim("Configuracion.Escala.Editar Escala", "true");
-            ViewData["permisoEliminar"] = _principal.HasClaim("Configuracion.Escala.Eliminar Escala", "true");
-            ViewData["permisoExportar"] = _principal.HasClaim("Configuracion.Escala.Exportar Escala", "true");
+            ViewData["permisoAgregar"] = _principal.HasClaim("Configuracion.Escala.Agregar", "true");
+            ViewData["permisoEditar"] = _principal.HasClaim("Configuracion.Escala.Editar", "true");
+            ViewData["permisoEliminar"] = _principal.HasClaim("Configuracion.Escala.Eliminar", "true");
+            ViewData["permisoExportar"] = _principal.HasClaim("Configuracion.Escala.Exportar", "true");
             return View();
         }
 
