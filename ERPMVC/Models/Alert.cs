@@ -48,6 +48,9 @@ namespace ERPMVC.Models
         [Display(Name = "Fecha de cierre")]
         public DateTime CloseDate { get; set; }
 
+        public string PersonName { get; set; }
+
+
         [Display(Name = "Descripción de la alerta")]
         public string DescriptionAlert { get; set; }
         [Display(Name = "Tipo(s) de alerta")]
