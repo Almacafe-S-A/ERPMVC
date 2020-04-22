@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Claims;
@@ -303,17 +304,57 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPut("PutUsuario")]
-        public async Task<ActionResult<ApplicationUser>> PutUsuario(string Id, ApplicationUserDTO _usuario)
+        public async Task<ActionResult<ApplicationUser>> PutUsuario(string LockoutEnd, ApplicationUserDTO _usuario)
         {
             try
             {
-                if (_usuario.PasswordHash.Equals(_usuario.UserName))
+                if (!LockoutEnd.Equals(String.Empty))
                 {
-                    return this.Json(new DataSourceResult
+                    int x = 0;
+                    int dia=1;
+                    int mes=1;
+                    int anio=1;
+                    string digito = "";
+                    foreach (char c in LockoutEnd)
                     {
-                        Errors = $"Error: La contraseña no puede ser igual que el usuario!"
-                    });
+                        if (c=='/'||c==' ')
+                        {
+                            switch (x)
+                            {
+                                case 0:
+                                    mes = Convert.ToInt32(digito);
+                                    x++;
+                                    digito = "";
+                                    break;
+                                case 1:
+                                     dia= Convert.ToInt32(digito);
+                                    digito = "";
+                                    x++;
+                                    break;
+                                case 2:
+                                    anio = Convert.ToInt32(digito);
+                                    digito = "";
+                                    x ++;
+                                    break;
+                                default:
+                                    break;
+                            }
+                            if (c == ' ')
+                            {
+                                break;
+                            }
+
+                        }
+                        else
+                        {
+
+                        digito = digito + c;
+                        }
+                    }
+                    DateTime fecha = new DateTime(anio,mes,dia);
+                    _usuario.LockoutEnd = DateTimeOffset.Parse(fecha.ToString());
                 }
+                
 
                 // TODO: Add insert logic here
                 string baseadress = config.Value.urlbase;

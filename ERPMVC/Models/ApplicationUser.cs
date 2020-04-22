@@ -21,8 +21,10 @@ namespace ERPMVC.Models
         public override string PasswordHash { get; set; }
         [UIHint("Phone")]
         public override string PhoneNumber { get; set; }
+        [DataType(DataType.Date)]
+        public override DateTimeOffset? LockoutEnd { get; set; }
 
-        
+
 
         public DateTime LastPasswordChangedDate { get; set; }
         public DateTime FechaCreacion { get; set; }
