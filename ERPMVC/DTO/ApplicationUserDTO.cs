@@ -10,9 +10,9 @@ namespace ERPMVC.DTO
 
     public class ApplicationUserDTO : ApplicationUser
     {
-        [Display(Name = "Reestablecer")]
-        [DataType("Boolean")]
-        public bool? cambiarpassword { get; set; }
+        //[Display(Name = "Reestablecer")]
+        //[DataType("Boolean")]
+        //public bool? cambiarpassword { get; set; }
         [Display(Name = "Bloqueado")]
         [DataType("Boolean")]
         public bool? IsBlocked { get; set; }

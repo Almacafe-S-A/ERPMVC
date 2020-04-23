@@ -157,7 +157,7 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-
+            _users.Select(s => { s.PasswordHash = String.Empty; return s; }).ToList();
             return _users.ToDataSourceResult(request);
         }
 
@@ -308,7 +308,7 @@ namespace ERPMVC.Controllers
         {
             try
             {
-                if (!LockoutEnd.Equals(String.Empty))
+                if (LockoutEnd != null&&LockoutEnd.Length<23)
                 {
                     int x = 0;
                     int dia=1;
@@ -354,6 +354,10 @@ namespace ERPMVC.Controllers
                     DateTime fecha = new DateTime(anio,mes,dia);
                     _usuario.LockoutEnd = DateTimeOffset.Parse(fecha.ToString());
                 }
+                else
+                {
+                    _usuario.LockoutEnd = null;
+                }
                 
 
                 // TODO: Add insert logic here
@@ -361,7 +365,7 @@ namespace ERPMVC.Controllers
                 _usuario.UserName = _usuario.Email;
                 //_usuario.BranchId = _usuario.BranchId;
                 HttpClient _client = new HttpClient();
-                _usuario.cambiarpassword = _usuario.cambiarpassword == null ? false : true;
+               // _usuario.cambiarpassword = _usuario.cambiarpassword == null ? false : true;
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.PutAsJsonAsync(baseadress + "api/Usuario/PutUsuario", _usuario);
                 string valorrespuesta = "";
@@ -378,7 +382,7 @@ namespace ERPMVC.Controllers
                     string error = await result.Content.ReadAsStringAsync();
                     return this.Json(new DataSourceResult
                     {
-                        Errors = $"Error: El password debe cumplir con los requisitos minimos (Longitud 8, Mayúsculas, minúsculas, 1 carater especial y caracteres númericos)!"
+                        Errors = $"{error}"
                     });
                     // return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
                     //return await Task.Run(() => BadRequest($"Ocurrio un error{result.Content.ReadAsStringAsync()}"));
@@ -393,7 +397,7 @@ namespace ERPMVC.Controllers
             }
 
             
-            _usuario.PasswordHash = "**********************";
+            //_usuario.PasswordHash = "**********************";
             return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
 
         }
