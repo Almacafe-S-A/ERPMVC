@@ -80,5 +80,43 @@ namespace ERPMVC.Controllers
                 return BadRequest();
             }
         }
+
+        public async Task<ActionResult> Delete([DataSourceRequest] DataSourceRequest request, Feriado feriado)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    if (feriado.Id == 0)
+                    {
+                        feriado.UsuarioCreacion = HttpContext.Session.GetString("user");
+                        feriado.UsuarioModificacion = feriado.UsuarioCreacion;
+                        feriado.FechaCreacion = DateTime.Now;
+                        feriado.FechaModificacion = feriado.FechaCreacion;
+                    }
+                    else
+                    {
+                        feriado.UsuarioModificacion = HttpContext.Session.GetString("user");
+                        feriado.FechaModificacion = DateTime.Now;
+                    }
+                    var respuesta = await Utils.HttpPostAsync(HttpContext.Session.GetString("token"),
+                        config.Value.urlbase + "api/Feriado/Delete", feriado);
+                    if (respuesta.IsSuccessStatusCode)
+                    {
+                        var contenido = await respuesta.Content.ReadAsStringAsync();
+                        var resultado = JsonConvert.DeserializeObject<Feriado>(contenido);
+                        feriado.Id = resultado.Id;
+                        return Json(new[] { resultado }.ToDataSourceResult(request, ModelState));
+                    }
+                }
+
+                return BadRequest();
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error al actualizar configuración del ISR");
+                return BadRequest();
+            }
+        }
     }
 }
