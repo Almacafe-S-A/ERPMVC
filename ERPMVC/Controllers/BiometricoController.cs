@@ -34,7 +34,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
-        [Authorize(Policy = "RRHH.Asistencia.Cargar Archivo Biometrico")]
+        //[Authorize(Policy = "RRHH.Asistencia.Cargar Archivo Biometrico")]
         public IActionResult Index()
         {
             ViewData["permisos"] = _principal;
@@ -136,25 +136,35 @@ namespace ERPMVC.Controllers
                                             Detalle = new List<DetalleBiometrico>(),
                                             Observacion = registro.Observacion
                                         };
-                
+
 
                 for (int fila = 1; fila <= hoja.LastRowNum; fila++)
                 {
                     var filaRegistro = hoja.GetRow(fila);
-                    
+
                     var IdBiometrico = Utils.GetNumeroXLS(filaRegistro.GetCell(0, MissingCellPolicy.RETURN_NULL_AND_BLANK));
                     var fecha = Utils.GetFechaXLS(filaRegistro.GetCell(1, MissingCellPolicy.RETURN_NULL_AND_BLANK));
                     var hora = Utils.GetHoraXLS(filaRegistro.GetCell(2, MissingCellPolicy.RETURN_NULL_AND_BLANK));
                     var tipo = filaRegistro.GetCell(3, MissingCellPolicy.RETURN_NULL_AND_BLANK).ToString();
 
-                    if (fecha.Equals(DateTime.MinValue))
+                    if (fecha.Equals(DateTime.MinValue)) {
+                        TempData["Errores"] = "Formato de Fecha No Valido";
+                        return RedirectToAction("Index");
                         continue;
 
-                    if(hora.Equals(DateTime.MinValue))
-                        continue;
+                    }
 
-                    if(IdBiometrico == null)
+                    if (hora.Equals(DateTime.MinValue)) { 
+                        TempData["Errores"] = "Formato de Fecha No Valido";
+                        return RedirectToAction("Index");
                         continue;
+                    }
+
+                    if (IdBiometrico == null) { 
+                        TempData["Errores"] = "Formato de Fecha No Valido";
+                        return RedirectToAction("Index");
+                        continue; 
+                    }
 
                     var fechaHora = new DateTime(fecha.Year, fecha.Month, fecha.Day, hora.Hour, hora.Minute, 0);
 
