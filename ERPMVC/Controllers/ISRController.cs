@@ -74,6 +74,10 @@ namespace ERPMVC.Controllers
                         configuracion.Id = resultado.Id;
                         return Json(new[]{resultado}.ToDataSourceResult(request,ModelState));
                     }
+                    else
+                    {
+                        return BadRequest(respuesta.Content.ReadAsStringAsync());
+                    }
                 }
 
                 return BadRequest();

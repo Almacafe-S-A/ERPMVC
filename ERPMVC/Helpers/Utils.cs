@@ -15,6 +15,8 @@ namespace ERPMVC.Helpers
 
         public static bool Cerrado { get; set; }
 
+        public static bool InicioPagodeCuotasISR { get; set; }
+
         public static async Task<HttpResponseMessage> HttpGetAsync(string token, string url)
         {
             HttpClient cliente = new HttpClient();
