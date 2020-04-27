@@ -231,7 +231,7 @@ namespace ERPMVC.Controllers
                     return this.Json(new DataSourceResult
                     {
                          //Data=  _usuario ,
-                        Errors = $"Ocurrio un error:{error} El password debe tener mayusculas y minusculas!"
+                        Errors = $"Ocurrio un error:{error}"
 
                     });
 
