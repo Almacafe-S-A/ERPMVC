@@ -1,0 +1,236 @@
+﻿@model ERPMVC.DTO.PeriodoDTO
+@{
+    ViewData["Title"] = "Calculo General RAP";
+
+}
+@{
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+           // {"required","Valor requerido" }
+        };
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<h3 class="text-themecolor">Calculo General ISR</h3>
+<div class="card">
+    <div class="card-body">
+        @*<h4>Pagos y saldos de ISR para el periodo</h4>*@
+        <form id="frmPeriodo" kendo-validator="true" kendo-messages="messages" asp-controller="DeduccionEmpleado" asp-action="CalculoISR"
+              data-ajax="true"
+              data-ajax-method="post" enctype="multipart/form-data"
+              data-ajax-begin="onBegin" data-ajax-complete="onComplete"
+              data-ajax-failure="onFailed" data-ajax-success="onSuccess"
+              class="validation-wizard wizard-circle">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label class="control-label" style="min-width:100%">Periodo</label>
+                        <kendo-dropdownlist name="Periodo" filter="Kendo.Mvc.UI.FilterType.Contains" for="Periodo" id="Periodo"
+                                            option-label="Seleccione el periodo"
+                                            datatextfield="Anio"
+                                            datavaluefield="Anio"
+                                            auto-bind="true"
+                                            on-change="RefrescarGrid"
+                                            data-val-required="EL Periodo es requerido"
+                                            style="min-width: 100%;">
+                            <datasource type="DataSourceTagHelperType.WebApi">
+                                <transport>
+                                    <read url="@Url.Action("Get", "Periodo")" />
+                                </transport>
+                            </datasource>
+
+                        </kendo-dropdownlist>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <label class="control-label" style="min-width:100%">Mes</label>
+                    @(Html.Kendo().DropDownList()
+                              .Name("Mes")
+                              .Events(e =>e.Change("RefrescarGrid"))
+                              .DataTextField("Text")
+                              .DataValueField("Value")                              
+                              .BindTo(new List<SelectListItem>() {
+                                  new SelectListItem() {
+                                      Text = "Enero",
+                                      Value = "1"
+                                  },
+                                  new SelectListItem() {
+                                      Text = "Febrero",
+                                      Value ="2"
+                                  },
+                                  new SelectListItem() {
+                                      Text = "Marzo",
+                                      Value = "3"
+                                  }
+                                  ,new SelectListItem() {
+                                      Text = "Abril",
+                                      Value = "4"
+                                  },
+                                  new SelectListItem() {
+                                      Text = "Mayo",
+                                      Value = "5"
+                                  },
+                                  new SelectListItem() {
+                                      Text = "Junio",
+                                      Value = "6"
+                                  }
+                                  ,new SelectListItem() {
+                                      Text = "Julio",
+                                      Value = "7"
+                                  }
+                                  ,new SelectListItem() {
+                                      Text = "Agosto",
+                                      Value = "8"
+                                  }
+                                  ,new SelectListItem() {
+                                      Text = "Septioembre",
+                                      Value = "9"
+                                  },
+                                  new SelectListItem() {
+                                      Text = "Octubre",
+                                      Value = "10"
+                                  },
+                                  new SelectListItem() {
+                                      Text = "Noviembre",
+                                      Value = "11"
+                                  },
+                                  new SelectListItem() {
+                                      Text = "Diciembre",
+                                      Value = "12"
+                                  }
+
+                                  
+                              })
+                              .Value("1")
+                              .HtmlAttributes(new { style = "width: 100%" })
+                                        )
+                    <span class="text-danger" style="min-width:100%"></span>
+                </div>
+                <div class="col-md-4">
+                    <label style="min-width:100%"></label>
+                    <button type="submit" class="btn btn-primary" >Calcular</button>
+                </div>
+            </div>
+        </form>
+
+
+
+    </div>
+
+</div>
+<div id="grdConfiguracion"></div>
+
+<script>
+        var onBegin = function () {
+        //alert("Begin");
+
+    };
+
+    var onComplete = function () {
+        //alert("Complete");
+        //$('#ModalEmployees').modal('hide');
+    };
+
+    var onSuccess = function (context) {
+        //alert(context);
+        console.log(context);
+        $.toast({
+            heading: 'Satisfactorio',
+            text: 'Se han Realizado los calculos correctamente',
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'success',
+            hideAfter: 30000,
+            stack: 6
+        });
+        RefrescarGrid();
+       
+       
+    };
+
+    var onFailed = function (context) {
+        // alert(context);
+        console.log(context);
+        $.toast({
+            heading: 'Error',
+            text: 'Error al Calcular: ' + context.responseText,
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'error',
+            hideAfter: 30000,
+            stack: 6
+        });
+    };
+
+    function RefrescarGrid() {
+        var grid = $("#grdConfiguracion").getKendoGrid();
+        grid.dataSource.read({periodo: $("#Periodo").val(),
+                            mes: $("#Mes").val()});
+    }
+      
+
+
+    function CrearGrid() {
+        $("#grdConfiguracion").kendoGrid({
+            dataSource: {
+                transport: {
+                    read: {
+                        url: "@Url.Action("GetPagosISRPeriodo", "DeduccionEmpleado")",
+                        data: {
+                            periodo: $("#Periodo").val(),
+                            mes: $("#Mes").val()
+                        }
+                    }
+                },
+                schema: {
+                    model: {
+                        id: "Id",
+                        fields: {
+                            Id: { type: "number", editable: false },
+                            Periodo: { type: "number", editable: false },
+                            Empleado: { defaultValue: { IdEmpleado: 0, NombreEmpleado: '' }, editable: false },
+                            Estado: { defaultValue: { IdEstado: 0, NombreEstado: "" }, editable: false },
+                            TotalAnual: { type: "number", editable: false },
+                            Saldo: { type: "number", editable: false },
+                            PagoAcumulado: { type: "number", editable: true },
+                            CuotaISR: { type: "number", editable: false }
+                        }
+                    }
+                }
+            },
+            columns: [
+                {
+                    command: [
+                        { name: "edit", text: { edit: "", update: "", cancel: "" } }
+                        //{ name: "aprobar", iconClass: "fa fa-thumbs-up", text: "", click: Aprobar, visible: function (dataItem) {return dataItem.Estado.IdEstado === 70 } },
+                        //{ name: "rechazar", iconClass: "fa fa-thumbs-down", text: "", click: Rechazar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 70 } }
+                    ],
+                    width:50
+                },
+                { field: "Id", title: "Id. ", width: 80, hidden: true },
+                { field: "Periodo",title:"Periodo", width:80},
+                { field: "Empleado", title: "Empleado", width: 200, template: '#= Empleado.NombreEmpleado #' },
+                { field: "TotalAnual", title: "Total Anual", width: 100, format: "{0:#,##0.00}", template: '<div style="text-align:right;">#= kendo.toString(TotalAnual, "n2") #</div>'},
+                { field: "PagoAcumulado", title: "Pagado", width: 100, editor: editorNumerico, format: "{0:#,##0.00}", template: '<div style="text-align:right;">#= kendo.toString(PagoAcumulado, "n2") #</div>' },
+                { field: "Saldo", title: "Saldo", width: 100, format: "{0:#,##0.00}", template: '<div style="text-align:right;">#= kendo.toString(Saldo, "n2") #</div>' },
+                { field: "CuotaISR", title: "ISR Mes", width: 100, format: "{0:#,##0.00}", template: '<div style="text-align:right;">#= kendo.toString(CuotaISR, "n2") #</div>' },
+                { field: "Estado", title: "Estado", width: 100, template: "#= Estado.NombreEstado #", hidden:true}
+            ],
+            noRecords: {
+                template:"No hay datos de pagos del ISR"
+            },
+            //height: 400,
+            scrollable: true,
+            editable: "inline"
+        });
+    }
+
+    function editorNumerico(contenedor, opciones) {
+        $('<input data-bind="value:' + opciones.field + '"/>')
+            .appendTo(contenedor)
+            .kendoNumericTextBox({ spinners: false });
+    }
+
+    $(document).ready(function() {
+        CrearGrid();
+    });
+</script>

@@ -46,6 +46,20 @@ namespace ERPMVC.Controllers
 
             return View(periodo);
         }
+        public ActionResult CalculoGeneralIHSS()
+        {
+            PeriodoDTO periodo = new PeriodoDTO();
+            periodo.Periodo = DateTime.Now.Year;
+
+            return View(periodo);
+        }
+        public ActionResult CalculoGeneralRAP()
+        {
+            PeriodoDTO periodo = new PeriodoDTO();
+            periodo.Periodo = DateTime.Now.Year;
+
+            return View(periodo);
+        }
 
         public ActionResult EditarDeducciones(long codigoEmpleado, string nombreEmpleado, double salarioEmpleado)
         {
@@ -236,6 +250,52 @@ namespace ERPMVC.Controllers
             }
         }
 
+
+        [HttpPost]
+        public async Task<ActionResult> CalculoRAP(PeriodoDTO pPeriodo)
+        {
+            try
+            {
+
+                var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
+                    config.Value.urlbase + $"api/DeduccionEmpleado/CalcularRAPGeneral/{pPeriodo.Periodo}/{pPeriodo.Mes}");
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    var contenido = await respuesta.Content.ReadAsStringAsync();
+                    var resultado = JsonConvert.DeserializeObject<List<PagosISRDTO>>(contenido);
+                    return Ok(resultado);
+                }
+                return BadRequest(await respuesta.Content.ReadAsStringAsync());
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Error al cargar el ISR para los empleados en periodo {pPeriodo.Periodo} y mes {pPeriodo.Mes}");
+                return BadRequest(ex.Message);
+            }
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> CalculoIHSS(PeriodoDTO pPeriodo)
+        {
+            try
+            {
+
+                var respuesta = await Utils.HttpGetAsync(HttpContext.Session.GetString("token"),
+                    config.Value.urlbase + $"api/DeduccionEmpleado/CalcularIHSSGeneral/{pPeriodo.Periodo}/{pPeriodo.Mes}");
+                if (respuesta.IsSuccessStatusCode)
+                {
+                    var contenido = await respuesta.Content.ReadAsStringAsync();
+                    var resultado = JsonConvert.DeserializeObject<List<PagosISRDTO>>(contenido);
+                    return Ok(resultado);
+                }
+                return BadRequest(await respuesta.Content.ReadAsStringAsync());
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, $"Error al cargar el ISR para los empleados en periodo {pPeriodo.Periodo} y mes {pPeriodo.Mes}");
+                return BadRequest(ex.Message);
+            }
+        }
 
 
 

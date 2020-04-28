@@ -316,6 +316,10 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _TipoPlanillas = JsonConvert.DeserializeObject<TipoPlanillas>(valorrespuesta);
                 }
+                else
+                {
+                    return BadRequest(result.Content.ReadAsStringAsync());
+                }
             }
             catch (Exception ex)
             {
