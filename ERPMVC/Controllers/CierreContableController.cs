@@ -54,17 +54,17 @@ namespace ERPMVC.Controllers
         [HttpPost]
         public async Task<ActionResult> GetEjecutarCierreContable([FromBody]BitacoraCierreContable _Cierrep)
         {
-            BitacoraCierreContable ultimocierre = await GetUltimoCierre();
+            //BitacoraCierreContable ultimocierre = await GetUltimoCierre();
       
-            if (_Cierrep.FechaCierre > DateTime.Now)
-            {
-                return await Task.Run(() => BadRequest($"La fecha no puede ser mayor a la fecha actual"));
-            }
+            //if (_Cierrep.FechaCierre > DateTime.Now)
+            //{
+            //    return await Task.Run(() => BadRequest($"La fecha no puede ser mayor a la fecha actual"));
+            //}
 
-            if (ultimocierre != null && _Cierrep.FechaCierre< ultimocierre.FechaCierre)
-            {
-                return await Task.Run(() => BadRequest($"La fecha no puede anterior al ultimo cierre"));
-            }
+            //if (ultimocierre != null && _Cierrep.FechaCierre< ultimocierre.FechaCierre)
+            //{
+            //    return await Task.Run(() => BadRequest($"La fecha no puede anterior al ultimo cierre"));
+            //}
             BitacoraCierreContable _Cierre = new BitacoraCierreContable();
             try
             {
