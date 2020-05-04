@@ -185,8 +185,12 @@ namespace ERPMVC.Controllers
                 {
                     return RedirectToAction("Index");
                 }
+                else {
+                   TempData["Errores"] = await respuesta.Content.ReadAsStringAsync();
 
-                TempData["Errores"]= await respuesta.Content.ReadAsStringAsync();
+                }
+
+                
                 return RedirectToAction("Index");
             }
             catch (Exception ex)
