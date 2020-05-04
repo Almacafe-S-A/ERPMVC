@@ -70,6 +70,10 @@ namespace ERPMVC.Controllers
                         feriado.Id = resultado.Id;
                         return Json(new[] { resultado }.ToDataSourceResult(request, ModelState));
                     }
+                    else
+                    {
+                        return BadRequest(respuesta.Content.ReadAsStringAsync());
+                    }
                 }
 
                 return BadRequest();
