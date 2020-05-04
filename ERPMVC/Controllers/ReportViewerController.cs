@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Net.Http;
@@ -104,6 +105,9 @@ namespace ERPMVC.Controllers
             reportOption.ReportModel.Stream = inputStream;
             reportOption.ReportModel.DataSourceCredentials.Add(dsc);
             reportOption.ReportModel.EmbedImageData = true;
+            var defaultDateCulture = "es-HN";
+            var ci = new CultureInfo(defaultDateCulture);
+            reportOption.Culture = ci;
         }
 
         public  void OnReportLoaded(ReportViewerOptions reportOption)
