@@ -288,7 +288,7 @@ namespace ERPMVC.Controllers
                                select new Boleto_Ent
                                {
                                    clave_e = c.clave_e,
-                                   observa_e = "Placas:" + c.placas + " || No.:" + c.clave_e + "  || Conductor:" + c.conductor + "|| Fecha:" + c.fecha_e + "|| Hora:" + c.hora_e,
+                                   observa_e = "Placas:" + c.placas + " || No.:" + c.clave_e + "  || Conductor:" + c.conductor + "|| Fecha:" + c.fecha_e + "|| Hora:" + c.hora_e + "|| ProductoCod:" + c.clave_p,
                                    Boleto_Sal = c.Boleto_Sal,
                                    peso_e = c.peso_e
                                    //CustomerId = c.CustomerId,
