@@ -171,7 +171,13 @@ namespace ERPMVC.Controllers
                 {
                     _message.Add(new MessageClassUtil { key = "Login", name = "error", mensaje = "Error en login" });
                     model.Failed = true;
-                    model.LoginError = "Error en login: " + resultLogin.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                    var message = resultLogin.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                    if (message.Length > 100)
+                    {
+                        message = "Server Error";
+
+                    }
+                    model.LoginError = "Error: " + message;
                     return View(model);
                 }
 
