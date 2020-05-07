@@ -269,8 +269,32 @@ namespace ERPMVC.Controllers
 
         public async Task<ActionResult> Virtualization_Read([DataSourceRequest] DataSourceRequest request, Customer _customerp)
         {
-            var res = await GetBoletaEntrada(_customerp);
-            return Json(res.ToDataSourceResult(request));
+            //var res = await GetBoletaEntrada(_customerp);
+            List<Boleto_Ent> _Boleto_Ent = new List<Boleto_Ent>();
+            string baseadress = config.Value.urlbase;
+            HttpClient _client = new HttpClient();
+            _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+            var result = await _client.GetAsync(baseadress + $"api/Boleto_Ent/GetBoletasdePesoByCustomer/{_customerp.CustomerId}/{true}/{false}");
+            string valorrespuesta = "";
+            if (result.IsSuccessStatusCode)
+            {
+                valorrespuesta = await (result.Content.ReadAsStringAsync());
+                _Boleto_Ent = JsonConvert.DeserializeObject<List<Boleto_Ent>>(valorrespuesta);
+                _Boleto_Ent = (from c in _Boleto_Ent
+                                            //.Where(q => q.clave_C == _customer.CustomerRefNumber)
+                                            // .Where(q => q.Boleto_Sal == null)
+                                            //.Where(q => q.completo == false)
+                                            .OrderByDescending(q => q.clave_e)
+                               select new Boleto_Ent
+                               {
+                                   clave_e = c.clave_e,
+                                   observa_e = "Placas:" + c.placas + " || No.:" + c.clave_e + "  || Conductor:" + c.conductor + "|| Fecha:" + c.fecha_e + "|| Hora:" + c.hora_e,
+                                   Boleto_Sal = c.Boleto_Sal,
+                                   peso_e = c.peso_e
+                                   //CustomerId = c.CustomerId,
+                               }).ToList();
+            }
+            return Json(_Boleto_Ent.ToDataSourceResult(request));
         }
 
         public async Task<ActionResult> Orders_ValueMapper(Int64[] values, Customer _customerp)
