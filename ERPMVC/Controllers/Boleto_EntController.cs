@@ -304,7 +304,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Boleto_Ent/GetBoleto_EntPag");
+                var result = await _client.GetAsync(baseadress + "api/Boleto_Ent/GetBoleto_Ent");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -356,7 +356,7 @@ namespace ERPMVC.Controllers
 
                             }
 
-                            // _Boleto_Ent = _Boleto_Ent.Where(q => q.Boleto_Sal.peso_s < q.peso_e).ToList();
+                            _Boleto_Ent = _Boleto_Ent.Where(q => q.Boleto_Sal.peso_s < q.peso_e).ToList();
                         }
                         else
                         {
@@ -375,7 +375,7 @@ namespace ERPMVC.Controllers
                                                //CustomerId = c.CustomerId,
                                            }).ToList();
 
-                            //_Boleto_Ent = _Boleto_Ent.Where(q => q.Boleto_Sal.peso_s > q.peso_e).ToList();
+                            _Boleto_Ent = _Boleto_Ent.Where(q => q.Boleto_Sal.peso_s > q.peso_e).ToList();
                         }
                     }
 
