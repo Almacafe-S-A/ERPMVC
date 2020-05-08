@@ -1,5 +1,5 @@
 ﻿@using Microsoft.AspNetCore.Http
-
+@inject IHttpContextAccessor HttpContextAccessor
 <!DOCTYPE html>
 <html>
 <head>
@@ -91,27 +91,27 @@
 
     <script>
         function error_handler(e) {
-            if (e.status == "customerror") {      
+            if (e.status == "customerror") {
                 $.toast({
                     heading: 'Error',
                     text: e.errors,
-                        position: 'top-right',
-                        loaderBg: '#ff6849',
-                        icon: 'error',
-                        hideAfter: 30000,
-                        stack: 6
-                    });
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 30000,
+                    stack: 6
+                });
             }
             else {
                 $.toast({
-                        heading: 'Validacion',
-                        text: 'Error de Servidor',
-                        position: 'top-right',
-                        loaderBg: '#ff6849',
-                        icon: 'error',
-                        hideAfter: 30000,
-                        stack: 6
-                    });
+                    heading: 'Validacion',
+                    text: 'Error de Servidor',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 30000,
+                    stack: 6
+                });
             }
         }
         kendo.culture("es-HN");
@@ -163,10 +163,10 @@
     </script>
 
     @*<div class="preloader">
-        <svg class="circular" viewBox="25 25 50 50">
-            <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2" stroke-miterlimit="10"></circle>
-        </svg>
-    </div>*@
+            <svg class="circular" viewBox="25 25 50 50">
+                <circle class="path" cx="50" cy="50" r="20" fill="none" stroke-width="2" stroke-miterlimit="10"></circle>
+            </svg>
+        </div>*@
     <div id="main-wrapper">
         <!-- ============================================================== -->
         <!-- Topbar header - style you can find in pages.scss -->
@@ -202,7 +202,7 @@
                         <!-- This is  -->
                         <li class="nav-item"> <a class="nav-link nav-toggler hidden-md-up text-muted waves-effect waves-dark" href="javascript:void(0)"><i class="mdi mdi-menu"></i></a> </li>
                         <li class="nav-item m-l-10" id="thetoggle"> <a class="nav-link sidebartoggler hidden-sm-down text-muted waves-effect waves-dark" href="javascript:void(0)"><i class="ti-menu"></i></a> </li>
-
+                        
                     </ul>
                     <!-- ============================================================== -->
 
@@ -211,13 +211,38 @@
                         <!-- ============================================================== -->
                         <!-- Search -->
                         <!-- ============================================================== -->
-                        <li class="nav-item hidden-sm-down search-box">
-                            <a class="nav-link hidden-sm-down text-muted waves-effect waves-dark" href="javascript:void(0)"><i class="ti-search"></i></a>
-                            <form class="app-search">
-                                <input type="text" class="form-control" placeholder="Search & enter"> <a class="srh-btn"><i class="ti-close"></i></a>
-                            </form>
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle waves-effect waves-dark" href="" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                <i class="mdi mdi-bell"></i>
+                                @if (!ERPMVC.Helpers.Utils.Cerrado)
+                                {
+                                    <div class="notify"> <span class="heartbit"></span> <span class="point"></span> </div>
+                                }
+
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right mailbox animated bounceInDown">
+                                <ul>
+                                    <li>
+                                        <div class="drop-title">Notificaciones</div>
+                                    </li>
+                                    <li>
+                                        <div class="message-center">
+                                            <!-- Message -->
+                                            @if (!ERPMVC.Helpers.Utils.Cerrado)
+                                            {
+                                                <a asp-action="CierreContable" asp-controller="CierreContable">
+                                                    <div class="btn btn-danger btn-circle"><i class="fa fa-calendar"></i></div>
+                                                    <div class="mail-contnet">
+                                                        <h5>Cierre Contable</h5> <span class="mail-desc">No se ha ejecutado el cierre </span> <span class="time"></span>
+                                                    </div>
+                                                </a>
+                                            }
+                                        </div>
+                                    </li>
+                                   
+                                </ul>
+                            </div>
                         </li>
-                        <!-- ============================================================== -->
                         <!-- Profile -->
                         <!-- ============================================================== -->
                         <li class="nav-item dropdown">
@@ -225,34 +250,12 @@
                             <div class="dropdown-menu dropdown-menu-right scale-up">
                                 <ul class="dropdown-user">
                                     <li>
-                                        <script>
-                                            $(document).ready(function () {
-                                                $.ajax({
-                                                    url: '@Url.Action("GetUserByEmail", "Common")',
-                                                    method: 'GET',
-                                                    datatype: "json",
-                                                    contentType: 'application/json',
-                                                    async: false,
-                                                    // data: dataObject,
-                                                    success: function (result) {
-                                                       // console.log(result);
-                                                        $("#miemail").text(result.Email);
-                                                        $("#miNombre").text(result.UserName);
 
-
-                                                    },
-                                                    error: function (XMLHttpRequest, textStatus, errorThrown) {
-                                                        //alert(textStatus + ": " + XMLHttpRequest.responseText);
-                                                        console.log("Server Error");
-                                                    }
-                                                });
-                                            })
-                                        </script>
                                         <div class="dw-user-box">
                                             <div class="u-img"><img src="~/admp/assets/images/users/1.jpg" alt="user"></div>
                                             <div class="u-text">
-                                                <h4 id="miNombre"> </h4>
-                                                <p class="text-muted" id="miemail"> </p> @*<a href="pages-profile.html" class="btn btn-rounded btn-danger btn-sm">View Profile</a>*@
+                                                <h4 id="miNombre">@HttpContextAccessor.HttpContext.Session.GetString("user") </h4>
+                                                <p class="text-muted" id="miemail">@HttpContextAccessor.HttpContext.Session.GetString("user") </p> @*<a href="pages-profile.html" class="btn btn-rounded btn-danger btn-sm">View Profile</a>*@
                                             </div>
                                         </div>
                                     </li>
@@ -291,27 +294,31 @@
             <!-- Container fluid  -->
             <!-- ============================================================== -->
             <script>
-                function MiZoom() {
-                    var scale = 'scale(1)';
-                    document.body.style.webkitTransform =  // Chrome, Opera, Safari
-                        document.body.style.msTransform =      // IE 9
-                        document.body.style.transform = scale;
-                    // alert('hace el zoom');
-                }
+                //function MiZoom() {
+                //    var scale = 'scale(1)';
+                //    document.body.style.webkitTransform =  // Chrome, Opera, Safari
+                //        document.body.style.msTransform =      // IE 9
+                //        document.body.style.transform = scale;
+                //    // alert('hace el zoom');
+                //}
             </script>
 
             <div class="container-fluid">
                 <!-- ============================================================== -->
                 <!-- Start Page Content -->
                 <!-- ============================================================== -->
-                @if (!ERPMVC.Helpers.Utils.Cerrado )
+                @if (false)
                 {
                     <div class="row" permiso="Contabilidad">
                         <div class="col-lg-12 col-xlg-12">
                             <div class="alert alert-danger ">
-                                <h3 class="card-title"> No se ha ejecutado el Cierre, Contacte a uno de los usuarios delegados!</h3>
-                                <a class="btn btn-secondary" permiso="Contabilidad.Procesos.Cierre Contable Manual" asp-action="CierreContable" asp-controller="CierreContable">Ejecutar Cierre</a>
-                                <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">×</span> </button>
+                                <h3 class="card-title">
+                                    No se ha ejecutado el Cierre, Contacte a uno de los usuarios delegados!
+                                    <a class="btn btn-secondary" permiso="Contabilidad.Procesos.Cierre Contable Manual" asp-action="CierreContable" asp-controller="CierreContable">Ejecutar Cierre</a>
+                                    <button type="button" class="close" data-dismiss="alert" aria-label="Close"> <span aria-hidden="true">×</span> </button>
+                                </h3>
+                                
+                                
                             </div>
                         </div>
                     </div>
@@ -337,14 +344,14 @@
     @RenderSection("scripts", required: false)
     <ejs-scripts></ejs-scripts>
     <script>
-        //$(document).ready(function () {
-        //    $("#thetoggle").click();
-        //    //SOLUCION PROVISIONAL PARA ELIMINAR EL # DE LA URL
-        //    $('.k-button').attr('href', 'javascript:void(0)');
-        //    $(".k-button").click(function (e) {
-        //        e.preventDefault();
-        //    });
-        //});
+            //$(document).ready(function () {
+            //    $("#thetoggle").click();
+            //    //SOLUCION PROVISIONAL PARA ELIMINAR EL # DE LA URL
+            //    $('.k-button').attr('href', 'javascript:void(0)');
+            //    $(".k-button").click(function (e) {
+            //        e.preventDefault();
+            //    });
+            //});
     </script>
     <script src="~/js/Syncfusion/ej.localetexts.es-ES.min.js"></script>
     <script src="~/js/Syncfusion/ej.culture.es-ES.min.js"></script>
