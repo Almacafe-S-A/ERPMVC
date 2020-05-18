@@ -28,7 +28,7 @@
                 <div class="row">
                     <div class="col-md-12">
 
-                        <h3>Chequera @Model.BankName Cta. @Model.AssociatedAccountNumber</h3>
+                        <h3>Chequera @Model.CheckAccountId @Model.BankName Cta. @Model.AssociatedAccountNumber</h3>
                     </div>
 
                 </div>
@@ -84,11 +84,12 @@
                         <div class="form-group">
                             <label asp-for="IdEstado" class="control-label">Estado</label>
                             <kendo-dropdownlist name="IdEstado"
-                                                for="@Model.IdEstado"
+                                                for="IdEstado"
                                                 filter="Kendo.Mvc.UI.FilterType.Contains"
                                                 option-label="Seleccionar Estado"
                                                 datatextfield="NombreEstado"
                                                 enable="false"
+                                                id="Estado"
                                                 required data-required-msg="El estado es requerido."
                                                 datavaluefield="IdEstado"
                                                 style="width: 100%;">
@@ -122,6 +123,12 @@
                                             command.Custom("Editar").Text(" ").IconClass("fa fa-pencil").Click("EditarCheque");
                                             command.Custom("Anular").Text(" ").IconClass("fa fa-close").Click("AnularCheque");
                                         }
+                                        if (permisos.HasClaim("Contabilidad.Movimientos.Asiento Contable.Aprobar", "true"))
+                                        {
+                                            command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
+                                            command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("Rechazar");
+
+                                        }
                                         command.Custom("ImprimirCheque").Text(" ").IconClass("fa fa-print").Click("ImprimirCheque");
                                         command.Custom("ImprimirReporteCheque").Text(" ").IconClass("fa fa-print").Click("ImprimirReporteCheque");
 
@@ -134,6 +141,7 @@
                                 columns.Bound(o => o.Ammount).Title("Monto").Format("{0:C}").Width(120);
                                 columns.Bound(o => o.Impreso).Title("Impreso").ClientTemplate("#= Impreso? 'Si':'No' #").Width(120);
                                 columns.Bound(o => o.Estado).Title("Estado").Width(120);
+                                columns.Bound(o => o.IdEstado).Visible(false);
                                 columns.Bound(o => o.AmountWords).Title("Cantidad en Letras").Width(250);
 
 
@@ -191,6 +199,7 @@
                             .Excel(excel => excel.FileName("ChequesReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                             + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
                             .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                            .Events(e => e.DataBound("dataBound"))
                             .DataSource(dataSource =>
                             dataSource
                             .WebApi()
@@ -226,6 +235,15 @@
 
 
 <script>
+    function dataBound(e) {
+        $.each(this.dataSource.data(), function () {
+            if (Number(this.IdEstado) != 97) {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Rechazar').hide();
+            }
+
+        })
+    }
      function AnularCheque(e) {
         debugger;
              e.preventDefault();
@@ -268,6 +286,61 @@
             });
         RefrescarGrid();
     }
+
+    function Aprobar(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        AprobarCheque(dataItem.Id, true);
+        RefrescarGrid();
+    }
+    function Rechazar(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        AprobarCheque(dataItem.Id, false);
+        RefrescarGrid();
+    }
+
+    function AprobarCheque(id , aprobacion) {
+        debugger;           
+            
+            var dataObject = {
+                Id: id,
+            };
+
+            $.ajax({
+                url: '@Url.Action("AprobarCheque", "CheckAccount")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject, aprobacion),
+                success: function (result) {
+                    debugger;
+                    $.toast({
+                                heading: 'Satisfactorio',
+                                text: 'Cheque  Correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    //alert(textStatus + ": " + XMLHttpRequest.responseText);
+                     $.toast({
+                                heading: 'Error',
+                                text: XMLHttpRequest.responseText,
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'error',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+                }
+            });
+        RefrescarGrid();
+    }
          function AddCheck() {
              clearsession();
              debugger;
@@ -275,7 +348,7 @@
              if (estadochequera == 'Inactivo') {
              $.toast({
                                 heading: 'Error',
-                                text: 'No se puedene emitrio Cheques de una Chequera Inactiva',
+                                text: 'No se puedene emitir Cheques de una Chequera Inactiva',
                                 position: 'top-right',
                                 loaderBg: '#ff6849',
                                 icon: 'error',
@@ -289,7 +362,7 @@
             CheckNumber: @Model.NumeroActual,
             Id: 0,
             AccountManagement: {
-                AccountManagementId : @Model.AccountManagement.AccountId
+                AccountManagementId : @Model.AccountManagement.AccountManagementId
             }
         };
         //console.log(dataItem.AccountManagementId);
@@ -324,18 +397,7 @@
                     debugger;
                     e.preventDefault();
                  var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-                 if (dataItem.Estado!= "Emitido") {
-                     $.toast({
-                         heading: 'Error',
-                         text: "Solo se pueden editar los cheques con estado Emitido",
-                         position: 'top-right',
-                         loaderBg: '#ff6849',
-                         icon: 'error',
-                         hideAfter: 30000,
-                         stack: 6
-                     });
-                     return;
-                     }
+
                         var dataObject = {
                             CheckAccountId: dataItem.CheckAccountId,
                             Id: dataItem.Id,
@@ -389,11 +451,23 @@
         debugger;
              e.preventDefault();
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-
-
-            var url = '@Url.Action("SFCheque", "CheckAccount")/' + dataItem.Id;
+            if (dataItem.IdEstado == 98 || dataItem.IdEstado == 52) {
+                var url = '@Url.Action("SFCheque", "CheckAccount")/' + dataItem.Id;
                 var win = window.open(url, '_blank');
                 win.focus();
+            } else {
+                $.toast({
+                    heading: 'Error',
+                    text: 'Solo se pueden imprimir los cheques de estado Emitido y Aprobado',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 30000,
+                    stack: 6
+                });
+            } 
+
+
 
 
     }
@@ -428,6 +502,9 @@
     setRowButtonTooltip(".k-grid-Anular", "Anular Cheque");
     setRowButtonTooltip(".k-grid-ImprimirCheque", "Imprimir Cheque");
     setRowButtonTooltip(".k-grid-ImprimirReporteCheque", "Imprimir reporte de voucher");
+    setRowButtonTooltip(".k-grid-Editar", "Editar Cheque");
+    setRowButtonTooltip(".k-grid-Aprobar", "Aprobar Cheque");
+    setRowButtonTooltip(".k-grid-Rechazar", "Rechazar Cheque");
 
 
 

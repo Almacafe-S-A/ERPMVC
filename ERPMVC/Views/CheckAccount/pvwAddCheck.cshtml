@@ -2,7 +2,15 @@
 @{ Layout = null;
     var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." }};
     var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
-    ViewData["JournalEntryId"] = Model.JournalEntrId;
+    //ViewData["JournalEntryId"] = Model.JournalEntry.JournalEntryId;
+    if (Model.JournalEntry != null)
+    {
+        ViewData["JournalEntryId"] = Model.JournalEntry.JournalEntryId;
+    }
+    else
+    {
+        ViewData["JournalEntryId"] = 0;
+    }
     if (Model.AccountManagement != null)
     {
         ViewData["Cuenta"] = Model.AccountManagement.AccountId;
@@ -122,7 +130,7 @@
                                         <div class="form-group">
                                             <label class="  control-label" style="width:100%">Tipo de Beneficiario</label>
                                             <kendo-dropdownlist name="PartyTypeId" for="PartyTypeId"
-                                                                id="IdPartyType"
+                                                                id="PartyTypeId"
                                                                 data-val-required="El Tipo Beneficiario es requerido."
                                                                 filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                 style="min-width: 100%;">
@@ -135,7 +143,8 @@
                                         <div class="form-group" id="party">
                                             <label class="  control-label" style="width:100%">Beneficiario</label>
                                             <kendo-dropdownlist name="PartyId"
-                                                                id="IdParty"
+                                                                id="PartyId"
+                                                                for="PartyId"
                                                                 enable="false"
                                                                 option-label="Seleccionar beneficiario"
                                                                 filter="Kendo.Mvc.UI.FilterType.Contains"
@@ -246,20 +255,44 @@
                                             <span asp-validation-for="Sinopsis" class="text-danger"></span>
                                         </div>
                                     </div>
+                                    <div class="col-md-4">
+                                        <div class="form-group">
+                                            <label asp-for="IdEstado" class="control-label">Estado</label>
+                                            <kendo-dropdownlist name="IdEstado"
+                                                                for="IdEstado"
+                                                                filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                option-label="Seleccionar Estado"
+                                                                datatextfield="NombreEstado"
+                                                                enable="false"
+                                                                required data-required-msg="El estado es requerido."
+                                                                datavaluefield="IdEstado"
+                                                                style="width: 100%;">
+                                                <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                    <transport>
+                                                        <read url="@Url.Action("Get", "Estados")" />
+                                                    </transport>
+                                                </datasource>
+                                            </kendo-dropdownlist>
+                                            <span asp-validation-for="IdEstado" class="text-danger"></span>
+                                        </div>
+                                    </div>
                                 </div>
                                 <div class="row">
 
                                 </div>
 
-                                @await Html.PartialAsync("JournalEntryLine",lineas ,ViewData)
+                                @await Html.PartialAsync("JournalEntryLine", lineas, ViewData)
 
                             </form>
-                            <div class="row">
+                            @if (Model.Id == 0 || Model.IdEstado == 99)
+                            {
+                                <div class="row">
 
-                                <button id="Guardar" class="form-control btn-miboton" type="button" onclick="SaveJournalEntry()"> Guardar </button>
+                                    <button id="Guardar" class="form-control btn-miboton" type="button" onclick="SaveJournalEntry()"> Guardar </button>
 
+                                </div>
+                            }
 
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -340,7 +373,7 @@ function customFunction(input) {
     }
 
     function RefrescarGrid() {
-        var grid = $("#gridCheckAccount").getKendoGrid();
+        var grid = $("#gridCheckAccountLine").getKendoGrid();
         grid.dataSource.read();
     }
     $(document).ready(function () {  
@@ -349,7 +382,7 @@ function customFunction(input) {
         $("#vendor").hide();
         $("#employe").hide();
         $("#notype").hide();
-        $("#IdPartyType").kendoDropDownList({
+        $("#PartyTypeId").kendoDropDownList({
             dataTextField: "text",
             dataValueField: "value",
             optionLabel: {
@@ -365,14 +398,14 @@ function customFunction(input) {
             filter: "contains",
             suggest: true,
         });
-        $("#IdParty").kendoDropDownList({
+        $("#PartyId").kendoDropDownList({
             optionLabel: "Seleccione beneficiario",
             enable: false
         });
 
-        $('#IdPartyType').on("change", function () {
-            var party = $("#IdPartyType").data("kendoDropDownList").text();
-            var Id = $("#IdPartyType").data("kendoDropDownList").value();
+        $('#PartyTypeId').on("change", function () {
+            var party = $("#PartyTypeId").data("kendoDropDownList").text();
+            var Id = $("#PartyTypeId").data("kendoDropDownList").value();
             debugger;
             if (Id == 1) {
                 if ($("#customer").is(':hidden')) {
@@ -470,7 +503,7 @@ function customFunction(input) {
              $("#Guardar").prop("disabled", false);
             return;
         }
-        var IdTipoBeneficiario = $("#IdPartyType").data("kendoDropDownList").value();
+        var IdTipoBeneficiario = $("#PartyTypeId").data("kendoDropDownList").value();
         if (IdTipoBeneficiario == '') {
              $.toast({
                                 heading: 'Error',
@@ -506,8 +539,7 @@ function customFunction(input) {
         for (var i = 0; i < displayedData.length; i++) {
             displayedData[i].JournalEntryLineId = 0;
         }
-        document.getElementById('btnCheckAccount').click();
-
+        
         
         beneficiario = '';
         switch (IdTipoBeneficiario) {
@@ -527,7 +559,17 @@ function customFunction(input) {
             
         }
 
+        var journalEntry = {
+            'TotalDebit' : $("#TotalDebit").val(),
+            'TotalDebit': $("#TotalCredit").val(),
+            'JournalEntryLines': displayedData
+
+
+
+        }
+
         var dataObject = {
+            'Id':$("#Id").val(),
             'CheckAccountId':$("#CheckAccountId").val(),
             'CheckNumber':$("#CheckNumber").val(),
             'Date':$("#Date").getKendoDatePicker().value().toJSON(),
@@ -536,8 +578,10 @@ function customFunction(input) {
             'RTN':$("#RTN").val(),
             'Ammount':$("#Ammount").val(),
             'Adress': $("#Adress").val(),
-            'Sinopsis':$("#Sinopsis").val(),
-            'JournalEntryLines': displayedData
+            'Sinopsis': $("#Sinopsis").val(),
+            'PartyTypeId': $("#PartyTypeId").val(),
+            'PartyId': $("#PartyId").val(),
+            'JournalEntry': journalEntry
             };
 
            console.log(displayedData);
@@ -551,7 +595,7 @@ function customFunction(input) {
                         async: false,
                         data: JSON.stringify(dataObject),
                         success: function (data) {
-                            $("#JournalEntryId").val(data.JournalEntryId);
+                            //$("#JournalEntryId").val(data.JournalEntryId);
                             //Imprimir(null, data.JournalEntryId);
                             //notification.show({
                             //    message: "Guardado correctamente!"

@@ -51,6 +51,10 @@ namespace ERPMVC.Models
         [ForeignKey("JournalEntrId")]
         public JournalEntry JournalEntry { get; set; }
 
+        public int? PartyTypeId { get; set; }
+
+        public int? PartyId { get; set; }
+
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
