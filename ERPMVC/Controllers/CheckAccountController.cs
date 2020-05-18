@@ -76,7 +76,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/Check/GetCheckAccountLinesById/" + _pCheque.Id);
+                var result = await _client.GetAsync(baseadress + "api/CheckAccountLines/GetCheckAccountLinesById/" + _pCheque.Id);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -85,8 +85,10 @@ namespace ERPMVC.Controllers
 
                 }
 
-                if (_pCheque.Id == 0)
+                if (_pCheque==null || _pCheque.Id == 0)
                 {
+                    _pCheque = new CheckAccountLinesDTO();
+                    _pCheque.Id = 0;
                     _pCheque.Date = DateTime.Now;
                     //AccountManagement account = new AccountManagement();
                     //////////Busca la cuenta bancaria asociadada a la chequera

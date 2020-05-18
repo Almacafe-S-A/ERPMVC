@@ -44,6 +44,13 @@ namespace ERPMVC.Models
 
         public string  Estado { get; set; }
 
+        public bool? Impreso { get; set; }
+
+        public long? JournalEntrId { get; set; }
+
+        [ForeignKey("JournalEntrId")]
+        public JournalEntry JournalEntry { get; set; }
+
         public DateTime FechaCreacion { get; set; }
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }

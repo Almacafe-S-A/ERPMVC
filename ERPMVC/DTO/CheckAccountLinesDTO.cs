@@ -10,10 +10,6 @@ namespace ERPMVC.DTO
     {
         public int PartyTypeId { get; set; }
 
-        public List<JournalEntryLine> JournalEntryLines { get; set; }
-
-        public List<RetentionReceipt> RetentionReceipts { get; set; }
-
         public AccountManagement AccountManagement { get; set; }
     }
 }

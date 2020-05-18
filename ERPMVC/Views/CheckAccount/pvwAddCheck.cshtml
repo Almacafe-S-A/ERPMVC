@@ -2,9 +2,37 @@
 @{ Layout = null;
     var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." }};
     var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+    ViewData["JournalEntryId"] = Model.JournalEntrId;
+    if (Model.AccountManagement != null)
+    {
+        ViewData["Cuenta"] = Model.AccountManagement.AccountId;
+    }
+    List<ERPMVC.Models.JournalEntryLine> lineas = new List<ERPMVC.Models.JournalEntryLine>();
+    if (Model.JournalEntry !=null)
+    {
+        lineas = Model.JournalEntry.JournalEntryLines.ToList();
+    }
+
 }
 
     <script>
+        function clearsession() {
+         var dataObject = ["journalentryline"];
+         $.ajax({
+            url: '@Url.Action("ClearSession","Common")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                  //  $('#myModalSalesOrder').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+         });
+    }
         function AddComprobanteRetencion() {
         var dataObject = {
             RetentionReceiptId: 0,
@@ -218,20 +246,12 @@
                                             <span asp-validation-for="Sinopsis" class="text-danger"></span>
                                         </div>
                                     </div>
-                                    @*<div class="col-md-4">
-                    <div class="form-group">
-                        <label asp-for="RetencionId" class="k-label" style="min-width:100%">Retencion</label>
-                        <input type="text" asp-for="RetencionId" name="Date" class="form-control"  />
-                        <button class="btn btn-primary" onclick="AddComprobanteRetencion()" type="button">Asociar Retención</button>
-                    </div>
-                </div>*@
-
                                 </div>
                                 <div class="row">
 
                                 </div>
 
-                                @await Html.PartialAsync("JournalEntryLine", new ERPMVC.DTO.JournalEntryLineDTO { JournalEntryId = 0, AccountId = Convert.ToInt32(Model.AccountManagement == null ? 0 : Model.AccountManagement.AccountId) })
+                                @await Html.PartialAsync("JournalEntryLine",lineas ,ViewData)
 
                             </form>
                             <div class="row">
