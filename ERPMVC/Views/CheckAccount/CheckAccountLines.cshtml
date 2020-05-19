@@ -143,6 +143,7 @@
                                 columns.Bound(o => o.Estado).Title("Estado").Width(120);
                                 columns.Bound(o => o.IdEstado).Visible(false);
                                 columns.Bound(o => o.AmountWords).Title("Cantidad en Letras").Width(250);
+                                columns.Bound(o => o.JournalEntrId).Title("No Asiento").Width(150);
 
 
                             })
@@ -246,7 +247,10 @@
     }
      function AnularCheque(e) {
         debugger;
-             e.preventDefault();
+         e.preventDefault();
+         if (!confirm("Esta seguro que desea Anular este Cheque?")) {
+             return;
+         }
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
             var dataObject = {
                 CheckAccountId: dataItem.CheckAccountId,
@@ -301,10 +305,14 @@
     }
 
     function AprobarCheque(id , aprobacion) {
-        debugger;           
-            
+        debugger;
+        var estado = 99;
+        if (aprobacion) {
+            estado = 98;
+        }
             var dataObject = {
                 Id: id,
+                IdEstado : estado,
             };
 
             $.ajax({
@@ -418,6 +426,7 @@
                                 hideAfter: 30000,
                                 stack: 6
              });
+            
             return;
         }
 
@@ -454,6 +463,7 @@
             if (dataItem.IdEstado == 98 || dataItem.IdEstado == 52) {
                 var url = '@Url.Action("SFCheque", "CheckAccount")/' + dataItem.Id;
                 var win = window.open(url, '_blank');
+                RefrescarGrid();
                 win.focus();
             } else {
                 $.toast({
@@ -501,7 +511,7 @@
 
     setRowButtonTooltip(".k-grid-Anular", "Anular Cheque");
     setRowButtonTooltip(".k-grid-ImprimirCheque", "Imprimir Cheque");
-    setRowButtonTooltip(".k-grid-ImprimirReporteCheque", "Imprimir reporte de voucher");
+    setRowButtonTooltip(".k-grid-ImprimirReporteCheque", "Imprimir Voucher");
     setRowButtonTooltip(".k-grid-Editar", "Editar Cheque");
     setRowButtonTooltip(".k-grid-Aprobar", "Aprobar Cheque");
     setRowButtonTooltip(".k-grid-Rechazar", "Rechazar Cheque");
