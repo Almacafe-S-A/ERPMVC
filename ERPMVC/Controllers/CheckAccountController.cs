@@ -105,6 +105,8 @@ namespace ERPMVC.Controllers
                     _pCheque.Id = 0;
                     _pCheque.Date = DateTime.Now;
                     _pCheque.FechaCreacion = DateTime.Now;
+                    _pCheque.Estado = "Pendiente de Aprobacion";
+                    _pCheque.IdEstado = 97;
                     //////////Busca la cuenta bancaria asociadada a la chequera
                     _client = new HttpClient();
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
@@ -586,7 +588,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<CheckAccount>> SaveCheck([FromBody]CheckAccountLinesDTO _Check)
+        public async Task<ActionResult<CheckAccount>> SaveCheck([FromBody]CheckAccountLines _Check)
         {
             CheckAccountLines _CheckAccount = _Check;
             try
@@ -636,7 +638,7 @@ namespace ERPMVC.Controllers
         // POST: CheckAccount/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<CheckAccount>> InsertCheck(CheckAccountLinesDTO _CheckAccount)
+        public async Task<ActionResult<CheckAccount>> InsertCheck(CheckAccountLines _CheckAccount)
         {
             try
             {
