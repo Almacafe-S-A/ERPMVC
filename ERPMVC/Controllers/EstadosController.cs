@@ -56,7 +56,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _Estados = JsonConvert.DeserializeObject<List<Estados>>(valorrespuesta);
-                    _Estados = _Estados.OrderByDescending(q => q.IdEstado).ToList();
+                    //_Estados = _Estados.OrderByDescending(q => q.IdEstado).ToList();
                 }
 
 
