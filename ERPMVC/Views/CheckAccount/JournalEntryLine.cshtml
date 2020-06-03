@@ -5,7 +5,7 @@
 }
 
 
-<script>
+    <script>
 
 
     function OnRequestEnd_TopLinePriceGrid(e) {
@@ -124,11 +124,18 @@
     }
 
     function onsave(e) {
-    }
+        }
+
 
     function onBound() {
+        debugger; 
+        var grid = $("#gridNumeracionJournalEntryLine").getKendoGrid();
+        grid.dataSource.read();
+        grid.refresh();
+        
+        }
 
-    }
+        
 
 
     function AddJournalEntryLine() {
@@ -138,12 +145,12 @@
 
 
 
-</script>
+    </script>
 
 
 
 
-<div class="row">
+<div class="row" id="linea" style="display:none">
     <div class="col-lg-12">
         <div class="card-body">
             <div class="row">
@@ -160,7 +167,7 @@
                 <div class="col-md-4">
                     <div class="form-group">
                         <label id="Cuentalbl">Cuenta</label>
-                        <kendo-dropdownlist id="Cuenta" filter="Kendo.Mvc.UI.FilterType.Contains" 
+                        <kendo-dropdownlist id="Cuenta" filter="Kendo.Mvc.UI.FilterType.Contains"  on-data-bound="onBound"
                                             option-label="Seleccione la cuenta "
                                             datatextfield="AccountName"
                                             datavaluefield="AccountId"
@@ -344,12 +351,7 @@
 
 <script>
 
-    var id = $("#EstadoId").val();
-    if (id == 6) {
-        $("#div1").hide();
-        $("#div2").hide();
-        $("#div3").hide();
-    }
+    
 
     function format(e) {
         tecla = (document.all) ? e.keyCode : e.which;
@@ -376,6 +378,95 @@
             $("#Credito").data("kendoNumericTextBox").value(null);
             $("#Debito").data("kendoNumericTextBox").value(null);
         }
+    });
+
+    function PrimeraLinea() {
+        debugger;
+        var grid = $("#gridNumeracionJournalEntryLine").data("kendoGrid");
+        var datasource = grid.dataSource;
+        var displayeddata = datasource.data();
+        displayeddata[0].Credit = Number($("#Ammount").val()).toFixed(2);
+        var dataItem = {
+            'JournalEntryLineId': displayeddata[0].JournalEntryLineId,
+            'JournalEntryId': @ViewData["JournalEntryId"],
+            'Debit': 0,
+            'Credit': displayeddata[0].Credit,
+            'AccountId': displayeddata[0].AccountId,
+            'AccountName': displayeddata[0].AccountName,
+            'PartyTypeId': displayeddata[0].PartyTypeId,
+            'PartyTypeName': displayeddata[0].Credit,
+            'PartyId': displayeddata[0].PartyId,
+            'PartyName': displayeddata[0].PartyName,
+            // 'Num': $("#Num").val(),
+            'Description': displayeddata[0].Description,
+            'CostCenterId': displayeddata[0].CostCenterId,
+            'CostCenterName': displayeddata[0].CostCenterName,
+        };
+        $.ajax({
+                url: '@Url.Action("UpdateJournalEntryLine", "JournalEntryLine")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataItem),
+                success: function (data) {
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $.toast({
+                        heading: 'Error!',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                }
+        });
+
+
+        grid.refresh();
+        $("#TotalCredito").val(0);
+        $("#TotalCredit").val(0);
+        $("#TotalDebit").val(0);
+        $("#TotalDebito").val(0);
+        for (var i = 0; i < displayeddata.length; i++) {
+            $("#TotalCredito").data("kendoNumericTextBox").value(parseFloat(Number($("#TotalCredito").val()) + Number(displayeddata[i].Credit)).toFixed(2));
+            $("#TotalDebito").data("kendoNumericTextBox").value(parseFloat(Number($("#TotalDebito").val()) + Number(displayeddata[i].Debit)).toFixed(2));
+            $("#TotalDebit").val(parseFloat(Number($("#TotalDebit").val()) + Number(displayeddata.Debit)).toFixed(2));
+            $("#TotalCredit").val(parseFloat(Number($("#TotalCredit").val()) + Number(displayeddata.Credit)).toFixed(2));
+        }
+
+    }
+
+    function UpdateLinea() {
+        debugger;
+        var grid = $("#gridNumeracionJournalEntryLine").data("kendoGrid");
+        var datasource = grid.dataSource;
+        var displayeddata = datasource.data();
+        displayeddata[0].Credit = $("#Ammount").val();
+        return {
+            'JournalEntryLineId': displayeddata[0].JournalEntryLineId,
+            'JournalEntryId': @ViewData["JournalEntryId"],
+            'Debit':0,
+            'Credit': displayeddata[0].Credit,
+            'AccountId': displayeddata[0].AccountId,
+            'AccountName': displayeddata[0].AccountName,
+            'PartyTypeId': displayeddata[0].PartyTypeId,
+            'PartyTypeName': displayeddata[0].Credit,
+            'PartyId': displayeddata[0].PartyId,
+            'PartyName': displayeddata[0].PartyName,
+            // 'Num': $("#Num").val(),
+            'Description': displayeddata[0].Description,
+            'CostCenterId': displayeddata[0].CostCenterId,
+            'CostCenterName': displayeddata[0].CostCenterName,
+            }
+    }
+
+    $("#Ammount").change(function () {
+        PrimeraLinea();
+
     });
 
 
@@ -441,15 +532,43 @@
     }
 
     function EliminarJournalEntry(e) {
+        var idestado = $('#IdEstado').val();
+        var idcheque = $('#Id').val();
+        if (!(idcheque == 0 || idestado == 99)) {
+            $.toast({
+                heading: 'Error',
+                text: 'No es posible Editar',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+            return;
+        }
         if (confirm('¿Esta seguro que desea eliminar este registro?')) {
             e.preventDefault();
 
             var notification = $("#notification").data("kendoNotification");
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
 
+
             console.log(dataItem);
             var grid = $("#gridNumeracionJournalEntryLine").data("kendoGrid");
             var datasource = grid.dataSource;
+            var displayeddata = datasource.data();
+            if (dataItem.uid == displayeddata[0].uid) {
+                $.toast({
+                    heading: 'Error',
+                    text: 'No es posible eliminar la cuenta de banco asociada a la chequera',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 30000,
+                    stack: 6
+                });
+                return;
+            }
             datasource.remove(dataItem);
 
             $.ajax({
@@ -463,13 +582,15 @@
 
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
-
-                    //  $("#btngenerarfactura").show();
-                    notification.show({
-                        title: "Validación",
-                        message: textStatus + ": " + XMLHttpRequest.responseText
-                    }, "error");
-
+                    $.toast({
+                        heading: 'Error!',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
                 }
             });
 
@@ -534,6 +655,9 @@
         $('#Span3').text('');
     });
 
+
+
+
 </script>
 
 @*<h3 class="text-themecolor">Lineas de Diarios</h3>*@
@@ -556,6 +680,7 @@
                                                                                                     }).Title("Acciones").Width(100);
 
                                                                                                     columns.Bound(p => p.JournalEntryLineId).Title("Id Line").Width(100).Hidden(true);
+                                                                                                    columns.Bound(p => p.JournalEntryId).Title("Asiento No").Width(100).Hidden(true);
                                                                                                     columns.Bound(p => p.AccountId).Hidden().Width(200);
                                                                                                     columns.Bound(p => p.AccountName).Width(200);
                                                                                                     columns.Bound(p => p.Debit).Width(200).Format("{0:N2}");
@@ -655,14 +780,14 @@
                                                                                                 .Read(read => read.Action("GetJournalEntryLine", "JournalEntryLine").Data("AgregarLinea"))
                                                                                                 .Create(create => create.Action("Insert", "JournalEntryLine"))
                                                                                                  .Destroy(destroy => destroy.Action("Delete", "JournalEntryLine", new { JournalEntryLineId = "{0}" }).Type(HttpVerbs.Post))
-                                                                                                //.Update(update => update.Action("Update", "JournalEntryLine", new { JournalEntryLineId = "{0}" }).Type(HttpVerbs.Put))
+                                                                                                .Update(update => update.Action("UpdateJournalEntryLine", "JournalEntryLine",new { JournalEntryLineId = "{0}" }).Type(HttpVerbs.Get).Data("UpdateLinea"))
                                                                                                 // .Destroy(destroy => destroy.Action("Delete", "JournalEntryLine", new { JournalEntryLineId = "{0}" }).Type(HttpVerbs.Delete))
 
                                                                                                 )
                                                                                                 .Events(e =>
                                                                                                 {
                                                                                                     e.Save("onsave");
-                                                                                                    e.DataBound("onBound");
+                                                                                                    //e.DataBound("onGridBound");
 
 
                                                                                                 })
