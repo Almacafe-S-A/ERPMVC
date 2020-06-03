@@ -119,8 +119,11 @@ namespace ERPMVC.Controllers
 
 
                     }
-                    //_pcheque.journalentry = new journalentry();
-                    //_pcheque.journalentry.journalentryid = 0;
+
+                    _pCheque.JournalEntry = new JournalEntry();
+                    _pCheque.JournalEntry.JournalEntryId = 0;
+                    _pCheque.JournalEntrId = 0;
+                    
 
                     //_pcheque.journalentry.journalentrylines = new list<journalentryline>();
 
