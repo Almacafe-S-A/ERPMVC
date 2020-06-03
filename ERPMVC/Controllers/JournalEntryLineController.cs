@@ -205,6 +205,39 @@ namespace ERPMVC.Controllers
         }
 
 
+        [HttpPost("[action]")]
+        public async Task<JournalEntryLine> UpdateJournalEntryLine([FromBody]JournalEntryLine _JournalEntryLinep)
+        {
+            List<JournalEntryLine> _JournalEntryLine = new List<JournalEntryLine>();
+            try
+            {
+               
+                    _JournalEntryLine = JsonConvert.DeserializeObject<List<JournalEntryLine>>(HttpContext.Session.GetString("journalentryline"));
+                foreach (var item in _JournalEntryLine)
+                {
+                    if (item.AccountId == _JournalEntryLinep.AccountId)
+                    {
+                        item.Credit = _JournalEntryLinep.Credit;
+                    }
+                }
+                
+                   string serialzado = JsonConvert.SerializeObject(_JournalEntryLine).ToString();
+                        HttpContext.Session.SetString("journalentryline", serialzado);
+                   
+                
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _JournalEntryLinep;
+
+        }
+
+
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<JournalEntryLine>> Delete([FromBody]JournalEntryLine _JournalEntryLine)
         {

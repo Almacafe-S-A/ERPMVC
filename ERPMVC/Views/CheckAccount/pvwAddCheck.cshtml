@@ -130,8 +130,8 @@
                                     <div class="col-md-4">
                                         <div class="form-group">
                                             <label class="  control-label" style="width:100%">Tipo de Beneficiario</label>
-                                            <kendo-dropdownlist name="PartyTypeId" for="PartyTypeId" on-data-bound="PartyTypechange"
-                                                                id="PartyTypeId" onchange="PartyTypechange"
+                                            <kendo-dropdownlist name="PartyTypeId" for="PartyTypeId" 
+                                                                id="PartyTypeId" 
                                                                 data-val-required="El Tipo Beneficiario es requerido."
                                                                 filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                 style="min-width: 100%;">
@@ -252,7 +252,7 @@
                                     <div class="col-md-8">
                                         <div class="form-group">
                                             <label asp-for="Sinopsis" class=" control-label" style="min-width:100%">Sinopsis</label>
-                                            <input type="text" asp-for="Sinopsis" name="Date" class="k-textbox" style="min-width:100%" data-val-required="La Sinopsis es Requerida" />
+                                            <input type="text" asp-for="Sinopsis" name="Sinopsis" class="k-textbox" style="min-width:100%" data-val-required="La Sinopsis es Requerida" />
                                             <span asp-validation-for="Sinopsis" class="text-danger"></span>
                                         </div>
                                     </div>
@@ -377,20 +377,17 @@ function customFunction(input) {
         grid.dataSource.read();
     }
     $(document).ready(function () {
+        debugger;
+
         $("#party").show();
         $("#customer").hide();
         $("#vendor").hide();
         $("#employe").hide();
         $("#notype").hide();
-        //$("#employe").data("kendoDropDownList").value(@Model.PartyId);
-        //$("#employe").data("kendoDropDownList").value(@Model.PartyId);
         $("#PartyTypeId").kendoDropDownList({
             dataTextField: "text",
             dataValueField: "value",
-            optionLabel: {
-                text: "Seleccione tipo de  beneficiario",
-                value: null
-            },
+            
             dataSource: [
                 { text: "Digitar", value: 0 },
                 { text: "Cliente", value: 1 },
@@ -401,26 +398,39 @@ function customFunction(input) {
             suggest: true,
         });
         $("#PartyTypeId").data("kendoDropDownList").value(@Model.PartyTypeId);
-        PartyTypechange();
         $("#PartyId").kendoDropDownList({
             optionLabel: "Seleccione beneficiario",
             enable: false
         });
+        PartyTypechange();
+        var idestado = $("#IdEstado").val();
+        var idcheque = $("#Id").val();
+        if (idcheque==0||idestado == 99) {
+            $("#linea").show();
+        } else {
+            $("#Ammount").prop("readonly", true);
+            $("#Date").prop("readonly", true);
+            $("#Place").prop("readonly", true);
+            $("#Sinopsis").prop("readonly", true);
+            $("#PayToOrderOf").prop("readonly", true);
+        }
+
 
     });
-    function AgregarLineaCuentaBanco() {
 
 
+    $("#PartyTypeId").change(function () {
+        PartyTypechange();
+    });
 
-    }
-
-        function PartyTypechange () {
+    function PartyTypechange() {
+        debugger;
             var party = $("#PartyTypeId").data("kendoDropDownList").text();
             var Id = $("#PartyTypeId").data("kendoDropDownList").value();
             debugger;
             if (Id == 1) {
                 if ($("#customer").is(':hidden')) {
-                   // $("#IdCustomer").data("kendoDropDownList").value(0);
+                    //$("#IdCustomer").data("kendoDropDownList").value(0);
                 }
                 $("#customer").show();
                 //$("#IdCustomer").attr("required", "required");
@@ -438,7 +448,7 @@ function customFunction(input) {
                 $("#vendor").hide();
                 //$("#IdVendor").removeAttr("required");
                 if ($("#employe").is(':hidden')) {
-                    //$("#idemploye").data("kendoDropDownList").value(0);
+                   // $("#idemploye").data("kendoDropDownList").value(0);
                 }
                 $("#employe").show();
                  $("#notype").hide();
@@ -449,7 +459,7 @@ function customFunction(input) {
                 //$("#IdCustomer").removeAttr("required");
                 $("#party").hide();
                 if ($("#vendor").is(':hidden')) {
-                   // $("#IdVendor").data("kendoDropDownList").value(0);
+                    //$("#IdVendor").data("kendoDropDownList").value(0);
                 }
                 $("#vendor").show();
                 //$("#IdVendor").attr("required", "required");
@@ -466,8 +476,9 @@ function customFunction(input) {
                 //$("#IdVendor").attr("required", "required");
                 $("#employe").hide();
                 //$("#idemploye").removeAttr("required");
+                $("#vendor").hide();
             }
-            else if (Id == 4) {
+            else  {
                 $("#customer").hide();
                 //$("#IdCustomer").removeAttr("required");
                 $("#party").hide();
@@ -548,16 +559,20 @@ function customFunction(input) {
 
         var displayedData = $("#gridNumeracionJournalEntryLine").data().kendoGrid.dataSource.data();
         for (var i = 0; i < displayedData.length; i++) {
-            displayedData[i].JournalEntryLineId = 0;
+            if (displayedData[i].JournalEntryLineId < 0 ) {
+                displayedData[i].JournalEntryLineId = 0;
+            }
+
+           // displayedData[i].JournalEntryLineId = 0;
         }
 
 
-        beneficiario = '';
+        var beneficiario = '';
         var partyid = 0;
         switch (IdTipoBeneficiario) {
             case '0':
                 beneficiario = $("#PaytoOrderOf").val();
-
+                partyid =null;
                 break;
             case '1':
                 beneficiario = $("#IdCustomer").data("kendoDropDownList").text();
@@ -576,6 +591,7 @@ function customFunction(input) {
         }
 
         var journalEntry = {
+            'JournalEntryId': '@Model.JournalEntrId',
             'TotalDebit' : Debito,
             'TotalCredit': Credito,
             'JournalEntryLines': displayedData
