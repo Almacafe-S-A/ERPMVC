@@ -218,6 +218,12 @@ namespace ERPMVC.Controllers
                     if (item.AccountId == _JournalEntryLinep.AccountId)
                     {
                         item.Credit = _JournalEntryLinep.Credit;
+                        item.PartyName = _JournalEntryLinep.PartyName;
+                        item.PartyTypeId = _JournalEntryLinep.PartyTypeId;
+                        item.PartyTypeName = _JournalEntryLinep.PartyTypeName;
+                        item.Description = _JournalEntryLinep.Description;
+
+
                     }
                 }
                 
