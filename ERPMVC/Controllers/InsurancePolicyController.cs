@@ -244,9 +244,13 @@ namespace ERPMVC.Controllers
                     _InsurancePolicyS.FechaCreacion = DateTime.Now;
                     _InsurancePolicyS.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_InsurancePolicyS);
-                    if ((insertresult.Result as ObjectResult).Value.ToString() == "Ocurrio un error: Error en la Configuración de Asiento Contable Automatico.")
+                    if (insertresult.Result is BadRequestObjectResult)
                     {
-                        return await Task.Run(() => BadRequest("Ocurrio un error: Error en la Configuración de Asiento Contable Automatico."));
+                        return await Task.Run(() => BadRequest(((BadRequestObjectResult)insertresult.Result).Value));
+                    }
+                    if (insertresult.Result is OkObjectResult)
+                    {
+                        return await Task.Run(() => Ok(((OkObjectResult)insertresult.Result).Value));
                     }
                     var value = (insertresult.Result as ObjectResult).Value;
                     _InsurancePolicyS = ((InsurancePolicy)(value));
@@ -272,7 +276,7 @@ namespace ERPMVC.Controllers
         [ValidateAntiForgeryToken]
         public async Task<ActionResult<InsurancePolicy>> Insert(InsurancePolicy _InsurancePolicy)
         {
-            InsurancePolicy _custo = new InsurancePolicy();
+            int _custo = 0;
             try
             {
                 // TODO: Add insert logic here
@@ -286,7 +290,7 @@ namespace ERPMVC.Controllers
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _custo = JsonConvert.DeserializeObject<InsurancePolicy>(valorrespuesta);
+                    _custo = JsonConvert.DeserializeObject<int>(valorrespuesta);
                 }
                 else
                 {
