@@ -32,7 +32,9 @@ namespace ERPMVC.Models
 
         public double MerchadiseTotalValue { get; set; }
 
-        public double MerchandiseInsuredValue { get; set; }
+        public double MerchandiseInsuredValue { get; set; }  
+        
+        public double MerchandiseDeductible { get; set; }
 
         public double InsuredDiference { get; set; }
 

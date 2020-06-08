@@ -65,16 +65,89 @@ namespace ERPMVC.Controllers
             return PartialView(insuranceEndorsement);
         }
 
-        public async Task<ActionResult> pvwAddInsuredAssets([FromBody] InsuredAssets insuredAsset) {
+        public async Task<ActionResult> pvwAddInsuredAssets([FromBody] InsuredAssets _InsuredAssetsp) {
+            
+            
 
-            return PartialView(insuredAsset);
-        
+            InsuredAssets _InsuredAssets = new InsuredAssets();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/InsuredAssets/GetInsuredAssetsById/" + _InsuredAssetsp.Id);
+                string valorrespuesta = "";
+                _InsuredAssets.FechaCreacion = DateTime.Now;
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await(result.Content.ReadAsStringAsync());
+                    _InsuredAssets = JsonConvert.DeserializeObject<InsuredAssets>(valorrespuesta);
+
+                }
+
+                if (_InsuredAssets == null)
+                {
+                    _InsuredAssets = new InsuredAssets();
+                    _InsuredAssets.FechaCreacion = DateTime.Now;
+                }
+                else
+                {
+                    // _InsuredAssets.NumeroDEIString = $"{_InsuredAssets.Sucursal}-{_InsuredAssets.Caja}-01-{_InsuredAssets.NumeroDEI.ToString().PadLeft(8, '0')} ";
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return PartialView(_InsuredAssets);
+
         }
 
-        public async Task<ActionResult> pvwAddInsuranceEndorsement([FromBody] InsuranceEndorsement insuranceEndorsement)
+        public async Task<ActionResult> pvwAddInsuranceEndorsement([FromBody] InsuranceEndorsement _InsuranceEndorsementp)
         {
+            InsuranceEndorsement _InsuranceEndorsement = new InsuranceEndorsement();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/InsuranceEndorsement/GetInsuranceEndorsementById/" + _InsuranceEndorsementp.InsuranceEndorsementId);
+                string valorrespuesta = "";
+                _InsuranceEndorsement.DateGenerated = DateTime.Now;
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await(result.Content.ReadAsStringAsync());
+                    _InsuranceEndorsement = JsonConvert.DeserializeObject<InsuranceEndorsement>(valorrespuesta);
 
-            return PartialView(insuranceEndorsement);
+                }
+
+                if (_InsuranceEndorsement == null)
+                {
+                    _InsuranceEndorsement = new InsuranceEndorsement();
+                    _InsuranceEndorsement.DateGenerated = DateTime.Now;
+                }
+                else
+                {
+                    // _InsuranceEndorsement.NumeroDEIString = $"{_InsuranceEndorsement.Sucursal}-{_InsuranceEndorsement.Caja}-01-{_InsuranceEndorsement.NumeroDEI.ToString().PadLeft(8, '0')} ";
+                }
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+
+            return PartialView(_InsuranceEndorsement);
 
         }
 
@@ -192,40 +265,6 @@ namespace ERPMVC.Controllers
         }
 
 
-
-        /*[HttpGet("[action]")]
-        public async Task<DataSourceResult> GeDocumentByCustomerId([DataSourceRequest]DataSourceRequest request, Int64 CustomerId)
-        {
-            List<CustomerDocument> _CustomerDocument = new List<CustomerDocument>();
-            try
-            {
-
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CustomerDocument/GeDocumentByCustomerId/" + CustomerId);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _CustomerDocument = JsonConvert.DeserializeObject<List<CustomerDocument>>(valorrespuesta);
-
-                }
-
-
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-
-            return _CustomerDocument.ToDataSourceResult(request);
-
-        }
-
-    */
 
 
         [HttpPost("[controller]/[action]")]

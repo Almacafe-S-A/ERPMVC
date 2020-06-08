@@ -204,7 +204,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<InsuranceEndorsementDTO>> SaveInsuranceEndorsement([FromBody]InsuranceEndorsementDTO _InsuranceEndorsement)
+        public async Task<ActionResult<InsuranceEndorsementDTO>> SaveInsuranceEndorsement([FromBody]InsuranceEndorsement _InsuranceEndorsement)
         {
 
             try
@@ -263,11 +263,13 @@ namespace ERPMVC.Controllers
         // POST: InsuranceEndorsement/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<InsuranceEndorsement>> Insert(InsuranceEndorsementDTO _InsuranceEndorsement)
+        public async Task<ActionResult<InsuranceEndorsement>> Insert(InsuranceEndorsement _InsuranceEndorsement)
         {
             try
             {
                 // TODO: Add insert logic here
+                _InsuranceEndorsement.EstadoId = 1;
+                _InsuranceEndorsement.Estado = "Activo";
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));

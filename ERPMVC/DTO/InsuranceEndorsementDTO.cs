@@ -9,8 +9,5 @@ namespace ERPMVC.DTO
 {
     public class InsuranceEndorsementDTO : InsuranceEndorsement
     {
-
-        public List<InsuranceEndorsement> _InsuranceEndorsement { get; set; }
-        public int editar { get; set; } = 1;
     }
 }
