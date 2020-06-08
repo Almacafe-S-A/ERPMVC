@@ -48,6 +48,39 @@ namespace ERPMVC.Controllers
             return View();
         }
 
+
+        public async Task<ActionResult> pvwInsuredAssets()
+        {
+            InsuredAssets insuredAssets = new InsuredAssets();
+            //insuredAssets.InsurancePolicyId = Mod.InsurancePolicyId;
+
+            return PartialView(insuredAssets);
+        }
+
+        public async Task<ActionResult> InsuranceEndorsement()
+        {
+            InsuranceEndorsement insuranceEndorsement = new InsuranceEndorsement();
+            //insuranceEndorsement.InsurancePolicyId = insurancePolicy.InsurancePolicyId;
+
+            return PartialView(insuranceEndorsement);
+        }
+
+        public async Task<ActionResult> pvwAddInsuredAssets([FromBody] InsuredAssets insuredAsset) {
+
+            return PartialView(insuredAsset);
+        
+        }
+
+        public async Task<ActionResult> pvwAddInsuranceEndorsement([FromBody] InsuranceEndorsement insuranceEndorsement)
+        {
+
+            return PartialView(insuranceEndorsement);
+
+        }
+
+
+
+
         //[HttpPost("[controller]/[action]")]
         public async Task<ActionResult> pvwAddInsurancePolicy([FromBody]InsurancePolicyDTO _InsurancePolicyDocumentp)
         {

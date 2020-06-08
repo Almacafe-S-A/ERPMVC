@@ -26,15 +26,15 @@ namespace ERPMVC.Models
 
         public string AssetName { get; set; }
 
-        public decimal AssetDeductible { get; set; }
+        public double AssetDeductible { get; set; }
 
-        public decimal AssetInsuredValue { get; set; }
+        public double AssetInsuredValue { get; set; }
 
-        public decimal MerchadiseTotalValue { get; set; }
+        public double MerchadiseTotalValue { get; set; }
 
-        public decimal MerchandiseInsuredValue { get; set; }
+        public double MerchandiseInsuredValue { get; set; }
 
-        public decimal InsuredDiference { get; set; }
+        public double InsuredDiference { get; set; }
 
         public Int64 EstadoId { get; set; }
         [ForeignKey("EstadoId")]

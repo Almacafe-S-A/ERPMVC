@@ -131,9 +131,11 @@ namespace ERPMVC.Controllers
 
         }
 
+       
+
 
         [HttpGet]
-        public async Task<DataSourceResult> GetWarehouse([DataSourceRequest]DataSourceRequest request, Warehouse _BranchId)
+        public async Task<DataSourceResult> GetWarehouse([DataSourceRequest]DataSourceRequest request)
         {
             List<Warehouse> _Warehouse = new List<Warehouse>();
             try
@@ -230,101 +232,6 @@ namespace ERPMVC.Controllers
 
             return Json(_Warehouse);
         }
-
-
-
-        //public async Task<ActionResult<Warehouse>> SaveWarehouse([FromBody]Warehouse _Warehouse)
-        //{
-        //    List<Warehouse> Warehouse = new List<Warehouse>();
-
-        //    Warehouse _listWarehouse = _Warehouse;
-        //    try
-        //    {              
-        //        string baseadress = config.Value.urlbase;
-        //        HttpClient _client = new HttpClient();
-        //        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-
-        //        if (_listWarehouse.WarehouseId == 0)
-        //        {
-        //            var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouse/");
-        //            string valorrespuesta = "";
-        //            _Warehouse.FechaModificacion = DateTime.Now;
-        //            _Warehouse.UsuarioModificacion = HttpContext.Session.GetString("user");
-        //            if (result.IsSuccessStatusCode)
-        //            {
-        //                valorrespuesta = await (result.Content.ReadAsStringAsync());
-        //                Warehouse = JsonConvert.DeserializeObject<List<Warehouse>>(valorrespuesta);
-
-        //                Warehouse = Warehouse.Where(q => q.WarehouseName == _Warehouse.WarehouseName && q.BranchId == _Warehouse.BranchId).ToList();
-
-        //                if (Warehouse.Count > 0)
-        //                {
-        //                    return await Task.Run(() => BadRequest("Ya exíste una Bodega creada con el mismo Nombre en esta Sucursal"));
-        //                }
-
-        //                if (_listWarehouse == null)
-        //                {
-        //                    _listWarehouse = new Warehouse();
-        //                }
-        //                if (_listWarehouse.WarehouseId > 0)
-        //                {
-        //                    return await Task.Run(() => BadRequest($"Ya existe una bodega registrada con ese nombre."));
-        //                }
-        //            }
-        //        }
-
-        //        if (_listWarehouse.WarehouseId == 0)
-        //        {
-        //            _Warehouse.FechaCreacion = DateTime.Now;
-        //            _Warehouse.UsuarioCreacion = HttpContext.Session.GetString("user");
-        //            var insertresult = await Insert(_Warehouse);
-        //            //var value = (insertresult.Result as ObjectResult).Value;
-        //            //Warehouse resultado = ((Warehouse)(value));
-        //            //if (resultado.BranchId <= 0)
-        //            //{
-        //            //    return await Task.Run(() => BadRequest($"No se guardo la bodega."));
-        //            //}
-        //        }
-
-
-
-        //        else
-        //        {
-        //            var result = await _client.GetAsync(baseadress + "api/Warehouse/GetWarehouse/");
-        //            string valorrespuesta = "";
-        //            if (result.IsSuccessStatusCode)
-        //            {
-        //                valorrespuesta = await (result.Content.ReadAsStringAsync());
-        //                Warehouse = JsonConvert.DeserializeObject<List<Warehouse>>(valorrespuesta);
-
-        //                 Warehouse = Warehouse.Where(q => q.WarehouseName == _Warehouse.WarehouseName && q.BranchId == _Warehouse.BranchId).ToList();
-        //                if (Warehouse.Count > 0)
-        //                {
-        //                    return await Task.Run(() => BadRequest("Ya exíste una Bodega creada con el mismo Nombre en esta Sucursal"));
-        //                }
-
-
-        //                if (_listWarehouse == null)
-        //                {
-        //                    _listWarehouse = new Warehouse();
-        //                }
-        //            }
-        //            _Warehouse.UsuarioCreacion = _Warehouse.UsuarioCreacion;
-        //            _Warehouse.FechaCreacion = _Warehouse.FechaCreacion;
-        //            _Warehouse.FechaModificacion = DateTime.Now;
-        //            _Warehouse.UsuarioCreacion = HttpContext.Session.GetString("user");
-        //            var updateresult = await Update(_Warehouse.WarehouseId, _Warehouse);                
-        //        }
-
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-        //        throw ex;
-        //    }
-
-        //    return Json(_Warehouse);
-        //}
 
         // POST: Warehouse/Insert
         [HttpPost]
