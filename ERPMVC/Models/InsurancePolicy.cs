@@ -22,19 +22,34 @@ namespace ERPMVC.Models
         [Display(Name = "Nombre Aseguradora")]
         public string InsurancesName { get; set; }
 
+        public bool Propias { get; set; }
+
         [Display(Name = "Id Cliente")]
-        public Int64 CustomerId { get; set; }
+        public Int64? CustomerId { get; set; }
+        public Customer Customer { get; set; }
         [Display(Name = "Nombre del cliente")]
         public string CustomerName { get; set; }
+
+        public double ReductibleRate { get; set; }
+
+        public double MerchandiseRate { get; set; }
+
 
         public double LpsAmount { get; set; }
 
         public double DollarAmount { get; set; }
 
+        public double InsuredTotal { get; set; }
+
         public string AttachmentURL { get; set; }
+
         public string AttachementFileName { get; set; }
 
-        public string Status { get; set; }
+        public Int64? EstadoId { get; set; }
+        [ForeignKey("EstadoId")]
+        public Estados Estados { get; set; }
+
+        public string Estado { get; set; }
 
         [Display(Name = "Fecha de creación")]
         public DateTime FechaCreacion { get; set; }
