@@ -227,6 +227,8 @@ namespace ERPMVC.Controllers
 
                 if (_listInsuredAssets.Id == 0)
                 {
+                    _InsuredAssets.EstadoId = 1;                    
+
                     _InsuredAssets.FechaCreacion = DateTime.Now;
                     _InsuredAssets.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_InsuredAssets);
@@ -284,7 +286,6 @@ namespace ERPMVC.Controllers
                 {
                     string d = await (result.Content.ReadAsStringAsync());
                     throw new Exception(d);
-                    //return await Task.Run(() => BadRequest($"Ocurrio un error: {d}"));
                 }
 
             }
@@ -292,10 +293,8 @@ namespace ERPMVC.Controllers
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw (ex);
-                // return await Task.Run(()=> BadRequest($"Ocurrio un error{ex.Message}"));
             }
             return Ok(_InsuredAssets);
-            // return new ObjectResult(new DataSourceResult { Data = new[] { _InsuredAssets }, Total = 1 });
         }
 
         [HttpPut("{id}")]
