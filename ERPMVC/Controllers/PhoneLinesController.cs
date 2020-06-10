@@ -33,7 +33,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
 
-        [Authorize(Policy = "RRHH.Lineas de Telefono")]
+        [Authorize(Policy = "RRHH.Bonos y Deducciones.Lineas de Telefono")]
         public IActionResult Index()
         {
             ViewData["permisos"] = _principal;
@@ -269,12 +269,16 @@ namespace ERPMVC.Controllers
                 _ExchangeRate.ModifiedDate = DateTime.Now;
                 _ExchangeRate.CreatedUser = HttpContext.Session.GetString("user");
                 _ExchangeRate.ModifiedUser = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/ExchangeRate/GetExchangeRateByFecha/ExchangeRate", _ExchangeRate);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/ExchangeRate/GetExchangeRateByFecha", _ExchangeRate);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ExchangeRate = JsonConvert.DeserializeObject<ExchangeRate>(valorrespuesta);
+                }
+                else
+                {
+                    return BadRequest("No se encontro tasa de cambio actualizada");
                 }
             }
             catch (Exception ex)
