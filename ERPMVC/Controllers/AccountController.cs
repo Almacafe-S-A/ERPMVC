@@ -162,7 +162,14 @@ namespace ERPMVC.Controllers
                     {
                         _message.Add(new MessageClassUtil { key = "Login", name = "error", mensaje = "Error en login" });
                         model.Failed = true;
-                        model.LoginError = "Error en login: " + resultLogin.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                        var message = resultLogin.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                        if (message.Length > 100)
+                        {
+                            _logger.LogError($"Ocurrio un error: { message }");
+                            message = "Server Error";
+
+                        }
+                        model.LoginError = "Error en login: " + message;
                         return View(model);
                     }
 
@@ -172,8 +179,10 @@ namespace ERPMVC.Controllers
                     _message.Add(new MessageClassUtil { key = "Login", name = "error", mensaje = "Error en login" });
                     model.Failed = true;
                     var message = resultLogin.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                    
                     if (message.Length > 100)
                     {
+                        _logger.LogError($"Ocurrio un error: { message }");
                         message = "Server Error";
 
                     }
@@ -187,7 +196,13 @@ namespace ERPMVC.Controllers
             {
                 Console.WriteLine(ex);
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                model.LoginError = "Ocurrio un error: " + ex.Message.ToString();
+                var message = ex.ToString();
+                if (message.Length > 100)
+                {
+                    message = "Server Error";
+
+                }
+                model.LoginError = "Error: " + message;
                 model.Failed = true;
                 return View(model);
                 // throw ex;

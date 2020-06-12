@@ -57,12 +57,35 @@ namespace ERPMVC.Controllers
             return PartialView(insuredAssets);
         }
 
-        public async Task<ActionResult> InsuranceEndorsement()
+        public  ActionResult InsuranceEndorsement()
         {
             InsuranceEndorsement insuranceEndorsement = new InsuranceEndorsement();
             //insuranceEndorsement.InsurancePolicyId = insurancePolicy.InsurancePolicyId;
 
             return PartialView(insuranceEndorsement);
+        }
+        
+        public ActionResult SFActivosAsegurados(InsurancePolicy insurancePolicy)
+        {
+            
+            return  View(insurancePolicy);
+        }
+
+
+        [HttpGet]
+        public async Task<ActionResult> SFInsuranceEndorsement(Int32 id)
+        {
+            try
+            {
+                InsuranceEndorsement _InsuranceEndorsement = new InsuranceEndorsement { InsuranceEndorsementId = id, };
+                return await Task.Run(() => View(_InsuranceEndorsement));
+            }
+            catch (Exception)
+            {
+
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+
         }
 
         public async Task<ActionResult> pvwAddInsuredAssets([FromBody] InsuredAssets _InsuredAssetsp) {
