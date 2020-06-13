@@ -73,12 +73,12 @@ namespace ERPMVC.Controllers
 
 
         [HttpGet]
-        public async Task<ActionResult> SFInsuranceEndorsement(Int32 id)
+        public async Task<ActionResult> SFInsuranceEndorsement(InsurancePolicy insurancePolicy)
         {
             try
             {
-                InsuranceEndorsement _InsuranceEndorsement = new InsuranceEndorsement { InsuranceEndorsementId = id, };
-                return await Task.Run(() => View(_InsuranceEndorsement));
+                
+                return await Task.Run(() => View(insurancePolicy));
             }
             catch (Exception)
             {
