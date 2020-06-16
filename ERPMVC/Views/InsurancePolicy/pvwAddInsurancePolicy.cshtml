@@ -53,7 +53,7 @@
             'LpsAmount': $("#LpsAmount").val(),
             'DollarAmount': $("#DollarAmount").val(),
             'AttachmentURL': $("#AttachmentURL").val(),
-            'Status': $("#IdEstado").data("kendoDropDownList").text(),
+            'EstadoId': $("#EstadoId").data("kendoDropDownList").text(),
             '_InsurancePolicy': displayedData
 
         };
@@ -75,6 +75,8 @@
 
 
     }
+
+    function SetEstado() { $('#Estado').val($('#EstadoId').data("kendoDropDownList").text()) }
     
 </script>
 
@@ -191,31 +193,13 @@
 
                                         <div class="col-md-3">
                                             <div class="form-group">
-                                                <label asp-for="EstadoId" class=" control-label" style="width:100%">Estado</label>
-                                                @if (Model.InsurancePolicyId > 0)
-                                                {
-                                                    <kendo-dropdownlist name="Status" for="EstadoId"
-                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        option-label="Seleccionar Estado"
-                                                                        datatextfield="NombreEstado" enable="false"
-                                                                        datavaluefield="NombreEstado"
-                                                                        data-required-msg="El Estado es requerido"
-                                                                        required
-                                                                        style="width: 100%;">
-                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
-                                                            <transport>
-                                                                <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
-                                                            </transport>
-                                                        </datasource>
-                                                    </kendo-dropdownlist>
-                                                }
-                                                else
-                                                {
+                                                <label asp-for="EstadoId" class=" control-label" style="width:100%">Estado</label>                                                
                                                     <kendo-dropdownlist name="Status" for="EstadoId"
                                                                         filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         option-label="Seleccionar Estado"
                                                                         datatextfield="NombreEstado"
-                                                                        datavaluefield="NombreEstado"
+                                                                        datavaluefield="IdEstado"
+                                                                        on-change="SetEstado"
                                                                         data-required-msg="El Estado es requerido"
                                                                         required
                                                                         style="width: 100%;">
@@ -225,9 +209,10 @@
                                                             </transport>
                                                         </datasource>
                                                     </kendo-dropdownlist>
-                                                }
+                                                
                                                 <span asp-validation-for="EstadoId" class="text-danger"></span>
                                             </div>
+                                            <input type="text" asp-for="Estado" hidden />
                                         </div>
                                         <div class="col-md-3">
                                             <div class="form-group">
@@ -478,6 +463,8 @@
 
     function SetCliente() { $('#CustomerName').val($('#CustomerId').data("kendoDropDownList").text()) }
 
+    
+
     var onBegin = function () {
         //alert("Begin");
         $("#btnInsurancePolicy").attr("disabled", true);
@@ -506,11 +493,8 @@
     };
 
     var onFailed = function (context) {
-        console.log(context.response);
-        var error = context.response;
-        //if (context.response.length>100) {
-        //    error = 'Error al crear la póliza.'
-        //}
+        console.log(context);
+        var error = context.responseText;        
             $.toast({
                 heading: 'Error',
                 text: error,
