@@ -1,0 +1,197 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "Trawnsferencias Bancarias";
+    
+}
+
+
+<script>
+
+    function onsave(e) {
+     //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+       // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+
+    function AddTransfer() {
+
+          $('#Modal').find(':input').not(':submit').val('');
+          $('#Modal').modal('show');
+        $("#Id").val('0');
+
+        var validator = $("#frmBank").data("kendoValidator");
+        validator.hideMessages();
+    }
+
+
+         function EditTransfer(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                BankId: dataItem.BankId,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwAddTransfer", "Bank")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumBank").html('');
+                    $("#NumBank").html(result);
+
+
+                    //$("#btnBlackListCustomers").hide();
+                    $('#Modal').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+         }
+
+
+
+</script>
+
+<h3 class="text-themecolor">Transferencias Bancarias</h3>
+@(Html.Kendo().Grid<ERPMVC.Models.BankAccountTransfers>
+                        ()
+                        .Name("gridBank")
+                        .Columns(columns =>
+                        {
+
+                            columns.Command(command =>
+                            {
+                                if (User.HasClaim("Bancos.Tranferencias","true"))
+                                {
+                                    command.Custom("Editar").Click("EditTransfer").Text(" ").IconClass("fa fa-edit");
+                                }
+                                if (User.HasClaim("Bancos.Transferencias.Eliminar","true"))
+                                {
+                                    command.Destroy().Text(" ").IconClass("fa fa-trash");
+                                }
+
+                            }).Width(150).Title("Acciones");
+
+                            columns.Bound(p => p.Id).Width(100);
+                            columns.Bound(p => p.FechaCreacion).Width(200).Title("Fecha");
+                            columns.Bound(p => p.TransactionDate).Width(250).Title("Fecha de Transaccion");
+                            columns.Bound(p => p.SourceAccountManagement.BankName).Width(250).Title("Banco Origen");
+                            columns.Bound(p => p.SourceAccountManagement.CurrencyName).Title("Modena").Width(150);
+                            columns.Bound(p => p.SourceAmount).Width(120).Title("Monto Origen");
+                            columns.Bound(p => p.DestinationAccountManagement.BankName).Width(250).Title("Banco Destino");
+                            columns.Bound(p => p.DestinationAccountManagement.CurrencyName).Title("Moneda Destino").Width(150);
+                            columns.Bound(p => p.DestinationAmount).Width(120).Title("Monto Destino");
+                            columns.Bound(p => p.Notes).Width(250).Title("Notas");
+
+                        })
+                            .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                   .Clear()
+                                                   .Contains("Contiene")
+                                                   .DoesNotContain("No contiene")
+                                                   .EndsWith("Termina con")
+                                                   .IsEqualTo("Es igual a")
+                                                   .IsNotEqualTo("No es igual a")
+                                                   .IsNull("Es nulo")
+                                                   .StartsWith("Inicia con")
+
+
+                                             )
+                                             .ForNumber(n => n
+                                               .Clear()
+                                               .IsEqualTo("Es igual a")
+                                               .IsGreaterThan("Es mayor que")
+                                               .IsLessThan("Es menor que")
+                                               .IsNull("Es nulo")
+                                               .IsLessThanOrEqualTo("Es menor o igual que")
+                                               .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                             )
+                                             .ForDate(d => d
+                                             .Clear()
+                                             .IsEqualTo("Es igual que")
+                                             .IsGreaterThan("Es mayor que")
+                                             .IsLessThan("Es menor que")
+                                             .IsLessThanOrEqualTo("Es menor o igual que")
+                                             .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                             .IsNotEqualTo("No es igual que")
+                                              )
+                                           ))
+                        .ToolBar(tools =>
+                        {
+                            // tools.Create();
+                            if (User.HasClaim("Bancos.Transferencias.Agregar","true"))
+                            {
+                                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                           .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddTransfer()" });
+                            }
+
+                            tools.Excel().HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a Excel");
+                            tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a PDF");
+
+                        })
+                        .Editable(e => e.Mode(GridEditMode.PopUp))
+                        .Sortable()
+                        .Pageable()
+                        .Filterable()
+                        .Scrollable()
+                        .Pdf(pdf => pdf.FileName("BankReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                            .Excel(excel => excel.FileName("BankReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                        .DataSource(dataSource =>
+                            dataSource
+                            .WebApi()
+
+                            .ServerOperation(true)
+                            .Model(model =>
+                            {
+                                model.Id(p => p.Id);
+                                model.Field(p => p.TransactionDate).Editable(false);
+                                model.Field(p => p.FechaCreacion).Editable(true);
+                                model.Field(p => p.UsuarioCreacion).Editable(false);
+                                model.Field(p => p.UsuarioModificacion).Editable(false);
+
+                            })
+                            .Events(events => events.Error("error_handler"))
+                            .Read(read => read.Action("Get", "BankAccountTransfers"))
+                            .Create(create => create.Action("Insert", "BankAccountTransfers"))
+                            .Update(update => update.Action("Update", "BankAccountTransfers").Type(HttpVerbs.Put))
+                            .Destroy(destroy => destroy.Action("Delete", "BankAccountTransfers").Type(HttpVerbs.Post))
+
+                        )
+                        .Events(e =>
+                        {
+                            e.Save("onsave");
+
+                        })
+)
+
+<div id="NumBank">
+    @await Html.PartialAsync("pvwBankAccountTransfers", new ERPMVC.Models.BankAccountTransfers { Id = 0 })
+</div>
+
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridBank").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridBank").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+</script>
