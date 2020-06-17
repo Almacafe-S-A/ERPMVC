@@ -20,12 +20,12 @@ namespace ERPMVC.Controllers
 {
     [Authorize]
     [CustomAuthorization]
-    public class InsuranceEndorsementController : Controller
+    public class InsuredAssetsController : Controller
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
         private readonly ClaimsPrincipal _principal;
-        public InsuranceEndorsementController(ILogger<InsuranceEndorsementController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
+        public InsuredAssetsController(ILogger<InsuredAssetsController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
@@ -33,7 +33,7 @@ namespace ERPMVC.Controllers
         }
 
         [Authorize(Policy = "Contabilidad.Seguros.Seguros Endosados")]
-        public IActionResult InsuranceEndorsement()
+        public IActionResult InsuredAssets()
         {
             ViewData["permisos"] = _principal;
             return View();
@@ -50,32 +50,32 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> pvwAddInsuranceEndorsement([FromBody]InsuranceEndorsement _InsuranceEndorsementp)
+        public async Task<ActionResult> pvwAddInsuredAssets([FromBody]InsuredAssets _InsuredAssetsp)
         {
-            InsuranceEndorsement _InsuranceEndorsement = new InsuranceEndorsement();
+            InsuredAssets _InsuredAssets = new InsuredAssets();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/InsuranceEndorsement/GetInsuranceEndorsementById/" + _InsuranceEndorsementp.InsuranceEndorsementId);
+                var result = await _client.GetAsync(baseadress + "api/InsuredAssets/GetInsuredAssetsById/" + _InsuredAssetsp.Id);
                 string valorrespuesta = "";
-                _InsuranceEndorsement.DateGenerated = DateTime.Now;
+                _InsuredAssets.FechaCreacion = DateTime.Now;
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _InsuranceEndorsement = JsonConvert.DeserializeObject<InsuranceEndorsement>(valorrespuesta);
+                    _InsuredAssets = JsonConvert.DeserializeObject<InsuredAssets>(valorrespuesta);
 
                 }
 
-                if (_InsuranceEndorsement == null)
+                if (_InsuredAssets == null)
                 {
-                    _InsuranceEndorsement = new InsuranceEndorsement ();
-                    _InsuranceEndorsement.DateGenerated = DateTime.Now;
+                    _InsuredAssets = new InsuredAssets();
+                    _InsuredAssets.FechaCreacion = DateTime.Now;
                 }
                 else
                 {
-                    // _InsuranceEndorsement.NumeroDEIString = $"{_InsuranceEndorsement.Sucursal}-{_InsuranceEndorsement.Caja}-01-{_InsuranceEndorsement.NumeroDEI.ToString().PadLeft(8, '0')} ";
+                    // _InsuredAssets.NumeroDEIString = $"{_InsuredAssets.Sucursal}-{_InsuredAssets.Caja}-01-{_InsuredAssets.NumeroDEI.ToString().PadLeft(8, '0')} ";
                 }
 
 
@@ -88,7 +88,7 @@ namespace ERPMVC.Controllers
 
 
 
-            return PartialView(_InsuranceEndorsement);
+            return PartialView(_InsuredAssets);
 
         }
 
@@ -96,30 +96,30 @@ namespace ERPMVC.Controllers
 
         //COMIENZA APROVACIÓN
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<InsuranceEndorsement>> Recibido([FromBody]InsuranceEndorsement _InsuranceEndorsement)
+        public async Task<ActionResult<InsuredAssets>> Recibido([FromBody]InsuredAssets _InsuredAssets)
         {
-            InsuranceEndorsement _so = new InsuranceEndorsement();
-            if (_InsuranceEndorsement != null)
+            InsuredAssets _so = new InsuredAssets();
+            if (_InsuredAssets != null)
             {
                 try
                 {
                     string baseadress = config.Value.urlbase;
                     HttpClient _client = new HttpClient();
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/InsuranceEndorsement/GetInsuranceEndorsementById/" + _InsuranceEndorsement.InsuranceEndorsementId);
+                    var result = await _client.GetAsync(baseadress + "api/InsuredAssets/GetInsuredAssetsById/" + _InsuredAssets.Id);
                     string jsonresult = "";
-                    jsonresult = JsonConvert.SerializeObject(_InsuranceEndorsement);
+                    jsonresult = JsonConvert.SerializeObject(_InsuredAssets);
                     string valorrespuesta = "";
                     if (result.IsSuccessStatusCode)
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _so = JsonConvert.DeserializeObject<InsuranceEndorsement>(valorrespuesta);
-                        _so.DateGenerated = DateTime.Now;
+                        _so = JsonConvert.DeserializeObject<InsuredAssets>(valorrespuesta);
+                        _so.FechaCreacion = DateTime.Now;
 
-                        var resultsalesorder = await Update(_so.InsuranceEndorsementId, _so);
+                        var resultsalesorder = await Update(_so.Id, _so);
 
                         var value = (resultsalesorder.Result as ObjectResult).Value;
-                        InsuranceEndorsement resultado = ((InsuranceEndorsement)(value));
+                        InsuredAssets resultado = ((InsuredAssets)(value));
                     }
                 }
                 catch (Exception ex)
@@ -141,20 +141,20 @@ namespace ERPMVC.Controllers
         [HttpGet]
         public async Task<DataSourceResult> Get([DataSourceRequest]DataSourceRequest request)
         {
-            List<InsuranceEndorsement> _InsuranceEndorsement = new List<InsuranceEndorsement>();
+            List<InsuredAssets> _InsuredAssets = new List<InsuredAssets>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/InsuranceEndorsement/GetInsuranceEndorsement");
+                var result = await _client.GetAsync(baseadress + "api/InsuredAssets/GetInsuredAssets");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _InsuranceEndorsement = JsonConvert.DeserializeObject<List<InsuranceEndorsement>>(valorrespuesta);
-                    _InsuranceEndorsement = _InsuranceEndorsement.OrderByDescending(q => q.InsuranceEndorsementId).ToList();
+                    _InsuredAssets = JsonConvert.DeserializeObject<List<InsuredAssets>>(valorrespuesta);
+                    _InsuredAssets = _InsuredAssets.OrderByDescending(q => q.Id).ToList();
                 }
 
 
@@ -166,28 +166,28 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _InsuranceEndorsement.ToDataSourceResult(request);
+            return _InsuredAssets.ToDataSourceResult(request);
 
         }
 
 
         [HttpGet]
-        public async Task<DataSourceResult> GetByInsuracePolicyId([DataSourceRequest] DataSourceRequest request, int insurancePolicyId)
+        public async Task<DataSourceResult> GetByInsurancePolicy([DataSourceRequest] DataSourceRequest request , int insurancePolicyId)
         {
-            List<InsuranceEndorsement> _InsuranceEndorsement = new List<InsuranceEndorsement>();
+            List<InsuredAssets> _InsuredAssets = new List<InsuredAssets>();
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/InsuranceEndorsement/GetInsuranceEndorsementByInsurancePolicyId/"+ insurancePolicyId);
+                var result = await _client.GetAsync(baseadress + "api/InsuredAssets/GetInsuredAssetsByInsurancePolicyId/"+ insurancePolicyId);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _InsuranceEndorsement = JsonConvert.DeserializeObject<List<InsuranceEndorsement>>(valorrespuesta);
-                    _InsuranceEndorsement = _InsuranceEndorsement.OrderByDescending(q => q.InsuranceEndorsementId).ToList();
+                    _InsuredAssets = JsonConvert.DeserializeObject<List<InsuredAssets>>(valorrespuesta);
+                    _InsuredAssets = _InsuredAssets.OrderByDescending(q => q.Id).ToList();
                 }
 
 
@@ -199,53 +199,55 @@ namespace ERPMVC.Controllers
             }
 
 
-            return _InsuranceEndorsement.ToDataSourceResult(request);
+            return _InsuredAssets.ToDataSourceResult(request);
 
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<InsuranceEndorsementDTO>> SaveInsuranceEndorsement([FromBody]InsuranceEndorsement _InsuranceEndorsement)
+        public async Task<ActionResult<InsuredAssets>> SaveInsuredAssets([FromBody]InsuredAssets _InsuredAssets)
         {
 
             try
             {
-                InsuranceEndorsement _listInsuranceEndorsement = new InsuranceEndorsement();
+                InsuredAssets _listInsuredAssets = new InsuredAssets();
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/InsuranceEndorsement/GetInsuranceEndorsementById/" + _InsuranceEndorsement.InsuranceEndorsementId);
+                var result = await _client.GetAsync(baseadress + "api/InsuredAssets/GetInsuredAssetsById/" + _InsuredAssets.Id);
                 string valorrespuesta = "";
-                _InsuranceEndorsement.FechaModificacion = DateTime.Now;
-                _InsuranceEndorsement.UsuarioModificacion = HttpContext.Session.GetString("user");
+                _InsuredAssets.FechaModificacion = DateTime.Now;
+                _InsuredAssets.UsuarioModificacion = HttpContext.Session.GetString("user");
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _listInsuranceEndorsement = JsonConvert.DeserializeObject<InsuranceEndorsement>(valorrespuesta);
+                    _listInsuredAssets = JsonConvert.DeserializeObject<InsuredAssets>(valorrespuesta);
                 }
 
-                if (_listInsuranceEndorsement == null) { _listInsuranceEndorsement = new InsuranceEndorsement(); }
+                if (_listInsuredAssets == null) { _listInsuredAssets = new InsuredAssets(); }
 
-                if (_listInsuranceEndorsement.InsuranceEndorsementId == 0)
+                if (_listInsuredAssets.Id == 0)
                 {
-                    _InsuranceEndorsement.FechaCreacion = DateTime.Now;
-                    _InsuranceEndorsement.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_InsuranceEndorsement);
+                    _InsuredAssets.EstadoId = 1;                    
+
+                    _InsuredAssets.FechaCreacion = DateTime.Now;
+                    _InsuredAssets.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_InsuredAssets);
                     var value = (insertresult.Result as ObjectResult).Value;
 
-                    InsuranceEndorsementDTO resultado = ((InsuranceEndorsementDTO)(value));
-                    if (resultado.InsuranceEndorsementId <= 0)
+                    InsuredAssets resultado = ((InsuredAssets)(value));
+                    if (resultado.Id <= 0)
                     {
                         return await Task.Run(() => BadRequest("No se genero la factura!"));
                     }
                     else
                     {
-                        // _InsuranceEndorsement.NumeroDEIString = $"{resultado.Sucursal}-01-{resultado.NumeroDEI.ToString().PadLeft(8, '0')} ";
+                        // _InsuredAssets.NumeroDEIString = $"{resultado.Sucursal}-01-{resultado.NumeroDEI.ToString().PadLeft(8, '0')} ";
                     }
 
                 }
                 else
                 {
-                    var updateresult = await Update(_InsuranceEndorsement.InsuranceEndorsementId, _InsuranceEndorsement);
+                    var updateresult = await Update(_InsuredAssets.Id, _InsuredAssets);
                 }
 
             }
@@ -257,36 +259,33 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return Json(_InsuranceEndorsement);
+            return Json(_InsuredAssets);
         }
 
-        // POST: InsuranceEndorsement/Insert
+        // POST: InsuredAssets/Insert
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<ActionResult<InsuranceEndorsement>> Insert(InsuranceEndorsement _InsuranceEndorsement)
+        public async Task<ActionResult<InsuredAssets>> Insert(InsuredAssets _InsuredAssets)
         {
             try
             {
                 // TODO: Add insert logic here
-                _InsuranceEndorsement.EstadoId = 1;
-                _InsuranceEndorsement.Estado = "Activo";
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _InsuranceEndorsement.UsuarioCreacion = HttpContext.Session.GetString("user");
-                _InsuranceEndorsement.UsuarioModificacion = HttpContext.Session.GetString("user");
-                var result = await _client.PostAsJsonAsync(baseadress + "api/InsuranceEndorsement/Insert", _InsuranceEndorsement);
+                _InsuredAssets.UsuarioCreacion = HttpContext.Session.GetString("user");
+                _InsuredAssets.UsuarioModificacion = HttpContext.Session.GetString("user");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/InsuredAssets/Insert", _InsuredAssets);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _InsuranceEndorsement = JsonConvert.DeserializeObject<InsuranceEndorsementDTO>(valorrespuesta);
+                    _InsuredAssets = JsonConvert.DeserializeObject<InsuredAssets>(valorrespuesta);
                 }
                 else
                 {
                     string d = await (result.Content.ReadAsStringAsync());
                     throw new Exception(d);
-                    //return await Task.Run(() => BadRequest($"Ocurrio un error: {d}"));
                 }
 
             }
@@ -294,14 +293,12 @@ namespace ERPMVC.Controllers
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw (ex);
-                // return await Task.Run(()=> BadRequest($"Ocurrio un error{ex.Message}"));
             }
-            return Ok(_InsuranceEndorsement);
-            // return new ObjectResult(new DataSourceResult { Data = new[] { _InsuranceEndorsement }, Total = 1 });
+            return Ok(_InsuredAssets);
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<InsuranceEndorsement>> Update(Int64 id, InsuranceEndorsement _InsuranceEndorsement)
+        public async Task<ActionResult<InsuredAssets>> Update(Int64 id, InsuredAssets _InsuredAssets)
         {
             try
             {
@@ -309,12 +306,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PutAsJsonAsync(baseadress + "api/InsuranceEndorsement/Update", _InsuranceEndorsement);
+                var result = await _client.PutAsJsonAsync(baseadress + "api/InsuredAssets/Update", _InsuredAssets);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _InsuranceEndorsement = JsonConvert.DeserializeObject<InsuranceEndorsement>(valorrespuesta);
+                    _InsuredAssets = JsonConvert.DeserializeObject<InsuredAssets>(valorrespuesta);
                 }
 
             }
@@ -324,12 +321,12 @@ namespace ERPMVC.Controllers
                 return await Task.Run(() => BadRequest($"Ocurrio un error{ex.Message}"));
             }
 
-            return await Task.Run(() => Ok(_InsuranceEndorsement));
-            // return new ObjectResult(new DataSourceResult { Data = new[] { _InsuranceEndorsement }, Total = 1 });
+            return await Task.Run(() => Ok(_InsuredAssets));
+            // return new ObjectResult(new DataSourceResult { Data = new[] { _InsuredAssets }, Total = 1 });
         }
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<InsuranceEndorsement>> Delete([FromBody]InsuranceEndorsement _InsuranceEndorsement)
+        public async Task<ActionResult<InsuredAssets>> Delete([FromBody]InsuredAssets _InsuredAssets)
         {
             try
             {
@@ -337,12 +334,12 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                var result = await _client.PostAsJsonAsync(baseadress + "api/InsuranceEndorsement/Delete", _InsuranceEndorsement);
+                var result = await _client.PostAsJsonAsync(baseadress + "api/InsuredAssets/Delete", _InsuredAssets);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _InsuranceEndorsement = JsonConvert.DeserializeObject<InsuranceEndorsement>(valorrespuesta);
+                    _InsuredAssets = JsonConvert.DeserializeObject<InsuredAssets>(valorrespuesta);
                 }
 
             }
@@ -353,33 +350,9 @@ namespace ERPMVC.Controllers
             }
 
 
-            return await Task.Run(() => Ok(_InsuranceEndorsement));
-            // return new ObjectResult(new DataSourceResult { Data = new[] { _InsuranceEndorsement }, Total = 1 });
+            return await Task.Run(() => Ok(_InsuredAssets));
+            // return new ObjectResult(new DataSourceResult { Data = new[] { _InsuredAssets }, Total = 1 });
         }
 
-
-
-        [HttpGet]
-        public async Task<ActionResult> SFInsuranceEndorsement(Int32 id)
-        {
-            try
-            {
-                InsuranceEndorsement _InsuranceEndorsement = new InsuranceEndorsement { InsuranceEndorsementId = id, };
-                return await Task.Run(() => View(_InsuranceEndorsement));
-            }
-            catch (Exception)
-            {
-
-                return await Task.Run(() => BadRequest("Ocurrio un error"));
-            }
-
-        }
-
-
-        public async Task<IActionResult> SFLibroCompras()
-        {
-            return await Task.Run(() => View());
-
-        }
     }
 }

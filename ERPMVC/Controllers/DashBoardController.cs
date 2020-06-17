@@ -582,9 +582,14 @@ namespace ERPMVC.Controllers
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                 var result = await _client.GetAsync(baseadress + "api/Dashboard/GetSalarioTotal");
                 string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
+                if (result.IsSuccessStatusCode  )
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    if (valorrespuesta == "")
+                    {
+                        return Json(_Cantidad);
+                    }
+
                     _Cantidad = JsonConvert.DeserializeObject<decimal>(valorrespuesta);
 
                 }

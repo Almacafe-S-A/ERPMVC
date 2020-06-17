@@ -89,7 +89,7 @@ namespace ERPMVC.Models
         [Display(Name = "Teléfono")]
         public string Telefono { get; set; }
         [Display(Name = "Extensión")]
-        public int Extension { get; set; }
+        public int? Extension { get; set; }
         [Display(Name = "Notas")]
         public string Notas { get; set; }
         [Display(Name = "Puesto Id")]
