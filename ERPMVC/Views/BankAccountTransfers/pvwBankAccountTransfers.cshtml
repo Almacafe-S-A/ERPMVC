@@ -12,7 +12,7 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <h4 class="modal-title">Bancos</h4>
+                <h4 class="modal-title">Transferencias Bancarias</h4>
                 <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
             </div>
             <div class="modal-body">
@@ -23,28 +23,160 @@
                                 <form id="frmBankAccountTransfers" kendo-validator="true" kendo-messages="messages"
                                       data-ajax="true"
                                       data-ajax-method="post"
-                                      data-ajax-begin="SaveBank"
+                                      data-ajax-begin="SaveTransfer"
                                       class="validation-wizard wizard-circle">
                                     <div class="form-body">
-                                        <h3 class="card-title">Bancos</h3>
-                                        <hr>
                                         <div class="row">
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label asp-for="Id" class=" control-label" style="width:100%"></label>
-                                                    <input type="text" asp-for="Id" name="Id" class="form-control" disabled="disabled" style="min-width:100%" />
+                                                    <input type="text" asp-for="Id" name="Id" class="k-textbox" disabled="disabled" style="min-width:100%" />
                                                     <span asp-validation-for="Id" class="text-danger"></span>
                                                 </div>
                                             </div>
-
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <label asp-for="Notes" class=" control-label" style="width:100%"></label>
-                                                    <input type="text" asp-for="Notes" name="BankName" class="form-control" data-val-required="El nombre de banco es requerido" autocomplete="off" style="min-width:100%" maxlength="50" />
-                                                    <span asp-validation-for="Notes" class="text-danger"></span>
+                                                    <label>Fecha Registro</label>
+                                                    <kendo-datetimepicker for="FechaCreacion" value="@Model.FechaCreacion" readonly />
                                                 </div>
                                             </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label>Fecha de Transaccion</label>
+                                                    <kendo-datepicker for="TransactionDate" data-val-required="La fecha de Transaccion es requerida " />
+                                                </div>
 
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="control-label">Estado</label>
+                                                <kendo-dropdownlist name="EstadoId" datatextfield="NombreEstado" datavaluefield="IdEstado" style="min-width:100%"
+                                                                    option-label="Seleccione Estado">
+                                                    <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                        <transport>
+                                                            <read url="@Url.Action("GetporGrupoEstado","Estados",new { GrupoId = 1})" />
+                                                        </transport>
+                                                    </datasource>
+
+                                                </kendo-dropdownlist>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="control-label" style="min-width:100%">Banco Orgien</label>
+                                                    <kendo-dropdownlist  style="min-width:100%" name="bancoorigen" datatextfield="BankName" datavaluefield="BankId" 
+                                                                        option-label="Seleccione Banco">
+                                                        <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetBank","Bank")" />
+                                                            </transport>
+                                                        </datasource>
+
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="control-label"  style="min-width:100%">Moneda</label>
+                                                    <kendo-dropdownlist class="control-label"   style="min-width:100%" 
+                                                                        name="monedaorigen" 
+                                                                        datatextfield="CurrencyName" 
+                                                                        datavaluefield="CurrencyId"
+                                                                        option-label="Seleccione Moneda">
+                                                        <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetCurrency","Currency")" />
+                                                            </transport>
+                                                        </datasource>
+
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="control-label"  style="min-width:100%">Cuenta Orgien</label>
+                                                    <kendo-dropdownlist for="SourceAccountManagementId"  style="min-width:100%"
+                                                                        datatextfield="AccountNumber" datavaluefield="AccountManagementId" option-label="Seleccione la Cuenta">
+                                                        <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetAccountManagement","AccountManagement")" />
+                                                            </transport>
+                                                        </datasource>
+
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="control-label"  style="min-width:100%">Monto </label>
+                                                <kendo-numerictextbox for="SourceAmount" spinners="false" min="0" style="min-width:100%"  />
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="control-label" style="min-width:100%">Banco Destino</label>
+                                                    <kendo-dropdownlist name="bancodestino" datatextfield="BankName" datavaluefield="BankId" style="min-width:100%"
+                                                                        option-label="Selcciione Banco">
+                                                        <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetBank","Bank")" />
+                                                            </transport>
+                                                        </datasource>
+
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="control-label" style="min-width:100%">Moneda Destino</label>
+                                                    <kendo-dropdownlist name="monedadestino" datatextfield="CurrencyName"
+                                                                        option-label="Seleccione Moneda"
+                                                                        value="@Model.DestinationAccountManagement" datavaluefield="CurrencyId" style="min-width:100%">
+                                                        <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true"
+                                                                    >
+                                                            <transport>
+                                                                <read url="@Url.Action("GetCurrency","Currency")" />
+                                                            </transport>
+                                                        </datasource>
+
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label  style="min-width:100%">Cuenta Destino</label>
+                                                    <kendo-dropdownlist for="DestinationAccountManagementId"
+                                                                        datatextfield="AccountNumber" 
+                                                                        datavaluefield="AccountManagementId"
+                                                                        style="min-width:100%"
+                                                                        option-label="Seleccione la cuenta">
+                                                        <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true"
+                                                                    >
+                                                            <transport>
+                                                                <read url="@Url.Action("GetAccountManagement","AccountManagement")" />
+                                                            </transport>
+                                                        </datasource>
+
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="control-label"  style="min-width:100%">Monto </label>
+                                                <kendo-numerictextbox for="DestinationAmount"  spinners="false" min="0" />
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="control-label" style="min-width:100%">Tasa de Cambio</label>
+                                                    <kendo-numerictextbox style="min-width:100%" for="Rate" min="0" spinners="false" />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-9">
+                                                <label class="control-label" style="min-width:100%">Observacciones</label>
+                                                <textarea class="k-textarea" style="min-width:100%" asp-for="Notes"></textarea>
+                                            </div>
                                         </div>
 
                                         <div class="row">
@@ -70,7 +202,7 @@
         var grid = $("#gridBank").getKendoGrid();
         grid.dataSource.read();
     }
-        function SaveBank(e) {
+        function SaveTransfer(e) {
 
             var notification = $("#notification").data("kendoNotification");
            // e.preventDefault();
@@ -79,19 +211,18 @@
 
             var displayedData = $("#gridBank").data().kendoGrid.dataSource.view();
 
-            var dataObject = {  'Id': $("#Id").val()===""?"0":$("#Id").val(),
-                           'BankName': $("#BankName").val(),
-                           'Description': $("#Description").val(),
-                           //'IdEstado': $("#IdEstado").val(),
-                           //'Estado': $("#IdEstado").data("kendoDropDownList").text(),
-                           'FechaCreacion': $("#FechaCreacion").val(),
-                           'FechaModificacion':$("#FechaModificacion").val(),
-                           'UsuarioCreacion':$("#UsuarioCreacion").val(),
-                           'UsuarioModificacion':$("#UsuarioModificacion").val(),
-                           '_Bank': displayedData
+            var dataObject = {
+                'Id': $("#Id").val() === "" ? "0" : $("#Id").val(),
+                'TransactionDate': $("#TransactionDate").getKendoDatePicker().value().toJSON(),
+                'SourceAccountManagementId': $("#SourceAccountManagementId").val(),
+                'DestinationAccountManagementId': $("#SourceAccountManagementId").val(),
+                'SourceAmount': $("#SourceAmount").val(),
+                'DestinationAmount': $("#DestinationAmount").val(),
+                'Rate': $("#Rate").val(),
+                'Notes': $("#Notes").val(),
             };
 
-           // console.log(JSON.stringify(dataObject));
+            console.log(JSON.stringify(dataObject));
             //var form = $("#frmNumeracion");
            // form.validate();
 
@@ -102,7 +233,7 @@
                 if (validator.validate()) {
 
                     $.ajax({
-                        url: '@Url.Action("SaveBank", "Bank")',
+                        url: '@Url.Action("SaveBankAccountTransfers", "BankAccountTransfers")',
                         method: 'POST',
                         datatype: "json",
                         contentType: 'application/json',
@@ -125,7 +256,7 @@
 
                            RefrescarGrid();
 
-                            $('#ModalBank').modal('hide');
+                            $('#Modal').modal('hide');
 
 
                         },

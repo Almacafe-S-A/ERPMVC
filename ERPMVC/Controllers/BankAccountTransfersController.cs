@@ -39,8 +39,8 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public async Task<ActionResult> pvwAddBankAccountTransfers([FromBody] BankAccountTransfers _sarpara)
-        {
+        public async Task<ActionResult> pvwBankAccountTransfers([FromBody] BankAccountTransfers _sarpara)
+         {
             BankAccountTransfers _BankAccountTransfers = new BankAccountTransfers();
             try
             {
@@ -56,15 +56,22 @@ namespace ERPMVC.Controllers
 
                 }
 
-                if (_BankAccountTransfers == null)
+                if (_BankAccountTransfers == null || _BankAccountTransfers.Id == 0)
                 {
                     _BankAccountTransfers = new BankAccountTransfers();
+                    _BankAccountTransfers.DestinationAmount = 0;
+                    _BankAccountTransfers.SourceAmount = 0;
+                    _BankAccountTransfers.Rate = 0;
+                    _BankAccountTransfers.FechaCreacion = DateTime.Now;
+                    _BankAccountTransfers.TransactionDate = DateTime.Now;
                 }
             }
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
+                //throw ex;
+                return BadRequest("Error al cargar el formulario");
+
             }
 
 
@@ -84,7 +91,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/BankAccountTransfers/GetBankAccountTransfers");
+                var result = await _client.GetAsync(baseadress + "api/BankAccountTransfers/Get");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
@@ -189,7 +196,6 @@ namespace ERPMVC.Controllers
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
             }
 
             return Json(_BankAccountTransfersS);
