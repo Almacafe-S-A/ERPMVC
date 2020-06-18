@@ -1,0 +1,153 @@
+﻿@model ERPMVC.Models.BankAccountTransfers
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+           {"required","Valor requerido" }
+        };
+
+}
+
+
+<div id="Modal" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Bancos</h4>
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmBankAccountTransfers" kendo-validator="true" kendo-messages="messages"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveBank"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <h3 class="card-title">Bancos</h3>
+                                        <hr>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Id" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="Id" name="Id" class="form-control" disabled="disabled" style="min-width:100%" />
+                                                    <span asp-validation-for="Id" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Notes" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="Notes" name="BankName" class="form-control" data-val-required="El nombre de banco es requerido" autocomplete="off" style="min-width:100%" maxlength="50" />
+                                                    <span asp-validation-for="Notes" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button id="btnBank" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function RefrescarGrid() {
+        var grid = $("#gridBank").getKendoGrid();
+        grid.dataSource.read();
+    }
+        function SaveBank(e) {
+
+            var notification = $("#notification").data("kendoNotification");
+           // e.preventDefault();
+            $("#btnBank").hide();
+            $("#btnBank").prop("disabled", true);
+
+            var displayedData = $("#gridBank").data().kendoGrid.dataSource.view();
+
+            var dataObject = {  'Id': $("#Id").val()===""?"0":$("#Id").val(),
+                           'BankName': $("#BankName").val(),
+                           'Description': $("#Description").val(),
+                           //'IdEstado': $("#IdEstado").val(),
+                           //'Estado': $("#IdEstado").data("kendoDropDownList").text(),
+                           'FechaCreacion': $("#FechaCreacion").val(),
+                           'FechaModificacion':$("#FechaModificacion").val(),
+                           'UsuarioCreacion':$("#UsuarioCreacion").val(),
+                           'UsuarioModificacion':$("#UsuarioModificacion").val(),
+                           '_Bank': displayedData
+            };
+
+           // console.log(JSON.stringify(dataObject));
+            //var form = $("#frmNumeracion");
+           // form.validate();
+
+            var validator = $("#frmBankAccountTransfers").data("kendoValidator");
+                 var status = $(".status");
+
+
+                if (validator.validate()) {
+
+                    $.ajax({
+                        url: '@Url.Action("SaveBank", "Bank")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+
+                            //notification.show({
+                            //    message: "Guardado correctamente!"
+                            //}, "upload-success");
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: 'Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+
+                           RefrescarGrid();
+
+                            $('#ModalBank').modal('hide');
+
+
+                        },
+                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                            notification.show({
+                                title: "Validacion",
+                                message: textStatus + ": " + XMLHttpRequest.responseText
+                            }, "error");
+
+                        }
+                    });
+
+                }
+                else {
+                    status.text("Oops! There is invalid data in the form.")
+                        .removeClass("valid")
+                        .addClass("invalid");
+                }
+
+
+            $("#btnBank").show();
+            $("#btnBank").prop("disabled", false);
+    }
+</script>
