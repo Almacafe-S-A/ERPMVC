@@ -30,16 +30,16 @@ namespace ERPMVC.Models
         [ForeignKey("DestinationAccountManagementId")]
         public AccountManagement DestinationAccountManagement { get; set; }
         [Column(TypeName = "Money")]
-        public decimal SourceAmount { get; set; }
+        public double SourceAmount { get; set; }
         [Column(TypeName = "Money")]
-        public decimal DestinationAmount { get; set; }
+        public double DestinationAmount { get; set; }
 
         public Int64? ExchangeRateId { get; set; }
         [ForeignKey("ExchangeRateId")]
         public ExchangeRate ExchangeRate { get; set; }
 
         [Column(TypeName = "Money")]
-        public decimal Rate { get; set; }
+        public double Rate { get; set; }
 
         public string Notes { get; set; }
 

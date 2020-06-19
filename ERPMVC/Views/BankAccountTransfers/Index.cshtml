@@ -6,7 +6,7 @@
 }
 
 
-<script>
+    <script>
 
     function onsave(e) {
      //   console.log(new Date(e.model.FechaRecepcion).toISOString());
@@ -14,14 +14,35 @@
     }
 
 
-    function AddTransfer() {
+        function AddTransfer() {
+            var dataObject = {
+                Id: 0
+            };
+        $.ajax({
+                url: '@Url.Action("pvwBankAccountTransfers", "BankAccountTransfers")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumBank").html('');
+                    $("#NumBank").html(result);
 
-          $('#Modal').find(':input').not(':submit').val('');
-          $('#Modal').modal('show');
-        $("#Id").val('0');
 
-        var validator = $("#frmBank").data("kendoValidator");
-        validator.hideMessages();
+                    //$("#btnBlackListCustomers").hide();
+                    $('#Modal').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+
+        
+
+
+       // var validator = $("#frmBank").data("kendoValidator");
+        //validator.hideMessages();
     }
 
 
@@ -29,12 +50,12 @@
              e.preventDefault();
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
             var dataObject = {
-                BankId: dataItem.BankId,
+                BankId: dataItem.Id,
                 editar : 0
             };
 
             $.ajax({
-                url: '@Url.Action("pvwAddTransfer", "Bank")',
+                url: '@Url.Action("pvwBankAccountTransfers", "BankAccountTransfers")',
                 method: 'POST',
                 datatype: "json",
                 contentType: 'application/json',
@@ -56,7 +77,7 @@
 
 
 
-</script>
+    </script>
 
 <h3 class="text-themecolor">Transferencias Bancarias</h3>
 @(Html.Kendo().Grid<ERPMVC.Models.BankAccountTransfers>
@@ -76,17 +97,17 @@
                                     command.Destroy().Text(" ").IconClass("fa fa-trash");
                                 }
 
-                            }).Width(150).Title("Acciones");
+                            }).Width(100).Title("Acciones");
 
                             columns.Bound(p => p.Id).Width(100);
-                            columns.Bound(p => p.FechaCreacion).Width(200).Title("Fecha");
-                            columns.Bound(p => p.TransactionDate).Width(250).Title("Fecha de Transaccion");
-                            columns.Bound(p => p.SourceAccountManagement.BankName).Width(250).Title("Banco Origen");
+                            columns.Bound(p => p.FechaCreacion).Width(150).Title("Fecha Registro").Format("{0:dd/MM/yyyy}");
+                            columns.Bound(p => p.TransactionDate).Width(150).Title("Fecha de Transaccion").Format("{0:dd/MM/yyyy}");
+                            columns.Bound(p => p.SourceAccountManagement.BankName).Width(150).Title("Banco Origen");
                             columns.Bound(p => p.SourceAccountManagement.CurrencyName).Title("Modena").Width(150);
-                            columns.Bound(p => p.SourceAmount).Width(120).Title("Monto Origen");
-                            columns.Bound(p => p.DestinationAccountManagement.BankName).Width(250).Title("Banco Destino");
+                            columns.Bound(p => p.SourceAmount).Width(170).Title("Monto Origen").Format("{0:n2}");
+                            columns.Bound(p => p.DestinationAccountManagement.BankName).Width(150).Title("Banco Destino");
                             columns.Bound(p => p.DestinationAccountManagement.CurrencyName).Title("Moneda Destino").Width(150);
-                            columns.Bound(p => p.DestinationAmount).Width(120).Title("Monto Destino");
+                            columns.Bound(p => p.DestinationAmount).Width(170).Title("Monto Destino").Format("{0:n2}");
                             columns.Bound(p => p.Notes).Width(250).Title("Notas");
 
                         })
@@ -160,7 +181,7 @@
 
                             })
                             .Events(events => events.Error("error_handler"))
-                            .Read(read => read.Action("Get", "BankAccountTransfers"))
+                            .Read(read => read.Action("GetBankAccountTransfers", "BankAccountTransfers"))
                             .Create(create => create.Action("Insert", "BankAccountTransfers"))
                             .Update(update => update.Action("Update", "BankAccountTransfers").Type(HttpVerbs.Put))
                             .Destroy(destroy => destroy.Action("Delete", "BankAccountTransfers").Type(HttpVerbs.Post))
