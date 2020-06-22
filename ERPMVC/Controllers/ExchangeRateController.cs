@@ -41,22 +41,22 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        [HttpGet("[action]")]
-        public async Task<JsonResult> GetExchangeRate([DataSourceRequest]DataSourceRequest request)
+        [HttpPost("[action]")]
+        public async Task<JsonResult> GetExchangeRateByDateNCurrency([FromBody] ExchangeRate exchangeRate)
         {
-            List<ExchangeRate> _ExchangeRate = new List<ExchangeRate>();
+            ExchangeRate _ExchangeRate = new ExchangeRate();
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ExchangeRate/GetExchangeRate");
+                var result = await _client.PostAsJsonAsync(baseadress + "api/ExchangeRate/GetExchangeRateByDateNCurrency",exchangeRate);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ExchangeRate = JsonConvert.DeserializeObject<List<ExchangeRate>>(valorrespuesta);
+                    _ExchangeRate = JsonConvert.DeserializeObject<ExchangeRate>(valorrespuesta);
                     
                 }
             }
@@ -65,8 +65,10 @@ namespace ERPMVC.Controllers
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 throw ex;
             }
-            return Json(_ExchangeRate.ToDataSourceResult(request));
+            return Json(_ExchangeRate);
         }
+
+
         public async Task<ActionResult<ExchangeRate>> SaveExchangeRate([FromBody]ExchangeRateDTO _ExchangeRateP)
         {
             ExchangeRate _ExchangeRate = _ExchangeRateP;

@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Security.Claims;
+using Syncfusion.XlsIO.Implementation;
 
 namespace ERPMVC.Controllers
 {
@@ -71,6 +72,37 @@ namespace ERPMVC.Controllers
             }
 
             return Json(_AccountManagementP);
+        }
+
+
+        public async Task<DataSourceResult> GetAccountManagementByBankNCurrency(DataSourceRequest request, Int64 BankId, int CurrencyId)
+        {
+            List<AccountManagement> _AccountManagementP = new List<AccountManagement>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/AccountManagement/GetAccountManagementByBankNCurrency/" + BankId + "/" + CurrencyId);
+                string valorrespuesta = "";
+
+                if (result.IsSuccessStatusCode)
+                {
+
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _AccountManagementP = JsonConvert.DeserializeObject<List<AccountManagement>>(valorrespuesta);
+                }
+
+
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            
+            return _AccountManagementP.ToDataSourceResult(request);
         }
         public async Task<ActionResult> pvwAddAccountManagement([FromBody]AccountManagementDTO _sarpara)
         {

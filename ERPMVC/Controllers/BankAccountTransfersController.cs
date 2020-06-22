@@ -183,6 +183,10 @@ namespace ERPMVC.Controllers
                     _BankAccountTransfersS.FechaCreacion = DateTime.Now;
                     _BankAccountTransfersS.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult = await Insert(_BankAccountTransfersS);
+                    if (insertresult.Result is BadRequestObjectResult)
+                    {
+                        return BadRequest(insertresult.Result.ToString());
+                    }
                 }
                 else
                 {
@@ -190,6 +194,10 @@ namespace ERPMVC.Controllers
                     _BankAccountTransfersS.UsuarioCreacion = _BankAccountTransfers.UsuarioCreacion;
                     _BankAccountTransfersS.FechaCreacion = _BankAccountTransfers.FechaCreacion;
                     var updateresult = await Update(_BankAccountTransfers.Id, _BankAccountTransfersS);
+                    if (updateresult.Result is BadRequestObjectResult)
+                    {
+                        return BadRequest(updateresult.Result.ToString());
+                    }
                 }
 
             }
@@ -200,6 +208,10 @@ namespace ERPMVC.Controllers
 
             return Json(_BankAccountTransfersS);
         }
+
+
+
+
 
         // POST: BankAccountTransfers/Insert
         [HttpPost]
@@ -222,6 +234,12 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _BankAccountTransfers = JsonConvert.DeserializeObject<BankAccountTransfers>(valorrespuesta);
                 }
+                else
+                {
+                    string error = await result.Content.ReadAsStringAsync();
+                    return BadRequest($"Ocurrio un error: {error}");
+
+                }
 
             }
             catch (Exception ex)
@@ -230,7 +248,7 @@ namespace ERPMVC.Controllers
                 return BadRequest($"Ocurrio un error{ex.Message}");
             }
             return Ok(_BankAccountTransfers);
-            // return new ObjectResult(new DataSourceResult { Data = new[] { _BankAccountTransfers }, Total = 1 });
+            
         }
 
         [HttpPut("{id}")]
@@ -249,6 +267,13 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _BankAccountTransfers = JsonConvert.DeserializeObject<BankAccountTransfers>(valorrespuesta);
                 }
+                else
+                {
+                    string error = await result.Content.ReadAsStringAsync();
+                    return BadRequest($"Ocurrio un error: {error}");
+
+                }
+
 
             }
             catch (Exception ex)
