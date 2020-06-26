@@ -33,7 +33,7 @@ namespace ERPMVC.Controllers
             _principal = httpContextAccessor.HttpContext.User;
         }
         // GET: ConfigurationVendor
-        [Authorize(Policy = "Proveedores.Configuracion de Proveedores")]
+        [Authorize(Policy = "Proveedores.Configuracion de Proveedor")]
         public ActionResult ConfigurationVendor()
         {
             ViewData["permisos"] = _principal;
