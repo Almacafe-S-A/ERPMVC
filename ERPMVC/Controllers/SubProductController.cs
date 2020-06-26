@@ -510,8 +510,8 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpPost]
-        public async Task<ActionResult<SubProduct>> Delete(Int64 productid, [FromBody]SubProduct _subproduct)
+        [HttpDelete]
+        public async Task<ActionResult<SubProduct>> Delete(SubProduct _subproduct)
         {
             SubProduct _SubProduct = new SubProduct();
             List<InvoiceLine> _InvoiceLine = new List<InvoiceLine>();
@@ -530,6 +530,7 @@ namespace ERPMVC.Controllers
 
                     valorrespuesta1 = await (result1.Content.ReadAsStringAsync());
                 }
+                
                 if (valorrespuesta1 == "0")
                 {
                     var result = await _client.PostAsJsonAsync(baseadress + "api/SubProduct/Delete", _subproduct);
@@ -538,6 +539,11 @@ namespace ERPMVC.Controllers
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
                         _SubProduct = JsonConvert.DeserializeObject<SubProduct>(valorrespuesta);
+                    }
+
+                    else
+                    {
+                        return await Task.Run(() => BadRequest("Este registro tiene referencia a otros datos,No se puede Eliminar"));
                     }
                 }
                 else

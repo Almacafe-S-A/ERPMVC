@@ -143,14 +143,17 @@
                                     }
                                     if (permisoEliminar)
                                     {
-                                        command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash").Click("DeleteSubProduct");
+                                        command.Destroy().Text(" ").IconClass("fa fa-trash");
                                     }
                                     //command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
-                                }).Width(150).Title("Acciones");
+                                }).Width(80).Title("Acciones");
                             }
                             columns.Bound(p => p.SubproductId).Width(70);
                             columns.Bound(p => p.ProductName).Width(160);
                             columns.Bound(p => p.ProductCode).Width(180);
+                           
+                                columns.Bound(o => o.Description).Width(180).Title("Ovbservacion");
+                            
                             //columns.Bound(p => p.Description).Width(200);
                             //columns.Bound(p => p.Balance).Width(200);
                             //columns.Bound(p => p.BagBalance).Width(200);
@@ -170,18 +173,18 @@
                                 tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
                                                                                                               .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddSubProduct()" });
                             }
-                                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
                         })
                         .Editable(e => e.Mode(GridEditMode.PopUp))
                         .Sortable()
                         .Pageable()
                         .Filterable()
                         .Scrollable()
-                        .Pdf(pdf => pdf.FileName("SubProductReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        .Pdf(pdf => pdf.FileName(ViewData["Title"] +"Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                         + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
                         .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                        .Excel(excel => excel.FileName("SubProductReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        .Excel(excel => excel.FileName(ViewData["Title"] + "Report_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                         + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
                         .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
                         .DataSource(dataSource =>
@@ -196,11 +199,11 @@
 
 
                         })
-                        .Events(events => events.Error("error_handler"))
+                        .Events(events => events.Error("error"))
                         .Read(read => read.Action("GetSubProductoByTipoGrid", "SubProduct").Data("ProductType"))
                        .Create(create => create.Action("Insert", "Product").Type(HttpVerbs.Post))
                        .Update(update => update.Action("Update", "Product").Type(HttpVerbs.Post))
-                       .Destroy(destroy => destroy.Action("Delete", "SubProduct").Type(HttpVerbs.Post))
+                       .Destroy(destroy => destroy.Action("Delete", "SubProduct"))
                         )
                         .Events(e =>
                         {
@@ -221,6 +224,27 @@
         });
     }
 
+
+    function error(e) {
+        var error = e.xhr.responseText;
+        if (error.length > 100) {
+            error = "Server Error";
+        }
+        $.toast({
+            heading: 'Error',
+            text: error,
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'error',
+            hideAfter: 30000,
+            stack: 6
+        });
+
+
+        var grid = $("#gridSubProduct").getKendoGrid();
+        grid.refresh();
+        grid.dataSource.read();
+    }
 
 
     function setRowButtonTooltip(btn_cl, btn_tooltip) {
