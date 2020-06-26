@@ -197,53 +197,43 @@ namespace ERPMVC.Controllers
 
         }
 
-
-        //public async Task<ActionResult> SaveProductRelation([FromBody]dynamic dto)
         public async Task<ActionResult> SaveProductRelation([FromBody]ProductRelation _ProductRelationp)
         {
             ProductRelation _ProductRelation = new ProductRelation();
-            List<ProductRelation> _ProductRelationlist = new List<ProductRelation>();
             try
             {
-
-
-
-               // ProductRelation _ProductRelationp = JsonConvert.DeserializeObject<ProductRelation>(dto);
-                //ProductRelation _ProductRelationp = dto;
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/ProductRelation/GetProductRelationByProductIDSubProductId", _ProductRelationp);
+                var result = await _client.GetAsync(baseadress + $"api/ProductRelation/GetProductRelationById/{_ProductRelationp.RelationProductId}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ProductRelationlist = JsonConvert.DeserializeObject<List<ProductRelation>>(valorrespuesta);
-
-
-
+                    _ProductRelation = JsonConvert.DeserializeObject<ProductRelation>(valorrespuesta);
                 }
 
 
-                if (_ProductRelationlist.Count == 0)
+                if (_ProductRelation==null)
                 {
                     _ProductRelationp.FechaCreacion = DateTime.Now;
                     _ProductRelationp.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_ProductRelationp);
+                    var insertresult =  await Insert(_ProductRelationp);
+                    if (insertresult is BadRequestObjectResult)
+                    {
+                        return BadRequest(((BadRequestObjectResult)insertresult).Value);
+                    }
                 }
                 else
                 {
                     _ProductRelationp.UsuarioModificacion = HttpContext.Session.GetString("user");
                     _ProductRelationp.FechaModificacion = DateTime.Now;
                     var updateresult = await Update(_ProductRelation.RelationProductId, _ProductRelationp);
+                    if (updateresult is BadRequestObjectResult)
+                    {
+                        return BadRequest(((BadRequestObjectResult)updateresult).Value);
+                    }
                 }
-
-
-
-
-
-
-
             }
             catch (Exception ex)
             {
@@ -255,21 +245,6 @@ namespace ERPMVC.Controllers
 
             return Json(_ProductRelation);
         }
-
-
-
-
-      
-
-
-
-
-
-
-
-
-
-
         [HttpPost]
         public async Task<ActionResult> Insert(ProductRelation _ProductRelationp)
         {
@@ -290,6 +265,10 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ProductRelation = JsonConvert.DeserializeObject<ProductRelation>(valorrespuesta);
+                }
+                else
+                {
+                    return BadRequest(result.Content.ReadAsStringAsync());
                 }
 
             }
@@ -319,6 +298,10 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ProductRelation = JsonConvert.DeserializeObject<ProductRelation>(valorrespuesta);
                 }
+                else
+                {
+                    return BadRequest(result.Content.ReadAsStringAsync()) ;
+                }
 
             }
             catch (Exception ex)
@@ -330,7 +313,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpDelete("Id")]
+        [HttpDelete]
         public async Task<ActionResult<ProductRelation>> Delete(Int64 Id, ProductRelation _ProductRelation)
         {
 
@@ -340,7 +323,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/ProducRelation/Delete", _ProductRelation);
+                var result = await _client.DeleteAsync(baseadress + $"api/ProductRelation/Delete/{_ProductRelation.RelationProductId}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
