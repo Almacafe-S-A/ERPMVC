@@ -170,6 +170,8 @@ namespace ERPMVC.Controllers
                     var value = (insertresult.Result as ObjectResult).Value;
                     EmployeesDTO resultado = ((EmployeesDTO)(value));
 
+                    _EmployeesP = resultado;
+
                     IFormFile file = files.FirstOrDefault();
                     if (file != null)
                     {
@@ -187,6 +189,8 @@ namespace ERPMVC.Controllers
                         var updateresult1 = await Update(_EmployeesP);
 
                     }
+                    //return await pvwEditEmployees(resultado.IdEmpleado);
+                   
                 }
                 else
                 {
