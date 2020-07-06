@@ -266,13 +266,13 @@ namespace ERPMVC
             {
                 DefaultRequestCulture = new RequestCulture(ci),
                 SupportedCultures = new List<CultureInfo>
-    {
-        ci,
-    },
+                    {
+                        ci,
+                    },
                 SupportedUICultures = new List<CultureInfo>
-    {
-        ci,
-    }
+                    {
+                        ci,
+                    }
             });
 
             //CultureInfo.DefaultThreadCurrentCulture = new CultureInfo("es-HN", false);

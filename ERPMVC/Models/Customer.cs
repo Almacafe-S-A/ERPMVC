@@ -119,6 +119,10 @@ namespace ERPMVC.Models
         [Display(Name = "Confirmación por correo")]
         public bool ConfirmacionCorreo { get; set; }
 
+        public Int64? ProductTypeId { get; set; }
+        [ForeignKey("ProductTypeId")]
+        public ProductType ProductType { get; set; }
+
 
         [Required]
         [Display(Name = "Usuario de creación")]
