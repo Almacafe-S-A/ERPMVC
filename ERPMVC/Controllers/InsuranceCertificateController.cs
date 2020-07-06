@@ -40,10 +40,7 @@ namespace ERPMVC.Controllers
             return View();
         }
 
-        public IActionResult SFSegurosEndosados()
-        {
-            return View();
-        }
+      
 
         [HttpPost]
         public async Task<ActionResult> pvwAddInsuranceCertificate([FromBody] InsuranceCertificate _InsuranceCertificatep)
