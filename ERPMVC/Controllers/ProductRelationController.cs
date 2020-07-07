@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Security.Claims;
 using System.Threading.Tasks;
-using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using ERPMVC.DTO;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -15,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -219,19 +219,19 @@ namespace ERPMVC.Controllers
                     _ProductRelationp.FechaCreacion = DateTime.Now;
                     _ProductRelationp.UsuarioCreacion = HttpContext.Session.GetString("user");
                     var insertresult =  await Insert(_ProductRelationp);
-                    if (insertresult is BadRequestObjectResult)
+                    if (insertresult.Result is BadRequestObjectResult)
                     {
-                        return BadRequest(((BadRequestObjectResult)insertresult).Value);
+                        return BadRequest(((BadRequestObjectResult)insertresult.Result).Value);
                     }
                 }
                 else
                 {
                     _ProductRelationp.UsuarioModificacion = HttpContext.Session.GetString("user");
                     _ProductRelationp.FechaModificacion = DateTime.Now;
-                    var updateresult = await Update(_ProductRelation.RelationProductId, _ProductRelationp);
-                    if (updateresult is BadRequestObjectResult)
+                    var updateresult = await Update( _ProductRelationp);
+                    if (updateresult.Result is BadRequestObjectResult)
                     {
-                        return BadRequest(((BadRequestObjectResult)updateresult).Value);
+                        return BadRequest(((BadRequestObjectResult)updateresult.Result).Value);
                     }
                 }
             }
@@ -246,7 +246,7 @@ namespace ERPMVC.Controllers
             return Json(_ProductRelation);
         }
         [HttpPost]
-        public async Task<ActionResult> Insert(ProductRelation _ProductRelationp)
+        public async Task<ActionResult<ProductRelation>> Insert(ProductRelation _ProductRelationp)
         {
             ProductRelation _ProductRelation = _ProductRelationp;
             try
@@ -266,10 +266,12 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ProductRelation = JsonConvert.DeserializeObject<ProductRelation>(valorrespuesta);
                 }
-                else
+                string error = await result.Content.ReadAsStringAsync();
+                if (error.Length > 100)
                 {
-                    return BadRequest(result.Content.ReadAsStringAsync());
+                    error = "Error al Guardar";
                 }
+                return BadRequest($"{error}");
 
             }
             catch (Exception ex)
@@ -281,7 +283,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update(Int64 id, ProductRelation _ProductRelation)
+        public async Task<ActionResult<ProductRelation>> Update(ProductRelation _ProductRelation)
         {
 
             try
@@ -298,10 +300,12 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ProductRelation = JsonConvert.DeserializeObject<ProductRelation>(valorrespuesta);
                 }
-                else
+                string error = await result.Content.ReadAsStringAsync();
+                if (error.Length > 100)
                 {
-                    return BadRequest(result.Content.ReadAsStringAsync()) ;
+                    error = "Error al Guardar";
                 }
+                return BadRequest($"{error}");
 
             }
             catch (Exception ex)
