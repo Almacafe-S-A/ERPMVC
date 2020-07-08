@@ -350,5 +350,12 @@ namespace ERPMVC.Controllers
             }
 
         }
+
+        [HttpGet]
+        public async Task<ActionResult> SFCertificates()
+        {
+            return await Task.Run(() => View());
+
+        }
     }
 }
