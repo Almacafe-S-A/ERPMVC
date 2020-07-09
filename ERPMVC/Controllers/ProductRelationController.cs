@@ -2,11 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
-using System.Security.Claims;
 using System.Threading.Tasks;
-using ERPMVC.DTO;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using ERPMVC.DTO;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -15,6 +14,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System.Security.Claims;
 
 namespace ERPMVC.Controllers
 {
@@ -197,53 +197,43 @@ namespace ERPMVC.Controllers
 
         }
 
-
-        //public async Task<ActionResult> SaveProductRelation([FromBody]dynamic dto)
         public async Task<ActionResult> SaveProductRelation([FromBody]ProductRelation _ProductRelationp)
         {
             ProductRelation _ProductRelation = new ProductRelation();
-            List<ProductRelation> _ProductRelationlist = new List<ProductRelation>();
             try
             {
-
-
-
-               // ProductRelation _ProductRelationp = JsonConvert.DeserializeObject<ProductRelation>(dto);
-                //ProductRelation _ProductRelationp = dto;
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/ProductRelation/GetProductRelationByProductIDSubProductId", _ProductRelationp);
+                var result = await _client.GetAsync(baseadress + $"api/ProductRelation/GetProductRelationById/{_ProductRelationp.RelationProductId}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ProductRelationlist = JsonConvert.DeserializeObject<List<ProductRelation>>(valorrespuesta);
-
-
-
+                    _ProductRelation = JsonConvert.DeserializeObject<ProductRelation>(valorrespuesta);
                 }
 
 
-                if (_ProductRelationlist.Count == 0)
+                if (_ProductRelation==null)
                 {
                     _ProductRelationp.FechaCreacion = DateTime.Now;
                     _ProductRelationp.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_ProductRelationp);
+                    var insertresult =  await Insert(_ProductRelationp);
+                    if (insertresult.Result is BadRequestObjectResult)
+                    {
+                        return BadRequest(((BadRequestObjectResult)insertresult.Result).Value);
+                    }
                 }
                 else
                 {
                     _ProductRelationp.UsuarioModificacion = HttpContext.Session.GetString("user");
                     _ProductRelationp.FechaModificacion = DateTime.Now;
-                    var updateresult = await Update(_ProductRelation.RelationProductId, _ProductRelationp);
+                    var updateresult = await Update( _ProductRelationp);
+                    if (updateresult.Result is BadRequestObjectResult)
+                    {
+                        return BadRequest(((BadRequestObjectResult)updateresult.Result).Value);
+                    }
                 }
-
-
-
-
-
-
-
             }
             catch (Exception ex)
             {
@@ -255,23 +245,8 @@ namespace ERPMVC.Controllers
 
             return Json(_ProductRelation);
         }
-
-
-
-
-      
-
-
-
-
-
-
-
-
-
-
         [HttpPost]
-        public async Task<ActionResult> Insert(ProductRelation _ProductRelationp)
+        public async Task<ActionResult<ProductRelation>> Insert(ProductRelation _ProductRelationp)
         {
             ProductRelation _ProductRelation = _ProductRelationp;
             try
@@ -291,6 +266,12 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ProductRelation = JsonConvert.DeserializeObject<ProductRelation>(valorrespuesta);
                 }
+                string error = await result.Content.ReadAsStringAsync();
+                if (error.Length > 100)
+                {
+                    error = "Error al Guardar";
+                }
+                return BadRequest($"{error}");
 
             }
             catch (Exception ex)
@@ -302,7 +283,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPut]
-        public async Task<IActionResult> Update(Int64 id, ProductRelation _ProductRelation)
+        public async Task<ActionResult<ProductRelation>> Update(ProductRelation _ProductRelation)
         {
 
             try
@@ -319,6 +300,12 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ProductRelation = JsonConvert.DeserializeObject<ProductRelation>(valorrespuesta);
                 }
+                string error = await result.Content.ReadAsStringAsync();
+                if (error.Length > 100)
+                {
+                    error = "Error al Guardar";
+                }
+                return BadRequest($"{error}");
 
             }
             catch (Exception ex)
@@ -330,7 +317,7 @@ namespace ERPMVC.Controllers
         }
 
 
-        [HttpDelete("Id")]
+        [HttpDelete]
         public async Task<ActionResult<ProductRelation>> Delete(Int64 Id, ProductRelation _ProductRelation)
         {
 
@@ -340,7 +327,7 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
 
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.PostAsJsonAsync(baseadress + "api/ProducRelation/Delete", _ProductRelation);
+                var result = await _client.DeleteAsync(baseadress + $"api/ProductRelation/Delete/{_ProductRelation.RelationProductId}");
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {

@@ -32,10 +32,6 @@ namespace ERPMVC.Models
 
         public double TotalAmountDl { get; set; }
 
-        public double TotalCertificateBalalnce { get; set; }
-
-        public double TotalAssuredDifernce { get; set; }
-
         public Int64 EstadoId { get; set; }
 
         public string Estado { get; set; }

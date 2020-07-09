@@ -527,6 +527,7 @@ namespace ERPMVC.Controllers
                 if (_JournalEntry == null)
                 {
                     _JournalEntry = new JournalEntryDTO();
+                    _JournalEntry = _sarpara;
                     _JournalEntry.Date = DateTime.Now;
                     _JournalEntry.DatePosted = DateTime.Now;
                 }
@@ -543,105 +544,8 @@ namespace ERPMVC.Controllers
 
         }
 
-        [HttpPost("[action]")]
-        public async Task<ActionResult> pvwAddJournalEntryAjuste([FromBody]JournalEntryDTO _sarpara)
-        {
-            JournalEntryDTO _JournalEntry = new JournalEntryDTO();
-            try
-            {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/JournalEntry/GetJournalEntryById/" + _sarpara.JournalEntryId);
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _JournalEntry = JsonConvert.DeserializeObject<JournalEntryDTO>(valorrespuesta);
-
-                }
-
-                if (_JournalEntry == null)
-                {
-                    _JournalEntry = new JournalEntryDTO();
-                    _JournalEntry.Date = DateTime.Now;
-                    _JournalEntry.DatePosted = DateTime.Now;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
 
 
-
-            return PartialView(_JournalEntry);
-
-        }
-        // GET: Customer/Details/5
-
-        /*
-                [HttpGet("[action]")]
-                public async Task<ActionResult> Proveedores(Int64 PurchId)
-                {
-                    Purch _customers = new Purch();
-                    try
-                    {
-                        string baseadress = config.Value.urlbase;
-                        HttpClient _client = new HttpClient();
-                        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                        var result = await _client.GetAsync(baseadress + "api/Purch/GetPurchById/" + PurchId);
-                        string valorrespuesta = "";
-                        if (result.IsSuccessStatusCode)
-                        {
-                            valorrespuesta = await (result.Content.ReadAsStringAsync());
-                            _customers = JsonConvert.DeserializeObject<Purch>(valorrespuesta);
-
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                        throw ex;
-                    }
-
-
-
-                    return await Task.Run(() => View(_customers));
-                }
-          */
-        [HttpGet("[action]")]
-        public async Task<ActionResult> CierreContableDiaAnterior()
-        {
-            List<BitacoraCierreContable> _BitacoraCierreContable = new List<BitacoraCierreContable>();
-            BitacoraCierreContable _EjecucionDiaAnteriorCierreContable = new BitacoraCierreContable();
-            try
-            {
-                string baseadress = config.Value.urlbase;
-                HttpClient _client = new HttpClient();
-                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/BitacoraCierreContable/GetBitacoraCierreContable");
-                string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
-                {
-                    var DateCierreAnterior = DateTime.Now.Date.AddDays(-1);
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _BitacoraCierreContable = JsonConvert.DeserializeObject<List<BitacoraCierreContable>>(valorrespuesta);
-                    _EjecucionDiaAnteriorCierreContable = _BitacoraCierreContable.Where(p => p.FechaCierre == DateCierreAnterior).FirstOrDefault();
-
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-
-
-
-            return await Task.Run(() => Json(_EjecucionDiaAnteriorCierreContable));
-        }
 
         [HttpGet("[action]")]
         public async Task<ActionResult> GetJournalEntryById(Int64 JournalEntryId)
