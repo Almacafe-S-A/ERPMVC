@@ -3,81 +3,77 @@
 
 @{ 
     ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+    ViewData["Title"] = "Conciliacion Bancaria";
 }
 
 <h3 class="text-themecolor">Conciliación Bancaria</h3>
-<div class="container-fluid">
-    <div class="row">
-        <div class="col">
-            <kendo-grid name="grdConciliaciones">
-                <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
-                    <transport>
-                        <read url="@Url.Action("GetConciliacion","Conciliacion")" />
-                    </transport>
-                    <schema>
-                        <model id="ConciliacionId">
-                            <fields>
-                                <field name="ConciliacionId" type="number" />
-                                <field name="FechaConciliacion" type="date" />
-                                <field name="DateBeginReconciled" type="date" />
-                                <field name="DateEndReconciled" type="date" />
-                                <field name="SaldoConciliado" type="number" />
-                                <field name="SaldoBanco" type="number" />
-                                <field name="SaldoLibro" type="number" />
-                            </fields>
-                        </model>
-                    </schema>
-                </datasource>
-                <columns>
-                    @if (permisos.HasClaim("Bancos.Conciliacion Bancaria.Editar", "true") || permisos.HasClaim("Bancos.Conciliacion Bancaria.Ver Detalle", "true"))
+<kendo-grid name="grdConciliaciones" height="500">
+    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+        <transport>
+            <read url="@Url.Action("GetConciliacion","Conciliacion")" />
+        </transport>
+        <schema>
+            <model id="ConciliacionId">
+                <fields>
+                    <field name="ConciliacionId" type="number" />
+                    <field name="FechaConciliacion" type="date" />
+                    <field name="DateBeginReconciled" type="date" />
+                    <field name="DateEndReconciled" type="date" />
+                    <field name="SaldoConciliado" type="number" />
+                    <field name="SaldoBanco" type="number" />
+                    <field name="SaldoLibro" type="number" />
+                </fields>
+            </model>
+        </schema>
+    </datasource>
+    <columns>
+        @if (permisos.HasClaim("Bancos.Conciliacion Bancaria.Editar", "true") || permisos.HasClaim("Bancos.Conciliacion Bancaria.Ver Detalle", "true"))
+        {
+            <column width="100">
+                <commands>
+                    @if (permisos.HasClaim("Bancos.Conciliacion Bancaria.Editar", "true"))
                     {
-                    <column width="200">
-                        <commands>
-                            @if (permisos.HasClaim("Bancos.Conciliacion Bancaria.Editar", "true"))
-                            {
-                                <column-command name="EditarConciliacion" permiso="Bancos.Conciliacion Bancaria.Editar" text=" " icon-class="fa fa-edit" click="EditarConciliacion"></column-command>
-                            }
-                            @if (permisos.HasClaim("Bancos.Conciliacion Bancaria.Ver Detalle", "true"))
-                            {
-                                <column-command name="VerDetConciliacion" permiso="Bancos.Conciliacion Bancaria.Ver Detalle" text=" " icon-class="fa fa-list-alt" click="VerDetalleConciliacion"></column-command>
-                            }
-                        </commands>
-                    </column>
+                        <column-command name="EditarConciliacion" permiso="Bancos.Conciliacion Bancaria.Editar" text=" " icon-class="fa fa-edit" click="EditarConciliacion"></column-command>
                     }
-                    <column title="No." field="ConciliacionId" width="100"></column>
-                    <column title="Banco" field="BankName" width="200"></column>
-                    <column title="Cuenta" field="NombreCuenta" width="400"></column>
-                    <column title="Fecha Conciliación" field="FechaConciliacion" format="{0:dd/MM/yyyy}" width="220" />
-                    <column title="Desde" field="DateBeginReconciled" format="{0:dd/MM/yyyy}" width="200" />
-                    <column title="Hasta" field="DateEndReconciled" format="{0:dd/MM/yyyy}" width="200" />
-                    <column title="Saldo Conciliado" field="SaldoConciliado" template="<span style='float:right'>#= kendo.toString(SaldoConciliado,'n2') #</span>" width="200" />
-                    <column title="Saldo Banco" field="SaldoBanco" template="<span style='float:right'>#= kendo.toString(SaldoBanco,'n2') #</span>" width="200" />
-                    <column title="Saldo Libro" field="SaldoLibro" template="<span style='float:right'>#= kendo.toString(SaldoLibro,'n2') #</span>" width="200" />
-                </columns>
-                <filterable>
-                    <messages clear="Limpiar" cancel="Cancelar" filter="Filtrar" info="Mostrar filas con un valor que:" />
-                    <operators>
-                        <string contains="Contiene" doesnotcontain="No contiene" endswith="Termina con" eq="Es igual a" neq="No es igual a" isnull="Es nulo" startswith="Inicia con" />
-                        <number eq="Es igual a" neq="No es igual a" gt="Es mayor que" gte="Es mayor o igual que" lt="Es menor que" lte="Es menor o igual que" isnull="Es nulo" />
-                        <date eq="Es igual que" neq="No es igual a" gt="Es mayor que" gte="Es mayor o igual que" lt="Es menor que" lte="Es menor o igual que" isnull="Es nulo" />
-                    </operators>
-                </filterable>
-                <toolbar>
-                    @if (permisos.HasClaim("Bancos.Conciliacion Bancaria.Agregar", "true"))
+                    @if (permisos.HasClaim("Bancos.Conciliacion Bancaria.Ver Detalle", "true"))
                     {
-                        <toolbar-button template="PlantillaAgregar" />
+                        <column-command name="VerDetConciliacion" permiso="Bancos.Conciliacion Bancaria.Ver Detalle" text=" " icon-class="fa fa-list-alt" click="VerDetalleConciliacion"></column-command>
                     }
-                        <toolbar-button name="pdf" text="PDF" icon-class="k-icon k-i-pdf" />
-                        <toolbar-button name="excel" text="Excel" icon-class="k-icon k-i-excel" />
-                </toolbar>
-                <pdf file-name="Reporte_Conciliacion_@(DateTime.Now.ToString("yyyy_MM_dd_hh_mm_ss")).pdf" proxy-url="@Url.Action("Export","Home")" all-pages="true" />
-                <excel file-name="Reporte_Conciliacion_@(DateTime.Now.ToString("yyyy_MM_dd_hh_mm_ss")).xlsx" filterable="true" proxy-url="@Url.Action("Export","Home")" all-pages="true" />
-                <editable enabled="false" />
-                <scrollable enabled="true" />
-            </kendo-grid>
-        </div>
-    </div>
-</div>
+                </commands>
+            </column>
+        }
+        <column title="No." field="ConciliacionId" width="100" ></column>
+        <column title="Banco" field="BankName" width="200"></column>
+        <column title="Cuenta" field="NombreCuenta" width="250"></column>
+        <column title="Fecha Conciliación" field="FechaConciliacion" format="{0:dd/MM/yyyy}" width="200" />
+        <column title="Desde" field="DateBeginReconciled" format="{0:dd/MM/yyyy}" width="200" />
+        <column title="Hasta" field="DateEndReconciled" format="{0:dd/MM/yyyy}" width="200" />
+        <column title="Saldo Conciliado" field="SaldoConciliado" template="<span style='float:right'>#= kendo.toString(SaldoConciliado,'n2') #</span>" width="200" />
+        <column title="Saldo Banco" field="SaldoBanco" template="<span style='float:right'>#= kendo.toString(SaldoBanco,'n2') #</span>" width="200" />
+        <column title="Saldo Libro" field="SaldoLibro" template="<span style='float:right'>#= kendo.toString(SaldoLibro,'n2') #</span>" width="200" />
+    </columns>
+    <filterable>
+        <messages clear="Limpiar" cancel="Cancelar" filter="Filtrar" info="Mostrar filas con un valor que:" />
+        <operators>
+            <string contains="Contiene" doesnotcontain="No contiene" endswith="Termina con" eq="Es igual a" neq="No es igual a" isnull="Es nulo" startswith="Inicia con" />
+            <number eq="Es igual a" neq="No es igual a" gt="Es mayor que" gte="Es mayor o igual que" lt="Es menor que" lte="Es menor o igual que" isnull="Es nulo" />
+            <date eq="Es igual que" neq="No es igual a" gt="Es mayor que" gte="Es mayor o igual que" lt="Es menor que" lte="Es menor o igual que" isnull="Es nulo" />
+        </operators>
+    </filterable>
+    <toolbar>
+        @if (permisos.HasClaim("Bancos.Conciliacion Bancaria.Agregar", "true"))
+        {
+            
+            <toolbar-button template="PlantillaAgregar" />
+        }
+        <toolbar-button name="pdf" text="PDF" icon-class="k-icon k-i-pdf"  />
+        <toolbar-button name="excel" text="Excel" icon-class="k-icon k-i-excel" />
+    </toolbar>
+    <pdf file-name="Reporte_Conciliacion_@(DateTime.Now.ToString("yyyy_MM_dd_hh_mm_ss")).pdf" proxy-url="@Url.Action("Export","Home")" all-pages="true" />
+    <excel file-name="Reporte_Conciliacion_@(DateTime.Now.ToString("yyyy_MM_dd_hh_mm_ss")).xlsx" filterable="true" proxy-url="@Url.Action("Export","Home")" all-pages="true" />
+    <editable enabled="false" />
+    <scrollable enabled="true" />
+</kendo-grid>
 
 <div id="ModalConciliacion">
     @*@await Html.PartialAsync("pvwAddConciliacion", new ERPMVC.DTO.ConciliacionDTO { ConciliacionId = 0, Editar=0 })*@
@@ -135,7 +131,7 @@
 
     function PlantillaAgregar(e) {
         var plantilla =
-            '<a role="button" class="k-button k-button-icontext k-grid-Agregar" href="#" onclick="AgregarConciliacion()"><span class="k-icon k-i-plus">::before</span>Agregar</a>';
+            '<a role="button" class="k-button k-button-icontext k-grid-Agregar" href="#" onclick="AgregarConciliacion()"><span class="k-icon k-i-plus"></span> Agregar</a>';
         return plantilla;
     }
 
