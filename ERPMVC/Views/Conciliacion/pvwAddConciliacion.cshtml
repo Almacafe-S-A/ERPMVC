@@ -354,8 +354,8 @@
                                     <label class="control-label" style="min-width:100%"></label>
                                     @*<kendo-button name="btnCancelar" on-click="CancelarConciliacion" enable="false" style="width: 100%;">Cancelar</kendo-button>*@
                                 <button name="btnCancelar" class="btn btn-danger" onclick="CancelarConciliacion" style="min-width: 100%">Cancelar</button>
-                                </div>
                                
+                                </div>
                             </div>
                         </div>
                         <br />
@@ -369,16 +369,18 @@
                                 <div id="grdSaldoLibro"></div>
                             </div>
                         </div>
-                        <div class="row">
-                            <div class="col-md-12">
-                                <button name="bntGuardar" onclick="GuardarConciliacion" class="form-control btn-miboton">Guardar Conciliación</button>
-                            </div>
-                        </div>
+                        
                     </div>
                 </div>
 
             </div>
-
+            <div class="modal-footer">
+                <div class="row">
+                    <div class="col-md-12">
+                        <button name="bntGuardar" onclick="GuardarConciliacion" class="form-control btn-miboton">Guardar Conciliación</button>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -424,7 +426,8 @@
                         Credit: r.Credit,
                         Debit: r.Debit,
                         TipoDoc: r.TipoDocumento,
-                        LineaConciliacion: "",
+                        //LineaConciliacion: "",
+                        LineaConciliacion:false,
                         JournalEntryId: r.JournalEntryId,
                         JournalEntryLineId: r.JournalEntryLineId,
                         ConciliacionLineaId: 0
@@ -447,6 +450,7 @@
         $("#grdSaldoLibro").kendoGrid({
             dataSource: {
                 data: window.datosLibros,
+                //batch: true,
                 schema: {
                     model: {
                         fields: {
@@ -455,7 +459,7 @@
                             TipoDoc: { name: "TipoDoc", type: "string", editable: false },
                             Credit: { name: "Credit", type: "number", editable: false },
                             Debit: { name: "Debit", type: "number", editable: false },
-                            LineaConciliacion: { name: "LineaConciliacion", type : "boolean", editable: @Model.Editar=== 1 ? true : false },
+                            LineaConciliacion: { name: "LineaConciliacion", type : "boolean",editable : true},
                             ConciliacionLineaId: { name: "ConciliacionLineaId", type: "number" }
                         }
                     }
@@ -467,14 +471,22 @@
                 { field: "Credit", title: "Crédito", width: 100 },
                 { field: "Debit", title: "Débito", width: 100 },
                 { field: "TipoDoc", title: "Tipo Documento", width: 100 },
-                { field: "LineaConciliacion", title: "Conciliada", width: 50, template: "<input type=\"checkbox\" />" },
-                { field: "ConciliacionLineaId", hidden: true }
+                {
+                    template: '<input type="checkbox" #= LineaConciliacion ? \'checked="checked"\' : "" # class="chkbx k-checkbox"  />'
+                    , width: 110, title: "Conciliada" 
+                },
+                { field: "ConciliacionLineaId", hidden: true },
+
             ],
             height: 400,
-            scrollable: true,
-            editable: true,
-            edit: EditadoSaldoLibro
+            scrollable: true,            
+            edit: EditadoSaldoLibro,
         });
+
+
+
+
+       
 
         if (@Model.ConciliacionId !== 0) {
             $("#BankId").val(@Model.BankId);
@@ -516,7 +528,7 @@
                         Credit: r.Credit,
                         Debit: r.Debit,
                         TipoDoc: r.TipoDocumento,
-                        //LineaConciliacion: r.Reconciled? "X":"",
+                        //LineaConciliacion: r.Reconciled? "X":"N",
                         LineaConciliacion: r.Reconciled,
                         JournalEntryId: r.JournalEntryId,
                         JournalEntryLineId: r.JournalEntryLineId,
@@ -529,22 +541,39 @@
         }
         
     }
+    $("#grdSaldoLibro .k-grid-content").on("change", "input.chkbx", function (e) {
+        var grid = $("#grdSaldoLibro").data("kendoGrid"),
+            dataItem = grid.dataItem($(e.target).closest("tr"));
+
+        dataItem.set("LineaConciliacion", this.checked);
+
+        EditadoSaldoLibro(e);
+    });
+
+
+    function dirtyField(data, fieldName) {
+        var hasClass = $("[data-uid=" + data.uid + "]").find(".k-dirty-cell").length < 1;
+        if (data.dirty && data.dirtyFields[fieldName] && hasClass) {
+            return "<span class='k-dirty'></span>"
+        }
+        else {
+            return "";
+        }
+    }
 
     function closeConciliacionBancaria() {
         window.RefreshConciliacion();
         $("#myModalConciliacionUpload").modal('hide');
     }
-
+    
     function EditadoSaldoLibro(e) {
-        $("[name='LineaConciliacion']", e.container).blur(function () {
-            var grid = $("#grdSaldoLibro").getKendoGrid();
-            var data = $("#grdSaldoLibro").getKendoGrid().dataSource.data();
-            montoConciliado = 0;
-            data.forEach(r => montoConciliado = r.LineaConciliacion !== '' ? montoConciliado + Math.abs(r.Credit - r.Debit) : montoConciliado);
-            $("#SaldoConciliado").val(montoConciliado);
-        });
+        var grid = $("#grdSaldoLibro").getKendoGrid();
+        var data = $("#grdSaldoLibro").getKendoGrid().dataSource.data();
+        montoConciliado = 0;
+        data.forEach(r => montoConciliado = r.LineaConciliacion  ? montoConciliado + Math.abs(r.Credit - r.Debit) : montoConciliado);
+        $("#SaldoConciliado").val(montoConciliado);
     }
-
+    
     function TotalizarSaldoLibro() {
         var data = $("#grdSaldoLibro").getKendoGrid().dataSource.data();
         var creditos = 0;
