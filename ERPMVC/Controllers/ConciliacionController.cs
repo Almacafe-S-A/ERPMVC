@@ -143,6 +143,8 @@ namespace ERPMVC.Controllers
         }
 
 
+        
+
 
        
 
@@ -265,157 +267,7 @@ namespace ERPMVC.Controllers
 
             return Json(_CheckAccountP);
         }
-        //IEnumerable<IFormFile>
-        /*private async Task<ConciliacionDTO> ProcesoConciliacion(IEnumerable<IFormFile> files, ConciliacionDTO _ConciliacionP)
-        {
-            List<string> fileInfo = new List<string>();
-            //Aigno la conciliacion para crearla
-            ConciliacionDTO _NewConciliacionP = _ConciliacionP;
-            _NewConciliacionP.ConciliacionLinea = new List<ConciliacionLinea>();
-
-            ConciliacionDTO _JournalEntry = new ConciliacionDTO();
-            //List<Accounting> _JournalEntryAccountName = new List<Accounting>();
-            //Accounting _JournalEntryAccountName = new Accounting();
-
-
-
-
-            foreach (var file in files)
-            {
-                var fileContent = ContentDispositionHeaderValue.Parse(file.ContentDisposition);
-                var fileName = Path.GetFileName(fileContent.FileName.ToString().Trim('"'));
-
-
-                //A existing workbook is opened.              
-                var filePath = _hostingEnvironment.WebRootPath + "/Conciliacion/" + fileName;
-
-                using (var stream = System.IO.File.Create(filePath))
-                {
-                    await file.CopyToAsync(stream);
-                }
-
-                //Aqui va la funcionalidad con syncfusion
-                //New instance of ExcelEngine is created 
-                //Equivalent to launching Microsoft Excel with no workbooks open
-                //Instantiate the spreadsheet creation engine
-                ExcelEngine excelEngine = new ExcelEngine();
-
-                //Instantiate the Excel application object
-                IApplication application = excelEngine.Excel;
-
-                //Assigns default application version
-                application.DefaultVersion = ExcelVersion.Excel2016;
-
-                //A existing workbook is opened.              
-                FileStream sampleFile = new FileStream(filePath, FileMode.Open,FileAccess.ReadWrite);
-
-                IWorkbook workbook = application.Workbooks.Open(sampleFile);
-
-                //Access first worksheet from the workbook.
-                IWorksheet worksheet = workbook.Worksheets[0];
-
-
-                //OBTENER LA DATA NECESARIA
-
-                //EL SIGUIENTE PROCEDIMIENTO RECORRE EL EXCEL POR MEDIO DE UN RANGO
-                IMigrantRange migrantRange = worksheet.MigrantRange;
-
-
-                int rowCount = worksheet.UsedRange.LastRow;
-                int colCount = worksheet.UsedRange.LastColumn;
-
-                //OBTENER LA DATA DE LA BASE DE DATOS A LA CUAL TENGO QUE COMPARAR
-                string CuentaBancaria="";
-
-                for (int ro = 2; ro < rowCount; ro++) {
-
-                    ConciliacionLinea _ConciliacionLineaP = new ConciliacionLinea();
-                    _ConciliacionLineaP.AccountId = _ConciliacionP.AccountId;
-                    _ConciliacionLineaP.AccountName = _ConciliacionP.AccountName;
-                    _ConciliacionLineaP.Credit = Convert.ToDouble(worksheet[ro, 7].Text);
-                    _ConciliacionLineaP.Debit = Convert.ToDouble(worksheet[ro, 6].Text);
-                    _ConciliacionLineaP.Monto = Convert.ToDouble(worksheet[ro,8 ].Text);
-                    _ConciliacionLineaP.ReferenceTrans = worksheet[ro, 2].Text;
-                    _ConciliacionLineaP.CurrencyId= Convert.ToInt32(worksheet[ro, 5].Text);
-                    _ConciliacionLineaP.MonedaName = worksheet[ ro,9].Text;
-                    
-                    _ConciliacionLineaP.TransDate =Convert.ToDateTime(worksheet[ro, 1].Text);
-                    _ConciliacionLineaP.ReferenciaBancaria= worksheet[ ro,3].Text;
-                    _ConciliacionLineaP.UsuarioCreacion= HttpContext.Session.GetString("user");
-                    _ConciliacionLineaP.UsuarioModificacion= HttpContext.Session.GetString("user");
-                    _ConciliacionLineaP.FechaCreacion = DateTime.Now;
-                    _ConciliacionLineaP.FechaModificacion = DateTime.Now;
-                    CuentaBancaria = worksheet[ro,3].Text;
-                    // for (int col = 1; col < colCount; col++) {
-                    //   cadena=worksheet[col, ro].Text;
-                    //}
-                    _NewConciliacionP.ConciliacionLinea.Add(_ConciliacionLineaP);
-                }
-
-                //
-                var CheckAccountP = await GetCheckAccountByAccountNumber(_NewConciliacionP.ConciliacionLinea[0].ReferenciaBancaria);
-                CheckAccount CuentaCheque = new CheckAccount();
-                CuentaCheque = ((CheckAccount)CheckAccountP.Value);
-
-                _NewConciliacionP.CheckAccountId = CuentaCheque.CheckAccountId;
-                _NewConciliacionP.BankId = CuentaCheque.BankId;
-                _NewConciliacionP.BankName = CuentaCheque.BankName;
-                _NewConciliacionP.FechaConciliacion = DateTime.Now;
-                _NewConciliacionP.SaldoConciliado = 0;
-                
-
-                
-                 workbook.Close();
-
-                
-                excelEngine.Dispose();
-
-                
-
-            }
-            return _NewConciliacionP;
-
-
-        }*/
-
-
         
-        /*public async Task<ActionResult<ConciliacionDTO>> Confirmacion([FromBody] dynamic dto)
-
-        {
-
-           ConciliacionDTO _Conciliacion = new ConciliacionDTO();
-           List<ConciliacionLinea> _ConciliacionP = new List<ConciliacionLinea>();
-
-
-
-            ////String[] tempArray;
-            //var customer = _customer;
-
-            //Conciliacion _conciliacion = _SubProductS;
-
-            //_SubProductS = JsonConvert.DeserializeObject<SubProductDTO>(dto.ToString());
-
-            try
-            {
-                //_Conciliacion = JsonConvert.DeserializeObject<ConciliacionDTO>(dto.ToString());
-
-                _Conciliacion = JsonConvert.DeserializeObject<List<ConciliacionLinea>>(dto.ToString());
-
-                //objeto _Conciliacion = JsonConvert.DeserializeObject<objeto>(dto.ToString());
-
-               // var insertresult = await Insert(_Conciliacion);
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                throw ex;
-            }
-            
-            return await Task.Run(()=> Ok(_Conciliacion));
-
-        }
-        */
         [HttpPost("[controller]/[action]")]
         [ValidateAntiForgeryToken]
         public async Task<ActionResult<Conciliacion>> Insert(ConciliacionDTO _ConciliacionP)
@@ -579,6 +431,39 @@ namespace ERPMVC.Controllers
             }
             
         }
+
+
+        [HttpGet]
+        public async Task<ActionResult<Decimal>> GetSaldoLibrosCuenta(DateTime pfecha, int pcuenta)
+        {
+            decimal saldo = 0;
+           try {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Conciliacion/GetSaldoLibrosCuenta" , new { fecha = pfecha, accountingId = pcuenta});
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    saldo = JsonConvert.DeserializeObject<decimal>(valorrespuesta);
+
+                }
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest(ex.ToString());
+            }
+
+            return saldo;
+
+        }
+
+
+
 
     }
     
