@@ -357,7 +357,7 @@
                                     <label class="control-label" style="min-width:100%"></label>
                                     @*<kendo-button name="btnCancelar" on-click="CancelarConciliacion" enable="false" style="width: 100%;">Cancelar</kendo-button>*@
                                 <button name="btnCancelar" class="btn btn-danger" onclick="CancelarConciliacion" style="min-width: 100%">Cancelar</button>
-                               
+                                <input type="number"    hidden id="saldolibroinicial" name="name" value="" />
                                 </div>
                             </div>
                         </div>
@@ -472,8 +472,8 @@
             columns: [
                 { field: "LineaId", title: "No.", width: 80 },
                 { field: "TransDate", title: "Fecha Transacción", width: 120, format: "{0:dd/MM/yyyy HH:mm:ss}" },
-                { field: "Debit", title: "Débito", width: 100 },
-                { field: "Credit", title: "Crédito", width: 100 },
+                { field: "Debit", title: "Débito", width: 100, format:"{0:c2}" },
+                { field: "Credit", title: "Crédito", width: 100, format: "{0:c2}" },
                 { field: "TipoDoc", title: "Tipo Documento", width: 100 },
                 {
                     template: '<input type="checkbox" #= LineaConciliacion ? \'checked="checked"\' : "" # class="chkbx k-checkbox"  />'
@@ -573,9 +573,12 @@
     }
 
     function EditadoSaldoLibro(e) {
+        debugger;
         var grid = $("#grdSaldoLibro").getKendoGrid();
         var data = $("#grdSaldoLibro").getKendoGrid().dataSource.data();
-        var saldolibros = $("#SaldoLibro").val();
+        //var saldolibros = $("#SaldoLibro").val();
+        var saldolibros = $("#saldolibroinicial").val();
+        saldolibros = parseFloat(saldolibros);
         var saldobancos = $("#SaldoBanco").val();
         var saldoconciliado = saldobancos - Math.abs(saldolibros);
 
@@ -583,7 +586,9 @@
         data.forEach(r => montoConciliado = r.LineaConciliacion ? montoConciliado + r.Debit - r.Credit : montoConciliado);
         saldoconciliado = saldoconciliado - montoConciliado;
         $("#SaldoConciliado").data("kendoNumericTextBox").value(saldoconciliado);
-        $("#SaldoLibro").data("kendoNumericTextBox").value(saldolibros + montoConciliado);
+        saldolibros += parseFloat(montoConciliado);
+
+        $("#SaldoLibro").data("kendoNumericTextBox").value(saldolibros);
 
        
     }
@@ -603,6 +608,7 @@
                 var saldobancos = $("#SaldoBanco").val();
                 var saldoconciliado = saldobancos - Math.abs(result);
                 $("#SaldoConciliado").data("kendoNumericTextBox").value(saldoconciliado);
+                $("#saldolibroinicial").val(result);
 
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
