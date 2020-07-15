@@ -177,6 +177,7 @@ namespace ERPMVC.Controllers
                     _Conciliacion.DateEndReconciled = DateTime.Now;
                     _Conciliacion.FechaConciliacion = DateTime.Now;
                     _Conciliacion.Editar = 1;
+                    _Conciliacion.EstadoId = 103;
                 }
 
                 
