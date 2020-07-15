@@ -37,6 +37,13 @@ namespace ERPMVC.Models
         [Display(Name = "SaldoConciliado")]
         public Double SaldoConciliado { get; set; }
 
+
+        public string Estado { get; set; }
+        public Int64 EstadoId { get; set; }
+        [ForeignKey("EstadoId")]
+        public Estados Estados { get; set; }
+
+
         [Required]
         [Display(Name = "FechaCreacion")]
         public DateTime FechaCreacion { get; set; }

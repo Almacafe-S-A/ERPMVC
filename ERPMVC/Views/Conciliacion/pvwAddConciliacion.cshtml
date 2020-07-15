@@ -54,13 +54,17 @@
         $("#CheckAccountId").data("kendoDropDownList").enable(true);
     }
 
-    function GuardarConciliacion() {
-        //debugger;
-        var saldoLbro = Number($("#SaldoLibro").val());
-        var saldoBnco = Number($("#SaldoBanco").val());
-        var saldoConciliado = Number($("#SaldoConciliado").val());
+    function GuardarConciliacion(e) {
+        debugger;
+        var estado = 103;
+        var estadoname = 'Abierta';
+        if (e) {
+           estado = 104;
+           estadoname = 'Cerrada'; 
+           // $("#EstadoId").val(104);
+        }
         var now = new Date();
-        if (saldoConciliado !== saldoBnco) {
+        if (false) {  //// eliminada la validacion de que cuadre la conciliacion
             alert('Conciliacion no esta cuadrada');
         } else {
             var lineas = [];
@@ -71,6 +75,7 @@
                     ConciliacionLineaId: r.ConciliacionLineaId,
                     MotivoId: null,
                     ConciliacionId: @Model.ConciliacionId,
+                    PartyName: r.PartyName,
                     Credit: r.Credit,
                     Debit: r.Debit,
                     ReferenciaBancaria: '',
@@ -80,7 +85,7 @@
                     JournalEntryId: r.JournalEntryId,
                     JournalEntryLineId: r.JournalEntryLineId,
                     VoucherTypeId: 0,
-                    Reconciled: r.LineaConciliacion !== "" ? 1 : 0,
+                    Reconciled: r.LineaConciliacion? 1 : 0,
                     ChecknumberId: 0,
                     MonedaName: 'Lempira',
                     FechaCreacion: now,
@@ -107,6 +112,10 @@
                 UsuarioModificacion:'',
                 SaldoBanco: $("#SaldoBanco").val(),
                 SaldoLibro: $("#SaldoLibro").val(),
+                //EstadoId: $("#EstadoId").val(),
+                //Estado: $("#EstadoId").data("kendoDropDownList").text(),
+                Estado: estadoname,
+                EstadoId : estado,
                 ConciliacionLinea: lineas
             };
             //debugger;
@@ -132,10 +141,16 @@
 
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    notification.show({
-                        title: "Validacion",
-                        message: textStatus + ": " + XMLHttpRequest.responseText
-                    }, "error");
+                    
+                    $.toast({
+                        heading: 'Error',
+                        text: XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 3000,
+                        stack: 6
+                    });
                 }
             });
 
@@ -321,7 +336,8 @@
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label asp-for="SaldoBanco" class="control-label" style="min-width:100%">Saldo Banco:</label>
-                                    <input id="SaldoBanco" class="k-textbox" style="min-width:100%" asp-for="SaldoBanco" required validationMessage="Ingrese el saldo de Banco" />
+                                    @*<input id="SaldoBanco" class="k-textbox" style="min-width:100%" asp-for="SaldoBanco" required validationMessage="Ingrese el saldo de Banco" />*@
+                                    <kendo-numerictextbox for="SaldoBanco" format="c2" min="0" spinners="false" />
                                     <span asp-validation-for="SaldoBanco"></span>
                                 </div>
                             </div>
@@ -330,39 +346,61 @@
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label asp-for="SaldoLibro" class="control-label" style="min-width:100%">Saldo Libro:</label>
-                                    <input style="min-width:100%" id="SaldoLibro" class="k-textbox" name="SaldoLibro" required validationMessage="Ingrese el saldo de Libro" for="@Model.SaldoLibro" value="@Model.SaldoLibro" readonly />
+                                    <kendo-numerictextbox for="SaldoLibro" format="c2" readonly spinners="false" />
+                                    <input type="number" hidden id="saldolibroinicial" name="name" value="" />
+                                    @*<input style="min-width:100%" id="SaldoLibro" class="k-textbox" name="SaldoLibro" required validationMessage="Ingrese el saldo de Libro" for="@Model.SaldoLibro" value="@Model.SaldoLibro" readonly />*@
                                     <span asp-validation-for="SaldoLibro"></span>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label for="SaldoConciliado">Saldo Conciliado:</label>
-                                    <input style="min-width:100%" id="SaldoConciliado" class="k-textbox" name="SaldoConciliado" value="@Model.SaldoConciliado" readonly />
+                                    @*<input style="min-width:100%" id="SaldoConciliado" class="k-textbox" name="SaldoConciliado" value="@Model.SaldoConciliado" readonly />*@
+                                    <kendo-numerictextbox for="SaldoConciliado" format="c2" readonly spinners="false"/>
                                     <span  asp-validation-for="SaldoConciliado"></span>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
-                                    <label class="control-label" style="min-width:100%"></label>
-                                    @*<kendo-button name="btnIniciar" on-click="IniciarConciliacion" >Iniciar Conciliación</kendo-button>*@
-                                    <button name="btnIniciar" class="btn btn-primary" onclick="IniciarConciliacion()"style="width: 100%;">Iniciar Conciliacion</button>
-                                </div>
-                                
-                            </div>
-                            <div class="col-md-3">
-                                <div class="form-group">
-                                    <label class="control-label" style="min-width:100%"></label>
-                                    @*<kendo-button name="btnCancelar" on-click="CancelarConciliacion" enable="false" style="width: 100%;">Cancelar</kendo-button>*@
-                                <button name="btnCancelar" class="btn btn-danger" onclick="CancelarConciliacion" style="min-width: 100%">Cancelar</button>
-                               
+                                    <label  class="control-label" style="min-width:100%">Estado</label>
+                                    <kendo-dropdownlist for="EstadoId" style="min-width:100%" enable="false" 
+                                                        datatextfield="NombreEstado"
+                                                        datavaluefield="IdEstado">
+                                        <datasource page-size=" 999" server-operation="true" type="DataSourceTagHelperType.WebApi" >
+                                            <transport >
+                                                <read url="@Url.Action("GetporGrupoEstado","Estados",new { GrupoId = 33})" />
+                                            </transport>
+                                        </datasource>
+                                    </kendo-dropdownlist>
                                 </div>
                             </div>
+                            
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+
+                            </div>
+                            
                         </div>
                         <br />
+
                         <div class="row">
                             <div class="col-md-3">
                                 <h3>Saldo Libro</h3>
                             </div>
+                            <div class="col-md-3"></div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <button name="btnIniciar" class="btn btn-primary" onclick="IniciarConciliacion()" style="width: 100%;">Iniciar Conciliacion</button>
+                                </div>
+
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <button name="btnCancelar" class="btn btn-danger" onclick="CancelarConciliacion" style="min-width: 100%">Cancelar</button>                                    
+                                </div>
+                            </div>
+
                         </div>
                         <div class="row">
                             <div class="col-md-12">
@@ -375,11 +413,19 @@
 
             </div>
             <div class="modal-footer">
-                <div class="row">
-                    <div class="col-md-12">
-                        <button name="bntGuardar" onclick="GuardarConciliacion" class="form-control btn-miboton">Guardar Conciliación</button>
+                @if (Model.EstadoId == 103)
+                {
+                    <div class="row">
+                        <div class="col-md-6">
+                            <button name="bntGuardarCerrar" onclick="GuardarConciliacion(true)" class="form-control btn-miboton">Guardar y Cerrar</button>
+                        </div>
+                        <div class="col-md-6">
+
+                            <button name="bntGuardar" onclick="GuardarConciliacion(false)" class="form-control btn-miboton">Guardar </button>
+                        </div>
                     </div>
-                </div>
+                }
+                
             </div>
         </div>
     </div>
@@ -403,12 +449,12 @@
         removerPrimeraLineaFaltaLibro = true;
         InicializarVentana();
     });
-    
-    
+
+
 
     function SaldoLibro(e) {
-        //debugger;
-        if (e === true) {
+        debugger;
+        if (e===true) {
             var codigoCuenta = $("#AccountId").val();
             var desde = kendo.toString(kendo.parseDate($("#DateBeginReconciled").val(), "dd/MM/yyyy"),"yyyy-MM-dd");
             var hasta = kendo.toString(kendo.parseDate($("#DateEndReconciled").val(), "dd/MM/yyyy"), "yyyy-MM-dd");
@@ -423,8 +469,9 @@
                     datosLibro = result.map(r => ({
                         LineaId: linea++,
                         TransDate: kendo.parseDate(r.FechaTransaccion, "yyyy-MM-dd'T'HH:mm:ss"),
-                        Credit: r.Credit,
+                        PartyName: r.PartyName,
                         Debit: r.Debit,
+                        Credit: r.Credit,
                         TipoDoc: r.TipoDocumento,
                         //LineaConciliacion: "",
                         LineaConciliacion:false,
@@ -432,6 +479,7 @@
                         JournalEntryLineId: r.JournalEntryLineId,
                         ConciliacionLineaId: 0
                     }));
+
                     //debugger;
                     $("#grdSaldoLibro").getKendoGrid().dataSource.data(datosLibro);
                     TotalizarSaldoLibro();
@@ -446,7 +494,7 @@
     }
 
     function InicializarVentana(e) {
-        
+
         $("#grdSaldoLibro").kendoGrid({
             dataSource: {
                 data: window.datosLibros,
@@ -457,9 +505,10 @@
                             LineaId: { name: "LineaId", type: "number" , editable:false },
                             TransDate: { name: "TransDate", type: "date", editable: false },
                             TipoDoc: { name: "TipoDoc", type: "string", editable: false },
-                            Credit: { name: "Credit", type: "number", editable: false },
+                            PartyName: { name: 'PartyName', type: "string", editable : false},
                             Debit: { name: "Debit", type: "number", editable: false },
-                            LineaConciliacion: { name: "LineaConciliacion", type : "boolean",editable : true},
+                            Credit: { name: "Credit", type: "number", editable: false },
+                            LineaConciliacion: { name: "LineaConciliacion", type : "boolean",editable : @Model.Editar},
                             ConciliacionLineaId: { name: "ConciliacionLineaId", type: "number" }
                         }
                     }
@@ -467,26 +516,27 @@
             },
             columns: [
                 { field: "LineaId", title: "No.", width: 80 },
-                { field: "TransDate", title: "Fecha Transacción", width: 200, format: "{0:dd/MM/yyyy HH:mm:ss}" },
-                { field: "Credit", title: "Crédito", width: 100 },
-                { field: "Debit", title: "Débito", width: 100 },
+                { field: "TransDate", title: "Fecha Transacción", width: 120, format: "{0:dd/MM/yyyy HH:mm:ss}" },
+                { field:"PartyName" , title : "Beneficiario" , width: 150},
+                { field: "Debit", title: "Débito", width: 100, format: "{0:c2}", attributes: { style: "text-align:right;" } },
+                { field: "Credit", title: "Crédito", width: 100, format: "{0:c2}", attributes: { style: "text-align:right;" } },
                 { field: "TipoDoc", title: "Tipo Documento", width: 100 },
                 {
                     template: '<input type="checkbox" #= LineaConciliacion ? \'checked="checked"\' : "" # class="chkbx k-checkbox"  />'
-                    , width: 110, title: "Conciliada" 
+                    , width: 110, title: "Conciliada"
                 },
                 { field: "ConciliacionLineaId", hidden: true },
 
             ],
             height: 400,
-            scrollable: true,            
+            scrollable: true,
             edit: EditadoSaldoLibro,
         });
 
 
 
 
-       
+
 
         if (@Model.ConciliacionId !== 0) {
             $("#BankId").val(@Model.BankId);
@@ -516,17 +566,18 @@
             }
 
             datosLibro = [];
-            
+
             var lineas = JSON.parse('@Html.Raw(Json.Serialize(@Model.ConciliacionLinea))');
             var motivos = JSON.parse('@Html.Raw(Json.Serialize(@ViewData["motivos"]))');
-            
+
             lineas.forEach(r => {
-                if (r.JournalEntryId !== null && r.JournalEntryId !== 0) {                    
+                if (r.JournalEntryId !== null && r.JournalEntryId !== 0) {
                     var regLibro = {
                         LineaId: window.linea++,
                         TransDate: kendo.parseDate(r.TransDate, "yyyy-MM-dd'T'HH:mm:ss"),
-                        Credit: r.Credit,
+                        PartyName: r.PartyName,
                         Debit: r.Debit,
+                        Credit: r.Credit,
                         TipoDoc: r.TipoDocumento,
                         //LineaConciliacion: r.Reconciled? "X":"N",
                         LineaConciliacion: r.Reconciled,
@@ -535,12 +586,14 @@
                         ConciliacionLineaId: r.ConciliacionLineaId
                     };
                     datosLibro.push(regLibro);
-                } 
+                }
             });
             $("#grdSaldoLibro").getKendoGrid().dataSource.data(datosLibro);
         }
-        
+
     }
+
+
     $("#grdSaldoLibro .k-grid-content").on("change", "input.chkbx", function (e) {
         var grid = $("#grdSaldoLibro").data("kendoGrid"),
             dataItem = grid.dataItem($(e.target).closest("tr"));
@@ -565,24 +618,54 @@
         window.RefreshConciliacion();
         $("#myModalConciliacionUpload").modal('hide');
     }
-    
+
     function EditadoSaldoLibro(e) {
+        debugger;
         var grid = $("#grdSaldoLibro").getKendoGrid();
         var data = $("#grdSaldoLibro").getKendoGrid().dataSource.data();
+        //var saldolibros = $("#SaldoLibro").val();
+        var saldolibros = $("#SaldoLibro").val();
+        saldolibros = parseFloat(saldolibros);
+        var saldobancos = $("#SaldoBanco").val();
+        var saldoconciliado = saldobancos - Math.abs(saldolibros);
+
         montoConciliado = 0;
-        data.forEach(r => montoConciliado = r.LineaConciliacion  ? montoConciliado + Math.abs(r.Credit - r.Debit) : montoConciliado);
-        $("#SaldoConciliado").val(montoConciliado);
+        data.forEach(r => montoConciliado = r.LineaConciliacion ? montoConciliado + r.Debit - r.Credit : montoConciliado);
+        saldoconciliado = saldoconciliado - montoConciliado;
+        $("#SaldoConciliado").data("kendoNumericTextBox").value(saldoconciliado);
+        saldolibros += parseFloat(montoConciliado);
+
+        $("#SaldoLibro").data("kendoNumericTextBox").value(saldolibros);
+
+       
     }
-    
+
     function TotalizarSaldoLibro() {
-        var data = $("#grdSaldoLibro").getKendoGrid().dataSource.data();
-        var creditos = 0;
-        var debitos = 0;
-        data.forEach(r => {
-            creditos = creditos + r.Credit;
-            debitos = debitos + r.Debit;
-        });
-        $("#SaldoLibro").val(Math.abs(creditos-debitos));
+        var fecha = kendo.toString(kendo.parseDate($("#DateBeginReconciled").val(), "dd/MM/yyyy"), "yyyy-MM-dd");
+        var cuenta = $("#AccountId").val();
+        $.ajax({
+                url: '@Url.Action("GetSaldoLibrosCuenta", "Conciliacion")'+'?pfecha=' + fecha + '&pcuenta=' + cuenta ,
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+            success: function (result) {
+                debugger;
+                $("#SaldoLibro").data("kendoNumericTextBox").value(result);
+                var saldobancos = $("#SaldoBanco").val();
+                var saldoconciliado = saldobancos - Math.abs(result);
+                $("#SaldoConciliado").data("kendoNumericTextBox").value(saldoconciliado);
+               // $("#saldolibroinicial").val(result);
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+
+
+
+
     }
-    
+
 </script>
