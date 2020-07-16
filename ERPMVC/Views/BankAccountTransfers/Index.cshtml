@@ -50,7 +50,7 @@
              e.preventDefault();
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
             var dataObject = {
-                BankId: dataItem.Id,
+                Id: dataItem.Id,
                 editar : 0
             };
 
@@ -88,16 +88,17 @@
 
                             columns.Command(command =>
                             {
-                                if (User.HasClaim("Bancos.Tranferencias","true"))
+                                if (User.HasClaim("Bancos.Transferencias.Ver", "true"))
                                 {
-                                    command.Custom("Editar").Click("EditTransfer").Text(" ").IconClass("fa fa-edit");
+                                    //command.Custom("Editar").Click("EditTransfer").Text(" ").IconClass("fa fa-list");
                                 }
-                                if (User.HasClaim("Bancos.Transferencias.Eliminar","true"))
+                                if (User.HasClaim("Bancos.Transferencias.Aprobar", "true"))
                                 {
-                                    command.Destroy().Text(" ").IconClass("fa fa-trash");
+                                    command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
+                                    command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("Rechazar");
                                 }
 
-                            }).Width(100).Title("Acciones");
+                            }).Width(150).Title("Acciones");
 
                             columns.Bound(p => p.Id).Width(100);
                             columns.Bound(p => p.FechaCreacion).Width(150).Title("Fecha Registro").Format("{0:dd/MM/yyyy}");
@@ -110,6 +111,7 @@
                             columns.Bound(p => p.DestinationAmount).Width(170).Title("Monto Destino").Format("{0:n2}");
                             columns.Bound(p => p.Estados.NombreEstado).Width(250).Title("Estado");
                             columns.Bound(p => p.Notes).Width(250).Title("Notas");
+                            columns.Bound(p => p.EstadoId).Visible(false);
 
                         })
                             .Filterable(f => f.Operators(o => o.ForString(s => s
@@ -167,6 +169,7 @@
                             .Excel(excel => excel.FileName("BankReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                         + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
                         .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                        .Events(e => e.DataBound("dataBound"))
                         .DataSource(dataSource =>
                             dataSource
                             .WebApi()
@@ -200,6 +203,76 @@
 </div>
 
 <script>
+
+    function dataBound(e) {
+        $.each(this.dataSource.data(), function () {
+            if (Number(this.EstadoId) != 5) {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Rechazar').hide();
+            }
+
+        })
+    }
+    function Aprobar(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        AprobarCheque(dataItem.Id, true);
+        RefrescarGrid();
+    }
+    function Rechazar(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        AprobarCheque(dataItem.Id, false);
+        RefrescarGrid();
+    }
+
+    function AprobarCheque(id , aprobacion) {
+        debugger;
+        var aprobado = 'Rechazado';
+        var estado = 7;
+        if (aprobacion) {
+            estado = 6;
+            aprobado = 'Aprobado'
+        }
+            var dataObject = {
+                Id: id,
+                EstadoId : estado,
+            };
+
+            $.ajax({
+                url: '@Url.Action("Aprobar", "BankAccountTransfers")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject, aprobacion),
+                success: function (result) {
+                    debugger;
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: aprobado+ '  Correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    //alert(textStatus + ": " + XMLHttpRequest.responseText);
+                     $.toast({
+                                heading: 'Error',
+                                text: XMLHttpRequest.responseText,
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'error',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+                }
+            });
+        RefrescarGrid();
+    }
     function setToolbarTooltip(btn_cl, btn_tooltip) {
         $("#gridBank").kendoTooltip({
             filter: btn_cl,
@@ -215,5 +288,7 @@
     }
     setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
     setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
-    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Ver Detalles");
+    setRowButtonTooltip(".k-grid-Aprobar", "Aprobar");
+    setRowButtonTooltip(".k-grid-Rechazar", "Rechazar");
 </script>
