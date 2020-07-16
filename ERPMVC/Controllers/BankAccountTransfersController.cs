@@ -64,6 +64,7 @@ namespace ERPMVC.Controllers
                     _BankAccountTransfers.Rate = 0;
                     _BankAccountTransfers.FechaCreacion = DateTime.Now;
                     _BankAccountTransfers.TransactionDate = DateTime.Now;
+                    _BankAccountTransfers.EstadoId = 5;
                 }
             }
             catch (Exception ex)
@@ -80,6 +81,48 @@ namespace ERPMVC.Controllers
 
         }
 
+
+        public async Task<ActionResult> Aprobar([FromBody] BankAccountTransfers _transfer, bool aprobacion)
+        {
+
+            if (_transfer.EstadoId == 6)
+            {
+                aprobacion = true;
+            }
+            else
+            {
+                aprobacion = false;
+            }
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/BankAccountTransfers/Aprobar/{_transfer.Id}/{aprobacion}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _transfer = JsonConvert.DeserializeObject<BankAccountTransfers>(valorrespuesta);
+                }
+                else
+                {
+                    return BadRequest($"Error este cheque ya habia sido Aprobado o Rechazado.");
+                }
+            }
+
+
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error: { ex.ToString() }");
+            }
+
+
+
+            return Ok(aprobacion);
+
+        }
 
         [HttpGet("[action]")]
         public async Task<DataSourceResult> GetBankAccountTransfers([DataSourceRequest] DataSourceRequest request)
