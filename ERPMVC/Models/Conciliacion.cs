@@ -68,6 +68,8 @@ namespace ERPMVC.Models
         [Display(Name = "Saldo en Libro Mayor de Banco")]
         public decimal SaldoLibro { get; set; }
 
+        public decimal SaldoLibroInicial { get; set; }
+
         public List<ConciliacionLinea> ConciliacionLinea { get; set; }
 
     }

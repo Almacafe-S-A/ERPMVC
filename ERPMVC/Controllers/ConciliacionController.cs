@@ -44,7 +44,7 @@ namespace ERPMVC.Controllers
         class objeto
         {
             public ConciliacionDTO[] arreglo { get; set; }
-            
+
         }
 
 
@@ -56,6 +56,11 @@ namespace ERPMVC.Controllers
             ViewData["permisos"] = _principal;
             return View();
         }
+
+
+
+
+        
 
         [HttpGet("[action]")]
         public async Task<DataSourceResult> GetConciliacion([DataSourceRequest]DataSourceRequest request)
@@ -143,10 +148,18 @@ namespace ERPMVC.Controllers
         }
 
 
-        
+        [HttpGet]
+        public async Task<ActionResult> SFConciliacion(int id)
+        {
+
+            return await Task.Run(() => View(new Conciliacion {ConciliacionId = id }));
 
 
-       
+
+        }
+
+
+
 
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> pvwAddConciliacion([FromBody]ConciliacionDTO _Conciliaciontp)
