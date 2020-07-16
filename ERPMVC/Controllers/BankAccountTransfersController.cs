@@ -64,6 +64,7 @@ namespace ERPMVC.Controllers
                     _BankAccountTransfers.Rate = 0;
                     _BankAccountTransfers.FechaCreacion = DateTime.Now;
                     _BankAccountTransfers.TransactionDate = DateTime.Now;
+                    _BankAccountTransfers.EstadoId = 5;
                 }
             }
             catch (Exception ex)
