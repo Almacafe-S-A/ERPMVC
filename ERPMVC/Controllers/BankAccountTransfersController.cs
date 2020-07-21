@@ -15,6 +15,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System.Security.Claims;
+using NPOI.OpenXmlFormats.Dml.Chart;
 
 namespace ERPMVC.Controllers
 {
@@ -65,6 +66,8 @@ namespace ERPMVC.Controllers
                     _BankAccountTransfers.FechaCreacion = DateTime.Now;
                     _BankAccountTransfers.TransactionDate = DateTime.Now;
                     _BankAccountTransfers.EstadoId = 5;
+                    _BankAccountTransfers.DestinationAccountManagement = new AccountManagement();
+                    _BankAccountTransfers.SourceAccountManagement = new AccountManagement();
                 }
             }
             catch (Exception ex)
@@ -199,10 +202,9 @@ namespace ERPMVC.Controllers
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                if (_BankAccountTransfers.Id == 0)
+                if (_BankAccountTransfers.Id != 0)
                 {
                     var result = await _client.GetAsync(baseadress + "api/BankAccountTransfers/GetBankAccountTransfersById/" + _BankAccountTransfers.Id);
-                    //var result = await _client.GetAsync(baseadress + "api/BankAccountTransfers/GetBankAccountTransfersById/" + _BankAccountTransfers.Id);
                     string valorrespuesta = "";
                     _BankAccountTransfers.FechaModificacion = DateTime.Now;
                     _BankAccountTransfers.UsuarioModificacion = HttpContext.Session.GetString("user");
@@ -217,11 +219,14 @@ namespace ERPMVC.Controllers
 
                     if (_BankAccountTransfers.Id > 0)
                     {
-                        return await Task.Run(() => BadRequest($"Ya existe un banco registrado con ese nombre."));
+                        
+                        var updateresult = await Update(_BankAccountTransfersS);
+                        if (updateresult.Result is BadRequestObjectResult)
+                        {
+                            return BadRequest(updateresult.Result.ToString());
+                        }
                     }
-                }
-
-                if (_BankAccountTransfersS.Id == 0)
+                }else 
                 {
                     _BankAccountTransfersS.FechaCreacion = DateTime.Now;
                     _BankAccountTransfersS.UsuarioCreacion = HttpContext.Session.GetString("user");
@@ -229,17 +234,6 @@ namespace ERPMVC.Controllers
                     if (insertresult.Result is BadRequestObjectResult)
                     {
                         return BadRequest(insertresult.Result.ToString());
-                    }
-                }
-                else
-                {
-                    var result = await _client.GetAsync(baseadress + "api/BankAccountTransfers/GetBankAccountTransfersById/" + _BankAccountTransfers.Id);
-                    _BankAccountTransfersS.UsuarioCreacion = _BankAccountTransfers.UsuarioCreacion;
-                    _BankAccountTransfersS.FechaCreacion = _BankAccountTransfers.FechaCreacion;
-                    var updateresult = await Update(_BankAccountTransfers.Id, _BankAccountTransfersS);
-                    if (updateresult.Result is BadRequestObjectResult)
-                    {
-                        return BadRequest(updateresult.Result.ToString());
                     }
                 }
 
@@ -295,7 +289,7 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<BankAccountTransfers>> Update(Int64 id, BankAccountTransfers _BankAccountTransfers)
+        public async Task<ActionResult<BankAccountTransfers>> Update(BankAccountTransfers _BankAccountTransfers)
         {
             try
             {
