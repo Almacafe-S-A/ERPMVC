@@ -266,17 +266,26 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ProductRelation = JsonConvert.DeserializeObject<ProductRelation>(valorrespuesta);
                 }
-                string error = await result.Content.ReadAsStringAsync();
+                else
+                {
+                    string error = await result.Content.ReadAsStringAsync();
+                    if (error.Length > 100)
+                    {
+                        error = "Error al Guardar";
+                    }
+                    return BadRequest($"{error}");
+                }
+                
+
+            }
+            catch (Exception ex)
+            {
+                string error = ex.Message                    ;
                 if (error.Length > 100)
                 {
                     error = "Error al Guardar";
                 }
                 return BadRequest($"{error}");
-
-            }
-            catch (Exception ex)
-            {
-                return BadRequest($"Ocurrio un error{ex.Message}");
             }
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _ProductRelation }, Total = 1 });
@@ -300,12 +309,15 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ProductRelation = JsonConvert.DeserializeObject<ProductRelation>(valorrespuesta);
                 }
-                string error = await result.Content.ReadAsStringAsync();
-                if (error.Length > 100)
+                else
                 {
-                    error = "Error al Guardar";
+                    string error = await result.Content.ReadAsStringAsync();
+                    if (error.Length > 100)
+                    {
+                        error = "Error al Guardar";
+                    }
+                    return BadRequest($"{error}");
                 }
-                return BadRequest($"{error}");
 
             }
             catch (Exception ex)
