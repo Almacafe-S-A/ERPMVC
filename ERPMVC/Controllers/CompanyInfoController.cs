@@ -332,7 +332,7 @@ namespace ERPMVC.Controllers
 
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<CompanyInfoDTO>> SaveCompanyInfo(/*IEnumerable<IFormFile> files, */CompanyInfoDTO _CompanyInfoS)
+        public async Task<ActionResult<CompanyInfoDTO>> SaveCompanyInfo(IEnumerable<IFormFile> files, CompanyInfoDTO _CompanyInfoS)
         {
             CompanyInfo _CompanyInfo = _CompanyInfoS;
             List<CompanyInfo> _listCompanyInfoValidation = new List<CompanyInfo>();
@@ -346,7 +346,7 @@ namespace ERPMVC.Controllers
                 string valorrespuesta = "";            
                 _CompanyInfo.FechaModificacion = DateTime.Now;
                 _CompanyInfo.UsuarioModificacion = HttpContext.Session.GetString("user");
-                //IFormFile file = files.FirstOrDefault();
+                IFormFile file = files.FirstOrDefault();
                 
                 if (result.IsSuccessStatusCode)
                 {
@@ -384,8 +384,8 @@ namespace ERPMVC.Controllers
 
                 if (_CompanyInfoS.CompanyInfoId == 0)
                 {
-                    //if (file != null)
-                    //{
+                    if (file != null)
+                    {
                         _CompanyInfoS.FechaCreacion = DateTime.Now;
                         _CompanyInfoS.UsuarioCreacion = HttpContext.Session.GetString("user");
                         var insertresult = await Insert(_CompanyInfoS);
@@ -394,36 +394,38 @@ namespace ERPMVC.Controllers
                             CompanyInfo comp = (CompanyInfo)insertresult.Value;
                             _CompanyInfoS.CompanyInfoId = comp.CompanyInfoId;
                         }
-                    //}
-                    //else
-                    //{
-                    //    return await Task.Run(() => BadRequest($"Seleccione una Imagen."));
-                    //}
+                    }
+                    else
+                    {
+                        return await Task.Run(() => BadRequest($"Seleccione una Imagen."));
+                    }
                 }
                 else
                 {
-                    //if (System.IO.File.Exists(_CompanyInfo.image))
-                    //{
-                    //    System.IO.File.Delete(_CompanyInfo.image);
-                    //}
-                    //_CompanyInfoS.image = file.FileName;
+                    if (System.IO.File.Exists(_CompanyInfo.image))
+                    {
+                        System.IO.File.Delete(_CompanyInfo.image);
+                    }
+                    _CompanyInfoS.image = file.FileName;
                     _CompanyInfoS.UsuarioCreacion = _CompanyInfo.UsuarioCreacion;
                     _CompanyInfoS.FechaCreacion = _CompanyInfo.FechaCreacion;
                     var updateresult = await Update(_CompanyInfo.CompanyInfoId, _CompanyInfoS);
                 }
 
-                //if (file != null)
-                //{
-                //  FileInfo info = new FileInfo(file.FileName);
-                //  var filename = _CompanyInfoS.CompanyInfoId + "_" + _CompanyInfoS.Company_Name + info.Extension;
-                //  var filePath = _hostingEnvironment.WebRootPath + "/CompanyImages/" + filename;
-                //  using (var stream = new FileStream(filePath, FileMode.Create))
-                //  {
-                //     await file.CopyToAsync(stream);
-                //  }
-                //  _CompanyInfoS.image = filename;
-                //  var updateresult2 = await Update(_CompanyInfo.CompanyInfoId, _CompanyInfoS);
-                //}              
+                if (file != null)
+                {
+                    FileInfo info = new FileInfo(file.FileName);
+                    var filename = _CompanyInfoS.CompanyInfoId + "_" + _CompanyInfoS.Company_Name + info.Extension;
+                    var filePath = _hostingEnvironment.WebRootPath + "/CompanyImages/" + filename;
+                    
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await file.CopyToAsync(stream);
+                    }
+                    _CompanyInfoS.image = filename;
+                    _CompanyInfoS.imageDir = filePath;
+                    var updateresult2 = await Update(_CompanyInfo.CompanyInfoId, _CompanyInfoS);
+                }
             }
             catch (Exception ex)
             {
@@ -508,6 +510,10 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _CompanyInfo = JsonConvert.DeserializeObject<CompanyInfo>(valorrespuesta);
+                }
+                else
+                {
+                    return BadRequest("El registro esta siendo utilizado, no se puede eliminar");
                 }
 
             }

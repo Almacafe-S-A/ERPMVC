@@ -41,6 +41,9 @@ namespace ERPMVC.Models
 
         [Display(Name = "Imagen")]
         public string image { get; set; }
+        [Display(Name = "Direccion de la imagen")]
+        public string imageDir { get; set; }
+
 
         [Display(Name = "Director General")]
         public string Manager { get; set; }
