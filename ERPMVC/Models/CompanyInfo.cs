@@ -26,6 +26,9 @@ namespace ERPMVC.Models
         [Display(Name = "Teléfono ")]
         public string Phone { get; set; }
 
+        [Display(Name = "Telefono Movil")]
+        public string MobilePhone { get; set; }
+
         [Display(Name = "Fax")]
         public string Fax { get; set; }
 
@@ -41,6 +44,9 @@ namespace ERPMVC.Models
 
         [Display(Name = "Imagen")]
         public string image { get; set; }
+        [Display(Name = "Direccion de la imagen")]
+        public string imageDir { get; set; }
+
 
         [Display(Name = "Director General")]
         public string Manager { get; set; }

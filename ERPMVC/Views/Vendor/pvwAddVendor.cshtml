@@ -137,6 +137,9 @@
                                                 <div class="form-group">
                                                     <label asp-for="RTN" class=" control-label" style="width:100%"></label>
                                                     <input asp-for="RTN" name="RTN" class="form-control" autocomplete="off" style="min-width:100%" data-val-required="RTN es requerido" />
+                                                    <span asp-validation-for="RTN" class="text-danger k-invalid-msg" data-for="RTN"></span>
+
+
                                                 </div>
 
                                             </div>
@@ -384,7 +387,7 @@
                                                                         datavaluefield="Id"
                                                                         auto-bind="true"
                                                                         data-val-required="Categoria proveedor es requerido"
-                                                                        onchange="Dropchange()"
+                                                                        onchange="Dropchange();"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi" server-filtering="true">
                                                             <transport>
@@ -394,13 +397,32 @@
 
                                                     </kendo-dropdownlist>
                                                     <span asp-validation-for="IdEstadoVendorConfi" class="text-danger"></span>
+
+                                                    @*   <label asp-for="IdEstadoVendorConfi" class="control-label" style="width:100%"></label>
+                                                        <kendo-dropdownlist name="IdEstadoVendorConfi"
+                                                                            for="@Model.IdEstadoVendorConfi"
+                                                                            filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                            option-label="Seleccionar Estado"
+                                                                            datatextfield="NombreEstado"
+                                                                            datavaluefield="IdEstado"
+                                                                            style="min-width:100%"
+                                                                            require
+                                                                            onchange="Dropchange();">
+                                                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                                <transport>
+                                                                    <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                                                                </transport>
+                                                            </datasource>
+                                                        </kendo-dropdownlist>
+
+                                                    *@
                                                 </div>
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label  class=" control-label" style="width:100%">Límite Mensual</label>
+                                                    <label asp-for="QtyMonth" class=" control-label" style="width:100%"></label>
                                                     @* format="  #.00 " step="1"*@
-                                                    <kendo-numerictextbox name="QtyMonth" for="QtyMonth"
+                                                    <kendo-numerictextbox name="QtyMonth"
                                                                           format="n2"
                                                                           min="0"
                                                                           data-val-required="Limite Mensual es requerido"
@@ -408,8 +430,8 @@
                                                                           style="min-width: 100%;text-align:right;padding-right: 3px"
                                                                           max="999999999"
                                                                           step="1"
-                                                                          readonly
-                                                                          value="Model.QtyMonth"/>
+                                                                          disabled="disabled"
+                                                                          value="Model.QtyMonth"></kendo-numerictextbox>
                                                     <span asp-validation-for="QtyMonth" class="text-danger"></span>
 
                                                 </div>
@@ -495,9 +517,6 @@
 
 
 <script>
-
-
-
     $("#RTN").on("change", function () {
         var RTN1 = $("#RTN").val();
         if (RTN1 != "") {
@@ -541,9 +560,9 @@
 
 
 
-    var limitmonth;
+    
     $('document').ready(function () {
-        Dropchange();
+        var limitmonth;
         debugger;
 
         var dataObjectConfiguration = {};
@@ -559,9 +578,10 @@
                                     //notification.show({
                                     //    message: "Guardado correctamente!"
                                     //}, "upload-success");
-                                    //console.log(result);
-                                    limitmonth = result.QtyMonth;
-                                    console.log("El valor de mensual " +limitmonth);
+                                   // console.log(result);
+                                    limitmonth = result;
+                                    console.log("El valor de mensual " + limitmonth);
+                                    $("#QtyMonth").val(limitmonth);
 
                                 },
                                 error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -619,8 +639,8 @@
     }
 
     function Dropchange() {
-        debugger;
-        var mensual = 0 ;
+        //debugger;
+        var mensual;
         var dataObjectConfiguration = {};
         $.ajax({
                                 url: '@Url.Action("GetConfigurationVendorActive", "ConfigurationVendor")',
@@ -630,11 +650,15 @@
                                 async: false,
                                 data: dataObjectConfiguration,
                                 success: function (result) {
+
+                                    //notification.show({
+                                    //    message: "Guardado correctamente!"
+                                    //}, "upload-success");
                                     if (result == null)
                                     {
                                         $.toast({
                                             heading: 'Error',
-                                            text: ' No hay configuracion de Proveedores Activa.',
+                                            text:  ' No hay configuracion de Proveedores Activa.',
                                             position: 'top-right',
                                             showHideTransition: 'fade',
                                             loaderBg: '#ff6849',
@@ -646,8 +670,9 @@
                                     else {
                                     console.log("Este es el valor de result");
                                     console.log(result);
-                                    mensual = result.QtyMonth;
-                                    console.log(mensual);
+                                    mensual = result;
+                                        console.log(mensual);
+                                        $("#QtyMonth").val(result);
                                     }
                                 },
                                 error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -659,17 +684,22 @@
 
                                 }
                             });
-        var limite = $("#IdEstadoVendorConfi").val();
-        if ( limite == 70) {
+
+        if ($("#IdEstadoVendorConfi").data("kendoDropDownList").text() === "Menor") {
+          //  document.getElementById('LabelQtyMonth').innerHTML = "Menor";
+              setearvalor("QtyMonth", mensual);
             document.getElementById('myDivCategoriaMayor').style.display = 'none';
+
           }
         else {
+          //  document.getElementById('LabelQtyMonth').innerHTML = "Mayor";
+
             var mensual = mensual + 0.01;
+
+            setearvalor("QtyMonth", mensual);
             document.getElementById('myDivCategoriaMayor').style.display = 'block';
 
-        }
-        var qty = $("#QtyMonth").data("kendoNumericTextBox");
-        qty.value(parseFloat(mensual));
+          }
         };
 
 
@@ -710,8 +740,37 @@
                         Estado = 'Enviada a Aprobacion'
                         listadoenqueaparece += gridListaPEPS.length > 0 ? "PEPS" : "";
                     }
+                   /* else {
+                        validadetalle = false;
+                        notification.show(
+                        {
+                            title: "Validación",
+                            message: "No puede guardar este para este Proveedor ya que aparece en los listados!"
+                        }, "error");
+                    }*/
 
                 }
+                /*else if (gridListaOFAC.length > 0
+                    || gridListaNegra.length > 0
+                    || gridListaONU.length > 0
+                    ||  gridListaOFACIdentity >0
+                                )
+                      {
+                            listadoenqueaparece += gridListaOFAC.length > 0 ? "OFAC" : "";
+                            listadoenqueaparece += gridListaNegra.length > 0 ? "ListaNegra" : "";
+                            listadoenqueaparece += gridListaONU.length > 0 ? "ListadoONU" : "";
+                            listadoenqueaparece += gridListaOFACIdentity.length > 0 ? "OFAC IDENTITY" : "";
+
+
+                            validadetalle = true;
+                            // $("#btnVendor").prop("disabled", false);
+
+                            notification.show({
+                                title: "Validación",
+                                message: "Esta Proveedor se muestra como estado rechazado!"
+                            }, "error");
+
+                }*/
         if (validadetalle)
         {
             debugger;

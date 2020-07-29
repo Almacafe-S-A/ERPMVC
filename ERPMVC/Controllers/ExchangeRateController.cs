@@ -69,6 +69,34 @@ namespace ERPMVC.Controllers
         }
 
 
+
+        [HttpGet("[action]")]
+        public async Task<JsonResult> GetExchangeRate([DataSourceRequest] DataSourceRequest request)
+        {
+            List<ExchangeRate> _ExchangeRate = new List<ExchangeRate>();
+            try
+            {
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/ExchangeRate/GetExchangeRate");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _ExchangeRate = JsonConvert.DeserializeObject<List<ExchangeRate>>(valorrespuesta);
+
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(_ExchangeRate.ToDataSourceResult(request));
+        }
+
         public async Task<ActionResult<ExchangeRate>> SaveExchangeRate([FromBody]ExchangeRateDTO _ExchangeRateP)
         {
             ExchangeRate _ExchangeRate = _ExchangeRateP;
