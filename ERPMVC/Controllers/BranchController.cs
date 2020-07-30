@@ -272,6 +272,58 @@ namespace ERPMVC.Controllers
         }
 
 
+        public async Task<ActionResult<Branch>> SaveBodegaHabilitada([FromBody] BranchDTO _BranchP)
+        {
+            List<Branch> Branch = new List<Branch>();
+
+            Branch _Branch = _BranchP;
+            try
+            {
+                Branch _listBranch = new Branch();
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/Branch/GetBranchByName/" + _Branch.BranchName);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _Branch = JsonConvert.DeserializeObject<Branch>(valorrespuesta);
+                    if (_Branch == null)
+                    {
+                        _Branch = new Branch();
+                    }
+                }
+                if (_Branch.BranchId == 0)
+                {
+                    _Branch.FechaCreacion = DateTime.Now;
+                    _Branch.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_BranchP);
+                    var value = (insertresult.Result as ObjectResult).Value;
+                    Branch resultado = ((Branch)(value));
+                    if (resultado.BranchId <= 0)
+                    {
+                        return await Task.Run(() => BadRequest($"No se guardo la sucursal."));
+                    }
+                }
+                else
+                {                    
+                    _BranchP.UsuarioCreacion = _Branch.UsuarioCreacion;
+                    _BranchP.FechaCreacion = _Branch.FechaCreacion;
+                    _BranchP.UsuarioModificacion = HttpContext.Session.GetString("user");
+                    _BranchP.FechaModificacion = DateTime.Now;
+                    var updateresult = await Update(_Branch.BranchId, _BranchP);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+            return Json(_BranchP);
+        }
+
+
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> pvwAddBranch([FromBody]BranchDTO _sarpara)
         {
