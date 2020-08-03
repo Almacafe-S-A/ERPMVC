@@ -24,6 +24,8 @@ namespace ERPMVC.Models
 
         public bool Propias { get; set; }
 
+        public bool? ExchangeDifferential { get; set; }
+
         [Display(Name = "Id Cliente")]
         public Int64? CustomerId { get; set; }
         public Customer Customer { get; set; }
