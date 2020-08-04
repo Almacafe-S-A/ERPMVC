@@ -531,14 +531,18 @@
                             ConciliacionLineaId: { name: "ConciliacionLineaId", type: "number" }
                         }
                     }
-                }
+                },
+
+                aggregate: [{ field: "Debit", aggregate: "sum" },
+                    { field: "Credit", aggregate: "sum" }    ]
             },
             columns: [
                 { field: "LineaId", title: "No.", width: 80 },
                 { field: "TransDate", title: "Fecha Transacción", width: 120, format: "{0:dd/MM/yyyy HH:mm:ss}" },
                 { field:"PartyName" , title : "Beneficiario" , width: 150},
-                { field: "Debit", title: "Débito", width: 100, format: "{0:c2}", attributes: { style: "text-align:right;" } },
-                { field: "Credit", title: "Crédito", width: 100, format: "{0:c2}", attributes: { style: "text-align:right;" } },
+                {
+                    field: "Debit", title: "Débito", width: 100, format: "{0:c2}", attributes: { style: "text-align:right;" },  footerTemplate: "Total: #=totalDebito()#" },
+                { field: "Credit", title: "Crédito", width: 100, format: "{0:c2}", attributes: { style: "text-align:right;" }, footerTemplate: "Total: #=totalCredito()#"  },
                 { field: "TipoDoc", title: "Tipo Documento", width: 100 },
                 {
                     template: '<input type="checkbox" #= LineaConciliacion ? \'checked="checked"\' : "" # class="chkbx k-checkbox"  />'
@@ -552,7 +556,7 @@
             edit: EditadoSaldoLibro,
         });
 
-
+        
 
 
 
@@ -622,6 +626,8 @@
         EditadoSaldoLibro(e);
     });
 
+  
+
 
     function dirtyField(data, fieldName) {
         var hasClass = $("[data-uid=" + data.uid + "]").find(".k-dirty-cell").length < 1;
@@ -657,6 +663,39 @@
         $("#SaldoLibro").data("kendoNumericTextBox").value(saldolibros);
 
        
+    }
+
+    
+
+    function totalDebito() {
+        var grid = $("#grdSaldoLibro").getKendoGrid();
+        var data = $("#grdSaldoLibro").getKendoGrid().dataSource.data();
+        var circulante = 0;
+        data.forEach(r => circulante = !r.LineaConciliacion ? circulante + r.Debit  : circulante);
+        //saldoconciliado = saldoconciliado - montoConciliado;
+        //return circulante.toFixed(2);
+        const formatter = new Intl.NumberFormat('es-HN', {
+            style: 'currency',
+            currency: 'Lps',
+            minimumFractionDigits: 2
+        });
+        return formatter.format(circulante);
+            
+    }
+
+    function totalCredito() {
+        var grid = $("#grdSaldoLibro").getKendoGrid();
+        var data = $("#grdSaldoLibro").getKendoGrid().dataSource.data();
+        var circulante = 0;
+        data.forEach(r => circulante = !r.LineaConciliacion ? circulante + r.Credit : circulante);
+        //saldoconciliado = saldoconciliado - montoConciliado;
+        const formatter = new Intl.NumberFormat('es-HN', {
+            style: 'currency',
+            currency: 'Lps',
+            minimumFractionDigits: 2
+        });
+        return formatter.format(circulante);
+
     }
 
     function TotalizarSaldoLibro() {
