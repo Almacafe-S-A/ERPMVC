@@ -19,5 +19,7 @@ namespace ERPMVC.DTO
     {
         public DateTime FechaTransaccion { get; set; }
         public string TipoDocumento { get; set; }
+
+        public int NumeroDocumento { get; set; }
     }
 }

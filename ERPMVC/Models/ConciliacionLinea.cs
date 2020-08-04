@@ -22,6 +22,9 @@ namespace ERPMVC.Models
         public string ReferenceTrans { get; set; }
         public Int64? JournalEntryId { get; set; }
         public Int64? JournalEntryLineId { get; set; }
+        public Int64? NumeroDocumento { get; set; }
+
+        public string TipoDocumento { get; set; }
 
         public string PartyName { get; set; }
         public Int64? VoucherTypeId { get; set; }
