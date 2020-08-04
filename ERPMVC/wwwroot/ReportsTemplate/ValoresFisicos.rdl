@@ -1171,7 +1171,7 @@
             </TablixRowHierarchy>
           </Tablix>
         </ReportItems>
-        <Height>2.1668in</Height>
+        <Height>1.3135in</Height>
       </Body>
       <Width>8.7187in</Width>
       <Page>
@@ -1420,7 +1420,7 @@
             <BackgroundColor>White</BackgroundColor>
             <Border />
           </Style>
-          <Height>1.4786in</Height>
+          <Height>0.87540in</Height>
           <PrintOnFirstPage>true</PrintOnFirstPage>
           <PrintOnLastPage>true</PrintOnLastPage>
           <ReportItems>
@@ -1608,12 +1608,15 @@
           <DataField>monto</DataField>
           <rd:TypeName>System.Decimal</rd:TypeName>
         </Field>
+        <Field Name="EstadoId">
+          <DataField>EstadoId</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
       </Fields>
       <Query>
         <DataSourceName>ERP</DataSourceName>
         <CommandType>Text</CommandType>
-        <CommandText>
-select  Distinct (b.BranchId),
+        <CommandText>select  Distinct (b.BranchId),
   b.BranchName,
   w.WarehouseId,
   w.WarehouseName,
@@ -1621,18 +1624,26 @@ select  Distinct (b.BranchId),
   i.CustomerName,
   i.Date,
   i.ProductTypes,
-  isnull(i.Amount,0) as monto,
-  Round(2.85/12*isnull(i.amount,0)/1000,2) as TotalaPagar
+  isnull(i.Amount,0) as monto
+  ,isnull(Round(p.MerchandiseRate/12*isnull(i.amount,0)/1000,2),0 )as TotalaPagar  
+  ,i.EstadoId
 from Branch b
  inner join Warehouse w on w.BranchId = b.BranchId 
  left join InsurancesCertificateLines il  on   il.WarehouseId = w.WarehouseId
- left join InsuranceCertificate i on i.id = il.InsuraceCertificateId where i.Date between @FechaInicio and @FechaFin</CommandText>
+ left join InsuranceCertificate i on i.id = il.InsuraceCertificateId
+ left join InsurancePolicy p on p.PolicyNumber = i.InsurancePolicyNumber where i.Date between @FechaInicio and @FechaFin AND i.estadoid = @Estado</CommandText>
         <QueryParameters>
           <QueryParameter Name="@FechaInicio">
             <Value>=Parameters!FechaInicio.Value</Value>
+            <rd:Type>DateTime</rd:Type>
           </QueryParameter>
           <QueryParameter Name="@FechaFin">
             <Value>=Parameters!FechaFin.Value</Value>
+            <rd:Type>DateTime</rd:Type>
+          </QueryParameter>
+          <QueryParameter Name="@Estado">
+            <Value>=Parameters!Estado.Value</Value>
+            <rd:Type>Int32</rd:Type>
           </QueryParameter>
         </QueryParameters>
       </Query>
@@ -1659,6 +1670,22 @@ from Branch b
     <ReportParameter Name="FechaFin">
       <DataType>DateTime</DataType>
       <Prompt>FechaFin</Prompt>
+    </ReportParameter>
+    <ReportParameter Name="Estado">
+      <DataType>Integer</DataType>
+      <Prompt>Estado</Prompt>
+      <ValidValues>
+        <ParameterValues>
+          <ParameterValue>
+            <Value>1</Value>
+            <Label>Activo</Label>
+          </ParameterValue>
+          <ParameterValue>
+            <Value>2</Value>
+            <Label>Inactivo</Label>
+          </ParameterValue>
+        </ParameterValues>
+      </ValidValues>
     </ReportParameter>
   </ReportParameters>
   <EmbeddedImages>
