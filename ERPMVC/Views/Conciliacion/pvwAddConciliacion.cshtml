@@ -23,10 +23,22 @@
 
     function IniciarConciliacion(e) {
         debugger;
+        var desde = $("#DateBeginReconciled").val();
+        var hasta = $("#DateEndReconciled").val();
+        if (desde > hasta) {
+            $.toast({
+                heading: 'Error',
+                text: 'Fecha Final no puede ser menor a la fecha Inicial.',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 3000,
+                stack: 6
+            });
+            return;
+        }
         var validador = $("#mdlCuerpo").kendoValidator().data("kendoValidator");
         if (validador.validate()) {
-
-
             $("#btnIniciar").prop("disabled", false);;
             $("#btnCancelar").prop("disabled", true);;
             $("#btnGuardar").prop("disabled", true);;
@@ -94,6 +106,8 @@
                     CurrencyId: 1,
                     TransDate: r.TransDate,
                     ReferenceTrans: 'ASIENTO CONTABLE',
+                    NumeroDocumento: r.NumeroDocumento,
+                    TipoDocumento : r.TipoDoc,
                     JournalEntryId: r.JournalEntryId,
                     JournalEntryLineId: r.JournalEntryLineId,
                     VoucherTypeId: 0,
@@ -122,6 +136,7 @@
                 DateBeginReconciled: $("#DateBeginReconciled").data("kendoDatePicker").value(),
                 DateEndReconciled: $("#DateEndReconciled").data("kendoDatePicker").value(),
                 SaldoConciliado: $("#SaldoConciliado").val(),
+
                 FechaCreacion: now,
                 FechaModificacion: now,
                 UsuarioCreacion: '',
@@ -202,7 +217,7 @@
                                     <kendo-dropdownlist name="IdBanco"
                                                         for="@Model.BankId"
                                                         filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                        option-label="Seleccioné un banco"
+                                                        option-label="Seleccione un banco"
                                                         datatextfield="BankName"
                                                         datavaluefield="BankId"
                                                         required
@@ -227,7 +242,7 @@
                                         <kendo-dropdownlist name="CheckAccountId"
                                                             for="@Model.CheckAccountId"
                                                             filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                            option-label="Seleccioné una cuenta de banco"
+                                                            option-label="Seleccione una cuenta de banco"
                                                             datatextfield="CodigoNombre"
                                                             datavaluefield="AccountManagementId"
                                                             cascade-from="BankId"
@@ -247,7 +262,7 @@
                                         <kendo-dropdownlist name="CheckAccountId"
                                                             for="@Model.CheckAccountId"
                                                             filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                            option-label="Seleccioné una cuenta de banco"
+                                                            option-label="Seleccione una cuenta de banco"
                                                             datatextfield="CodigoNombre"
                                                             datavaluefield="AccountManagementId"
                                                             required
@@ -273,7 +288,7 @@
                                         <kendo-dropdownlist name="IdCuentaMayor"
                                                             for="@Model.AccountId"
                                                             filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                            option-label="Seleccioné una cuenta contable"
+                                                            option-label="Seleccione una cuenta contable"
                                                             datatextfield="CodigoNombre"
                                                             datavaluefield="AccountId"
                                                             cascade-from="CheckAccountId"
@@ -293,7 +308,7 @@
                                         <kendo-dropdownlist name="IdCuentaMayor"
                                                             for="AccountId"
                                                             filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                            option-label="Seleccioné una cuenta contable"
+                                                            option-label="Seleccione una cuenta contable"
                                                             datatextfield="CodigoNombre"
                                                             datavaluefield="AccountId"
                                                             required
@@ -492,6 +507,7 @@
                         Debit: r.Debit,
                         Credit: r.Credit,
                         TipoDoc: r.TipoDocumento,
+                        NumeroDocumento: r.NumeroDocumento,
                         //LineaConciliacion: "",
                         LineaConciliacion:false,
                         JournalEntryId: r.JournalEntryId,
@@ -524,6 +540,7 @@
                             LineaId: { name: "LineaId", type: "number" , editable:false },
                             TransDate: { name: "TransDate", type: "date", editable: false },
                             TipoDoc: { name: "TipoDoc", type: "string", editable: false },
+                            NumeroDocumento: { name: "NumeroDocumento", type: "number", editable: false },
                             PartyName: { name: 'PartyName', type: "string", editable : false},
                             Debit: { name: "Debit", type: "number", editable: false },
                             Credit: { name: "Credit", type: "number", editable: false },
@@ -537,13 +554,14 @@
                     { field: "Credit", aggregate: "sum" }    ]
             },
             columns: [
-                { field: "LineaId", title: "No.", width: 80 },
+                { field: "LineaId", title: "No.", width: 80, footerTemplate: "Total Circulante" },
                 { field: "TransDate", title: "Fecha Transacción", width: 120, format: "{0:dd/MM/yyyy HH:mm:ss}" },
                 { field:"PartyName" , title : "Beneficiario" , width: 150},
                 {
-                    field: "Debit", title: "Débito", width: 100, format: "{0:c2}", attributes: { style: "text-align:right;" },  footerTemplate: "Total: #=totalDebito()#" },
-                { field: "Credit", title: "Crédito", width: 100, format: "{0:c2}", attributes: { style: "text-align:right;" }, footerTemplate: "Total: #=totalCredito()#"  },
+                    field: "Debit", title: "Debito", width: 100, format: "{0:c2}", attributes: { style: "text-align:right;" }, footerTemplate: "<div style='text-align:right'>#=totalDebito()#</div>" },
+                { field: "Credit", title: "Credito", width: 100, format: "{0:c2}", attributes: { style: "text-align:right;" }, footerTemplate: "<div style='text-align:right'>#=totalCredito()#</div>"  },
                 { field: "TipoDoc", title: "Tipo Documento", width: 100 },
+                { field: "NumeroDocumento", title: "No Documento", width: 100 },
                 {
                     template: '<input type="checkbox" #= LineaConciliacion ? \'checked="checked"\' : "" # class="chkbx k-checkbox"  />'
                     , width: 110, title: "Conciliada"
@@ -602,6 +620,7 @@
                         Debit: r.Debit,
                         Credit: r.Credit,
                         TipoDoc: r.TipoDocumento,
+                        NumeroDocumento: r.NumeroDocumento,
                         //LineaConciliacion: r.Reconciled? "X":"N",
                         LineaConciliacion: r.Reconciled,
                         JournalEntryId: r.JournalEntryId,
