@@ -15,35 +15,7 @@
     }
 
 
-    function GenerarCertificados() {
-        debugger;
-        $.ajax({
-            url: '@Url.Action("GenerarCertificados", "InsuranceCertificate")',
-            method: 'POST',
-            datatype: "json",
-            contentType: 'application/json',
-            async: false,
-            success: function (result) {
-                $.toast({
-                    heading: 'Satisfactorio',
-                    text: 'Certificados Generados Correctamente',
-                    position: 'top-right',
-                    loaderBg: '#ff6849',
-                    icon: 'success',
-                    hideAfter: 10000,
-                    stack: 6
-                });
-                RefrescarGrid();
-            },
-             error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    //alert(textStatus + ": " + XMLHttpRequest.responseText);
-                 alert("Error");
-
-              }
-        });
-
-
-        }
+ 
 
 
     function Imprimir(e) {
@@ -191,43 +163,86 @@
                 <h4 class="modal-title">Generar Certificados</h4>
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
-            <div class="modal-body">
-                <div class="row">
-                    <h5></h5>
-                </div>
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="control-label">Mes</label>
-                            <kendo-datepicker name="mes" format="MMMM yyyy" depth="CalendarView.Year" start="CalendarView.Year" />
+            <form id="frmGenerar"
+                  data-ajax="true"
+                  data-ajax-method="post"
+                  data-ajax-begin="GenerarCertificados"
+                  kendo-validator="true">
+                <div class="modal-body">
+                    <div class="row">
+                        <h5></h5>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="control-label" style="min-width:100%">Mes</label>
+                                <kendo-datepicker name="fechames" id="fechames" format="MMMM yyyy" depth="CalendarView.Year" start="CalendarView.Year" style="min-width:100%"  data-val-required="La Fecha es requerida" value="DateTime.Now"/>
+                                <span class="text-danger" style="min-width:100%"></span>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label class="control-label">Cliente:</label>
+                                <kendo-dropdownlist name="IdCliente" id="IdCliente" auto-width="true"
+                                                    style="min-width:100%"
+                                                    option-label="Todos"
+                                                    datatextfield="CustomerName"
+                                                    datavaluefield="CustomerId">
+                                    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="10000">
+                                        <transport>
+                                            <read url="@Url.Action("Get", "Customer")" />
+                                        </transport>
+                                    </datasource>
+                                </kendo-dropdownlist>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-6">
-                        <div class="form-group">
-                            <label class="control-label">Cliente:</label>
-                            <kendo-dropdownlist name="CustomerId"  id="Cliente" auto-width="true"
-                                                style="min-width:100%"
-                                                option-label="Todos"
-                                                datatextfield="CustomerName"
-                                                datavaluefield="CustomerId">
-                                <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="10000">
-                                    <transport>
-                                        <read url="@Url.Action("Get", "Customer")" />
-                                    </transport>
-                                </datasource>
-                            </kendo-dropdownlist>
-                        </div>
-                    </div>
                 </div>
-                
-                
-               
+                <div class="modal-footer">
+                    <button class="btn btn-primary" type="submit">Generar</button>
+                </div>
 
-
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-primary" onclick="GenerarCertificados()" >Generar</button>
-            </div>
+            </form>
+            
         </div>
     </div>
 </div>
+<script>
+       function GenerarCertificados() {
+        debugger;
+           var fecha =  $("#fechames").getKendoDatePicker().value().toJSON()
+           var IdCliente = $("#IdCliente").val();
+        var dataObject = {
+            Fecha: fecha,
+            cliente: IdCliente
+        }
+        $.ajax({
+            url: '@Url.Action("GenerarCertificados", "InsuranceCertificate")',
+            method: 'POST',
+            datatype: "json",
+            data: JSON.stringify(dataObject),
+            contentType: 'application/json',
+            async: false,
+            success: function (result) {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: 'Certificados Generados Correctamente',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 10000,
+                    stack: 6
+                });
+                RefrescarGrid();
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    //alert(textStatus + ": " + XMLHttpRequest.responseText);
+                 alert("Error");
+
+              }
+        });
+
+
+        }
+</script>
