@@ -84,6 +84,11 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _GarantiaBancaria = JsonConvert.DeserializeObject<GarantiaBancariaDTO>(valorrespuesta);
                 }
+                else
+                {
+                    _GarantiaBancaria.IdEstado = 101;
+                    _GarantiaBancaria.NombreEstado = "Vigente"; 
+                }                
             }
             catch (Exception ex)
             {
