@@ -49,7 +49,7 @@
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label class="control-label" style="min-width:100%">Tasa de Cambio</label>
-                                                    <kendo-numerictextbox style="min-width:100%" for="Rate" min="0" spinners="false" format="n4" max="1000" data-val-required="La Tasa de Cambio es Requerida" />
+                                                    <kendo-numerictextbox style="min-width:100%" for="Rate" min="0" spinners="false" format="n4" max="1000" data-val-required="La Tasa de Cambio es Requerida" enable="false" />
                                                     <span asp-validation-for="Rate"></span>
                                                 </div>
                                             </div>
@@ -258,31 +258,35 @@
         var tasadecambio = 0;
         var montoDestino = 0;
         var montoOrigen = $("#SourceAmount").val();
-        var monedaorigen = $("#sourcecurrency").val();
-        var monedadestino = $("#destinationcurrency").val();
+        
+        var monedaOrigen = $("#sourcecurrency").val();
+        var monedaDestino = $("#destinationcurrency").val();
         var monedatasa = 0;
+        var compra = true; 
 
-        if ((monedaorigen != 1 && monedadestino != 1) || (monedadestino == 0 || monedaorigen == 0) ) {
-           
+        if (monedaDestino != 1 && monedaOrigen != 1) { ////en el caso que la transasccion no involucre lempiras 
+            $("#Rate").data("kendoNumericTextBox").enable(true);
             return;
 
-        }
-
-        if (monedadestino == monedaorigen) {
-            $("#Rate").data("kendoNumericTextBox").value(1);
-
-            montoDestino = $("#SourceAmount").val();
-            $("#DestinationAmount").data("kendoNumericTextBox").value(montoDestino);
-            return;
-        }
-
-        if (monedadestino == 1) {
-            monedatasa = monedaorigen;
         } else {
-            monedatasa = monedadestino;
-
-
+            $("#Rate").data("kendoNumericTextBox").enable(false);
         }
+
+        if (monedaDestino == monedaOrigen) {
+            $("#Rate").data("kendoNumericTextBox").vaule(1);
+            $("#DestinationAmount").data("kendoNumericTextBox").value(montorigen);
+
+            return;
+        }
+
+        if (monedaOrigen != 1) { ///// caso en el que se compre la divisa extrangera  
+            compra = false;
+            monedatasa = monedaOrigen;
+        } else {
+            compra = true;
+            monedatasa = monedaDestino;
+        }
+
         var fecha = $("#TransactionDate").getKendoDatePicker().value().toJSON();
         var dataObject = {
             CurrencyId: monedatasa,
@@ -299,9 +303,17 @@
             success: function (data) {
                 if (data != undefined) {
                     debugger;
-                        tasadecambio = data.ExchangeRateValue;                        
-                        $("#Rate").data("kendoNumericTextBox").value(tasadecambio);
-                        montoDestino = Number(DestinationAmount) * Number(tasadecambio);
+                    tasadecambio = data.ExchangeRateValue;   
+                    tasadecambioCompra = data.ExchangeRateValueCompra;
+                    var tasa = 1;
+                    if (compra) {
+                        tasa = tasadecambioCompra;
+                    } else {
+                        tasa = tasadecambio;
+                    }
+
+                        $("#Rate").data("kendoNumericTextBox").value(tasa);
+                            montoDestino = Number(montoOrigen) * Number(tasa);
                         $("#DestinationAmount").data("kendoNumericTextBox").value(montoDestino);
                     }
                     else {
@@ -314,8 +326,8 @@
                             hideAfter: 30000,
                             stack: 6
                         });
-                        $("#Rate").data("kendoNumericTextBox").value(null);
-                        $("#DestinationAmount").data("kendoNumericTextBox").value(null);                        
+                        $("#Rate").data("kendoNumericTextBox").value(0);
+                        $("#DestinationAmount").data("kendoNumericTextBox").value(0);                        
                     }
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -330,26 +342,29 @@
 
         var sourceAmount = $("#SourceAmount").val();
         var destinationAmount = $("#DestinationAmount").val();
-        if (destinationAmount == 0) {
+        if (sourceAmount == 0 ) {
             $.toast({
                 heading: 'Error',
-                text: "La Cantidadd de destino no puede ser cero",
+                text: "La Cantidad de Origen no puede ser cero",
                 position: 'top-right',
                 loaderBg: '#ff6849',
                 icon: 'error',
                 hideAfter: 30000,
                 stack: 6
             });
-        } if (sourceAmount != destinationAmount) {
+            return;
+        }
+        if (destinationAmount == 0 ) {
             $.toast({
                 heading: 'Error',
-                text: result.responseText,
+                text: "La Cantidad de destino no puede ser cero",
                 position: 'top-right',
                 loaderBg: '#ff6849',
                 icon: 'error',
                 hideAfter: 30000,
                 stack: 6
             });
+            return;
         }
 
             var notification = $("#notification").data("kendoNotification");
