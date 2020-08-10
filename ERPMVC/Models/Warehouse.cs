@@ -63,6 +63,10 @@ namespace ERPMVC.Models
         //Cada dos años -> 3 meses antes, 21 meses transcurridos
         public DateTime? FechaHabilitacion { get; set; }
 
+        [Display(Name = "Categoria de Clasificacion para los activos asegurados")]
+        public long? CategoriaActivoId { get; set; }
+        public ElementoConfiguracion CategoriaActivo { get; set; }
+
         [Required]
         [Display(Name = "Usuario de creación")]
         public string UsuarioCreacion { get; set; }
