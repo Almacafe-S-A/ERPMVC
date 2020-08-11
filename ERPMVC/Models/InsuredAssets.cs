@@ -38,7 +38,10 @@ namespace ERPMVC.Models
 
         public double InsuredDiference { get; set; }
 
+        public long CategoryId { get; set; }
+        [ForeignKey("CategoryId")]
 
+        public ElementoConfiguracion Category { get; set; }
 
         public Int64 EstadoId { get; set; }
         [ForeignKey("EstadoId")]
