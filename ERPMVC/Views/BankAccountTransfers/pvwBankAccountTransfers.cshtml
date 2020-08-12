@@ -49,7 +49,7 @@
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label class="control-label" style="min-width:100%">Tasa de Cambio</label>
-                                                    <kendo-numerictextbox style="min-width:100%" for="Rate" min="0" spinners="false" format="n4" max="1000" data-val-required="La Tasa de Cambio es Requerida" enable="false" />
+                                                    <kendo-numerictextbox style="min-width:100%" for="Rate" min="0" spinners="false" format="n4" on-change="GetRate"  max="1000" data-val-required="La Tasa de Cambio es Requerida" decimals="4" />
                                                     <span asp-validation-for="Rate"></span>
                                                 </div>
                                             </div>
@@ -59,7 +59,7 @@
                                         <div class="row">
                                             <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <label class="control-label" style="min-width:100%">Banco Orgien</label>
+                                                    <label class="control-label" style="min-width:100%">Banco Origen</label>
                                                     <kendo-dropdownlist style="min-width:100%" name="sourcebank" datatextfield="BankName" datavaluefield="BankId" value="@Model.SourceAccountManagement.BankId"
                                                                         option-label="Seleccione Banco"
                                                                         onchange="RefreshSourceAccounts()">
@@ -92,7 +92,7 @@
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <label class="control-label" style="min-width:100%">Cuenta Orgien</label>
+                                                    <label class="control-label" style="min-width:100%">Cuenta Origen</label>
                                                     <kendo-dropdownlist for="SourceAccountManagementId" style="min-width:100%" no-data-template="No se encontraron cuentas" value="@Model.SourceAccountManagementId"
                                                                         required data-required-msg="La Cuenta de Origen es requerida"
                                                                         datatextfield="AccountNumber" datavaluefield="AccountManagementId" option-label="Seleccione la Cuenta">
@@ -124,7 +124,7 @@
                                             </script>
                                             <div class="col-md-3">
                                                 <label class="control-label" style="min-width:100%">Monto </label>
-                                                <kendo-numerictextbox for="SourceAmount" spinners="false" min="0" style="min-width:100%" />
+                                                <kendo-numerictextbox for="SourceAmount" spinners="false" min="0" style="min-width:100%" on-change="RefreshSourceAccounts" />
                                             </div>
                                         </div>
                                         <div class="row">
@@ -132,7 +132,7 @@
                                                 <div class="form-group">
                                                     <label class="control-label" style="min-width:100%">Banco Destino</label>
                                                     <kendo-dropdownlist name="destinationbank" datatextfield="BankName" datavaluefield="BankId" style="min-width:100%" value="@Model.DestinationAccountManagement.BankId"
-                                                                        option-label="Seleccione Banco" onchange="RefreshDestinationAccounts()">
+                                                                        option-label="Seleccione Banco" onchange="GetRate()">
                                                         <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
                                                             <transport>
                                                                 <read url="@Url.Action("GetBank","Bank")" />
@@ -216,7 +216,7 @@
                                                 </kendo-dropdownlist>
                                             </div>
                                             <div class="col-md-9">
-                                                <label class="control-label" style="min-width:100%">Observacciones</label>
+                                                <label class="control-label" style="min-width:100%">Observaciones</label>
                                                 <textarea class="k-textarea" style="min-width:100%" asp-for="Notes"></textarea>
                                                 <input type="number" asp-for="JournalEntryId" value="@Model.JournalEntryId" hidden />
                                             </div>
@@ -256,33 +256,46 @@
     function GetRate() {
         debugger;
         var tasadecambio = 0;
+        //tasadecambio = $('#Rate').val();
+        
         var montoDestino = 0;
         var montoOrigen = $("#SourceAmount").val();
         
         var monedaOrigen = $("#sourcecurrency").val();
         var monedaDestino = $("#destinationcurrency").val();
+        
         var monedatasa = 0;
         var compra = true; 
 
-        if (monedaDestino != 1 && monedaOrigen != 1) { ////en el caso que la transasccion no involucre lempiras 
-            $("#Rate").data("kendoNumericTextBox").enable(true);
+        if (monedaDestino ==null ) {
+            return;
+        }
+        if (monedaOrigen==null ) {
+            return;
+        }
+
+        if (monedaDestino == monedaOrigen) {
+            $("#Rate").data("kendoNumericTextBox").value(1);
+            $("#DestinationAmount").data("kendoNumericTextBox").value(montoOrigen);
+
+            return;
+        }
+
+        if ((monedaDestino != 1 && monedaOrigen != 1) && monedaDestino != null && monedaOrigen != null) { ////en el caso que la transasccion no involucre lempiras 
+            $("#Rate").data("kendoNumericTextBox").enable(false);
+
             return;
 
         } else {
             $("#Rate").data("kendoNumericTextBox").enable(false);
         }
 
-        if (monedaDestino == monedaOrigen) {
-            $("#Rate").data("kendoNumericTextBox").vaule(1);
-            $("#DestinationAmount").data("kendoNumericTextBox").value(montorigen);
-
-            return;
-        }
+        
 
         if (monedaOrigen != 1) { ///// caso en el que se compre la divisa extrangera  
             compra = false;
             monedatasa = monedaOrigen;
-        } else {
+        } else {//// caso que se venda con divisa extrangera 
             compra = true;
             monedatasa = monedaDestino;
         }
@@ -301,33 +314,45 @@
                 async: false,
                 data: JSON.stringify(dataObject),
             success: function (data) {
-                if (data != undefined) {
+                if (data != null) {
                     debugger;
                     tasadecambio = data.ExchangeRateValue;   
                     tasadecambioCompra = data.ExchangeRateValueCompra;
                     var tasa = 1;
                     if (compra) {
                         tasa = tasadecambioCompra;
+                        montoDestino = Number(montoOrigen) / Number(tasa);
                     } else {
-                        tasa = tasadecambio;
+                        tasa = tasadecambio;                        
+                        montoDestino = Number(montoOrigen) * Number(tasa);
                     }
 
                         $("#Rate").data("kendoNumericTextBox").value(tasa);
-                            montoDestino = Number(montoOrigen) * Number(tasa);
+                           // montoDestino = Number(montoOrigen) * Number(tasa);
                         $("#DestinationAmount").data("kendoNumericTextBox").value(montoDestino);
                     }
-                    else {
+                else {
+                    tasa = $("#Rate").val();
+                    if (tasa > 0 ) {
+                        montoDestino = Number(montoOrigen) * Number(tasa);
+                        $("#DestinationAmount").data("kendoNumericTextBox").value(montoDestino);
+                    } else {
+                        $("#Rate").data("kendoNumericTextBox").value(0);
+                        $("#DestinationAmount").data("kendoNumericTextBox").value(montoOrigen);
+                    }
+                        montoDestino = Number(montoOrigen) * Number(tasa);
+                        $("#DestinationAmount").data("kendoNumericTextBox").value(montoDestino);
                         $.toast({
                             heading: 'Validación',
-                            text: 'No se encontra la tasa de cambio del dia, favor digite o ingrese la tasa de cambio',
+                            text: 'No se encontra la tasa de cambio del dia de de la transaccion',
                             position: 'top-right',
                             loaderBg: '#ff6849',
                             icon: 'error',
                             hideAfter: 30000,
                             stack: 6
                         });
-                        $("#Rate").data("kendoNumericTextBox").value(0);
-                        $("#DestinationAmount").data("kendoNumericTextBox").value(0);                        
+                        //$("#Rate").data("kendoNumericTextBox").value(0);
+                        //$("#DestinationAmount").data("kendoNumericTextBox").value(0);                        
                     }
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
