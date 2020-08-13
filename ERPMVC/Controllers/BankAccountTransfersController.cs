@@ -223,7 +223,7 @@ namespace ERPMVC.Controllers
                         var updateresult = await Update(_BankAccountTransfersS);
                         if (updateresult.Result is BadRequestObjectResult)
                         {
-                            return BadRequest(updateresult.Result.ToString());
+                            return BadRequest(((BadRequestObjectResult)updateresult.Result).Value);
                         }
                     }
                 }else 
@@ -233,7 +233,7 @@ namespace ERPMVC.Controllers
                     var insertresult = await Insert(_BankAccountTransfersS);
                     if (insertresult.Result is BadRequestObjectResult)
                     {
-                        return BadRequest(insertresult.Result.ToString());
+                        return BadRequest(((BadRequestObjectResult)insertresult.Result).Value.ToString());
                     }
                 }
 
