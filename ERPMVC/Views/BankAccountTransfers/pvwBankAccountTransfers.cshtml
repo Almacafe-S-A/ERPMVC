@@ -42,14 +42,14 @@
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label>Fecha de Transaccion</label>
-                                                    <kendo-datepicker max="DateTime.Now" for="TransactionDate" data-val-required="La fecha de Transaccion es requerida " style="min-width:100%" />
+                                                    <kendo-datepicker max="DateTime.Now" for="TransactionDate" data-val-required="La fecha de Transaccion es requerida " style="min-width:100%" on-change="GetRate" />
                                                 </div>
 
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
-                                                    <label class="control-label" style="min-width:100%">Tasa de Cambio</label>
-                                                    <kendo-numerictextbox style="min-width:100%" for="Rate" min="0" spinners="false" format="n4" on-change="GetRate"  max="1000" data-val-required="La Tasa de Cambio es Requerida" decimals="4" />
+                                                    <label class="control-label" style="min-width:100%">Tasa de Cambio       <input type="checkbox"  checked  id="auto" onchange="tasaautomatica()"/> Auto </label>
+                                                    <kendo-numerictextbox enable="false" style="min-width:100%" for="Rate" min="0" spinners="false" format="n4" on-change="GetRate"  max="1000" data-val-required="La Tasa de Cambio es Requerida" decimals="4" />
                                                     <span asp-validation-for="Rate"></span>
                                                 </div>
                                             </div>
@@ -124,7 +124,7 @@
                                             </script>
                                             <div class="col-md-3">
                                                 <label class="control-label" style="min-width:100%">Monto </label>
-                                                <kendo-numerictextbox for="SourceAmount" spinners="false" min="0" style="min-width:100%" on-change="RefreshSourceAccounts" />
+                                                <kendo-numerictextbox  for="SourceAmount" spinners="false" min="0" style="min-width:100%" on-change="RefreshSourceAccounts" />
                                             </div>
                                         </div>
                                         <div class="row">
@@ -178,8 +178,7 @@
                                                 </div>
                                             </div>
 
-                                            <script>
-                                                onchange
+                                            <script>                                                
                                                 function RefreshDestinationAccounts() {
                                                     debugger;
                                                     var cuentas = $("#DestinationAccountManagementId").data("kendoDropDownList").dataSource;
@@ -252,60 +251,92 @@
     }
 
 
+    function tasaautomatica() {
+        debugger;
+        var auto = $('#auto').prop('checked');
+        $("#Rate").data("kendoNumericTextBox").enable(!auto);        
+        $("#Rate").data("kendoNumericTextBox").value(0);
+        $("#DestinationAmount").data("kendoNumericTextBox").value(0);
+        GetRate();
+    }
+
 
     function GetRate() {
         debugger;
         var tasadecambio = 0;
         //tasadecambio = $('#Rate').val();
-        
+
         var montoDestino = 0;
         var montoOrigen = $("#SourceAmount").val();
-        
+
         var monedaOrigen = $("#sourcecurrency").val();
         var monedaDestino = $("#destinationcurrency").val();
-        
-        var monedatasa = 0;
-        var compra = true; 
 
-        if (monedaDestino ==null ) {
+        var tasa = $("#Rate").val();
+        var auto = $('#auto').prop('checked');
+        $("#Rate").data("kendoNumericTextBox").enable(!auto);
+
+        var monedatasa = 0;
+        var compra = false;
+        var monedasextrangerasiguales = false;
+        var monedaextrangera = true;
+        
+        
+        if (!ValidarMonedas()) {
             return;
         }
-        if (monedaOrigen==null ) {
-            return;
+        
+        if (monedaOrigen == 1) { 
+            compra = true;
+            monedatasa = monedaDestino;
+            monedaextrangera = false;
+        } else {
+            if (monedaDestino == 1) {
+                compra = false;
+                monedatasa = monedaOrigen;
+                monedaextrangera = false;
+            } else {
+                monedasextrangerasiguales = true;
+                monedatasa = monedaOrigen;
+            }
         }
 
         if (monedaDestino == monedaOrigen) {
-            $("#Rate").data("kendoNumericTextBox").value(1);
-            $("#DestinationAmount").data("kendoNumericTextBox").value(montoOrigen);
-
-            return;
+            $("#DestinationAmount").data("kendoNumericTextBox").value(montoOrigen);            
+            if (!monedaextrangera) {
+                $("#Rate").data("kendoNumericTextBox").value(1);
+                return;
+            } else {
+                
+            }
         }
 
-        if ((monedaDestino != 1 && monedaOrigen != 1) && monedaDestino != null && monedaOrigen != null) { ////en el caso que la transasccion no involucre lempiras 
-            $("#Rate").data("kendoNumericTextBox").enable(false);
-
+        if (tasa > 0 && !auto) {
+            if (monedasextrangerasiguales) {
+                //tasa = tasadecambio;
+                montoDestino = montoOrigen;
+            } else {
+                if (compra) {
+                    //tasa = tasadecambio;
+                    montoDestino = Number(montoOrigen) / Number(tasa);
+                } else {
+                    //tasa = tasadecambioCompra;
+                    montoDestino = Number(montoOrigen) * Number(tasa);
+                }
+            }
+            /////Sete la Tasa y el monto destino
+            $("#Rate").data("kendoNumericTextBox").value(tasa);
+            $("#DestinationAmount").data("kendoNumericTextBox").value(montoDestino);
             return;
-
-        } else {
-            $("#Rate").data("kendoNumericTextBox").enable(false);
-        }
-
+        } 
         
-
-        if (monedaOrigen != 1) { ///// caso en el que se compre la divisa extrangera  
-            compra = false;
-            monedatasa = monedaOrigen;
-        } else {//// caso que se venda con divisa extrangera 
-            compra = true;
-            monedatasa = monedaDestino;
-        }
-
+        
         var fecha = $("#TransactionDate").getKendoDatePicker().value().toJSON();
         var dataObject = {
             CurrencyId: monedatasa,
             DayofRate:fecha
         };
-
+        
         $.ajax({
                 url: '@Url.Action("GetExchangeRateByDateNCurrency", "ExchangeRate")',
                 method: 'POST',
@@ -316,44 +347,41 @@
             success: function (data) {
                 if (data != null) {
                     debugger;
-                    tasadecambio = data.ExchangeRateValue;   
+                    tasadecambio = data.ExchangeRateValue;
                     tasadecambioCompra = data.ExchangeRateValueCompra;
-                    var tasa = 1;
-                    if (compra) {
-                        tasa = tasadecambioCompra;
-                        montoDestino = Number(montoOrigen) / Number(tasa);
+                    
+                    if (monedasextrangerasiguales) {
+                        tasa = tasadecambio;
+                        montoDestino = montoOrigen;
                     } else {
-                        tasa = tasadecambio;                        
-                        montoDestino = Number(montoOrigen) * Number(tasa);
+                        if (compra) {
+                            tasa = tasadecambio;
+                            montoDestino = Number(montoOrigen) / Number(tasa);
+                        } else {
+                            tasa = tasadecambioCompra;
+                            montoDestino = Number(montoOrigen) * Number(tasa);
+                        }
                     }
-
-                        $("#Rate").data("kendoNumericTextBox").value(tasa);
-                           // montoDestino = Number(montoOrigen) * Number(tasa);
-                        $("#DestinationAmount").data("kendoNumericTextBox").value(montoDestino);
+                    
                     }
                 else {
-                    tasa = $("#Rate").val();
-                    if (tasa > 0 ) {
-                        montoDestino = Number(montoOrigen) * Number(tasa);
-                        $("#DestinationAmount").data("kendoNumericTextBox").value(montoDestino);
-                    } else {
-                        $("#Rate").data("kendoNumericTextBox").value(0);
-                        $("#DestinationAmount").data("kendoNumericTextBox").value(montoOrigen);
-                    }
-                        montoDestino = Number(montoOrigen) * Number(tasa);
-                        $("#DestinationAmount").data("kendoNumericTextBox").value(montoDestino);
-                        $.toast({
-                            heading: 'Validación',
-                            text: 'No se encontra la tasa de cambio del dia de de la transaccion',
-                            position: 'top-right',
-                            loaderBg: '#ff6849',
-                            icon: 'error',
-                            hideAfter: 30000,
-                            stack: 6
-                        });
-                        //$("#Rate").data("kendoNumericTextBox").value(0);
-                        //$("#DestinationAmount").data("kendoNumericTextBox").value(0);                        
-                    }
+                    
+                    $.toast({
+                        heading: 'Validación',
+                        text: 'No se encontra la tasa de cambio del dia de de la transaccion',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                    montoDestino = 0;
+                    tasa = 0;
+                }
+
+                /////Sete la Tasa y el monto destino
+                $("#Rate").data("kendoNumericTextBox").value(tasa);
+                $("#DestinationAmount").data("kendoNumericTextBox").value(montoDestino);
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     alert(textStatus + ": " + XMLHttpRequest.responseText);
@@ -361,9 +389,37 @@
             });
     }
 
+    function ValidarMonedas() { ////Valida que en la transaccion exista una moneda local o que las dos monedas sean extrangeras 
+        var monedaOrigen = $("#sourcecurrency").val();
+        var monedaDestino = $("#destinationcurrency").val();
+        if (monedaDestino == null || monedaOrigen == null) {
+            return false;
+        }
+        var monedaOrigen = $("#sourcecurrency").val();
+        var monedaDestino = $("#destinationcurrency").val();
+        if ((monedaDestino != 1 && monedaOrigen != 1)) {
+            if (monedaDestino != monedaOrigen) {
+                $.toast({
+                    heading: 'Error',
+                    text: 'Transaccion no Soportada, una de las monedas debe de ser en moneda local o ambas iguales',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 30000,
+                    stack: 6
+                });
+                return false;
+            }
 
+
+        }
+        return true;
+    }
 
     function SaveTransfer(e) {
+        if (!ValidarMonedas()) {
+            return;
+        }
 
         var sourceAmount = $("#SourceAmount").val();
         var destinationAmount = $("#DestinationAmount").val();
