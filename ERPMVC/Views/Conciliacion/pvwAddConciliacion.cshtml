@@ -567,12 +567,11 @@
                     { field: "Credit", aggregate: "sum" }    ]
             },
             columns: [
-                { field: "LineaId", title: "No.", width: 80, footerTemplate: "Total Circulante" },
+                { field: "LineaId", title: "No.", width: 80, footerTemplate: "<div>Total </div><div>Total Circulante</div>" },
                 { field: "TransDate", title: "Fecha Transacción", width: 120, format: "{0:dd/MM/yyyy HH:mm:ss}" },
                 { field:"PartyName" , title : "Beneficiario" , width: 150},
-                {
-                    field: "Debit", title: "Debito", width: 100, format: "{0:c2}", attributes: { style: "text-align:right;" }, footerTemplate: "<div style='text-align:right'>#=totalDebito()#</div>" },
-                { field: "Credit", title: "Credito", width: 100, format: "{0:c2}", attributes: { style: "text-align:right;" }, footerTemplate: "<div style='text-align:right'>#=totalCredito()#</div>"  },
+                { field: "Debit", title: "Debito", width: 100, format: "{0:c2}", attributes: { style: "text-align:right;" }, footerTemplate: "<div style='text-align:right'>#=totalColumnas(1)#</div><div style='text-align:right'>#=totalColumnas(3)#</div>" },
+                { field: "Credit", title: "Credito", width: 100, format: "{0:c2}", attributes: { style: "text-align:right;" }, footerTemplate: "<div style='text-align:right'>#=totalColumnas(2)#</div><div style='text-align:right'>#=totalColumnas(4)#</div>" },
                 { field: "TipoDoc", title: "Tipo Documento", width: 100 },
                 { field: "NumeroDocumento", title: "No Documento", width: 100 },
                 {
@@ -586,11 +585,6 @@
             scrollable: true,
             edit: EditadoSaldoLibro,
         });
-
-        
-
-
-
 
         if (@Model.ConciliacionId !== 0) {
             $("#BankId").val(@Model.BankId);
@@ -697,38 +691,35 @@
        
     }
 
-    
-
-    function totalDebito() {
-        var grid = $("#grdSaldoLibro").getKendoGrid();
+    function totalColumnas(tiporesultado) {
         var data = $("#grdSaldoLibro").getKendoGrid().dataSource.data();
-        var circulante = 0;
-        data.forEach(r => circulante = !r.LineaConciliacion ? circulante + r.Debit  : circulante);
-        //saldoconciliado = saldoconciliado - montoConciliado;
-        //return circulante.toFixed(2);
+        var total = 0;
+
+        switch (tiporesultado) {
+            case 1: ///////Calcular el Total debitos                
+                data.forEach(r => total += r.Debit);
+                break;
+            case 2 : /// Calcular el total de Creditos
+                data.forEach(r => total += r.Credit);
+                break;
+            case 3: ////Calcular el total de debitos Circulantes
+                data.forEach(r => total = !r.LineaConciliacion ? total + r.Debit : total);
+                break;
+            case 4://///Calcular el total de creditos
+                data.forEach(r => total = !r.LineaConciliacion ? total + r.Credit : total);
+                break;
+            default:
+                break;
+        }
         const formatter = new Intl.NumberFormat('es-HN', {
             style: 'currency',
             currency: 'Lps',
             minimumFractionDigits: 2
         });
-        return formatter.format(circulante);
-            
-    }
-
-    function totalCredito() {
-        var grid = $("#grdSaldoLibro").getKendoGrid();
-        var data = $("#grdSaldoLibro").getKendoGrid().dataSource.data();
-        var circulante = 0;
-        data.forEach(r => circulante = !r.LineaConciliacion ? circulante + r.Credit : circulante);
-        //saldoconciliado = saldoconciliado - montoConciliado;
-        const formatter = new Intl.NumberFormat('es-HN', {
-            style: 'currency',
-            currency: 'Lps',
-            minimumFractionDigits: 2
-        });
-        return formatter.format(circulante);
+        return formatter.format(total);
 
     }
+
 
     function TotalizarSaldoLibro() {
         var fecha = kendo.toString(kendo.parseDate($("#DateBeginReconciled").val(), "dd/MM/yyyy"), "yyyy-MM-dd");
