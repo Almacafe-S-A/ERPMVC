@@ -161,47 +161,30 @@ namespace ERPMVC.Controllers
 
         public async Task<ActionResult> AnularCheque([FromBody]CheckAccountLines _pCheque)
         {
-            //CheckAccountLines _Check = new CheckAccountLines();
-
             try
             {
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/CheckAccountLines/GetCheckAccountLinesById/" + _pCheque.Id);
-                string valorrespuesta = "";
+                var result = await _client.GetAsync(baseadress + $"api/CheckAccountLines/AnularCheque/{_pCheque.Id}");
+                var valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _pCheque = JsonConvert.DeserializeObject<CheckAccountLines>(valorrespuesta);
                 }
-                if (_pCheque.Estado != "Anulado")
-                {
-                   
-                    result = await _client.PutAsJsonAsync(baseadress + "api/CheckAccountLines/AnularCheque", _pCheque);
-                    valorrespuesta = "";
-                    if (result.IsSuccessStatusCode)
-                    {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _pCheque = JsonConvert.DeserializeObject<CheckAccountLines>(valorrespuesta);
-                    }
-                }
                 else
                 {
-                    return BadRequest($"Error este cheque ya habia sido Anulado.");
+                    return BadRequest(result.Content.ReadAsStringAsync());
+
                 }
             }
-               
-            
             catch (Exception ex)
             {
                 _logger.LogError($"Ocurrio un error: { ex.ToString() }");
                 return BadRequest($"Ocurrio un error: { ex.ToString() }");
             }
-
-
-
-            return Ok(_pCheque);
+            return Ok();
 
         }
 
