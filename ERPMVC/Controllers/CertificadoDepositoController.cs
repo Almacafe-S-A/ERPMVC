@@ -76,12 +76,12 @@ namespace ERPMVC.Controllers
                     {
                         IdCD = 0,
                         FechaCertificado = DateTime.Now,
-                        FechaVencimiento = DateTime.Now.AddDays(60),
+                        //FechaVencimiento = DateTime.Now.AddDays(60),
                         FechaVencimientoDeposito = DateTime.Now.AddDays(30),
-                        FechaFirma = DateTime.Now,
+                        //FechaFirma = DateTime.Now,
                         FechaInicioComputo = DateTime.Now,
                         FechaPagoBanco = DateTime.Now,                        
-                        BranchId = Convert.ToInt64(HttpContext.Session.GetString("BranchId"))
+                        BranchId = Convert.ToInt32(HttpContext.Session.GetString("BranchId"))
                     };
                 }
                 else
@@ -101,6 +101,8 @@ namespace ERPMVC.Controllers
             return PartialView(_CertificadoDeposito);
 
         }
+
+
 
 
         [HttpGet("[controller]/[action]")]

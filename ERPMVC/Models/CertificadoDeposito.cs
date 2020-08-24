@@ -21,13 +21,17 @@ namespace ERPMVC.Models
         public string CustomerName { get; set; }
 
         [Display(Name = "Sucursal")]
-        public Int64 BranchId { get; set; }
+        public int BranchId { get; set; }
+        [ForeignKey("BranchId")]
+        public Branch Branch { get; set; }
         [Display(Name = "Sucursal")]
         public string BranchName { get; set; }
 
 
         [Display(Name = "Tipo Servicio")]
         public Int64 ServicioId { get; set; }
+        [ForeignKey("ServicioId")]
+        public Product Servicio { get; set; }
 
         [Display(Name = "Servicio")]
         public string ServicioName { get; set; }
@@ -60,10 +64,8 @@ namespace ERPMVC.Models
         public DateTime FechaVencimientoDeposito { get; set; }
 
         [Display(Name = "Número de traslado")]
-        public Int64 NoTraslado { get; set; }
+        public Int64? NoTraslado { get; set; }
 
-        [Display(Name = "Fecha de vencimiento")]
-        public DateTime FechaVencimiento { get; set; }
 
         [Display(Name = "Aduana")]
         public string Aduana { get; set; }
@@ -80,7 +82,7 @@ namespace ERPMVC.Models
         public string OtrosCargos { get; set; }
 
         [Display(Name = "Banco")]
-        public Int64 BankId { get; set; }
+        public Int64? BankId { get; set; }
         [Display(Name = "Banco")]
         public string BankName { get; set; }
         [Display(Name = "Moneda")]
@@ -88,21 +90,23 @@ namespace ERPMVC.Models
         [Display(Name = "Moneda")]
         public string CurrencyName { get; set; }
         [Display(Name = "Monto de garantia")]
-        public double MontoGarantia { get; set; }
+        public double? MontoGarantia { get; set; }
         [Display(Name = "Fecha pago")]
         public DateTime FechaPagoBanco { get; set; }
 
         [Display(Name = "Porcentaje intereses")]
-        public double PorcentajeInteresesInsolutos { get; set; }
+        public double? PorcentajeInteresesInsolutos { get; set; }
 
         [Display(Name = "Fecha de inicio")]
-        public DateTime FechaInicioComputo { get; set; }
+        public DateTime? FechaInicioComputo { get; set; }
+
+        [Display(Name = "Fecha de Vencimiento")]
+        public DateTime? FechaVencimientoCertificado { get; set; }
 
         [Display(Name = "Lugar de firma")]
         public string LugarFirma { get; set; }
 
-        [Display(Name = "Fecha de firma")]
-        public DateTime FechaFirma { get; set; }
+
 
         [Display(Name = "Nombre prestatario")]
         public string NombrePrestatario { get; set; }
@@ -126,6 +130,8 @@ namespace ERPMVC.Models
         public DateTime FechaModificacion { get; set; }
         public string UsuarioCreacion { get; set; }
         public string UsuarioModificacion { get; set; }
+        [NotMapped]
+        public EndososCertificados Endoso { get; set; } 
 
         public string Impreso { get; set; }
 
