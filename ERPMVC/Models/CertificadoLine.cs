@@ -43,6 +43,10 @@ namespace ERPMVC.Models
         [Display(Name = "Bodega")]
         public string WarehouseName { get; set; }
 
+        public string Observaciones { get; set; }
+
+        public decimal DerechosFiscales { get; set; }
+
 
     }
 }
