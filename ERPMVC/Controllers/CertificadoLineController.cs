@@ -205,6 +205,9 @@ namespace ERPMVC.Controllers
                             obj.UnitMeasureId = _CertificadoLine.UnitMeasureId;
                             obj.UnitMeasurName = _CertificadoLine.UnitMeasurName;
                             obj.ValorImpuestos = _CertificadoLine.ValorImpuestos;
+                            obj.WarehouseId = _CertificadoLine.WarehouseId;
+                            obj.WarehouseName = _CertificadoLine.WarehouseName;
+                            obj.Merma = _CertificadoLine.Merma;
                         }
 
                         HttpContext.Session.SetString("listadoproductoscertificadodeposito", JsonConvert.SerializeObject(_CertificadoLinelist).ToString());

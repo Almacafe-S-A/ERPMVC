@@ -79,17 +79,22 @@
 
 
                         var cantidad = data._GoodsReceivedLine[i].Quantity - (data._GoodsReceivedLine[i].Quantity * merma);
-                        // console.log('Valor de merma:' + merma);
+                        //. console.log('Valor de merma:' + merma);
                         //console.log('Valor de Quantity:' + data._GoodsReceivedLine[i].Quantity);
+                        //console.log(data._GoodsReceivedLine[i]);
                         datasource.insert({
-                            CertificadoLineId: i + 1, IdCD: 0,
+                            CertificadoLineId: i + 1,
+                            IdCD: 0,
                             UnitMeasureId: data._GoodsReceivedLine[i].UnitOfMeasureId
                             , SubProductId: data._GoodsReceivedLine[i].SubProductId
                             , SubProductName: data._GoodsReceivedLine[i].SubProductName
                             , UnitMeasurName: data._GoodsReceivedLine[i].UnitOfMeasureName
+                            , WarehouseId: data._GoodsReceivedLine[i].WarehouseId
+                            , WarehouseName: data._GoodsReceivedLine[i].WarehouseName
                             , Description: ""
                             , Quantity: cantidad
                             , Price: 0
+                            , Merma: merma
                             // , Price: data._GoodsReceivedLine[i].Price
                             , Amount: (data._GoodsReceivedLine[i].Price * (cantidad))
                         });
@@ -120,7 +125,7 @@
                     }
 
                     changeServicio();
-                    grid.refresh();
+                   // grid.refresh();
                     $("#Quantitysum").data("kendoNumericTextBox").value(sumacantidad);
                     $("#Total").data("kendoNumericTextBox").value(total);
 
@@ -291,10 +296,20 @@
 
                                                 if (existe === false) {
                                                     $('#ddlRecibosAsociados').append('<option value="' + $("#cbxBuscarGoodsReceived").val() + '">' + '' + $("#cbxBuscarGoodsReceived").data("kendoDropDownList").text() + '</option>');
+                                                    $.toast({
+                                                        heading: 'Satisfactorio',
+                                                        text: 'Recibo Asociado',
+                                                        position: 'top-right',
+                                                        loaderBg: '#ff6849',
+                                                        icon: 'success',
+                                                        hideAfter: 3000,
+                                                        stack: 6
+                                                    });
                                                 }
                                                 else {
                                                     $("#alertamsj").css('display', 'block');
-                                                    $("#alertamsj").text('Ya existe el recibo!');
+                                                    $("#alertamsj").text('El Recibo Seleccionado ya fue asociado');
+                                                    return;
                                                 }
                                             }
                                             else
@@ -316,26 +331,6 @@
                                         }
 
                                     </script>
-
-                                    @*<kendo-dropdownlist name="orders" style="width:100%"
-                                            datatextfield="ProductName"
-                                            datavaluefield="GoodsReceivedId"
-                                            min-length="3"
-                                            auto-bind="false"
-                                            cascade-from="CustomerIdAsociarRecibo"
-                                            height="290"
-                                            filter="Kendo.Mvc.UI.FilterType.Contains">
-                            <datasource type="DataSourceTagHelperType.Ajax" page-size="80">
-                                <transport>
-                                    <read url="@Url.Action("Virtualization_Read", "GoodsReceived")"   />
-                                </transport>
-                            </datasource>
-                            <virtual item-height="26" value-mapper="valueMapper"  data="GetCustomerIdP" />
-                            <popup-animation>
-                                <open duration="500" />
-                                <close duration="500" />
-                            </popup-animation>
-                        </kendo-dropdownlist>*@
                                     @(Html.Kendo().DropDownList()
                                                       .Name("cbxBuscarGoodsReceived")
                                                       .Filter(Kendo.Mvc.UI.FilterType.Contains)
@@ -384,7 +379,7 @@
                     <h6>Recibos Asociados</h6>
                     <section>
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-12">
                                 @*<div class="form-group">
                         <label for="wint1">Recibos asociados :</label>
                         <input type="text" class="form-control required" id="wint1">

@@ -11,6 +11,7 @@ namespace ERPMVC.Models
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public Int64 CertificadoLineId { get; set; }
+        public int? PdaNo { get; set; }
         [Display(Name = "Certificado")]
         public Int64 IdCD { get; set; }
         [Display(Name = "Producto")]
@@ -29,6 +30,8 @@ namespace ERPMVC.Models
         public double Quantity { get; set; }
         [Display(Name = "Precio")]
         public double Price { get; set; }
+        [Display(Name = "Merma")]
+        public double? Merma { get; set; }
         [Display(Name = "Total")]
         public double Amount { get; set; }
         [Display(Name = "Valor a pagar impuestos")]
@@ -45,7 +48,7 @@ namespace ERPMVC.Models
 
         public string Observaciones { get; set; }
 
-        public decimal DerechosFiscales { get; set; }
+        public double DerechosFiscales { get; set; }
 
 
     }
