@@ -170,22 +170,23 @@
                                         <script>
                                             function changeServicio() {
                                                 debugger;
-                                                if ($("#ServicioId").val() == 2) {
-
-                                                    $("#divtotalsujetoapago").css("display", "block");
-                                                    $("#divvalorimpuesto").css("display", "block");
+                                                var servicio = $("#ServicioId").val();
+                                                if ( servicio== 2) {  
+                                                    
                                                     $("#importacion").show();
-
                                                     $("#BranchId").data("kendoDropDownList").dataSource.read();
                                                     $("#BranchId").data("kendoDropDownList").enable(true);
 
                                                 }
                                                 else {
                                                     $("#importacion").hide();
-                                                    $("#divtotalsujetoapago").css("display", "none");
-
-                                                    //$("#SujetasAPago").data("kendoNumericTextBox").sevalue(0);
                                                 }
+                                                if (servicio == 3) {
+                                                    $("#bodegahabilitada").show();
+                                                } else {
+                                                    $("#bodegahabilitada").hide();
+                                                }
+
                                             }
                                         </script>
                                         <label asp-for="ServicioId" class="control-label" style="width:100%"></label>
@@ -248,10 +249,10 @@
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <label asp-for="FechaCertificado" class="control-label" style="width: 100%;"></label>
-                                        <kendo-datetimepicker name="FechaCertificado"
+                                        <label asp-for="FechaCertificado" class="control-label" style="min-width: 100%;"></label>
+                                        <kendo-datepicker name="FechaCertificado"
                                                               style="min-width: 93%;"
-                                                              format="dd/MM/yyyy hh:mm:ss"
+                                                              format="dd/MM/yyyy "
                                                               data-val-required="La fecha es requerida"
                                                               value="Model.FechaCertificado" />
                                         <span asp-validation-for="FechaCertificado" class="text-danger"></span>
@@ -259,11 +260,11 @@
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <label asp-for="FechaVencimientoDeposito" class="control-label" style="width: 100%;"></label>
-                                        <kendo-datetimepicker name="FechaVencimientoDeposito"
+                                        <label asp-for="FechaVencimientoDeposito" class="control-label" style="min-width: 100%;"></label>
+                                        <kendo-datepicker name="FechaVencimientoDeposito"
                                                               style="width: 100%;"
-                                                              format="dd/MM/yyyy hh:mm:ss"
-                                                              time-format="hh:mm:ss"
+                                                              format="dd/MM/yyyy "
+                                                              time-format=""
                                                               data-val-required="La fecha es requerida"
                                                               value="Model.FechaVencimientoDeposito" />
                                         <span asp-validation-for="FechaVencimientoDeposito" class="text-danger"></span>
@@ -297,7 +298,7 @@
                             <div class="row">
 
 
-                                <div class="col-md-3">
+                                @*<div class="col-md-3">
                                     <div class="form-group">
                                         <label asp-for="InsuranceId" class="control-label" style="min-width: 100%;">Aseguradora</label>
                                         <kendo-dropdownlist name="InsurancesId" for="InsuranceId" filter="Kendo.Mvc.UI.FilterType.Contains"
@@ -317,18 +318,41 @@
                                         </kendo-dropdownlist>
                                         <span asp-validation-for="InsuranceId" class="text-danger"></span>
                                     </div>
+                                </div>*@
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label class="control-label">Póliza Propia</label>
+                                        <kendo-switch name="PolizaPropia" enabled="true" for="PolizaPropia" on-change="RefreshPolicies"  checked="@Model.PolizaPropia">
+                                            <messages checked="Si" unchecked="No" />
+                                        </kendo-switch>
+                                    </div>
                                 </div>
                                 <div class="col-md-3">
                                     <div class="form-group">
-                                        <label asp-for="InsurancePolicyId" class="control-label" style="min-width: 100%;">Póliza</label>
+                                        <label asp-for="InsurancePolicyId" class="control-label" style="min-width: 100%;">Póliza </label>
                                         <script>
                                             function GetInsurance() {
+                                                console.log($('#PolizaPropia').val());
+                                                var propia = $("#PolizaPropia").data("kendoSwitch");
+                                                return {
 
-                                                return { 'InsuranceId': $("#InsuranceId").val() }
+                                                    'PolizaPropia': propia.check(),
+                                                    'CustomerId':$('#CustomerId').val()
+                                                }
                                             }
 
                                             function RefreshPolicies() {
+                                                debugger;
+
                                                 $("#InsurancePolicyId").data("kendoDropDownList").dataSource.read();
+                                                var propia = $("#PolizaPropia").data("kendoSwitch");
+                                                var valor = propia.check();
+                                                if (valor == true) {
+                                                    $("#Seguro").val("S/endoso");
+                                                } else {
+                                                    $("#Seguro").val("S/tarifa");
+                                                }
+
                                             }
                                         </script>
                                         <kendo-dropdownlist name="InsurancePolicyId" for="InsurancePolicyId" filter="Kendo.Mvc.UI.FilterType.Contains"
@@ -341,7 +365,7 @@
                                                             style="min-width: 100%;">
                                             <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
                                                 <transport>
-                                                    <read url="@Url.Action("GetInsuracesPoliciesByInsuranceId", "INsurancePolicy")" data="GetInsurance" />
+                                                    <read url="@Url.Action("GetInsuracesPoliciesByProperty", "InsurancePolicy")" data="GetInsurance" />
                                                 </transport>
                                             </datasource>
                                         </kendo-dropdownlist>
@@ -360,20 +384,26 @@
 
                             </div>
                             <div class="row">
-                                <div class="col-md-3" id="divtotalsujetoapago" style="display:none">
-                                    <label asp-for="SujetasAPago" class="control-label" style="width:100%"></label>
-                                    <kendo-numerictextbox for="SujetasAPago"
-                                                          format="n"
-                                                          enable="false"
-                                                          min="0"
-                                                          max="99999999"
-                                                          step="1"
-                                                          style="width: 100%;"
-                                                          value="Model.SujetasAPago" />
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label class="control-label">Seguro</label>
+                                        <input class="k-textbox" type="text" asp-for="Seguro" value="@Model.Seguro" style="min-width: 100%" />
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label class="control-label">Almacenaje</label>
+                                        <input class="k-textbox" type="text" asp-for="Almacenaje" value="S/tarifa" style="min-width:100%" />
+                                    </div>
 
                                 </div>
+                                <div class="col-md-3" id="bodegahabilitada">
+                                    <div class="form-group">
+                                        <label class="control-label">Situado en </label>
+                                        <input class="k-textbox" type="text" asp-for="SituadoEn" value="@Model.SituadoEn" style="min-width:100%" />
+                                    </div>
 
-
+                                </div>
                             </div>
                             @if (Model.Endoso != null) //// Seccion donde se muestran los datos del endoso se muestran solo si el certificado esta endosado
                             {
@@ -383,52 +413,80 @@
 
 
 
-                            <div id="importacion">
-                                <h3> Información de Poliza de Importación</h3> <h4>almacenaje Fiscal</h4>
-                                <hr />
-                                <div class="row">
-                                    <div class="col-sm-4 col-md-3">
-                                        <div class="form-group">
-                                            <label asp-for="NombreEmpresa" class="control-label" style="width:100%"></label>
-                                            <input type="text" asp-for="NombreEmpresa" required class="k-textbox " style="min-width: 100%" />
-                                            <span asp-validation-for="NombreEmpresa" class="text-danger"></span>
-                                        </div>
+                        <div id="importacion">
+                            <h3> Información de Poliza de Importación</h3> <h4>almacenaje Fiscal</h4>
+                            <hr />
+                            <div class="row">
+                                <div class="col-sm-4 col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="NombreEmpresa" class="control-label" style="width:100%"></label>
+                                        <input type="text" asp-for="NombreEmpresa" required class="k-textbox " style="min-width: 100%" />
+                                        <span asp-validation-for="NombreEmpresa" class="text-danger"></span>
+                                    </div>
 
+                                </div>
+                                <div class="col-sm-4 col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="Aduana" class="control-label" style="width:100%"></label>
+                                        <input type="text" asp-for="Aduana" required class="k-textbox " style="min-width: 100%" />
+                                        <span asp-validation-for="Aduana" class="text-danger"></span>
                                     </div>
-                                    <div class="col-sm-4 col-md-3">
-                                        <div class="form-group">
-                                            <label asp-for="Aduana" class="control-label" style="width:100%"></label>
-                                            <input type="text" asp-for="Aduana" required class="k-textbox " style="min-width: 100%" />
-                                            <span asp-validation-for="Aduana" class="text-danger"></span>
-                                        </div>
 
 
-                                    </div>
-                                    <div class="col-sm-4 col-md-2">
-                                        <div class="form-group">
-                                            <label asp-for="ManifiestoNo" class="control-label" style="width:100%"></label>
-                                            <input type="text" asp-for="ManifiestoNo" required class="k-textbox " style="min-width: 100%" />
-                                            <span asp-validation-for="ManifiestoNo" class="text-danger"></span>
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-4 col-md-2">
-                                        <div class="form-group">
-                                            <label asp-for="NoTraslado" class="control-label" style="width:100%"></label>
-                                            <input type="text" asp-for="NoTraslado" required class="k-textbox " style="min-width: 100%" />
-                                            <span asp-validation-for="NoTraslado" class="text-danger"></span>
-                                        </div>
-                                    </div>
-                                    <div class="col-sm-4 col-md-2">
-                                        <div class="form-group">
-                                            <label asp-for="OtrosCargos" class="control-label" style="width:100%"></label>
-                                            <input type="text" asp-for="OtrosCargos" required class="k-textbox " style="min-width: 100%" />
-                                            <span asp-validation-for="OtrosCargos" class="text-danger"></span>
-                                        </div>
+                                </div>
+                                <div class="col-sm-4 col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="ManifiestoNo" class="control-label" style="width:100%"></label>
+                                        <input type="text" asp-for="ManifiestoNo" required class="k-textbox " style="min-width: 100%" />
+                                        <span asp-validation-for="ManifiestoNo" class="text-danger"></span>
                                     </div>
                                 </div>
+                                <div class="col-sm-4 col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="NoTraslado" class="control-label" style="width:100%"></label>
+                                        <input type="text" asp-for="NoTraslado" required class="k-textbox " style="min-width: 100%" />
+                                        <span asp-validation-for="NoTraslado" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-sm-4 col-md-2">
+                                    <div class="form-group">
+                                        <label asp-for="OtrosCargos" class="control-label" style="width:100%"></label>
+                                        <input type="text" asp-for="OtrosCargos" required class="k-textbox " style="min-width: 100%" value="Si" />
+                                        <span asp-validation-for="OtrosCargos" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    <div class="form-group">
+                                        <label asp-for="PorcentajeDeudas" class="control-label" style="width:100%">Porcentaje morosidad</label>
+                                        <input type="text" asp-for="PorcentajeDeudas" required class="k-textbox " style="min-width: 100%" />
+                                        <span asp-validation-for="PorcentajeDeudas" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-3" style="display:none">
+                                <label asp-for="SujetasAPago" class="control-label" style="width:100%"></label>
+                                <kendo-numerictextbox for="SujetasAPago"
+                                                      format="n"
+                                                      enable="false"
+                                                      min="0"
+                                                      max="99999999"
+                                                      step="1"
+                                                      style="width: 100%;"
+                                                      value="Model.SujetasAPago" />
 
                             </div>
 
+                        </div>
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="form-group">
+                                        <label class="control-label">Comentarios Certificado</label>
+                                        <textarea class="k-textarea" asp-for="Comentario" rows="2" style="min-width:100%"></textarea>
+                                    </div>                                    
+                                </div>
+                            </div>
                         </form>
                     </div>
 
@@ -455,6 +513,19 @@
                                     <div class="col-md-2">
                                         <dl class="dl-horizontal">
                                             <dt>
+                                                <label asp-for="TotalDerechos" class="control-label">Total Derechos</label>
+                                            </dt>
+                                            <dd>
+                                                <kendo-numerictextbox for="TotalDerechos"
+                                                                      format="n2"
+                                                                      spinners="false"
+                                                                      style="min-width: 100%;text-align:right;padding-right: 3px;"
+                                                                      min="0" readonly class="control-label right bold"
+                                                                      max="999999999"
+                                                                      value="Model.TotalDerechos" />
+                                                <span asp-validation-for="TotalDerechos" class="text-danger"></span>
+                                            </dd>
+                                            <dt>
                                                 <label asp-for="Quantitysum" class="control-label">Total Cantidad</label>
                                             </dt>
                                             <dd>
@@ -462,7 +533,7 @@
                                                                       format="n2"
                                                                       spinners="false"
                                                                       style="min-width: 100%;text-align:right;padding-right: 3px;"
-                                                                      min="0" enable="false" class="control-label right bold"
+                                                                      min="0" readonly class="control-label right bold"
                                                                       max="999999999"
                                                                       value="Model.Quantitysum" />
                                                 <span asp-validation-for="Quantitysum" class="text-danger"></span>
@@ -477,7 +548,7 @@
                                                 <kendo-numerictextbox name="Total"
                                                                       format="n2" spinners="false"
                                                                       min="0"
-                                                                      enable="false"
+                                                                      readonly
                                                                       required class="control-label right bold"
                                                                       style="min-width: 100%;text-align:right;padding-right: 3px;"
                                                                       max="999999999"
@@ -529,7 +600,19 @@
 
       //  debugger;
         var validadetalle = true;
-        var displayedData = $("#gridCertificadoDepositoDetail").data().kendoGrid.dataSource.data();
+         var displayedData = $("#gridCertificadoDepositoDetail").data().kendoGrid.dataSource.data();
+         if (displayedData.length >5 ) {
+             $.toast({
+                 heading: 'Error',
+                 text: 'El certificado no puede tener mas de 5 Partidas',
+                 position: 'top-right',
+                 loaderBg: '#ff6849',
+                 icon: 'error',
+                 hideAfter: 3000,
+                 stack: 6
+             });
+             return;
+         }
         for (var i = 0; i < displayedData.length; i++) {
             displayedData[i].CertificadoLineId = 0;
             if (
@@ -548,19 +631,31 @@
 
             if ($("#ServicioId").val() == 2 && (displayedData[i].ValorImpuestos == '' || displayedData[i].ValorImpuestos == 0)) {
                 validadetalle = false;
-                notification.show({
-                    title: "Validación",
-                    message: "Ingresar los valores de impuestos!"
-                }, "error");
+                
+                $.toast({
+                    heading: 'Error',
+                    text: 'Ingresar los valores de impuestos!',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 3000,
+                    stack: 6
+                });
             }
          }
 
          if ($("#ServicioId").val() == 2 && ($("#SujetasAPago").val() == '' || $("#SujetasAPago").val() == 0)) {
              validadetalle = false;
-             notification.show({
-                 title: "Validación",
-                 message: "Ingresar los valores de impuestos!"
-             }, "error");
+             
+             $.toast({
+                 heading: 'Error',
+                 text: 'Ingresar los valores de impuestos!',
+                 position: 'top-right',
+                 loaderBg: '#ff6849',
+                 icon: 'error',
+                 hideAfter: 3000,
+                 stack: 6
+             });
          }
 
 
@@ -573,6 +668,7 @@
              var validator = $("#frmCertificadoDeposito").data("kendoValidator");
              var validator2 = $("#TotalesDocumento").data("kendoValidator");
              var status = $(".status");
+            //var aseguradora = 
              if (displayedData.length > 0) {
                  if (validator.validate() && validator2.validate()) {
                      var dataObject = {
@@ -586,22 +682,25 @@
                          'ServicioName': $("#ServicioId").data("kendoDropDownList").text(),
                          'IdEstado': $("#IdEstado").val(),
                          'Direccion': $("#Direccion").val(),
-                         'FechaCertificado': $("#FechaCertificado").getKendoDateTimePicker().value().toJSON(),
+                         'FechaCertificado': $("#FechaCertificado").getKendodatepicker().value().toJSON(),
                          'NombreEmpresa': $("#NombreEmpresa").val(),
                          'EmpresaSeguro': $("#InsuranceId").data("kendoDropDownList").text(),
                          'NoPoliza': $("#InsurancePolicyId").data("kendoDropDownList").text(),
-                         'FechaVencimiento': $("#FechaVencimiento").getKendoDateTimePicker().value().toJSON(),
+                         'FechaVencimientoCertificado': $("#FechaVencimientoCertificado").getKendodatepicker().value().toJSON(),
                          'Almacenaje': $("#Almacenaje").val(),
-                         'BankId': $("#BankId").val(),
-                         'BankName': $("#BankId").data("kendoDropDownList").text(),
+                         'Comentario': $("#Comentario").val(),
+                         'PorcentajeDeudas': $("#PorcentajeDeudas").val(),
+                         //'BankId': $("#BankId").val(),
+                         //'BankName': $("#BankId").data("kendoDropDownList").text(),
+                         'PolizaPropia': $("#PolizaPropia").val(),
                          'CurrencyId': $("#CurrencyId").val(),
                          'CurrencyName': $("#CurrencyId").data("kendoDropDownList").text(),
-                         'FechaFirma': $("#FechaFirma").getKendoDateTimePicker().value().toJSON(),
-                         'FechaInicioComputo': $("#FechaInicioComputo").getKendoDateTimePicker().value().toJSON(),
-                         'FechaPagoBanco': $("#FechaPagoBanco").getKendoDateTimePicker().value().toJSON(),
-                         'FechaVencimientoDeposito': $("#FechaVencimientoDeposito").getKendoDateTimePicker().value().toJSON(),
-                         'LugarFirma': $("#LugarFirma").val(),
-                         'MontoGarantia': $("#MontoGarantia").val(),
+                         //'FechaFirma': $("#FechaFirma").getKendodatepicker().value().toJSON(),
+                         //'FechaInicioComputo': $("#FechaInicioComputo").getKendodatepicker().value().toJSON(),
+                         //'FechaPagoBanco': $("#FechaPagoBanco").getKendodatepicker().value().toJSON(),
+                         'FechaVencimientoDeposito': $("#FechaVencimientoDeposito").getKendodatepicker().value().toJSON(),
+                         //'LugarFirma': $("#LugarFirma").val(),
+                         //'MontoGarantia': $("#MontoGarantia").val(),
                          'NoCD': $("#NoCD").val(),
                          'NoTraslado': $("#NoTraslado").val(),
                          'NombrePrestatario': $("#NombrePrestatario").val(),
@@ -617,24 +716,11 @@
                          'InsuranceId': $("InsuranceId").val(),
                          '_CertificadoLine': displayedData,
                          'RecibosAsociados': list
-                         //'FechaCreacion': $("#FechaCreacion").val(),
-                         //'FechaModificacion': $("#FechaModificacion").val(),
-                         //'UsuarioCreacion': $("#UsuarioCreacion").val(),
-                         //'UsuarioModificacion': $("#UsuarioModificacion").val(),
-                         //'WarehouseName': $("#WarehouseId").data("kendoDropDownList").text(),
                      };
-
-                     //console.log(JSON.stringify(dataObject));
-                     //var form = $("#frmCertificadoDeposito");
-                     //form.validate();
-                     //console.log(JSON.stringify(dataObject));
-                     //console.log(dataObject);
-
                      $.ajax({
                          url: '@Url.Action("SaveCertificadoDeposito", "CertificadoDeposito")',
                          method: 'POST',
                          datatype: "json",
-                         //  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
                          contentType: 'application/json',
                          async: false,
                          data: JSON.stringify(dataObject),
@@ -649,10 +735,6 @@
                                  hideAfter: 3000,
                                  stack: 6
                              });
-                             //notification.show({
-                             //    message: "Guardado correctamente!"
-                             //}, "upload-success");
-
                              RefreshCertificadoDeposito();
                              $('#myModalCertificadoDeposito').modal('hide');
 

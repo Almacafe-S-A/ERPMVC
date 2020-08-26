@@ -70,7 +70,7 @@ namespace ERPMVC.Controllers
 
                 }
 
-                if (_CertificadoDeposito == null)
+                if (_CertificadoDeposito.IdCD == 0)
                 {
                     _CertificadoDeposito = new CertificadoDepositoDTO
                     {
@@ -81,7 +81,9 @@ namespace ERPMVC.Controllers
                         //FechaFirma = DateTime.Now,
                         FechaInicioComputo = DateTime.Now,
                         FechaPagoBanco = DateTime.Now,                        
-                        BranchId = Convert.ToInt32(HttpContext.Session.GetString("BranchId"))
+                        BranchId = Convert.ToInt32(HttpContext.Session.GetString("BranchId")),
+                        PolizaPropia = true,
+                        Seguro = "S/Tarifa",
                     };
                 }
                 else
