@@ -199,8 +199,12 @@ namespace ERPMVC.Controllers
                     _Boleto_Ent = JsonConvert.DeserializeObject<Boleto_Ent>(valorrespuesta);
                 }
 
-                if (_Boleto_Ent.Boleto_Sal != null)
+                if (_Boleto_Ent != null )
                 {
+                    if (_Boleto_Ent.Boleto_Sal == null)
+                    {
+                        return await Task.Run(() => BadRequest("No se ha completado esta boleta!, cierre el proceso"));
+                    }
                     if (_Boleto_Ent.peso_e > _Boleto_Ent.Boleto_Sal.peso_n)
                     {
                         _ControlPallets.taracamion = Convert.ToDouble((_Boleto_Ent.peso_e - _Boleto_Ent.Boleto_Sal.peso_n) / Convert.ToDouble(100));
@@ -222,7 +226,7 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    return await Task.Run(() => BadRequest("No se ha completado esta boleta!, cierre el proceso"));
+                    return await Task.Run(() => BadRequest("No se encontro la boleta de peso, cierre el proceso"));
                 }
 
             }
