@@ -4,7 +4,7 @@
     ViewData["Title"] = "Activos Fijos";
     ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
-<script>
+    <script>
     function OnSave() {
         console.log("Salvando");
     }
@@ -62,6 +62,54 @@
         });
         RefrescarGrid();
 
+    }
+
+
+    function DardeBaja(e) {
+        debugger;
+        if (!confirm("Esta seguro que desea darle de baja al activo esto tendra un efecto contable")) {
+            return;
+        }
+		e.preventDefault();
+		var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+		var dataObject = {
+			FixedAssetId: dataItem.FixedAssetId,
+			//editar: 0
+		};
+
+		$.ajax({
+			url: '@Url.Action("Delete", "FixedAsset")',
+			method: 'POST',
+			datatype: "json",
+			contentType: 'application/json',
+			async: false,
+			data: JSON.stringify(dataObject),
+			success: function (result) {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: 'Se ha dado de baja el activo',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+			},
+			error: function (xhr, status, error) {
+				var errorMessage = xhr.status + ': ' + xhr.statusText
+                $.toast({
+                    heading: 'Error ',
+                    text: 'Este activo no se puede dar de baja, no se aplicaron cambios',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+			}
+        });
+        RefrescarGrid();
+
 	}
 
 	function RefrescarGrid() {
@@ -76,7 +124,7 @@
         window.location.href = '@Url.Action("SFFixedAssetsToDepreciate", "FixedAsset")';
     }
 
-</script>
+    </script>
 <h3 class="text-themecolor">Activos Fijos</h3>
 
 @* Telerik *@
@@ -94,7 +142,8 @@
                                         }
                                         if (permisos.HasClaim("Contabilidad.Activos.Activos Fijos.Eliminar", "true"))
                                         {
-                                            cmd.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                                            //cmd.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                                            cmd.Custom("DardeBaja").Text(" ").IconClass("fa fa-trash").Click("DardeBaja");
                                         }
                                     }).Title("Acciones").Width(110);
                                 }
@@ -180,7 +229,7 @@
                             .Read(r => r.Action("Get", "FixedAsset"))
                             .Create(c => c.Action("Insert", "FixedAsset").Type(HttpVerbs.Post))
                             .Update(u => u.Action("Update", "FixedAsset").Type(HttpVerbs.Post))
-                            .Destroy(d => d.Action("Delete", "FixedAsset", new { FixedAssetId = "{0}" }).Type(HttpVerbs.Delete))
+                            //.Destroy(d => d.Action("Delete", "FixedAsset", new { FixedAssetId = "{0}" }).Type(HttpVerbs.Delete))
                         )
                         .Events(e =>
                         {
