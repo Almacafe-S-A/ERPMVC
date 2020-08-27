@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
-using ERPMVC.Helpers;
+﻿using ERPMVC.Helpers;
 using ERPMVC.Models;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
@@ -13,6 +8,11 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
+using System.Threading.Tasks;
 
 namespace ERPMVC.Controllers
 {
@@ -208,6 +208,9 @@ namespace ERPMVC.Controllers
                             obj.WarehouseId = _CertificadoLine.WarehouseId;
                             obj.WarehouseName = _CertificadoLine.WarehouseName;
                             obj.Merma = _CertificadoLine.Merma;
+                            obj.PdaNo = _CertificadoLine.PdaNo;
+                            obj.TotalCantidad = _CertificadoLine.TotalCantidad;
+                            obj.DerechosFiscales = _CertificadoLine.DerechosFiscales;
                         }
 
                         HttpContext.Session.SetString("listadoproductoscertificadodeposito", JsonConvert.SerializeObject(_CertificadoLinelist).ToString());

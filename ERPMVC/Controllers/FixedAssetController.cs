@@ -216,8 +216,8 @@ namespace ERPMVC.Controllers
             return Ok(_FixedAsset);
         }
 
-        [HttpDelete("FixedAssetId")]
-        public async Task<ActionResult<FixedAsset>> Delete(FixedAsset _FixedAsset)
+
+        public async Task<ActionResult<FixedAsset>> Delete([FromBody] FixedAsset _FixedAsset)
         {
             try
             {
@@ -232,6 +232,10 @@ namespace ERPMVC.Controllers
                     await Task.Run(() => DeleteDepreciation(_FixedAsset.FixedAssetId));
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _FixedAsset = JsonConvert.DeserializeObject<FixedAsset>(valorrespuesta);
+                }
+                else
+                {
+                    return BadRequest("no se puede dar de baja el activo");
                 }
 
             }
