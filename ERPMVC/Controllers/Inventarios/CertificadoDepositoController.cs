@@ -399,10 +399,10 @@ namespace ERPMVC.Controllers
                         {
                             return await Task.Run(() => BadRequest("Ingrese un precio valido!"));
                         }
-                        else if (item.Price * item.Quantity != item.Amount)
+                        /*  else if (item.Price * item.Quantity != item.Amount)
                         {
                             return await Task.Run(() => BadRequest("El calculo de precio por cantidad no coincide!"));
-                        }
+                        }*/
                     }
 
 

@@ -27,6 +27,9 @@ namespace ERPMVC.Models
         [Display(Name = "Sucursal")]
         public string BranchName { get; set; }
 
+        public string Recibos { get; set; }
+
+
 
         [Display(Name = "Tipo Servicio")]
         public Int64 ServicioId { get; set; }
