@@ -50,6 +50,10 @@ namespace ERPMVC.Models
 
         public double DerechosFiscales { get; set; }
 
+        public int ReciboId { get; set; }
+        public double CantidadDisponible { get; set; }
+
 
     }
+
 }

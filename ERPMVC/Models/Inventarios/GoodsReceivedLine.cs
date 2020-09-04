@@ -14,6 +14,8 @@ namespace ERPMVC.Models
         public Int64 GoodsReceiveLinedId { get; set; }
         [Display(Name = "Recibo de mercaderia")]
         public Int64 GoodsReceivedId { get; set; }
+        [ForeignKey("GoodsReceivedId")]
+        public GoodsReceived GoodsReceived { get; set; }
         [Display(Name = "Unidad de Medida")]
         public Int64 UnitOfMeasureId { get; set; }
 

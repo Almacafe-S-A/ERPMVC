@@ -211,6 +211,8 @@ namespace ERPMVC.Controllers
                             obj.PdaNo = _CertificadoLine.PdaNo;
                             obj.TotalCantidad = _CertificadoLine.TotalCantidad;
                             obj.DerechosFiscales = _CertificadoLine.DerechosFiscales;
+                            obj.CantidadDisponible = _CertificadoLine.CantidadDisponible;
+                            obj.ReciboId = _CertificadoLine.ReciboId;
                         }
 
                         HttpContext.Session.SetString("listadoproductoscertificadodeposito", JsonConvert.SerializeObject(_CertificadoLinelist).ToString());
