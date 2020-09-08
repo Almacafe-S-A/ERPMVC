@@ -269,9 +269,9 @@ namespace ERPMVC.Controllers
         }
 
         [HttpPost("[controller]/[action]")]
-        public async Task<ActionResult<List<GoodsReceived>>> AgruparRecibos([FromBody]GoodsReceivedParams _params)
+        public async Task<ActionResult<List<GoodsReceivedLine>>> AgruparRecibos([FromBody]GoodsReceivedParams _params)
         {
-            GoodsReceived _GoodsReceived = new GoodsReceived();
+            List<GoodsReceivedLine> _GoodsReceived = new List<GoodsReceivedLine>();
             if(_params!=null)
             if (_params.RecibosSeleccionados != null)
             {
@@ -286,7 +286,7 @@ namespace ERPMVC.Controllers
                     if (result.IsSuccessStatusCode)
                     {
                         valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _GoodsReceived = JsonConvert.DeserializeObject<GoodsReceived>(valorrespuesta);
+                        _GoodsReceived = JsonConvert.DeserializeObject<List<GoodsReceivedLine>>(valorrespuesta);
                       
                     }
                 }

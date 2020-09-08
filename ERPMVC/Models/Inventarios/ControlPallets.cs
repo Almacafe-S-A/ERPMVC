@@ -20,6 +20,8 @@ namespace ERPMVC.Models
 
         [Display(Name = "Bodega")]
         public int WarehouseId { get; set; }
+
+        public string WarehouseName { get; set; }
         [Display(Name = "Fecha control")]
         public DateTime DocumentDate { get; set; }
 
