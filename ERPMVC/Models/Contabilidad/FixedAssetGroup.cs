@@ -32,6 +32,11 @@ namespace ERPMVC.Models
         [ForeignKey("DepreciationAccountingId")]
         public Accounting DepreciationFixedAssetAccounting { get; set; }
 
+
+        public Int64? ResidualValueFixedAssetAccountingId { get; set; }
+        [ForeignKey("ResidualValueFixedAssetAccountingId")]
+        public Accounting ResidualValueFixedAssetAccounting { get; set; }
+
         [Display(Name = "Estado")]
         public Int64 IdEstado { get; set; }
 
@@ -49,8 +54,6 @@ namespace ERPMVC.Models
 
         [Display(Name = "Usuario de modificación")]
         public string UsuarioModificacion { get; set; }
-    
-        public List<FixedAssetGroup> _FixedAssetGroup { get; set; } = new List<FixedAssetGroup>();
 
 
     }
