@@ -235,7 +235,8 @@ namespace ERPMVC.Controllers
                 }
                 else
                 {
-                    return BadRequest("no se puede dar de baja el activo");
+                    string error = await result.Content.ReadAsStringAsync();
+                    return BadRequest(error);
                 }
 
             }
