@@ -33,9 +33,9 @@ namespace ERPMVC.Models
         public Accounting DepreciationFixedAssetAccounting { get; set; }
 
 
-        public Int64? ResidualValueFixedAssetAccountingId { get; set; }
-        [ForeignKey("ResidualValueFixedAssetAccountingId")]
-        public Accounting ResidualValueFixedAssetAccounting { get; set; }
+        public Int64? AccumulatedDepreciationAccountingId { get; set; }
+        [ForeignKey("AccumulatedDepreciationAccountingId")]
+        public Accounting AccumulatedDepreciationAccounting { get; set; }
 
         [Display(Name = "Estado")]
         public Int64 IdEstado { get; set; }
