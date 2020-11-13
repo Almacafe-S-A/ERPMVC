@@ -20,19 +20,19 @@ namespace ERPMVC.Models
 
 
         public Int64? SubProductId { get; set; }
-        [ForeignKey("SubProductId")]
-        public SubProduct SubProduct { get; set; }
+
+        public string SubProductName { get; set; }
 
         public int? UnitofMeasureId { get; set; }
-        [ForeignKey("UnitofMeasureId")]
-        public UnitOfMeasure UnitOfMeasure { get; set; }
+
+        public string UnitofMeasureName { get; set; }
 
         public decimal? Qty { get; set; }
 
 
         public int WarehouseId { get; set; }
-        [ForeignKey("WarehouseId")]
-        public Warehouse Warehouse { get; set; }
+
+        public string WarehouseName { get; set; }
 
         public string Observacion { get; set; }
 

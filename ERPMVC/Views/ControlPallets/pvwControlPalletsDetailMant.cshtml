@@ -41,6 +41,36 @@
 
     }
 
+    $(function () {
+        debugger;
+        var pesado = $("#pesado").data("kendoSwitch").check();
+        if (!pesado) {
+            $("#productopesadodet2").hide();
+            $("#inputalto").hide();
+            $("#inputancho").hide();
+            $("#inputotros").hide();
+            $("#ddproducto").show();
+            $("#dduom").show();
+            $("#ddbranch").show();
+            $("#Alto").removeAttr("required");
+            $("#Ancho").removeAttr("required");
+            $("#cantidadYute").removeAttr("required");
+            $("#cantidadPolietileno").removeAttr("required");
+            $("#TotalLinea").removeAttr("required");
+            $("#Otros").removeAttr("required");
+
+
+        } else {
+            $("#ddproducto").hide();
+            $("#dduom").hide();
+            $("#ddbranch").hide();
+
+            $("#ddproducto").hide();
+            $("#dduom").hide();
+            $("#ddbranch").hide();
+        }
+       
+    });
 
     function CalcularTotalDocumento() {
       //  var freight = $("#Freight").val()===""?0:$("#Freight").val();
@@ -104,7 +134,7 @@
         var numeric = $("#" + nombrenumerico).data("kendoNumericTextBox");
         numeric.value(valor);
         numeric.trigger('change');
-        numeric = null;
+        //numeric = null;
     }
 
 
@@ -129,6 +159,11 @@
 
     }
 
+
+    function SetTotalLinea() {
+        var totallinea = $("#Totallinea").data("kendoNumericTextBox");
+       // totallinea.value($("#Cantidad").val());
+    }
 
 
     function cargarloader() {
@@ -183,7 +218,7 @@
         $("#myModalControlPalletsLine").find('[data-role="numerictextbox"]').each(function () {
             var $textbox = $(this);
             console.log($($textbox).id);
-            $textbox.data("kendoNumericTextBox").value(null);
+            //$textbox.data("kendoNumericTextBox").value(null);
         });
 
     });
@@ -223,11 +258,75 @@
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label asp-for="ControlPalletsLineId" class="control-label"></label>
-                                                    <input type="number" asp-for="ControlPalletsLineId" class="form-control" style="min-width:100%" disabled />
+                                                    <input type="number" asp-for="ControlPalletsLineId" class="k-textbox" style="min-width:100%" readonly />
 
                                                 </div>
                                             </div>
-                                            <div class="col-md-3">
+                                            <div class="col-md-3" id="ddproducto">
+                                                <div class="form-group">
+                                                    <label  class="control-label" style="width:100%">Producto</label>
+                                                    <kendo-dropdownlist name="SubProductIddet" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione el Producto del cliente"
+                                                                        onchange="GetProductTypeIdS()"
+                                                                        datatextfield="ProductName"
+                                                                        datavaluefield="SubproductId"
+                                                                        auto-bind="false"
+                                                                        required
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-filtering="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetSubProductoByTipoByCustomer", "SubProduct")" data="GetProductTypeIdS" />
+                                                            </transport>
+                                                        </datasource>
+
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+
+
+                                            <div class="col-md-3" id="dduom">
+                                                <div class="form-group">
+                                                    <label class="control-label">Unidad de Medida</label>
+                                                    <kendo-dropdownlist name="UnitofMeasureIddet"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione la unidad de medida"
+                                                                        required
+                                                                        auto-bind="true"
+                                                                        datatextfield="UnitOfMeasureName"
+                                                                        datavaluefield="UnitOfMeasureId"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="30000">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetUnitOfMeasureJson", "UnitOfMeasure")" data="GetUnitOfMeasureId" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3" id="ddbranch">
+                                                <div class="form-group">
+                                                    <label  class="control-label">Bodega</label>
+                                                    <kendo-dropdownlist name="WarehouseIddet"  filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione Bodega"
+                                                                        cascade-from="BranchId"
+                                                                        required
+                                                                        auto-bind="false"
+                                                                        datatextfield="WarehouseName"
+                                                                        datavaluefield="WarehouseId"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-filtering="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("Get", "Warehouse")" data="GetBranchId" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    
+                                                </div>
+                                            </div>
+
+
+                                            <div class="col-md-3" id="inputalto">
                                                 <div class="form-group">
 
                                                     <label asp-for="Alto" class=" control-label" style="width:100%"></label>
@@ -236,63 +335,86 @@
                                                                           min="0"
                                                                           decimals="0"
                                                                           step="1"
+                                                                          spinners="false"
                                                                           required
                                                                           onchange="CalcularTotal();"
                                                                           style="width:100%"
-                                                                          value="Model.Alto"/>
+                                                                          value="0" />
                                                     <span asp-validation-for="Alto" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                            <div class="col-md-3">
+                                            <div class="col-md-3" id="inputancho">
                                                 <div class="form-group">
                                                     <label asp-for="Ancho" class="control-label" style="width:100%"></label>
                                                     @*<input type="text" id="Ancho" asp-for="Ancho" class="form-control" style="width:100%" />*@
                                                     <kendo-numerictextbox name="Ancho"
                                                                           format="##"
                                                                           step="1"
+                                                                          spinners="false"
                                                                           required
                                                                           onchange="CalcularTotal();"
                                                                           style="width:100%"
-                                                                          value="Model.Ancho"/>
+                                                                          value="0" />
                                                     <span asp-validation-for="Ancho" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                            <div class="col-md-3">
+                                            <div class="col-md-3" id="inputotros">
                                                 <div class="form-group">
                                                     <label asp-for="Otros" class=" control-label" style="width:100%"></label>
                                                     <kendo-numerictextbox name="Otros"
                                                                           format="n2"
+                                                                          spinners="false"
                                                                           min="0"
                                                                           step="1"
                                                                           required
                                                                           onchange="CalcularTotal();"
                                                                           style="width:100%"
-                                                                          value="Model.Otros"/>
+                                                                          value="0" />
                                                     <span asp-validation-for="Otros" class="text-danger"></span>
                                                 </div>
                                             </div>
                                         </div>
-                                        
+                                        <div class="row" id="total">
+                                            <div class="col-md-3"></div>
+                                            <div class="col-md-9">
+                                                <div class="form-group">
+                                                    <label  class=" control-label" style="width:100%">Cantidad</label>
+                                                    <kendo-numerictextbox name="Cantidad"
+                                                                          format="n2"
+                                                                          id="Cantidad"
+                                                                          spinners="false"
+                                                                          min="0"
+                                                                          required
+                                                                          
 
-                                        <div class="row">
-                                            <div class="col-md-4">
+                                                                          decimals="2"    
+                                                                          style="min-width:100%"
+                                                                          value="0" />
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row" id="productopesadodet2">
+                                            <div class="col-md-3"></div>
+                                            <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label asp-for="cantidadYute" class="control-label" style="width:100%"></label>
 
-                                                    <input type="number" min="0" asp-for="cantidadYute" onkeyup="CalcularTotal();" class="form-control" style="min-width:100%" />
-                                                    @*<kendo-numerictextbox name="cantidadYute"
+                                                    @*<input type="number" min="0" asp-for="cantidadYute" onkeyup="CalcularTotal();" class="form-control" style="min-width:100%" />*@
+                                                    <kendo-numerictextbox name="cantidadYute"
                                                         format="n2"
                                                         min="0"
                                                         decimals="0"
                                                         step="1"
+                                                        spinners="false"
                                                         required
-                                                        onchange="CalcularTotal();"
+                                                        onkeyup="CalcularTotal()"
                                                         style="width:100%"
-                                                        for="cantidadYute"/>*@
+                                                        for="cantidadYute"/>
                                                     <span asp-validation-for="cantidadYute" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label asp-for="cantidadPoliEtileno" class="control-label" style="width:100%"></label>
                                                     <kendo-numerictextbox name="cantidadPoliEtileno"
@@ -300,16 +422,17 @@
                                                                           decimals="0"
                                                                           min="0"
                                                                           step="1"
+                                                                          spinners="false"
                                                                           required
                                                                           onchange="CalcularTotal();"
                                                                           style="width:100%"
-                                                                          value="Model.cantidadPoliEtileno"/>
+                                                                          value="0"/>
                                                     <span asp-validation-for="cantidadPoliEtileno" class="text-danger"></span>
                                                 </div>
                                             </div>
 
 
-                                            <div class="col-md-4">
+                                            <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label asp-for="Totallinea" class=" control-label" style="width:100%"></label>
                                                     <kendo-numerictextbox name="Totallinea"
@@ -331,7 +454,7 @@
                                     </div>
 
                                     <div class="row">
-                                        <button id="btnActualizarCotizacionLinea" type="submit" class="form-control">Actualizar</button>
+                                        <button id="btnActualizarCotizacionLinea" type="submit" class="form-control btn-miboton">Actualizar</button>
                                     </div>
 
                                 </form>
