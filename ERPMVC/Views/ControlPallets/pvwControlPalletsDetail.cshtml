@@ -9,11 +9,12 @@
 
     function GetControlPalletsId() {
         debugger;
-        if ($("#Totallinea").val() > 0 || @Model.ControlPalletsId >0) {
+        if ($("#Totallinea").val() > 0 || @Model.ControlPalletsId > 0 || $("#Cantidad").val() > 0 ) {
             var displayedData = $("#gridControlPalletsDetail").data().kendoGrid.dataSource.data();
             var id = -999999;
             // debugger;
-            if (Number($("#ControlPalletsLineId").val()) === 0) {
+            var controllineid = Number($("#ControlPalletsLineId").val());
+            if (controllineid <= 0) {
                 if (displayedData.length > 0) {
                     for (var i = 0; i < displayedData.length; i++) {
                         //console.log('Linea:' + displayedData[i].CertificadoLineId);
@@ -25,27 +26,38 @@
 
                     id = id + 1;
                 }
-                else if ($("#Ancho").val() > 0) {
+                else if ($("#Ancho").val() > 0 || $("#Cantidad").val()>0) {
                     id = 1;
                 }
             }
             else {
                 id = $("#ControlPalletsLineId").val();
             }
+            var pesado = $("#pesado").data("kendoSwitch").check();
+            var total = 0;
+            if (pesado) {
+                total = $("#Totallinea").val();
+            } else {
+                total = $("#Cantidad").val();
+            }
+
              return {
-                'ControlPalletsLineId':id,
+                 'ControlPalletsLineId': id,
                  'ControlPalletsId': @Model.ControlPalletsId,
-                 // 'ControlPalletsId': $("#ControlPalletsId").val(),
-                'Alto': $("#Alto").val(),
-                'Ancho': $("#Ancho").val(),
-                'Otros': $("#Otros").val(),
-                'Totallinea': $("#Totallinea").val(),
-                'cantidadPoliEtileno': $("#cantidadPoliEtileno").val(),
-                'cantidadYute': $("#cantidadYute").val(),
-                 //'FechaCreacion': $("#FechaCreacion").val(),
-                 //'FechaModificacion': $("#FechaModificacion").val(),
-                 //'UsuarioCreacion': $("#UsuarioCreacion").val(),
-                //'UsuarioModificacion': $("#UsuarioModificacion").val()
+                 'Alto': $("#Alto").val(),
+                 'Ancho': $("#Ancho").val(),
+                 'Otros': $("#Otros").val(),
+                 'SubProductId': $("#SubProductIddet").val(),
+                 'SubProductName': $("#SubProductIddet").data("kendoDropDownList").text(),
+                 'WarehouseId': $("#WarehouseIddet").val(),
+                 'WarehouseName': $("#WarehouseIddet").data("kendoDropDownList").text(),
+                 'UnitofMeasureId': $("#UnitofMeasureIddet").val(),
+                 'UnitofMeasureName': $("#UnitofMeasureIddet").data("kendoDropDownList").text(),
+                 'Qty': $("#Cantidad").val(),
+                 //'Observacion' : $("#Observacion").val(),
+                 'Totallinea': total,
+                 'cantidadPoliEtileno': $("#cantidadPoliEtileno").val(),
+                 'cantidadYute': $("#cantidadYute").val(),
 
             }
 
@@ -67,10 +79,9 @@
     function AddCotizacionDetalle() {
         var notification = $("#notification").data("kendoNotification");
         $('#myModalControlPalletsLine').find(':input').not('#ControlPalletsId :submit').val('0');
-       // debugger;
-      //  console.log($("#ProductId").val());
+        var pesado = $("#pesado").data("kendoSwitch").check();
 
-        if ($("#WeightBallotddl").val() == 0) {
+        if ($("#WeightBallotddl").val() == 0 && pesado) {
 
             $.toast({
                 heading: 'Error',
@@ -83,6 +94,7 @@
             });
 
             $("#btnSaveControlEstiba").prop("disabled", true);
+
 
         } else if ($("#BranchId").val() == 0) {
 
@@ -127,27 +139,10 @@
 
                 }
             });
-
-
-
-           // var cantidadPoliEtileno = $("#cantidadPoliEtileno").data("kendoNumericTextBox");
-           // cantidadPoliEtileno.value(0);
-           // cantidadPoliEtileno.trigger('change');
-
-           // var cantidadYute = $("#cantidadYute").data("kendoNumericTextBox");
-           // cantidadYute.value(0);
-           // cantidadYute.trigger('change');
-           //// llenarsubproduct();
-           // $("#frmControlPalletsLine :input").not('#ControlPalletsLineId').prop("disabled", false);
             $('#myModalControlPalletsLine').modal('show');
             $("#btnSaveControlEstiba").prop("disabled", false);
         } else {
             var notification = $("#notification").data("kendoNotification");
-            //notification.show({
-            //    title: "Validacion",
-            //    message: "Debe seleccionar un Servicio!"
-            //}, "error");
-
             $.toast({
                 heading: 'Validacion',
                 text: 'Debe seleccionar un Servicio!',
@@ -163,32 +158,6 @@
         }
 
     }
-
-    @*function llenarsubproduct() {
-           var combobox = $('#SubProductId').getKendoDropDownList();
-
-            var dataObject = { 'ProductId': $("#ProductId").val() };
-              $.ajax({
-                    url: '@Url.Action("GetSubProductByProductId", "ProductRelation")',
-                    method: 'GET',
-                    datatype: "json",
-                    contentType: 'application/json',
-                    async: false,
-                    data: dataObject,
-                    success: function (data) {
-                        combobox.setDataSource(data);
-                    },
-                    error: function (XMLHttpRequest, textStatus, errorThrown) {
-
-                      //  $("#btngenerarfactura").show();
-                        notification.show({
-                            title: "Validacion",
-                            message: textStatus + ": " + XMLHttpRequest.responseText
-                        }, "error");
-
-                    }
-                });
-    }*@
 
     function EditControlPalletDetalle(e) {
 
@@ -247,9 +216,6 @@
 
 
             $("#cantidadYute").val(dataItem.cantidadYute);
-            //var cantidadYute = $("#cantidadYute").data("kendoNumericTextBox");
-            //cantidadYute.value(dataItem.cantidadYute);
-            //cantidadYute.trigger('change');
 
 
             var Totallinea = $("#Totallinea").data("kendoNumericTextBox");
@@ -259,13 +225,6 @@
             $("#btnActualizarCotizacionLinea").prop("disabled", false);
         }
 
-
-
-
-      //  llenarsubproduct();
-        //var combobox = $('#SubProductId').getKendoDropDownList();
-        //combobox.value(subproducto);
-        //combobox.trigger('change');
         $('#myModalControlPalletsLine').modal('show');
 
     }
@@ -285,11 +244,6 @@
                 async: false,
                 data: JSON.stringify(dataItem),
                 success: function (data) {
-                    //$("#ControlPalletsLineMant").html('');
-                    //$("#ControlPalletsLineMant").html(data);
-                    //var txt = $(data);
-                    //var found = $("#SubProductId", txt);
-                    //subproducto = $(found).val();
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
 
@@ -333,19 +287,21 @@
                                                                       {
                                                                          
                                                                               columns.Command(command =>
-                                                                              {
-                                                                                 
-                                                                                      command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
-                                                                                  
-                                                                               
+                                                                              {                                                                                 
+                                                                                      command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");                                                                               
                                                                                       command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditControlPalletDetalle");
-                                                                                  
-                                                                                  // command.Custom("Imprimir").Click("ImprimirCotizacion");
-                                                                                  //  command.Edit(); command.Destroy();
                                                                               }).Title("Acciones").Width(100);
                                                                       }                                                                      
+                                                                      columns.Bound(p => p.ControlPalletsId).Title("Id Control").Width(150).Visible(false);
                                                                       columns.Bound(p => p.ControlPalletsLineId).Title("Id Linea").Width(120);
-                                                                      columns.Bound(p => p.ControlPalletsId).Title("Id Control").Width(150);
+                                                                      columns.Bound(p => p.SubProductName).Title("Producto").Width(120);
+                                                                      columns.Bound(p => p.UnitofMeasureName).Title("Unidad").Width(200);
+                                                                      columns.Bound(p => p.WarehouseName).Title("Unidad").Width(200);
+                                                                      columns.Bound(p => p.SubProductId).Visible(false);
+                                                                      columns.Bound(p => p.UnitofMeasureId).Visible(false);
+                                                                      columns.Bound(p => p.WarehouseId).Visible(false);
+                                                                      columns.Bound(p => p.Qty).Width(100).Title("Cant");
+
                                                                       columns.Bound(p => p.Alto).Title("Alto").Width(150);
                                                                       columns.Bound(p => p.Ancho).Title("Ancho").Width(150);
                                                                       columns.Bound(p => p.Otros).Title("Otros").Width(150);
@@ -358,33 +314,19 @@
                                                                       if (Model.editar == 1)
                                                                       {
                                                                           
-                                                                              tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                              tools.Custom().Text("Agregar Producto").IconClass("k-icon k-i-plus")
                                                                           .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacionDetalle();" });
                                                                           
                                                                       }
-                                                                          tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                                                          tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
 
                                                                   })
                                                                    .Editable(e => e.Mode(GridEditMode.PopUp))
                                                                     .Sortable()
                                                                     .AutoBind(true)
-                                                                    //.Pageable()
-
                                                                     .Filterable()
                                                                     .Scrollable()
-                                                                    // .ClientDetailTemplateId("template")
-                                                                    .Pdf(pdf => pdf.FileName("Control de ingreso detalle Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                                                      .Excel(excel => excel.FileName("Control de ingreso detalle Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                                                    //.Events(e=>e.Save("onsave"))
                                                                     .DataSource(dataSource =>
-
                                                                    dataSource
-                                                                   //.Ajax()
                                                                    .WebApi()
                                                                    .PageSize(100)
                                                                     .ServerOperation(true)

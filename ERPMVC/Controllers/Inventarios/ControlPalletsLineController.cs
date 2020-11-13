@@ -138,6 +138,13 @@ namespace ERPMVC.Controllers
                             obj.cantidadYute = _ControlPalletsLinep.cantidadYute;
                             obj.Otros = _ControlPalletsLinep.Otros;
                             obj.Totallinea = _ControlPalletsLinep.Totallinea;
+                            obj.WarehouseId = _ControlPalletsLinep.WarehouseId;
+                            obj.WarehouseName = _ControlPalletsLinep.WarehouseName;
+                            obj.SubProductId = _ControlPalletsLinep.SubProductId;
+                            obj.SubProductName = _ControlPalletsLinep.SubProductName;
+                            obj.UnitofMeasureId = _ControlPalletsLinep.UnitofMeasureId;
+                            obj.UnitofMeasureName = _ControlPalletsLinep.UnitofMeasureName;
+                            obj.Qty = _ControlPalletsLinep.Qty;
                             //obj. = _ControlPalletsLinep.TotalCantidad;
 
                         }

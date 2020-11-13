@@ -18,6 +18,24 @@ namespace ERPMVC.Models
         public int Ancho { get; set; }
         public int Otros { get; set; }
 
+
+        public Int64? SubProductId { get; set; }
+
+        public string SubProductName { get; set; }
+
+        public int? UnitofMeasureId { get; set; }
+
+        public string UnitofMeasureName { get; set; }
+
+        public decimal? Qty { get; set; }
+
+
+        public int WarehouseId { get; set; }
+
+        public string WarehouseName { get; set; }
+
+        public string Observacion { get; set; }
+
         [Display(Name = "Total de Línea")]
         public double Totallinea { get; set; }
 

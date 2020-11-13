@@ -361,14 +361,85 @@ namespace ERPMVC.Controllers
 
         }
 
+        private ControlPalletsDTO ToControlPallets(dynamic dto) {
+            ControlPalletsDTO controlPallets = new ControlPalletsDTO {
+                ControlPalletsId = dto.ControlPalletsId,
+                BranchId = dto.BranchId,
+                BranchName = dto.BranchName,
+                WeightBallot = dto.WeightBallot,
+                QQPesoBruto = dto.QQPesoBruto,
+                QQPesoFinal = dto.QQPesoFinal==null ? 0 : dto.QQPesoFinal,
+                QQPesoNeto = dto.QQPesoNeto,
+                CustomerId = dto.CustomerId,
+                CustomerName = dto.CustomerName,
+                ProductId = dto.ProductId,
+                ProductName = dto.ProductName,
+                SubProductName = dto.SubProductName,
+                //SubProductId = dto.SubProductId,
+                DescriptionProduct = dto.DescriptionProduct,
+                DocumentDate = dto.DocumentDate,
+                EsIngreso = dto.EsIngreso,
+                EsSalida = dto.EsSalida,
+                PalletId = dto.PalletId,
+                Placa = dto.Placa,
+                Marca = dto.Marca,
+                //SacosDevueltos = dto.SacosDevueltos,
+                SubTotal = dto.SubTotal==null ? 0 : dto.SubTotal,
+                TotalSacos = dto.TotalSacos,
+                Motorista = dto.Motorista,
+                Tara = dto.Tara,
+                TotalSacosPolietileno = dto.TotalSacosPolietileno,
+                TotalSacosYute = dto.TotalSacosYute,
+                //UnitOfMeasureId = dto.UnitOfMeasureId,
+                //UnitOfMeasureName = dto.UnitOfMeasureId,
+                //WarehouseId = dto.WarehouseId,
+                WarehouseName = dto.WarehouseName,
+               // _Boleto_Ent = dto._Boleto_Ent
+
+
+
+            };
+            controlPallets._ControlPalletsLine = new List<ControlPalletsLine>();
+            foreach (var item in dto._ControlPalletsLine)
+            {
+                controlPallets._ControlPalletsLine.Add(new ControlPalletsLine
+                {
+                    ControlPalletsId = item.ControlPalletsId,
+                    SubProductId = item.SubProductId,
+                    SubProductName = item.SubProductName,
+                    WarehouseName = item.WareHosenam,
+                    WarehouseId= item.WarehouseId,
+                    Alto = item.Alto,
+                    Ancho = item.Ancho,
+                    cantidadPoliEtileno = item.cantidadPoliEtileno,
+                    cantidadYute = item.cantidadYute,
+                    ControlPalletsLineId = item.ControlPalletsLineId,
+                    Observacion = item.Observacion,
+                    Otros = item.Otros,
+                    Qty = item.Qty,
+                    UnitofMeasureId = item.UnitofMeasureId,
+                    UnitofMeasureName = item.UnitofMeasureName,
+                    Totallinea = item.Totallinea,
+                    
+
+                    
+
+                }) ;
+            }
+            
+            //controlPallets._ControlPalletsLine = dto._ControlPalletsLine;
+            return controlPallets;
+        }
 
 
         [HttpPost("[action]")]
-        public async Task<ActionResult<ControlPallets>> SaveControlPallets([FromBody]ControlPalletsDTO _ControlPalletsDTO)
+        public async Task<ActionResult<ControlPallets>> SaveControlPallets([FromBody]dynamic dto)
         {
-
+            ControlPalletsDTO _ControlPalletsDTO = new ControlPalletsDTO();
             try
             {
+                
+                _ControlPalletsDTO = ToControlPallets(dto);
                 if (_ControlPalletsDTO != null)
                 {
                     ControlPallets _listControlPallets = new ControlPallets();
