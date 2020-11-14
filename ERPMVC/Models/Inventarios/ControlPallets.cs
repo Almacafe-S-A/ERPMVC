@@ -19,14 +19,14 @@ namespace ERPMVC.Models
         public string BranchName { get; set; }
 
         [Display(Name = "Bodega")]
-        public int WarehouseId { get; set; }
+        public int? WarehouseId { get; set; }
 
         public string WarehouseName { get; set; }
         [Display(Name = "Fecha control")]
         public DateTime DocumentDate { get; set; }
 
         [Display(Name = "Producto Cliente")]
-        public Int64 SubProductId { get; set; }
+        public Int64? SubProductId { get; set; }
 
         [Display(Name = "Producto Cliente")]
         public string SubProductName { get; set; }
@@ -94,7 +94,7 @@ namespace ERPMVC.Models
         public Int64 WeightBallot { get; set; }
 
         [Display(Name = "Unidad de medida")]
-        public Int64 UnitOfMeasureId { get; set; }
+        public Int64? UnitOfMeasureId { get; set; }
 
         [Display(Name = "Unidad de medida")]
         public string UnitOfMeasureName { get; set; }

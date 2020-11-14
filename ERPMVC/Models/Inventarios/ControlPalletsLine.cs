@@ -30,7 +30,7 @@ namespace ERPMVC.Models
         public decimal? Qty { get; set; }
 
 
-        public int WarehouseId { get; set; }
+        public int? WarehouseId { get; set; }
 
         public string WarehouseName { get; set; }
 

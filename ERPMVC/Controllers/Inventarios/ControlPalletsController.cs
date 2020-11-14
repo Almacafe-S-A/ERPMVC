@@ -362,7 +362,7 @@ namespace ERPMVC.Controllers
         }
 
         private ControlPalletsDTO ToControlPallets(dynamic dto) {
-            ControlPalletsDTO controlPallets = new ControlPalletsDTO {
+                ControlPalletsDTO controlPallets = new ControlPalletsDTO {
                 ControlPalletsId = dto.ControlPalletsId,
                 BranchId = dto.BranchId,
                 BranchName = dto.BranchName,
@@ -374,8 +374,8 @@ namespace ERPMVC.Controllers
                 CustomerName = dto.CustomerName,
                 ProductId = dto.ProductId,
                 ProductName = dto.ProductName,
-                SubProductName = dto.SubProductName,
-                //SubProductId = dto.SubProductId,
+                SubProductName = dto.SubProductId == null ? "": dto.SubProductName,
+                SubProductId = dto.SubProductId == null? 0 : dto.SubProductId,
                 DescriptionProduct = dto.DescriptionProduct,
                 DocumentDate = dto.DocumentDate,
                 EsIngreso = dto.EsIngreso,
@@ -390,14 +390,11 @@ namespace ERPMVC.Controllers
                 Tara = dto.Tara,
                 TotalSacosPolietileno = dto.TotalSacosPolietileno,
                 TotalSacosYute = dto.TotalSacosYute,
-                //UnitOfMeasureId = dto.UnitOfMeasureId,
-                //UnitOfMeasureName = dto.UnitOfMeasureId,
-                //WarehouseId = dto.WarehouseId,
+                UnitOfMeasureId = dto.UnitOfMeasureId == null,
+                UnitOfMeasureName = dto.UnitOfMeasureName,
+                WarehouseId = dto.WarehouseId,
                 WarehouseName = dto.WarehouseName,
-               // _Boleto_Ent = dto._Boleto_Ent
-
-
-
+                _Boleto_Ent = dto._Boleto_Ent
             };
             controlPallets._ControlPalletsLine = new List<ControlPalletsLine>();
             foreach (var item in dto._ControlPalletsLine)

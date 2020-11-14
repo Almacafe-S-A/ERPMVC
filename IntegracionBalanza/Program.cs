@@ -2,11 +2,11 @@
 using Hangfire;
 using IntegracionBalanza.Utils;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
+//using Microsoft.EntityFrameworkCore.Metadata.Internal;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
-using Microsoft.IdentityModel.Protocols;
+//using Microsoft.IdentityModel.Protocols;
 using MoreLinq;
 using Newtonsoft.Json;
 using NLog;
