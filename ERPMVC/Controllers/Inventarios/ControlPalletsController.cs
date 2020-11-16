@@ -390,7 +390,7 @@ namespace ERPMVC.Controllers
                 Tara = dto.Tara,
                 TotalSacosPolietileno = dto.TotalSacosPolietileno,
                 TotalSacosYute = dto.TotalSacosYute,
-                UnitOfMeasureId = dto.UnitOfMeasureId == null,
+                UnitOfMeasureId = dto.UnitOfMeasureId == null? 0 : dto.UnitOfMeasureId,
                 UnitOfMeasureName = dto.UnitOfMeasureName,
                 WarehouseId = dto.WarehouseId,
                 WarehouseName = dto.WarehouseName,
@@ -404,7 +404,7 @@ namespace ERPMVC.Controllers
                     ControlPalletsId = item.ControlPalletsId,
                     SubProductId = item.SubProductId,
                     SubProductName = item.SubProductName,
-                    WarehouseName = item.WareHosenam,
+                    WarehouseName = item.WarehouseName,
                     WarehouseId= item.WarehouseId,
                     Alto = item.Alto,
                     Ancho = item.Ancho,
@@ -441,40 +441,18 @@ namespace ERPMVC.Controllers
                 {
                     ControlPallets _listControlPallets = new ControlPallets();
                     string baseadress = config.Value.urlbase;
-                    HttpClient _client = new HttpClient();
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPalletsById/" + _ControlPalletsDTO.ControlPalletsId);
-                    string valorrespuesta = "";
+                    HttpClient _client = new HttpClient();                
                     _ControlPalletsDTO.FechaModificacion = DateTime.Now;
                     _ControlPalletsDTO.UsuarioModificacion = HttpContext.Session.GetString("user");
-                    if (result.IsSuccessStatusCode)
+                    _ControlPalletsDTO.FechaCreacion = DateTime.Now;
+                    _ControlPalletsDTO.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_ControlPalletsDTO);
+
+                    var statuscode = (insertresult.Result as ObjectResult).StatusCode;
+                    //_ControlPalletsDTO = ((ControlPalletsDTO)(value));
+                    if (statuscode != 200)
                     {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _listControlPallets = JsonConvert.DeserializeObject<ControlPallets>(valorrespuesta);
-                    }
-
-                    if (_listControlPallets == null) { _listControlPallets = new ControlPallets(); }
-                    if (_listControlPallets.ControlPalletsId == 0)
-                    {
-                        _ControlPalletsDTO.FechaCreacion = DateTime.Now;
-                        _ControlPalletsDTO.UsuarioCreacion = HttpContext.Session.GetString("user");
-                        var insertresult = await Insert(_ControlPalletsDTO);
-
-                        var value = (insertresult.Result as ObjectResult).Value;
-                        _ControlPalletsDTO = ((ControlPalletsDTO)(value));
-                        if (_ControlPalletsDTO.ControlPalletsId > 0)
-                        {
-
-                        }
-                        else
-                        {
-                            return await Task.Run(() => BadRequest("No se genero correctamente el control!"));
-                        }
-
-                    }
-                    else
-                    {
-                        //var updateresult = await Update(_ControlPalletsDTO.ControlPalletsId, _ControlPalletsDTO);
+                        return await Task.Run(() => BadRequest("No se genero correctamente el control!"));
                     }
                 }
                 else
@@ -509,8 +487,12 @@ namespace ERPMVC.Controllers
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
-                    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ControlPallets = JsonConvert.DeserializeObject<ControlPalletsDTO>(valorrespuesta);
+                    //valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    //_ControlPallets = JsonConvert.DeserializeObject<ControlPalletsDTO>(valorrespuesta);
+                }
+                else
+                {
+                    return BadRequest();
                 }
 
             }
