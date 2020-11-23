@@ -1,0 +1,282 @@
+﻿@using Kendo.Mvc.UI
+
+@{
+    ViewData["Title"] = "Liquidaciones Precios";
+    
+}
+
+
+    <script>
+
+    function onsave(e) {
+     //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+       // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+
+        function AddTransfer() {
+            var dataObject = {
+                Id: 0
+            };
+            debugger;
+        $.ajax({
+                url: '@Url.Action("pvwLiquidacion", "Liquidacion")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumBank").html('');
+                    $("#NumBank").html(result);
+                    $('#Modal').modal('show');
+                },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                debugger;
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+                console.log(errorThrown)
+                console.log(XMLHttpRequest.responseText)
+                }
+            });
+
+    }
+
+
+         function EditTransfer(e) {
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                Id: dataItem.Id,
+                editar : 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("pvwLiquidacion", "Liquidacion")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumBank").html('');
+                    $("#NumBank").html(result);
+                    $('#Modal').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+         }
+
+
+
+    </script>
+
+<h3 class="text-themecolor">Liquidaciones</h3>
+@(Html.Kendo().Grid<ERPMVC.Models.Liquidacion>
+                        ()
+                        .Name("gridLiquidaciones")
+                        .Columns(columns =>
+                        {
+
+                            columns.Command(command =>
+                            {
+                                if (User.HasClaim("Inventarios.Liquidaciones.Editar", "true"))
+                                {
+                                    command.Custom("Editar").Click("EditTransfer").Text(" ").IconClass("fa fa-pencil");
+                                }
+                                if (User.HasClaim("Inventarios.Liquidaciones.Aprobar", "true"))
+                                {
+                                    command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
+                                    command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("Rechazar");
+                                }
+
+                            }).Width(150).Title("Acciones");
+
+                            columns.Bound(p => p.Id).Width(100);
+                            columns.Bound(p => p.FechaCreacion).Width(150).Title("Fecha Registro").Format("{0:dd/MM/yyyy}");
+                            columns.Bound(p => p.CustomerName).Width(150).Title("Cliente").Format("{0:dd/MM/yyyy}");
+                            columns.Bound(p => p.ProductName).Width(150).Title("Servicio");
+                            columns.Bound(p => p.Estados.NombreEstado).Width(250).Title("Estado");
+                            columns.Bound(p => p.EstadoId).Visible(false);
+
+                        })
+                            .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                   .Clear()
+                                                   .Contains("Contiene")
+                                                   .DoesNotContain("No contiene")
+                                                   .EndsWith("Termina con")
+                                                   .IsEqualTo("Es igual a")
+                                                   .IsNotEqualTo("No es igual a")
+                                                   .IsNull("Es nulo")
+                                                   .StartsWith("Inicia con")
+
+
+                                             )
+                                             .ForNumber(n => n
+                                               .Clear()
+                                               .IsEqualTo("Es igual a")
+                                               .IsGreaterThan("Es mayor que")
+                                               .IsLessThan("Es menor que")
+                                               .IsNull("Es nulo")
+                                               .IsLessThanOrEqualTo("Es menor o igual que")
+                                               .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                             )
+                                             .ForDate(d => d
+                                             .Clear()
+                                             .IsEqualTo("Es igual que")
+                                             .IsGreaterThan("Es mayor que")
+                                             .IsLessThan("Es menor que")
+                                             .IsLessThanOrEqualTo("Es menor o igual que")
+                                             .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                             .IsNotEqualTo("No es igual que")
+                                              )
+                                           ))
+                        .ToolBar(tools =>
+                        {
+                            // tools.Create();
+                            if (User.HasClaim("Inventarios.Liquidaciones.Agregar","true"))
+                            {
+                                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                           .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddTransfer()" });
+                            }
+
+                            tools.Excel().HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a Excel");
+                            tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a PDF");
+
+                        })
+                        .Editable(e => e.Mode(GridEditMode.PopUp))
+                        .Sortable()
+                        .Pageable()
+                        .Filterable()
+                        .Scrollable()
+                        .Pdf(pdf => pdf.FileName("BankReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                            .Excel(excel => excel.FileName("BankReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                        .Events(e => e.DataBound("dataBound"))
+                        .DataSource(dataSource =>
+                            dataSource
+                            .WebApi()
+
+                            .ServerOperation(true)
+                            .Model(model =>
+                            {
+                                model.Id(p => p.Id);
+                                model.Field(p => p.FechaCreacion).Editable(false);
+                                model.Field(p => p.FechaCreacion).Editable(true);
+                                model.Field(p => p.UsuarioCreacion).Editable(false);
+                                model.Field(p => p.UsuarioModificacion).Editable(false);
+
+                            })
+                            .Events(events => events.Error("error_handler"))
+                            .Read(read => read.Action("GetLiquidacion", "Liquidacion"))
+                            .Create(create => create.Action("Insert", "Liquidacion"))
+                            .Update(update => update.Action("Update", "Liquidacion").Type(HttpVerbs.Put))
+                            .Destroy(destroy => destroy.Action("Delete", "Liquidacion").Type(HttpVerbs.Post))
+
+                        )
+                        .Events(e =>
+                        {
+                            e.Save("onsave");
+
+                        })
+)
+
+<div id="NumBank">
+    @await Html.PartialAsync("pvwLiquidacion", new ERPMVC.Models.Liquidacion { Id = 0 })
+</div>
+
+<script>
+
+    function dataBound(e) {
+        $.each(this.dataSource.data(), function () {
+            if (Number(this.EstadoId) != 5) {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Rechazar').hide();
+            }
+
+        })
+    }
+    function Aprobar(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        AprobarCheque(dataItem.Id, true);
+        RefrescarGrid();
+    }
+    function Rechazar(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        AprobarCheque(dataItem.Id, false);
+        RefrescarGrid();
+    }
+
+    function AprobarCheque(id , aprobacion) {
+        debugger;
+        var aprobado = 'Rechazado';
+        var estado = 7;
+        if (aprobacion) {
+            estado = 6;
+            aprobado = 'Aprobado'
+        }
+            var dataObject = {
+                Id: id,
+                EstadoId : estado,
+            };
+
+            $.ajax({
+                url: '@Url.Action("Aprobar", "BankAccountTransfers")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject, aprobacion),
+                success: function (result) {
+                    debugger;
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: aprobado+ '  Correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    //alert(textStatus + ": " + XMLHttpRequest.responseText);
+                     $.toast({
+                                heading: 'Error',
+                                text: XMLHttpRequest.responseText,
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'error',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+                }
+            });
+        RefrescarGrid();
+    }
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridLiquidaciones").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridLiquidaciones").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar");
+    setRowButtonTooltip(".k-grid-Aprobar", "Aprobar");
+    setRowButtonTooltip(".k-grid-Rechazar", "Rechazar");
+</script>

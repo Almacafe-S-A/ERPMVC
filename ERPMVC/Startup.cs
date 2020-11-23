@@ -83,7 +83,7 @@ namespace ERPMVC
 
             services
                .AddFluentEmail("erp@almacafehn.com")
-               .AddRazorRenderer()
+               //.AddRazorRenderer()
                .AddSmtpSender(client);
 
             services.AddScoped<IViewRenderService, ViewRenderService>();

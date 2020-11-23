@@ -1,0 +1,390 @@
+﻿@model ERPMVC.Models.Liquidacion
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+           {"required","Valor requerido" }
+        };
+}
+
+
+<div id="Modal" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Liquidacion de Precios</h4>
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmBankAccountTransfers" kendo-validator="true" kendo-messages="messages"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="Save"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="Id" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="Id" name="Id" class="k-textbox" readonly style="min-width:100%" />
+                                                    <span asp-validation-for="Id" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label>Fecha Registro</label>
+                                                    <kendo-datetimepicker for="FechaCreacion" value="@Model.FechaCreacion" readonly style="min-width:100%" />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="control-label" style="min-width:100%">Cliente</label>
+                                                    <kendo-dropdownlist style="min-width:100%" for="CustomerId"
+                                                                        datatextfield="CustomerName"
+                                                                        datavaluefield="CustomerId"                                                                        
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        value="@Model.CustomerId"
+                                                                        on-change="RefrescarRecibos"
+                                                                        option-label="Seleccione Cliente">
+                                                        <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("Get","Customer")" />
+                                                            </transport>
+                                                        </datasource>
+
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="control-label" style="min-width:100%">Servicio</label>
+                                                    <kendo-dropdownlist class="control-label" style="min-width:100%" value="@Model.ProductId"
+                                                                        for="ProductId"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        datatextfield="ProductName"
+                                                                        datavaluefield="ProductId"
+                                                                        on-change="RefrescarRecibos"
+                                                                        option-label="Seleccione Servicio">
+                                                        <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("Get","Product")" />
+                                                            </transport>
+                                                        </datasource>
+
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+                                            <script>
+                                                function GetCustomerService() {
+                                                    var customer = $("#CustomerId").val();
+                                                    var servicio = $("#ProductId").val();
+                                                    var dataobject = {
+                                                        'servicioid': servicio,
+                                                        'clienteid': customer,
+                                                    }
+                                                    console.log(dataobject);
+                                                    return dataobject
+                                                }
+                                                function GetRecibos() {
+                                                    var recibosselect = $("#Recibos").data("kendoMultiSelect");
+                                                    return {
+                                                        'recibos': recibosselect.value()
+                                                    }
+
+                                                }
+                                            </script>
+                                            
+                                            
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-9">
+                                                <div class="form-group">
+                                                    <label class="control-label" style="min-width:100%">Recibos de Mercaderias</label>
+                                                    <kendo-multiselect name="Recibos" style="min-width:100%" no-data-template="No se encontraron recibos" value="@Model.Recibos"
+                                                                       required data-required-msg="Seleccione un Recibo" on-change="RefrescarGridDetalle"
+                                                                       datatextfield="GoodsReceivedId" datavaluefield="GoodsReceivedId" option-label="Seleccione los recibos">
+                                                        <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GoodsReceivedCustomerService","GoodsReceived")" data="GetCustomerService" />
+                                                            </transport>
+                                                        </datasource>
+
+                                                    </kendo-multiselect>
+                                                    <span asp-validation-for="Recibos"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="control-label" style="min-width:100%">Tasa de Cambio   </label>
+                                                    <kendo-numerictextbox enable="false" style="min-width:100%" for="TasaCambio" min="0" spinners="false" format="n4"  max="1000" data-val-required="La Tasa de Cambio es Requerida" decimals="4" />
+                                                    <span asp-validation-for="TasaCambio"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="control-label" style="min-width:100%">Selectivo Consumo  </label>
+                                                    <kendo-numerictextbox enable="false" style="min-width:100%" for="SelectivoConsumo" min="0" spinners="false" format="n4"  max="1000" data-val-required="La Tasa de Cambio es Requerida" decimals="4" />
+                                                    <span asp-validation-for="SelectivoConsumo"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="control-label" style="min-width:100%">Seguro </label>
+                                                    <kendo-numerictextbox enable="false" style="min-width:100%" for="Seguro" min="0" spinners="false" format="n4"  max="1000" data-val-required="La Tasa de Cambio es Requerida" decimals="4" />
+                                                    <span asp-validation-for="Seguro"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-3">
+                                                <label class="control-label" style="min-width:100%">Impuesto sobre Ventas </label>
+                                                <kendo-numerictextbox for="ImpuestoSobreVentas" spinners="false" min="0" style="min-width:100%"  />
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <label class="control-label" style="min-width:100%">Otros </label>
+                                                <kendo-numerictextbox for="Otros" spinners="false" min="0" style="min-width:100%" />
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="control-label" style="min-width:100%">Flete</label>
+                                                <kendo-numerictextbox for="Flete" spinners="false" min="0" style="min-width:100%" />
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="control-label" style="min-width:100%">Total</label>
+                                                <kendo-numerictextbox for="Total" spinners="false" min="0" style="min-width:100%" />
+                                            </div>
+                                            <div class="col-md-3">
+                                                <label class="control-label">Estado</label>
+                                                <kendo-dropdownlist for="EstadoId" datatextfield="NombreEstado"
+                                                                    datavaluefield="IdEstado" style="min-width:100%" enable="false"
+                                                                    option-label="Seleccione Estado">
+                                                    <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                        <transport>
+                                                            <read url="@Url.Action("GetporGrupoEstado","Estados",new { GrupoId = 3})" />
+                                                        </transport>
+                                                    </datasource>
+
+                                                </kendo-dropdownlist>
+                                            </div>
+                                        </div>
+                                        <div class="row"></div>
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                @(Html.Kendo().Grid<ERPMVC.Models.LiquidacionLine>()
+                                                                  .Name("gridDetalle")
+                                                                  .Columns(columns =>
+                                                                  {
+
+
+                                                                              columns.Command(command =>
+                                                                              {
+                                                                                     // command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+                                                                                      //command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditControlPalletDetalle");
+                                                                              }).Title("Acciones").Width(100);
+
+                                                                      columns.Bound(p => p.Id).Title("Id").Width(150).Visible(false);
+                                                                      columns.Bound(p => p.GoodsReceivedLine.GoodsReceived.GoodsReceivedId).Title("Recibo No").Width(120);
+                                                                      columns.Bound(p => p.SubProductName).Title("Producto").Width(120);
+                                                                      columns.Bound(p => p.Cantidad).Title("Cantidad").Width(200);
+                                                                      columns.Bound(p => p.TotalFOB).Title("Totla FOB");
+                                                                      columns.Bound(p => p.TotalCIB).Title("Total CIB").Width(200);
+                                                                      columns.Bound(p => p.TotalCIFLPS).Title("Total CIF LPS").Width(200);
+                                                                      columns.Bound(p => p.ValorDerechosImportacion).Title("Derechos Importacion").Width(200);
+                                                                      columns.Bound(p => p.TotalCIFDerechosImp).Width(100).Title("Total CIF mas Derechos").Width(200);
+
+                                                                      columns.Bound(p => p.ValorSelectivoConsumo).Title("Alto").Width(150);
+                                                                      columns.Bound(p => p.OtrosImpuestos).Title("Ancho").Width(150);
+                                                                      columns.Bound(p => p.TotalImpuestoVentas).Title("Otros").Width(150);
+                                                                      columns.Bound(p => p.TotalCIFDerechosImp).Title("Total Linea").Width(150);
+                                                                      columns.Bound(p => p.TotalFinal).Width(240);
+                                                                  })
+                                                                   .Editable(e => e.Mode(GridEditMode.PopUp))
+                                                                    .Sortable()
+                                                                    .AutoBind(true)
+                                                                    .Filterable()
+                                                                    .Scrollable()
+                                                                    .DataSource(dataSource =>
+                                                                   dataSource
+                                                                   .WebApi()
+                                                                   .PageSize(100)
+                                                                    .ServerOperation(true)
+                                                                    .Model(model =>
+                                                                    {
+                                                                        model.Id(p => p.TotalCIB);
+                                                                        model.Field(p => p.TotalFOB).Editable(true);
+                                                                        //model.Field(p => p.ControlPalletsId).Editable(false);
+
+                                                                    })
+                                                                    .Events(events =>
+                                                                    {
+                                                                        events.Error("error_handler");
+                                                                        //events.upda("EditHandler");
+
+                                                                    })
+                                                                    .Read(read => read.Action("LiquidacionesPendientes", "Liquidacion").Data("GetRecibos"))
+                                                              //.Create(create => create.Action("Insert", "SalesOrderLine"))
+                                                              //.Update(update => update.Action("Update", "SalesOrderLine", new { ControlPalletsLineId = "{0}" }))
+                                                              //.Destroy(destroy => destroy.Action("Delete", "SalesOrderLine", new { ControlPalletsLineId = "{0}" }))
+                                                              )
+        )
+                                            </div>
+
+
+                                        </div>
+                                        @if (Model.EstadoId == 5 || Model.Id == 0 || Model.EstadoId == 7)
+                                        {
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <button id="btnGuardar" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                                </div>
+                                            </div>
+                                        }
+
+
+
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function RefrescarGrid() {
+        var grid = $("#gridLiquidaciones").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+    function RefrescarGridDetalle() {
+        var grid = $("#gridDetalle").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+    function RefrescarRecibos() {
+        var multiselect = $("#Recibos").data("kendoMultiSelect");
+        multiselect.dataSource.read();
+
+    }
+
+
+    function Save(e) {
+        if (!ValidarMonedas()) {
+            return;
+        }
+
+        var sourceAmount = $("#SourceAmount").val();
+        var destinationAmount = $("#DestinationAmount").val();
+        if (sourceAmount == 0 ) {
+            $.toast({
+                heading: 'Error',
+                text: "La Cantidad de Origen no puede ser cero",
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+            return;
+        }
+        if (destinationAmount == 0 ) {
+            $.toast({
+                heading: 'Error',
+                text: "La Cantidad de destino no puede ser cero",
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+            return;
+        }
+
+            var notification = $("#notification").data("kendoNotification");
+           // e.preventDefault();
+            $("#btnGuardar").hide();
+            $("#btnGuardar").prop("disabled", true);
+
+            var displayedData = $("#gridLiquidaciones").data().kendoGrid.dataSource.view();
+
+            var dataObject = {
+                'Id': $("#Id").val() === "" ? "0" : $("#Id").val(),
+                'TransactionDate': $("#TransactionDate").getKendoDatePicker().value().toJSON(),
+                'SourceAccountManagementId': $("#SourceAccountManagementId").val(),
+                'DestinationAccountManagementId': $("#DestinationAccountManagementId").val(),
+                'SourceAmount': $("#SourceAmount").val(),
+                'DestinationAmount': $("#DestinationAmount").val(),
+                'Rate': $("#Rate").val(),
+                'Notes': $("#Notes").val(),
+                'EstadoId': $("#EstadoId").val(),
+                'JournalEntryId': $("#JournalEntryId").val()
+            };
+
+            console.log(JSON.stringify(dataObject));
+            //var form = $("#frmNumeracion");
+           // form.validate();
+
+            var validator = $("#frmBankAccountTransfers").data("kendoValidator");
+                 var status = $(".status");
+
+
+                if (validator.validate()) {
+
+                    $.ajax({
+                        url: '@Url.Action("SaveBankAccountTransfers", "BankAccountTransfers")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: 'Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+                           RefrescarGrid();
+                            $('#Modal').modal('hide');
+                        },
+                        error: function (result) {
+                            console.log(result);
+                            $.toast({
+                                heading: 'Error',
+                                text: result.responseText,
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'error',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+
+                        }
+                    });
+
+                }
+                else {
+                    status.text("Oops! There is invalid data in the form.")
+                        .removeClass("valid")
+                        .addClass("invalid");
+                }
+
+
+            $("#btnGuardar").show();
+            $("#btnGuardar").prop("disabled", false);
+    }
+</script>
