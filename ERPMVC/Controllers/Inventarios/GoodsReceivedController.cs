@@ -135,8 +135,14 @@ namespace ERPMVC.Controllers
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _GoodsReceived = JsonConvert.DeserializeObject<List<GoodsReceived>>(valorrespuesta);
                     _GoodsReceived = _GoodsReceived.OrderByDescending(q => q.GoodsReceivedId).ToList();
-                }
+                    _GoodsReceived = (from recibos in _GoodsReceived
+                                      select new GoodsReceived() {
+                                          GoodsReceivedId = recibos.GoodsReceivedId,
+                                          Comments = recibos.GoodsReceivedId + " - " + recibos.Comments,
+                                      }).ToList();
 
+                }
+                
 
             }
             catch (Exception ex)

@@ -19,7 +19,7 @@
                     <div class="col-lg-12">
                         <div class="card">
                             <div class="card-body">
-                                <form id="frmBankAccountTransfers" kendo-validator="true" kendo-messages="messages"
+                                <form id="frm" kendo-validator="true" kendo-messages="messages"
                                       data-ajax="true"
                                       data-ajax-method="post"
                                       data-ajax-begin="Save"
@@ -36,7 +36,7 @@
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label>Fecha Registro</label>
-                                                    <kendo-datetimepicker for="FechaCreacion" value="@Model.FechaCreacion" readonly style="min-width:100%" />
+                                                    <kendo-datetimepicker for="FechaLiquidacion" value="@Model.FechaLiquidacion" readonly style="min-width:100%" />
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
@@ -90,8 +90,12 @@
                                                 }
                                                 function GetRecibos() {
                                                     var recibosselect = $("#Recibos").data("kendoMultiSelect");
+                                                    var recibos = recibosselect == undefined ? [] : recibosselect.value();
+
+                                                    
                                                     return {
-                                                        'recibos': recibosselect.value()
+                                                        'recibos': recibos ,
+                                                        'Id': $('#Id').val()
                                                     }
 
                                                 }
@@ -103,16 +107,24 @@
                                             <div class="col-md-9">
                                                 <div class="form-group">
                                                     <label class="control-label" style="min-width:100%">Recibos de Mercaderias</label>
-                                                    <kendo-multiselect name="Recibos" style="min-width:100%" no-data-template="No se encontraron recibos" value="@Model.Recibos"
-                                                                       required data-required-msg="Seleccione un Recibo" on-change="RefrescarGridDetalle"
-                                                                       datatextfield="GoodsReceivedId" datavaluefield="GoodsReceivedId" option-label="Seleccione los recibos">
-                                                        <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
-                                                            <transport>
-                                                                <read url="@Url.Action("GoodsReceivedCustomerService","GoodsReceived")" data="GetCustomerService" />
-                                                            </transport>
-                                                        </datasource>
+                                                    @if (Model.Id == 0)
+	                                                {
+                                                        <kendo-multiselect name="Recibos" style="min-width:100%" no-data-template="No se encontraron recibos" value="@Model.Recibos"
+                                                                           required data-required-msg="Seleccione un Recibo" on-change="RefrescarGridDetalle"
+                                                                           datatextfield="Comments" datavaluefield="GoodsReceivedId" option-label="Seleccione los recibos">
+                                                            <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                                <transport>
+                                                                    <read url="@Url.Action("GoodsReceivedCustomerService","GoodsReceived")" data="GetCustomerService" />
+                                                                </transport>
+                                                            </datasource>
 
-                                                    </kendo-multiselect>
+                                                        </kendo-multiselect>
+                                                    }
+                                                    else
+                                                    {
+                                                        <input type="text"  style="min-width:100%" asp-for="Recibos" value="@Model.Recibos" readonly class="k-textbox" />
+                                                    }
+
                                                     <span asp-validation-for="Recibos"></span>
                                                 </div>
                                             </div>
@@ -122,21 +134,21 @@
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label class="control-label" style="min-width:100%">Tasa de Cambio   </label>
-                                                    <kendo-numerictextbox enable="false" style="min-width:100%" for="TasaCambio" min="0" spinners="false" format="n4"  max="1000" data-val-required="La Tasa de Cambio es Requerida" decimals="4" />
+                                                    <kendo-numerictextbox  style="min-width:100%" for="TasaCambio" min="0" spinners="false" format="n4"  max="1000" data-val-required="La Tasa de Cambio es Requerida" decimals="4" />
                                                     <span asp-validation-for="TasaCambio"></span>
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label class="control-label" style="min-width:100%">Selectivo Consumo  </label>
-                                                    <kendo-numerictextbox enable="false" style="min-width:100%" for="SelectivoConsumo" min="0" spinners="false" format="n4"  max="1000" data-val-required="La Tasa de Cambio es Requerida" decimals="4" />
+                                                    <kendo-numerictextbox  style="min-width:100%" for="SelectivoConsumo" min="0" spinners="false" format="n4"  max="1000" data-val-required="La Tasa de Cambio es Requerida" decimals="4" />
                                                     <span asp-validation-for="SelectivoConsumo"></span>
                                                 </div>
                                             </div>
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label class="control-label" style="min-width:100%">Seguro </label>
-                                                    <kendo-numerictextbox enable="false" style="min-width:100%" for="Seguro" min="0" spinners="false" format="n4"  max="1000" data-val-required="La Tasa de Cambio es Requerida" decimals="4" />
+                                                    <kendo-numerictextbox  style="min-width:100%" for="Seguro" min="0" spinners="false" format="n4"  max="1000" data-val-required="La Tasa de Cambio es Requerida" decimals="4" />
                                                     <span asp-validation-for="Seguro"></span>
                                                 </div>
                                             </div>
@@ -162,11 +174,11 @@
                                             <div class="col-md-3">
                                                 <label class="control-label">Estado</label>
                                                 <kendo-dropdownlist for="EstadoId" datatextfield="NombreEstado"
-                                                                    datavaluefield="IdEstado" style="min-width:100%" enable="false"
+                                                                    datavaluefield="IdEstado" style="min-width:100%"  enable="false"
                                                                     option-label="Seleccione Estado">
                                                     <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
                                                         <transport>
-                                                            <read url="@Url.Action("GetporGrupoEstado","Estados",new { GrupoId = 3})" />
+                                                            <read url="@Url.Action("GetporGrupoEstado","Estados",new { GrupoId = 33})" />
                                                         </transport>
                                                     </datasource>
 
@@ -182,29 +194,30 @@
                                                                   {
 
 
-                                                                              columns.Command(command =>
-                                                                              {
-                                                                                     // command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
-                                                                                      //command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditControlPalletDetalle");
-                                                                              }).Title("Acciones").Width(100);
+                                                                      /*columns.Command(command =>
+                                                                      {
+                                                                          //command.Edit().UpdateText(" ").CancelText(" ").Text(" ");
+                                                                          // command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+                                                                          //command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditControlPalletDetalle");
+                                                                      }).Title("Acciones").Width(120);*/
 
                                                                       columns.Bound(p => p.Id).Title("Id").Width(150).Visible(false);
-                                                                      columns.Bound(p => p.GoodsReceivedLine.GoodsReceived.GoodsReceivedId).Title("Recibo No").Width(120);
-                                                                      columns.Bound(p => p.SubProductName).Title("Producto").Width(120);
-                                                                      columns.Bound(p => p.Cantidad).Title("Cantidad").Width(200);
-                                                                      columns.Bound(p => p.TotalFOB).Title("Totla FOB");
-                                                                      columns.Bound(p => p.TotalCIB).Title("Total CIB").Width(200);
-                                                                      columns.Bound(p => p.TotalCIFLPS).Title("Total CIF LPS").Width(200);
-                                                                      columns.Bound(p => p.ValorDerechosImportacion).Title("Derechos Importacion").Width(200);
-                                                                      columns.Bound(p => p.TotalCIFDerechosImp).Width(100).Title("Total CIF mas Derechos").Width(200);
-
-                                                                      columns.Bound(p => p.ValorSelectivoConsumo).Title("Alto").Width(150);
-                                                                      columns.Bound(p => p.OtrosImpuestos).Title("Ancho").Width(150);
-                                                                      columns.Bound(p => p.TotalImpuestoVentas).Title("Otros").Width(150);
-                                                                      columns.Bound(p => p.TotalCIFDerechosImp).Title("Total Linea").Width(150);
-                                                                      columns.Bound(p => p.TotalFinal).Width(240);
+                                                                      columns.Bound(p => p.GoodsReceivedLine.GoodsReceivedId).Title("Recibo No").Width(120);
+                                                                      columns.Bound(p => p.SubProductName).Title("Producto").Width(200);
+                                                                      columns.Bound(p => p.Cantidad).Title("Cant").Width(120);
+                                                                      columns.Bound(p => p.TotalFOB).Title("Totla FOB").Width(120);
+                                                                      columns.Bound(p => p.TotalCIB).Title("Total CIB").Width(120);
+                                                                      columns.Bound(p => p.TotalCIFLPS).Title("Total CIF LPS").Width(120);
+                                                                      columns.Bound(p => p.ValorDerechosImportacion).Title("Derechos Impor.").Width(150);
+                                                                      columns.Bound(p => p.TotalCIFDerechosImp).Width(100).Title("CIF + Derechos").Width(150);
+                                                                      columns.Bound(p => p.ValorSelectivoConsumo).Title("Selectivo Cons.").Width(150);
+                                                                      columns.Bound(p => p.OtrosImpuestos).Title("Otros Imptos").Width(150);
+                                                                      columns.Bound(p => p.TotalImpuestoVentas).Title("Total ISV").Width(150);
+                                                                      columns.Bound(p => p.TotalCIFDerechosImp).Title("CIF Derech. Imp.").Width(150);
+                                                                      columns.Bound(p => p.TotalFinal).Width(150).Title("Total");
                                                                   })
-                                                                   .Editable(e => e.Mode(GridEditMode.PopUp))
+                                                                   .Editable(e => e.Mode(GridEditMode.InCell))
+
                                                                     .Sortable()
                                                                     .AutoBind(true)
                                                                     .Filterable()
@@ -216,15 +229,28 @@
                                                                     .ServerOperation(true)
                                                                     .Model(model =>
                                                                     {
-                                                                        model.Id(p => p.TotalCIB);
+                                                                        //model.Id(i => i.Id);
+                                                                        model.Field(p => p.GoodsReceivedLine.GoodsReceivedId).Editable(false);
+                                                                        model.Field(p => p.TotalCIB).Editable(true);
                                                                         model.Field(p => p.TotalFOB).Editable(true);
-                                                                        //model.Field(p => p.ControlPalletsId).Editable(false);
+                                                                        model.Field(p => p.Cantidad).Editable(false);
+                                                                        model.Field(p => p.SubProductName).Editable(false);
+                                                                        model.Field(p => p.TotalCIFDerechosImp).Editable(false);
+                                                                        model.Field(p => p.TotalCIFLPS).Editable(false);
+                                                                        model.Field(p => p.TotalDerechosmasImpuestos).Editable(false);
+                                                                        model.Field(p => p.TotalFinal).Editable(false);
+                                                                        model.Field(p => p.TotalImpuestoVentas).Editable(false);
+                                                                        model.Field(p => p.ValorDerechosImportacion).Editable(false);
+                                                                        model.Field(p => p.ValorSelectivoConsumo).Editable(false);
+                                                                        model.Field(p => p.OtrosImpuestos).Editable(false);
+
 
                                                                     })
                                                                     .Events(events =>
                                                                     {
                                                                         events.Error("error_handler");
                                                                         //events.upda("EditHandler");
+                                                                        events.Change("onCellChange");
 
                                                                     })
                                                                     .Read(read => read.Action("LiquidacionesPendientes", "Liquidacion").Data("GetRecibos"))
@@ -277,19 +303,50 @@
         multiselect.dataSource.read();
 
     }
+    var formulas = {
+        "In Stock": function (model) {
+            return model.StockValue - model.Percentage;
+        },
+        TotalFOB: function (model) {
+            return (10 ) * 5;
+        },
+        "Out Stock": function (model) {
+            return (model.StockValue - model.Percentage) * model.SalePrice;
+        },
+        Credit: function (model) {
+            return model.Percentage * model.SalePrice;
+        }
+    };
+    function onCellChange(e) {
+        debugger;
+        var tasacambio = $("#tasacambio").val();
+        var selectivoconsumo = $("#SelectivoConsumo").val();
 
+
+
+        if (e.action === "itemchange" && e.field === "TotalFOB") {
+            var model = e.items[0],
+                type = model.Type,
+                currentValue = formulas[e.field](model);
+            if (currentValue !== model.Amount) {
+                model.TotalImpuestoVentas = 98;
+                e.items[0].TotalCIFLPS = 34;
+                console.log(currentValue);
+                $("#gridDetalle").find("tr[data-uid='" + model.uid + "'] td:eq(7)").text(model.TotalFOB);
+
+            }
+        }
+        return;
+    }
 
     function Save(e) {
-        if (!ValidarMonedas()) {
-            return;
-        }
 
-        var sourceAmount = $("#SourceAmount").val();
-        var destinationAmount = $("#DestinationAmount").val();
-        if (sourceAmount == 0 ) {
+        var tasacambio = $("#tasacambio").val();
+        var selectivoconsumo = $("#selectivoconsumo").val();
+        if (selectivoconsumo == 0 ) {
             $.toast({
                 heading: 'Error',
-                text: "La Cantidad de Origen no puede ser cero",
+                text: "La Cantidad de selectiv oconsumo no puede ser cero",
                 position: 'top-right',
                 loaderBg: '#ff6849',
                 icon: 'error',
@@ -298,10 +355,10 @@
             });
             return;
         }
-        if (destinationAmount == 0 ) {
+        if (tasacambio == 0 ) {
             $.toast({
                 heading: 'Error',
-                text: "La Cantidad de destino no puede ser cero",
+                text: "La tasa de cambio de destino no puede ser cero",
                 position: 'top-right',
                 loaderBg: '#ff6849',
                 icon: 'error',
@@ -311,38 +368,48 @@
             return;
         }
 
-            var notification = $("#notification").data("kendoNotification");
-           // e.preventDefault();
+           
             $("#btnGuardar").hide();
             $("#btnGuardar").prop("disabled", true);
 
-            var displayedData = $("#gridLiquidaciones").data().kendoGrid.dataSource.view();
+        var displayedData = $("#gridDetalle").data().kendoGrid.dataSource.view();
+
+        var recibos = '';
+        var multiselect = $("#Recibos").data('kendoMultiSelect').value();
+        for (i = 0; i < multiselect.length; i++ )
+        {
+            recibos += multiselect[i]+',';
+        }
 
             var dataObject = {
                 'Id': $("#Id").val() === "" ? "0" : $("#Id").val(),
-                'TransactionDate': $("#TransactionDate").getKendoDatePicker().value().toJSON(),
-                'SourceAccountManagementId': $("#SourceAccountManagementId").val(),
-                'DestinationAccountManagementId': $("#DestinationAccountManagementId").val(),
-                'SourceAmount': $("#SourceAmount").val(),
-                'DestinationAmount': $("#DestinationAmount").val(),
-                'Rate': $("#Rate").val(),
-                'Notes': $("#Notes").val(),
-                'EstadoId': $("#EstadoId").val(),
-                'JournalEntryId': $("#JournalEntryId").val()
+                'FechaLiquidacion': $("#FechaLiquidacion").getKendoDateTimePicker().value().toJSON(),
+                'CustomerId': $("#CustomerId").val(),
+                'CustomerName': $("#CustomerId").data('kendoDropDownList').text(),
+                'ProductId': $("#ProductId").val(),
+                'ProductName': $("#ProductId").data('kendoDropDownList').text(),
+                'Recibos': recibos,
+                'TasaCambio': tasacambio,
+                'SelectivoConsumo': $("#SelectivoConsumo").val(),
+                'Seguro': $("#Seguro").val(),
+                'ImpuestoSobreVentas': $("#ImpuestoSobreVentas").val(),
+                'Otros': $("#Otros").val(),
+                'Flete': $('#Total').val(),
+                'EstadoId': $('#EstadoId').val(),
+                'detalleliquidacion': displayedData,
+
             };
 
             console.log(JSON.stringify(dataObject));
-            //var form = $("#frmNumeracion");
-           // form.validate();
 
-            var validator = $("#frmBankAccountTransfers").data("kendoValidator");
+            var validator = $("#frm").data("kendoValidator");
                  var status = $(".status");
 
 
                 if (validator.validate()) {
 
                     $.ajax({
-                        url: '@Url.Action("SaveBankAccountTransfers", "BankAccountTransfers")',
+                        url: '@Url.Action("SaveLiquidacion", "Liquidacion")',
                         method: 'POST',
                         datatype: "json",
                         contentType: 'application/json',

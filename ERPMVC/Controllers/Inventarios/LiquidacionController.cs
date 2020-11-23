@@ -55,7 +55,8 @@ namespace ERPMVC.Controllers
 
                 }
                 else {
-                    _Liquidacion.FechaCreacion = DateTime.Now;
+                    _Liquidacion.FechaLiquidacion = DateTime.Now;
+                    _Liquidacion.EstadoId = 103;
                 }
                 return PartialView(_Liquidacion);
             }
@@ -67,28 +68,36 @@ namespace ERPMVC.Controllers
 
             }
         }
-        public async Task<DataSourceResult> LiquidacionesPendientes([DataSourceRequest] DataSourceRequest request, [FromQuery(Name = "Recibos")] int[] recibos)
+        public async Task<DataSourceResult> LiquidacionesPendientes([DataSourceRequest] DataSourceRequest request, [FromQuery(Name = "Recibos")] int[] recibos, [FromQuery(Name = "Id")] int id)
         {
             List<LiquidacionLine> liquidacionLines = new List<LiquidacionLine>();
             try
             {
-                //int clienteid, servicioid;
-                //clienteid = dto.clienteid;
-                //servicioid = dto.servicioid;
-                string strrecibos = "?";
-                foreach (var item in recibos)
-                {
-                    strrecibos += $"Recibos={item}";
-                    if (item != recibos.ElementAt(recibos.Count()-1))
-                    {
-                        strrecibos += "&&";
-                    }
-                }
-
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + $"api/Liquidaciones/GetLiquidacionesPendientesporCliente{strrecibos}");
+                string requestURl ;
+                if (id== 0)
+                {
+                    string strrecibos = "?";
+                    foreach (var item in recibos)
+                    {
+                        strrecibos += $"Recibos={item}";
+                        if (item != recibos.ElementAt(recibos.Count() - 1))
+                        {
+                            strrecibos += "&&";
+                        }
+                    }
+                    requestURl = $"api/Liquidaciones/GetLiquidacionesPendientesporCliente{strrecibos}";
+                }
+                else
+                {
+                    requestURl = $"api/Liquidaciones/LiquidacionDetalle/{id}";
+                }
+                
+
+                
+                var result = await _client.GetAsync(baseadress + requestURl);
                 string valorrespuesta = "";
                 if (result.IsSuccessStatusCode)
                 {
