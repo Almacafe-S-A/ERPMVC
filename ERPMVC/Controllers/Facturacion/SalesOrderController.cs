@@ -14,6 +14,7 @@ using ERPMVC.Helpers;
 using ERPMVC.Models;
 using FluentEmail.Core;
 using FluentEmail.Smtp;
+using FluentEmail.Razor;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -502,7 +503,7 @@ namespace ERPMVC.Controllers
 
                                 string completepath = Directory.GetCurrentDirectory() + "/Views/Shared/Page1.cshtml";
                                 string url = this.Request.Scheme + "://" + this.Request.Host.Value + Url.Action("Index", "SalesOrder");
-                                //Email.DefaultRenderer = new RazorRenderer();
+                                Email.DefaultRenderer = new RazorRenderer();
                                 //var template = "Dear @Model.Name, You are totally @Model.Compliment. Ya que el nombre se encontro en los listados";
                                 var email = Email
                                     .From(_config.Value.emailsender)
