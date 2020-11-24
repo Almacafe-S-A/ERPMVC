@@ -117,7 +117,46 @@ namespace ERPMVC.Controllers
 
         }
 
-       // [HttpGet("[controller]/[action]/{id}")]
+
+        [HttpGet("[controller]/[action]")]
+        public async Task<DataSourceResult> GoodsReceivedCustomerService([DataSourceRequest] DataSourceRequest request, [FromQuery(Name = "clienteid")] int clienteid, [FromQuery(Name = "servicioid")] int servicioid)
+        {
+            List<GoodsReceived> _GoodsReceived = new List<GoodsReceived>();
+            try
+            {
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + $"api/GoodsReceived/GoodsReceivedCustomerService/{clienteid}/{servicioid}");
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _GoodsReceived = JsonConvert.DeserializeObject<List<GoodsReceived>>(valorrespuesta);
+                    _GoodsReceived = _GoodsReceived.OrderByDescending(q => q.GoodsReceivedId).ToList();
+                    _GoodsReceived = (from recibos in _GoodsReceived
+                                      select new GoodsReceived() {
+                                          GoodsReceivedId = recibos.GoodsReceivedId,
+                                          Comments = recibos.GoodsReceivedId + " - " + recibos.Comments,
+                                      }).ToList();
+
+                }
+                
+
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                throw ex;
+            }
+
+
+            return _GoodsReceived.ToDataSourceResult(request);
+
+        }
+
+        // [HttpGet("[controller]/[action]/{id}")]
         public ActionResult SFGoodsReceived(Int32 id)
         {
 
