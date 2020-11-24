@@ -77,6 +77,19 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet]
+        public async Task<ActionResult> SFReporteAsientos()
+        {
+            try
+            {
+                return await Task.Run(() => View());
+            }
+            catch (Exception)
+            {
+                return await Task.Run(() => BadRequest("Ocurrio un error"));
+            }
+        }
+
+        [HttpGet]
         public async Task<ActionResult> SFAjusteContable(Int64 id)
         {
             try

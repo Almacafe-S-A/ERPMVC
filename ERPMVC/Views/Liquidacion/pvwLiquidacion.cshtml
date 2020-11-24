@@ -202,19 +202,19 @@
                                                                       }).Title("Acciones").Width(120);*/
 
                                                                       columns.Bound(p => p.Id).Title("Id").Width(150).Visible(false);
-                                                                      columns.Bound(p => p.GoodsReceivedLine.GoodsReceivedId).Title("Recibo No").Width(120);
+                                                                      columns.Bound(p => p.GoodsReceivedLine.GoodsReceivedId).Title("Recibo No").Width(120).ClientFooterTemplate("Totales");
                                                                       columns.Bound(p => p.SubProductName).Title("Producto").Width(200);
-                                                                      columns.Bound(p => p.Cantidad).Title("Cant").Width(120);
-                                                                      columns.Bound(p => p.TotalFOB).Title("Totla FOB").Width(120);
-                                                                      columns.Bound(p => p.TotalCIB).Title("Total CIB").Width(120);
-                                                                      columns.Bound(p => p.TotalCIFLPS).Title("Total CIF LPS").Width(120);
-                                                                      columns.Bound(p => p.ValorDerechosImportacion).Title("Derechos Impor.").Width(150);
-                                                                      columns.Bound(p => p.TotalCIFDerechosImp).Width(100).Title("CIF + Derechos").Width(150);
-                                                                      columns.Bound(p => p.ValorSelectivoConsumo).Title("Selectivo Cons.").Width(150);
-                                                                      columns.Bound(p => p.OtrosImpuestos).Title("Otros Imptos").Width(150);
-                                                                      columns.Bound(p => p.TotalImpuestoVentas).Title("Total ISV").Width(150);
-                                                                      columns.Bound(p => p.TotalCIFDerechosImp).Title("CIF Derech. Imp.").Width(150);
-                                                                      columns.Bound(p => p.TotalFinal).Width(150).Title("Total");
+                                                                      columns.Bound(p => p.Cantidad).Title("Cant").Width(120).ClientFooterTemplate("#=totalColumnas(11,0)#");
+                                                                      columns.Bound(p => p.TotalFOB).Title("Totla FOB").Width(120).ClientFooterTemplate("#=totalColumnas(1,0)#");
+                                                                      columns.Bound(p => p.TotalCIB).Title("Total CIB").Width(120).ClientFooterTemplate("#=totalColumnas(2,1)#");
+                                                                      columns.Bound(p => p.TotalCIFLPS).Title("Total CIF LPS").Width(120).ClientFooterTemplate("#=totalColumnas(3,1)#");
+                                                                      columns.Bound(p => p.ValorDerechosImportacion).Title("Derechos Impor.").Width(150).ClientFooterTemplate("#=totalColumnas(4,1)#");
+                                                                      columns.Bound(p => p.TotalCIFDerechosImp).Width(100).Title("CIF + Derechos").Width(150).ClientFooterTemplate("#=totalColumnas(5,1)#");
+                                                                      columns.Bound(p => p.ValorSelectivoConsumo).Title("Selectivo Cons.").Width(150).ClientFooterTemplate("#=totalColumnas(6,1)#");
+                                                                      columns.Bound(p => p.OtrosImpuestos).Title("Otros Imptos").Width(150).ClientFooterTemplate("#=totalColumnas(7,1)#");
+                                                                      columns.Bound(p => p.TotalImpuestoVentas).Title("Total ISV").Width(150).ClientFooterTemplate("#=totalColumnas(8,1)#");
+                                                                      columns.Bound(p => p.TotalCIFDerechosImp).Title("CIF Derech. Imp.").Width(150).ClientFooterTemplate("#=totalColumnas(9,1)#");
+                                                                      columns.Bound(p => p.TotalFinal).Width(150).Title("Total").ClientFooterTemplate("#=totalColumnas(10,1)#");
                                                                   })
                                                                    .Editable(e => e.Mode(GridEditMode.InCell))
 
@@ -303,6 +303,60 @@
         multiselect.dataSource.read();
 
     }
+    function totalColumnas(tiporesultado, conmoneda) {
+        var data = $("#gridDetalle").getKendoGrid().dataSource.data();
+        var total = 0;
+
+        switch (tiporesultado) {
+            case 1: ///////Calcular el Total FOB                
+                data.forEach(r => total += r.TotalFOB);
+                break;
+            case 2: /// Calcular el total CIB
+                data.forEach(r => total += r.TotalCIB);
+                break;
+            case 3: ////Calcular el total CIF LPS
+                data.forEach(r => total += r.TotalCIFLPS);
+                break;
+            case 4://///Calcular el total de Valor de derechos importacion
+                data.forEach(r => total += r.ValorDerechosImportacion);
+                break;
+            case 5:
+                data.forEach(r => total += r.TotalCIFDerechosImp);
+                break;
+            case 6:
+                data.forEach(r => total += r.ValorSelectivoConsumo);
+                break;
+            case 7:
+                data.forEach(r => total += r.OtrosImpuestos);
+                break;
+            case 8:
+                data.forEach(r => total += r.TotalCIFDerechosImp);
+                break;
+            case 9:
+                data.forEach(r => total += r.TotalImpuestoVentas);
+                break;
+            case 10:
+                data.forEach(r => total += r.TotalFinal);
+                break;
+            case 11:
+                data.forEach(r => total += r.Cantidad);
+                break;
+
+
+            default:
+                break;
+        }
+        const formatter = new Intl.NumberFormat('es-HN', {
+            style: 'currency',
+            currency: 'LPS',
+            minimumFractionDigits: 2
+        });
+        if (conmoneda == 1) {
+            return formatter.format(total);
+        }
+            return total;
+
+    }
     var formulas = {
         "In Stock": function (model) {
             return model.StockValue - model.Percentage;
@@ -321,15 +375,18 @@
         debugger;
         var tasacambio = $("#tasacambio").val();
         var selectivoconsumo = $("#SelectivoConsumo").val();
-
-
-
         if (e.action === "itemchange" && e.field === "TotalFOB") {
             var model = e.items[0],
                 type = model.Type,
                 currentValue = formulas[e.field](model);
             if (currentValue !== model.Amount) {
                 model.TotalImpuestoVentas = 98;
+                model.TotalCIB =
+                model.ValorDerechosImportacion =
+                model.ValorSelectivoConsumo =
+                model.TotalCIFDerechosImp
+                model.TotalImpuestoVentas
+                model.TotalFinal=
                 e.items[0].TotalCIFLPS = 34;
                 console.log(currentValue);
                 $("#gridDetalle").find("tr[data-uid='" + model.uid + "'] td:eq(7)").text(model.TotalFOB);
@@ -358,7 +415,7 @@
         if (tasacambio == 0 ) {
             $.toast({
                 heading: 'Error',
-                text: "La tasa de cambio de destino no puede ser cero",
+                text: "La tasa de cambio no puede ser cero",
                 position: 'top-right',
                 loaderBg: '#ff6849',
                 icon: 'error',
