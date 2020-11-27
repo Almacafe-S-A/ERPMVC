@@ -32,22 +32,22 @@ namespace ERPMVC.Models
         public string ProductName { get; set; }
         public string Recibos { get; set; }
 
-        public double TasaCambio { get; set; }
+        public decimal TasaCambio { get; set; }
 
-        public double DerechosImportacion { get; set; }
+        public decimal DerechosImportacion { get; set; }
 
-        public double SelectivoConsumo { get; set; }
+        public decimal SelectivoConsumo { get; set; }
 
-        public double ImpuestoSobreVentas { get; set; }
+        public decimal ImpuestoSobreVentas { get; set; }
 
 
-        public double Flete { get; set; }
+        public decimal Flete { get; set; }
 
-        public double Seguro { get; set; }
+        public decimal Seguro { get; set; }
 
-        public double Otros { get; set; }
+        public decimal Otros { get; set; }
 
-        public double Total { get; set; }
+        public decimal Total { get; set; }
 
 
 
