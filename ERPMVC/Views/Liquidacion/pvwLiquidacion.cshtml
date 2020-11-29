@@ -190,7 +190,7 @@
                                             </div>
                                             <div class="col-md-3">
                                                 <label class="control-label" style="min-width:100%">Total</label>
-                                                <kendo-numerictextbox for="Total" spinners="false" min="0" style="min-width:100%" />
+                                                <kendo-numerictextbox for="Total" spinners="false" readonly min="0" style="min-width:100%" />
                                             </div>
 
                                         </div>
@@ -321,6 +321,23 @@
 
             };
 
+        var ISV = $("#ImpuestoSobreVentas").val();
+        var SelectivoConsumo = $("#SelectivoConsumo").va();
+        var DerechosImportacion = $("#DerechosImportacion").val();
+        var TasaCambio = $("#TasaCambio").val();
+        if (ISV == 0 || SelectivoConsumo == 0 || DerechosImportacion == 0 || TasaCambio == 0) {
+            $.toast({
+                heading: 'Error',
+                text: "Faltan Valores Requeridos",
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+            return;
+        }
+
             console.log(JSON.stringify(dataObject));
 
             var validator = $("#frm").data("kendoValidator");
@@ -338,7 +355,9 @@
                         data: JSON.stringify(dataObject),
                         success: function (data) {
                             var griddetalle = $("#gridDetalle").data().kendoGrid.dataSource;
-                            griddetalle.data(data);
+                            griddetalle.data(data.detalleliquidacion);
+                            var total = $("#Total").data("kendoNumericTextBox");
+                            total.value(data.Total);
                             console.log(data);
                             $.toast({
                                 heading: 'Satisfactorio',
@@ -511,36 +530,22 @@
 
     function Save(e) {
 
-        var tasacambio = $("#tasacambio").val();
-        var selectivoconsumo = $("#selectivoconsumo").val();
-        if (selectivoconsumo == 0 ) {
+        var total = $("#Total").val();
+        var grid = $("#gridDetalle").data().kendoGrid;
+        ///validar si el grid tiene datos no validados 
+        if (total== 0 ) {
             $.toast({
                 heading: 'Error',
-                text: "La Cantidad de selectiv oconsumo no puede ser cero",
+                text: "Debe validar los datos del formulario",
                 position: 'top-right',
                 loaderBg: '#ff6849',
                 icon: 'error',
                 hideAfter: 30000,
                 stack: 6
             });
-            return;
-        }
-        if (tasacambio == 0 ) {
-            $.toast({
-                heading: 'Error',
-                text: "La tasa de cambio no puede ser cero",
-                position: 'top-right',
-                loaderBg: '#ff6849',
-                icon: 'error',
-                hideAfter: 30000,
-                stack: 6
-            });
-            return;
         }
 
-
-            $("#btnGuardar").hide();
-            $("#btnGuardar").prop("disabled", true);
+        $("#btnGuardar").prop("disabled", true);
 
         var displayedData = $("#gridDetalle").data().kendoGrid.dataSource.view();
 

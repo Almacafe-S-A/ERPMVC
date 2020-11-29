@@ -82,20 +82,21 @@ namespace ERPMVC.Controllers.Inventarios
 
         }
 
-        public async Task<List<LiquidacionLine>> Update([FromBody] Liquidacion _Liquidacion)
+        public ActionResult<Liquidacion> Update([FromBody] Liquidacion _Liquidacion)
         {
             List<LiquidacionLine> liquidacionLines = _Liquidacion.detalleliquidacion;
-            decimal totalfob = liquidacionLines.Sum(s => s.TotalFOB);
+            decimal totalfob = _Liquidacion.detalleliquidacion.Sum(s => s.TotalFOB);
             decimal total = totalfob + _Liquidacion.Seguro + _Liquidacion.Otros + _Liquidacion.Flete;
-            liquidacionLines = (from liquidacions in liquidacionLines
-                                select new LiquidacionLine() {
+            /*liquidacionLines = (from liquidacions in liquidacionLines
+                                select new LiquidacionLine()
+                                {
                                     Id = liquidacions.Id,
                                     GoodsReceivedLine = liquidacions.GoodsReceivedLine,
                                     SubProductId = liquidacions.SubProductId,
                                     SubProductName = liquidacions.SubProductName,
                                     Cantidad = liquidacions.Cantidad,
                                     TotalFOB = liquidacions.TotalFOB,
-                                    TotalCIB =  total / (totalfob * liquidacions.TotalFOB) ,
+                                    TotalCIB = total / (totalfob * liquidacions.TotalFOB),
                                     TotalCIFLPS = total / (totalfob * liquidacions.TotalFOB) * _Liquidacion.TasaCambio,
                                     ValorDerechosImportacion = total / (totalfob * liquidacions.TotalFOB) * _Liquidacion.TasaCambio * _Liquidacion.DerechosImportacion,
                                     TotalCIFDerechosImp = (total / (totalfob * liquidacions.TotalFOB) * _Liquidacion.TasaCambio * _Liquidacion.DerechosImportacion) +
@@ -106,12 +107,39 @@ namespace ERPMVC.Controllers.Inventarios
                                     TotalImpuestoVentas = total / (totalfob * liquidacions.TotalFOB) * _Liquidacion.TasaCambio * _Liquidacion.DerechosImportacion,
                                     TotalDerechosmasImpuestos = (total / (totalfob * liquidacions.TotalFOB) * _Liquidacion.TasaCambio * _Liquidacion.DerechosImportacion) +
                                         total / (totalfob * liquidacions.TotalFOB) * _Liquidacion.TasaCambio + (((total / (totalfob * liquidacions.TotalFOB) * _Liquidacion.TasaCambio * _Liquidacion.DerechosImportacion) +
-                                        total / (totalfob * liquidacions.TotalFOB) * _Liquidacion.TasaCambio) * _Liquidacion.SelectivoConsumo),
-                                    //TotalFinal = 
+                                        total / (totalfob * liquidacions.TotalFOB) * _Liquidacion.TasaCambio) * _Liquidacion.SelectivoConsumo
+            */
+            try
+            {
+                foreach (var item in liquidacionLines)
+                {
+                    var totalCIF = total / item.TotalFOB * totalfob;
+                    item.TotalCIB = totalCIF;
+                    item.TotalCIFLPS = totalCIF * _Liquidacion.TasaCambio;
+                    var totalciflps = totalCIF * _Liquidacion.TasaCambio;
 
+                    item.ValorDerechosImportacion = item.TotalCIFLPS * _Liquidacion.DerechosImportacion;
+                    item.TotalCIFDerechosImp = item.ValorDerechosImportacion * item.TotalCIFLPS;
+                    item.ValorSelectivoConsumo = item.TotalCIFDerechosImp * _Liquidacion.SelectivoConsumo;
+                    item.OtrosImpuestos = 0;
+                    item.TotalImpuestoVentas = item.TotalCIB * _Liquidacion.ImpuestoSobreVentas;
+                    item.TotalDerechosmasImpuestos = item.TotalCIFDerechosImp + item.TotalImpuestoVentas;
+                    item.TotalFinal = item.TotalCIFLPS + item.ValorDerechosImportacion + item.TotalDerechosmasImpuestos;
+                }
+            }
+            catch (DivideByZeroException)
+            {
 
+                return BadRequest("No se permiten Total FOB con valor 0");
+            } catch (Exception ex) {
 
-            return liquidacionLines;
+                return BadRequest(ex.ToString());
+            }
+            
+            _Liquidacion.detalleliquidacion = liquidacionLines;
+            _Liquidacion.Total = total;
+
+            return _Liquidacion;
 
 
 
