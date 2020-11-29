@@ -26,6 +26,9 @@
           <QueryParameter Name="@Hasta">
             <Value>=Parameters!Hasta.Value</Value>
           </QueryParameter>
+          <QueryParameter Name="@Centrocosto">
+            <Value>=Parameters!Centrocosto.Value</Value>
+          </QueryParameter>
         </QueryParameters>
         <CommandText>select  je.JournalEntryId NoAsiento
 		,je.DatePosted FechaTransaccion
@@ -36,11 +39,13 @@
 		,jl.Debit Debito
 		,jl.Credit Credito
 		,jl.PartyName Beneficiario
+                                ,jl.CostcenterName
 from JournalEntryLine jl 
 inner join JournalEntry je
 on jl.JournalEntryId = je.JournalEntryId
 inner join Accounting a  on a.AccountId = jl.AccountId
-where je.EstadoId = @estado and je.DatePosted  Between @Desde and @Hasta
+where je.EstadoId = @estado and je.DatePosted  Between @Desde and dateadd(Day,1, @Hasta)
+and (jl.CostCenterId = @Centrocosto Or @Centrocosto = 0)
 order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandText>
         <rd:UseGenericDesigner>true</rd:UseGenericDesigner>
       </Query>
@@ -79,6 +84,10 @@ order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandTex
         </Field>
         <Field Name="Beneficiario">
           <DataField>Beneficiario</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+        <Field Name="CostcenterName">
+          <DataField>CostcenterName</DataField>
           <rd:TypeName>System.String</rd:TypeName>
         </Field>
       </Fields>
@@ -135,6 +144,22 @@ order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandTex
         </Field>
       </Fields>
     </DataSet>
+    <DataSet Name="CostCenter">
+      <Query>
+        <DataSourceName>ERP</DataSourceName>
+        <CommandText>select c.CostCenterId,c.CostCenterName  from CostCenter c union all SELECT 0, 'TODOS LOS CENTROS DE COSTO' ORDER BY C.CostCenterId</CommandText>
+      </Query>
+      <Fields>
+        <Field Name="CostCenterId">
+          <DataField>CostCenterId</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
+        <Field Name="CostCenterName">
+          <DataField>CostCenterName</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+    </DataSet>
   </DataSets>
   <ReportSections>
     <ReportSection>
@@ -150,13 +175,13 @@ order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandTex
                   <Width>0.73533in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.13541in</Width>
+                  <Width>1.27083in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>0.8in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.52311in</Width>
+                  <Width>1.82519in</Width>
                 </TablixColumn>
                 <TablixColumn>
                   <Width>1in</Width>
@@ -165,7 +190,10 @@ order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandTex
                   <Width>1in</Width>
                 </TablixColumn>
                 <TablixColumn>
-                  <Width>1.12292in</Width>
+                  <Width>2.26875in</Width>
+                </TablixColumn>
+                <TablixColumn>
+                  <Width>1.60417in</Width>
                 </TablixColumn>
               </TablixColumns>
               <TablixRows>
@@ -506,6 +534,46 @@ order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandTex
                         </Textbox>
                       </CellContents>
                     </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="Textbox1">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>Centro de Costos</Value>
+                                  <Style>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Bold</FontWeight>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style>
+                                <TextAlign>Center</TextAlign>
+                              </Style>
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>Textbox1</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BottomBorder>
+                              <Color>LightGrey</Color>
+                              <Style>Solid</Style>
+                              <Width>1pt</Width>
+                            </BottomBorder>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
                   </TablixCells>
                 </TablixRow>
                 <TablixRow>
@@ -795,12 +863,47 @@ order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandTex
                         </Textbox>
                       </CellContents>
                     </TablixCell>
+                    <TablixCell>
+                      <CellContents>
+                        <Textbox Name="CostcenterName">
+                          <CanGrow>true</CanGrow>
+                          <KeepTogether>true</KeepTogether>
+                          <Paragraphs>
+                            <Paragraph>
+                              <TextRuns>
+                                <TextRun>
+                                  <Value>=Fields!CostcenterName.Value</Value>
+                                  <Style>
+                                    <FontSize>9pt</FontSize>
+                                    <FontWeight>Normal</FontWeight>
+                                    <Color>#333333</Color>
+                                  </Style>
+                                </TextRun>
+                              </TextRuns>
+                              <Style />
+                            </Paragraph>
+                          </Paragraphs>
+                          <rd:DefaultName>CostcenterName</rd:DefaultName>
+                          <Style>
+                            <Border>
+                              <Style>None</Style>
+                            </Border>
+                            <BackgroundColor>White</BackgroundColor>
+                            <PaddingLeft>2pt</PaddingLeft>
+                            <PaddingRight>2pt</PaddingRight>
+                            <PaddingTop>2pt</PaddingTop>
+                            <PaddingBottom>2pt</PaddingBottom>
+                          </Style>
+                        </Textbox>
+                      </CellContents>
+                    </TablixCell>
                   </TablixCells>
                 </TablixRow>
               </TablixRows>
             </TablixBody>
             <TablixColumnHierarchy>
               <TablixMembers>
+                <TablixMember />
                 <TablixMember />
                 <TablixMember />
                 <TablixMember />
@@ -825,7 +928,7 @@ order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandTex
             <Top>0.42708in</Top>
             <Left>0.1103in</Left>
             <Height>0.46875in</Height>
-            <Width>7.82313in</Width>
+            <Width>11.01063in</Width>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -841,8 +944,7 @@ order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandTex
                   <TextRun>
                     <Value>Desde:</Value>
                     <Style>
-                      <FontFamily>Segoe UI</FontFamily>
-                      <FontSize>8pt</FontSize>
+                      <FontSize>9pt</FontSize>
                       <FontWeight>Bold</FontWeight>
                     </Style>
                   </TextRun>
@@ -862,48 +964,6 @@ order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandTex
               <PaddingLeft>2pt</PaddingLeft>
             </Style>
           </Textbox>
-          <Line Name="Line1">
-            <Top>2.37793in</Top>
-            <Left>5.12187in</Left>
-            <Height>0in</Height>
-            <Width>2.23958in</Width>
-            <ZIndex>2</ZIndex>
-            <Style>
-              <Border>
-                <Style>Solid</Style>
-              </Border>
-            </Style>
-          </Line>
-          <Textbox Name="TextBox49">
-            <CanGrow>true</CanGrow>
-            <KeepTogether>true</KeepTogether>
-            <Paragraphs>
-              <Paragraph>
-                <TextRuns>
-                  <TextRun>
-                    <Value>Firma Contador</Value>
-                    <Style>
-                      <FontFamily>Segoe UI</FontFamily>
-                      <FontSize>8pt</FontSize>
-                      <FontWeight>Bold</FontWeight>
-                    </Style>
-                  </TextRun>
-                </TextRuns>
-                <Style>
-                  <LineHeight>10pt</LineHeight>
-                </Style>
-              </Paragraph>
-            </Paragraphs>
-            <Top>2.41666in</Top>
-            <Left>5.77083in</Left>
-            <Height>0.25in</Height>
-            <Width>0.96875in</Width>
-            <ZIndex>3</ZIndex>
-            <Style>
-              <Border />
-              <PaddingLeft>2pt</PaddingLeft>
-            </Style>
-          </Textbox>
           <Textbox Name="TextBox20">
             <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
@@ -913,8 +973,7 @@ order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandTex
                   <TextRun>
                     <Value>Hasta:</Value>
                     <Style>
-                      <FontFamily>Segoe UI</FontFamily>
-                      <FontSize>8pt</FontSize>
+                      <FontSize>9pt</FontSize>
                       <FontWeight>Bold</FontWeight>
                     </Style>
                   </TextRun>
@@ -928,8 +987,7 @@ order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandTex
                   <TextRun>
                     <Value />
                     <Style>
-                      <FontFamily>Segoe UI</FontFamily>
-                      <FontSize>8pt</FontSize>
+                      <FontSize>9pt</FontSize>
                       <FontWeight>Bold</FontWeight>
                     </Style>
                   </TextRun>
@@ -943,7 +1001,7 @@ order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandTex
             <Left>2.60417in</Left>
             <Height>0.25in</Height>
             <Width>0.43958in</Width>
-            <ZIndex>4</ZIndex>
+            <ZIndex>2</ZIndex>
             <Style>
               <Border />
               <PaddingLeft>2pt</PaddingLeft>
@@ -967,10 +1025,10 @@ order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandTex
             </Paragraphs>
             <rd:DefaultName>Debito1</rd:DefaultName>
             <Top>0.96528in</Top>
-            <Left>4.80843in</Left>
+            <Left>5.24801in</Left>
             <Height>0.25in</Height>
             <Width>1in</Width>
-            <ZIndex>5</ZIndex>
+            <ZIndex>3</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1000,10 +1058,10 @@ order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandTex
             </Paragraphs>
             <rd:DefaultName>Credito1</rd:DefaultName>
             <Top>0.96528in</Top>
-            <Left>5.80843in</Left>
+            <Left>6.24801in</Left>
             <Height>0.25in</Height>
             <Width>1in</Width>
-            <ZIndex>6</ZIndex>
+            <ZIndex>4</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1024,6 +1082,7 @@ order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandTex
                   <TextRun>
                     <Value>=Parameters!Desde.Value</Value>
                     <Style>
+                      <FontSize>9pt</FontSize>
                       <Format>d</Format>
                     </Style>
                   </TextRun>
@@ -1036,7 +1095,7 @@ order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandTex
             <Left>0.61666in</Left>
             <Height>0.25in</Height>
             <Width>1in</Width>
-            <ZIndex>7</ZIndex>
+            <ZIndex>5</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
@@ -1056,6 +1115,7 @@ order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandTex
                   <TextRun>
                     <Value>=Parameters!Hasta.Value</Value>
                     <Style>
+                      <FontSize>9pt</FontSize>
                       <Format>d</Format>
                     </Style>
                   </TextRun>
@@ -1068,19 +1128,92 @@ order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandTex
             <Left>3.04375in</Left>
             <Height>0.25in</Height>
             <Width>1in</Width>
-            <ZIndex>8</ZIndex>
+            <ZIndex>6</ZIndex>
             <Style>
               <Border>
                 <Style>None</Style>
               </Border>
+              <VerticalAlign>Top</VerticalAlign>
               <PaddingLeft>2pt</PaddingLeft>
               <PaddingRight>2pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop>
               <PaddingBottom>2pt</PaddingBottom>
             </Style>
           </Textbox>
+          <Textbox Name="TextBox14">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>Total:</Value>
+                    <Style>
+                      <FontFamily>Segoe UI</FontFamily>
+                      <FontSize>8pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <LineHeight>10pt</LineHeight>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <Top>0.96528in</Top>
+            <Left>4.61672in</Left>
+            <Height>0.25in</Height>
+            <Width>0.47083in</Width>
+            <ZIndex>7</ZIndex>
+            <Style>
+              <Border />
+              <PaddingLeft>2pt</PaddingLeft>
+            </Style>
+          </Textbox>
+          <Line Name="Line1">
+            <Top>1.71878in</Top>
+            <Left>8.74593in</Left>
+            <Height>0in</Height>
+            <Width>2.23958in</Width>
+            <ZIndex>8</ZIndex>
+            <Style>
+              <Border>
+                <Style>Solid</Style>
+              </Border>
+            </Style>
+          </Line>
+          <Textbox Name="TextBox49">
+            <CanGrow>true</CanGrow>
+            <KeepTogether>true</KeepTogether>
+            <Paragraphs>
+              <Paragraph>
+                <TextRuns>
+                  <TextRun>
+                    <Value>Firma Contador</Value>
+                    <Style>
+                      <FontFamily>Segoe UI</FontFamily>
+                      <FontSize>8pt</FontSize>
+                      <FontWeight>Bold</FontWeight>
+                    </Style>
+                  </TextRun>
+                </TextRuns>
+                <Style>
+                  <LineHeight>10pt</LineHeight>
+                </Style>
+              </Paragraph>
+            </Paragraphs>
+            <Top>1.71878in</Top>
+            <Left>9.39489in</Left>
+            <Height>0.25in</Height>
+            <Width>0.96875in</Width>
+            <ZIndex>9</ZIndex>
+            <Style>
+              <Border />
+              <PaddingLeft>2pt</PaddingLeft>
+            </Style>
+          </Textbox>
         </ReportItems>
-        <Height>3.03128in</Height>
+        <Height>2.48961in</Height>
         <Style>
           <Border />
           <TopBorder>
@@ -1097,7 +1230,7 @@ order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandTex
           </RightBorder>
         </Style>
       </Body>
-      <Width>8.00635in</Width>
+      <Width>11.18343in</Width>
       <Page>
         <PageHeader>
           <Height>0.9512in</Height>
@@ -1126,7 +1259,7 @@ order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandTex
                 </Paragraph>
               </Paragraphs>
               <Top>0.32292in</Top>
-              <Left>2.60417in</Left>
+              <Left>4.14384in</Left>
               <Height>0.25in</Height>
               <Width>2.75in</Width>
               <Style>
@@ -1163,7 +1296,7 @@ order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandTex
               </Paragraphs>
               <rd:DefaultName>ExecutionTime</rd:DefaultName>
               <Top>0.20708in</Top>
-              <Left>6.71483in</Left>
+              <Left>9.76691in</Left>
               <Height>0.49084in</Height>
               <Width>1.2186in</Width>
               <ZIndex>2</ZIndex>
@@ -1183,12 +1316,12 @@ order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandTex
             <BackgroundColor>White</BackgroundColor>
           </Style>
         </PageHeader>
-        <PageHeight>11.69in</PageHeight>
-        <PageWidth>8.27in</PageWidth>
+        <PageHeight>8.27in</PageHeight>
+        <PageWidth>11.69in</PageWidth>
         <LeftMargin>0.25in</LeftMargin>
-        <RightMargin>0in</RightMargin>
+        <RightMargin>0.25in</RightMargin>
         <TopMargin>0.25in</TopMargin>
-        <BottomMargin>0.25in</BottomMargin>
+        <BottomMargin>0in</BottomMargin>
         <Style>
           <Border />
         </Style>
@@ -1198,6 +1331,11 @@ order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandTex
   <ReportParameters>
     <ReportParameter Name="estado">
       <DataType>Integer</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>6</Value>
+        </Values>
+      </DefaultValue>
       <Prompt>Estado</Prompt>
       <ValidValues>
         <DataSetReference>
@@ -1215,11 +1353,27 @@ order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandTex
       <DataType>DateTime</DataType>
       <Prompt>Hasta</Prompt>
     </ReportParameter>
+    <ReportParameter Name="Centrocosto">
+      <DataType>Integer</DataType>
+      <DefaultValue>
+        <Values>
+          <Value>0</Value>
+        </Values>
+      </DefaultValue>
+      <Prompt>Centro de Costo</Prompt>
+      <ValidValues>
+        <DataSetReference>
+          <DataSetName>CostCenter</DataSetName>
+          <ValueField>CostCenterId</ValueField>
+          <LabelField>CostCenterName</LabelField>
+        </DataSetReference>
+      </ValidValues>
+    </ReportParameter>
   </ReportParameters>
   <ReportParametersLayout>
     <GridLayoutDefinition>
       <NumberOfColumns>1</NumberOfColumns>
-      <NumberOfRows>4</NumberOfRows>
+      <NumberOfRows>5</NumberOfRows>
       <CellDefinitions>
         <CellDefinition>
           <ColumnIndex>0</ColumnIndex>
@@ -1235,6 +1389,11 @@ order by jl.JournalEntryId,jl.JournalEntryLineId , je.DatePosted asc</CommandTex
           <ColumnIndex>0</ColumnIndex>
           <RowIndex>3</RowIndex>
           <ParameterName>Hasta</ParameterName>
+        </CellDefinition>
+        <CellDefinition>
+          <ColumnIndex>0</ColumnIndex>
+          <RowIndex>4</RowIndex>
+          <ParameterName>Centrocosto</ParameterName>
         </CellDefinition>
       </CellDefinitions>
     </GridLayoutDefinition>
