@@ -82,7 +82,7 @@ namespace ERPMVC.Controllers.Inventarios
 
         }
 
-        public ActionResult<Liquidacion> Update([FromBody] Liquidacion _Liquidacion)
+        public ActionResult<Liquidacion> ValidarDetalle([FromBody] Liquidacion _Liquidacion)
         {
             List<LiquidacionLine> liquidacionLines = _Liquidacion.detalleliquidacion;
             decimal totalfob = _Liquidacion.detalleliquidacion.Sum(s => s.TotalFOB);
