@@ -1,8 +1,11 @@
 ﻿@using Kendo.Mvc.UI
 
 @{
-    ViewData["Title"] = "Sub productos propios";
-
+    ViewData["Title"] = "SubServicios";
+    bool permisoAgregar, permisoEditar, permisoEliminar;
+    permisoAgregar = (bool)ViewData["permisoAgregar"];
+    permisoEditar = (bool)ViewData["permisoEditar"];
+    permisoEliminar = (bool)ViewData["permisoEliminar"];
 }
 
 <script>
@@ -78,6 +81,42 @@
                 }
             });
          }
+    function DeleteSubProduct(e) {
+        if (confirm('¿Esta seguro que desea eliminar este registro?')) {
+            e.preventDefault();
+            debugger;
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                SubproductId: dataItem.SubproductId
+                //TituloVentana: 'SubServicios',
+                //ProductTypeId: '1'
+            };
+
+            var productid =   dataItem.SubproductId;
+
+           
+            $.ajax({
+                url: '@Url.Action("Delete", "SubProduct")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json; charset=utf-8',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    Insert_And_Delete = true;
+                    var grid = $("#gridSubProduct").getKendoGrid();
+                    grid.dataSource.read();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+        }
+    }
+    function RefrescarGrid() {
+        var grid = $("#gridSubProduct").getKendoGrid();
+        grid.dataSource.read();
+    }
 
 
 </script>
@@ -91,23 +130,35 @@
 
                         .Columns(columns =>
                         {
-                            columns.Command(command =>
+                            if (permisoEditar == true || permisoEliminar == true)
                             {
-                                //command.Custom("Ver detalles").Click("Detalles");
-                                //command.Custom("Editar").Click("EditSubProduct");
-                                //command.Destroy().Text("Eliminar");
-                                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditSubProduct");
-                                command.Destroy().Text(" ").IconClass("fa fa-trash");
-                            }).Width(250);
-                            columns.Bound(p => p.SubproductId).Width(150);
-                            columns.Bound(p => p.ProductName).Width(170);
-                            columns.Bound(p => p.ProductCode).Width(170);
-                            columns.Bound(p => p.Description).Width(200);
+                                columns.Command(command =>
+                                {
+                                    //command.Custom("Ver detalles").Click("Detalles");
+                                    //command.Custom("Editar").Click("EditSubProduct");
+                                    //command.Destroy().Text("Eliminar");
+                                    if (permisoEditar)
+                                    {
+                                        command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditSubProduct");
+                                    }
+                                    if (permisoEliminar)
+                                    {
+                                        command.Destroy().Text(" ").IconClass("fa fa-trash");
+                                    }
+                                    //command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                                }).Width(80).Title("Acciones");
+                            }
+                            columns.Bound(p => p.SubproductId).Width(120).Title("Id SubServicio");
+                            columns.Bound(p => p.ProductName).Width(160);
+                            columns.Bound(p => p.ProductCode).Width(180).Title("Código de SubServicio");
+                            columns.Bound(o => o.Description).Width(180).Title("Observación");
+                            
+                            //columns.Bound(p => p.Description).Width(200);
                             //columns.Bound(p => p.Balance).Width(200);
                             //columns.Bound(p => p.BagBalance).Width(200);
                             // columns.Bound(p => p.UnitOfMeasureId).Width(150);
                             // columns.Bound(p => p.ProductTypeName).Width(150);
-                            columns.Bound(p => p.Estado).Width(150);
+                            columns.Bound(p => p.Estado).Width(120);
 
                         })
 
@@ -116,23 +167,23 @@
                         {
 
                             //tools.Create();
-                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                                              .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddSubProduct()" });
-                            tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
-                            tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
-
-
-
+                            if (permisoAgregar)
+                            {
+                                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                                              .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddSubProduct()" });
+                            }
+                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
                         })
                         .Editable(e => e.Mode(GridEditMode.PopUp))
                         .Sortable()
                         .Pageable()
                         .Filterable()
                         .Scrollable()
-                        .Pdf(pdf => pdf.FileName("SubProductReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        .Pdf(pdf => pdf.FileName(ViewData["Title"] +"Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                         + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
                         .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                        .Excel(excel => excel.FileName("SubProductReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        .Excel(excel => excel.FileName(ViewData["Title"] + "Report_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                         + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
                         .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
                         .DataSource(dataSource =>
@@ -147,11 +198,11 @@
 
 
                         })
-                        .Events(events => events.Error("error_handler"))
+                        .Events(events => events.Error("error"))
                         .Read(read => read.Action("GetSubProductoByTipoGrid", "SubProduct").Data("ProductType"))
-                       //.Create(create => create.Action("Insert", "Product").Type(HttpVerbs.Post))
-                       //.Update(update => update.Action("Update", "Product").Type(HttpVerbs.Post))
-                       .Destroy(destroy => destroy.Action("Delete", "SubProduct").Type(HttpVerbs.Post))
+                       .Create(create => create.Action("Insert", "Product").Type(HttpVerbs.Post))
+                       .Update(update => update.Action("Update", "Product").Type(HttpVerbs.Post))
+                       .Destroy(destroy => destroy.Action("Delete", "SubProduct"))
                         )
                         .Events(e =>
                         {
@@ -164,6 +215,50 @@
     function ProductType() {
         return { ProductTypeId:1 };
     }
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridSubProduct").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+
+    function error(e) {
+        var error = e.xhr.responseText;
+        if (error.length > 100) {
+            error = "Server Error";
+        }
+        $.toast({
+            heading: 'Error',
+            text: error,
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'error',
+            hideAfter: 30000,
+            stack: 6
+        });
+
+
+        var grid = $("#gridSubProduct").getKendoGrid();
+        grid.refresh();
+        grid.dataSource.read();
+    }
+
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridSubProduct").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
 </script>
 
 

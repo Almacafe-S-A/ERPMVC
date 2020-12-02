@@ -1,0 +1,476 @@
+﻿@model ERPMVC.DTO.PhoneLinesDTO
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+// {"required","Valor requerido" }
+};
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<div id="ModalPhoneLines" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Línea de Teléfono</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmPhoneLines" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SavePhoneLines"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="PhoneLineId" class=" control-label" style="min-width:100%">Id Línea de Teléfono</label>
+                                                    <input type="text" asp-for="PhoneLineId" name="PhoneLineId" class="form-control" disabled="disabled" style="min-width:100%" />
+                                                    <span asp-validation-for="PhoneLineId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="IdBranch" class="control-label"></label>
+                                                    <kendo-dropdownlist name="IdBranch" for="IdBranch" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione la Sucursal!"
+                                                                        datatextfield="BranchName"
+                                                                        datavaluefield="BranchId" data-val-required="La Sucursal es requerida."
+                                                                        style="width: 100%;"
+                                                                        auto-bind="true">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
+                                                            <sorts>
+                                                                <sort field="BranchName" direction="asc" />
+                                                            </sorts>
+                                                            <transport>
+                                                                <read url="@Url.Action("Get", "Branch")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="IdBranch" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="IdEmpleado" class="control-label">Empleado</label>
+                                                    <kendo-dropdownlist name="IdEmpleado" for="@Model.IdEmpleado" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione el Empleado!"
+                                                                        datatextfield="NombreEmpleado"
+                                                                        datavaluefield="IdEmpleado"
+                                                                        data-val-required="El Empleado es requerido."
+                                                                        style="width: 100%;"
+                                                                        auto-bind="true">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetEmployees", "Employees")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="IdEmpleado" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="CompanyPhone" class=" control-label" style="min-width:100%"></label>
+                                                    <input type="text" asp-for="CompanyPhone" required data-required-msg="El Teléfono de la Empresa es requerido." name="CompanyPhone" class="form-control" style="min-width:100%" />
+                                                    <span asp-validation-for="CompanyPhone" class="text-danger"></span>
+                                                    <span id="CompanyPhoneAlert" class="text-danger"><span role="alert" class="k-icon k-i-warning"></span> Complete el número de Teléfono de Empresa.</span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="DueBalanceUS" class=" control-label" style="min-width:100%"></label>
+                                                    <kendo-numerictextbox name="DueBalanceUS"
+                                                                          format="c2" culture="en-US" spinners="true" decimals="2"
+                                                                          min="0" data-val-required="El Monto Vencido US es requerido." data-min-msg="El Monto Vencido US no puede ser negativo."
+                                                                          style="width: 100%;text-align:right;padding-right: 3px"
+                                                                          max="999999999"
+                                                                          step="1"
+                                                                          value="Model.DueBalanceUS" />
+                                                    <span asp-validation-for="DueBalanceUS" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="DueBalanceLps" class=" control-label" style="min-width:100%"></label>
+                                                    <kendo-numerictextbox name="DueBalanceLps" enable="false"
+                                                                          format="c2" spinners="true" decimals="2"
+                                                                          min="0" data-val-required="El Monto Vencido Lps es requerido." data-min-msg="El Monto Vencido Lps no puede ser negativo."
+                                                                          style="width: 100%;text-align:right;padding-right: 3px"
+                                                                          max="999999999"
+                                                                          step="1"
+                                                                          value="Model.DueBalanceLps" />
+                                                    <span asp-validation-for="DueBalanceLps" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="PaymentUS" class=" control-label" style="min-width:100%"></label>
+                                                    <kendo-numerictextbox name="PaymentUS"
+                                                                          format="c2" culture="en-US" spinners="true" decimals="2"
+                                                                          min="0" data-val-required="El Monto Abono US es requerido." data-min-msg="El Monto Abono US no puede ser negativo."
+                                                                          style="width: 100%;text-align:right;padding-right: 3px"
+                                                                          max="999999999"
+                                                                          step="1"
+                                                                          value="Model.PaymentUS" />
+                                                    <span asp-validation-for="PaymentUS" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="PaymentLps" class=" control-label" style="min-width:100%"></label>
+                                                    <kendo-numerictextbox name="PaymentLps" enable="false"
+                                                                          format="c2" spinners="true" decimals="2"
+                                                                          min="0" data-val-required="El Monto Abono Lps es requerido." data-min-msg="El Monto Abono Lps no puede ser negativo."
+                                                                          style="width: 100%;text-align:right;padding-right: 3px"
+                                                                          max="999999999"
+                                                                          step="1"
+                                                                          value="Model.PaymentLps" />
+                                                    <span asp-validation-for="PaymentLps" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        
+
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="TotalUS" class=" control-label" style="min-width:100%"></label>
+                                                    <kendo-numerictextbox name="TotalUS"
+                                                                          format="c2" culture="en-US" spinners="true" decimals="2"
+                                                                          min="0" data-val-required="El Total US es requerido." data-min-msg="El Total US no puede ser negativo."
+                                                                          style="width: 100%;text-align:right;padding-right: 3px"
+                                                                          max="999999999"
+                                                                          step="1"
+                                                                          value="Model.TotalUS" />
+                                                    <span asp-validation-for="TotalUS" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="TotalLps" class=" control-label" style="min-width:100%"></label>
+                                                    <kendo-numerictextbox name="TotalLps" enable="false"
+                                                                          format="c2" spinners="true" decimals="2"
+                                                                          min="0" data-val-required="El Total Lps es requerido." data-min-msg="El Total Lps no puede ser negativo."
+                                                                          style="width: 100%;text-align:right;padding-right: 3px"
+                                                                          max="999999999"
+                                                                          step="1"
+                                                                          value="Model.TotalLps" />
+                                                    <span asp-validation-for="TotalLps" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="IdEstado" class=" control-label" style="width:100%">Estado</label>
+                                                    <kendo-dropdownlist name="EstadoId" data-val-required="El Estado es requerido."
+                                                                        for="@Model.IdEstado" enable="true"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar el Estado!"
+                                                                        datatextfield="NombreEstado"
+                                                                        datavaluefield="IdEstado"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <sorts>
+                                                                <sort field="NombreEstado" direction="asc" />
+                                                            </sorts>
+                                                            <transport>
+                                                                <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="IdEstado" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button id="btnPhoneLines" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#CompanyPhone").kendoMaskedTextBox({
+            mask: "(999) 9999-9999",
+            //change: ValidacionDuplicateCompanyPhone
+        });
+
+        $("#CompanyPhoneAlert").hide();
+    });
+
+    $("#CompanyPhone").change(function () {
+        validarCompanyPhone();
+    })
+    
+    $("#IdEmpleado").change(function () {
+        //ValidacionDuplicateEmpleado();
+    })
+
+    $("#DueBalanceUS").change(function () {
+        ConvercionDolarALps();
+    })
+
+    $("#PaymentUS").change(function () {
+        ConvercionDolarALps();
+    })
+
+    $("#TotalUS").change(function () {
+        ConvercionDolarALps();
+    })
+
+    $("#btnPhoneLines").click(function () {
+        if ($("#DueBalanceLps").data("kendoNumericTextBox").value() == null
+            || $("#PaymentLps").data("kendoNumericTextBox").value() == null
+            || $("#TotalLps").data("kendoNumericTextBox").value() == null) {
+            $.toast({
+                heading: 'Validación',
+                text: ' Los campos calculados no pueden ir vacios.',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+            return false;
+        }
+        
+        if ($("#TotalLps").data("kendoNumericTextBox").value() == 0) {
+            $.toast({
+                heading: 'Validación',
+                text: ' El Total Lps no puede ir en 0.',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+            return false;
+        }
+
+        validarCompanyPhone();
+        if ($('#CompanyPhoneAlert').is(':hidden')) {
+            return true;
+        }
+        else {
+            return false;
+        }
+    });
+
+    function validarCompanyPhone() {
+        var cadena = $("#CompanyPhone").val();
+        if (cadena.indexOf("_") > -1 == true) {
+            $("#CompanyPhoneAlert").show();
+            return false;
+        }
+        else {
+            $("#CompanyPhoneAlert").hide();
+        }
+    }
+
+    function ConvercionDolarALps() {
+        var DueBalanceUS = 0, DueBalanceLps = 0, PaymentUS = 0, PaymentLps = 0, TotalUS = 0, TotalLps = 0, TasaDeCambio = 0;
+        DueBalanceUS = $("#DueBalanceUS").val();
+        DueBalanceLps = $("#DueBalanceLps").val();
+        PaymentUS = $("#PaymentUS").val();
+        PaymentLps = $("#PaymentLps").val();
+        TotalUS = $("#TotalUS").val();
+        TotalLps = $("#TotalLps").val();
+        if (DueBalanceUS > 0 || PaymentUS > 0 || TotalUS > 0) {
+            var dataObject = { CurrencyId: 2 };
+            $.ajax({
+                url: '@Url.Action("TasaDeCambioDolar", "PhoneLines")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    if (data != undefined) {
+                        TasaDeCambio = data.ExchangeRateValue;
+                        DueBalanceLps = Number(DueBalanceUS) * Number(TasaDeCambio);
+                        $("#DueBalanceLps").data("kendoNumericTextBox").value(DueBalanceLps);
+                        PaymentLps = Number(PaymentUS) * Number(TasaDeCambio);
+                        $("#PaymentLps").data("kendoNumericTextBox").value(PaymentLps);
+                        TotalLps = Number(TotalUS) * Number(TasaDeCambio);
+                        $("#TotalLps").data("kendoNumericTextBox").value(TotalLps);
+                    }
+                    else {
+                        $.toast({
+                            heading: 'Validación',
+                            text: ' No se encontro la tasa de cambio de dolar de hoy, porfavor Ingrese la Tasa de Cambio primero.',
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 30000,
+                            stack: 6
+                        });
+                        $("#DueBalanceLps").data("kendoNumericTextBox").value(null);
+                        $("#PaymentLps").data("kendoNumericTextBox").value(null);
+                        $("#TotalLps").data("kendoNumericTextBox").value(null);
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+        }
+        else {
+            $("#DueBalanceLps").data("kendoNumericTextBox").value(0);
+            $("#PaymentLps").data("kendoNumericTextBox").value(0);
+            $("#TotalLps").data("kendoNumericTextBox").value(0);
+        }
+    }
+
+    function ValidacionDuplicateEmpleado() {
+        var dataObject = {
+            PhoneLineId: $("#PhoneLineId").val(),
+            IdEmpleado: $("#IdEmpleado").data("kendoDropDownList").value(),
+        };
+        if ($("#IdEmpleado").data("kendoDropDownList").value() > 0) {
+            $.ajax({
+                url: '@Url.Action("ValidacionEmpleado", "PhoneLines")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                }
+            });
+        }
+    }
+
+    function ValidacionDuplicateCompanyPhone() {
+        var dataObject = {
+            PhoneLineId: $("#PhoneLineId").val(),
+            CompanyPhone: $("#CompanyPhone").val(),
+        };
+        debugger;
+        if ($("#CompanyPhone").val() != "" && $('#CompanyPhoneAlert').is(':hidden')) {
+            $.ajax({
+                url: '@Url.Action("ValidacionCompanyPhone", "PhoneLines")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                }
+            });
+        }
+    }
+
+    function SavePhoneLines() {
+        $("#btnPhoneLines").hide();
+        $("#btnPhoneLines").prop("disabled", true);
+
+        var dataObject = {
+            'PhoneLineId': $("#PhoneLineId").val() === "" ? "0" : $("#PhoneLineId").val(),
+            'IdEmpleado': $("#IdEmpleado").data("kendoDropDownList").value(),
+            'NombreEmpleado': $("#IdEmpleado").data("kendoDropDownList").text(),
+            'IdBranch': $("#IdBranch").data("kendoDropDownList").value(),
+            'CompanyPhone': $("#CompanyPhone").val(),
+            'DueBalanceLps': $("#DueBalanceLps").val(),
+            'DueBalanceUS': $("#DueBalanceUS").val(),
+            'PaymentLps': $("#PaymentLps").val(),
+            'PaymentUS': $("#PaymentUS").val(),
+            'TotalLps': $("#TotalLps").val(),
+            'TotalUS': $("#TotalUS").val(),
+            'IdEstado': $("#IdEstado").data("kendoDropDownList").value(),
+            'Estado': $("#IdEstado").data("kendoDropDownList").text(),
+        };
+        
+        var validator = $("#frmPhoneLines").data("kendoValidator");
+        var status = $(".status");
+        if (validator.validate()) {
+            $.ajax({
+                url: '@Url.Action("SavePhoneLines", "PhoneLines")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: 'Datos guardados correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+
+                    RefrescarGrid();
+                    $('#ModalPhoneLines').modal('hide');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    if (XMLHttpRequest.responseText == "Ya exíste una Línea de Teléfono creada con el mismo Empleado."
+                        || XMLHttpRequest.responseText == "Ya exíste una Línea de Teléfono creada con el mismo Número de Teléfono.") {
+                        $("#btnPhoneLines").show();
+                        $("#btnPhoneLines").prop("disabled", false);
+                    }
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                }
+            });
+        }
+        else {
+            status.text("Oops! There is invalid data in the form.")
+                .removeClass("valid")
+                .addClass("invalid");
+        }
+    }
+</script>

@@ -1,0 +1,279 @@
+﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
+@{
+    var errores = TempData.Keys.Contains("Errores") ? TempData["Errores"].ToString() : "";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+    ViewData["Title"] = "Carga de Archivo Biometrico";
+        var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+           {"required","Requerido" }
+        };
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+
+}
+<h3 class="text-themecolor">Carga de Archivo Biometrico</h3>
+
+<form id="frmBiometrico" enctype="multipart/form-data" kendo-validator="true" method="post" action="@Url.Action("GuardarBiometrico","Biometrico")" kendo-messages="messages" >
+    
+    <div class="card">
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="Fecha" class="form-label">Fecha:</label>
+                        <kendo-datepicker name="Fecha" style="width: 100%;"
+                                          id="Fecha"
+                                          format="dd/MM/yyyy"
+                                          required
+                                          data-val-required="La fecha es requerida" />
+                    </div>
+
+                </div>
+
+
+                <div class="col-md-8">
+                    <div class="form-group">
+                        <label style="min-width:100%" for="Observacion">Observación:</label>
+
+                        <textarea style="min-width:100%" id="Observacion" name="Observacion" required></textarea>
+                    </div>
+                </div>
+
+            </div>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="form-group">
+                        <label for="Archivo" style="min-width:100%">Archivo:</label>
+                        <input id="Archivo" name="Archivo" type="file" style="min-width:100%" required  accept=".xlsx"/>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <label style="min-width:100%"></label>
+                    
+                    <button class="btn btn-primary" type="submit">Cargar Archivo</button>
+                </div>
+
+                <div class="col-md-3">
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+
+<div class="row">
+    <h4>Archivos Cargados</h4>
+    <div id="grdConfiguracion"></div>
+</div>
+<div id="ModalContenido"></div>
+
+<script>
+
+
+    function CrearGrid() {
+        $("#grdConfiguracion").kendoGrid({
+            dataSource: {
+                transport: {
+                    read: "@Url.Action("GetBiometricos", "Biometrico")"
+                },
+                schema: {
+                    model: {
+                        id:"Id",
+                        fields: {
+                            Id: { type: "number", editable: false },
+                            Fecha: { type: "date", editable: false },
+                            Observacion: { type:"string", editable: false },
+                            IdEstado: { type: "number", editable: false },
+                            Estado: { defaultValue: {IdEstado:0,NombreEstado:""}, editable: false }
+                        }
+                    }
+                }
+            },
+            columns: [
+                {
+                    command: [
+                        PermisoVerDetalle(),
+                        PermisoAprobar(),
+                        PermisoRechazar()
+                    ],
+                    width:150
+                },
+                { field: "Id", title: "Id. ", width: 80 },
+                { field: "Fecha", title: "Fecha", width: 150, template: '#= kendo.toString(Fecha,"dd/MM/yyyy")#' },
+                { field: "Observacion", title: "Observacion",widh : 150},
+                { field: "Estado", title: "Estado", width: 100, template: "#= Estado.NombreEstado #"}
+            ],
+            noRecords: {
+                template:"No archivos biometricos cargados"
+            },
+            //height: 400,
+            scrollable: true,
+            editable: false
+        });
+    }
+
+    //function EditorFecha() {
+    //    $("#Fecha").kendoDatePicker({ dateInput: true, format: "dd/MM/yyyy" });
+    //}
+
+    function EditorArchivo() {
+        $("#Archivo").kendoUpload({
+            multiple:false
+        });
+    }
+
+    function VerDetalle(e) {
+        e.preventDefault();
+        var registro = this.dataItem($(e.currentTarget).closest('tr'));
+        var parametros = {
+            IdBiometrico: registro.Id
+        };
+
+        $.ajax({
+            url: '@Url.Action("VerDetalle", "Biometrico")',
+            method: 'GET',
+            datatype: "json",
+            async: false,
+            data: parametros,
+            success: function (result) {
+                $("#ModalContenido").html('');
+                $("#ModalContenido").html(result);
+                $('#modalDetalle').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+
+    function Aprobar(e) {
+        e.preventDefault();
+        var registro = this.dataItem($(e.currentTarget).closest('tr'));
+        var parametros = {
+            IdBiometrico: registro.Id
+        };
+        debugger;
+        $.ajax({
+            url: '@Url.Action("AprobarBiometrico", "Biometrico")',
+            method: 'POST',
+            datatype: "json",
+            async: false,
+            data: parametros,
+            success: function (result) {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: 'Datos guardados correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                RefreshBiometrico();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                debugger;
+                $.toast({
+                    heading: 'Error',
+                    text: textStatus + ": " + XMLHttpRequest.responseText,
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                RefreshBiometrico();
+            }
+        });
+    }
+
+    function Rechazar(e) {
+        e.preventDefault();
+        var registro = this.dataItem($(e.currentTarget).closest('tr'));
+        var parametros = {
+            IdBiometrico: registro.Id
+        };
+        debugger;
+        $.ajax({
+            url: '@Url.Action("RechazarBiometrico", "Biometrico")',
+            method: 'POST',
+            datatype: "json",
+            async: false,
+            data: parametros,
+            success: function (result) {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: 'Datos guardados correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                RefreshBiometrico();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                debugger;
+                $.toast({
+                    heading: 'Error',
+                    text: textStatus + ": " + XMLHttpRequest.responseText,
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                RefreshBiometrico();
+            }
+        });
+    }
+
+    function RefreshBiometrico() {
+        $("#grdConfiguracion").getKendoGrid().dataSource.read();
+    }
+
+    $(document).ready(function () {
+        debugger;
+        if ('@errores' !== '') {
+            $.toast({
+                heading: 'Error',
+                text: ' @errores',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 3000,
+                stack: 6
+            });
+        }
+        //EditorFecha();
+        CrearGrid();
+    });
+</script>
+<script type="text/javascript">
+    function PermisoVerDetalle() {
+        var permisos = '@ViewData["permisos"]';
+
+            Detalle = {
+                name: "ver", iconClass: "fa fa-eye", text: "", click: VerDetalle
+            }
+            return Detalle
+
+    }
+    function PermisoAprobar() {
+        var permisos = '@ViewData["permisos"]';
+
+            AprobarArchivoBiometrico = {
+                name: "aprobar", iconClass: "fa fa-thumbs-up", text: "", click: Aprobar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 60 }
+            }
+            return AprobarArchivoBiometrico
+
+    }
+    function PermisoRechazar() {
+        var permisos = '@ViewData["permisos"]';
+
+            RechazarArchivoBiometrico = {
+                name: "rechazar", iconClass: "fa fa-thumbs-down", text: "", click: Rechazar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 60 }
+            }
+            return RechazarArchivoBiometrico
+
+    }
+</script>

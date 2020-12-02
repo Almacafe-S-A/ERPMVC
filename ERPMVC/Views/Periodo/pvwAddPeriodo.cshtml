@@ -1,0 +1,190 @@
+﻿@model ERPMVC.DTO.PeriodoDTO
+
+
+<div id="ModalPeriodo" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Periodo</h4>
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmPeriodo" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SavePeriodo"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <hr>
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Id" class=" control-label" style="width:100%">Id Estado</label>
+                                                    <input type="text" asp-for="Id" name="Periodo" class="form-control" required disabled="disabled" style="min-width:100%" />
+                                                    <span asp-validation-for="Id" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Anio" class="control-label" style="width:100%">Año</label>
+                                                    <input asp-for="Anio" id="numero" class="form-control" style="min-width: 100% !important;" data-min-msg=" Año debe ser mayor o igual que 2000"   required data-required-msg="El año es requerido" min="2000" max="9999" maxlength="4"
+                                                            onkeypress="return SoloNumeros(event)" autocomplete="off" />
+                                                    <span asp-validation-for="Anio" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <!-- Estado -->
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="IdEstado" class="control-label">Estado </label>
+                                                    <kendo-dropdownlist name="IdEstado" for="@Model.IdEstado" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        required data-required-msg="Estado es requerido"
+                                                                        option-label="Seleccione Estado"
+                                                                        datatextfield="NombreEstado"
+                                                                        datavaluefield="IdEstado"
+                                                                        style="min-width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="IdEstado" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button id="btnPeriodo" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+
+    function SoloNumeros(e) {
+        key = e.keyCode || e.which;
+        tecla = String.fromCharCode(key).toLowerCase();
+        letras = "1234567890";
+        especiales = "8-37-39-46";
+
+        tecla_especial = false
+        for (var i in especiales) {
+            if (key == especiales[i]) {
+                tecla_especial = true;
+                break;
+            }
+        }
+
+        if (letras.indexOf(tecla) == -1 && !tecla_especial) {
+            return false;
+        }
+    }
+
+
+    var input = document.getElementById('numero');
+    input.addEventListener('input', function () {
+        if (this.value.length > 4)
+            this.value = this.value.slice(0,4);
+    })
+
+
+    function RefreshGridPerioddo() {
+        var grid = $("#gridPeriodo").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+    function SavePeriodo(e) {
+        debugger;
+     
+            var notification = $("#notification").data("kendoNotification");
+           // e.preventDefault();
+            $("#btnPeriodo").hide();
+            $("#btnPeriodo").prop("disabled", true);
+
+        var dataObject = {
+                           'Id': $("#Id").val(),
+                           'Anio': $("#numero").val(),
+                           'IdEstado': $("#IdEstado").val(),
+                           'Estado': $("#IdEstado").data("kendoDropDownList").text() 
+                           //'FechaCreacion': $("#FechaCreacion").val(),
+                           //'FechaModificacion':$("#FechaModificacion").val(),
+                           //'UsuarioCreacion':$("#UsuarioCreacion").val(),
+                           //'UsuarioModificacion':$("#UsuarioModificacion").val(),
+                           //'_Estados': displayedData
+            };
+        var validator = $("#frmPeriodo").data("kendoValidator");
+
+           
+                if (validator.validate()) {
+
+                    $.ajax({
+                    url: '@Url.Action("SavePeriodos", "Periodo")',
+                    method: 'POST',
+                    datatype: "json",
+                    contentType: 'application/json',
+                    async: false,
+                    data: JSON.stringify(dataObject),
+                    success: function (data) {
+
+                        $("#Id").val(data.Id);
+                        $.toast({
+                            heading: 'Satisfactorio',
+                            text: '<br><br>Datos guardados correctamente.',
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'success',
+                            hideAfter: 8000,
+                            stack: 6
+                        });
+                        RefreshGridPerioddo();
+                        $('#ModalPeriodo').modal('hide');
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        $("#btnPeriodo").show();
+                        $("#btnPeriodo").prop("disabled", false);
+                        //notification.show({
+                        //    title: "Validación",
+                        //    message: textStatus + ": " + XMLHttpRequest.responseText
+                        //}, "error");
+                        $.toast({
+                            heading: 'Validación',
+                            text: ' ' + XMLHttpRequest.responseText,
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 30000,
+                            stack: 6
+                        });     
+                    }
+                });
+
+                }
+                else {
+                    $("#btnPeriodo").show();
+                    $("#btnPeriodo").prop("disabled", false);
+                }
+
+       
+    }
+</script>

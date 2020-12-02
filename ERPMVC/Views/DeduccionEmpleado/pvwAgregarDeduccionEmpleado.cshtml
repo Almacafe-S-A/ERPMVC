@@ -1,0 +1,330 @@
+﻿@model ERPMVC.Models.DeduccionEmpleado
+@using System.Security.Claims
+@{
+    var editable = (int)ViewData["Editar"];
+    var codigoEmpleado = (long)ViewData["CodigoEmpleado"];
+    var nombreEmpleado = (string)ViewData["NombreEmpleado"];
+    var salario = (double)ViewData["SalarioEmpleado"];
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
+<div id="DeduccionEmpleadoModalUpload" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" onclick="CerrarDeduccionEmpleado();">&times;</button>
+                <h4 class="modal-title">Deducciones Empleado</h4>
+            </div>
+
+            <div class="modal-body" kendo-validator="true" name="mdlCuerpo">
+                <div>
+                    <p>
+                        <strong>Código Empleado: </strong>@codigoEmpleado<br />
+                        <strong>Nombre Empleado: </strong>@nombreEmpleado<br />
+                        <strong>Salario Empleado: </strong>@salario.ToString("#,##0.00")<br />
+                    </p>
+                </div>
+                <div id="grdDeduccionesEmpleado"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<span id="notificacion"></span>
+
+<script>
+
+    $(document).ready(function() {
+        CrearGrid();
+    });
+
+    function CrearGrid() {
+        $("#grdDeduccionesEmpleado").kendoGrid({
+            dataSource: {
+                transport: {
+                    read: "@Url.Action("GetDeduccionesEmpleado", "DeduccionEmpleado", new {empleadoId = codigoEmpleado})",
+                    update: "@Url.Action("GuardarDeduccionEmpleado", "DeduccionEmpleado")",
+                    create: "@Url.Action("GuardarDeduccionEmpleado", "DeduccionEmpleado")",
+                    parameterMap: function(datos, tipo) {
+                        if (tipo !== 'read') {
+                            datos.VigenciaInicio = kendo.toString(kendo.parseDate(datos.VigenciaInicio, "dd/MM/yyyy"), "yyyy-MM-dd");
+                            datos.VigenciaFinaliza = kendo.toString(kendo.parseDate(datos.VigenciaFinaliza, "dd/MM/yyyy"), "yyyy-MM-dd");
+                            datos.DeductionId = datos.Deduccion.DeductionId;
+                            debugger;
+                        }
+                        return datos;
+                    }
+                },
+                schema: {
+                    model: {
+                        id:"Id",
+                        fields: {
+                            Id: { name: "Id", type: "number", editable: true },
+                            EmpleadoId: { name: "EmpleadoId", type: "number", editable: true },
+                            DeductionId: { name: "DeductionId", type: "number", editable: true },
+                            Deduccion: {
+                                name: "Deduccion", defaultValue: {DeductionId:0,EtiquetaDropDown:""}, editable: true },
+                            Monto: { name: "Monto", type: "number", editable: true },
+                            VigenciaInicio: { name: "VigenciaInicio", type: "date", editable: true, format: "{0:dd/MM/yyyy}" },
+                            VigenciaFinaliza: { name: "VigenciaFinaliza", type: "date", editable: true, format: "{0:dd/MM/yyyy}" },
+                            CantidadCuotas: { name: "CantidadCuotas", type: "number", editable: true },
+                            EstadoId: { name: "EstadoId", type: "number", editable: true }
+                        }
+                    }
+                },
+                requestEnd: function (e) {
+                    if (e.type !== "read") {
+                        $("#grdDeduccionesEmpleado").data("kendoGrid").dataSource.read();
+                    }
+                },
+                aggregate: [
+                    { field: "Deduccion", aggregate: "count" },
+                    {field:"Monto", aggregate:"sum"}
+                ]
+            },
+            toolbar: [
+                PermisoAgregarDeduccion()
+            ],
+            columns: [
+                {
+                    command: [
+                        PermisoEdit(),//,  iconClass: "fa fa-edit", text:"" }
+                        //{ name: "destroy", text:"Quitar"}//, iconClass: "fa fa-list-alt", text:"" }
+                    ],
+                    width:100
+                },
+                { field: "Id", title: "Id. ", width: 80, hidden: true },
+                { field: "EmpleadoId", title: "Codigo Empleado", width: 80, hidden: true },
+                { field: "EsPorcentaje", hidden:true },
+                { field: "Valor", hidden:true },
+                {
+                    field: "Deduccion", title: "Tipo Deducción", width: 100, editor: editorTipoDeduccion, template: "#= Deduccion.EtiquetaDropDown #",
+                    aggregates: ["count"], footerTemplate:"Cantidad: #=count#"},
+                {
+                    field: "Monto", title: "Monto", width: 100, editor: editorNumerico, format:"{0:#,##0.00}", aggregates:["sum"],
+                    footerTemplate:'Total: #= kendo.toString( sum, "\\#,\\#\\#0.00") #'
+                },
+                { field: "VigenciaInicio", title: "Vigente desde", width: 100 , template: '#= kendo.toString(VigenciaInicio,"dd/MM/yyyy")#'},
+                { field: "VigenciaFinaliza", title: "Vigente hasta", width: 100, template: '#= kendo.toString(VigenciaFinaliza,"dd/MM/yyyy")#' },
+                { field: "CantidadCuotas", title: "Cantidad Cuotas", width: 100, editor: editorNumerico },
+                { field: "EstadoId", title: "Estado", width: 100, editor: editorEstado, template: "#= EstadoId === 1? 'Activo':'Inactivo' #"}
+            ],
+
+            noRecords: {
+                template:"No tiene deducciones activas."
+            },
+            //height: 400,
+            scrollable: true,
+            editable: (@editable === 1 ? "inline":false),
+            edit: EditandoGrid,
+            save: ValidarIngreso
+        });
+    }
+
+    function ValidarIngreso(e) {
+        debugger;
+        var deduccion = e.model;
+        if (typeof deduccion.Deduccion === 'undefined') {
+            alert('Debe seleccionar el tipo de deducción');
+            e.preventDefault();
+            return false;
+        } else {
+            deduccion.set("DeductionId", deduccion.DeductionId);
+        }
+        if (deduccion.Monto <= 0) {
+            alert('Debe ingresar un valor para el monto de la deducción');
+            e.preventDefault();
+            return false;
+        }
+        if (deduccion.VigenciaFinaliza < deduccion.VigenciaInicio) {
+            alert('La vigencia hasta no puede ser menor a la vigencia desde');
+            e.preventDefault();
+            return false;
+        }
+
+        if (deduccion.EstadoId === 0) {
+            alert('Debe seleccionar un estado para la deducción');
+            e.preventDefault();
+            return false;
+        }
+        if (deduccion.EsPorcentaje) {
+            deduccion.set("Monto", @salario * deduccion.Valor/ 100.00);
+        }
+        if (deduccion.DeductionId === 1) {
+            $.ajax({
+                url: '@Url.Action("CalcularISR", "DeduccionEmpleado")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: {empleadoId : @codigoEmpleado},
+                success: function (data) {
+                    debugger;
+                    if (typeof data === 'undefined') {
+                        $.toast({
+                            heading: 'Error',
+                            text: ' ocurrio un error calculando el ISR ',
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 2000,
+                            stack: 6
+                        }); 
+                    } else {
+                        deduccion.set("Monto", data);
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $.toast({
+                        heading: 'Error',
+                        text: ' ' + textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 2000,
+                        stack: 6
+                    });
+                }
+            });
+        }
+        debugger;
+    }
+
+    function editorNumerico(contenedor, opciones) {
+        $('<input data-bind="value:' + opciones.field + '"/>')
+            .appendTo(contenedor)
+            .kendoNumericTextBox({ spinners: false });
+    }
+
+    function editorTipoDeduccion(contenedor, opciones) {
+        $('<input data-bind="value:' + opciones.field + '"/>')
+            .appendTo(contenedor)
+            .kendoDropDownList({
+                index:0,
+                autoBind: true,
+                dataTextField: "EtiquetaDropDown",
+                dataValueField: "DeductionId",
+                dataSource: {
+                    transport: {
+                        read: {
+                            type:"GET",
+                            url: '@Url.Action("GetDeduccionesSinLey", "TipoDeduccion")',
+                            dataType: "json"
+                        }
+                    },
+                    schema: {
+                        model: {
+                            fields: {
+                                DeductionId : { type:"number"},
+                                Description: { type: "string" },
+                                DeductionTypeId: { type: "number" },
+                                DeductionType: { type: "string" },
+                                Formula: { type: "number" },
+                                EsPorcentaje: { type: "bool" },
+                                EtiquetaDropDrown: {type:"string"}
+                            }
+                        }
+                    }
+                },
+                filter: "contains",
+                suggest: true,
+                change:cambioTipoDeduccion
+            });
+    }
+
+    function editorEstado(contenedor, opciones) {
+        $('<input data-bind="value:' + opciones.field + '"/>')
+            .appendTo(contenedor)
+            .kendoDropDownList({
+                index:0,
+                autoBind: true,
+                dataTextField: "NombreEstado",
+                dataValueField: "IdEstado",
+                dataSource: {
+                    transport: {
+                        read: {
+                            type:"GET",
+                            url: '@Url.Action("GetGrupoEstadoI", "Estados")',
+                            dataType: "json"
+                        }
+                    },
+                    schema: {
+                        model: {
+                            fields: {
+                                IdEstado: { type: "number" },
+                                NombreEstado: {type:"string"}
+                            }
+                        }
+                    }
+                }
+            });
+    }
+
+    function cambioTipoDeduccion(e) {
+        debugger;
+        var tipoDeduccion = e.sender.dataItem();
+        var grid = e.sender.element.closest(".k-grid").data("kendoGrid");
+        var fila = e.sender.element.closest("tr");
+        var deduccion = grid.dataItem(fila);
+        if (tipoDeduccion.EsPorcentaje) {
+            deduccion.set("Monto", @salario * tipoDeduccion.Formula / 100.00);
+        } else {
+            deduccion.set("Monto", tipoDeduccion.Formula);
+        }
+        if (tipoDeduccion.DeductionId === 1) {
+            $.ajax({
+                url: '@Url.Action("CalcularISR", "DeduccionEmpleado")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: {empleadoId : @codigoEmpleado},
+                success: function (data) {
+                    debugger;
+                    if (typeof data === 'undefined') {
+                        $.toast({
+                            heading: 'Error',
+                            text: ' ocurrio un error calculando el ISR ',
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 2000,
+                            stack: 6
+                        }); 
+                    } else {
+                        deduccion.set("Monto", data);
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $.toast({
+                        heading: 'Error',
+                        text: ' ' + textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 2000,
+                        stack: 6
+                    });
+                }
+            });
+        }
+        deduccion.set("EsPorcentaje", tipoDeduccion.EsPorcentaje);
+        deduccion.set("Valor", tipoDeduccion.Formula);
+        console.log(tipoDeduccion);
+    }
+
+    function CerrarDeduccionEmpleado() {
+        window.RefreshDeduccionEmpleado();
+        $("#DeduccionEmpleadoModalUpload").modal('hide');
+
+    }
+
+    function EditandoGrid(e) {
+        if (e.model.isNew()) {
+            e.model.set("EmpleadoId", @codigoEmpleado);
+            e.model.set("EstadoId", 1);
+        }
+    }
+
+    function Guardar(e) {
+
+    }
+</script>

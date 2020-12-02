@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -24,14 +25,18 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public ScheduleSubservicesController(ILogger<ScheduleSubservicesController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public ScheduleSubservicesController(ILogger<ScheduleSubservicesController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
 
+        [Authorize(Policy = "Clientes.Reglas de Cobro")]
         public async Task<IActionResult> Index()
         {
+            ViewData["permisos"] = _principal;
             return await Task.Run(() => View());
         }
 
@@ -57,6 +62,7 @@ namespace ERPMVC.Controllers
                 {
                     _ScheduleSubservices = new ScheduleSubservicesDTO {  StartTime = DateTime.Now, EndTime = DateTime.Now };
                 }
+                ViewData["permisos"] = _principal;
             }
             catch (Exception ex)
             {
@@ -87,7 +93,7 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _ScheduleSubservices = JsonConvert.DeserializeObject<List<ScheduleSubservices>>(valorrespuesta);
-
+                    _ScheduleSubservices = _ScheduleSubservices.OrderByDescending(q => q.ScheduleSubservicesId).ToList();
                 }
 
 

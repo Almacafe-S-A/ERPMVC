@@ -1,0 +1,810 @@
+﻿@using System.Security.Claims
+@model ERPMVC.DTO.MatrizRiesgoCustomersDTO
+@{
+    //var Linea = ViewData["producto"] as IEnumerable<ERPMVC.Models.Product>;
+    ViewData["Title"] = "Matriz de Riesgos Clientes";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
+
+
+<script>
+    function EditMatrizRiesgoCustomers(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = { 'Id': dataItem.Id };
+
+        if (dataItem.Id > 0) {
+            $.ajax({
+                url: '@Url.Action("pvwAddMatrizRiesgoCustomers", "MatrizRiesgoCustomers")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    debugger;
+                    $("#Id").val(data.Id);
+                    $("#CustomerId").data("kendoDropDownList").value(data.CustomerId);
+                    $("#BranchId").data("kendoDropDownList").value(data.BranchId);
+                    $("#ProductId").data("kendoDropDownList").value(data.ProductId);
+                    $("#IdFactorRiesgo").data("kendoDropDownList").value(data.IdFactorRiesgo);
+                    $("#IdContextoRiesgo").data("kendoDropDownList").value(data.IdContextoRiesgo);
+                    $("#TipodeAccionderiesgoId").data("kendoDropDownList").value(data.TipodeAccionderiesgoId);
+                    $("#Riesgo").val(data.Riesgo);
+                    $("#Efecto").val(data.Efecto);
+                    $("#Responsable").val(data.Responsable);
+                    $("#RiesgoInicialProbabilidad").val(data.RiesgoInicialProbabilidad);
+                    $("#RiesgoInicialImpacto").val(data.RiesgoInicialImpacto);
+                    $("#RiesgoInicialCalificacion").val(data.RiesgoInicialCalificacion);
+                    $("#RiesgoInicialValorSeveridad").val(data.RiesgoInicialValorSeveridad);
+                    $("#Controles").val(data.Controles);
+                    $("#FechaObjetvo").val(data.FechaObjetvo);
+                    $("#RiesgoResidualProbabilidad").val(data.RiesgoResidualProbabilidad);
+                    $("#RiesgoResidualImpacto").val(data.RiesgoResidualImpacto);
+                    $("#RiesgoResidualCalificacion").val(data.RiesgoResidualCalificacion);
+                    $("#RiesgoResidualValorSeveridad").val(data.RiesgoResidualValorSeveridad);
+                    $("#Seguimiento").val(data.Seguimiento);
+                    $("#FechaRevision").data("kendoDatePicker").value(data.FechaRevision);
+                    $("#Avance").val(data.Avance);
+                    var SwitchInput = $("#Eficaz").data("kendoSwitch");
+                    SwitchInput.check(data.Eficaz);
+                    var validator = $("#frmMatrizRiesgoClientes").data("kendoValidator");
+                    validator.hideMessages();
+                    var x = document.getElementsByClassName("k-invalid");
+                    if (x.length > 0) {
+                        $("span").removeClass("k-invalid");
+                    }
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+
+                }
+            });
+        }
+    }
+
+
+    function Delete(e) {
+        if (confirm('¿Esta seguro que desea eliminar este registro?')) {
+            e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                'Id': dataItem.Id,
+            };
+
+            $.ajax({
+                url: '@Url.Action("Delete", "MatrizRiesgoCustomers")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    RefrescarGrid();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $.toast({
+                        heading: 'Error',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                }
+            });
+        }
+    }
+
+</script>
+
+<script>
+    function customFunction(input) {
+        if (input.attr('name') === "Id" && input.val() === "0") {
+            return false;
+        }
+        return true;
+    }
+
+    function RefrescarGrid() {
+        var grid = $("#gridMatrizRiesgoCustomers").getKendoGrid();
+        grid.dataSource.read();
+        grid.refresh();
+    }
+
+    function AddMatrizRiesgoCustomers(e) {
+        $("#btnGuardarMatrizRiesgoClientes").hide();
+        $("#btnGuardarMatrizRiesgoClientes").prop("disabled", true);
+        debugger;
+
+        var permisos = '@ViewData["permisos"]';
+        if ("@permisos.HasClaim("Monitoreo.Matriz de Riesgos Clientes.Agregar Matriz de Riesgos Clientes", "true")" == "False") {
+            if ($("#Id").val() == 0) {
+                $.toast({
+                    heading: 'Validación',
+                    text: 'No tiene permiso para agregar nuevos registros.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 30000,
+                    stack: 6
+                });
+
+                $("#btnGuardarMatrizRiesgoClientes").show();
+                $("#btnGuardarMatrizRiesgoClientes").prop("disabled", false);
+
+                return false;
+            };
+        };
+
+        var validator = $("#frmMatrizRiesgoClientes").data("kendoValidator");
+        var status = $(".status");
+        debugger;
+        if (validator.validate()) {
+            var dataObject = {
+                'Id': $("#Id").val() === "" ? "0" : $("#Id").val(),
+                'CustomerId': $("#CustomerId").val(),
+                'BranchId': $("#BranchId").val(),
+                'BranchName': $("#BranchId").data("kendoDropDownList").text(),
+                'ProductId': $("#ProductId").val(),
+                'IdFactorRiesgo': $("#IdFactorRiesgo").val(),
+                'FactorRiesgo': $("#IdFactorRiesgo").data("kendoDropDownList").text(),
+                'Riesgo': $("#Riesgo").val(),
+                'Efecto': $("#Efecto").val(),
+                'IdContextoRiesgo': $("#IdContextoRiesgo").val(),
+                'Responsable': $("#Responsable").val(),
+                'RiesgoInicialProbabilidad': $("#RiesgoInicialProbabilidad").val(),
+                'RiesgoInicialImpacto': $("#RiesgoInicialImpacto").val(),
+                'RiesgoInicialCalificacion': $("#RiesgoInicialCalificacion").val(),
+                'RiesgoInicialValorSeveridad': $("#RiesgoInicialValorSeveridad").val(),
+                'Controles': $("#Controles").val(),
+                'TipodeAccionderiesgoId': $("#TipodeAccionderiesgoId").val(),
+                'FechaObjetvo': $("#FechaObjetvo").val(),
+                'RiesgoResidualProbabilidad': $("#RiesgoResidualProbabilidad").val(),
+                'RiesgoResidualImpacto': $("#RiesgoResidualImpacto").val(),
+                'RiesgoResidualCalificacion': $("#RiesgoResidualCalificacion").val(),
+                'RiesgoResidualValorSeveridad': $("#RiesgoResidualValorSeveridad").val(),
+                'Seguimiento': $("#Seguimiento").val(),
+                'FechaRevision': $("#FechaRevision").getKendoDatePicker().value().toJSON(),
+                'Avance': $("#Avance").val(),
+                'Eficaz': $("#Eficaz").is(':checked'),
+            };
+
+            $.ajax({
+                url: '@Url.Action("SaveMatrizRiesgoCustomers", "MatrizRiesgoCustomers")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: '<br/>Datos guardados correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+
+                    $("#CustomerId").data("kendoDropDownList").value(0);
+                    $("#BranchId").data("kendoDropDownList").value(0);
+                    $("#ProductId").data("kendoDropDownList").value(0);
+                    $("#IdFactorRiesgo").data("kendoDropDownList").value(0);
+                    $("#IdContextoRiesgo").data("kendoDropDownList").value(0);
+                    $("#TipodeAccionderiesgoId").data("kendoDropDownList").value(0);
+                    //$('#frmMatrizRiesgoClientes').find(':input').not(':submit').val('');
+                    $("#Id").val('0');
+                    $("#Riesgo").val(null);
+                    $("#Efecto").val(null);
+                    $("#Responsable").val(null);
+                    $("#RiesgoInicialProbabilidad").val(null);
+                    $("#RiesgoInicialImpacto").val(null);
+                    $("#RiesgoInicialCalificacion").val(null);
+                    $("#RiesgoInicialValorSeveridad").val(null);
+                    $("#Controles").val(null);
+                    $("#FechaObjetvo").val(null);
+                    $("#RiesgoResidualProbabilidad").val(null);
+                    $("#RiesgoResidualImpacto").val(null);
+                    $("#RiesgoResidualCalificacion").val(null);
+                    $("#RiesgoResidualValorSeveridad").val(null);
+                    $("#Seguimiento").val(null);
+                    $("#FechaRevision").val(null);
+                    $("#Avance").val(null);
+
+                    $("#btnGuardarMatrizRiesgoClientes").show();
+                    $("#btnGuardarMatrizRiesgoClientes").prop("disabled", false);
+                    //$("#HoraExtraSwitch").checked(false);
+                    var SwitchInput = $("#Eficaz").data("kendoSwitch");
+                    SwitchInput.check(false);
+
+                    RefrescarGrid();
+                    //$('#ModalComprobanteRetencion').modal('hide');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+
+                    $("#btnGuardarMatrizRiesgoClientes").show();
+                    $("#btnGuardarMatrizRiesgoClientes").prop("disabled", false);
+                }
+            });
+        }
+        else {
+            status.text("Oops! There is invalid data in the form.")
+                .removeClass("valid")
+                .addClass("invalid");
+
+            $("#btnGuardarMatrizRiesgoClientes").show();
+            $("#btnGuardarMatrizRiesgoClientes").prop("disabled", false);
+        }
+    }
+
+    //solo acepte numeros
+    function soloNumeros(e) {
+        var key = window.Event ? e.which : e.keyCode
+        if (key == 13) {
+            //para desplegar los drop de producto
+            var numerictextbox = $("#ProductId").data("kendoDropDownList");
+            numerictextbox.focus();
+            $('#ProductId').data("kendoDropDownList").open();
+        }
+        return ((key >= 48 && key <= 57) || (key == 8))
+    }
+</script>
+
+
+@{
+    var messages1 = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+    {"required","Valor requerido" }
+ };
+    var rules1 = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+@if (permisos.HasClaim("Monitoreo.Matriz de Riesgos Clientes.Agregar Matriz de Riesgos Clientes", "true")
+    || permisos.HasClaim("Monitoreo.Matriz de Riesgos Clientes.Editar Matriz de Riesgos Clientes", "true"))
+{
+<div class="container-fluid">
+    <div class="row" id="validation">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body">
+                    <div class="modal-header">
+                        <h1 class="modal-title" style="color:white">Matriz de Riesgos Clientes</h1>
+                        @*<button type="button" class="close" onclick="BackIndex()">&times;</button>*@
+                    </div>
+                    <br />
+                    <form id="frmMatrizRiesgoClientes" kendo-validator="true"
+                          method="post" class="validation-wizard wizard-circle">
+
+                        <div class="col-lg-12">
+                            @*<div class="row" id="div1">*@
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="Id" class=" control-label" style="min-width:100%"></label>
+                                        <input type="text" asp-for="Id" name="Id" class="form-control" disabled="disabled" style="min-width:100%" />
+                                        <span asp-validation-for="Id" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="CustomerId" class="control-label"></label>
+                                        <kendo-dropdownlist name="CustomerId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                            option-label="Seleccione el cliente"
+                                                            datatextfield="CustomerName"
+                                                            datavaluefield="CustomerId"
+                                                            class="form-control-line"
+                                                            required data-required-msg="El Cliente es requerido."
+                                                            style="width: 100%;">
+                                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
+                                                <transport>
+                                                    <read url="@Url.Action("GetCustomer", "Common")" />
+                                                </transport>
+                                            </datasource>
+                                        </kendo-dropdownlist>
+                                        <span asp-validation-for="CustomerId" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="BranchId" class="control-label"></label>
+                                        <kendo-dropdownlist name="BranchId" for="BranchId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                            option-label="Seleccione la Sucursal"
+                                                            datatextfield="BranchName"
+                                                            datavaluefield="BranchId" data-val-required="La Sucursal es requerida."
+                                                            style="width: 100%;"
+                                                            auto-bind="true">
+                                            <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
+                                                <sorts>
+                                                    <sort field="BranchName" direction="asc" />
+                                                </sorts>
+                                                <transport>
+                                                    <read url="@Url.Action("Get", "Branch")" />
+                                                </transport>
+                                            </datasource>
+                                        </kendo-dropdownlist>
+                                        <span asp-validation-for="BranchId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="ProductId" class="control-label" style="width:100%"></label>
+                                        <kendo-dropdownlist name="ProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                            for="ProductId"
+                                                            option-label="Seleccione el Producto"
+                                                            datatextfield="ProductName"
+                                                            datavaluefield="ProductId"
+                                                            required data-required-msg="El Producto es requerido."
+                                                            style="width: 100%;">
+                                            <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
+                                                <transport>
+                                                    <read url="@Url.Action("GetProduct", "Common")" />
+                                                </transport>
+                                            </datasource>
+                                        </kendo-dropdownlist>
+                                        <span asp-validation-for="ProductId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <script>
+                                        function FactorRiesgo() {
+                                            return { 'Id': 83 };
+                                        }
+                                    </script>
+                                    <div class="form-group">
+                                        <label asp-for="IdFactorRiesgo" class="control-label" style="width:100%"></label>
+                                        <kendo-dropdownlist name="IdFactorRiesgo" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                            for="IdFactorRiesgo"
+                                                            option-label="Seleccione el Factor Riesgo"
+                                                            datatextfield="Nombre"
+                                                            datavaluefield="Id"
+                                                            required data-required-msg="El Factor Riesgo es requerido."
+                                                            style="width: 100%;">
+                                            <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
+                                                <transport>
+                                                    <read url="@Url.Action("GetElementoByIdConfiguracion", "ElementoConfiguracion")" data="FactorRiesgo" />
+                                                </transport>
+                                            </datasource>
+                                        </kendo-dropdownlist>
+                                        <span asp-validation-for="IdFactorRiesgo" class="text-danger"></span>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="Riesgo" class=" control-label" style="min-width:100%"></label>
+                                        <textarea type="text" id="Riesgo" class="form-control" maxlength="250" required data-required-msg="El Riesgo es requerido." style="min-width:100%;" rows="4" cols="40" asp-for="Riesgo"></textarea>
+                                        @*<input type="text" maxlength="250" required data-required-msg="El Riesgo es requerido." asp-for="Riesgo" name="Riesgo" class="form-control" style="min-width:100%" />*@
+                                        <span asp-validation-for="Riesgo" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="Efecto" class=" control-label" style="min-width:100%"></label>
+                                        <textarea type="text" id="Efecto" class="form-control" maxlength="250" required data-required-msg="El Efecto es requerido." style="min-width:100%;" rows="4" cols="40" asp-for="Efecto"></textarea>
+                                        @*<input type="text" maxlength="250" required data-required-msg="El Efecto es requerido." asp-for="Efecto" name="Efecto" class="form-control" style="min-width:100%" />*@
+                                        <span asp-validation-for="Efecto" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="IdContextoRiesgo" class="control-label" style="width:100%">Contexto de Riesgo</label>
+                                        <kendo-dropdownlist name="IdContextoRiesgo" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                            for="IdContextoRiesgo"
+                                                            option-label="Seleccione el Contexto de Riesgo"
+                                                            datatextfield="TipoContexto"
+                                                            datavaluefield="IdContextoRiesgo"
+                                                            required data-required-msg="El Contexto de Riesgo es requerido."
+                                                            style="width: 100%;">
+                                            <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
+                                                <transport>
+                                                    <read url="@Url.Action("GetContextoRiesgo", "ContextoRiesgo")" />
+                                                </transport>
+                                            </datasource>
+                                        </kendo-dropdownlist>
+                                        <span asp-validation-for="IdContextoRiesgo" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="Responsable" class=" control-label" style="min-width:100%"></label>
+                                        <input type="text" asp-for="Responsable" maxlength="100" required data-required-msg="El Responsable es requerido." name="Responsable" class="form-control" style="min-width:100%" />
+                                        <span asp-validation-for="Responsable" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="RiesgoInicialProbabilidad" class=" control-label" style="min-width:100%"></label>
+                                        <input type="text" maxlength="2" onKeyPress="return soloNumeros(event)" required data-required-msg="La Probabilidad de Riesgo Inicial es requerida." asp-for="RiesgoInicialProbabilidad" name="RiesgoInicialProbabilidad" class="form-control" style="min-width:100%" />
+                                        <span asp-validation-for="RiesgoInicialProbabilidad" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="RiesgoInicialImpacto" class=" control-label" style="min-width:100%"></label>
+                                        <input type="text" maxlength="2" onKeyPress="return soloNumeros(event)" required data-required-msg="El Impacto de Riesgo Inicial es requerido." asp-for="RiesgoInicialImpacto" name="RiesgoInicialImpacto" class="form-control" style="min-width:100%" />
+                                        <span asp-validation-for="RiesgoInicialImpacto" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <input type="number" data-validate="false" asp-for="RiesgoInicialCalificacion" hidden="hidden" />
+                                <input type="number" data-validate="false" asp-for="RiesgoInicialValorSeveridad" hidden="hidden" />
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="Controles" class=" control-label" style="min-width:100%"></label>
+                                        <textarea type="text" id="Controles" class="form-control" maxlength="500" required data-required-msg="Los Controles son requeridos." style="min-width:100%;" rows="6" cols="40" asp-for="Riesgo"></textarea>
+                                        @*<input type="text" maxlength="500" asp-for="Controles" required data-required-msg="Los Controles son requeridos." name="Controles" class="form-control" style="min-width:100%" />*@
+                                        <span asp-validation-for="Controles" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="TipodeAccionderiesgoId" class="control-label" style="width:100%">Tipo de Acción</label>
+                                        <kendo-dropdownlist name="TipodeAccionderiesgoId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                            for="TipodeAccionderiesgoId"
+                                                            option-label="Seleccione el  producto"
+                                                            datatextfield="Tipodeaccion"
+                                                            datavaluefield="TipodeAccionderiesgoId"
+                                                            required data-required-msg="El Tipo de Acción es requerido."
+                                                            style="width: 100%;">
+                                            <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
+                                                <transport>
+                                                    <read url="@Url.Action("GetTipodeAccionderiesgo", "TipodeAccionderiesgo")" />
+                                                </transport>
+                                            </datasource>
+                                        </kendo-dropdownlist>
+                                        <span asp-validation-for="TipodeAccionderiesgoId" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="FechaObjetvo" class=" control-label" style="min-width:100%"></label>
+                                        <input type="text" maxlength="50" required data-required-msg="La Fecha Objetivo es requerida." asp-for="FechaObjetvo" name="FechaObjetvo" class="form-control" style="min-width:100%" />
+                                        <span asp-validation-for="FechaObjetvo" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="RiesgoResidualProbabilidad" class=" control-label" style="min-width:100%"></label>
+                                        <input type="text" maxlength="2" onKeyPress="return soloNumeros(event)" required data-required-msg="La Probabilidad de Riesgo Residual es requerida." asp-for="RiesgoResidualProbabilidad" name="RiesgoResidualProbabilidad" class="form-control" style="min-width:100%" />
+                                        <span asp-validation-for="RiesgoResidualProbabilidad" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="RiesgoResidualImpacto" class=" control-label" style="min-width:100%"></label>
+                                        <input type="text" maxlength="2" onKeyPress="return soloNumeros(event)" required data-required-msg="El Impacto de Riesgo Residual es requerido." asp-for="RiesgoResidualImpacto" name="RiesgoResidualImpacto" class="form-control" style="min-width:100%" />
+                                        <span asp-validation-for="RiesgoResidualImpacto" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <input type="number" data-validate="false" asp-for="RiesgoResidualCalificacion" hidden="hidden" />
+                                <input type="number" data-validate="false" asp-for="RiesgoResidualValorSeveridad" hidden="hidden" />
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="Seguimiento" class=" control-label" style="min-width:100%"></label>
+                                        <textarea type="text" id="Seguimiento" class="form-control" maxlength="600" required data-required-msg="El Seguimiento es requerido." style="min-width:100%;" rows="6" cols="40" asp-for="Seguimiento"></textarea>
+                                        @*<input type="text" maxlength="500" asp-for="Seguimiento" required data-required-msg="El Seguimiento es requerido." name="Seguimiento" class="form-control" style="min-width:100%" />*@
+                                        <span asp-validation-for="Seguimiento" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label asp-for="Avance" class=" control-label" style="min-width:100%">% Avance</label>
+                                        <input type="text" maxlength="3" onKeyPress="return soloNumeros(event)" required data-required-msg="El Avance es requerido." asp-for="Avance" name="Avance" class="form-control" style="min-width:100%" />
+                                        <span asp-validation-for="Avance" class="text-danger"></span>
+                                    </div>
+                                </div>
+                                <div class="col-md-2">
+                                    <div class="form-group">
+                                        <label asp-for="Eficaz" class=" control-label" style="width:100%"></label>
+                                        @(Html.Kendo().SwitchFor(m => m.Eficaz).Messages(s => s.Checked("Si").Unchecked("No")))
+                                        <span asp-validation-for="Eficaz" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label asp-for="FechaRevision" class=" control-label" style="min-width:100%"></label>
+                                        <kendo-datepicker name="FechaRevision"
+                                                          style="width: 100%;"
+                                                          format="dd/MM/yyyy"
+                                                          time-format="hh:mm:ss"
+                                                          data-val-required="La Fecha de Revisión es requerida." />
+                                        <span asp-validation-for="FechaRevision" class="text-danger"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <button id="btnGuardarMatrizRiesgoClientes" type="button" class="form-control btn-miboton" onclick="AddMatrizRiesgoCustomers()">Guardar</button>
+                            </div>
+                            @*</div>*@
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+}
+else
+{
+    <h3 class="text-themecolor">Matriz de Riesgos Clientes</h3>
+} 
+
+@*<div class="box">
+    <div class="box-body">*@
+
+@(Html.Kendo().Grid<ERPMVC.DTO.MatrizRiesgoCustomersDTO>()
+                        .Name("gridMatrizRiesgoCustomers")
+                        .Columns(columns =>
+                        {
+                            if (permisos.HasClaim("Monitoreo.Matriz de Riesgos Clientes.Editar Matriz de Riesgos Clientes", "true")
+                            || permisos.HasClaim("Monitoreo.Matriz de Riesgos Clientes.Eliminar Matriz de Riesgos Clientes", "true"))
+                            {
+                                columns.Command(command =>
+                                {
+                                    if (permisos.HasClaim("Monitoreo.Matriz de Riesgos Clientes.Editar Matriz de Riesgos Clientes", "true"))
+                                    {
+                                        command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditMatrizRiesgoCustomers");
+                                    }
+                                    if (permisos.HasClaim("Monitoreo.Matriz de Riesgos Clientes.Eliminar Matriz de Riesgos Clientes", "true"))
+                                    {
+                                        command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+                                    }
+
+                                }).Width(100).Title("Acciones");
+                            }
+                            columns.Bound(p => p.Id).Title("Id").Width(90).Visible(true);
+                            columns.Bound(p => p.Customer.CustomerName).Title("Cliente").Width(250);
+                            columns.Bound(p => p.Product.ProductName).Title("Producto").Width(250);
+                            columns.Bound(p => p.FactorRiesgo).Title("Factor de Riesgo").Width(200);
+                            columns.Bound(p => p.Riesgo).Title("Riesgo").Width(250);
+                            columns.Bound(p => p.Efecto).Title("Efecto").Width(250);
+                            columns.Bound(p => p.ContextoRiesgo.TipoContexto).Title("Contexto").Width(130);
+                            columns.Bound(p => p.Responsable).Title("Responsable").Width(200);
+                            columns.Bound(p => p.RiesgoInicialProbabilidad).Title("Probabilidad Riesgo Inicial").Width(230);
+                            columns.Bound(p => p.RiesgoInicialImpacto).Title("Impacto Riesgo Inicial").Width(220);
+                            columns.Bound(p => p.RiesgoInicialCalificacion).Title("Calificación Riesgo Inicial").Width(230);
+                            columns.Bound(p => p.RiesgoInicialValorSeveridad).Title("Valor Severidad Riesgo Inicial").Width(250);
+                            columns.Bound(p => p.RiesgoInicialNivel).Title("Nivel Riesgo Inicial").Width(230).HtmlAttributes(new { @style = "background:#=RiesgoInicialColorHexadecimal#;color:white;" });
+                            columns.Bound(p => p.Controles).Title("Controles").Width(250);
+                            columns.Bound(p => p.TipodeAccionderiesgo.Tipodeaccion).Title("Tipo de Acción").Width(150);
+                            columns.Bound(p => p.FechaObjetvo).Title("Fecha Objetivo").Width(250);
+                            columns.Bound(p => p.RiesgoResidualProbabilidad).Title("Probabilidad Riesgo Residual").Width(250);
+                            columns.Bound(p => p.RiesgoResidualImpacto).Title("Impacto Riesgo Residual").Width(250);
+                            columns.Bound(p => p.RiesgoResidualCalificacion).Title("Calificación Riesgo Residual").Width(250);
+                            columns.Bound(p => p.RiesgoResidualValorSeveridad).Title("Valor Severidad Riesgo Residual").Width(270);
+                            columns.Bound(p => p.RiesgoResidualNivel).Title("Nivel Riesgo Residual").Width(230).HtmlAttributes(new { @style = "background:#=RiesgoResidualColorHexadecimal#;color:white;" });
+                            columns.Bound(p => p.Seguimiento).Title("Seguimiento (Descripción de las acciones realizadas).").Width(500);
+                            columns.Bound(p => p.FechaRevision).Title("Fecha Revisión").Format("{0:dd/MM/yyyy}").Width(180);
+                            columns.Bound(p => p.Avance).Title("% Avance").Width(150);
+                            columns.Bound(p => p.Eficaz).ClientTemplate("#= Eficaz ? 'Si' : 'No' #").Title("Eficaz").Width(90);
+                        })
+                            .Filterable(f => f.Operators(o => o.ForString(s => s
+                    .Clear()
+                    .Contains("Contiene")
+                    .DoesNotContain("No contiene")
+                    .EndsWith("Termina con")
+                    .IsEqualTo("Es igual a")
+                    .IsNotEqualTo("No es igual a")
+                    .IsNull("Es nulo")
+                    .StartsWith("Inicia con")
+
+
+                )
+                .ForNumber(n => n
+                .Clear()
+                .IsEqualTo("Es igual a")
+                .IsGreaterThan("Es mayor que")
+                .IsLessThan("Es menor que")
+                .IsNull("Es nulo")
+                .IsLessThanOrEqualTo("Es menor o igual que")
+                .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                )
+                .ForDate(d => d
+                .Clear()
+                .IsEqualTo("Es igual que")
+                .IsGreaterThan("Es mayor que")
+                .IsLessThan("Es menor que")
+                .IsLessThanOrEqualTo("Es menor o igual que")
+                .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                .IsNotEqualTo("No es igual que")
+                )
+            ))
+                        .ToolBar(tools =>
+                        {
+                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                        })
+                        .Editable(e => e.Mode(GridEditMode.PopUp))
+                        .Sortable()
+                        .AutoBind(true)
+                        .Pageable()
+                        //.Events(e => e.DataBound("CalcularTotalDocumento"))
+                        .Filterable()
+                        .Scrollable()
+                        // .ClientDetailTemplateId("template")
+                        .Pdf(pdf => pdf.FileName("Matriz de Riesgos Clientes Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                            .Excel(excel => excel.FileName("Matriz de Riesgos Clientes Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                        //.Events(e=>e.Save("onsave"))
+                        .DataSource(dataSource =>
+
+                        dataSource
+                        //.Ajax()
+                        .WebApi()
+
+                        .ServerOperation(true)
+                        .Model(model =>
+                        {
+                            model.Id(p => p.Id);
+                            model.Field(p => p.Id).Editable(false);
+
+                        })
+                        .Events(events =>
+                        {
+                            events.Error("error_handler");
+
+                        })
+                        .Read(read => read.Action("GetMatrizRiesgoCustomers", "MatrizRiesgoCustomers"))))
+
+@*</div>
+    </div>*@
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridMatrizRiesgoCustomers").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridMatrizRiesgoCustomers").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setRowButtonTooltip(".k-grid-Editar", "Editar Registro");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar Registro");
+
+    $(document).ready(function () {
+        $("#Id").val("0");
+
+        $("#RiesgoInicialProbabilidad").on('paste', function (e) {
+            e.preventDefault();
+        })
+        $("#RiesgoInicialImpacto").on('paste', function (e) {
+            e.preventDefault();
+        })
+        $("#RiesgoResidualProbabilidad").on('paste', function (e) {
+            e.preventDefault();
+        })
+        $("#RiesgoResidualImpacto").on('paste', function (e) {
+            e.preventDefault();
+        })
+        $("#Avance").on('paste', function (e) {
+            e.preventDefault();
+        })
+    });
+
+    $("#RiesgoInicialProbabilidad").on("change", function () {
+        var RiesgoInicialImpacto = $("#RiesgoInicialImpacto").val();
+        if (this.value > 0 && RiesgoInicialImpacto > 0) {
+            $("#RiesgoInicialCalificacion").val(this.value * RiesgoInicialImpacto);
+            if ($("#RiesgoInicialCalificacion").val() <= 4) {
+                $("#RiesgoInicialValorSeveridad").val(1);
+            }
+            else if ($("#RiesgoInicialCalificacion").val() <= 8) {
+                $("#RiesgoInicialValorSeveridad").val(2);
+            }
+            else if ($("#RiesgoInicialCalificacion").val() <= 12) {
+                $("#RiesgoInicialValorSeveridad").val(3);
+            }
+            else if ($("#RiesgoInicialCalificacion").val() > 12) {
+                $("#RiesgoInicialValorSeveridad").val(4);
+            }
+        }
+        else {
+            $("#RiesgoInicialCalificacion").val(null);
+        }
+    })
+
+    $("#RiesgoInicialImpacto").on("change", function () {
+        var RiesgoInicialProbabilidad = $("#RiesgoInicialProbabilidad").val();
+        if (this.value > 0 && RiesgoInicialProbabilidad > 0) {
+            $("#RiesgoInicialCalificacion").val(this.value * RiesgoInicialProbabilidad);
+            if ($("#RiesgoInicialCalificacion").val() <= 4) {
+                $("#RiesgoInicialValorSeveridad").val(1);
+            }
+            else if ($("#RiesgoInicialCalificacion").val() <= 8) {
+                $("#RiesgoInicialValorSeveridad").val(2);
+            }
+            else if ($("#RiesgoInicialCalificacion").val() <= 12) {
+                $("#RiesgoInicialValorSeveridad").val(3);
+            }
+            else if ($("#RiesgoInicialCalificacion").val() > 12) {
+                $("#RiesgoInicialValorSeveridad").val(4);
+            }
+        }
+        else {
+            $("#RiesgoInicialCalificacion").val(null);
+        }
+    })
+
+    $("#RiesgoResidualProbabilidad").on("change", function () {
+        var RiesgoResidualImpacto = $("#RiesgoResidualImpacto").val();
+        if (this.value > 0 && RiesgoResidualImpacto > 0) {
+            $("#RiesgoResidualCalificacion").val(this.value * RiesgoResidualImpacto);
+            if ($("#RiesgoResidualCalificacion").val() <= 4) {
+                $("#RiesgoResidualValorSeveridad").val(1);
+            }
+            else if ($("#RiesgoResidualCalificacion").val() <= 8) {
+                $("#RiesgoResidualValorSeveridad").val(2);
+            }
+            else if ($("#RiesgoResidualCalificacion").val() <= 12) {
+                $("#RiesgoResidualValorSeveridad").val(3);
+            }
+            else if ($("#RiesgoResidualCalificacion").val() > 12) {
+                $("#RiesgoResidualValorSeveridad").val(4);
+            }
+        }
+        else {
+            $("#RiesgoResidualCalificacion").val(null);
+        }
+    });
+
+    $("#RiesgoResidualImpacto").on("change", function () {
+        var RiesgoResidualProbabilidad = $("#RiesgoResidualProbabilidad").val();
+        if (this.value > 0 && RiesgoResidualProbabilidad > 0) {
+            $("#RiesgoResidualCalificacion").val(this.value * RiesgoResidualProbabilidad);
+            if ($("#RiesgoResidualCalificacion").val() <= 4) {
+                $("#RiesgoResidualValorSeveridad").val(1);
+            }
+            else if ($("#RiesgoResidualCalificacion").val() <= 8) {
+                $("#RiesgoResidualValorSeveridad").val(2);
+            }
+            else if ($("#RiesgoResidualCalificacion").val() <= 12) {
+                $("#RiesgoResidualValorSeveridad").val(3);
+            }
+            else if ($("#RiesgoResidualCalificacion").val() > 12) {
+                $("#RiesgoResidualValorSeveridad").val(4);
+            }
+        }
+        else {
+            $("#RiesgoResidualCalificacion").val(null);
+        }
+    });
+</script>

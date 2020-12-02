@@ -1,7 +1,10 @@
 ﻿@using Kendo.Mvc.UI
 
 @{
-    ViewData["Title"] = "TASA DE CAMBIO DE DOLAR";
+    ViewData["Title"] = "Tasa de Cambio de Dólar";
+    bool permisoAgregar, permisoEditar;
+    permisoAgregar = (bool)ViewData["permisoAgregar"];
+    permisoEditar = (bool)ViewData["permisoEditar"];
 }
 
 <script>
@@ -96,26 +99,30 @@
          }
 </script>
 
-<h3 class="text-themecolor">Tasa de Dollar</h3>
+<h3 class="text-themecolor">Tasa de Dólar</h3>
 @(Html.Kendo().Grid<ERPMVC.Models.ExchangeRate>
                                 ()
                                 .Name("gridNumeracionExchangeRate")
                                 .Columns(columns =>
                                 {
-                                    columns.Command(command =>
+                                    if (permisoEditar)
                                     {
-                                        //command.Custom("Ver detalles").Click("Detalles");
-                                        //command.Custom("Editar").Click("EditTypeAccount");
-                                        command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditExchangeRate");
+                                        columns.Command(command =>
+                                        {
+                                            //command.Custom("Ver detalles").Click("Detalles");
+                                            //command.Custom("Editar").Click("EditTypeAccount");
+                                            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditExchangeRate");
 
-                                        //  command.Destroy();
-                                    }).Width(100);
-                                    columns.Bound(p => p.ExchangeRateId).Title("Código").Width(50);
+                                            //  command.Destroy();
+                                        }).Width(170).Title("Acciones");
+                                    }
+
+                                    columns.Bound(p => p.ExchangeRateId).Title("Código").Width(100);
                                     columns.Bound(p => p.DayofRate).Title("Fecha").Format("{0:dd/MM/yyyy}").Width(150);
                                     columns.Bound(p => p.ExchangeRateValue).Title("Tasa de Venta").Format("{0:N4}").Width(150);
+                                    columns.Bound(p => p.ExchangeRateValueCompra).Title("Tasa de Compra").Format("{0:N4}").Width(150);
                                     columns.Bound(p => p.CurrencyName).Width(150);
-                                    columns.Bound(p => p.CurrencyId).Hidden().Width(150)
-                                    .Width(100);
+                                    columns.Bound(p => p.CurrencyId).Hidden().Width(150);
                                 })
                                     .Filterable(f => f.Operators(o => o.ForString(s => s
                                                            .Clear()
@@ -151,13 +158,13 @@
                                 .ToolBar(tools =>
                                 {
                                     // tools.Create();
-                                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                                                   .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddExchangeRate()" });
-                                    tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                    tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-
+                                    if (permisoAgregar)
+                                    {
+                                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                                                           .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddExchangeRate()" });
+                                    }
+                                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
                                 })
                                 .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
                                 .Sortable()
@@ -201,3 +208,23 @@
 <div id="NumExchangeRate">
     @await Html.PartialAsync("pvwAddExchangeRate", new ERPMVC.DTO.ExchangeRateDTO { ExchangeRateId = 0, DayofRate = DateTime.Now })
 </div>
+
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridNumeracionExchangeRate").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridNumeracionExchangeRate").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+</script>

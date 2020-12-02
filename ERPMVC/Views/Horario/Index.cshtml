@@ -1,0 +1,144 @@
+﻿@using Kendo.Mvc.UI
+@{
+    ViewData["Title"] = "Horarios";
+ }
+<h3 class="text-themecolor">Horarios</h3>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <div class="row">
+                <div id="grdConfiguracion"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        CrearGrid();
+    });
+
+    function CrearGrid() {
+        $("#grdConfiguracion").kendoGrid({
+            dataSource: {
+                transport: {
+                    read: "@Url.Action("GetHorarios", "Horario")",
+                    update: "@Url.Action("Guardar", "Horario")",
+                    create: "@Url.Action("Guardar", "Horario")",
+                    parameterMap: function (datos, tipo) {
+                        if (tipo !== 'read') {
+                            //debugger;
+                            if (datos.HoraInicio.length > 10) {
+                                datos.HoraInicio = kendo.toString(new Date(datos.HoraInicio), "hh:mm tt");
+                            }
+                            if (datos.HoraFinal.length > 10) {
+                                datos.HoraFinal = kendo.toString(new Date(datos.HoraFinal), "hh:mm tt");
+                            }
+                            
+                            datos.IdEstado = datos.Estado.IdEstado;
+                            //debugger;
+                        }
+                        return datos;
+                    }
+                },
+                schema: {
+                    model: {
+                        id:"Id",
+                        fields: {
+                            Id: { type: "number", editable: true },
+                            Nombre: { type: "string", editable: true },
+                            HoraInicio: {type: "string", editable: true },
+                            HoraFinal: { type: "string", editable: true },
+                            IdEstado: { type: "number", editable: true },
+                            Estado: { defaultValue: {IdEstado:1, NombreEstado:"Activo"}, editable: true }
+                        }
+                    }
+                },
+                requestEnd: function(e) {
+                    if (e.type !== "read") {
+                        $("#grdConfiguracion").data("kendoGrid").dataSource.read();
+                    }
+                }
+            },
+            toolbar: [
+                { name: "create", text: "Nuevo Horario" }
+            ],
+            columns: [
+                {
+                    command: [
+                        { name: "edit", text: { edit: "", update: "", cancel: "" }}
+                    ],
+                    width:60
+                },
+                { field: "Id", title: "Id. ", width: 80, hidden: true },
+                { field: "Nombre", title: "Nombre", width: 300 },
+                { field: "HoraInicio", title: "Hora Inicio", width: 100, editor: editorHora},
+                { field: "HoraFinal", title: "Hora Final", width: 100, editor: editorHora},
+                { field: "Idestado", hidden:true},
+                { field: "Estado", title: "Estado", width: 100, editor: editorEstado, template: "#= (typeof Estado ==='undefined'? '': Estado.NombreEstado) #"}
+            ],
+            noRecords: {
+                template:"No hay horarios"
+            },
+            //height: 400,
+            scrollable: true,
+            editable: "inline",
+            save: ValidarIngreso
+        });
+
+        function ValidarIngreso(e) {
+            //debugger;
+            var registro = e.model;
+            if (new Date(registro.HoraFinal) < new Date(registro.HoraInicio)) {
+                alert('Hora final no puede ser menor a hora de inicio');
+                e.preventDefault();
+                return false;
+            }
+            //debugger;
+        }
+
+        function editorHora(contenedor, opciones) {
+            $('<input data-bind="value:' + opciones.field + '"/>')
+                .appendTo(contenedor)
+                .kendoTimePicker({ format:"hh:mm tt"});
+        }
+
+        function editorEstado(contenedor, opciones) {
+            $('<input name="' + opciones.field + '"/>')
+                .appendTo(contenedor)
+                .kendoDropDownList({
+                    index:0,
+                    autoBind: true,
+                    dataTextField: "NombreEstado",
+                    dataValueField: "IdEstado",
+                    dataSource: {
+                        transport: {
+                            read: {
+                                type:"GET",
+                                url: '@Url.Action("GetGrupoEstadoI", "Estados")',
+                                dataType: "json"
+                            }
+                        },
+                        schema: {
+                            model: {
+                                fields: {
+                                    IdEstado: { type: "number" },
+                                    NombreEstado: {type:"string"}
+                                }
+                            }
+                        }
+                    }
+                });
+        }
+
+        //function cambioEstado(e) {
+        //    //debugger;
+        //    var estado = e.sender.dataItem();
+        //    var grid = e.sender.element.closest(".k-grid").data("kendoGrid");
+        //    var fila = e.sender.element.closest("tr");
+        //    var registro = grid.dataItem(fila);
+        //    registro.set("IdEstado", estado.IdEstado);
+        //    registro.set("Estado", estado);
+        //}
+    }
+</script>

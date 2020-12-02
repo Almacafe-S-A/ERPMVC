@@ -2,7 +2,10 @@
 
 @{
     ViewData["Title"] = "Escala";
-
+    bool permisoAgregar, permisoEditar, permisoEliminar;
+    permisoAgregar = (bool)ViewData["permisoAgregar"];
+    permisoEditar = (bool)ViewData["permisoEditar"];
+    permisoEliminar = (bool)ViewData["permisoEliminar"];
 }
 
 <script>
@@ -23,7 +26,10 @@
          $('#ModalEscala').modal('show');
          $("#EscalaId").val('0');
 
-
+         var validator = $("#frmEscala").data("kendoValidator");
+         validator.hideMessages();
+         $('#ModalEscala').find(':input').not(':submit').val('');
+         $("#IdEstado").data("kendoDropDownList").value(0);
 
 
     }
@@ -79,15 +85,26 @@
 
                 .Columns(columns =>
                 {
-                    columns.Command(command =>
+                    if (permisoEditar == true || permisoEliminar == true)
                     {
-                        //command.Custom("Ver detalles").Click("Detalles");
-                        command.Custom("Editar").Click("EditEscala");
-                        command.Destroy().Text("Eliminar");
-                    }).Width(250);
+                        columns.Command(command =>
+                        {
+                            //command.Custom("Ver detalles").Click("Detalles");
+                            if (permisoEditar)
+                            {
+                                command.Custom("Editar").Click("EditEscala").Text(" ").IconClass("fa fa-edit");
+                            }
+                            if (permisoEliminar)
+                            {
+                                command.Destroy().Text(" ").IconClass("fa fa-trash");
+                            }
+
+                        }).Width(170).Title("Acciones");
+                    }
+
                     columns.Bound(p => p.IdEscala).Width(150);
                     columns.Bound(p => p.NombreEscala).Width(170);
-                    columns.Bound(p => p.DescripcionEscala).Width(170);
+                    columns.Bound(p => p.DescripcionEscala).Width(250);
                     columns.Bound(p => p.ValorInicial).Width(200);
                     columns.Bound(p => p.ValorFinal).Width(160);
                     columns.Bound(p => p.Porcentaje).Width(160);
@@ -103,10 +120,14 @@
                 {
 
                     //tools.Create();
-                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                              .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddEscala()" });
-                    tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                    tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                    if (permisoAgregar)
+                    {
+                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                      .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddEscala()" });
+                    }
+                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
 
 
 
@@ -150,3 +171,23 @@
 <div id="numEscala">
     @await Html.PartialAsync("pvwAddEscala", new ERPMVC.DTO.EscalaDTO { IdEscala = 0 })
 </div>
+
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridEscala").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridEscala").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+</script>

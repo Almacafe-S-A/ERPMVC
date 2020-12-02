@@ -1,6 +1,8 @@
 ﻿@model ERPMVC.DTO.CreditNoteDTO
-
-
+@using System.Security.Claims
+@{
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisosCreditNote"];
+}
 
 <script>
 
@@ -93,18 +95,22 @@
         var notification = $("#notification").data("kendoNotification");
       //  console.log($("#ProductId").val());
         if ($("#ProductId").val() !== '' && $("#ProductId").val() !== '0') {
+            CalcularTotalDocumento();
             var validator = $("#frmSalesOrderLine").data("kendoValidator");
             validator.hideMessages();
             //$(".k-icon k-i-warning").empty();
             //document.getElementsByClassName("k-icon k-i-warning").innerHTML = "";
             llenarsubproduct();
             $("#frmSalesOrderLine :input").not('#SalesOrderId').prop("disabled", false);
+            $("#CreditNoteLineId").val(0);
             $('#TaxId').data("kendoDropDownList").value(0);
             $('#DescriptionDetail').val('');
             $('#SubProductId').data("kendoDropDownList").value(0);
             $("#Quantity").data("kendoNumericTextBox").value(0);
+            $("#DiscountPercentage").data("kendoNumericTextBox").value(0);
+            $("#DiscountAmount").data("kendoNumericTextBox").value(0);
             $("#Price").data("kendoNumericTextBox").value(0);
-            $("#Amount").data("kendoNumericTextBox").value(0);
+            //$("#Amount").data("kendoNumericTextBox").value(0);
             $("#SubTotalLine").data("kendoNumericTextBox").value(0);
             $("#TaxAmount").data("kendoNumericTextBox").value(0);
             $("#AmountLine").data("kendoNumericTextBox").value(0);
@@ -112,13 +118,28 @@
             $("#AccountId").data("kendoDropDownList").value('');
             //$("#UnitOfMeasureId").data("kendoDropDownList").value('');
             $("#TaxPercentage").data("kendoNumericTextBox").value(0);
+            var x = document.getElementsByClassName("k-invalid");
+            if (x.length > 0) {
+                $("span").removeClass("k-invalid");
+            }
+            var validator = $("#frmSalesOrderLine").data("kendoValidator");
+            validator.hideMessages();
             $('#myModalInvoiceLine').modal('show');
         } else {
             var notification = $("#notification").data("kendoNotification");
-            notification.show({
-                title: "Validación",
-                message: "Debe seleccionar un producto!"
-            }, "error");
+            //notification.show({
+            //    title: "Validación",
+            //    message: "Debe seleccionar un producto!"
+            //}, "error");
+            $.toast({
+                heading: 'Validación',
+                text: "Debe seleccionar un Servicio!",
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
 
         }
 
@@ -141,10 +162,55 @@
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
 
                     //  $("#btngenerarfactura").show();
-                    notification.show({
-                        title: "Validación",
-                        message: textStatus + ": " + XMLHttpRequest.responseText
-                    }, "error");
+                    //notification.show({
+                    //    title: "Validación",
+                    //    message: textStatus + ": " + XMLHttpRequest.responseText
+                    //}, "error");
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+
+                }
+            });
+        }
+    }
+
+    function llenarsubproductprincipal() {
+        var combobox = $('#SubProductPrincipal').getKendoDropDownList();
+        if (combobox != null) {
+            var dataObject = { 'ProductId': $("#ProductId").val() };
+            $.ajax({
+                url: '@Url.Action("GetSubProductByProductId", "ProductRelation")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: dataObject,
+                success: function (data) {
+                    combobox.setDataSource(data);
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    //  $("#btngenerarfactura").show();
+                    //notification.show({
+                    //    title: "Validación",
+                    //    message: textStatus + ": " + XMLHttpRequest.responseText
+                    //}, "error");
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
 
                 }
             });
@@ -172,38 +238,49 @@
                 success: function (data) {
                     $("#SalesOrderLineMant").html('');
                     $("#SalesOrderLineMant").html(data);
+
                     GetPercentage();
-                    console.log(data)
-                    //$("#SubProductId").data("kendoDropDownList").value(data.SubProductId);
+                    //console.log(data)
+                    llenarsubproduct();
+                    $("#SubProductId").data("kendoDropDownList").value(dataItem.SubProductId);
 
 
-                    var txt = $(data);
+                    //var txt = $(data);
 
-                    var combobox = $('#SubProductId').getKendoDropDownList();
-                    if (combobox != null) {
-                        var found = $("#SubProductId", txt);
-                        subproducto = $(found).val();
-                    }
+                    //var combobox = $('#SubProductId').getKendoDropDownList();
+                    //if (combobox != null) {
+                    //    var found = $("#SubProductId", txt);
+                    //    subproducto = $(found).val();
+                    //}
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
 
                     //  $("#btngenerarfactura").show();
-                    notification.show({
-                        title: "Validación",
-                        message: textStatus + ": " + XMLHttpRequest.responseText
-                    }, "error");
+                    //notification.show({
+                    //    title: "Validación",
+                    //    message: textStatus + ": " + XMLHttpRequest.responseText
+                    //}, "error");
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
 
                 }
             });
 
             $("#frmSalesOrderLine :input").prop("disabled", true);
             //llenarsubproduct();
-            var combobox = $('#SubProductId').getKendoDropDownList();
-            if (combobox != null) {
-                combobox.value(subproducto);
-                combobox.trigger('change');
+            //var combobox = $('#SubProductId').getKendoDropDownList();
+            //if (combobox != null) {
+            //    combobox.value(subproducto);
+            //    combobox.trigger('change');
 
-            }
+            //}
         }
         else {
 
@@ -240,13 +317,19 @@
 
 
             $("#btnActualizarCotizacionLinea").prop("disabled", false);
+            var x = document.getElementsByClassName("k-invalid");
+            if (x.length > 0) {
+                $("span").removeClass("k-invalid");
+            }
+            var validator = $("#frmSalesOrderLine").data("kendoValidator");
+            validator.hideMessages();
             $("#CreditNoteLineId").val(dataItem.CreditNoteLineId);
             //$("#IdCD").val($("#cbxBuscarCertificadosDeposito").val());
             //hcustom = $("#CustomerId").val();
             //console.log(hcustom);
             //if(Number($("#IdCD").val()) === 0)
             //{
-            //    
+            //
             //}
             llenarsubproduct();
             $("#AccountId").data("kendoDropDownList").value(dataItem.AccountId);
@@ -257,7 +340,7 @@
             $("#Price").data("kendoNumericTextBox").value(dataItem.Price);
             $("#AmountLine").data("kendoNumericTextBox").value(dataItem.Amount);
             $("#DiscountPercentage").data("kendoNumericTextBox").value(dataItem.DiscountPercentage);
-            $("#DiscountAmount").data("kendoNumericTextBox").value(dataItem.DiscountPercentage);
+            $("#DiscountAmount").data("kendoNumericTextBox").value(dataItem.DiscountAmount);
             $("#SubTotalLine").data("kendoNumericTextBox").value(dataItem.SubTotal);
             $("#TaxId").data("kendoDropDownList").value(dataItem.TaxId);
             $("#TaxPercentage").data("kendoNumericTextBox").value(dataItem.TaxPercentage);
@@ -276,7 +359,7 @@
         function Delete(e) {
 
         e.preventDefault();
-        if (confirm('Esta seguro que desea eliminar la fila?')) {
+        if (confirm('¿Esta seguro que desea eliminar la fila?')) {
             var notification = $("#notification").data("kendoNotification");
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
 
@@ -298,10 +381,19 @@
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
 
                     //  $("#btngenerarfactura").show();
-                    notification.show({
-                        title: "Validación",
-                        message: textStatus + ": " + XMLHttpRequest.responseText
-                    }, "error");
+                    //notification.show({
+                    //    title: "Validación",
+                    //    message: textStatus + ": " + XMLHttpRequest.responseText
+                    //}, "error");
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
 
                 }
             });
@@ -320,135 +412,152 @@
 
 
 <div class="box">
+    <h3 class="text-themecolor">Detalle de Nota de Crédito</h3>
     <div class="box-body">
-
         @(Html.Kendo().Grid<ERPMVC.Models.CreditNoteLine>()
-                                                  .Name("gridCreditNoteDetail")
-                                                  .Columns(columns =>
-                                                  {
-                                                      columns.Command(command =>
-                                                      {
-                                                          if (Model.CreditNoteId == 0)
-                                                          {
-                                                              command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
-                                                              //command.Destroy().Text("Eliminar");
-                                                          }
-                                                          command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCotizacionDetalle");
-                                                          // command.Custom("Imprimir").Click("ImprimirCotizacion");
-                                                          //  command.Edit(); command.Destroy();
-                                                      }).Width(150);
+                                                                                  .Name("gridCreditNoteDetail")
+                                                                                  .Columns(columns =>
+                                                                                  {
+                                                                                      
+                                                                                          columns.Command(command =>
+                                                                                          {
 
-                                                      columns.Bound(p => p.CreditNoteLineId).Title("Id Linea").Width(150);
-                                                      //columns.Bound(p => p.CreditNoteId).Title("Id Maestro").Width(150);
-                                                      columns.Bound(p => p.AccountId).Title("Cuenta").Width(150).Visible(false);
-                                                      columns.Bound(p => p.AccountName).Title("Nombre Cuenta").Width(150);
-                                                      columns.Bound(p => p.SubProductId).Title("IdProducto").Width(150).Visible(false);
-                                                      columns.Bound(p => p.SubProductName).Title("Producto").Width(150);
-                                                      columns.Bound(p => p.Description).Title("Descripcion").Width(150);
-                                                      //columns.Bound(p => p.UnitOfMeasureId).Title("Unidad de medida").Width(150);
-                                                      columns.Bound(p => p.Quantity).Format("{0:n2}").Title("Cantidad").Width(150);
-                                                      columns.Bound(p => p.Price).Format("{0:n2}").Title("Precio").Format("{0:n2}").Width(150);
-                                                      columns.Bound(p => p.Amount).Format("{0:n2}").Title("Monto").Width(150);
-                                                      //  columns.Bound(p => p.TaxPercentage).Title("Porcentaje impuestos").Width(150);
-                                                      columns.Bound(p => p.DiscountPercentage).Format("{0:n2}").Title("Porcentaje Descuento").Width(150);
-                                                      columns.Bound(p => p.DiscountAmount).Format("{0:n2}").Title("Descuentos").Width(150);
-                                                      columns.Bound(p => p.SubTotal).Format("{0:n2}").Title("Sub Total").Width(150);
-                                                      columns.Bound(p => p.TaxId).Format("{0:n2}").Title("Impuesto").Width(150);
-                                                      columns.Bound(p => p.TaxCode).Title("Tipo Impuesto").Width(150);
-                                                      columns.Bound(p => p.TaxPercentage).Format("{0:n2}").Title("Porcentaje Impuesto").Width(150);
-                                                      // columns.Bound(p => p.tax).Title("Tipo Impuesto").Width(150);
-                                                      columns.Bound(p => p.TaxAmount).Format("{0:n2}").Title("Impuestos").Width(150);
+                                                                                              if (Model.CreditNoteId == 0)
+                                                                                              {
+                                                                                                  
+                                                                                                      command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCotizacionDetalle");
+                                                                                                 
+                                                                                                      command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+                                                                                                  
+                                                                                                  //command.Destroy().Text("Eliminar");
+                                                                                              }
+                                                                                              else
+                                                                                              {
+                                                                                                  
+                                                                                                      command.Custom("Editar").Text(" ").IconClass("far fa-list-alt").Click("EditCotizacionDetalle");
+                                                                                                  
+                                                                                              }
 
-                                                      columns.Bound(p => p.Total).Format("{0:n2}").Title("Total").Width(150);
+                                                                                              // command.Custom("Imprimir").Click("ImprimirCotizacion");
+                                                                                              //  command.Edit(); command.Destroy();
+                                                                                          }).Width(150).Title("Acciones");
+                                                                                      
+                                                                                      columns.Bound(p => p.CreditNoteLineId).Title("Id Línea").Width(150);
+                                                                                      //columns.Bound(p => p.CreditNoteId).Title("Id Maestro").Width(150);
+                                                                                      columns.Bound(p => p.AccountId).Title("Cuenta").Width(150).Hidden(true);
+                                                                                      columns.Bound(p => p.AccountName).Title("Nombre Cuenta").Width(250);
+                                                                                      columns.Bound(p => p.SubProductId).Title("IdProducto").Width(150).Hidden(true);
+                                                                                      columns.Bound(p => p.SubProductName).Title("SubServicio").Width(150);
+                                                                                      columns.Bound(p => p.Description).Title("Descripción").Width(250);
+                                                                                      //columns.Bound(p => p.UnitOfMeasureId).Title("Unidad de medida").Width(150);
+                                                                                      columns.Bound(p => p.Quantity).Format("{0:n2}").Title("Cantidad").Width(150);
+                                                                                      columns.Bound(p => p.Price).Format("{0:n2}").Title("Precio").Format("{0:n2}").Width(150);
+                                                                                      columns.Bound(p => p.Amount).Format("{0:n2}").Title("Monto").Width(150);
+                                                                                      //  columns.Bound(p => p.TaxPercentage).Title("Porcentaje impuestos").Width(150);
+                                                                                      columns.Bound(p => p.DiscountPercentage).Format("{0:n2}").Title("Porcentaje Descuento").Width(250);
+                                                                                      columns.Bound(p => p.DiscountAmount).Format("{0:n2}").Title("Descuentos").Width(200);
+                                                                                      columns.Bound(p => p.SubTotal).Format("{0:n2}").Title("Sub Total").Width(150);
+                                                                                      columns.Bound(p => p.TaxId).Format("{0:n2}").Title("Impuesto").Width(150);
+                                                                                      columns.Bound(p => p.TaxCode).Title("Tipo Impuesto").Width(200);
+                                                                                      columns.Bound(p => p.TaxPercentage).Format("{0:n2}").Title("Porcentaje Impuesto").Width(250);
+                                                                                      // columns.Bound(p => p.tax).Title("Tipo Impuesto").Width(150);
+                                                                                      columns.Bound(p => p.TaxAmount).Format("{0:n2}").Title("Impuestos").Width(150);
 
-                                                  })
-                                                      .Filterable(f => f.Operators(o => o.ForString(s => s
-                                               .Clear()
-                                               .Contains("Contiene")
-                                               .DoesNotContain("No contiene")
-                                               .EndsWith("Termina con")
-                                               .IsEqualTo("Es igual a")
-                                               .IsNotEqualTo("No es igual a")
-                                               .IsNull("Es nulo")
-                                               .StartsWith("Inicia con")
+                                                                                      columns.Bound(p => p.Total).Format("{0:n2}").Title("Total").Width(150);
 
-
-                                         )
-                                         .ForNumber(n => n
-                                           .Clear()
-                                           .IsEqualTo("Es igual a")
-                                           .IsGreaterThan("Es mayor que")
-                                           .IsLessThan("Es menor que")
-                                           .IsNull("Es nulo")
-                                           .IsLessThanOrEqualTo("Es menor o igual que")
-                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                         )
-                                         .ForDate(d => d
-                                         .Clear()
-                                         .IsEqualTo("Es igual que")
-                                         .IsGreaterThan("Es mayor que")
-                                         .IsLessThan("Es menor que")
-                                         .IsLessThanOrEqualTo("Es menor o igual que")
-                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                         .IsNotEqualTo("No es igual que")
-                                          )
-                                       ))
-                                                  .ToolBar(tools =>
-                                                  {
-                                                      if (Model.CreditNoteId == 0)
-                                                      {
-                                                          tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                          .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacionDetalle();" });
-                                                      }
-
-                                                      tools.Excel().HtmlAttributes(new { @class = "toolbar-field" });
-                                                      tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" });
+                                                                                  })
+                                                                                      .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                                               .Clear()
+                                                                               .Contains("Contiene")
+                                                                               .DoesNotContain("No contiene")
+                                                                               .EndsWith("Termina con")
+                                                                               .IsEqualTo("Es igual a")
+                                                                               .IsNotEqualTo("No es igual a")
+                                                                               .IsNull("Es nulo")
+                                                                               .StartsWith("Inicia con")
 
 
-                                                  })
-                                                   .Editable(e => e.Mode(GridEditMode.PopUp))
-                                                    .Sortable()
-                                                    .AutoBind(true)
-                                                    .Pageable()
-                                                    //.Events(e => e.DataBound("CalcularTotalDocumento"))
-                                                    .Filterable()
-                                                    .Scrollable()
-                                                    // .ClientDetailTemplateId("template")
-                                                    .Pdf(pdf => pdf.FileName("FacturaDetalleReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                                      .Excel(excel => excel.FileName("FacturaDetalleReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                                    //.Events(e=>e.Save("onsave"))
-                                                    .DataSource(dataSource =>
+                                                                         )
+                                                                         .ForNumber(n => n
+                                                                           .Clear()
+                                                                           .IsEqualTo("Es igual a")
+                                                                           .IsGreaterThan("Es mayor que")
+                                                                           .IsLessThan("Es menor que")
+                                                                           .IsNull("Es nulo")
+                                                                           .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                         )
+                                                                         .ForDate(d => d
+                                                                         .Clear()
+                                                                         .IsEqualTo("Es igual que")
+                                                                         .IsGreaterThan("Es mayor que")
+                                                                         .IsLessThan("Es menor que")
+                                                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                         .IsNotEqualTo("No es igual que")
+                                                                          )
+                                                                       ))
+                                                                                  .ToolBar(tools =>
+                                                                                  {
+                                                                                      if (Model.CreditNoteId == 0)
+                                                                                      {
+                                                                                          
+                                                                                              tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                          .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacionDetalle();" });
+                                                                                          
+                                                                                      }
+                                                                                          tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                                                          tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                                                                      
 
-                                                   dataSource
-                                                   //.Ajax()
-                                                   .WebApi()
+                                                                                  })
+                                                                                   .Editable(e => e.Mode(GridEditMode.PopUp))
+                                                                                    .Sortable()
+                                                                                    .AutoBind(true)
+                                                                                    .Pageable(s => s
+                                                                                    .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+                                                                                    .Empty("No hay datos."))
+                                                                                    .Enabled(false))
+                                                                                    //.Events(e => e.DataBound("CalcularTotalDocumento"))
+                                                                                    .Filterable()
+                                                                                    .Scrollable()
+                                                                                    // .ClientDetailTemplateId("template")
+                                                                                    .Pdf(pdf => pdf.FileName("Nota_Crédito_Detalle_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                                                                      .Excel(excel => excel.FileName("Nota_Crédito_Detalle_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                                                                    //.Events(e=>e.Save("onsave"))
+                                                                                    .DataSource(dataSource =>
 
-                                                    .ServerOperation(true)
-                                                    .Model(model =>
-                                                    {
-                                                        model.Id(p => p.CreditNoteLineId);
-                                                        model.Field(p => p.CreditNoteLineId).Editable(false);
-                                                        model.Field(p => p.CreditNoteId).Editable(false);
+                                                                                   dataSource
+                                                                                   //.Ajax()
+                                                                                   .WebApi()
 
-                                                    })
-                                                    .Events(events =>
-                                                    {
-                                                        events.Error("error_handler");
-                                                        //events.upda("EditHandler");
+                                                                                    .ServerOperation(true)
+                                                                                    .Model(model =>
+                                                                                    {
+                                                                                        model.Id(p => p.CreditNoteLineId);
+                                                                                        model.Field(p => p.CreditNoteLineId).Editable(false);
+                                                                                        model.Field(p => p.CreditNoteId).Editable(false);
 
-                                                    })
-                                                    .Read(read => read.Action("GetCreditNoteLineByCreditNoteId", "CreditNoteLine").Data("GetInvoiceId"))
-                                              //.Destroy(destroy => destroy.Action("Delete", "CreditNoteLine").Type(HttpVerbs.Post))
-                                              //.Create(create => create.Action("Insert", "SalesOrderLine"))
-                                              //.Update(update => update.Action("Update", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
-                                              //.Destroy(destroy => destroy.Action("Delete", "CreditNoteLine", new { CreditNoteLineId = "{0}" }))
-                                              //.Destroy(destroy => destroy.Action("Delete", "CreditNoteLine", new { CreditNoteLineId = "{0}" }).Type(HttpVerbs.Delete))
+                                                                                    })
+                                                                                    .Sort(s => s.Add(m => m.CreditNoteLineId).Descending())
+                                                                                    .Events(events =>
+                                                                                    {
+                                                                                        events.Error("error_handler");
+                                                                                        //events.upda("EditHandler");
 
-                                              )
+                                                                                    })
+                                                                                    .Read(read => read.Action("GetCreditNoteLineByCreditNoteId", "CreditNoteLine").Data("GetInvoiceId"))
+                                                                              //.Destroy(destroy => destroy.Action("Delete", "CreditNoteLine").Type(HttpVerbs.Post))
+                                                                              //.Create(create => create.Action("Insert", "SalesOrderLine"))
+                                                                              //.Update(update => update.Action("Update", "SalesOrderLine", new { SalesOrderLineId = "{0}" }))
+                                                                              //.Destroy(destroy => destroy.Action("Delete", "CreditNoteLine", new { CreditNoteLineId = "{0}" }))
+                                                                              //.Destroy(destroy => destroy.Action("Delete", "CreditNoteLine", new { CreditNoteLineId = "{0}" }).Type(HttpVerbs.Delete))
+
+                                                                              )
         )
 
     </div>
@@ -456,5 +565,29 @@
 
 
 <script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridCreditNoteDetail").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
 
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridCreditNoteDetail").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
+    //setRowButtonTooltip(".k-grid-GenerarFactura", "Generar una factura fiscal!");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
+    if (@Model.CreditNoteId > 0) {
+        setRowButtonTooltip(".k-grid-Editar", "Ver Detalle");
+    }
+    else {
+        setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    }
+    //setRowButtonTooltip(".k-grid-Seleccionar", "Seleccionar registro");
 </script>

@@ -1,10 +1,12 @@
 ﻿@model ERPMVC.DTO.ProformaInvoiceDTO
+@using System.Security.Claims
 
 @{ Layout = null;
     var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
-                                {"required","Valor requerido" }
-                            };
+                {"required","Valor requerido" }
+            };
     var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 
 
@@ -40,9 +42,6 @@
         if (input.attr('name') === "TotalLine" && input.val() == 0) {
             return false;
         }
-
-
-
         return true;
     }
 
@@ -84,8 +83,8 @@
         <!-- Modal content-->
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
                 <h4 class="modal-title">Información Factura proforma</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="card">
@@ -109,9 +108,6 @@
                 </div>
 
                 <div class="container-fluid">
-
-
-
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
@@ -146,8 +142,6 @@
 
                         <div class="col-md-6">
                             <div class="form-group">
-
-
                                 <script>
                                     function valueMapper(options) {
                                         $.ajax({
@@ -226,11 +220,18 @@
 
                                                         var midataObject = {
                                                             ProformaLineId: i + 1, ProformaInvoiceId: 0
+                                                            //, TaxCode: data.SalesOrderLines[i].TaxCode
+                                                            , UnitOfMeasureName: data.SalesOrderLines[i].UnitOfMeasureName
+                                                            , UnitOfMeasureId: data.SalesOrderLines[i].UnitOfMeasureId
+                                                            , SubProductId: data.SalesOrderLines[i].SubProductId
+                                                            , SubProductName: data.SalesOrderLines[i].SubProductName
+                                                            , SubTotal: data.SalesOrderLines[i].SubTotal
+                                                            , Price: data.SalesOrderLines[i].Price
+                                                            , DiscountAmount: data.SalesOrderLines[i].DiscountAmount
+                                                            , Amount: data.SalesOrderLines[i].Amount
+                                                            , TaxPercentage: data.SalesOrderLines[i].TaxPercentage
                                                             , TaxCode: data.SalesOrderLines[i].TaxCode
-                                                            , UnitOfMeasureName: data.SalesOrderLines[i].UnitOfMeasureName, UnitOfMeasureId: data.SalesOrderLines[i].UnitOfMeasureId
-                                                            , SubProductId: data.SalesOrderLines[i].SubProductId, SubProductName: data.SalesOrderLines[i].SubProductName
-                                                            , SubTotal: data.SalesOrderLines[i].SubTotal, Price: data.SalesOrderLines[i].Price
-                                                            , DiscountAmount: data.SalesOrderLines[i].DiscountAmount, TaxCode: data.SalesOrderLines[i].TaxCode
+                                                            , TaxId: data.SalesOrderLines[i].TaxId
                                                             , TaxAmount: data.SalesOrderLines[i].TaxAmount
                                                             , Total: data.SalesOrderLines[i].Total
                                                             , Quantity: data.SalesOrderLines[i].Quantity, WareHouseId: data.SalesOrderLines[i].WarehouseId
@@ -257,8 +258,6 @@
                                                         datasource.insert(midataObject);
                                                     }
                                                 }
-
-
                                             },
                                             error: function (XMLHttpRequest, textStatus, errorThrown) {
 
@@ -294,43 +293,38 @@
                                 <input type="hidden" id="singuardar" value="0" />
                                 <label for="cbxBuscar" class="control-label" style="width:100%">Asociar cotización con proforma</label>
                                 @(Html.Kendo().DropDownList()
-                                  .Name("cbxBuscarCotizaciones")
-                                  .Filter(Kendo.Mvc.UI.FilterType.Contains)
-                                  .OptionLabel("Buscar Cotización")
-                                  .DataTextField("SalesOrderName")
-                                  .DataValueField("SalesOrderId")
-                                  .HtmlAttributes(new { style = "width:100%" })
-                                  .Height(290)
-                                  .Events(e =>
-                                  {
-                                     e.Change("changesetearvalues");
-                                     //e.Filtering("applyFilterCustomer");
-                                  })
-                                  .AutoBind(false)
+                                                  .Name("cbxBuscarCotizaciones")
+                                                  .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                                                  .OptionLabel("Buscar Cotización")
+                                                  .DataTextField("SalesOrderName")
+                                                  .DataValueField("SalesOrderId")
+                                                  .HtmlAttributes(new { style = "width:100%" })
+                                                  .Height(290)
+                                                  .Events(e =>
+                                                  {
+                                                      e.Change("changesetearvalues");
+                                                                      //e.Filtering("applyFilterCustomer");
+                                                                  })
+                                                  .AutoBind(false)
 
-                                  .DataSource(source =>
-                                  {
-                                      source.Ajax()
-                                      .PageSize(80)
-                                       .Read(read => read.Action("Virtualization_ReadByCustomer", "SalesOrder")
-                                           .Data("ClienteId"));
+                                                  .DataSource(source =>
+                                                  {
+                                                      source.Ajax()
+                                                      .PageSize(9999999)
+                                                       .Read(read => read.Action("Virtualization_ReadByCustomer", "SalesOrder")
+                                                           .Data("ClienteId"));
 
-                                      source.ServerFiltering(true);
-                                  })
-                                  .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapper"))
+                                                      source.ServerFiltering(true);
+                                                  })
+                                                  .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapper"))
                                 )
-
-
                             </div>
                         </div>
                     </div>
 
-
                     <div class="row">
                         <div class="col-md-12">
                             <div class="form-group">
-
-
                                 <script>
                                     function valueMapperCertificado(options) {
                                         $.ajax({
@@ -452,7 +446,7 @@
                                                                         , Total: data.ProformaInvoiceLine[i].Total
                                                                         , Quantity: data.ProformaInvoiceLine[i].Quantity
                                                                         , WareHouseId: data.ProformaInvoiceLine[i].WarehouseId
-                                                                        //, ControlPalletsId: $("#cbxBuscarCotizaciones").val()
+                                                                        , ControlPalletsId: $("#cbxBuscarCotizaciones").val()
                                                                     };
 
                                                                     $.ajax({
@@ -471,15 +465,10 @@
                                                                             alert(textStatus + ": " + XMLHttpRequest.responseText);
                                                                         }
                                                                     });
-
                                                                     datasource.insert(midataObject);
-
-
                                                                 }
 
                                                                 CalcularTotalDocumento();
-
-
                                                             },
                                                             error: function (XMLHttpRequest, textStatus, errorThrown) {
 
@@ -487,7 +476,6 @@
                                                                     title: "Validación",
                                                                     message: textStatus + ": " + XMLHttpRequest.responseText
                                                                 }, "error");
-
                                                             }
                                                         });
                                                     }
@@ -505,7 +493,6 @@
                                                     }, "error");
                                                 }
                                             }
-
 
                                             function ClienteId() {
                                                 return {
@@ -539,34 +526,35 @@
 
                                 <input type="hidden" id="IdentificadorCalculo" value="0" />
                                 <input type="hidden" id="CustomerIdhidden" value="0" />
-                                <button id="btnSeleccionarCertificadoDeposito" class="form-control" onclick="SelectAllClick();">Seleccionar todos</button>
+                                <button id="btnSeleccionarCertificadoDeposito" class="form-control btn-miboton" onclick="SelectAllClick();">Seleccionar todos</button>
+                                <br />
                                 <label for="cbxBuscar" class="control-label" style="width:100%">Asociar certificado(s) de depósito con proforma</label>
                                 @(Html.Kendo().MultiSelect()
-                                                         .Name("cbxBuscarCertificadosDeposito")
-                                                         .Filter(Kendo.Mvc.UI.FilterType.Contains)
-                                                         .Placeholder("Seleccionar Certificado(s)")
-                                                         .DataTextField("CustomerName")
-                                                         .DataValueField("IdCD")
-                                                         
-                                                         .HtmlAttributes(new { style = "width:100%" })
-                                                         .Height(290)
-                                                         .Events(e =>
-                                                         {
-                                                                             //e.Change("changesetearvaluesCertificado");
-                                                         })
-                                                         .AutoBind(false)
-                                                         .DataSource(source =>
-                                                         {
-                                                             source.Ajax()
-                                                             .PageSize(80)
-                                                              .Read(read => read.Action("Virtualization_ReadByCustomer", "CertificadoDeposito")
-                                                              .Data("ClienteId"));
-                                                             source.ServerFiltering(true);
-                                                         })
-                                                         .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapperCertificado"))
-                                )
+                                                                         .Name("cbxBuscarCertificadosDeposito")
+                                                                         .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                                                                         .Placeholder("Seleccionar Certificado(s)")
+                                                                         .DataTextField("CustomerName")
+                                                                         .DataValueField("IdCD")
 
-                                <button id="btnAsociarCertificados" class="form-control" onclick="changesetearvaluesCertificado();">Calcular Factura por certificado</button>
+                                                                         .HtmlAttributes(new { style = "width:100%" })
+                                                                         .Height(290)
+                                                                         .Events(e =>
+                                                                         {
+                                                                                             //e.Change("changesetearvaluesCertificado");
+                                                                                         })
+                                                                         .AutoBind(false)
+                                                                         .DataSource(source =>
+                                                                         {
+                                                                             source.Ajax()
+                                                                             .PageSize(9999999)
+                                                                              .Read(read => read.Action("Virtualization_ReadByCustomer", "CertificadoDeposito")
+                                                                              .Data("ClienteId"));
+                                                                             source.ServerFiltering(true);
+                                                                         })
+                                                                         .Virtual(v => v.ItemHeight(26).ValueMapper("valueMapperCertificado"))
+                                )
+                                <br />
+                                <button id="btnAsociarCertificados" class="form-control btn-miboton" onclick="changesetearvaluesCertificado();">Calcular Factura por certificado</button>
                             </div>
                         </div>
                     </div>
@@ -690,12 +678,7 @@
                                                             }
                                                         });
                                                 }
-
                                                 CalcularTotalDocumento();
-
-
-
-
                                             },
                                             error: function (XMLHttpRequest, textStatus, errorThrown) {
 
@@ -703,14 +686,13 @@
                                                     title: "Validación",
                                                     message: textStatus + ": " + XMLHttpRequest.responseText
                                                 }, "error");
-
                                             }
                                         });
                                     }
                                     else {
                                         $.toast({
                                             heading: 'Validación',
-                                            text: '<br/><br/>Seleccione la cotización!.',
+                                            text: 'Seleccione la cotización!.',
                                             position: 'top-right',
                                             loaderBg: '#ff6849',
                                             icon: 'alert',
@@ -718,43 +700,39 @@
                                             stack: 6
                                         });
                                     }
-
-
                                 }
                             </script>
+                            <br />
                             <label for="cbxBuscar" class="control-label" style="width:100%">Agregar area utilizada</label>
                             @(Html.Kendo().DropDownList()
-                                                                                .Name("cbxBuscarCustomerArea")
-                                                                                .Filter(Kendo.Mvc.UI.FilterType.Contains)
-                                                                                .OptionLabel("Buscar Area utilizada")
-                                                                                .DataTextField("CustomerName")
-                                                                                .DataValueField("CustomerAreaId")
-                                                                                .HtmlAttributes(new { style = "width:100%" })
-                                                                                .Height(290)
-                                                                                .Events(e =>
-                                                                                {
-                                                                                                // e.Change("changeAreaUtilizada");
-                                                                                                //e.Filtering("applyFilterCustomer");
-                                                                                            })
-                                                                                .AutoBind(true)
+                                                                                                        .Name("cbxBuscarCustomerArea")
+                                                                                                        .Filter(Kendo.Mvc.UI.FilterType.Contains)
+                                                                                                        .OptionLabel("Buscar Area utilizada")
+                                                                                                        .DataTextField("CustomerName")
+                                                                                                        .DataValueField("CustomerAreaId")
+                                                                                                        .HtmlAttributes(new { style = "width:100%" })
+                                                                                                        .Height(9999999)
+                                                                                                        .Events(e =>
+                                                                                                        {
+                                                                                                                        // e.Change("changeAreaUtilizada");
+                                                                                                                        //e.Filtering("applyFilterCustomer");
+                                                                                                                    })
+                                                                                                        .AutoBind(true)
 
-                                                                                .DataSource(source =>
-                                                                                {
-                                                                                    source.Ajax()
-                                                                                    .PageSize(80)
+                                                                                                        .DataSource(source =>
+                                                                                                        {
+                                                                                                            source.Ajax()
+                                                                                                            .PageSize(80)
 
-                                                                                    .Read("Virtualization_Read", "CustomerArea");
-                                                                                    source.ServerFiltering(true);
-                                                                                })
-                                                                                .Virtual(v => v.ItemHeight(26).ValueMapper("valueMappercustomerarea"))
+                                                                                                            .Read("Virtualization_Read", "CustomerArea");
+                                                                                                            source.ServerFiltering(true);
+                                                                                                        })
+                                                                                                        .Virtual(v => v.ItemHeight(26).ValueMapper("valueMappercustomerarea"))
                             )
-
-                            <button id="btnAsociarAreasUtilizadas" class="form-control" onclick="changeAreaUtilizada();">Calcular Factura por area utilizada</button>
+                            <br />
+                            <button id="btnAsociarAreasUtilizadas" class="form-control btn-miboton" onclick="changeAreaUtilizada();">Calcular Factura por área utilizada</button>
                         </div>
                     </div>
-
-
-
                 </div>
 
 
@@ -763,27 +741,25 @@
                         <div class="col-12">
                             <div class="card">
                                 <div class="card-body">
-
                                     <form id="frmSalesOrder" kendo-validator="true" kendo-messages="messages" kendo-rules="rules"
                                           data-ajax="true"
                                           data-ajax-method="post"
-                                          method="post" class="validation-wizard wizard-circle">                                     
-
+                                          method="post" class="validation-wizard wizard-circle">
                                         <div class="row">
                                             <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
-                                                    <label asp-for="ProformaId" class="control-label"></label>                                                   
-                                                    <kendo-numerictextbox name="SalesOrderId"
-                                                                          format="n"
-                                                                          min="0"
-                                                                          disabled
-                                                                          max="99999999"
-                                                                          step="1"
-                                                                          style="width: 100%;"
-                                                                          value="Model.ProformaId"></kendo-numerictextbox>
+                                                    <label asp-for="ProformaId" class="control-label">Id</label>
+                                                    @*<kendo-numerictextbox name="SalesOrderId"
+                                                        format="n"
+                                                        min="0"
+                                                        disabled
+                                                        max="99999999"
+                                                        step="1"
+                                                        style="width: 100%;"
+                                                        value="Model.ProformaId"></kendo-numerictextbox>*@
+                                                    <input type="text" asp-for="ProformaId" name="ProformaId" disabled="disabled" class="form-control" style="min-width:100%" />
                                                     <span asp-validation-for="ProformaId" class="text-danger"></span>
                                                 </div>
-
                                             </div>
 
                                             <div class="col-sm-4 col-md-4">
@@ -803,8 +779,6 @@
                                                             async: false,
                                                             data: JSON.stringify(dataObject),
                                                             success: function (result) {
-
-
                                                                 notification.show({
                                                                     title: "Validacion",
                                                                     message: "Se encuentra en los listados de ofac"
@@ -827,8 +801,8 @@
                                                 <div class="form-group">
                                                     <label asp-for="ProformaName" class="control-label" style="width:100%"></label>
                                                     <span>
-                                                        <input asp-for="ProformaName" required class="form-control form-control-line" style="min-width: 80%" />
-                                                        <button onclick="RefreshOFAC();" class="k-button k-primary"><i class="fa fa-search"></i>OFAC</button>
+                                                        <input asp-for="ProformaName" class="form-control form-control-line" style="min-width: 100%" required data-required-msg="Nombre Cliente es requerido" maxlength="60" />
+                                                        @*<button onclick="RefreshOFAC();" class="k-button k-primary"><i class="fa fa-search"></i>OFAC</button>*@
                                                     </span>
                                                     <span asp-validation-for="ProformaName" class="text-danger"></span>
                                                 </div>
@@ -838,11 +812,10 @@
                                                 <div class="form-group">
                                                     <label asp-for="Correo" class="control-label" style="width:100%"></label>
                                                     @*<input type="email" asp-for="Correo" data-val-regex="Correo invalido" class="form-control required " style="min-width: 100%" />*@
-                                                    <input type="text" asp-for="Correo" class="form-control" style="min-width: 100%" />
+                                                    <input type="text" asp-for="Correo" class="form-control" style="min-width: 100%" placeholder="e.g.myname@example.net" maxlength="50" />
                                                     <span asp-validation-for="Correo" class="text-danger"></span>
                                                 </div>
                                             </div>
-
                                         </div>
 
                                         <div class="row">
@@ -871,7 +844,7 @@
                                                                           $("#Tefono").val(result.Phone);
                                                                           $("#CustomerRefNumber").val(result.CustomerRefNumber);
                                                                           $("#StartDate").data("kendoDateTimePicker").value(result.StartDate);
-                                                                          $("#EndDate").data("kendoDateTimePicker").value(result.EndDate);                                                                         
+                                                                          $("#EndDate").data("kendoDateTimePicker").value(result.EndDate);
                                                                      },
                                                                       error: function (XMLHttpRequest, textStatus, errorThrown) {
                                                                              alert(textStatus + ": " + XMLHttpRequest.responseText);
@@ -884,12 +857,11 @@
                                                         }
                                                     </script>
                                                     <label asp-for="CustomerId" class="control-label"></label>
-
                                                     <kendo-dropdownlist name="CustomerId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         option-label="Seleccione el cliente"
                                                                         datatextfield="CustomerName"
                                                                         datavaluefield="CustomerId"
-                                                                        class="form-control-line"
+                                                                        class="form-control-line" required data-required-msg="Cliente es requerido"
                                                                         onchange="SetCustomerName();"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
@@ -906,6 +878,7 @@
                                                     <kendo-datetimepicker name="StartDate"
                                                                           style="width: 100%;"
                                                                           format="dd/MM/yyyy hh:mm:ss"
+                                                                          required data-required-msg="Fecha de inicio es requerido"
                                                                           time-format="hh:mm:ss"
                                                                           value="Model.StartDate"></kendo-datetimepicker>
                                                     <span asp-validation-for="StartDate" class="text-danger"></span>
@@ -917,13 +890,13 @@
                                                     <kendo-datetimepicker name="EndDate"
                                                                           style="width: 100%;"
                                                                           format="dd/MM/yyyy hh:mm:ss"
+                                                                          required data-required-msg="Fecha de fin es requerido"
                                                                           time-format="hh:mm:ss"
                                                                           value="Model.EndDate"></kendo-datetimepicker>
                                                     <span asp-validation-for="EndDate" class="text-danger"></span>
                                                 </div>
                                             </div>
                                         </div>
-
 
                                         <div class="row">
                                             @*<div class="col-md-4">
@@ -959,7 +932,7 @@
                                             <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="RTN" class="control-label" style="width:100%"></label>
-                                                    <input type="text" asp-for="RTN" required class="form-control required " style="min-width: 100%" />
+                                                    <input type="text" asp-for="RTN" class="form-control required" style="min-width: 100%" required data-required-msg="RTN es requerido" maxlength="45" onKeyPress="return Numeros(event)" />
                                                     <span asp-validation-for="RTN" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -967,32 +940,29 @@
                                             <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Tefono" class="control-label" style="width:100%"></label>
-                                                    <input type="text" asp-for="Tefono" class="form-control required " style="min-width: 100%" />
+                                                    <input type="text" asp-for="Tefono" class="form-control required " style="min-width: 100%" onchange="validar()" />
                                                     <span asp-validation-for="Tefono" class="text-danger"></span>
+                                                    <span id="telefono" class="text-danger">Complete el número de teléfono!</span>
                                                 </div>
                                             </div>
-
-                                        </div>
-
-                                        <div class="row">
-
-                                      
 
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="CustomerRefNumber" class="control-label" style="width:100%"></label>
-                                                    <input asp-for="CustomerRefNumber" class="form-control" style="min-width: 100%" />
+                                                    <input asp-for="CustomerRefNumber" class="form-control" style="min-width: 100%" maxlength="40" />
                                                     <span asp-validation-for="CustomerRefNumber" class="text-danger"></span>
                                                 </div>
                                             </div>
+                                        </div>
 
+                                        <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="BranchId" class="control-label"></label>
                                                     <kendo-dropdownlist name="BranchId" for="BranchId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         option-label="Seleccione la sucursal"
                                                                         datatextfield="BranchName"
-                                                                        datavaluefield="BranchId"
+                                                                        datavaluefield="BranchId" required data-required-msg="Sucursal es requerido"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
                                                             <transport>
@@ -1003,10 +973,7 @@
                                                     <span asp-validation-for="BranchId" class="text-danger"></span>
                                                 </div>
                                             </div>
-                                        </div>
 
-
-                                        <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="CurrencyId" class="control-label"></label>
@@ -1014,7 +981,7 @@
                                                                         option-label="Seleccione la moneda"
                                                                         datatextfield="CurrencyName"
                                                                         datavaluefield="CurrencyId"
-                                                                        required
+                                                                        required data-required-msg="Moneda es requerido"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
                                                             <transport>
@@ -1031,9 +998,9 @@
                                                     <label asp-for="SalesTypeId" class="control-label" style="width:100%"></label>
                                                     <kendo-dropdownlist name="SalesTypeId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         for="SalesTypeId"
-                                                                        option-label="Seleccione el tipo de ventas"
+                                                                        option-label="Seleccione tipo de ventas"
                                                                         datatextfield="SalesTypeName"
-                                                                        datavaluefield="SalesTypeId"
+                                                                        datavaluefield="SalesTypeId" required data-required-msg="Tipo de ventas es requerido"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi" page-size="9999999">
                                                             <transport>
@@ -1044,17 +1011,18 @@
                                                     <span asp-validation-for="SalesTypeId" class="text-danger"></span>
                                                 </div>
                                             </div>
+                                        </div>
 
+                                        <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="ProductId" class="control-label" style="width:100%"></label>
-
                                                     <kendo-dropdownlist name="ProductId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         for="ProductId"
                                                                         option-label="Seleccione el  producto"
                                                                         datatextfield="ProductName"
                                                                         datavaluefield="ProductId"
-                                                                        required
+                                                                        required data-required-msg="Producto es requerido"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi" page-size="99999999">
                                                             <transport>
@@ -1066,10 +1034,6 @@
                                                 </div>
                                             </div>
 
-                                        </div>
-
-
-                                        <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="OrderDate" class="control-label" style="width: 100%;"></label>
@@ -1077,23 +1041,11 @@
                                                                           style="width: 100%;"
                                                                           format="dd/MM/yyyy hh:mm:ss"
                                                                           time-format="hh:mm:ss"
-                                                                          data-val-required="La fecha es requerida"
+                                                                          data-val-required="Fecha proforma es requerido"
                                                                           value="Model.OrderDate"></kendo-datetimepicker>
                                                     <span asp-validation-for="OrderDate" class="text-danger"></span>
                                                 </div>
                                             </div>
-
-                                            @*<div class="col-md-4">
-                                                <div class="form-group">
-                                                    <label asp-for="DeliveryDate" class="control-label" style="width: 100%;"></label>
-                                                    <kendo-datetimepicker name="DeliveryDate"
-                                                                          style="width: 100%;"
-                                                                          format="dd/MM/yyyy hh:mm:ss"
-                                                                          time-format="hh:mm:ss"
-                                                                          value="Model.DeliveryDate"></kendo-datetimepicker>
-                                                    <span asp-validation-for="DeliveryDate" class="text-danger"></span>
-                                                </div>
-                                            </div>*@
 
                                             <div class="col-md-4">
                                                 <div class="form-group">
@@ -1102,38 +1054,44 @@
                                                                           style="width: 100%;"
                                                                           format="dd/MM/yyyy hh:mm:ss"
                                                                           time-format="hh:mm:ss"
+                                                                          required data-required-msg="Fecha de vencimiento es requerido"
                                                                           value="Model.ExpirationDate"></kendo-datetimepicker>
                                                     <span asp-validation-for="ExpirationDate" class="text-danger"></span>
                                                 </div>
                                             </div>
-
-
                                         </div>
 
                                         <div class="row">
+                                            @*<div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label asp-for="DeliveryDate" class="control-label" style="width: 100%;"></label>
+                                                        <kendo-datetimepicker name="DeliveryDate"
+                                                                              style="width: 100%;"
+                                                                              format="dd/MM/yyyy hh:mm:ss"
+                                                                              time-format="hh:mm:ss"
+                                                                              value="Model.DeliveryDate"></kendo-datetimepicker>
+                                                        <span asp-validation-for="DeliveryDate" class="text-danger"></span>
+                                                    </div>
+                                                </div>*@
+                                        </div>
 
+                                        <div class="row">
                                             <div class=" col-sm-12 col-md-12">
                                                 <div class="form-group">
                                                     <label asp-for="Direccion" class="control-label" style="width:100%"></label>
-                                                    <textarea asp-for="Direccion" required class="form-control required " style="min-width: 100% !important;"></textarea>
+                                                    <textarea asp-for="Direccion" class="form-control required " style="min-width: 100% !important;" required data-required-msg="Dirección es requerido" maxlength="100"></textarea>
                                                     <span asp-validation-for="Direccion" class="text-danger"></span>
                                                 </div>
                                             </div>
-
-
                                         </div>
-
-
-
                                         @*</div>*@
-
                                     </form>
                                 </div>
 
                                 <div class="card">
                                     <div class="card-body">
                                         <div id="salesorderdetail">
-                                            @await Html.PartialAsync("pvwProformaInvoiceDetail", Model)
+                                            @await Html.PartialAsync("pvwProformaInvoiceDetail", Model, new ViewDataDictionary(ViewData) { { "permisosProformaInvoice", permisos } })
                                         </div>
 
                                         <div id="SalesOrderLineMant">
@@ -1356,10 +1314,9 @@
                                         </form>
 
                                         <div class="row">
-                                            @if (Convert.ToBoolean(Model.editar))
-                                            {
-                                                <button id="btnSaveCotizacion" type="submit" class="form-control btn-miboton " onclick="SaveCotizacion(this);">Guardar</button>
-                                            }
+
+                                            <button id="btnSaveCotizacion" type="submit" class="form-control btn-miboton" onclick="SaveCotizacion(this);">Guardar</button>
+
                                         </div>
 
                                     </div>
@@ -1373,8 +1330,48 @@
     </div>
 </div>
 
+<script>
+    function validar() {
+        var cadena = $("#Tefono").val();
+        if (cadena.indexOf("_") > -1 == true) {
+            $("#telefono").show();
+        }
+        else {
+            $("#telefono").hide();
+        }
+    }
+</script>
+
 
 <script>
+
+    function Numeros(e) {
+        var key = window.Event ? e.which : e.keyCode
+        return (key >= 48 && key <= 57)
+    }
+    $(document).ready(function () {
+        $("#Tefono").kendoMaskedTextBox({
+            mask: "(999) 0000-0000"
+        });
+        $("#telefono").hide();
+    });
+    function SoloNumeros(e) {
+        key = e.keyCode || e.which;
+        tecla = String.fromCharCode(key).toLowerCase();
+        letras = "1234567890.";
+        especiales = "8-37-39-46";
+        tecla_especial = false
+        for (var i in especiales) {
+            if (key == especiales[i]) {
+                tecla_especial = true;
+                break;
+            }
+        }
+        if (letras.indexOf(tecla) == -1 && !tecla_especial) {
+            return false;
+        }
+    }
+
 
     function GetProductIdS() {
         return { 'ProductId': $("#ProductId").val() }
@@ -1387,187 +1384,235 @@
     }
 
     function SaveCotizacion(e) {
+        debugger;
+        //var StartDate = $("#StartDate").getKendoDateTimePicker().value().toJSON();
+        //var EndDate = $("#EndDate").getKendoDateTimePicker().value().toJSON();
+        if ($("#StartDate").getKendoDateTimePicker().value() && $("#EndDate").getKendoDateTimePicker().value() > 0) {
+            if ($("#StartDate").getKendoDateTimePicker().value() < $("#EndDate").getKendoDateTimePicker().value()) {
+                var notification = $("#notification").data("kendoNotification");
+                // e.preventDefault();
+                $("#btnSaveCotizacion").hide();
+                $("#btnSaveCotizacion").prop("disabled", true);
 
-        var notification = $("#notification").data("kendoNotification");
-        // e.preventDefault();
-        $("#btnSaveCotizacion").hide();
-        $("#btnSaveCotizacion").prop("disabled", true);
+                var validadetalle = true;
+                var displayedData = $("#gridProformaInvoiceDetail").data().kendoGrid.dataSource.view();
+                for (var i = 0; i < displayedData.length; i++) {
+                    displayedData[i].ProformaLineId = 0;
+                    if (displayedData[i].TaxCode === '' || displayedData[i].TaxCode === null
+                        || displayedData[i].Total === 0) {
+                        notification.show({
+                            title: "Validación",
+                            message: "No Ingreso el codigo de impuesto"
+                        }, "error");
 
-        var validadetalle = true;
-        var displayedData = $("#gridProformaInvoiceDetail").data().kendoGrid.dataSource.view();
-        for (var i = 0; i < displayedData.length; i++) {
-            displayedData[i].ProformaLineId = 0;
-            if (displayedData[i].TaxCode === '' || displayedData[i].TaxCode === null
-                || displayedData[i].Total === 0) {
-                notification.show({
-                    title: "Validación",
-                    message: "No Ingreso el codigo de impuesto"
-                }, "error");
+                        validadetalle = false;
+                    }
+                }
+                debugger
+                if (validadetalle) {
+                    var dataObject = {
+                        'ProformaId': $("#ProformaId").val() === "" ? "0" : $("#ProformaId").val(),
+                        'ProformaName': $("#ProformaName").val(),
+                        'BranchId': $("#BranchId").val(),
+                        'BranchName': $("#BranchId").data("kendoDropDownList").text(),
+                        'CustomerId': $("#CustomerId").val(),
+                        'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
+                        'ProductId': $("#ProductId").val(),
+                        'ProductName': $("#ProductId").data("kendoDropDownList").text(),
+                        'OrderDate': $("#OrderDate").getKendoDateTimePicker().value().toJSON(),
+                        // 'DeliveryDate': $("#DeliveryDate").getKendoDateTimePicker().value().toJSON(),
+                        'ExpirationDate': $("#ExpirationDate").getKendoDateTimePicker().value().toJSON(),
+                        'StartDate': $("#StartDate").getKendoDateTimePicker().value().toJSON(),
+                        'EndDate': $("#EndDate").getKendoDateTimePicker().value().toJSON(),
+                        'CurrencyId': Number($("#CurrencyId").val()),
+                        'CurrencyName': $("#CurrencyId").data("kendoDropDownList").text(),
+                        'CustomerRefNumber': $("#CustomerRefNumber").val(),
+                        'SalesTypeId': $("#SalesTypeId").val(),
+                        //'TypeContractId': Number($("#TypeContractId").val()),
+                        //'NameContract': $("#TypeContractId").data("kendoDropDownList").text(),
+                        'Remarks': $("#Remarks").val(),
+                        'Amount': $("#Amount").val(),
+                        'SubTotal': $("#SubTotal").val(),
+                        'Discount': $("#Discount").val(),
+                        'Tax': $("#Tax").val(),
+                        'Tax18': $("#Tax18").val(),
+                        'Freight': $("#Freight").val(),
+                        'Total': $("#Total").val(),
+                        'Correo': $("#Correo").val(),
+                        'Direccion': $("#Direccion").val(),
+                        'Identificador': $("#IdentificadorCalculo").val(),
+                        'RTN': $("#RTN").val(),
+                        'Tefono': $("#Tefono").val(),
+                        'TotalExento': $("#TotalExento").val(),
+                        'TotalExonerado': $("#TotalExonerado").val(),
+                        'TotalGravado': $("#TotalGravado").val(),
+                        'TotalGravado18': $("#TotalGravado18").val(),
+                        'SalesOrderId': ($("#cbxBuscarCotizaciones").val() === '' ? 0 : $("#cbxBuscarCotizaciones").val()),
+                        //'CertificadoDepositoId': $("#cbxBuscarCertificadosDeposito").val() === '' ? 0 : $("#cbxBuscarCertificadosDeposito").val(),
+                        'CustomerAreaId': $("#cbxBuscarCustomerArea").val() === '' ? 0 : $("#cbxBuscarCustomerArea").val(),
+                        'ProformaInvoiceLine': displayedData,
 
-                validadetalle = false;
-            }
-        }
-        debugger
-        if (validadetalle) {
-            var dataObject = {
-                'ProformaId': $("#ProformaId").val() === "" ? "0" : $("#ProformaId").val(),
-                'ProformaName': $("#ProformaName").val(),
-                'BranchId': $("#BranchId").val(),
-                'BranchName': $("#BranchId").data("kendoDropDownList").text(),
-                'CustomerId': $("#CustomerId").val(),
-                'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
-                'ProductId': $("#ProductId").val(),
-                'ProductName': $("#ProductId").data("kendoDropDownList").text(),
-                'OrderDate': $("#OrderDate").getKendoDateTimePicker().value().toJSON(),
-               // 'DeliveryDate': $("#DeliveryDate").getKendoDateTimePicker().value().toJSON(),
-                'ExpirationDate': $("#ExpirationDate").getKendoDateTimePicker().value().toJSON(),
-                'StartDate': $("#StartDate").getKendoDateTimePicker().value().toJSON(),
-                'EndDate': $("#EndDate").getKendoDateTimePicker().value().toJSON(),
-                'CurrencyId': Number($("#CurrencyId").val()),
-                'CurrencyName': $("#CurrencyId").data("kendoDropDownList").text(),
-                'CustomerRefNumber': $("#CustomerRefNumber").val(),
-                'SalesTypeId': $("#SalesTypeId").val(),
-                //'TypeContractId': Number($("#TypeContractId").val()),
-                //'NameContract': $("#TypeContractId").data("kendoDropDownList").text(),
-                'Remarks': $("#Remarks").val(),
-                'Amount': $("#Amount").val(),
-                'SubTotal': $("#SubTotal").val(),
-                'Discount': $("#Discount").val(),
-                'Tax': $("#Tax").val(),
-                'Freight': $("#Freight").val(),
-                'Total': $("#Total").val(),
-                'Correo': $("#Correo").val(),
-                'Direccion': $("#Direccion").val(),
-                'Identificador': $("#IdentificadorCalculo").val(),
-                'RTN': $("#RTN").val(),
-                'Tefono': $("#Tefono").val(),
-                'TotalExento': $("#TotalExento").val(),
-                'TotalExonerado': $("#TotalExonerado").val(),
-                'TotalGravado': $("#TotalGravado").val(),
-                'SalesOrderId': ($("#cbxBuscarCotizaciones").val() === '' ? 0 : $("#cbxBuscarCotizaciones").val()),
-                //'CertificadoDepositoId': $("#cbxBuscarCertificadosDeposito").val() === '' ? 0 : $("#cbxBuscarCertificadosDeposito").val(),
-                'CustomerAreaId': $("#cbxBuscarCustomerArea").val() === '' ? 0 : $("#cbxBuscarCustomerArea").val(),
-                'ProformaInvoiceLine': displayedData,
+                    };
 
-            };
-
-            var validator = $("#frmSalesOrder").data("kendoValidator");
-            var validator2 = $("#TotalesDocumento").data("kendoValidator");
-            var status = $(".status");
-
-
-            if (Number($("#Total").val()) <= 0 || Number($("#SubTotal").val()) <= 0) {
-                notification.show({
-                    title: "Validación",
-                    message: "No se estan calculando correctamente los totales!!"
-                }, "error");
-
-                return;
-
-            }
+                    var validator = $("#frmSalesOrder").data("kendoValidator");
+                    var validator2 = $("#TotalesDocumento").data("kendoValidator");
+                    var status = $(".status");
 
 
-            //   console.log(displayedData);
-            //for (var i = 0; i < displayedData.length; i++) {
-            //    console.log(displayedData[i].TaxCode);
-            //    if (displayedData[i].TaxCode === '' || displayedData[i].TaxCode === null
-            //        || displayedData[i].TaxCode === undefined
-            //        || displayedData[i].Total === undefined
-            //    ) {
-            //        $.toast({
-            //            heading: 'Advertencia ',
-            //            text: '\n Actualice los datos del detalle.',
-            //            position: 'top-right',
-            //            loaderBg: '#ff6849',
-            //            icon: 'warning',
-            //            hideAfter: 30000,
-            //            stack: 6
-            //        });
-            //        $("#btnSaveCotizacion").show();
-            //        $("#btnSaveCotizacion").prop("disabled", false);
-            //        return;
-            //    }
-            //}
+                    if (Number($("#Total").val()) <= 0 || Number($("#SubTotal").val()) <= 0) {
+                        notification.show({
+                            title: "Validación",
+                            message: "No se estan calculando correctamente los totales!!"
+                        }, "error");
+                        $("#btnSaveCotizacion").show();
+                        $("#btnSaveCotizacion").prop("disabled", false);
+
+                        return;
+
+                    }
 
 
-            if (displayedData.length > 0) {
-                if (validator.validate() && validator2.validate()) {
+                    //   console.log(displayedData);
+                    //for (var i = 0; i < displayedData.length; i++) {
+                    //    console.log(displayedData[i].TaxCode);
+                    //    if (displayedData[i].TaxCode === '' || displayedData[i].TaxCode === null
+                    //        || displayedData[i].TaxCode === undefined
+                    //        || displayedData[i].Total === undefined
+                    //    ) {
+                    //        $.toast({
+                    //            heading: 'Advertencia ',
+                    //            text: '\n Actualice los datos del detalle.',
+                    //            position: 'top-right',
+                    //            loaderBg: '#ff6849',
+                    //            icon: 'warning',
+                    //            hideAfter: 30000,
+                    //            stack: 6
+                    //        });
+                    //        $("#btnSaveCotizacion").show();
+                    //        $("#btnSaveCotizacion").prop("disabled", false);
+                    //        return;
+                    //    }
+                    //}
 
-                    $.ajax({
-                        url: '@Url.Action("SaveProformaInvoice", "ProformaInvoice")',
-                        method: 'POST',
-                        datatype: "json",
-                        //  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
-                        contentType: 'application/json',
-                        async: false,
-                        data: JSON.stringify(dataObject),
-                        success: function (data) {
-                            RefreshCotizaciones();
 
-                            $("#ProformaId").data("kendoNumericTextBox").value(data.ProformaId);
+                    if (displayedData.length > 0) {
+                        if (validator.validate() && validator2.validate()) {
+
+                            $.ajax({
+                                url: '@Url.Action("SaveProformaInvoice", "ProformaInvoice")',
+                                method: 'POST',
+                                datatype: "json",
+                                //  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                                contentType: 'application/json',
+                                async: false,
+                                data: JSON.stringify(dataObject),
+                                success: function (data) {
+                                    RefreshCotizaciones();
+                                    $("#ProformaId").val(data.ProformaId);
+                                    //CalcularTotalDocumento();
+                                    //RefreshCotizacionesDetail();
+                                    $.toast({
+                                        heading: 'Satisfactorio',
+                                        text: 'Datos guardados correctamente.',
+                                        position: 'top-right',
+                                        loaderBg: '#ff6849',
+                                        icon: 'success',
+                                        hideAfter: 7000,
+                                        stack: 6
+                                    });
+                                    //notification.show({
+                                    //    message: "Guardado correctamente!"
+                                    //}, "upload-success");
 
 
+                                    $('#myModalSalesOrder').modal('hide');
+
+                                },
+                                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                    $("#btnSaveCotizacion").show();
+                                    $("#btnSaveCotizacion").prop("disabled", false);
+                                    notification.show({
+                                        title: "Validación",
+                                        message: textStatus + ": " + XMLHttpRequest.responseText
+                                    }, "error");
+
+                                }
+                            });
+
+                        }
+                        else {
+
+                            $("#btnSaveCotizacion").show();
+                            $("#btnSaveCotizacion").prop("disabled", false);
+                            //notification.show({
+                            //    title: "Validación",
+                            //    message: "Datos incorrectos en el formulario!"
+                            //}, "error");
                             $.toast({
-                                heading: 'Satisfactorio',
-                                text: 'Datos guardados correctamente.',
+                                heading: 'Validación',
+                                text: 'Datos incorrectos en el formulario!',
                                 position: 'top-right',
                                 loaderBg: '#ff6849',
-                                icon: 'success',
+                                icon: 'error',
                                 hideAfter: 7000,
                                 stack: 6
                             });
-                            //notification.show({
-                            //    message: "Guardado correctamente!"
-                            //}, "upload-success");
 
-
-                            $('#myModalSalesOrder').modal('hide');
-
-                        },
-                        error: function (XMLHttpRequest, textStatus, errorThrown) {
-                            $("#btnSaveCotizacion").show();
-                            $("#btnSaveCotizacion").prop("disabled", false);
-                            notification.show({
-                                title: "Validación",
-                                message: textStatus + ": " + XMLHttpRequest.responseText
-                            }, "error");
 
                         }
-                    });
+                    }
+                    else {
 
+                        $("#btnSaveCotizacion").show();
+                        $("#btnSaveCotizacion").prop("disabled", false);
+                        //notification.show({
+                        //    title: "Validación",
+                        //    message: "Debe agregar los productos!"
+                        //}, "error");
+                        $.toast({
+                            heading: 'Validación',
+                            text: 'Debe agregar los productos!',
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 7000,
+                            stack: 6
+                        });
+
+                    }
                 }
                 else {
-
                     $("#btnSaveCotizacion").show();
                     $("#btnSaveCotizacion").prop("disabled", false);
-                    notification.show({
-                        title: "Validación",
-                        message: "Datos incorrectos en el formulario!"
-                    }, "error");
-
-
                 }
+
             }
             else {
-
-                $("#btnSaveCotizacion").show();
-                $("#btnSaveCotizacion").prop("disabled", false);
-                notification.show({
-                    title: "Validación",
-                    message: "Debe agregar los productos!"
-                }, "error");
+                $.toast({
+                    heading: 'Validación',
+                    text: 'La Fecha Fin no debe de ser menor que la Fecha de Inicio!',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 7000,
+                    stack: 6
+                });
 
             }
         }
-        else {
-            $("#btnSaveCotizacion").show();
-            $("#btnSaveCotizacion").prop("disabled", false);
+        else
+        {
+            $.toast({
+                heading: 'Validación',
+                text: 'Debe llenar las Fechas!',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 7000,
+                stack: 6
+            });
         }
 
     }
-
-
-
-
-
 </script>
+

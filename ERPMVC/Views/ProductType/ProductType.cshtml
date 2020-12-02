@@ -1,8 +1,11 @@
 ﻿@using Kendo.Mvc.UI
 
 @{
-    ViewData["Title"] = "Sub producto de clientes";
-
+    ViewData["Title"] = "Tipo de Producto";
+    bool permisoAgregar, permisoEditar, permisoEliminar;
+    permisoAgregar = (bool)ViewData["permisoAgregar"];
+    permisoEditar = (bool)ViewData["permisoEditar"];
+    permisoEliminar = (bool)ViewData["permisoEliminar"];
 }
 
 <script>
@@ -65,15 +68,28 @@
 
                         .Columns(columns =>
                         {
-                            columns.Command(command =>
+                            if (permisoEditar == true || permisoEliminar == true)
                             {
-                                //command.Custom("Ver detalles").Click("Detalles");
-                                command.Custom("Editar").Click("EditProductType");
-                                command.Destroy().Text("Eliminar");
-                            }).Width(250);
-                            columns.Bound(p => p.ProductTypeId).Width(150);
-                            columns.Bound(p => p.ProductTypeName).Width(170);
+                                columns.Command(command =>
+                                {
+                                    //command.Custom("Ver detalles").Click("Detalles");
+                                    if (permisoEditar)
+                                    {
+                                        command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditProductType");
+                                    }
+                                    if (permisoEliminar)
+                                    {
+                                        command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                                    }
+
+                                }).Width(120).Title("Acciones");
+                            }
+                            columns.Bound(p => p.ProductTypeId).Width(100).Title("Id");
+                            columns.Bound(p => p.ProductTypeName).Width(170).Title("Tipo de Producto");
                             columns.Bound(p => p.Description).Width(200);
+                            columns.Bound(p => p.Estado).Width(150);
+
+
 
                         })
 
@@ -82,13 +98,14 @@
                         {
 
                             //tools.Create();
-                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                                              .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddProductType()" });
-                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-
+                            if (permisoAgregar)
+                            {
+                                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                                              .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddProductType()" });
+                            }
+                                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                            
                         })
                         .Editable(e => e.Mode(GridEditMode.PopUp))
                         .Sortable()
@@ -113,6 +130,7 @@
 
 
                         })
+                         .Sort(s => s.Add(m => m.ProductTypeId).Descending())
                         .Events(events => events.Error("error_handler"))
                         .Read(read => read.Action("Get", "ProductType").Data("ProductType"))
                        //.Create(create => create.Action("Insert", "Product").Type(HttpVerbs.Post))
@@ -128,8 +146,33 @@
 
 <script>
     function ProductType() {
-        return { ProductTypeId:2 };
+        return { ProductTypeId: 2 };
     }
+
+  
+
+        function setToolbarTooltip(btn_cl, btn_tooltip) {
+            $("#gridProductType").kendoTooltip({
+                filter: btn_cl,
+                content: btn_tooltip
+            });
+        }
+
+
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridProductType").kendoTooltip({
+                filter: btn_cl,
+                content: btn_tooltip
+            });
+        }
+
+
+
+        setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+        setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+        setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+
 </script>
 
 

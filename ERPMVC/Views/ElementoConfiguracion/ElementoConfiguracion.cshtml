@@ -1,6 +1,9 @@
 ﻿@using Kendo.Mvc.UI
 @{
-    ViewData["Title"] = "ElementoConfiguracion";
+    ViewData["Title"] = "Elemento Configuración";
+    bool permisoAgregar, permisoEditar, permisoExportar;
+    permisoAgregar = (bool)ViewData["permisoAgregar"];
+    permisoEditar = (bool)ViewData["permisoEditar"];
 }
 
 <script>
@@ -11,13 +14,17 @@
     }
 
     function caidata(data) {
-        //data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
-        //data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
+        data.FechaRecepcion = data.FechaRecepcion.toISOString('yyyy-MM-dd');
+        data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
     }
 
 
     function AddElementoConfiguracion() {
+        $("#btnElementoConfiguracion").show();
+        $("#btnElementoConfiguracion").prop("disabled", false);
         $('#ModalElementoConfiguracion').find(':input').not(':submit').val('');
+        var validator = $("#frmElementoConfiguracion").data("kendoValidator");
+        validator.hideMessages();
 
 
           var dataObject = {
@@ -78,7 +85,7 @@
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
                     //alert(textStatus + ": " + XMLHttpRequest.responseText);
                     //console.log('RESULTADO', result);
-                    console.log(textStatus + ": " + XMLHttpRequest.responseText)
+                      console.log(textStatus + ": " + XMLHttpRequest.responseText)
                 }
             });
          }
@@ -90,11 +97,57 @@
 
     }
 
+    var GrupoConfiguracionId = 0;
+    var firstload = 0;
+    function ElementoByGrupoComfiguracion(ElementoByGrupoConfiguracionIdv) {
+        debugger;
+        kendo.ui.progress($("#divClasificacionCuentas"), true);
+        setTimeout(function () {
+            kendo.ui.progress($("#divClasificacionCuentas"), false);
+        }, 3000);
+        GrupoConfiguracionId = ElementoByGrupoConfiguracionIdv;
 
+        RefreshGridElementoConfiguracion();
+    }
+
+    function DataByGrupo() {
+        return {
+            'GrupoConfiguracionId': GrupoConfiguracionId,
+        }
+    }
 </script>
 
-<h3 class="text-themecolor">Configuración Elemento</h3>
+<h3 class="text-themecolor">Elemento Configuración</h3>
+<div class="card" id="divClasificacionCuentas">
+    <div class="card-body">
+        <h4 class="card-title">Clasificación de Elementos de Configuración</h4>
 
+        <hr />
+        <div class="row">
+            <div class="col-md-5">
+                <label class="control-label" style="min-width: 100%;">Mostrar Elementos de Grupo Configuración</label>
+                <kendo-dropdownlist id="GrupoConfiguracion"
+                                    filter="Kendo.Mvc.UI.FilterType.Contains"
+                                    onchange="ElementoByGrupoComfiguracion(this.value)"
+                                    option-label="Todos"
+                                    datatextfield="Nombreconfiguracion"
+                                    datavaluefield="IdConfiguracion"
+                                    style="min-width: 100%;">
+                    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999999">
+                        <sorts>
+                            <sort field="Nombreconfiguracion" direction="asc" />
+                        </sorts>
+                        <transport>
+                            <read url="@Url.Action("Get", "GrupoConfiguracion")" />
+                        </transport>
+                    </datasource>
+                </kendo-dropdownlist>
+            </div>
+        </div>
+
+
+    </div>
+</div>
 @(Html.Kendo().Grid<ERPMVC.Models.ElementoConfiguracion>
                       ()
 
@@ -102,24 +155,27 @@
 
                         .Columns(columns =>
                         {
-                            columns.Command(command =>
+                            if (permisoEditar)
                             {
-                                //command.Custom("Ver detalles").Click("Detalles");
-                                command.Custom("Editar").Click("EditElementoConfiguracion");
-                                //command.Destroy().Text("Borrar");
-                            }).Width(250);
+                                columns.Command(command =>
+                                {
+                                    //command.Custom("Ver detalles").Click("Detalles");
+                                    command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditElementoConfiguracion");
+                                    //command.Destroy().Text("Borrar");
+                                }).Title("Acciones").Width(180);
+                            }
+
                             columns.Bound(p => p.Id).Width(100);
                             columns.Bound(p => p.Nombre).Width(200);
-                            columns.Bound(p => p.Descripcion).Width(170);
-                            columns.Bound(p => p.Estado).Width(170);
-
+                            //columns.Bound(p => p.Descripcion).Width(170); 
                             //columns.Bound(p => p.GrupoConfiguracion.Nombreconfiguracion).Width(170);
                             columns.Bound(p => p.Valordecimal).Width(170);
-                            columns.Bound(p => p.Valorstring).Width(170);
+                            columns.Bound(p => p.Valorstring).Width(150);
                             columns.Bound(p => p.Valorstring2).Width(170);
-                            columns.Bound(p => p.Formula).Width(170);
-                            columns.Bound(p => p.UsuarioCreacion).Width(170);
-                            columns.Bound(p => p.UsuarioModificacion).Width(190);
+                            columns.Bound(p => p.IdEstado).ClientTemplate("#if (IdEstado =='1') {#Activo#} else {#Inactivo#} #").Width(130);
+                            //columns.Bound(p => p.Formula).Width(170);
+                            //columns.Bound(p => p.UsuarioCreacion).Width(170);
+                            //columns.Bound(p => p.UsuarioModificacion).Width(190);
                         })
                             .Filterable(f => f.Operators(o => o.ForString(s => s
                                                        .Clear()
@@ -159,12 +215,11 @@
                             //tools.Create();
                             //tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
                             //.HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddElementoConfiguracion()" });
-                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                 .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddElementoConfiguracion()" });
-                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
+                            if (permisoAgregar)
+                            {
+                                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddElementoConfiguracion()" });
+                            }
 
                         })
                         .Editable(e => e.Mode(GridEditMode.PopUp))
@@ -172,10 +227,10 @@
                         .Pageable()
                         .Filterable()
                         .Scrollable()
-                        .Pdf(pdf => pdf.FileName("ElementoConfiguracionReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        .Pdf(pdf => pdf.FileName("Elemento_Configuracion-Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                         + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
                         .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                        .Excel(excel => excel.FileName("ElementoConfiguracionReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                        .Excel(excel => excel.FileName("Elemento_Configuracion-Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
                         + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
                         .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
                         .DataSource(dataSource =>
@@ -191,7 +246,7 @@
 
                         })
                         .Events(events => events.Error("error_handler"))
-                        .Read(read => read.Action("Get", "ElementoConfiguracion"))
+                        .Read(read => read.Action("GetElementoByGrupoConfiguracion", "ElementoConfiguracion").Data("DataByGrupo"))
                         .Create(create => create.Action("Insert", "ElementoConfiguracion").Type(HttpVerbs.Post))
                         .Update(update => update.Action("Update", "ElementoConfiguracion").Type(HttpVerbs.Post))
                         .Destroy(destroy => destroy.Action("Delete", "ElementoConfiguracion").Type(HttpVerbs.Post))
@@ -204,7 +259,25 @@
 
                         })
 )
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridElementoConfiguracion").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
 
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridElementoConfiguracion").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+</script>
 <div id="numElementoConfiguracion">
     @await Html.PartialAsync("pvwElementoConfiguracion", new ERPMVC.DTO.ElementoConfiguracionDTO { Id = 0 })
 </div>

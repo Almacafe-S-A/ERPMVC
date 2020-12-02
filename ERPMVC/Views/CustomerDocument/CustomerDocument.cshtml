@@ -1,4 +1,7 @@
-﻿
+﻿@using System.Security.Claims
+@{ 
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
 <h3 class="text-themecolor">Documentos del cliente</h3>
 <script>
 
@@ -78,11 +81,12 @@
             async: false,
             data: JSON.stringify(dataObject),
             success: function (result) {
+                console.log(result)
                 $("#CustomerDocument").html('');
                 $("#CustomerDocument").html(result);
                 $("#DocumentTypeId").data("kendoDropDownList").value(dataItem.DocumentTypeId);
                 //$('#InsurancesName').val(dataItem.InsurancesName);
-                var fileName = dataItem.DocumentName;
+                @*var fileName = dataItem.DocumentName;
                 var fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1);
                 var files = [
                     { name: fileName, extension: "." + fileExtension },
@@ -91,11 +95,11 @@
                             saveUrl: "@Url.Action("SaveCustomerDocument", "CustomerDocument")",
                             removeUrl: "@Url.Action("","")",
                     autoUpload: true,
-                            
+
                 }, upload: SaveCustomerDocument,
                     multiple: false,
                     localization: {
-                        
+
                             select: "Seleccionar Archivos",
                             cancel: "Cancelar",
                             dropFilesHere: "Soltar Archivo aquí",
@@ -103,8 +107,8 @@
                             retry: "Reintentar",
                         },
                     files: files,
-                });
-                $("#DocumentTypeId").data("kendoDropDownList").trigger('change');             
+                });*@
+                $("#DocumentTypeId").data("kendoDropDownList").trigger('change');
                 $('#myModalCustomerDocumentUpload').modal('show');
             },
              error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -126,10 +130,10 @@
             async: false,
             data: (dataObject),
              success: function (result) {
-                 
+
                 //  saveAs(result, "save");
                 //$("#CustomerDocument").html('');
-                //$("#CustomerDocument").html(result);             
+                //$("#CustomerDocument").html(result);
                 //$('#myModalCustomerDocumentUpload').modal('show');
             },
              error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -148,7 +152,7 @@
           ajax.setRequestHeader("Content-Type", "application/json");
                             ajax.onreadystatechange = function () {
                                 if (this.readyState == 4) {
-                                    //debugger; 
+                                    //debugger;
                                     var blob = new Blob([this.response], { type: "application/vnd.ms-excel;charset=charset=utf-8" });
                                    // var blob = new  Blob([this.response], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=charset=utf-8" });
                                     var fileName = dataItem.DocumentName;
@@ -163,7 +167,7 @@
 
    function ImprimirDocumento(e) {
         e.preventDefault();
-       var dataItem = this.dataItem($(e.currentTarget).closest("tr"));  
+       var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
 
        var ext = dataItem.DocumentName.substr(dataItem.DocumentName.lastIndexOf('.') + 1);
        console.log(ext);
@@ -183,100 +187,141 @@
 </script>
 
 @(Html.Kendo().Grid<ERPMVC.Models.CustomerDocument>()
-                      .Name("gridCustomerDocument")
-                      .Columns(columns =>
-                      {
-                          columns.Command(command =>
-                          {
-                              command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCustomerDocument");
-                              command.Custom("Descargar").Text(" ").IconClass("fa fa-download").Click("Descargar");
-                              command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirDocumento");
-                              // command.Custom("Ver detalles").Click("Detalles");
-                              // command.Edit(); command.Destroy();
-                          }).Width(170);
-                          columns.Bound(p => p.CustomerDocumentId).Width(100);
-                          columns.Bound(p => p.CustomerId).Visible(false).Width(100);
-                          columns.Bound(p => p.DocumentName).Width(150);
-                          columns.Bound(p => p.DocumentTypeId).Width(100);
-                          columns.Bound(p => p.DocumentTypeName).Width(100);
-                          columns.Bound(p => p.Path).Visible(false).Width(100);
-                          columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy}").Width(100);
+                              .Name("gridCustomerDocument")
+                              .Columns(columns =>
+                              {
+                                  
+                                      columns.Command(command =>
+                                      {
+                                          
+                                              command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCustomerDocument");
+                                         
+                                              command.Custom("Descargar").Text(" ").IconClass("fa fa-download").Click("Descargar");
+                                         
+                                              command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirDocumento");
+                                          
+                                          // command.Custom("Ver detalles").Click("Detalles");
+                                          // command.Edit(); command.Destroy();
+                                      }).Width(170).Title("Acciones");
+                                  
+                                  columns.Bound(p => p.CustomerDocumentId).Width(100);
+                                  columns.Bound(p => p.CustomerId).Visible(false).Width(100);
+                                  columns.Bound(p => p.DocumentName).Width(150);
+                                  //columns.Bound(p => p.DocumentTypeId).Width(100);
+                                  columns.Bound(p => p.DocumentTypeName).Width(200).Title("Tidpo de Docuemento");
+                                  columns.Bound(p => p.Path).Visible(false).Width(100);
+                                  //columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy}").Width(100);
 
-                      })
-                          .Filterable(f => f.Operators(o => o.ForString(s => s
-                                               .Clear()
-                                               .Contains("Contiene")
-                                               .DoesNotContain("No contiene")
-                                               .EndsWith("Termina con")
-                                               .IsEqualTo("Es igual a")
-                                               .IsNotEqualTo("No es igual a")
-                                               .IsNull("Es nulo")
-                                               .StartsWith("Inicia con")
-
-
-                                         )
-                                         .ForNumber(n => n
-                                           .Clear()
-                                           .IsEqualTo("Es igual a")
-                                           .IsGreaterThan("Es mayor que")
-                                           .IsLessThan("Es menor que")
-                                           .IsNull("Es nulo")
-                                           .IsLessThanOrEqualTo("Es menor o igual que")
-                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                         )
-                                         .ForDate(d => d
-                                         .Clear()
-                                         .IsEqualTo("Es igual que")
-                                         .IsGreaterThan("Es mayor que")
-                                         .IsLessThan("Es menor que")
-                                         .IsLessThanOrEqualTo("Es menor o igual que")
-                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                         .IsNotEqualTo("No es igual que")
-                                          )
-                                       ))
-                      .ToolBar(tools =>
-                      {
-                          //tools.Create();
-                          tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerArea();" });
-
-                          tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                          tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                              })
+                                  .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                       .Clear()
+                                                       .Contains("Contiene")
+                                                       .DoesNotContain("No contiene")
+                                                       .EndsWith("Termina con")
+                                                       .IsEqualTo("Es igual a")
+                                                       .IsNotEqualTo("No es igual a")
+                                                       .IsNull("Es nulo")
+                                                       .StartsWith("Inicia con")
 
 
-                      })
-                      .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
-                      .Sortable()
-                      .Pageable()
-                      .Filterable()
-                      .Scrollable()
-                      .Pdf(pdf => pdf.FileName("CustomerDocumentReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                       + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                       .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                         .Excel(excel => excel.FileName("CustomerDocumentReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                       + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                       .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                      .DataSource(dataSource =>
-                          dataSource
-                            .WebApi()
-                            .ServerOperation(true)
-                            .Model(model =>
-                            {
-                                model.Id(p => p.CustomerId);
-                                model.Field(p => p.CustomerId).Editable(false);
-                            })
-                            .Events(events => events.Error("error_handler"))
-                            .Read(read => read.Action("GeDocumentByCustomerId", "CustomerDocument").Data("GetCustomerId"))
-                            .Create(create => create.Action("Insert", "CustomerDocument"))
-                            .Update(update => update.Action("Update", "CustomerDocument", new { id = "{0}" }))
-                            .Destroy(destroy => destroy.Action("Delete", "CustomerDocument", new { id = "{0}" }))
-                      )
-                        .Events(e =>
-                        {
-                            //e.Save("onsave");
-                        })
+                                                 )
+                                                 .ForNumber(n => n
+                                                   .Clear()
+                                                   .IsEqualTo("Es igual a")
+                                                   .IsGreaterThan("Es mayor que")
+                                                   .IsLessThan("Es menor que")
+                                                   .IsNull("Es nulo")
+                                                   .IsLessThanOrEqualTo("Es menor o igual que")
+                                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                 )
+                                                 .ForDate(d => d
+                                                 .Clear()
+                                                 .IsEqualTo("Es igual que")
+                                                 .IsGreaterThan("Es mayor que")
+                                                 .IsLessThan("Es menor que")
+                                                 .IsLessThanOrEqualTo("Es menor o igual que")
+                                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                 .IsNotEqualTo("No es igual que")
+                                                  )
+                                               ))
+                              .ToolBar(tools =>
+                              {
+                                  //tools.Create();
+                                  
+                                      tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerArea();" });
+                                  
+                                      tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                      tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                  
+
+
+                              })
+                              .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                              .Sortable()
+                              .Pageable()
+                              .Filterable()
+                              .Scrollable()
+                              .Pdf(pdf => pdf.FileName("CustomerDocumentReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                               + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                               .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                 .Excel(excel => excel.FileName("CustomerDocumentReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                               + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                               .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                              .DataSource(dataSource =>
+                                  dataSource
+                                    .WebApi()
+                                    .ServerOperation(true)
+                                    .Model(model =>
+                                    {
+                                        model.Id(p => p.CustomerId);
+                                        model.Field(p => p.CustomerId).Editable(false);
+                                    })
+                                    .Events(events => events.Error("error_handler"))
+                                    .Sort(s => s.Add(m => m.CustomerDocumentId).Descending())
+                                    .Read(read => read.Action("GeDocumentByCustomerId", "CustomerDocument").Data("GetCustomerId"))
+                                    .Create(create => create.Action("Insert", "CustomerDocument"))
+                                    .Update(update => update.Action("Update", "CustomerDocument", new { id = "{0}" }))
+                                    .Destroy(destroy => destroy.Action("Delete", "CustomerDocument", new { id = "{0}" }))
+                              )
+                                .Events(e =>
+                                {
+                                    //e.Save("onsave");
+                                })
 )
 
 <div id="CustomerDocument">
-    @await Html.PartialAsync("pvwCustomerDocumentUpload", new ERPMVC.Models.CustomerDocument { CustomerDocumentId = 0, DocumentName = ""})
+    @await Html.PartialAsync("pvwCustomerDocumentUpload", new ERPMVC.Models.CustomerDocument { CustomerDocumentId = 0, DocumentName = "" })
 </div>
+
+
+
+<script>
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+
+        $("#gridCustomerDocument").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridCustomerDocument").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir");
+    setRowButtonTooltip(".k-grid-Descargar", "Descargar");
+
+
+
+
+</script>
+
+
+

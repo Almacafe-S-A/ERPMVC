@@ -15,6 +15,8 @@ namespace ERPMVC.DTO
 
         public double TotalDebit { get; set; }
 
+        public bool hasChildren { get; set; }
+
         public bool? estadocuenta { get; set; }
         public double TotalCredit { get; set; }
         public List<AccountingDTO> Children { get; set; } = new List<AccountingDTO>();

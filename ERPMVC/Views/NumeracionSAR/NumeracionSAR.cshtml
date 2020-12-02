@@ -1,7 +1,11 @@
 ﻿@using Kendo.Mvc.UI
 
 @{
-    ViewData["Title"] = "NUMERACION SAR";
+    ViewData["Title"] = "Númeriación SAR";
+    bool permisoAgregar, permisoEditar, permisoEliminar;
+    permisoAgregar = (bool)ViewData["permisoAgregar"];
+    permisoEditar = (bool)ViewData["permisoEditar"];
+    permisoEliminar = (bool)ViewData["permisoEliminar"];
 }
 
 
@@ -101,19 +105,27 @@
                                         .Name("gridNumeracionSAR")
                                         .Columns(columns =>
                                         {
-                                            columns.Command(command =>
+                                            if (permisoEditar == true || permisoEliminar == true)
                                             {
-                                                //command.Custom("Ver detalles").Click("Detalles");
-                                                command.Custom("Editar").Click("EditNumeracion");
-                                                command.Destroy();
-                                            }).Width(250);
-
-                                            columns.Bound(p => p.IdNumeracion).Width(180);
+                                                columns.Command(command =>
+                                                {
+                                                    //command.Custom("Ver detalles").Click("Detalles");
+                                                    if (permisoEditar)
+                                                    {
+                                                        command.Custom("Editar").Click("EditNumeracion").IconClass("fa fa-edit").Text(" ");
+                                                    }
+                                                    if (permisoEliminar)
+                                                    {
+                                                        command.Destroy().Text(" ").IconClass("fa fa-trash");
+                                                    }
+                                                }).Width(150).Title("Acciones");
+                                            }
+                                            columns.Bound(p => p.IdNumeracion).Width(150);
                                             // columns.Bound(p => p.IdCAI).Width(150);
-                                            columns.Bound(p => p._cai).Width(190);
+                                            columns.Bound(p => p._cai).Width(250);
                                             columns.Bound(p => p.NoInicio).Width(180);
                                             columns.Bound(p => p.NoFin).Width(160);
-                                            columns.Bound(p => p.FechaLimite).Format("{0:dd/MM/yyyy}").Width(250);
+                                            columns.Bound(p => p.FechaLimite).Format("{0:dd/MM/yyyy}").Width(200);
                                             columns.Bound(p => p.CantidadOtorgada).Width(220);
                                             // columns.Bound(p => p.SiguienteNumero).Width(220);
                                             columns.Bound(p => p.PuntoEmision).Width(200);
@@ -158,12 +170,13 @@
                                         .ToolBar(tools =>
                                         {
                                             //tools.Create();
-                                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCai()" });
-
-                                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
+                                            if (permisoAgregar)
+                                            {
+                                                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                                        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCai()" });
+                                            }
+                                                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
                                         })
                                         .Editable(e => e.Mode(GridEditMode.PopUp))
                                         .Sortable()
@@ -209,7 +222,25 @@
     @await Html.PartialAsync("GripEditar", new ERPMVC.DTO.DTO_NumeracionSAR { IdNumeracion = 0, IdCAI = 0, FechaLimite=DateTime.Now })
 </div>
 
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridNumeracionSAR").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
 
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridNumeracionSAR").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+</script>
 
 
 

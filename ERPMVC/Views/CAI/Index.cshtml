@@ -2,7 +2,10 @@
 
 @{
     ViewData["Title"] = "CAI";
-   
+    bool permisoAgregar, permisoEditar, permisoEliminar;
+    permisoAgregar = (bool)ViewData["permisoAgregar"];
+    permisoEditar = (bool)ViewData["permisoEditar"];
+    permisoEliminar = (bool)ViewData["permisoEliminar"];
 }
 
 <script>
@@ -23,17 +26,19 @@
        
 
         $('#ModalCAI').find(':input').not(':submit').val('');
-
         $('#ModalCAI').modal('show');
         $("#IdCAI").val('0');
         $("#IdEstado").data("kendoDropDownList").value(0);
 
-
+        var validator = $("#frmCAI").data("kendoValidator");
+        validator.hideMessages();
 
     }
 
     
-         function EditCAI(e) {
+    function EditCAI(e) {
+
+
              e.preventDefault();
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
             var dataObject = {
@@ -49,6 +54,9 @@
                 async: false,
                 data: JSON.stringify(dataObject),
                 success: function (result) {
+                    var validator = $("#frmCAI").data("kendoValidator");
+        validator.hideMessages();
+      
                     $("#numCAI").html('');
                     $("#numCAI").html(result);
 
@@ -81,16 +89,25 @@
 
         .Columns(columns =>
         {
-            columns.Command(command =>
+            if (permisoEditar == true || permisoEliminar == true)
             {
-                //command.Custom("Ver detalles").Click("Detalles");
-                command.Custom("Editar").Click("EditCAI");
-                command.Destroy().Text("Eliminar");
-            }).Width(250);
+                columns.Command(command =>
+                {
+                    //command.Custom("Ver detalles").Click("Detalles");
+                    if (permisoEditar)
+                    {
+                        command.Custom("Editar").Text(" ").Click("EditCAI").IconClass("fa fa-edit");
+                    }
+                    if (permisoEliminar)
+                    {
+                        command.Destroy().Text(" ").IconClass("fa fa-trash");
+                    }
+                }).Width(150).Title("Acciones");
+            }
             columns.Bound(p => p.IdCAI).Width(100);
-            columns.Bound(p => p._cai).Title("CAI").Width(180);
-            columns.Bound(p => p.FechaRecepcion).ClientTemplate("#= kendo.toString(kendo.parseDate(FechaRecepcion), 'dd/MM/yyyy') #").Width(170);
-            columns.Bound(p => p.FechaLimiteEmision).ClientTemplate("#= kendo.toString(kendo.parseDate(FechaLimiteEmision), 'dd/MM/yyyy') #").Width(200);
+            columns.Bound(p => p._cai).Title("CAI").Width(200);
+            columns.Bound(p => p.FechaRecepcion).ClientTemplate("#= kendo.toString(kendo.parseDate(FechaRecepcion), 'dd/MM/yyyy') #").Title("Fecha Recepción").Width(170);
+            columns.Bound(p => p.FechaLimiteEmision).ClientTemplate("#= kendo.toString(kendo.parseDate(FechaLimiteEmision), 'dd/MM/yyyy') #").Title("Fecha Límite Emisión").Width(200);
             columns.Bound(p => p.Estado).Width(100);
             //columns.Bound(p => p.UsuarioCreacion).Width(170);
             //columns.Bound(p => p.UsuarioModificacion).Width(190);
@@ -133,10 +150,14 @@
         {
 
             //tools.Create();
-            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                          .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCAI()" });
-            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+            if (permisoAgregar)
+            {
+                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                         .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCAI()" });
+            }
+                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
 
 
 
@@ -185,3 +206,23 @@
 <div id="numCAI">
     @await Html.PartialAsync("pvwAddCAI", new ERPMVC.DTO.CAIDTO { IdCAI = 0, FechaLimiteEmision = DateTime.Now, FechaRecepcion = DateTime.Now })
 </div>
+
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridCAI").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridCAI").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+</script>

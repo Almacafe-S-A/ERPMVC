@@ -5,7 +5,9 @@
       <Body>
         <Style>
           <BackgroundColor>White</BackgroundColor>
-          <Border />
+          <Border>
+            <Color>#808080</Color>
+          </Border>
         </Style>
         <ReportItems>
           <Rectangle Name="Rectangle1">
@@ -78,13 +80,13 @@
               <Image Name="Image1">
                 <Left>0.20520in</Left>
                 <Top>0.04906in</Top>
-                <Value>LogoAlmacafe</Value>
+                <Value>=First(Fields!imageDir.Value,"Companyinfo")</Value>
                 <Height>0.43010in</Height>
                 <Width>1.024in</Width>
                 <Style>
                   <Border />
                 </Style>
-                <Source>Embedded</Source>
+                <Source>External</Source>
                 <Sizing>FitProportional</Sizing>
               </Image>
             </ReportItems>
@@ -530,11 +532,12 @@
                             <Paragraph>
                               <TextRuns>
                                 <TextRun>
-                                  <Value>=Fields!Price.Value</Value>
+                                  <Value>=Format(IIf(Fields!TypeContractId.Value = 123, Fields!Price.Value * 1000, IIf(Fields!TypeContractId.Value = 124, Fields!Price.Value *100, Fields!Price.Value)), "#,0.00;(#,0.00)")</Value>
                                   <Style />
                                 </TextRun>
                               </TextRuns>
                               <Style>
+                                <TextAlign>Right</TextAlign>
                                 <LineHeight>10pt</LineHeight>
                               </Style>
                             </Paragraph>
@@ -607,7 +610,9 @@
               <PaddingRight>2pt</PaddingRight>
               <PaddingTop>2pt</PaddingTop>
               <PaddingBottom>2pt</PaddingBottom>
-              <Border />
+              <Border>
+                <Color>#808080</Color>
+              </Border>
             </Style>
             <CanGrow>true</CanGrow>
             <KeepTogether>true</KeepTogether>
@@ -1360,10 +1365,10 @@ Ponemos  a su estimada consideración nuestra propuesta para el almacenamiento, 
   </ReportSections>
   <AutoRefresh>0</AutoRefresh>
   <DataSources>
-    <DataSource Name="DataSource1">
+    <DataSource Name="ERP">
       <ConnectionProperties>
         <DataProvider>SQL</DataProvider>
-        <ConnectString>Data Source=des.canbbevbcgld.us-west-2.rds.amazonaws.com;Initial Catalog=ERP;User id=almacafe;password=Almacafe2019;</ConnectString>
+        <ConnectString>Data Source=mjolnir\mssqlserver2017;Initial Catalog=ERP;User id=sa;password=sa2010;</ConnectString>
       </ConnectionProperties>
     </DataSource>
   </DataSources>
@@ -1412,7 +1417,7 @@ Ponemos  a su estimada consideración nuestra propuesta para el almacenamiento, 
         </Field>
       </Fields>
       <Query>
-        <DataSourceName>DataSource1</DataSourceName>
+        <DataSourceName>ERP</DataSourceName>
         <CommandType>Text</CommandType>
         <CommandText>select SalesOrderId,RTN,Tefono ,OrderDate 
 ,Correo,Direccion,BranchId,CustomerId,ProductName
@@ -1509,11 +1514,23 @@ WHERE   (so.SalesOrderId = @SalesOrderId)
           <DataField>TaxId</DataField>
           <rd:TypeName>System.Int64</rd:TypeName>
         </Field>
+        <Field Name="Porcentaje">
+          <DataField>Porcentaje</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="Valor">
+          <DataField>Valor</DataField>
+          <rd:TypeName>System.Decimal</rd:TypeName>
+        </Field>
+        <Field Name="TypeContractId">
+          <DataField>TypeContractId</DataField>
+          <rd:TypeName>System.Int64</rd:TypeName>
+        </Field>
       </Fields>
       <Query>
-        <DataSourceName>DataSource1</DataSourceName>
+        <DataSourceName>ERP</DataSourceName>
         <CommandType>Text</CommandType>
-        <CommandText>select * from [dbo].[SalesOrderLine] sol
+        <CommandText>select sol.*,so.TypeContractId from [dbo].[SalesOrderLine] sol INNER JOIN [dbo].[SalesOrder] so ON SOL.[SalesOrderId] = so.[SalesOrderId]
 WHERE       (sol.SalesOrderId = @SalesOrderId) 
  AND sol.SubProductId NOT IN
         (SELECT cc.SubProductId FROM CustomerConditions cc 
@@ -1558,7 +1575,7 @@ WHERE       (sol.SalesOrderId = @SalesOrderId)
         </Field>
       </Fields>
       <Query>
-        <DataSourceName>DataSource1</DataSourceName>
+        <DataSourceName>ERP</DataSourceName>
         <CommandType>Text</CommandType>
         <CommandText>select cc.ConditionId,cc.CustomerConditionName,
 Description, cc.LogicalCondition,cc.ValueToEvaluate,cc.ValueDecimal,
@@ -1572,6 +1589,19 @@ WHERE       (so.SalesOrderId = @SalesOrderId)</CommandText>
             <Value>=Parameters!SalesOrderId.Value</Value>
           </QueryParameter>
         </QueryParameters>
+      </Query>
+    </DataSet>
+    <DataSet Name="Companyinfo">
+      <Fields>
+        <Field Name="imageDir">
+          <DataField>imageDir</DataField>
+          <rd:TypeName>System.String</rd:TypeName>
+        </Field>
+      </Fields>
+      <Query>
+        <DataSourceName>ERP</DataSourceName>
+        <CommandType>Text</CommandType>
+        <CommandText>select top 1 imageDir from companyinfo</CommandText>
       </Query>
     </DataSet>
   </DataSets>

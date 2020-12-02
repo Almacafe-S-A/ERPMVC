@@ -1,0 +1,528 @@
+﻿@model ERPMVC.Models.BankAccountTransfers
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+           {"required","Valor requerido" }
+        };
+}
+
+
+<div id="Modal" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Transferencias Bancarias</h4>
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmBankAccountTransfers" kendo-validator="true" kendo-messages="messages"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveTransfer"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="Id" class=" control-label" style="width:100%"></label>
+                                                    <input type="text" asp-for="Id" name="Id" class="k-textbox" disabled="disabled" style="min-width:100%" />
+                                                    <span asp-validation-for="Id" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label>Fecha Registro</label>
+                                                    <kendo-datetimepicker for="FechaCreacion" value="@Model.FechaCreacion" readonly style="min-width:100%" />
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label>Fecha de Transaccion</label>
+                                                    <kendo-datepicker max="DateTime.Now" for="TransactionDate" data-val-required="La fecha de Transaccion es requerida " style="min-width:100%" on-change="GetRate" />
+                                                </div>
+
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="control-label" style="min-width:100%">Tasa de Cambio       <input type="checkbox"  checked  id="auto" onchange="tasaautomatica()"/> Auto </label>
+                                                    <kendo-numerictextbox enable="false" style="min-width:100%" for="Rate" min="0" spinners="false" format="n4" on-change="GetRate"  max="1000" data-val-required="La Tasa de Cambio es Requerida" decimals="4" />
+                                                    <span asp-validation-for="Rate"></span>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="control-label" style="min-width:100%">Banco Origen</label>
+                                                    <kendo-dropdownlist style="min-width:100%" name="sourcebank" datatextfield="BankName" datavaluefield="BankId" value="@Model.SourceAccountManagement.BankId"
+                                                                        option-label="Seleccione Banco"
+                                                                        onchange="RefreshSourceAccounts()">
+                                                        <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetBank","Bank")" />
+                                                            </transport>
+                                                        </datasource>
+
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="control-label" style="min-width:100%">Moneda</label>
+                                                    <kendo-dropdownlist class="control-label" style="min-width:100%" value="@Model.SourceAccountManagement.CurrencyId"
+                                                                        name="sourcecurrency"
+                                                                        onchange="RefreshSourceAccounts()"
+                                                                        datatextfield="CurrencyName"
+                                                                        datavaluefield="CurrencyId"
+                                                                        option-label="Seleccione Moneda">
+                                                        <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetCurrency","Currency")" />
+                                                            </transport>
+                                                        </datasource>
+
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="control-label" style="min-width:100%">Cuenta Origen</label>
+                                                    <kendo-dropdownlist for="SourceAccountManagementId" style="min-width:100%" no-data-template="No se encontraron cuentas" value="@Model.SourceAccountManagementId"
+                                                                        required data-required-msg="La Cuenta de Origen es requerida"
+                                                                        datatextfield="AccountNumber" datavaluefield="AccountManagementId" option-label="Seleccione la Cuenta">
+                                                        <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetAccountManagementByBankNCurrency","AccountManagement")" data="GetSourceBankAccounts" />
+                                                            </transport>
+                                                        </datasource>
+
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="SourceAccountManagementId"></span>
+                                                </div>
+                                            </div>
+                                            <script>
+                                                function RefreshSourceAccounts() {
+                                                    debugger;
+                                                    $("#SourceAccountManagementId").data("kendoDropDownList").dataSource.read();
+                                                    GetRate();
+                                                }
+                                                function GetSourceBankAccounts() {
+                                                    var banco = $("#sourcebank").val();
+                                                    var moneda = $("#sourcecurrency").val();
+
+                                                    return {
+                                                        BankId: banco,
+                                                        CurrencyId: moneda
+                                                    }
+                                                }
+                                            </script>
+                                            <div class="col-md-3">
+                                                <label class="control-label" style="min-width:100%">Monto </label>
+                                                <kendo-numerictextbox  for="SourceAmount" spinners="false" min="0" style="min-width:100%" on-change="RefreshSourceAccounts" />
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="control-label" style="min-width:100%">Banco Destino</label>
+                                                    <kendo-dropdownlist name="destinationbank" datatextfield="BankName" datavaluefield="BankId" style="min-width:100%" value="@Model.DestinationAccountManagement.BankId"
+                                                                        option-label="Seleccione Banco" onchange="RefreshDestinationAccounts()">
+                                                        <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetBank","Bank")" />
+                                                            </transport>
+                                                        </datasource>
+
+                                                    </kendo-dropdownlist>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label class="control-label" style="min-width:100%">Moneda Destino</label>
+                                                    <kendo-dropdownlist name="destinationcurrency" datatextfield="CurrencyName" onchange="RefreshDestinationAccounts()" value="@Model.DestinationAccountManagement.CurrencyId"
+                                                                        option-label="Seleccione Moneda"
+                                                                        datavaluefield="CurrencyId" style="min-width:100%">
+                                                        <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetCurrency","Currency")" />
+                                                            </transport>
+                                                        </datasource>
+
+                                                    </kendo-dropdownlist>
+
+                                                </div>
+                                            </div>
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label style="min-width:100%">Cuenta Destino</label>
+                                                    <kendo-dropdownlist for="DestinationAccountManagementId" no-data-template="No se encontraron cuentas" value="@Model.DestinationAccountManagementId"
+                                                                        datatextfield="AccountNumber" option-label-template="Seleccione la cuenta"
+                                                                        datavaluefield="AccountManagementId"
+                                                                        style="min-width:100%"
+                                                                        required data-required-msg="La Cuenta de Destino es requerida"
+                                                                        option-label="Seleccione la cuenta">
+                                                        <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetAccountManagementByBankNCurrency","AccountManagement")" data="GetDestinationBankAccounts" />
+                                                            </transport>
+                                                        </datasource>
+
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="DestinationAccountManagementId"></span>
+                                                </div>
+                                            </div>
+
+                                            <script>                                                
+                                                function RefreshDestinationAccounts() {
+                                                    debugger;
+                                                    var cuentas = $("#DestinationAccountManagementId").data("kendoDropDownList").dataSource;
+                                                    cuentas.read();
+                                                    GetRate();
+                                                }
+                                                function GetDestinationBankAccounts() {
+                                                    var banco = $("#destinationbank").val();
+                                                    var moneda = $("#destinationcurrency").val();
+
+                                                    return {
+                                                        BankId: banco,
+                                                        CurrencyId: moneda
+                                                    }
+                                                }
+                                            </script>
+                                            <div class="col-md-3">
+                                                <label class="control-label" style="min-width:100%">Monto </label>
+                                                <kendo-numerictextbox for="DestinationAmount" spinners="false" min="0" readonly />
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-3">
+                                                <label class="control-label">Estado</label>
+                                                <kendo-dropdownlist for="EstadoId" datatextfield="NombreEstado"
+                                                                    datavaluefield="IdEstado" style="min-width:100%" enable="false"
+                                                                    option-label="Seleccione Estado">
+                                                    <datasource page-size="999" type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                        <transport>
+                                                            <read url="@Url.Action("GetporGrupoEstado","Estados",new { GrupoId = 3})" />
+                                                        </transport>
+                                                    </datasource>
+
+                                                </kendo-dropdownlist>
+                                            </div>
+                                            <div class="col-md-9">
+                                                <label class="control-label" style="min-width:100%">Observaciones</label>
+                                                <textarea class="k-textarea" style="min-width:100%" asp-for="Notes"></textarea>
+                                                <input type="number" asp-for="JournalEntryId" value="@Model.JournalEntryId" hidden />
+                                            </div>
+                                        </div>
+                                        @if (Model.EstadoId == 5 || Model.Id == 0 || Model.EstadoId == 7)
+                                        {
+                                            <div class="row">
+                                                <div class="col-md-12">
+                                                    <button id="btnBank" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                                </div>
+                                            </div>
+                                        }
+
+
+
+                                    </div>
+                                </form>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function RefrescarGrid() {
+        var grid = $("#gridBank").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+
+    function tasaautomatica() {
+        debugger;
+        var auto = $('#auto').prop('checked');
+        $("#Rate").data("kendoNumericTextBox").enable(!auto);        
+        $("#Rate").data("kendoNumericTextBox").value(0);
+        $("#DestinationAmount").data("kendoNumericTextBox").value(0);
+        GetRate();
+    }
+
+
+    function GetRate() {
+        debugger;
+        var tasadecambio = 0;
+        //tasadecambio = $('#Rate').val();
+
+        var montoDestino = 0;
+        var montoOrigen = $("#SourceAmount").val();
+
+        var monedaOrigen = $("#sourcecurrency").val();
+        var monedaDestino = $("#destinationcurrency").val();
+
+        var tasa = $("#Rate").val();
+        var auto = $('#auto').prop('checked');
+        $("#Rate").data("kendoNumericTextBox").enable(!auto);
+
+        var monedatasa = 0;
+        var compra = false;
+        var monedasextrangerasiguales = false;
+        var monedaextrangera = true;
+        
+        
+        if (!ValidarMonedas()) {
+            return;
+        }
+        
+        if (monedaOrigen == 1) { 
+            compra = true;
+            monedatasa = monedaDestino;
+            monedaextrangera = false;
+        } else {
+            if (monedaDestino == 1) {
+                compra = false;
+                monedatasa = monedaOrigen;
+                monedaextrangera = false;
+            } else {
+                monedasextrangerasiguales = true;
+                monedatasa = monedaOrigen;
+            }
+        }
+
+        if (monedaDestino == monedaOrigen) {
+            $("#DestinationAmount").data("kendoNumericTextBox").value(montoOrigen);            
+            if (!monedaextrangera) {
+                $("#Rate").data("kendoNumericTextBox").value(1);
+                return;
+            } else {
+                
+            }
+        }
+
+        if (tasa > 0 && !auto) {
+            if (monedasextrangerasiguales) {
+                //tasa = tasadecambio;
+                montoDestino = montoOrigen;
+            } else {
+                if (compra) {
+                    //tasa = tasadecambio;
+                    montoDestino = Number(montoOrigen) / Number(tasa);
+                } else {
+                    //tasa = tasadecambioCompra;
+                    montoDestino = Number(montoOrigen) * Number(tasa);
+                }
+            }
+            /////Sete la Tasa y el monto destino
+            $("#Rate").data("kendoNumericTextBox").value(tasa);
+            $("#DestinationAmount").data("kendoNumericTextBox").value(montoDestino);
+            return;
+        } 
+        
+        
+        var fecha = $("#TransactionDate").getKendoDatePicker().value().toJSON();
+        var dataObject = {
+            CurrencyId: monedatasa,
+            DayofRate:fecha
+        };
+        
+        $.ajax({
+                url: '@Url.Action("GetExchangeRateByDateNCurrency", "ExchangeRate")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+            success: function (data) {
+                if (data != null) {
+                    debugger;
+                    tasadecambio = data.ExchangeRateValue;
+                    tasadecambioCompra = data.ExchangeRateValueCompra;
+                    
+                    if (monedasextrangerasiguales) {
+                        tasa = tasadecambio;
+                        montoDestino = montoOrigen;
+                    } else {
+                        if (compra) {
+                            tasa = tasadecambio;
+                            montoDestino = Number(montoOrigen) / Number(tasa);
+                        } else {
+                            tasa = tasadecambioCompra;
+                            montoDestino = Number(montoOrigen) * Number(tasa);
+                        }
+                    }
+                    
+                    }
+                else {
+                    
+                    $.toast({
+                        heading: 'Validación',
+                        text: 'No se encontra la tasa de cambio del dia de de la transaccion',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                    montoDestino = 0;
+                    tasa = 0;
+                }
+
+                /////Sete la Tasa y el monto destino
+                $("#Rate").data("kendoNumericTextBox").value(tasa);
+                $("#DestinationAmount").data("kendoNumericTextBox").value(montoDestino);
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+    }
+
+    function ValidarMonedas() {
+        debugger;////Valida que en la transaccion exista una moneda local o que las dos monedas sean extrangeras
+        var monedaOrigen = $("#sourcecurrency").val();
+        var monedaDestino = $("#destinationcurrency").val();
+        if (monedaDestino == "" || monedaOrigen == "") {
+            return false;
+        }
+        var monedaOrigen = $("#sourcecurrency").val();
+        var monedaDestino = $("#destinationcurrency").val();
+        if ((monedaDestino != 1 && monedaOrigen != 1)) {
+            if (monedaDestino != monedaOrigen) {
+                $.toast({
+                    heading: 'Error',
+                    text: 'Transaccion no Soportada, una de las monedas debe de ser en moneda local o ambas iguales',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 30000,
+                    stack: 6
+                });
+                return false;
+            }
+
+
+        }
+        return true;
+    }
+
+    function SaveTransfer(e) {
+        if (!ValidarMonedas()) {
+            return;
+        }
+
+        var sourceAmount = $("#SourceAmount").val();
+        var destinationAmount = $("#DestinationAmount").val();
+        if (sourceAmount == 0 ) {
+            $.toast({
+                heading: 'Error',
+                text: "La Cantidad de Origen no puede ser cero",
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+            return;
+        }
+        if (destinationAmount == 0 ) {
+            $.toast({
+                heading: 'Error',
+                text: "La Cantidad de destino no puede ser cero",
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+            return;
+        }
+
+            var notification = $("#notification").data("kendoNotification");
+           // e.preventDefault();
+            $("#btnBank").hide();
+            $("#btnBank").prop("disabled", true);
+
+            var displayedData = $("#gridBank").data().kendoGrid.dataSource.view();
+
+            var dataObject = {
+                'Id': $("#Id").val() === "" ? "0" : $("#Id").val(),
+                'TransactionDate': $("#TransactionDate").getKendoDatePicker().value().toJSON(),
+                'SourceAccountManagementId': $("#SourceAccountManagementId").val(),
+                'DestinationAccountManagementId': $("#DestinationAccountManagementId").val(),
+                'SourceAmount': $("#SourceAmount").val(),
+                'DestinationAmount': $("#DestinationAmount").val(),
+                'Rate': $("#Rate").val(),
+                'Notes': $("#Notes").val(),
+                'EstadoId': $("#EstadoId").val(),
+                'JournalEntryId': $("#JournalEntryId").val()
+            };
+
+            console.log(JSON.stringify(dataObject));
+            //var form = $("#frmNumeracion");
+           // form.validate();
+
+            var validator = $("#frmBankAccountTransfers").data("kendoValidator");
+                 var status = $(".status");
+
+
+                if (validator.validate()) {
+
+                    $.ajax({
+                        url: '@Url.Action("SaveBankAccountTransfers", "BankAccountTransfers")',
+                        method: 'POST',
+                        datatype: "json",
+                        contentType: 'application/json',
+                        async: false,
+                        data: JSON.stringify(dataObject),
+                        success: function (data) {
+                            $.toast({
+                                heading: 'Satisfactorio',
+                                text: 'Datos guardados correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+                           RefrescarGrid();
+                            $('#Modal').modal('hide');
+                        },
+                        error: function (result) {
+                            console.log(result);
+                            $.toast({
+                                heading: 'Error',
+                                text: result.responseText,
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'error',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+
+                        }
+                    });
+
+                }
+                else {
+                    status.text("Oops! There is invalid data in the form.")
+                        .removeClass("valid")
+                        .addClass("invalid");
+                }
+
+
+            $("#btnBank").show();
+            $("#btnBank").prop("disabled", false);
+    }
+</script>

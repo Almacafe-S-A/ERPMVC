@@ -2,6 +2,10 @@
 
 @{
     ViewData["Title"] = "Información de la empresa";
+    bool permisoAgregar, permisoEditar, permisoEliminar;
+    permisoAgregar = (bool)ViewData["permisoAgregar"];
+    permisoEditar = (bool)ViewData["permisoEditar"];
+    permisoEliminar = (bool)ViewData["permisoEliminar"];
 }
 
 <script>
@@ -34,18 +38,19 @@
                 data: JSON.stringify(dataObject),
                 success: function (result) {
                     $("#NumCompanyInfo").html('');
-                    $("#NumCompanyInfo").html(result);                  
+                    $("#NumCompanyInfo").html(result);
                     $('#ModalCompanyInfo').modal('show');
                 },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+               error: function (XMLHttpRequest, textStatus, errorThrown) {
+                   alert(errorThrown);
                 }
             });
 
       }
 
 
-         function EditCompanyInfo(e) {
+    function EditCompanyInfo(e) {
+        debugger;
              e.preventDefault();
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
             var dataObject = {
@@ -63,10 +68,38 @@
                 success: function (result) {
                     $("#NumCompanyInfo").html('');
                     $("#NumCompanyInfo").html(result);
+                    //var archivo = dataItem.image;
+            @*if (archivo != "" || archivo ){
+            var res = archivo.split("/");
+            console.log(res)
+            var image = "/" + res[1] + "/"+res[2];
+            var fileName = res[2];
+            var fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1);
+            var files = [
+                { name: fileName, extension: "." + fileExtension },
+            ];
+            $("#files").kendoUpload({
+                async: {
+                    saveUrl: "@Url.Action("SaveImage","CompanyInfo")",
+                    removeUrl: "@Url.Action("", "")",
+                    //autoUpload: true,
+                },
+                upload: SaveCompanyImages,
+                multiple: false,
+                localization: {
+                    select: "Seleccionar Imagen",
+                    cancel: "Cancelar",
+                    dropFilesHere: "Soltar Archivo aquí",
+                    invalidFileExtension: "Extensión de Archivo Invalido",
+                    retry: "Reintentar",
+                },
+                files: files,
+            });
+             }*@
                     $('#ModalCompanyInfo').modal('show');
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                    alert(errorThrown);
                 }
             });
          }
@@ -77,119 +110,143 @@
 
 <h3 class="text-themecolor">Información de la Empresa</h3>
 @(Html.Kendo().Grid<ERPMVC.Models.CompanyInfo>
-                ()
-                .Name("gridCompanyInfo")
-                .Columns(columns =>
-                {
-
-                    columns.Command(command =>
+                    ()
+                    .Name("gridCompanyInfo")
+                    .Columns(columns =>
                     {
-                        //command.Custom("Ver detalles").Click("Detalles");
-                        command.Custom("Editar").Click("EditCompanyInfo");
-                        command.Destroy().Text("Eliminar");
-                    }).Width(250);
-                    columns.Bound(p => p.CompanyInfoId).Width(100);
-                    columns.Bound(p => p.Company_Name).Width(200);
-                    columns.Bound(p => p.Address).Width(150);
-                    columns.Bound(p => p.Phone).Width(150);
-                    columns.Bound(p => p.Fax).Width(150);
-                    columns.Bound(p => p.Email).Width(200);
-                    columns.Bound(p => p.Tax_Id).Width(250);
-                    columns.Bound(p => p.image).Width(200);
-                    columns.Bound(p => p.CountryName).Width(200);
-                    columns.Bound(p => p.Address).Width(300);
-                    columns.Bound(p => p.Manager).Width(200);
-                    columns.Bound(p => p.PostalCode).Width(200);
-                    columns.Bound(p => p.PrintHeader).Width(200);
-                    columns.Bound(p => p.RTNMANAGER).Width(200);
-                    columns.Bound(p => p.RevOffice).Width(200);
+                        if (permisoEditar == true || permisoEliminar == true)
+                        {
+                            columns.Command(command =>
+                            {
+                                //command.Custom("Ver detalles").Click("Detalles");
+                                if (permisoEditar)
+                                {
+                                    command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCompanyInfo");
+                                }
+                                if (permisoEliminar)
+                                {
+                                    command.Destroy().IconClass("fa fa-trash-alt").Text(" ");
+                                }
+                            }).Title("Acciones").Width(200);
+                        }
+                        columns.Bound(p => p.CompanyInfoId).Title("Id Empresa").Width(150);
+                        columns.Bound(p => p.Company_Name).Width(300);
+                        columns.Bound(p => p.Address).Width(300);
+                        columns.Bound(p => p.Phone).Title("Teléfono Fijo").Width(200);
+                        columns.Bound(p => p.Fax).Width(150);
+                        columns.Bound(p => p.Email).Width(250);
+                        columns.Bound(p => p.Tax_Id).Width(250);
+                        //columns.Bound(p => p.image).Width(200);
+                        columns.Bound(p => p.CountryName).Title("País").Width(200);
+                        columns.Bound(p => p.Manager).Title("Gerente General").Width(200);
+                        columns.Bound(p => p.RTNMANAGER).Title("RTN Gerente General").Width(250);
+                        columns.Bound(p => p.PostalCode).Width(200);
+                        //columns.Bound(p => p.PrintHeader).Width(300);                       
+                        //columns.Bound(p => p.RevOffice).Width(200);
+                    })
+                        .Filterable(f => f.Operators(o => o.ForString(s => s
+                                               .Clear()
+                                               .Contains("Contiene")
+                                               .DoesNotContain("No contiene")
+                                               .EndsWith("Termina con")
+                                               .IsEqualTo("Es igual a")
+                                               .IsNotEqualTo("No es igual a")
+                                               .IsNull("Es nulo")
+                                               .StartsWith("Inicia con")
 
 
-
-
-                })
-                    .Filterable(f => f.Operators(o => o.ForString(s => s
+                                         )
+                                         .ForNumber(n => n
                                            .Clear()
-                                           .Contains("Contiene")
-                                           .DoesNotContain("No contiene")
-                                           .EndsWith("Termina con")
                                            .IsEqualTo("Es igual a")
-                                           .IsNotEqualTo("No es igual a")
+                                           .IsGreaterThan("Es mayor que")
+                                           .IsLessThan("Es menor que")
                                            .IsNull("Es nulo")
-                                           .StartsWith("Inicia con")
-
-
-                                     )
-                                     .ForNumber(n => n
-                                       .Clear()
-                                       .IsEqualTo("Es igual a")
-                                       .IsGreaterThan("Es mayor que")
-                                       .IsLessThan("Es menor que")
-                                       .IsNull("Es nulo")
-                                       .IsLessThanOrEqualTo("Es menor o igual que")
-                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                     )
-                                     .ForDate(d => d
-                                     .Clear()
-                                     .IsEqualTo("Es igual que")
-                                     .IsGreaterThan("Es mayor que")
-                                     .IsLessThan("Es menor que")
-                                     .IsLessThanOrEqualTo("Es menor o igual que")
-                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                     .IsNotEqualTo("No es igual que")
-                                      )
-                                   ))
-                .ToolBar(tools =>
-                {
-                    // tools.Create();
-                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                           .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCompanyInfo()" });
-                    tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                    tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-
-                })
-                .Editable(e => e.Mode(GridEditMode.PopUp))
-                .Sortable()
-                .Pageable()
-                .Filterable()
-                .Scrollable()
-                .Pdf(pdf => pdf.FileName("CompanyInfoReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                    .Excel(excel => excel.FileName("CompanyInfoReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                .DataSource(dataSource =>
-                    dataSource
-                    .WebApi()
-
-                    .ServerOperation(true)
-                    .Model(model =>
+                                           .IsLessThanOrEqualTo("Es menor o igual que")
+                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                         )
+                                         .ForDate(d => d
+                                         .Clear()
+                                         .IsEqualTo("Es igual que")
+                                         .IsGreaterThan("Es mayor que")
+                                         .IsLessThan("Es menor que")
+                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                         .IsNotEqualTo("No es igual que")
+                                          )
+                                       ))
+                    .ToolBar(tools =>
                     {
-                        model.Id(p => p.CompanyInfoId);
-                        model.Field(p => p.CompanyInfoId).Editable(false);
-                        model.Field(p => p.FechaCreacion).Editable(true);
-                        model.Field(p => p.UsuarioCreacion).Editable(false);
-                        model.Field(p => p.UsuarioModificacion).Editable(false);
+                        // tools.Create();
+                        if (permisoAgregar)
+                        {
+                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                       .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCompanyInfo()" });
+                        }
+                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
 
                     })
-                    .Events(events => events.Error("error_handler"))
-                    .Read(read => read.Action("Get", "CompanyInfo"))
-                    .Create(create => create.Action("Insert", "CompanyInfo"))
-                    //.Update(update => update.Action("Update", "CompanyInfo", new { CompanyInfoId = "{0}" }).Type(HttpVerbs.Put))
-                    .Destroy(destroy => destroy.Action("Delete", "CompanyInfo").Type(HttpVerbs.Post))
+                    .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                    .Sortable()
+                    .Pageable()
+                    .Filterable()
+                    .Scrollable()
+                    .Pdf(pdf => pdf.FileName("InformaciondelaEmpresaReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                        .Excel(excel => excel.FileName("InformaciondelaEmpresaReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                    .DataSource(dataSource =>
+                        dataSource
+                        .WebApi()
+
+                        .ServerOperation(true)
+                        .Model(model =>
+                        {
+                            model.Id(p => p.CompanyInfoId);
+                            model.Field(p => p.CompanyInfoId).Editable(false);
+                            model.Field(p => p.FechaCreacion).Editable(true);
+                            model.Field(p => p.UsuarioCreacion).Editable(false);
+                            model.Field(p => p.UsuarioModificacion).Editable(false);
+
+                        })
+                        .Events(events => events.Error("error_handler"))
+                        .Read(read => read.Action("Get", "CompanyInfo"))
+                        .Create(create => create.Action("Insert", "CompanyInfo"))
+                        //.Update(update => update.Action("Update", "CompanyInfo", new { CompanyInfoId = "{0}" }).Type(HttpVerbs.Put))
+                        .Destroy(destroy => destroy.Action("Delete", "CompanyInfo").Type(HttpVerbs.Post))
 
 
-                )
-                .Events(e =>
-                {
-                    e.Save("onsave");
+                    )
+                    .Events(e =>
+                    {
+                        e.Save("onsave");
 
-                })
+                    })
 )
 
 <div id="NumCompanyInfo">
     @await Html.PartialAsync("pvwAddCompanyInfo", new ERPMVC.DTO.CompanyInfoDTO { CompanyInfoId = 0 })
 </div>
+
+<script>
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridCompanyInfo").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridCompanyInfo").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+</script>

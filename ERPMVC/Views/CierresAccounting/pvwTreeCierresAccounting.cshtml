@@ -1,0 +1,443 @@
+﻿@{
+    ViewData["Title"] = "Históricos de consulta del Catalogo Contable";
+    Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+// {"required","Valor requerido" }
+};
+
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+    var typesAccount = ViewData["TypeAccounts"] as IEnumerable<ERPMVC.Models.TypeAccount>;
+}
+
+
+<script>
+
+
+
+       function EditAccount(e) {
+          //   e.preventDefault();
+           var dataItem = e;//this.dataItem($(e.currentTarget).closest("tr"));
+             var dataObject = {
+                 AccountId: dataItem.AccountId,
+                editar : 0
+           };
+
+
+            $.ajax({
+                url: '@Url.Action("pvwAddAccounting", "Accounting")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumAccounting").html('');
+                    $("#NumAccounting").html(result);
+
+                    console.log(dataItem.ParentAccountId);
+                    if (dataItem.ParentAccountId == null) {
+                        banderadepadre = 1;
+                    }
+                    else {
+                        banderadepadre = 1;
+                    }
+
+                    //$("#btnCAI").hide();
+                    $('#ModalAccounting').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+           });
+
+         }
+
+
+
+    var TypeAccountId = 0;
+    var firstload = 0;
+    function TypeAccounting(TypeAccountIdv) {
+        debugger;
+        kendo.ui.progress($("#divClasificacionCuentas"), true);
+        setTimeout(function () {
+            kendo.ui.progress($("#divClasificacionCuentas"), false);
+        }, 3000);
+        TypeAccountId = TypeAccountIdv;
+
+        var treelist = $("#AccountingTreelist").data("kendoTreeList");
+        treelist.dataSource.read();
+
+
+    }
+
+    var BitacoraCierreContableId = 0;
+    var firstload = 0;
+    function BitacoraCierreContable(BitacoraCierreContableIdS) {
+        debugger;
+        kendo.ui.progress($("#divClasificacionCuentas"), true);
+        setTimeout(function () {
+            kendo.ui.progress($("#divClasificacionCuentas"), false);
+        }, 3000);
+        BitacoraCierreContableId = BitacoraCierreContableIdS;
+
+        var treelist = $("#AccountingTreelist").data("kendoTreeList");
+        treelist.dataSource.read();
+
+
+    }
+    function RefreshTreeList() {
+       // kendo.ui.progress($("#divClasificacionCuentas"), true);
+
+        // TypeAccountId = TypeAccountIdv;
+
+        var treelist = $("#AccountingTreelist").data("kendoTreeList");
+        treelist.dataSource.read();
+
+    }
+    function DataTypeAccounting() {
+        debugger;
+        var bandera = true;
+
+        //if ($("#IdEstadoAccounting").data("kendoDropDownList").select() == -1
+        console.log($("#IdEstadoAccounting").data("kendoDropDownList").text());
+        if ($("#IdEstadoAccounting").data("kendoDropDownList").text() === "Todos")
+        {
+            bandera = null;
+        }
+        else if ($("#IdEstadoAccounting").data("kendoDropDownList").text() === "Inactivo") {
+
+            bandera = false;
+
+        }
+
+
+        if (firstload == 0) {
+            bandera = true;
+        }
+
+
+        firstload++;
+       // console.log('TypeAccountId' + TypeAccountId);
+        //console.log('bandera' + bandera);
+
+        return {
+            'TypeAccountId': TypeAccountId,
+            'estadocuenta': bandera,
+            'BitacoraCierreContableId': BitacoraCierreContableId,
+        }
+    }
+
+    function onBound() {
+        kendo.ui.progress($("#divClasificacionCuentas"), false);
+    }
+    function ImprimirAuxiliarMovimientoPorFechas(e) {
+           e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var url = '@Url.Action("SFAuxiliarMovimientos", "Accounting")/' + dataItem.AccountId;
+           var win = window.open(url, '_blank');
+           win.focus();
+    }
+    function ImprimirAuxiliarMovimientoPorDia(e) {
+        e.preventDefault();
+       // console.log(e);
+           var dataItem = $(e.currentTarget).closest("tr");
+        var url = '@Url.Action("SFAuxiliarMovimientosPorDia", "Accounting")';
+           var win = window.open(url, '_blank');
+           win.focus();
+    }
+</script>
+
+@(Html.Kendo().TreeList<ERPMVC.DTO.CierresAccountingDTO>()
+                                                        .Name("AccountingTreelist")
+                                                        .Toolbar(toolbar =>
+                                                        {
+                                                           // toolbar.Custom().Text("Agregar Cuenta").Name("AddAccounting").Click("AddAccounting");
+                                                    //toolbar.Custom().Text("Editar Cuenta").Name("EditAccount").Click("EditAccount");
+                                                    //toolbar.Custom().Text("Agregar Padre").Name("AddFatherAccounting").Click("AddFatherAccounting");
+
+                                                    //toolbar.Custom().Text("Generar Reporte").Name("ReportAccounts").Click("ImprimirAuxiliarMovimientoPorDia");
+                                                    // toolbar.Custom().Text("Cuentas Activas").Name("Activas");
+                                                }
+                                                             ).Columns(columns =>
+                                                           {
+
+                                                                 columns.Add().Field(f => f.AccountName).Width(550);
+                                                         //columns.Add().Width(125).Command(c =>
+                                                         //{
+                                                         //    c.Custom().Text("Imprimir").Click("ImprimirAuxiliarMovimientoPorDia");
+                                                         //    c.Custom().Text(" ").ImageClass("fa fa-print").Name("Imprimir").Click("ImprimirAuxiliarMovimientoPorFechas");
+                                                         //}).Title("Imprimir");
+                                                         columns.Add().Field(f => f.AccountBalance).Width(200).Format("{0:C4}").HtmlAttributes(new { @style = "text-align:right" });
+                                                                 columns.Add().Field(f => f.AccountCode).Width(200).Title("Código Contable");
+                                                                 columns.Add().Field(f => f.BlockedInJournal).Width(200).Template("#= BlockedInJournal ? 'SI' : 'NO' #");
+                                                                 columns.Add().Field(f => f.IsCash).Width(200).Template("#= IsCash ? 'SI' : 'NO' #");
+                                                                 columns.Add().Field(f => f.Estado).Width(200);
+
+                                                         // columns.Add().Field(f => f.TypeAccountId).Width(200);
+                                                         columns.Add().Field(f => f.TypeAccountId).Width(200).Hidden();
+                                                         //.TemplateId( "typeAccount - template" );
+                                                         //.TemplateId("#=TypeAccount.TypeAccountName#").Sortable(false).Width(200);
+                                                         columns.Add().Field(f => f.ParentAccountId).Width(200).Hidden();
+
+                                                             })
+                                            .Filterable()
+                                             .Sortable()
+                                            //.Pageable()
+                                            //      .Filterable(true)
+
+
+
+
+                                            // .Events(e =>
+                                            // {
+                                            //    e.DataBound("onBound");
+                                            // })
+                                            // .Editable(//e => e.Mode("inline")
+                                            // e => e.Mode(TreeListEditMode.PopUp).Move(false)
+                                            // )
+
+                                            //.Editable(e => e.Mode(TreeListEditMode.PopUp))
+                                            .DataSource(dataSource => dataSource
+                                             .Events(events => events.Error("error_handler"))
+                                             .Read(read => read.Action("CierresAccountingRes", "CierresAccounting").Data("DataTypeAccounting"))
+
+                                            //.Update(update => update.Action("Update", "Accounting", new { AccountId = "{0}" }).Type(HttpVerbs.Put))
+                                            .Model(m =>
+                                            {
+                                                m.Id(f => f.AccountId);
+                                                m.ParentId(f => f.ParentAccountId).Editable(false);
+                                                m.Field(f => f.BlockedInJournal).Editable(true);
+                                                m.Field(f => f.AccountCode).Editable(true);
+                                                m.Field(f => f.IsCash).Editable(true);
+                                                m.Field(f => f.IdEstado).Editable(true);
+
+                                                m.Field(f => f.TypeAccountId).Editable(true);
+                                                m.Field(f => f.AccountName).Editable(true);
+                                                m.Field(f => f.AccountBalance).Editable(false);
+                                                m.Expanded(false);
+
+
+                                            })
+
+                                        ).Height(540)
+                                        //.Pageable(p => p.PageSize(15)
+                                        //              .PageSizes(true)
+                                        //)
+                                        .Selectable(true)
+        // .HtmlAttributes(new { dblclick = " "})
+        /*.Events(events =>
+        {
+            events.Edit("onEdit");
+        })*/
+
+)
+
+@*<div id="div" class="modal-header">
+        <button id="btnAccounting" class="btn waves-effect waves-light btn-lg btn-rounded btn-primary" type="button" onclick="AddAccounting()">Agregar Cuenta </button>
+
+    </div>*@
+
+
+<style>
+
+    #div {
+        background-color: #0094ff;
+        width: 100%;
+        height: 50px;
+        line-height: 50px;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+</style>
+
+
+<script type="text/javascript">
+    var padre;
+
+
+    var validar = false;
+
+    $(window).scroll(function () {
+        $("#div").stop().animate({ "marginTop": ($(window).scrollTop()) + "px", "marginLeft": ($(window).scrollLeft()) + "px" }, "slow");
+    });
+
+
+    debugger;
+    $('document').ready(function () {
+
+
+
+          $("#AccountingTreelist").click(function () {
+               // alert('Jquery Tutorial');
+               var treelist = $("#AccountingTreelist").data("kendoTreeList");
+               var row = treelist.select();
+               if (row.length > 0) {
+                   /// EditAccount(row);
+                   var data = treelist.dataItem(row);
+                  // alert("Seleccionaste: " + data.AccountId);
+                   validar = true;
+                   padre = data.AccountId;
+                   // console.log(data.AccountId);
+               };
+
+        });
+        $("#AccountingTreelist").dblclick(function () {
+            // alert('Jquery Tutorial');
+            var treelist = $("#AccountingTreelist").data("kendoTreeList");
+
+            var row = treelist.select();
+
+
+            //row.e
+            if (row.length > 0) {
+                /// EditAccount(row);
+                var data = treelist.dataItem(row);
+               // alert("Seleccionaste: doble click" + data.AccountId);
+               // validar = true;
+                padre = data.AccountId;
+                //  var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+                //this.dataItem($(e.currentTarget).editar("tr"));
+                EditAccount(data);
+                $("#AccountingTreelist").data("kendoTreeList").clearSelection();
+
+                //console.log(data);
+               // console.log(JSON.stringify(data));
+
+            };
+
+        });
+
+        $(".clearSelection").click(function () {
+            $("#AccountingTreelist").data("kendoTreeList").clearSelection();
+
+
+
+        });
+
+    });
+
+    function AddFatherAccounting() {
+         $("#AccountId").val('0');
+            var dataObject = {
+                AccountId: 0,
+                ParentAccountId:0,
+                editar: 1
+        };
+       // ParentAccountId
+      //  $("#ParentAccountId").prop("disabled", true);
+             $.ajax({
+                url: '@Url.Action("pvwAddAccounting", "Accounting")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumAccounting").html('');
+                    $("#NumAccounting").html(result);
+                    //$("#btnCAI").hide();
+                    $('#ModalAccounting').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+
+    }
+
+    function AddAccounting() {
+        debugger;
+        $('document').ready(function () {
+              $("#AccountingTreelist").click(function () {
+                   // alert('Jquery Tutorial');
+                   var treelist = $("#AccountingTreelist").data("kendoTreeList");
+                   var row = treelist.select();
+                   if (row.length > 0) {
+                       /// EditAccount(row);
+                       var data = treelist.dataItem(row);
+                       validar = true;
+
+                      // alert("Seleccionaste: " + data.AccountId);
+                       // console.log(data.AccountId);
+                   };
+
+               });
+            $(".clearSelection").click(function () {
+                $("#AccountingTreelist").data("kendoTreeList").clearSelection();
+
+
+                var selectRow = function (e) {
+                    if (e.type != "keypress" || kendo.keys.ENTER == e.keyCode) {
+                        var treelist = $("#AccountingTreelist").data("kendoTreeList"),
+                            rowIndex = treelist.select(), //$("#selectRow").val(),
+                            row = treelist.content.find("tr:visible").eq(rowIndex);
+                        padre = row.AccountId;
+                        validar = true;
+                        // alert("Seleccionaste: " + row.AccountId);
+
+
+                        // treelist.select(row);
+                    }
+                };
+                // alert("Seleccionaste: " + selectRow.data.dataItem().AccountId;
+                //".toggleGroup").click(toggleGroup);
+                /* treelist.items().each(function (i, el) {
+                     $(el).on("dblclick", function (event) {
+                         alert($(this).text());
+                     });*/
+            });
+
+        });
+        if (validar === true) {
+            validar = false;
+            debugger;
+           // alert("Seleccionaste: " + padre);
+             $('#ModalAccounting').find(':input').not(':submit').val('');
+
+            // $('#ModalAccounting').modal('show');
+            $("#AccountId").val('0');
+            var dataObject = {
+                AccountId: 0,
+                ParentAccountId:padre,
+                editar: 1
+            };
+             $.ajax({
+                url: '@Url.Action("pvwAddAccounting", "Accounting")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $("#NumAccounting").html('');
+                    $("#NumAccounting").html(result);
+                    //$("#btnCAI").hide();
+                    $('#ModalAccounting').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+            $("#AccountingTreelist").data("kendoTreeList").clearSelection();
+
+        }
+        else {
+
+
+            $.toast({
+                heading: 'Informacion',
+                text: 'Debe seleccionar una cuenta Padre',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+
+
+        }
+
+    }
+</script>
+

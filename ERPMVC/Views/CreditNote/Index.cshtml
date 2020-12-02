@@ -1,4 +1,8 @@
-﻿
+﻿@using System.Security.Claims
+@{
+    ViewData["Title"] = "Nota de Crédito";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
 <script>
 
     function ClearSession() {
@@ -22,7 +26,7 @@
     function AddCotizacion() {
        // $('#myModalSalesOrder').find(':input').not(':submit').val('');
          //$('#myModalSalesOrder').modal('show');
-       
+
         ClearSession();
 
          var dataObject = {
@@ -41,9 +45,14 @@
               //  console.log(result);
                 $("#divCreditNote").html('');
                 $("#divCreditNote").html(result);
-                document.getElementById('FacturaFiscal').style.display = 'inline';
-                document.getElementById('FacturaInterna').style.display = 'none';
-                document.getElementById('InvoiceDetail').style.display = 'inline';
+                $("#Tefono").kendoMaskedTextBox({
+                    mask: "(999) 0000-0000"
+                });
+                $("#TefonoAlert").hide();
+                //$("#BranchId").data("kendoDropDownList").value(0);
+                //document.getElementById('FacturaFiscal').style.display = 'inline';
+                //document.getElementById('FacturaInterna').style.display = 'none';
+                //document.getElementById('InvoiceDetail').style.display = 'inline';
                 //RefreshCreditNoteDetail();
                 // $("#btnSaveCreditNote").show();
                  $('#myModalSalesOrder').modal('show');
@@ -77,7 +86,10 @@
             success: function (result) {
                 $("#divCreditNote").html('');
                 $("#divCreditNote").html(result);
-
+                $("#Tefono").kendoMaskedTextBox({
+                    mask: "(999) 0000-0000"
+                });
+                $("#TefonoAlert").hide();
                 var txt = $(result);
                 var found = $("#IdPuntoEmision", txt);
                 IdPuntoEmision = $(found).val();
@@ -100,10 +112,12 @@
         debugger
         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
         if (dataItem.Fiscal) {
-            window.location.href = '@Url.Action("SFCreditNoteInterna", "CreditNote")/' + dataItem.CreditNoteId;
+            //window.location.href = '@Url.Action("SFCreditNoteInterna", "CreditNote")/' + dataItem.CreditNoteId;
         }
         else {
-            window.location.href = '@Url.Action("SFCreditNoteFiscal", "CreditNote")/' + dataItem.CreditNoteId;
+            var url = '@Url.Action("SFCreditNoteFiscal", "CreditNote")/' + dataItem.CreditNoteId;
+           var win = window.open(url, '_blank');
+           win.focus();
         }
 
 
@@ -111,116 +125,138 @@
 
 </script>
 
-<h3 class="text-themecolor">Notas de Crédito</h3>
+<h3 class="text-themecolor">Notas Crédito</h3>
 
 @(Html.Kendo().Grid<ERPMVC.Models.CreditNote>()
-                          .Name("gridCreditNotes")
-                          .Columns(columns =>
-                          {
-                              columns.Command(command =>
-                              {
-                                  command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCotizacion");
-                                  command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
+                                  .Name("gridCreditNotes")
+                                  .Columns(columns =>
+                                  {
+                                      if (permisos.HasClaim("Ventas.Nota de Credito.Ver Detalle", "true")
+                                          || permisos.HasClaim("Ventas.Nota de Credito.Imprimir", "true"))
+                                      {
+                                          columns.Command(command =>
+                                          {
+                                              if (permisos.HasClaim("Ventas.Nota de Credito.Ver Detalle", "true"))
+                                              {
+                                                  command.Custom("Editar").Text(" ").IconClass("far fa-list-alt").Click("EditCotizacion");
+                                              }
+                                              if (permisos.HasClaim("Ventas.Nota de Credito.Imprimir", "true"))
+                                              {
+                                                  command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
+                                              }
 
-                              }).Width(250);
-
-                              columns.Bound(p => p.CreditNoteId).Width(150);
-                              columns.Bound(p => p.CreditNoteName).Width(150);
-                              columns.Bound(p => p.CreditNoteDate).Format("{0:dd/MM/yyyy}").Width(170);
-                              columns.Bound(p => p.ExpirationDate).Format("{0:dd/MM/yyyy}").Width(150);
-                              columns.Bound(p => p.IdPuntoEmision).Width(150);
-                              columns.Bound(p => p.Fiscal).Width(150);
-                          })
-                              .Filterable(f => f.Operators(o => o.ForString(s => s
-                                       .Clear()
-                                       .Contains("Contiene")
-                                       .DoesNotContain("No contiene")
-                                       .EndsWith("Termina con")
-                                       .IsEqualTo("Es igual a")
-                                       .IsNotEqualTo("No es igual a")
-                                       .IsNull("Es nulo")
-                                       .StartsWith("Inicia con")
-
-
-                                 )
-                                 .ForNumber(n => n
-                                   .Clear()
-                                   .IsEqualTo("Es igual a")
-                                   .IsGreaterThan("Es mayor que")
-                                   .IsLessThan("Es menor que")
-                                   .IsNull("Es nulo")
-                                   .IsLessThanOrEqualTo("Es menor o igual que")
-                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                 )
-                                 .ForDate(d => d
-                                 .Clear()
-                                 .IsEqualTo("Es igual que")
-                                 .IsGreaterThan("Es mayor que")
-                                 .IsLessThan("Es menor que")
-                                 .IsLessThanOrEqualTo("Es menor o igual que")
-                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                 .IsNotEqualTo("No es igual que")
-                                  )
-                               ))
-                          .ToolBar(tools =>
-                          {
-                              // tools.Create();
-                              tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                             .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
-
-                              tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                              tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                          }).Width(130).Title("Acciones");
+                                      }
+                                      columns.Bound(p => p.CreditNoteId).Width(100).Visible(false);
+                                      columns.Bound(p => p.FechaCreacion).Title("Fecha de Creación").Format("{0:dd/MM/yyyy}").Width(210);
+                                      columns.Bound(p => p.NoSAG).Title("Numeración SAR").Width(200);
+                                      columns.Bound(p => p.CreditNoteName).Width(250);
+                                      columns.Bound(p => p.CreditNoteDate).Format("{0:dd/MM/yyyy}").Width(270);
+                                      columns.Bound(p => p.ExpirationDate).Format("{0:dd/MM/yyyy}").Width(250);
+                                      columns.Bound(p => p.IdPuntoEmision).Width(200);
+                                      columns.Bound(p => p.Fiscal).ClientTemplate("#= Fiscal ? 'Si' : 'No' #").Width(150).Visible(false);
+                                  })
+                                      .Filterable(f => f.Operators(o => o.ForString(s => s
+                                               .Clear()
+                                               .Contains("Contiene")
+                                               .DoesNotContain("No contiene")
+                                               .EndsWith("Termina con")
+                                               .IsEqualTo("Es igual a")
+                                               .IsNotEqualTo("No es igual a")
+                                               .IsNull("Es nulo")
+                                               .StartsWith("Inicia con")
 
 
-                          })
-                           .Editable(e => e.Mode(GridEditMode.PopUp))
-                            .Sortable()
-                            .AutoBind(true)
-                            .Pageable()
-                            .Filterable()
-                            .Scrollable()
-                            // .ClientDetailTemplateId("template")
-                            .Pdf(pdf => pdf.FileName("CreditNoteReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                              .Excel(excel => excel.FileName("CreditNoteReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                            //.Events(e=>e.Save("onsave"))
-                            .DataSource(dataSource =>
+                                         )
+                                         .ForNumber(n => n
+                                           .Clear()
+                                           .IsEqualTo("Es igual a")
+                                           .IsGreaterThan("Es mayor que")
+                                           .IsLessThan("Es menor que")
+                                           .IsNull("Es nulo")
+                                           .IsLessThanOrEqualTo("Es menor o igual que")
+                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                         )
+                                         .ForDate(d => d
+                                         .Clear()
+                                         .IsEqualTo("Es igual que")
+                                         .IsGreaterThan("Es mayor que")
+                                         .IsLessThan("Es menor que")
+                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                         .IsNotEqualTo("No es igual que")
+                                          )
+                                       ))
+                                  .ToolBar(tools =>
+                                  {
+                                      // tools.Create();
+                                      if (permisos.HasClaim("Ventas.Nota de Credito.Agregar", "true"))
+                                      {
+                                          tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                 .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacion();" });
+                                      }
+                                          tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                          tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                      
 
-                           dataSource
-                           //.Ajax()
-                           .WebApi()
-                            .ServerOperation(true)
-                            .Model(model =>
-                            {
-                                model.Id(p => p.CreditNoteId);
-                                model.Field(p => p.CreditNoteName).Editable(true);
-                                model.Field(p => p.CreditNoteId).Editable(true);
+                                  })
+                                   .Editable(e => e.Mode(GridEditMode.PopUp))
+                                    .Sortable()
+                                    .AutoBind(true)
+                                    .Pageable(s => s
+                                    .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+                                    .Empty("No hay datos."))
+                                    )
+                                    .Filterable()
+                                    .Scrollable()
+                                    // .ClientDetailTemplateId("template")
+                                    .Pdf(pdf => pdf.FileName("Nota_Crédito_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                      .Excel(excel => excel.FileName("Nota_Crédito_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                    //.Events(e => e.DataBound("dataBound"))
+                                    .DataSource(dataSource =>
+
+                                   dataSource
+                                   //.Ajax()
+                                   .WebApi()
+                                    .ServerOperation(true)
+                                    .Model(model =>
+                                    {
+                                        model.Id(p => p.CreditNoteId);
+                                        model.Field(p => p.CreditNoteName).Editable(true);
+                                        model.Field(p => p.CreditNoteId).Editable(true);
 
 
-                            })
-                            .Events(events =>
-                            {
-                                events.Error("error_handler");
-                                //events.upda("EditHandler");
+                                    })
+                                    .Sort(s => s.Add(m => m.FechaCreacion).Descending())
+                                    .Events(events =>
+                                    {
+                                        events.Error("error_handler");
+                                        //events.upda("EditHandler");
 
-                            })
-                            .Read(read => read.Action("Get", "CreditNote") )
-                            .Create(create => create.Action("Insert", "CreditNote"))
-                            .Update(update => update.Action("Update", "CreditNote", new { id = "{0}" }))
-                            .Destroy(destroy => destroy.Action("Delete", "CreditNote", new { id = "{0}" }))
-                      )
+                                    })
+                                    .Read(read => read.Action("Get", "CreditNote"))
+                                    .Create(create => create.Action("Insert", "CreditNote"))
+                                    .Update(update => update.Action("Update", "CreditNote", new { id = "{0}" }))
+                                    .Destroy(destroy => destroy.Action("Delete", "CreditNote", new { id = "{0}" }))
+                              )
 )
 
 <div id="divCreditNote">
-    @await Html.PartialAsync("pvwCreditNote", new ERPMVC.DTO.CreditNoteDTO {  CreditNoteId = 0, CreditNoteDate = DateTime.Now, DeliveryDate = DateTime.Now , ExpirationDate =DateTime.Now })
+    @await Html.PartialAsync("pvwCreditNote", new ERPMVC.DTO.CreditNoteDTO { CreditNoteId = 0, CreditNoteDate = DateTime.Now, DeliveryDate = DateTime.Now, ExpirationDate = DateTime.Now })
 </div>
 
+<div id="ConditionView">
+    @*  @await Html.PartialAsync("~/Views/Conditions/pvwConditions.cshtml", new ERPMVC.Models.Conditions { ConditionId = 0 });*@
+</div>
 
-@*<script>
+<div id="CustomerConditionView">
+</div>
 
+<script>
     function setToolbarTooltip(btn_cl, btn_tooltip) {
         $("#gridCreditNotes").kendoTooltip({
             filter: btn_cl,
@@ -235,19 +271,32 @@
         });
     }
 
-    setToolbarTooltip(".k-button k-button-icontext k-grid-Agregar k-i-plus-sm", "Agregar un nuevo registro");
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
     //setRowButtonTooltip(".k-grid-edit", "Tooltip for Edit button");
-    setRowButtonTooltip(".k-grid-GenerarFactura", "Generar una factura fiscal!");
-    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir");
-    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    //setRowButtonTooltip(".k-grid-GenerarFactura", "Generar una factura fiscal!");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir registro");
+    setRowButtonTooltip(".k-grid-Editar", "Ver Detalle");
+</script>
+<script>
 
-</script>*@
+    // Import DejaVu Sans font for embedding
 
 
 
-<div id="ConditionView">
-    @*  @await Html.PartialAsync("~/Views/Conditions/pvwConditions.cshtml", new ERPMVC.Models.Conditions { ConditionId = 0 });*@
-</div>
+    // NOTE: Only required if the Kendo UI stylesheets are loaded
 
-<div id="CustomerConditionView">
-</div>
+    // from a different origin, e.g. cdn.kendostatic.com
+
+    kendo.pdf.defineFont({
+
+        "DejaVu Sans": "http://cdn.kendostatic.com/2014.3.1314/styles/fonts/DejaVu/DejaVuSans.ttf",
+
+        "DejaVu Sans|Bold": "http://cdn.kendostatic.com/2014.3.1314/styles/fonts/DejaVu/DejaVuSans-Bold.ttf",
+
+        "DejaVu Sans|Bold|Italic": "http://cdn.kendostatic.com/2014.3.1314/styles/fonts/DejaVu/DejaVuSans-Oblique.ttf",
+
+        "DejaVu Sans|Italic": "http://cdn.kendostatic.com/2014.3.1314/styles/fonts/DejaVu/DejaVuSans-Oblique.ttf"
+
+    });
+
+</script>

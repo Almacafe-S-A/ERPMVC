@@ -1,7 +1,9 @@
 ﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
 
 @{
-    ViewData["Title"] = "TIPOS DE VOUCHERS/DOCUMENTOS";
+    ViewData["Title"] = "Tipos de Vouchers/Documentos";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 
 <script>
@@ -23,6 +25,8 @@
 
 
 
+        var validator = $("#frmTypeJournal").data("kendoValidator");
+        validator.hideMessages();
 
 
       }
@@ -63,103 +67,130 @@
 
 <h3 class="text-themecolor">Tipo de Vouchers</h3>
 @(Html.Kendo().Grid<ERPMVC.Models.TypeJournal>
-                            ()
-                            .Name("gridNumeracionTypeJournal")
-                            .Columns(columns =>
-                            {
-                                columns.Command(command =>
-                                {
-                        //command.Custom("Ver detalles").Click("Detalles");
-                        //command.Custom("Editar").Click("EditTypeAccount");
-                        command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditTypeJournal");
+                                    ()
+                                    .Name("gridNumeracionTypeJournal")
+                                    .Columns(columns =>
+                                    {
+                                        if (permisos.HasClaim("Contabilidad.Tipos de Documentos.Editar", "true"))
+                                        {
+                                            columns.Command(command =>
+                                            {
+                                                //command.Custom("Ver detalles").Click("Detalles");
+                                                //command.Custom("Editar").Click("EditTypeAccount");
+                                                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditTypeJournal");
 
-                        //  command.Destroy();
-                    }).Width(100);
-                                columns.Bound(p => p.TypeJournalId).Title("Codigo").Width(2);
-                                columns.Bound(p => p.TypeJournalName).Title("Nombre de Tipo").Width(200);
-
-
-
-
-                            })
-                                .Filterable(f => f.Operators(o => o.ForString(s => s
-                                                       .Clear()
-                                                       .Contains("Contiene")
-                                                       .DoesNotContain("No contiene")
-                                                       .EndsWith("Termina con")
-                                                       .IsEqualTo("Es igual a")
-                                                       .IsNotEqualTo("No es igual a")
-                                                       .IsNull("Es nulo")
-                                                       .StartsWith("Inicia con")
-
-
-                                                 )
-                                                 .ForNumber(n => n
-                                                   .Clear()
-                                                   .IsEqualTo("Es igual a")
-                                                   .IsGreaterThan("Es mayor que")
-                                                   .IsLessThan("Es menor que")
-                                                   .IsNull("Es nulo")
-                                                   .IsLessThanOrEqualTo("Es menor o igual que")
-                                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                 )
-                                                 .ForDate(d => d
-                                                 .Clear()
-                                                 .IsEqualTo("Es igual que")
-                                                 .IsGreaterThan("Es mayor que")
-                                                 .IsLessThan("Es menor que")
-                                                 .IsLessThanOrEqualTo("Es menor o igual que")
-                                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                 .IsNotEqualTo("No es igual que")
-                                                  )
-                                               ))
-                            .ToolBar(tools =>
-                            {
-                    // tools.Create();
-                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                                   .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddTypeJournal()" });
-                                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                                //  command.Destroy();
+                                            }).Title("Acciones").Width(100);
+                                        }
+                                        columns.Bound(p => p.TypeJournalId).Title("Código").Width(100);
+                                        columns.Bound(p => p.TypeJournalName).Title("Nombre de Tipo").Width(200);
 
 
 
-                            })
-                            .Editable(e => e.Mode(GridEditMode.PopUp))
-                            .Sortable()
-                            .Pageable()
-                            .Filterable()
-                            .Scrollable()
-                            .Pdf(pdf => pdf.FileName("TypeJournalReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                .Excel(excel => excel.FileName("TypeJournalReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                            .DataSource(dataSource =>
-                                dataSource
-                                .WebApi()
 
-                                .ServerOperation(true)
-                                .Model(model =>
-                                {
-                                    model.Id(p => p.TypeJournalId);
-                                    model.Field(p => p.TypeJournalName).Editable(false);
+                                    })
+                                        .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                               .Clear()
+                                                               .Contains("Contiene")
+                                                               .DoesNotContain("No contiene")
+                                                               .EndsWith("Termina con")
+                                                               .IsEqualTo("Es igual a")
+                                                               .IsNotEqualTo("No es igual a")
+                                                               .IsNull("Es nulo")
+                                                               .StartsWith("Inicia con")
 
-                                })
-                                .Events(events => events.Error("error_handler"))
-                                .Read(read => read.Action("GetTypeJournal", "TypeJournal"))
-                                .Create(create => create.Action("Insert", "TypeJournal"))
-                                .Update(update => update.Action("Update", "TypeJournal", new { TypeJournalId = "{0}" }).Type(HttpVerbs.Put))
-                            //.Destroy(destroy => destroy.Action("Delete", "TypeAccount", new { Num = "{1}" }).Type(HttpVerbs.Delete))
 
-                            )
-                            .Events(e =>
-                            {
-                                e.Save("onsave");
+                                                         )
+                                                         .ForNumber(n => n
+                                                           .Clear()
+                                                           .IsEqualTo("Es igual a")
+                                                           .IsGreaterThan("Es mayor que")
+                                                           .IsLessThan("Es menor que")
+                                                           .IsNull("Es nulo")
+                                                           .IsLessThanOrEqualTo("Es menor o igual que")
+                                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                         )
+                                                         .ForDate(d => d
+                                                         .Clear()
+                                                         .IsEqualTo("Es igual que")
+                                                         .IsGreaterThan("Es mayor que")
+                                                         .IsLessThan("Es menor que")
+                                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                         .IsNotEqualTo("No es igual que")
+                                                          )
+                                                       ))
+                                    .ToolBar(tools =>
+                                    {
+                                        // tools.Create();
+                                        if (permisos.HasClaim("Contabilidad.Tipos de Documentos.Agregar", "true"))
+                                        {
+                                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                                       .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddTypeJournal()" });
+                                        }
+                                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
 
-                            })
+
+                                    })
+                                    .Editable(e => e.Mode(GridEditMode.PopUp))
+                                    .Sortable()
+                                    .Pageable()
+                                    .Filterable()
+                                    .Scrollable()
+                                    .Pdf(pdf => pdf.FileName("TypeJournalReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                        .Excel(excel => excel.FileName("TypeJournalReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                    .DataSource(dataSource =>
+                                        dataSource
+                                        .WebApi()
+
+                                        .ServerOperation(true)
+                                        .Model(model =>
+                                        {
+                                            model.Id(p => p.TypeJournalId);
+                                            model.Field(p => p.TypeJournalName).Editable(false);
+
+                                        })
+                                        .Events(events => events.Error("error_handler"))
+                                        .Read(read => read.Action("GetTypeJournal", "TypeJournal"))
+                                        .Create(create => create.Action("Insert", "TypeJournal"))
+                                        .Update(update => update.Action("Update", "TypeJournal", new { TypeJournalId = "{0}" }).Type(HttpVerbs.Put))
+                                    //.Destroy(destroy => destroy.Action("Delete", "TypeAccount", new { Num = "{1}" }).Type(HttpVerbs.Delete))
+
+                                    )
+                                    .Events(e =>
+                                    {
+                                        e.Save("onsave");
+
+                                    })
 )
 
 <div id="NumTypeJournal">
     @await Html.PartialAsync("pvwAddTypeJournal", new ERPMVC.DTO.TypeJournalDTO { TypeJournalId = 0 })
 </div>
+
+<script>
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridNumeracionTypeJournal").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridNumeracionTypeJournal").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+
+</script>

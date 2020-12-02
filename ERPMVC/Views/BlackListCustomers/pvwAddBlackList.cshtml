@@ -27,8 +27,8 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
+                <h4 class="modal-title">Información Mediática</h4>
                 <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Información mediatica</h4>
             </div>
             <div class="modal-body">
                 <div class="row" id="validation">
@@ -41,7 +41,7 @@
                                       data-ajax-begin="SaveBlackListCustomers"
                                       class="validation-wizard wizard-circle">
                                     <div class="form-body">
-                                        <h3 class="card-title">Información mediatica</h3>
+                                       @* <h3 class="card-title">Información Mediática</h3>*@
                                         <hr>
                                         <div class="row">
                                             <div class="col-md-4">
@@ -54,16 +54,66 @@
 
                                             <div class="col-md-4">
                                                 <div class="form-group">
+                                                    <script>
+                                                        function SetCustomerName(e) {
+                                                           // console.log(e);
+                                                            if ($("#CustomerId").val() > 0) {
+                                                                var dataObject = { CustomerId: $("#CustomerId").val()};
+                                                                  $.ajax({
+                                                                     url: '@Url.Action("GetCustomerById", "Customer")',
+                                                                     method: 'GET',
+                                                                     datatype: "json",
+                                                                     contentType: 'application/json',
+                                                                     async: false,
+                                                                     data: dataObject,
+                                                                      success: function (result) {
+                                                                          $("#RTN").val(result.RTN);
+                                                                          $("#Alias").val(result.Alias);
+                                                                          $("#Identidad").val(result.Identidad);
+                                                                          $("#Referencia").val(result.Referencia);
+                                                                     },
+                                                                      error: function (XMLHttpRequest, textStatus, errorThrown) {
+                                                                          $.toast({
+                                                                              heading: 'Error',
+                                                                              text: ' Error al seleccionar el cliente',
+                                                                              position: 'top-right',
+                                                                              loaderBg: '#ff6849',
+                                                                              icon: 'error',
+                                                                              hideAfter: 30000,
+                                                                              stack: 6
+                                                                          });
+                                                                       }
+                                                                  });
+                                                            }
+                                                            else {
+                                                                $("#SalesOrderName").prop('disabled', false);
+                                                            }
+                                                        }
+                                                    </script>
                                                     <label asp-for="CustomerId" class="control-label">Nombre</label>
-                                                    <input type="text" asp-for="CustomerName" name="CustomerName" class="form-control" required style="min-width:100%" />
-
+                                                    @*<input type="text" asp-for="CustomerName" name="CustomerName" class="form-control" required style="min-width:100%" maxlength="60"   data-required-msg="Nombre es requerido" />*@
+                                                    <kendo-dropdownlist name="CustomerId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione el cliente"
+                                                                        datatextfield="CustomerName"
+                                                                        datavaluefield="CustomerId"
+                                                                        enable="true"
+                                                                        class="form-control-line"
+                                                                        onchange="SetCustomerName();"
+                                                                        required data-required-msg="El Cliente es requerido"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetCustomer", "Common")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
                                                 </div>
                                             </div>
 
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label asp-for="RTN" class=" control-label" style="width:100%"></label>
-                                                    <input type="text" asp-for="RTN" name="RTN" class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <label asp-for="RTN" class=" control-label" style="width:100%"></label> 
+                                                    <input type="text" asp-for="RTN" name="RTN" class="form-control" autocomplete="off" style="min-width:100%" onKeyPress="return soloNumeros(event)" maxlength="50" />
                                                     <span asp-validation-for="RTN" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -87,7 +137,7 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Alias" class=" control-label" style="width:100%"></label>
-                                                    <input type="text" asp-for="Alias" name="Alias" class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <input type="text" asp-for="Alias" name="Alias" class="form-control" autocomplete="off" style="min-width:100%"  maxlength="60"/>
                                                     <span asp-validation-for="Alias" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -95,21 +145,18 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Identidad" class=" control-label" style="width:100%"></label>
-                                                    <input type="text" asp-for="Identidad" name="Identidad" class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <input type="text" asp-for="Identidad" name="Identidad" class="form-control" autocomplete="off" style="min-width:100%" maxlength="50"  onKeyPress="return soloNumeros(event)"/>
                                                     <span asp-validation-for="Identidad" class="text-danger"></span>
                                                 </div>
                                             </div>
                                         </div>
 
                                         <div class="row">
-
-
-
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Referencia" class=" control-label" style="width:100%"></label>
                                                     @*<input type="text" asp-for="Referencia" name="Referencia" class="form-control" autocomplete="off" style="min-width:100%" />*@
-                                                    <textarea asp-for="Referencia" required class="form-control required " rows="5" style="min-width: 100% !important;"></textarea>
+                                                    <textarea asp-for="Referencia" required class="form-control required " rows="5" style="min-width: 100% !important;" data-required-msg="Referencia es requerido"></textarea>
                                                     <span asp-validation-for="Referencia" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -117,7 +164,7 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Origen" class=" control-label" style="width:100%"></label>
-                                                    <input type="text" asp-for="Origen" name="Origen" class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <input type="text" asp-for="Origen" name="Origen" class="form-control" autocomplete="off" style="min-width:100%"  maxlength="60"/>
                                                     <span asp-validation-for="Origen" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -130,7 +177,7 @@
                                                                         filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         option-label="Seleccionar Estado"
                                                                         datatextfield="NombreEstado"
-                                                                        datavaluefield="IdEstado"
+                                                                        datavaluefield="IdEstado" required data-required-msg="Estado es requerido"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
                                                             <transport>
@@ -138,6 +185,7 @@
                                                             </transport>
                                                         </datasource>
                                                     </kendo-dropdownlist>
+                                                    <span asp-validation-for="IdEstado" class="text-danger"></span>
                                                 </div>
                                             </div>
 
@@ -161,7 +209,7 @@
                                                                         datatextfield="Name"
                                                                         onchange="refreshdepartamento();"
                                                                         datavaluefield="Id"
-                                                                        required
+                                                                        required data-required-msg="País es requerido"
                                                                         auto-bind="true"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
@@ -170,6 +218,7 @@
                                                             </transport>
                                                         </datasource>
                                                     </kendo-dropdownlist>
+                                                    <span asp-validation-for="CountryId" class="text-danger"></span>
                                                 </div>
                                             </div>
 
@@ -195,7 +244,7 @@
                                                                         option-label="Seleccionar Departamento"
                                                                         auto-bind="true"
                                                                         onchange="refreshmunicipio();"
-                                                                        required
+                                                                        required data-required-msg="Departamento es requerido"
                                                                         datatextfield="Name"
                                                                         datavaluefield="Id"
                                                                         style="width: 100%;">
@@ -223,7 +272,7 @@
                                                                         filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         option-label="Seleccionar Ciudad"
                                                                         auto-bind="true"
-                                                                        required
+                                                                        required data-required-msg="Municipio es requerido"
                                                                         datatextfield="Name"
                                                                         datavaluefield="Id"
                                                                         style="width: 100%;">
@@ -280,11 +329,55 @@
 
 
 <script>
+    $("#RTN").on("change", function () {
+        var RTN1 = $("#RTN").val();
+        if (RTN1 != "") {
+            debugger;
+            var dataObjectConfiguration = {
+                RTN: RTN1
+            };
+               $.ajax({
+                          url: '@Url.Action("GetBlackListByRTN", "BlackListCustomers")',
+                          method: 'POST',
+                          datatype: "json",
+                          contentType: 'application/json',
+                          async: false,
+                          data: JSON.stringify(dataObjectConfiguration),
+                          success: function (result) {
+                          if (result.BlackListId != 0) {
+                          $("#RTN").val('');
+                          $.toast({
+                          heading: 'Error',
+                          text: '' + ' El RTN ingresado ya existe.',
+                          position: 'top-right',
+                          showHideTransition: 'fade',
+                          loaderBg: '#ff6849',
+                          icon: 'error',
+                          hideAfter: 30000,
+                          stack: 6
+                          });
+                        }
+                      },
+                      error: function (XMLHttpRequest, textStatus, errorThrown) {
+                      notification.show({
+                      title: "Validación",
+                      message: textStatus + ": " + XMLHttpRequest.responseText
+                     }, "error");
+                  }
+               });
+        }
+    });
+
+
+    function soloNumeros(e) {
+        var key = window.Event ? e.which : e.keyCode
+        return (key >= 48 && key <= 57)
+    }
+
     function RefrescarGrid() {
 
         var grid = $("#gridBlackListCustomers").getKendoGrid();
         grid.dataSource.read();
-
     }
 
     function SaveBlackListCustomers(e) {
@@ -297,8 +390,10 @@
         //var displayedData = $("#gridBlackListCustomers").data().kendoGrid.dataSource.view();
 
         var dataObject = {  'BlackListId': $("#BlackListId").val()===""?"0":$("#BlackListId").val(),
-                           //'CustomerId': $("#CustomerId").val(),
-                           'CustomerName': $("#CustomerName").val(), //$("#CustomerId").data("kendoDropDownList").text(),
+                           ////'CustomerId': $("#CustomerId").val(),
+                           //'CustomerName': $("#CustomerName").val(), //$("#CustomerId").data("kendoDropDownList").text(),
+            'CustomerId': $("#CustomerId").val(),
+            'CustomerName': $("#CustomerId").data("kendoDropDownList").text(),
                            'CustomerReference': $("#CustomerReference").val(),
                            'DocumentDate': $("#DocumentDate").getKendoDateTimePicker().value().toJSON(),
                            'StateId': $("#StateId").val(),

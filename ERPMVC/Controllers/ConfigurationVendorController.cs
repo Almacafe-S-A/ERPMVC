@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.DTO;
 using ERPMVC.Helpers;
@@ -24,33 +25,37 @@ namespace ERPMVC.Controllers
     {
         private readonly IOptions<MyConfig> config;
         private readonly ILogger _logger;
-        public ConfigurationVendorController(ILogger<ConfigurationVendorController> logger, IOptions<MyConfig> config)
+        private readonly ClaimsPrincipal _principal;
+        public ConfigurationVendorController(ILogger<ConfigurationVendorController> logger, IOptions<MyConfig> config, IHttpContextAccessor httpContextAccessor)
         {
             this.config = config;
             this._logger = logger;
+            _principal = httpContextAccessor.HttpContext.User;
         }
         // GET: ConfigurationVendor
+        [Authorize(Policy = "Proveedores.Configuracion de Proveedor")]
         public ActionResult ConfigurationVendor()
         {
+            ViewData["permisos"] = _principal;
             return View();
         }
         [HttpGet("[action]")]
         public async Task<JsonResult> GetConfigurationVendorActive([DataSourceRequest]DataSourceRequest request)
         {
-            ConfigurationVendor _ConfigurationVendor = new ConfigurationVendor();
+            double limit = 0;
             try
             {
 
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                var result = await _client.GetAsync(baseadress + "api/ConfigurationVendor/GetConfigurationVendorActive");
+                var result = await _client.GetAsync(baseadress + "api/Vendor/GetVendorLimit");
      
                 string valorrespuesta = ""; // 
                 if (result.IsSuccessStatusCode)
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    _ConfigurationVendor = JsonConvert.DeserializeObject<ConfigurationVendor>(valorrespuesta);
+                    limit = JsonConvert.DeserializeObject<double>(valorrespuesta);
 
                 }
 
@@ -63,7 +68,7 @@ namespace ERPMVC.Controllers
             }
 
 
-            return Json(_ConfigurationVendor);
+            return Json(limit);
 
         }
 

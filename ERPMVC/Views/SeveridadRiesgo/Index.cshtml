@@ -1,108 +1,121 @@
 ﻿@model ERPMVC.DTO.SeveridadRiesgoDTO
+
+@using System.Security.Claims
 @{
     ViewData["Title"] = "Severidad de Riesgo";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 
 <h3 class="text-themecolor">Severidad de Riesgo</h3>
 
-    <div id="msj_failed" hidden>
-        <div class="col-md-12" id="mensaje">
-            <div class="alert alert-warning alert-danger">
-                <button type="button" class="close" data-dissmiss="warning" onclick="AlertClose();" aria-hidden="true">&times;</button>
-                <h5 id="MensajeBrecha"><i class="icon fa fa-warning"></i></h5>
-            </div>
+<div id="msj_failed" hidden>
+    <div class="col-md-12" id="mensaje">
+        <div class="alert alert-warning alert-danger">
+            <button type="button" class="close" data-dissmiss="warning" onclick="AlertClose();" aria-hidden="true">&times;</button>
+            <h5 id="MensajeBrecha"><i class="icon fa fa-warning"></i></h5>
         </div>
     </div>
+</div>
 
 @(Html.Kendo().Grid<ERPMVC.Models.SeveridadRiesgo>()
-                                  .Name("gridSeveridadRiesgo")
-                                  .Events(events => events
-                                            //.DataBound("onDataBound")
-                                            .DataBinding("onDataBinding")
-                                            )
-                                  .Columns(columns =>
-                                  {
-                                      columns.Command(command =>
+                                      .Name("gridSeveridadRiesgo")
+                                      .Events(events => events
+                                                //.DataBound("onDataBound")
+                                                .DataBinding("onDataBinding")
+                                                )
+                                      .Columns(columns =>
                                       {
-                                          command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditSeveridadRiesgo");
-                                          //command.Destroy().Text("Eliminar");
-                                      }).Title("Acciones").Width(80);
-                                      columns.Bound(p => p.IdSeveridad).Width(100).Visible(false);
-                                      columns.Bound(p => p.Impacto).Width(100);
-                                      columns.Bound(p => p.Probabilidad).Width(120);
-                                      columns.Bound(p => p.LimeteCalidadSuperir).Width(100).Hidden(true);
-                                      columns.Bound(p => p.LimiteCalidadInferior).Width(100).Hidden(true);
-                                      columns.Template("#=LimeteCalidadSuperir# <br> #=LimiteCalidadInferior#").Title("Calificación").Width(100);
-                                      columns.Bound(p => p.RangoInferiorSeveridad).Width(100).Hidden(true);
-                                      columns.Bound(p => p.RangoSuperiorSeveridad).Width(100).Hidden(true);
-                                      columns.Template("#=RangoInferiorSeveridad# - #=RangoSuperiorSeveridad#").Title("Valor").Width(100);
-                                      columns.Bound(p => p.ColorHexadecimal).Hidden(true);
-                                      columns.Bound(p => p.Nivel).Width(100).HtmlAttributes(new { @style = "background:#=ColorHexadecimal#;color:white;" });
-                                  })
-                                                .Filterable(f => f.Operators(o => o.ForString(s => s
+                                          if (permisos.HasClaim("Monitoreo.Severidad de Riesgo.Editar", "true"))
+                                          {
+                                              columns.Command(command =>
+                                              {
+                                                  command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditSeveridadRiesgo");
+                                                  //command.Destroy().Text("Eliminar");
+                                              }).Title("Acciones").Width(80);
+                                          }
+                                          columns.Bound(p => p.IdSeveridad).Width(100).Visible(false);
+                                          columns.Bound(p => p.Impacto).Width(100);
+                                          columns.Bound(p => p.Probabilidad).Width(120);
+                                          columns.Bound(p => p.LimeteCalidadSuperir).Width(100).Hidden(true).Title("Límite Calificación Superior");
+                                          columns.Bound(p => p.LimiteCalidadInferior).Width(100).Hidden(true).Title("Límite Calificación Inferrior");
+                                          columns.Template("#=LimeteCalidadSuperir# <br> #=LimiteCalidadInferior#").Title("Calificación").Width(100);
+                                          columns.Bound(p => p.RangoInferiorSeveridad).Width(100).Hidden(true).Title("Valor Inferior Severidad");
+                                          columns.Bound(p => p.RangoSuperiorSeveridad).Width(100).Hidden(true).Title("Valor Superior Severidad");
+                                          columns.Template("#=RangoInferiorSeveridad# - #=RangoSuperiorSeveridad#").Title("Valor").Width(100);
+                                          columns.Bound(p => p.ColorHexadecimal).Hidden(true);
+                                          columns.Bound(p => p.Nivel).Width(100).HtmlAttributes(new { @style = "background:#=ColorHexadecimal#;color:black;" });
+                                      })
+                                                    .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                                    .Clear()
+                                                                    .Contains("Contiene")
+                                                                    .DoesNotContain("No contiene")
+                                                                    .EndsWith("Termina con")
+                                                                    .IsEqualTo("Es igual a")
+                                                                    .IsNotEqualTo("No es igual a")
+                                                                    .IsNull("Es nulo")
+                                                                    .StartsWith("Inicia con")
+                                                                )
+                                                                .ForNumber(n => n
                                                                 .Clear()
-                                                                .Contains("Contiene")
-                                                                .DoesNotContain("No contiene")
-                                                                .EndsWith("Termina con")
                                                                 .IsEqualTo("Es igual a")
-                                                                .IsNotEqualTo("No es igual a")
+                                                                .IsGreaterThan("Es mayor que")
+                                                                .IsLessThan("Es menor que")
                                                                 .IsNull("Es nulo")
-                                                                .StartsWith("Inicia con")
-                                                            )
-                                                            .ForNumber(n => n
-                                                            .Clear()
-                                                            .IsEqualTo("Es igual a")
-                                                            .IsGreaterThan("Es mayor que")
-                                                            .IsLessThan("Es menor que")
-                                                            .IsNull("Es nulo")
-                                                            .IsLessThanOrEqualTo("Es menor o igual que")
-                                                            .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                            )
-                                                            .ForDate(d => d
-                                                            .Clear()
-                                                            .IsEqualTo("Es igual que")
-                                                            .IsGreaterThan("Es mayor que")
-                                                            .IsLessThan("Es menor que")
-                                                            .IsLessThanOrEqualTo("Es menor o igual que")
-                                                            .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                            .IsNotEqualTo("No es igual que")
-                                                            )
-                                                        ))
-                                            .ToolBar(tools =>
-                                            {
-                                                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @id = "SeveridadRiesgo_Add", @class = "k-i-plus-sm", onclick = "AddSeveridadRiesgo()" });
-                                                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-                                            })
-                                            .Editable(e => e.Mode(GridEditMode.PopUp))
-                                            .Sortable()
-                                            .Pageable()
-                                            .Filterable()
-                                            .Scrollable()
-                                            .Pdf(pdf => pdf.FileName("SeveridadRiesgoReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                                .Excel(excel => excel.FileName("SeveridadRiesgoReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                            .DataSource(dataSource =>
-                                                dataSource
-                                                .WebApi()
-                                                .ServerOperation(true)
-                                                .Model(model =>
+                                                                .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                )
+                                                                .ForDate(d => d
+                                                                .Clear()
+                                                                .IsEqualTo("Es igual que")
+                                                                .IsGreaterThan("Es mayor que")
+                                                                .IsLessThan("Es menor que")
+                                                                .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                .IsNotEqualTo("No es igual que")
+                                                                )
+                                                            ))
+                                                .ToolBar(tools =>
                                                 {
-                                                    model.Id(p => p.IdSeveridad);
-                                                    model.Field(p => p.IdSeveridad).Editable(false);
-                                                    model.Field(p => p.Impacto).Editable(true);
-                                                    model.Field(p => p.Probabilidad).Editable(true);
-                                                    model.Field(p => p.Nivel).Editable(false);
+                                                    if (permisos.HasClaim("Monitoreo.Severidad de Riesgo.Agregar", "true"))
+                                                    {
+                                                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus").HtmlAttributes(new { @id = "SeveridadRiesgo_Add", @class = "k-i-plus-sm", onclick = "AddSeveridadRiesgo()" });
+                                                    }
+                                                    tools.Custom().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field", onclick = "exportToExcel()" });
+                                                    tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
                                                 })
-                                                .Events(events => events.Error("error_handler"))
-                                                .Read(read => read.Action("GetSeveridadRiesgo", "SeveridadRiesgo"))
-                                            //.Create(create => create.Action("PostSeveridadRiesgo", "SeveridadRiesgo"))
-                                            //.Update(update => update.Action("PutSeveridadRiesgo", "SeveridadRiesgo", new { id = "{0}" }))
-                                            //.Destroy(destroy => destroy.Action("DeleteSeveridadRiesgo", "SeveridadRiesgo", new { id = "{0}" }))
-                                            )
+                                                .Editable(e => e.Mode(GridEditMode.PopUp))
+                                                .Sortable()
+                                                .Pageable(s => s
+                                                    .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+                                                    .Empty("No hay datos."))
+                                                )
+                                                .Filterable()
+
+                                                .Pdf(pdf => pdf.FileName("SeveridadRiesgoReporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                                    .Excel(excel => excel.FileName("SeveridadRiesgoReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                                .DataSource(dataSource =>
+                                                    dataSource
+                                                    .WebApi()
+                                                    .ServerOperation(true)
+                                                    .Model(model =>
+                                                    {
+                                                        model.Id(p => p.IdSeveridad);
+                                                        model.Field(p => p.IdSeveridad).Editable(false);
+                                                        model.Field(p => p.Impacto).Editable(true);
+                                                        model.Field(p => p.Probabilidad).Editable(true);
+                                                        model.Field(p => p.Nivel).Editable(false);
+                                                    })
+                                                    .Sort(s => s.Add(m => m.Impacto).Descending())
+                                                    .Events(events => events.Error("error_handler"))
+                                                    .Read(read => read.Action("GetSeveridadRiesgo", "SeveridadRiesgo"))
+                                                //.Create(create => create.Action("PostSeveridadRiesgo", "SeveridadRiesgo"))
+                                                //.Update(update => update.Action("PutSeveridadRiesgo", "SeveridadRiesgo", new { id = "{0}" }))
+                                                //.Destroy(destroy => destroy.Action("DeleteSeveridadRiesgo", "SeveridadRiesgo", new { id = "{0}" }))
+                                                )
 )
 
 <div id="numSeveridadRiesgo">
@@ -113,6 +126,23 @@
     $(document).ready(function () {
         $("#NivelAlert").prop("hidden", true);
     });
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridSeveridadRiesgo").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridSeveridadRiesgo").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
 
     function AlertClose() {
         $("#msj_failed").prop("hidden", true);
@@ -147,50 +177,28 @@
                     if (displayedData.Data[Bajo] != undefined && displayedData.Data[Medio] != undefined) {
                         var BrechaInferior = displayedData.Data[Bajo].RangoSuperiorSeveridad - displayedData.Data[Medio].RangoInferiorSeveridad
                         BrechaInferior = Math.round(BrechaInferior * 100) / 100;
+
+                        var BrechaLimiteInferior = displayedData.Data[Bajo].LimeteCalidadSuperir - displayedData.Data[Medio].LimiteCalidadInferior
+                        BrechaLimiteInferior = Math.round(BrechaLimiteInferior * 100) / 100;
                     }
                     if (displayedData.Data[Medio] != undefined && displayedData.Data[Alto] != undefined) {
                         var BrechaIntermedia = Number(displayedData.Data[Medio].RangoSuperiorSeveridad) - Number(displayedData.Data[Alto].RangoInferiorSeveridad)
                         BrechaIntermedia = Math.round(BrechaIntermedia * 100) / 100;
+
+                        var BrechaLimiteIntermedio = displayedData.Data[Medio].LimeteCalidadSuperir - displayedData.Data[Alto].LimiteCalidadInferior
+                        BrechaLimiteIntermedio = Math.round(BrechaLimiteIntermedio * 100) / 100;
                     }
                     if (displayedData.Data[Alto] != undefined && displayedData.Data[MuyAlto] != undefined) {
                         var BrechaSuperior = Number(displayedData.Data[Alto].RangoSuperiorSeveridad) - Number(displayedData.Data[MuyAlto].RangoInferiorSeveridad)
                         BrechaSuperior = Math.round(BrechaSuperior * 100) / 100;
+
+                        var BrechaLimiteSuperior = displayedData.Data[Alto].LimeteCalidadSuperir - displayedData.Data[MuyAlto].LimiteCalidadInferior
+                        BrechaLimiteSuperior = Math.round(BrechaLimiteSuperior * 100) / 100;
                     }
+
                     if (BrechaInferior != undefined) {
                         if (BrechaInferior == -0.01) {
                             $("#msj_failed").prop("hidden", true);
-                            if (BrechaIntermedia != undefined) {
-                                if (BrechaIntermedia == -0.01) {
-                                    $("#msj_failed").prop("hidden", true);
-                                    if (BrechaSuperior != undefined) {
-                                        if (BrechaSuperior == -0.01) {
-                                            $("#msj_failed").prop("hidden", true);
-                                        }
-                                        else {
-                                            $("#msj_failed").prop("hidden", false);
-                                            var NivelAnterior = displayedData.Data[Alto].Nivel;
-                                            var NivelPosterior = displayedData.Data[MuyAlto].Nivel;
-                                            var RangoSuperiorAnterior = displayedData.Data[Bajo].RangoSuperiorSeveridad;
-                                            var RangoInferiorPosterior = displayedData.Data[Medio].RangoInferiorSeveridad;
-                                            localStorage.setItem("NivelAnterior", NivelAnterior);
-                                            localStorage.setItem("NivelPosterior", NivelPosterior);
-                                            localStorage.setItem("RangoSuperiorAnterior", RangoSuperiorAnterior);
-                                            localStorage.setItem("RangoInferiorPosterior", RangoInferiorPosterior);
-                                        }
-                                    }
-                                }
-                                else {
-                                    $("#msj_failed").prop("hidden", false);
-                                    var NivelAnterior = displayedData.Data[Medio].Nivel;
-                                    var NivelPosterior = displayedData.Data[Alto].Nivel;
-                                    var RangoSuperiorAnterior = displayedData.Data[Bajo].RangoSuperiorSeveridad;
-                                    var RangoInferiorPosterior = displayedData.Data[Medio].RangoInferiorSeveridad;
-                                    localStorage.setItem("NivelAnterior", NivelAnterior);
-                                    localStorage.setItem("NivelPosterior", NivelPosterior);
-                                    localStorage.setItem("RangoSuperiorAnterior", RangoSuperiorAnterior);
-                                    localStorage.setItem("RangoInferiorPosterior", RangoInferiorPosterior);
-                                }
-                            }
                         }
                         else {
                             $("#msj_failed").prop("hidden", false);
@@ -198,6 +206,38 @@
                             var NivelPosterior = displayedData.Data[Medio].Nivel;
                             var RangoSuperiorAnterior = displayedData.Data[Bajo].RangoSuperiorSeveridad;
                             var RangoInferiorPosterior = displayedData.Data[Medio].RangoInferiorSeveridad;
+                            localStorage.setItem("NivelAnterior", NivelAnterior);
+                            localStorage.setItem("NivelPosterior", NivelPosterior);
+                            localStorage.setItem("RangoSuperiorAnterior", RangoSuperiorAnterior);
+                            localStorage.setItem("RangoInferiorPosterior", RangoInferiorPosterior);
+                        }
+                    }
+                    if (BrechaIntermedia != undefined) {
+                        if (BrechaIntermedia == -0.01) {
+                            $("#msj_failed").prop("hidden", true);
+                        }
+                        else {
+                            $("#msj_failed").prop("hidden", false);
+                            var NivelAnterior = displayedData.Data[Medio].Nivel;
+                            var NivelPosterior = displayedData.Data[Alto].Nivel;
+                            var RangoSuperiorAnterior = displayedData.Data[Medio].RangoSuperiorSeveridad;
+                            var RangoInferiorPosterior = displayedData.Data[Alto].RangoInferiorSeveridad;
+                            localStorage.setItem("NivelAnterior", NivelAnterior);
+                            localStorage.setItem("NivelPosterior", NivelPosterior);
+                            localStorage.setItem("RangoSuperiorAnterior", RangoSuperiorAnterior);
+                            localStorage.setItem("RangoInferiorPosterior", RangoInferiorPosterior);
+                        }
+                    }
+                    if (BrechaSuperior != undefined) {
+                        if (BrechaSuperior == -0.01) {
+                            $("#msj_failed").prop("hidden", true);
+                        }
+                        else {
+                            $("#msj_failed").prop("hidden", false);
+                            var NivelAnterior = displayedData.Data[Alto].Nivel;
+                            var NivelPosterior = displayedData.Data[MuyAlto].Nivel;
+                            var RangoSuperiorAnterior = displayedData.Data[Alto].RangoSuperiorSeveridad;
+                            var RangoInferiorPosterior = displayedData.Data[MuyAlto].RangoInferiorSeveridad;
                             localStorage.setItem("NivelAnterior", NivelAnterior);
                             localStorage.setItem("NivelPosterior", NivelPosterior);
                             localStorage.setItem("RangoSuperiorAnterior", RangoSuperiorAnterior);
@@ -227,21 +267,95 @@
                     else {
                         $('#msj_failed').prop("hidden", true);
                     }
+
+                    if ($('#MensajeBrecha').is(':hidden')) {
+                        if (BrechaLimiteInferior != undefined) {
+                            if (BrechaLimiteInferior == -1) {
+                                $("#msj_failed").prop("hidden", true);
+                            }
+                            else {
+                                $("#msj_failed").prop("hidden", false);
+                                var NivelAnterior = displayedData.Data[Bajo].Nivel;
+                                var NivelPosterior = displayedData.Data[Medio].Nivel;
+                                var LimeteCalidadSuperirAnterior = displayedData.Data[Bajo].LimeteCalidadSuperir;
+                                var LimiteCalidadInferiorPosterior = displayedData.Data[Medio].LimiteCalidadInferior;
+                                localStorage.setItem("NivelAnterior", NivelAnterior);
+                                localStorage.setItem("NivelPosterior", NivelPosterior);
+                                localStorage.setItem("LimeteCalidadSuperirAnterior", LimeteCalidadSuperirAnterior);
+                                localStorage.setItem("LimiteCalidadInferiorPosterior", LimiteCalidadInferiorPosterior);
+                            }
+                        }
+                        if (BrechaLimiteIntermedio != undefined) {
+                            if (BrechaLimiteIntermedio == -1) {
+                                $("#msj_failed").prop("hidden", true);
+                            }
+                            else {
+                                $("#msj_failed").prop("hidden", false);
+                                var NivelAnterior = displayedData.Data[Medio].Nivel;
+                                var NivelPosterior = displayedData.Data[Alto].Nivel;
+                                var LimeteCalidadSuperirAnterior = displayedData.Data[Medio].LimeteCalidadSuperir;
+                                var LimiteCalidadInferiorPosterior = displayedData.Data[Alto].LimiteCalidadInferior;
+                                localStorage.setItem("NivelAnterior", NivelAnterior);
+                                localStorage.setItem("NivelPosterior", NivelPosterior);
+                                localStorage.setItem("LimeteCalidadSuperirAnterior", LimeteCalidadSuperirAnterior);
+                                localStorage.setItem("LimiteCalidadInferiorPosterior", LimiteCalidadInferiorPosterior);
+                            }
+                        }
+                        if (BrechaLimiteSuperior != undefined) {
+                            if (BrechaLimiteSuperior == -1) {
+                                $("#msj_failed").prop("hidden", true);
+                            }
+                            else {
+                                $("#msj_failed").prop("hidden", false);
+                                var NivelAnterior = displayedData.Data[Alto].Nivel;
+                                var NivelPosterior = displayedData.Data[MuyAlto].Nivel;
+                                var LimeteCalidadSuperirAnterior = displayedData.Data[Alto].LimeteCalidadSuperir;
+                                var LimiteCalidadInferiorPosterior = displayedData.Data[MuyAlto].LimiteCalidadInferior;
+                                localStorage.setItem("NivelAnterior", NivelAnterior);
+                                localStorage.setItem("NivelPosterior", NivelPosterior);
+                                localStorage.setItem("LimeteCalidadSuperirAnterior", LimeteCalidadSuperirAnterior);
+                                localStorage.setItem("LimiteCalidadInferiorPosterior", LimiteCalidadInferiorPosterior);
+                            }
+                        }
+                        if (localStorage.getItem("NivelAnterior")) {
+                            $('#msj_failed').prop("hidden", false);
+                            var NivelAnterior = localStorage.getItem("NivelAnterior")
+                            var NivelPosterior = localStorage.getItem("NivelPosterior")
+                            var LimeteCalidadSuperirAnterior = localStorage.getItem("LimeteCalidadSuperirAnterior")
+                            var LimiteCalidadInferiorPosterior = localStorage.getItem("LimiteCalidadInferiorPosterior")
+                            var MensajeLimite = LimeteCalidadSuperirAnterior - LimiteCalidadInferiorPosterior
+                            MensajeLimite = Math.round(MensajeLimite * 100) / 100;
+                            console.log("MensajeLimite", MensajeLimite)
+                            if (MensajeLimite < -1) {
+                                $('#MensajeBrecha').text(" Exísten brechas entre los límites de los siguientes niveles: " + NivelAnterior + " y " + NivelPosterior + ".");
+                            }
+                            else if (MensajeLimite == 0) {
+                                $('#MensajeBrecha').text(" Exísten valores iguales entre los límites de los siguientes niveles: " + NivelAnterior + " y " + NivelPosterior + ".");
+                            }
+                            else if (MensajeLimite > -1) {
+                                $('#MensajeBrecha').text(" Exísten límites Intercalados en los siguientes niveles: " + NivelAnterior + " y " + NivelPosterior + ".");
+                            }
+                            localStorage.clear();
+                        }
+                        else {
+                            $('#msj_failed').prop("hidden", true);
+                        }
+                    }
                 }
             },
             error: function (XMLHttpRequest, textStatus, errorThrown) {
                 alert(textStatus + ": " + XMLHttpRequest.responseText);
             }
         });
-        
+
 
         var displayedData = $("#gridSeveridadRiesgo").data().kendoGrid.dataSource.view();
-        if (displayedData.length == 4) {
-            $("#SeveridadRiesgo_Add").hide();
-        }
-        else {
-            $("#SeveridadRiesgo_Add").show();
-        }
+        //if (displayedData.length == 4) {
+        //    $("#SeveridadRiesgo_Add").hide();
+        //}
+        //else {
+        //    $("#SeveridadRiesgo_Add").show();
+        //}
 
         if (displayedData.length == 0) {
             $("#LimeteCalidadSuperir").prop("disabled", true);
@@ -372,4 +486,92 @@
             }
         });
     }
+
+
+    var exportFlag = false;
+$("#gridSeveridadRiesgo").data("kendoGrid").bind("excelExport", function (e) {
+    if (!exportFlag) {
+        debugger;
+        e.sender.showColumn(4);
+        //e.sender.hideColumn(4);
+        e.preventDefault();
+        exportFlag = true;
+        setTimeout(function () {
+            e.sender.saveAsExcel();
+        });
+    } else {
+        //e.sender.showColumn(4);
+        e.sender.hideColumn(4);
+        exportFlag = false;
+    }
+});
+
+    function exportToExcel() {
+       const grid = $('#gridSeveridadRiesgo').data('kendoGrid');
+
+        grid.showColumn("LimeteCalidadSuperir");
+        grid.showColumn("LimiteCalidadInferior");
+        grid.showColumn("RangoInferiorSeveridad");
+        grid.showColumn("RangoSuperiorSeveridad");
+
+        
+        grid.saveAsExcel();
+        
+
+        setTimeout(function ()
+        {
+            hideColumns();
+        }, 500);
+    };
+
+    function hideColumns() {
+       const grid = $('#gridSeveridadRiesgo').data('kendoGrid');
+
+        grid.hideColumn("LimeteCalidadSuperir");
+        grid.hideColumn("LimiteCalidadInferior");
+        grid.hideColumn("RangoInferiorSeveridad");
+        grid.hideColumn("RangoSuperiorSeveridad");
+
+        resetColumSize();
+
+        //var cols = grid.columns;
+        //cols["Impacto"].width = 100;
+        //cols["Probabilidad"].width = 120;
+        //cols["#=LimeteCalidadSuperir# <br> #=LimiteCalidadInferior#"].width = 100;
+        //cols["#=RangoInferiorSeveridad# - #=RangoSuperiorSeveridad#"].width = 100;
+
+
+                                          //columns.Template("#=LimeteCalidadSuperir# <br> #=LimiteCalidadInferior#").Title("Calificación").Width(100);
+                                          
+                                          //columns.Template("#=RangoInferiorSeveridad# - #=RangoSuperiorSeveridad#").Title("Valor").Width(100);
+        //setGridWidth(grid);
+    };
+
+    function resetColumSize() {
+    var grid = $("#gridSeveridadRiesgo").getKendoGrid();
+        grid.columns[1].width = 100;
+        grid.columns[2].width = 120;
+        grid.columns[5].width = 100;
+        grid.columns[8].width = 100;
+        grid.columns[10].width = 100;
+    grid.setOptions({columns: grid.columns});
+    }
+
+    var initialGridWidth;
+          function setGridWidth(e){
+            var cols = e.sender.columns;
+            var currentColWidth = cols.reduce(function(prev, cur){
+              if(!cur.hidden){
+                return prev += cur.width;
+              } else {
+                return prev;
+              }
+            }, 0);
+
+            if(currentColWidth > initialGridWidth){
+              e.sender.wrapper.width(initialGridWidth);
+            } else {
+              e.sender.wrapper.width(currentColWidth + kendo.support.scrollbar());
+            }
+          }
 </script>

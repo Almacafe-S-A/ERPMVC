@@ -1,8 +1,11 @@
 ﻿@using Kendo.Mvc.UI
 
 @{
-    ViewData["Title"] = "Producto";
-
+    ViewData["Title"] = "Servicios";
+    bool permisoAgregar, permisoEditar, permisoEliminar;
+    permisoAgregar = (bool)ViewData["permisoAgregar"];
+    permisoEditar = (bool)ViewData["permisoEditar"];
+    permisoEliminar = (bool)ViewData["permisoEliminar"];
 }
 
 <script>
@@ -98,13 +101,22 @@
 
                 .Columns(columns =>
                 {
-                    columns.Command(command =>
+                    if (permisoEditar == true || permisoEliminar == true)
                     {
-                        //command.Custom("Ver detalles").Click("Detalles");
-                        command.Custom("Editar").Click("EditProduct");
-                        command.Destroy().Text("Eliminar");
-                    }).Width(250);
+                        columns.Command(command =>
+                        {
+                            //command.Custom("Ver detalles").Click("Detalles");
+                            if (permisoEditar)
+                            {
+                                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditProduct");
+                            }
+                            if (permisoEliminar)
+                            {
+                                command.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                            }
 
+                        }).Width(250).Title("Acciones");
+                    }
                     columns.Bound(p => p.ProductId).Width(190);
                     columns.Bound(p => p.ProductName).Width(190);
                     columns.Bound(p => p.ProductCode).Width(190);
@@ -116,6 +128,7 @@
                     columns.Bound(p => p.CurrencyName).Width(190);
                     //  columns.Bound(p => p.currency).Width(190);
                     columns.Bound(p => p.Estado).Width(190);
+                    columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy HH:mm:ss}").Width(100).Hidden();
 
 
                 })
@@ -125,13 +138,13 @@
                 {
 
                     //tools.Create();
-                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                              .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddProduct()" });
-                    tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                    tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-
+                    if (permisoAgregar)
+                    {
+                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                      .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddProduct()" });
+                    }
+                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
                 })
                 .Editable(e => e.Mode(GridEditMode.PopUp))
                 .Sortable()
@@ -155,6 +168,7 @@
                     model.Field(p => p.ProductId).Editable(false);
 
                 })
+                 .Sort(s => s.Add(m => m.FechaCreacion).Descending())
                 .Events(events => events.Error("error_handler"))
                 .Read(read => read.Action("Get", "Product"))
                 //.Create(create => create.Action("Insert", "Product").Type(HttpVerbs.Post))
@@ -167,6 +181,32 @@
 
                 })
 )
+
+<script>
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridProduct").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridProduct").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+
+</script>
 
 <div id="numProduct">
     @await Html.PartialAsync("pvwAddProduct", new ERPMVC.DTO.ProductDTO { ProductId = 0 })

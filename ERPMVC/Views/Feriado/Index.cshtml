@@ -1,0 +1,157 @@
+﻿@using Kendo.Mvc.UI
+@{ 
+    ViewData["Title"] ="Feriados";
+}
+<h3 class="text-themecolor">Feriados</h3>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <div class="row">
+                <div id="grdConfiguracion"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        CrearGrid();
+    });
+
+    function CrearGrid() {
+        $("#grdConfiguracion").kendoGrid({
+            dataSource: {
+                transport: {
+                    read: "@Url.Action("GetFeriados", "Feriado")",
+                    update: "@Url.Action("Guardar", "Feriado")",
+                    create: "@Url.Action("Guardar", "Feriado")",
+                    destroy: "@Url.Action("Delete", "Feriado")",
+                    parameterMap: function (datos, tipo) {
+                        if (tipo !== 'read') {
+                            datos.FechaInicio = kendo.toString(kendo.parseDate(datos.FechaInicio, "dd/MM/yyyy"), "yyyy-MM-dd");
+                            datos.FechaFin = kendo.toString(kendo.parseDate(datos.FechaFin, "dd/MM/yyyy"), "yyyy-MM-dd");
+                            datos.EstadoId = datos.Estado.IdEstado;
+                            debugger;
+                        }
+                        return datos;
+                    },
+                    
+                },
+                schema: {
+                    model: {
+                        id:"Id",
+                        fields: {
+                            Id: { type: "number", editable: true },
+                            Anio: { type: "number", editable: true },
+                            Nombre: { type: "string", editable: true },
+                            FechaInicio: { name:"FechaInicio", type: "date", editable: true, format: "{0:dd/MM/yyyy}" },
+                            FechaFin: { name: "FechaFin",type: "date", editable: true, format: "{0:dd/MM/yyyy}" },
+                            IdEstado: { type: "number", editable: true },
+                            Estado: { editable: true }
+                        }
+                    }
+                },
+                requestEnd: function(e) {
+                    if (e.type !== "read") {
+                        $("#grdConfiguracion").data("kendoGrid").dataSource.read();
+                    }
+                },
+                error: function (e) {
+                        console.log(e);
+                         $.toast({
+                                heading: 'Error',
+                                text: e.Request.ResponseText,
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+                    }
+            },
+            toolbar: [
+                { name: "create", text: "Nuevo Feriado" }
+            ],
+            columns: [
+                {
+                    title:"Acciones",
+                    command: [
+                        { name: "edit", text: { edit: "", update: "", cancel: "" } },
+                        { name: "destroy", text:" "}
+                    ],
+                    width:60
+                },
+                { field: "Id", title: "Id. ", width: 80, hidden: true },
+                { field: "Anio", title: "Período", width: 100, editor: editorNumerico, format: "{0:####}" },
+                { field: "Nombre", title: "Nombre", width: 300 },
+                { field: "FechaInicio", title: "Fecha Inicio", width: 100, template: '#= kendo.toString(FechaInicio,"dd/MM/yyyy")#'},
+                { field: "FechaFin", title: "Fecha Final", width: 100, template: '#= kendo.toString(FechaFin,"dd/MM/yyyy")#'},
+                { field: "Idestado", hidden:true},
+                { field: "Estado", title: "Estado", width: 100, editor: editorEstado, template: "#= Estado.NombreEstado #"}
+            ],
+            noRecords: {
+                template:"No hay feriados"
+            },
+            //height: 400,
+            scrollable: true,
+            editable: "inline",
+            save: ValidarIngreso
+        });
+
+        function ValidarIngreso(e) {
+            //debugger;
+            var registro = e.model;
+            if (registro.FechaFin < registro.FechaInicio) {
+                alert('Fecha final no puede ser menor a fecha de inicio');
+                e.preventDefault();
+                return false;
+            }
+            //debugger;
+        }
+
+        function editorNumerico(contenedor, opciones) {
+            $('<input data-bind="value:' + opciones.field + '"/>')
+                .appendTo(contenedor)
+                .kendoNumericTextBox({ spinners: false, format:"####" });
+        }
+
+        function editorEstado(contenedor, opciones) {
+            $('<input data-bind="value:' + opciones.field + '"/>')
+                .appendTo(contenedor)
+                .kendoDropDownList({
+                    index:0,
+                    autoBind: true,
+                    dataTextField: "NombreEstado",
+                    dataValueField: "IdEstado",
+                    dataSource: {
+                        transport: {
+                            read: {
+                                type:"GET",
+                                url: '@Url.Action("GetGrupoEstadoI", "Estados")',
+                                dataType: "json"
+                            }
+                        },
+                        schema: {
+                            model: {
+                                fields: {
+                                    IdEstado: { type: "number" },
+                                    NombreEstado: {type:"string"}
+                                }
+                            }
+                        }
+                    },
+                    change: cambioEstado
+                });
+        }
+
+        function cambioEstado(e) {
+            //debugger;
+            var estado = e.sender.dataItem();
+            var grid = e.sender.element.closest(".k-grid").data("kendoGrid");
+            var fila = e.sender.element.closest("tr");
+            var registro = grid.dataItem(fila);
+            registro.set("IdEstado", estado.IdEstado);
+            registro.set("Estado", estado);
+        }
+    }
+</script>

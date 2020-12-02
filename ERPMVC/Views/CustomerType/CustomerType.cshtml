@@ -1,8 +1,8 @@
 ﻿@using Kendo.Mvc.UI
-
+@using System.Security.Claims
 @{
-    ViewData["Title"] = "CustomerType";
-
+    ViewData["Title"] = "Tipo Cliente";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 
 <script>
@@ -32,7 +32,7 @@
 
     }
 
-    
+
          function EditCustomerType(e) {
              e.preventDefault();
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
@@ -52,7 +52,7 @@
                     $("#NumCustomerType").html('');
                     $("#NumCustomerType").html(result);
 
-                
+
                     //$("#btnCAI").hide();
                     $('#ModalCustomerType').modal('show');
                 },
@@ -69,108 +69,139 @@
 <h3 class="text-themecolor">Tipo de Cliente</h3>
 
 @(Html.Kendo().Grid<ERPMVC.Models.CustomerType>
-              ()
+                  ()
 
-                .Name("gridCustomerType")
-                .Columns(columns =>
-                {
-
-                    columns.Command(command =>
+                    .Name("gridCustomerType")
+                    .Columns(columns =>
                     {
-                        //command.Custom("Ver detalles").Click("Detalles");
-                        //command.Custom("Editar").Click("EditCustomerType");
-                        //command.Destroy().Text("Eliminar");
-                        command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCustomerType");
-                        command.Destroy().Text(" ").IconClass("fa fa-trash");
-                    }).Width(200);
+                        if (permisos.HasClaim("Administracion.Tipo de Cliente.Editar", "true")
+                        || permisos.HasClaim("Administracion.Tipo de Cliente.Eliminar", "true"))
+                        {
+                            columns.Command(command =>
+                            {
+                                //command.Custom("Ver detalles").Click("Detalles");
+                                //command.Custom("Editar").Click("EditCustomerType");
+                                //command.Destroy().Text("Eliminar");
+                                if (permisos.HasClaim("Administracion.Tipo de Cliente.Editar", "true"))
+                                {
+                                    command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCustomerType");
+                                }
+                                if (permisos.HasClaim("Administracion.Tipo de Cliente.Eliminar", "true"))
+                                {
+                                    command.Destroy().Text(" ").IconClass("fa fa-trash");
+                                }
+                            }).Width(150).Title("Acciones");
+                        }
+                        columns.Bound(p => p.CustomerTypeId).Width(100);
+                        columns.Bound(p => p.CustomerTypeName).Width(200);
+                        columns.Bound(p => p.Description).Width(200);
+                        columns.Bound(p => p.Estado).Width(200);
 
-                    columns.Bound(p => p.CustomerTypeId).Width(170);
-                    columns.Bound(p => p.CustomerTypeName).Width(170);
-                    columns.Bound(p => p.Description).Width(200);
-                    columns.Bound(p => p.Estado).Width(200);
+
+                    })
+                        .Filterable(f => f.Operators(o => o.ForString(s => s
+                                           .Clear()
+                                           .Contains("Contiene")
+                                           .DoesNotContain("No contiene")
+                                           .EndsWith("Termina con")
+                                           .IsEqualTo("Es igual a")
+                                           .IsNotEqualTo("No es igual a")
+                                           .IsNull("Es nulo")
+                                           .StartsWith("Inicia con")
 
 
-                })
-                    .Filterable(f => f.Operators(o => o.ForString(s => s
+                                     )
+                                     .ForNumber(n => n
                                        .Clear()
-                                       .Contains("Contiene")
-                                       .DoesNotContain("No contiene")
-                                       .EndsWith("Termina con")
                                        .IsEqualTo("Es igual a")
-                                       .IsNotEqualTo("No es igual a")
+                                       .IsGreaterThan("Es mayor que")
+                                       .IsLessThan("Es menor que")
                                        .IsNull("Es nulo")
-                                       .StartsWith("Inicia con")
+                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                     )
+                                     .ForDate(d => d
+                                     .Clear()
+                                     .IsEqualTo("Es igual que")
+                                     .IsGreaterThan("Es mayor que")
+                                     .IsLessThan("Es menor que")
+                                     .IsLessThanOrEqualTo("Es menor o igual que")
+                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                     .IsNotEqualTo("No es igual que")
+                                      )
+                                   ))
+
+                    .ToolBar(tools =>
+                    {
+                        // tools.Create();
+                        if (permisos.HasClaim("Administracion.Tipo de Cliente.Agregar", "true"))
+                        {
+                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                               .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerType()" });
+                        }
+                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
 
 
-                                 )
-                                 .ForNumber(n => n
-                                   .Clear()
-                                   .IsEqualTo("Es igual a")
-                                   .IsGreaterThan("Es mayor que")
-                                   .IsLessThan("Es menor que")
-                                   .IsNull("Es nulo")
-                                   .IsLessThanOrEqualTo("Es menor o igual que")
-                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                 )
-                                 .ForDate(d => d
-                                 .Clear()
-                                 .IsEqualTo("Es igual que")
-                                 .IsGreaterThan("Es mayor que")
-                                 .IsLessThan("Es menor que")
-                                 .IsLessThanOrEqualTo("Es menor o igual que")
-                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                 .IsNotEqualTo("No es igual que")
-                                  )
-                               ))
+                    })
+                    .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                    .Sortable()
+                    .Pageable()
+                    .Filterable()
+                    .Scrollable()
+                    .Pdf(pdf => pdf.FileName("CustomerTypeReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                    .Excel(excel => excel.FileName("CustomerTypeReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                    .DataSource(dataSource =>
+                    dataSource
+                    .WebApi()
 
-                .ToolBar(tools =>
-                {
-                    // tools.Create();
-                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                           .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerType()" });
-                    tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                    tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                    .ServerOperation(true)
+                    .Model(model =>
+                    {
+                        model.Id(p => p.CustomerTypeId);
+                        model.Field(p => p.CustomerTypeId).Editable(false);
 
 
+                    })
+                    .Events(events => events.Error("error_handler"))
+                    .Read(read => read.Action("Get", "CustomerType"))
+                    .Create(create => create.Action("Insert", "CustomerType").Type(HttpVerbs.Post))
+                    .Update(update => update.Action("Update", "CustomerType").Type(HttpVerbs.Put))
+                    .Destroy(destroy => destroy.Action("Delete", "CustomerType", new { CustomerTypeId = "{0}" }).Type(HttpVerbs.Delete))
 
-                })
-                .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
-                .Sortable()
-                .Pageable()
-                .Filterable()
-                .Scrollable()
-                .Pdf(pdf => pdf.FileName("CustomerTypeReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                .Excel(excel => excel.FileName("CustomerTypeReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                .DataSource(dataSource =>
-                dataSource
-                .WebApi()
+                    )
+                    .Events(e =>
+                    {
+                        e.Save("onsave");
 
-                .ServerOperation(true)
-                .Model(model =>
-                {
-                    model.Id(p => p.CustomerTypeId);
-                    model.Field(p => p.CustomerTypeId).Editable(false);
-
-
-                })
-                .Events(events => events.Error("error_handler"))
-                .Read(read => read.Action("Get", "CustomerType"))
-                .Create(create => create.Action("Insert", "CustomerType").Type(HttpVerbs.Post))
-                .Update(update => update.Action("Update", "CustomerType").Type(HttpVerbs.Put))
-                .Destroy(destroy => destroy.Action("Delete", "CustomerType", new { CustomerTypeId = "{0}" }).Type(HttpVerbs.Delete))
-
-                )
-                .Events(e =>
-                {
-                    e.Save("onsave");
-
-                })
+                    })
 )
 
 <div id="NumCustomerType">
-    @await Html.PartialAsync("pvwAddCustomerType", new ERPMVC.DTO.CustomerTypeDTO { CustomerTypeId = 0})
+    @await Html.PartialAsync("pvwAddCustomerType", new ERPMVC.DTO.CustomerTypeDTO { CustomerTypeId = 0 })
 </div>
+
+
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridCustomerType").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridCustomerType").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+</script>

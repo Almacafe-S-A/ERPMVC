@@ -8,19 +8,11 @@ namespace ERPMVC.DTO
 {
     public class ConciliacionDTO : Conciliacion
     {
-        public List<Conciliacion> _Conciliacion { get; set; }
+        public ConciliacionDTO()
+        {
+        }
 
-
-        public int editar { get; set; } = 1;
-
-        public string token { get; set; }
-
-        public double Debit { get; set; }
-        public double Credit { get; set; }
-        public double Saldo { get; set; }
-        public string AccountName { get; set; }
-        
-        public IEnumerable<IFormFile> files { get; set; }
-        //public string FechaInicio { get; internal set; }
+        public string NombreCuenta { get; set; }
+        public int Editar { get; set; }
     }
 }

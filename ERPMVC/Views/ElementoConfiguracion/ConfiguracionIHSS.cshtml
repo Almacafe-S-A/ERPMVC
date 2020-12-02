@@ -1,0 +1,89 @@
+﻿@using Kendo.Mvc.UI
+@{ 
+    ViewData["Title"]= "Configuración IHSS";
+
+}
+<h3 class="text-themecolor">Configuración IHSS</h3>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <div class="row">
+                <div id="grdConfiguracion"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        CrearGrid();
+    });
+
+    function CrearGrid() {
+        $("#grdConfiguracion").kendoGrid({
+            dataSource: {
+                transport: {
+                    read: "@Url.Action("GetElementoByGrupoConfiguracionV2", "ElementoConfiguracion")?GrupoConfiguracionId=100",
+                    update: "@Url.Action("Guardar", "ElementoConfiguracion")"
+                },
+                schema: {
+                    model: {
+                        id:"Id",
+                        fields: {
+                            Id: { type: "number", editable: false},
+                            Nombre: { type: "string", editable: false },
+                            Descripcion: { type: "string", editable: false },
+                            IdEstado: { type: "number", editable: false },
+                            Estado: { type: "string", editable: false },
+                            Idconfiguracion: { type: "number", editable: false },
+                            Valordecimal: { type: "number", editable: true },
+                            Valorstring: { type: "string", editable: false },
+                            Valorstring2: { type: "string", editable: false },
+                            Formula: { type: "string", editable: false }
+                        }
+                    }
+                },
+                requestEnd: function(e) {
+                    if (e.type !== "read") {
+                        $("#grdConfiguracion").data("kendoGrid").dataSource.read();
+                    }
+                }
+            },
+            columns: [
+                {
+                    command: [
+                        { name: "edit", text: {edit:"Editar", update:"Actualizar", cancel:"Cancelar"}}//,  iconClass: "fa fa-edit", text:"" }
+                    ],
+                    width:100
+                },
+                { field: "Id", title: "Id. ", width: 80, hidden: true },
+                { field: "Nombre", title: "Nombre", width: 100 },
+                { field: "Descripcion", title: "Descripcion", width: 300 },
+                { field: "Valordecimal", title: "Valor", width: 100, editor: editorNumerico, format:"{0:#,##0.00}" }
+            ],
+            noRecords: {
+                template:"No hay configuraciones activas."
+            },
+            height: 400,
+            scrollable: true,
+            editable: "inline",
+            save: ValidarIngreso
+        });
+
+        function ValidarIngreso(e) {
+            //debugger;
+            var configuracion = e.model;
+            if (configuracion.Valordecimal < 0 ) {
+                alert('Valores no pueden ser negativos');
+                e.preventDefault();
+                return false;
+            }
+            //debugger;
+        }
+
+        function editorNumerico(contenedor, opciones) {
+            $('<input data-bind="value:' + opciones.field + '"/>')
+                .appendTo(contenedor)
+                .kendoNumericTextBox({ spinners: false });
+        }
+    }
+</script>

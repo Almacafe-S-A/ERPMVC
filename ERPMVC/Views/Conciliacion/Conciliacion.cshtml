@@ -1,226 +1,185 @@
 ﻿@using Kendo.Mvc.UI
-@{
-    ViewData["Title"] = "CONCILIACION BANCARIA";
-    var CheckAccount = ViewData["CheckAccount"] as IEnumerable<ERPMVC.Models.CheckAccount>;
+@using System.Security.Claims
 
-    // var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
-    //                              { "required","Valor requerido" }};
-
-    // var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
-    }
-
-
-
-<script>
-
-    function customFunction(input) {
-
-        if (input.attr('name') === "BranchId" && input.val() === "0") {
-            return false;
-        }
-
-    }
-
-
-    function GetConciliacionId() {
-        return { ConciliacionId: $("#ConciliacionId").val() }
-    }
-
-
-</script>
-
-<script>
-
-    function AddConciliacion() {
-
-           //  clearsession();
-             var dataObject = {
-                 ConciliacionId: 0,
-                editar : 1
-            };
-
-            $.ajax({
-                url: '@Url.Action("pvwAddConciliacion", "Conciliacion")',
-                method: 'POST',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: JSON.stringify(dataObject),
-                success: function (result) {
-                    $("#ModalConciliacion").html('');
-                    $("#ModalConciliacion").html(result);
-                    //RefreshCotizacionesDetail();
-                    // $("#btnSaveCotizacion").show();
-                    $('#myModalConciliacionUpload').modal('show');
-                },
-                 error: function (XMLHttpRequest, textStatus, errorThrown) {
-                        alert(textStatus + ": " + XMLHttpRequest.responseText);
-                  }
-            });
-
-
-        }
-
-
-    function EditConciliacion(e) {
-            e.preventDefault();
-
-           // clearsession();
-
-            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-            var dataObject = {
-                ConciliacionId: dataItem.ConciliacionId,
-                editar : 0
-            };
-
-            $.ajax({
-                url: '@Url.Action("pvwAddConciliacion", "Conciliacion")',
-                method: 'POST',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: JSON.stringify(dataObject),
-                success: function (result) {
-                    $("#ModalConciliacion").html('');
-                    $("#ModalConciliacion").html(result);
-
-                    //$("#DocumentTypeId").data("kendoDropDownList").trigger('change');
-                    $('#myModalConciliacionUpload').modal('show');
-                },
-                 error: function (XMLHttpRequest, textStatus, errorThrown) {
-                        alert(textStatus + ": " + XMLHttpRequest.responseText);
-                  }
-            });
-        }
-
-
-    function RefreshConciliacion() {
-
-        $("#gridConciliaciones").getKendoGrid().dataSource.read();
-
-
-        }
-    function DetallesConciliacion(e) {
-        e.preventDefault();
-        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-        window.location.href = "@Url.Action("DetailsConciliation", "Conciliacion")?ConciliacionId=" + dataItem.ConciliacionId;
-        //update => update.Action("Update", "Purch", new { TypeAccountId = "{0}" }).Type(HttpVerbs.Put)
-    }
-
-</script>
-
-
-
-
-
-
-
+@{ 
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+    ViewData["Title"] = "Conciliacion Bancaria";
+}
 
 <h3 class="text-themecolor">Conciliación Bancaria</h3>
+<kendo-grid name="grdConciliaciones" height="500">
+    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+        <sorts>
+            <sort field="ConciliacionId" direction="desc"/>
 
-@(Html.Kendo().Grid<ERPMVC.Models.Conciliacion>
-    ()
-    .Name("gridConciliaciones")
-    .Columns(columns =>
-    {
-        columns.Command(command =>
+        </sorts>
+        <transport>
+            <read url="@Url.Action("GetConciliacion","Conciliacion")" />
+        </transport>
+        <schema>
+            <model id="ConciliacionId">
+                <fields>
+                    <field name="ConciliacionId" type="number" />
+                    <field name="FechaConciliacion" type="date" />
+                    <field name="DateBeginReconciled" type="date" />
+                    <field name="DateEndReconciled" type="date" />
+                    <field name="SaldoConciliado" type="number" />
+                    <field name="SaldoBanco" type="number" />
+                    <field name="SaldoLibro" type="number" />
+                </fields>
+            </model>
+        </schema>
+    </datasource>
+    <columns>
+        @if (permisos.HasClaim("Bancos.Conciliacion Bancaria.Editar", "true") || permisos.HasClaim("Bancos.Conciliacion Bancaria.Ver Detalle", "true"))
         {
-            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditConciliacion");
-            // command.Custom("Descargar").Text(" ").IconClass("fa fa-download").Click("Descargar");
-            // command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirDocumento");
-            command.Custom("Ver Detalles").Text(" ").IconClass("far fa-list-alt").Click("DetallesConciliacion");
-            // command.Edit(); command.Destroy();
-        }).Width(170);
-        columns.Bound(p => p.ConciliacionId).Width(100).Visible(false);
-
-        columns.Bound(p => p.FechaConciliacion).Format("{0:dd/MM/yyyy}").Width(100);
-        columns.Bound(p => p.BankName).Width(200);
-        columns.ForeignKey(p => p.CheckAccountId,
-             (System.Collections.IEnumerable)ViewData["CheckAccount"], "CheckAccountId", "AssociatedAccountNumber")
-             .Title("Numero de Cuenta").Width(200);
-        //Bound(p => p.CheckAccountId).Width(200);
-        columns.Bound(p => p.SaldoConciliado).Width(200);
-        columns.Bound(p=> p.DateBeginReconciled).Format("{0:dd/MM/yyyy}").Width(200);
-        columns.Bound(p=> p.DateEndReconciled).Format("{0:dd/MM/yyyy}").Width(200);
-    })
-    .Filterable(f => f.Operators(o => o.ForString(s => s
-    .Clear()
-    .Contains("Contiene")
-    .DoesNotContain("No contiene")
-    .EndsWith("Termina con")
-    .IsEqualTo("Es igual a")
-    .IsNotEqualTo("No es igual a")
-    .IsNull("Es nulo")
-    .StartsWith("Inicia con")
-
-
-    )
-    .ForNumber(n => n
-    .Clear()
-    .IsEqualTo("Es igual a")
-    .IsGreaterThan("Es mayor que")
-    .IsLessThan("Es menor que")
-    .IsNull("Es nulo")
-    .IsLessThanOrEqualTo("Es menor o igual que")
-    .IsGreaterThanOrEqualTo("Es mayor o igual que")
-    )
-    .ForDate(d => d
-    .Clear()
-    .IsEqualTo("Es igual que")
-    .IsGreaterThan("Es mayor que")
-    .IsLessThan("Es menor que")
-    .IsLessThanOrEqualTo("Es menor o igual que")
-    .IsGreaterThanOrEqualTo("Es mayor o igual que")
-    .IsNotEqualTo("No es igual que")
-    )
-    ))
-    .ToolBar(tools =>
-    {
-        //tools.Create();
-        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddConciliacion();" });
-
-        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-    })
-    .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
-    .Sortable()
-    .Pageable()
-    .Filterable()
-    .Scrollable()
-    .Pdf(pdf => pdf.FileName("ConciliacionReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-    .ProxyURL(Url.Action("Export", "Home")).AllPages())
-    .Excel(excel => excel.FileName("ConciliacionReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-    .DataSource(dataSource =>
-    dataSource
-    .WebApi()
-    .ServerOperation(true)
-    .Model(model =>
-    {
-        model.Id(p => p.ConciliacionId);
-        model.Field(p => p.ConciliacionId).Editable(false);
-        model.Field(p => p.CheckAccountId).DefaultValue(1);
-
-    })
-    .Events(events => events.Error("error_handler"))
-    .Read(read => read.Action("GetConciliacion", "Conciliacion"))
-    // .Create(create => create.Action("Insert", "Conciliacion"))
-     .Update(update => update.Action("Update", "Conciliacion", new { Conciliacionid = "{0}" }))
-    //.Destroy(destroy => destroy.Action("Delete", "Conciliacion", new { id = "{0}" }))
-    )
-    .Events(e =>
-    {
-        //e.Save("onsave");
-    })
-    )
+            <column width="100">
+                <commands>
+                    @if (User.HasClaim("Bancos.Conciliacion Bancaria.Editar", "true"))
+                    {
+                        <column-command name="EditarConciliacion" permiso="Bancos.Conciliacion Bancaria.Editar" text=" " icon-class="fa fa-edit" click="EditarConciliacion"></column-command>
+                    }
+                    @if (User.HasClaim("Bancos.Conciliacion Bancaria.Imprimir", "true"))
+                    {
+                        <column-command name="Imprimir" permiso="Bancos.Conciliacion Bancaria.Imprimir" text=" " icon-class="fa fa-print" click="Imprimir"></column-command>
+                    }
 
 
 
-    <div id="ModalConciliacion">
-        @await Html.PartialAsync("pvwAddConciliacion", new ERPMVC.DTO.ConciliacionDTO { ConciliacionId = 0 })
-    </div>
+                </commands>
+            </column>
+        }
+        <column title="No." field="ConciliacionId" width="100"></column>
+        <column title="Banco" field="BankName" width="200"></column>
+        <column title="Cuenta" field="NombreCuenta" width="250"></column>
+        <column title="Fecha Conciliación" field="FechaConciliacion" format="{0:dd/MM/yyyy}" width="200" />
+        <column title="Desde" field="DateBeginReconciled" format="{0:dd/MM/yyyy}" width="200" />
+        <column title="Hasta" field="DateEndReconciled" format="{0:dd/MM/yyyy}" width="200" />
+        <column title="Saldo Conciliado" field="SaldoConciliado" template="<span style='float:right'>#= kendo.toString(SaldoConciliado,'n2') #</span>" width="200" />
+        <column title="Saldo Banco" field="SaldoBanco" template="<span style='float:right'>#= kendo.toString(SaldoBanco,'n2') #</span>" width="200" />
+        <column title="Saldo Libro" field="SaldoLibro" template="<span style='float:right'>#= kendo.toString(SaldoLibro,'n2') #</span>" width="200" />
+        <column title="Estado" field="Estado" width="200"></column>
+    </columns>
+    <filterable>
+        <messages clear="Limpiar" cancel="Cancelar" filter="Filtrar" info="Mostrar filas con un valor que:" />
+        <operators>
+            <string contains="Contiene" doesnotcontain="No contiene" endswith="Termina con" eq="Es igual a" neq="No es igual a" isnull="Es nulo" startswith="Inicia con" />
+            <number eq="Es igual a" neq="No es igual a" gt="Es mayor que" gte="Es mayor o igual que" lt="Es menor que" lte="Es menor o igual que" isnull="Es nulo" />
+            <date eq="Es igual que" neq="No es igual a" gt="Es mayor que" gte="Es mayor o igual que" lt="Es menor que" lte="Es menor o igual que" isnull="Es nulo" />
+        </operators>
+    </filterable>
+    <toolbar>
+        @if (permisos.HasClaim("Bancos.Conciliacion Bancaria.Agregar", "true"))
+        {
+
+            <toolbar-button template="PlantillaAgregar" />
+        }
+        <toolbar-button name="pdf" text="PDF" icon-class="k-icon k-i-pdf" />
+        <toolbar-button name="excel" text="Excel" icon-class="k-icon k-i-excel" />
+    </toolbar>
+    <pdf file-name="Reporte_Conciliacion_@(DateTime.Now.ToString("yyyy_MM_dd_hh_mm_ss")).pdf" proxy-url="@Url.Action("Export","Home")" all-pages="true" />
+    <excel file-name="Reporte_Conciliacion_@(DateTime.Now.ToString("yyyy_MM_dd_hh_mm_ss")).xlsx" filterable="true" proxy-url="@Url.Action("Export","Home")" all-pages="true" />
+    <editable enabled="false" />
+    <scrollable enabled="true" />
+    <sortable enabled="true" />
+</kendo-grid>
+
+<div id="ModalConciliacion">
+    @*@await Html.PartialAsync("pvwAddConciliacion", new ERPMVC.DTO.ConciliacionDTO { ConciliacionId = 0, Editar=0 })*@
+</div>
+
+<script>
+    function EditarConciliacion(e) {
+        e.preventDefault();
+        var registro = this.dataItem($(e.currentTarget).closest('tr'));
+        var parametros = {
+            ConciliacionId: registro.ConciliacionId,
+            Editar: 1
+        };
+        $.ajax({
+            url: '@Url.Action("pvwAddConciliacion", "Conciliacion")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(parametros),
+            success: function (result) {
+                $("#ModalConciliacion").html('');
+                $("#ModalConciliacion").html(result);
+                $('#myModalConciliacionUpload').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+
+
+    function Imprimir(e) {
+        e.preventDefault();
+        var registro = this.dataItem($(e.currentTarget).closest('tr'));
+        var parametros = {
+            ConciliacionId: registro.ConciliacionId
+        };
+        window.location.href = '@Url.Action("SFConciliacion", "Conciliacion")/' + registro.ConciliacionId;
+        
+    }
+
+    function VerDetalleConciliacion(e) {
+        e.preventDefault();
+        var registro = this.dataItem($(e.currentTarget).closest('tr'));
+        var parametros = {
+            ConciliacionId: registro.ConciliacionId
+        };
+        $.ajax({
+            url: '@Url.Action("pvwAddConciliacion", "Conciliacion")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(parametros),
+            success: function (result) {
+                $("#ModalConciliacion").html('');
+                $("#ModalConciliacion").html(result);
+                $('#myModalConciliacionUpload').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+
+    function PlantillaAgregar(e) {
+        var plantilla =
+            '<a role="button" class="k-button k-button-icontext k-grid-Agregar" href="#" onclick="AgregarConciliacion()"><span class="k-icon k-i-plus"></span> Agregar</a>';
+        return plantilla;
+    }
+
+    function AgregarConciliacion() {
+        var parametros = {
+            ConciliacionId: 0,
+            Editar : 1
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwAddConciliacion", "Conciliacion")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(parametros),
+            success: function (result) {
+                $("#ModalConciliacion").html('');
+                $("#ModalConciliacion").html(result);
+                $('#myModalConciliacionUpload').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+
+    function RefreshConciliacion() {
+        $("#grdConciliaciones").getKendoGrid().dataSource.read();
+    }
+</script>

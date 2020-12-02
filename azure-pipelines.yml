@@ -3,12 +3,15 @@
 # Add steps that publish symbols, save build artifacts, and more:
 # https://docs.microsoft.com/azure/devops/pipelines/languages/dotnet-core
 
-pr:
+trigger:
 - desarrollo
 - master
+- release
+- staging
+- DEMO_SIN_LOGO
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: 'windows-2019'
 
 variables:
   solution: '**/*.sln'
@@ -18,20 +21,11 @@ variables:
 
 steps:
 
-- task: SonarQubePrepare@4
+- task: UseDotNet@2
   inputs:
-    SonarQube: 'Sonarqube HTTP'
-    scannerMode: 'MSBuild'
-    projectKey: 'ALMACAFE-FE'
-    projectName: 'ALMACAFE FRONT END'
-    extraProperties: |
-      # Additional properties that will be passed to the scanner, 
-      # Put one key=value per line, example:
-      sonar.exclusions=**/*.bin,**/wwwroot/**,
-      sonar.login=DevOps
-      sonar.password=$(SonarPassword)      
-  condition: eq(variables['Build.SourceBranchName'], 'master')
-
+    packageType: 'sdk'
+    version: '2.2.x'
+    vsVersion: '16.6.4'
 - task: NuGetToolInstaller@1
 
 - task: NuGetCommand@2
@@ -48,20 +42,6 @@ steps:
     platform: '$(buildPlatform)'
     configuration: '$(buildConfiguration)'
 
-- task: FileTransform@2
-  inputs:
-    folderPath: '$(build.artifactStagingDirectory)/WebApp.zip'
-    xmlTransformationRules: 
-    jsonTargetFiles: '**/appsettings.json'
-
-
-- task: SonarQubeAnalyze@4
-  condition: eq(variables['Build.SourceBranchName'], 'master')
-
-- task: SonarQubePublish@4
-  inputs:
-    pollingTimeoutSec: '300'
-  condition: eq(variables['Build.SourceBranchName'], 'master')
 
 - task: PublishBuildArtifacts@1
   inputs:

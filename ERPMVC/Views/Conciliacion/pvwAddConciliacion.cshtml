@@ -1,22 +1,207 @@
-﻿@model ERPMVC.DTO.ConciliacionDTO
+﻿@*@using RazorLight.Extensions*@
+@model ERPMVC.DTO.ConciliacionDTO
 
-@{ Layout = null;
-    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
-// {"required","Valor requerido" }
-};
+@{ 
+    Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." } };
     var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+
 }
 
-<script>
-    
-    function closeConciliacionBancaria() {
-
-        RefreshConciliacion();
-        $("#myModalConciliacionUpload").modal('hide');
+    <script>
+    function BancoSeleccion() {
+        return {
+            BankId: $("#BankId").val()
+        };
     }
 
-</script>
+    function CuentaBancoSeleccion() {
+        return {
+            CuentaId: $("#CheckAccountId").val()
+        };
+    }
 
+    function IniciarConciliacion(e) {
+        debugger;
+        var desde = $("#DateBeginReconciled").val();
+        var hasta = $("#DateEndReconciled").val();
+        if (desde > hasta) {
+            $.toast({
+                heading: 'Error',
+                text: 'Fecha Final no puede ser menor a la fecha Inicial.',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 3000,
+                stack: 6
+            });
+            return;
+        }
+        var validador = $("#mdlCuerpo").kendoValidator().data("kendoValidator");
+        if (validador.validate()) {
+            $("#btnIniciar").prop("disabled", false);;
+            $("#btnCancelar").prop("disabled", true);;
+            $("#btnGuardar").prop("disabled", true);;
+            $("#DateBeginReconciled").data("kendoDatePicker").enable(false);
+            $("#DateEndReconciled").data("kendoDatePicker").enable(false);
+            $("#BankId").data("kendoDropDownList").enable(false);
+            $("#AccountId").data("kendoDropDownList").enable(false);
+            $("#CheckAccountId").data("kendoDropDownList").enable(false);
+            if (@Model.ConciliacionId !== 0 && @Model.Editar === 1) {
+                SaldoLibro(false);
+            } else {
+                SaldoLibro(true);
+            }
+
+        }
+    }
+
+    function CancelarConciliacion(e) {
+        $("#btnIniciar").prop("disabled", true);;
+        $("#btnCancelar").prop("disabled", false);;
+        $("#DateBeginReconciled").data("kendoDatePicker").enable(true);
+        $("#DateEndReconciled").data("kendoDatePicker").enable(true);
+        $("#BankId").data("kendoDropDownList").enable(true);
+        //$("#BankId").val(null);
+        //$("#AccountId").val(null);
+        //$("#CheckAccountId").val(null);
+        $("#AccountId").data("kendoDropDownList").enable(true);
+        $("#CheckAccountId").data("kendoDropDownList").enable(true);
+        $("#SaldoConciliado").data("kendoNumericTextBox").value(0);
+        $("#SaldoBanco").data("kendoNumericTextBox").value(0);
+        $("#SaldoLibro").data("kendoNumericTextBox").value(0);
+        var grid = $("#grdSaldoLibro").data("kendoGrid");
+        var dataSource = [];
+        $("#grdSaldoLibro").getKendoGrid().dataSource.data(dataSource);
+        grid.setDataSource(dataSource);
+        //grid.getKendoGrid().dataSource.data(dataobject);
+
+    }
+
+    function GuardarConciliacion(e) {
+        debugger;
+        var estado = 103;
+        var estadoname = 'Abierta';
+        if (e) {
+            var saldo = $("#SaldoConciliado").val();
+            if (saldo != 0) {
+                $.toast({
+                    heading: 'Error',
+                    text: 'La Conciliacion no esta cuadrada no se puede cerrar',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                return;
+            }
+           estado = 104;
+           estadoname = 'Cerrada';
+           // $("#EstadoId").val(104);
+        }
+        var now = new Date();
+        if (false) {  //// eliminada la validacion de que cuadre la conciliacion
+            alert('Conciliacion no esta cuadrada');
+        } else {
+            var lineas = [];
+            var lineasSaldo = $("#grdSaldoLibro").getKendoGrid().dataSource.data();
+            //debugger;
+            lineasSaldo.forEach(r => {
+                var registro = {
+                    ConciliacionLineaId: r.ConciliacionLineaId,
+                    MotivoId: null,
+                    ConciliacionId: @Model.ConciliacionId,
+                    PartyName: r.PartyName,
+                    Credit: r.Credit,
+                    Debit: r.Debit,
+                    ReferenciaBancaria: '',
+                    CurrencyId: 1,
+                    TransDate: r.TransDate,
+                    ReferenceTrans: 'ASIENTO CONTABLE',
+                    NumeroDocumento: r.NumeroDocumento,
+                    TipoDocumento : r.TipoDoc,
+                    JournalEntryId: r.JournalEntryId,
+                    JournalEntryLineId: r.JournalEntryLineId,
+                    VoucherTypeId: 0,
+                    Reconciled: r.LineaConciliacion? 1 : 0,
+                    ChecknumberId: 0,
+                    MonedaName: 'Lempira',
+                    FechaCreacion: now,
+                    FechaModificacion: now,
+                    UsuarioCreacion: '',
+                    UsuarioModificacion: ''
+                };
+                lineas.push(registro);
+            });
+
+            var saldolibroinicial = $("#SaldoLibroInicial").val();
+            console.log(saldolibroinicial);
+            saldolibroinicial = parseFloat(saldolibroinicial);
+            console.log(saldolibroinicial);
+;            var conciliacion = {
+                ConciliacionId: @Model.ConciliacionId,
+                BankId: $("#BankId").val(),
+                AccountId: $("#AccountId").val(),
+                BankName: $("#BankId").data("kendoDropDownList").text(),
+                CheckAccountId: $("#CheckAccountId").val(),
+                FechaConciliacion: $("#FechaConciliacion").data("kendoDatePicker").value(),
+                DateBeginReconciled: $("#DateBeginReconciled").data("kendoDatePicker").value(),
+                DateEndReconciled: $("#DateEndReconciled").data("kendoDatePicker").value(),
+                SaldoConciliado: $("#SaldoConciliado").val(),
+
+                FechaCreacion: now,
+                FechaModificacion: now,
+                UsuarioCreacion: '',
+                UsuarioModificacion:'',
+                SaldoBanco: $("#SaldoBanco").val(),
+    SaldoLibro: $("#SaldoLibro").val(),
+    SaldoLibroInicial: saldolibroinicial,
+                //EstadoId: $("#EstadoId").val(),
+                //Estado: $("#EstadoId").data("kendoDropDownList").text(),
+                Estado: estadoname,
+                EstadoId : estado,
+                ConciliacionLinea: lineas
+            };
+            //debugger;
+            $.ajax({
+                url: '@Url.Action("SaveConciliacion", "Conciliacion")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(conciliacion),
+                success: function (data) {
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: 'Datos guardados correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 3000,
+                        stack: 6
+                    });
+                    window.RefreshConciliacion();
+                    $("#myModalConciliacionUpload").modal('hide');
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    $.toast({
+                        heading: 'Error',
+                        text: XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 3000,
+                        stack: 6
+                    });
+                }
+            });
+
+        }
+    }
+    </script>
 
 <div id="myModalConciliacionUpload" class="modal fade" role="dialog">
     <div class="modal-dialog modal-lg">
@@ -24,248 +209,546 @@
         <!-- Modal content-->
         <div class="modal-content">
             <div class="modal-header">
+                <h4 class="modal-title">Conciliación Bancaria</h4>
                 <button type="button" class="close" onclick="closeConciliacionBancaria();">&times;</button>
-                <h4 class="modal-title">Conciliación bancaria</h4>
             </div>
-            <div class="modal-body">
-                <div class="box">
-                    <h3 class="card-title">Conciliación Bancaria</h3>
 
-                    </div>
-               
-                <div class="row" id="validation">
-                    <div class="col-lg-12">
-                        <div class="card">
+            <div class="modal-body" kendo-validator="true" name="mdlCuerpo">
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="IdConciliacion">Número Conciliación:</label><br />
+                                    <input class="k-textbox" type="text" readonly id="IdConciliacion" name="IdConciliacion" value="@Model.ConciliacionId" style="min-width:100% " />
+                                </div>
+                                
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label asp-for="BankId">Banco:</label>
+                                    <kendo-dropdownlist name="IdBanco"
+                                                        for="@Model.BankId"
+                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                        option-label="Seleccione un banco"
+                                                        datatextfield="BankName"
+                                                        datavaluefield="BankId"
+                                                        required
+                                                        validationMessage="Seleccione el Banco"
+                                                        style="width: 100%">
+                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                            <transport>
+                                                <read url="@Url.Action("GetBank","Bank")" />
+                                            </transport>
+                                        </datasource>
+                                    </kendo-dropdownlist>
+                                    <span asp-validation-for="BankId"></span>
+                                </div>
+                                
+                            </div>
 
-                            @*data-ajax-method="post"
-                                method="post"
-                                data-ajax-begin="return SaveCustomerDocument();"
-                                data-ajax="true"*@
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label asp-for="CheckAccountId">Cuenta Banco:</label>
+                                    @if (Model.Editar == 1)
+                                    {
+                                        <kendo-dropdownlist name="CheckAccountId"
+                                                            for="@Model.CheckAccountId"
+                                                            filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                            option-label="Seleccione una cuenta de banco"
+                                                            datatextfield="CodigoNombre"
+                                                            datavaluefield="AccountManagementId"
+                                                            cascade-from="BankId"
+                                                            auto-bind="false"
+                                                            required
+                                                            validationMessage="Seleccione la cuenta de Banco"
+                                                            style="width: 100%">
+                                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                <transport>
+                                                    <read url="@Url.Action("GetAccountManagementByBankId","AccountManagement")" data="BancoSeleccion" />
+                                                </transport>
+                                            </datasource>
+                                        </kendo-dropdownlist>
+                                    }
+                                    else
+                                    {
+                                        <kendo-dropdownlist name="CheckAccountId"
+                                                            for="@Model.CheckAccountId"
+                                                            filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                            option-label="Seleccione una cuenta de banco"
+                                                            datatextfield="CodigoNombre"
+                                                            datavaluefield="AccountManagementId"
+                                                            required
+                                                            validationMessage="Seleccione la cuenta de Banco"
+                                                            style="width: 100%">
+                                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                <transport>
+                                                    <read url="@Url.Action("GetAccountManagementByBankId","AccountManagement")" data="BancoSeleccion" />
+                                                </transport>
+                                            </datasource>
+                                        </kendo-dropdownlist>
+                                    }
+                                <span asp-validation-for="CheckAccountId"></span>
+                                </div>
+                                
 
-                            <div class="card-body">
-                                @* method="post"
-                                    action='@Url.Action("Submit")' enctype="multipart/form-data"
-                                *@
-                                <form id="ConciliacionBancaria" kendo-validator="true"
-                                      data-ajax-method="post"
-                                      data-ajax-begin="SaveConciliacion"
-                                      data-ajax="true"
-                                        class="validation-wizard wizard-circle">
-                                    <div class="row">
-                                        
-                                        <div class="col-md-4 ">
-                                            <div class="form-group">
-                                                <label asp-for="ConciliacionId" class="control-label" style="width: 100%;"></label>
-                                                <input type="text" name="ConciliacionId" required class="form-control" style="min-width:100%;" asp-for="ConciliacionId" disabled="disabled" />
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label asp-for="BankId" class="control-label"></label>
-                                                <kendo-dropdownlist name="BankId"
-                                                                    for="BankId"
-                                                                    filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                    option-label="Seleccionar Banco"
-                                                                    datatextfield="BankName"
-                                                                    datavaluefield="BankId"
-                                                                    style="width: 100%;">
-                                                    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
-                                                        <transport>
-                                                            <read url="@Url.Action("GetBank", "Bank")" />
-                                                        </transport>
-                                                    </datasource>
-                                                </kendo-dropdownlist>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label asp-for="FechaConciliacion" class=" control-label" style="width:100%"></label>
-                                                <kendo-datetimepicker name="FechaConciliacion"
-                                                                      style="width: 100%;"
-                                                                      format="yyyy-MM-dd"
-                                                                      data-val-required="La fecha es requerida"
-                                                                      for="FechaConciliacion"></kendo-datetimepicker>
-                                                <span asp-validation-for="FechaConciliacion" class="text-danger"></span>
-                                            </div>
-                                        </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="AccountId">Cuenta Contable:</label>
+                                    @if (Model.Editar == 1)
+                                    {
+                                        <kendo-dropdownlist name="IdCuentaMayor"
+                                                            for="@Model.AccountId"
+                                                            filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                            option-label="Seleccione una cuenta contable"
+                                                            datatextfield="CodigoNombre"
+                                                            datavaluefield="AccountId"
+                                                            cascade-from="CheckAccountId"
+                                                            auto-bind="false"
+                                                            required
+                                                            validationMessage="Seleccione la cuenta contable"
+                                                            style="width: 100%">
+                                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" server-filtering="false">
+                                                <transport>
+                                                    <read url="@Url.Action("GetCuentaContableCuentaBanco","Accounting")" data="CuentaBancoSeleccion" />
+                                                </transport>
+                                            </datasource>
+                                        </kendo-dropdownlist>
+                                    }
+                                    else
+                                    {
+                                        <kendo-dropdownlist name="IdCuentaMayor"
+                                                            for="AccountId"
+                                                            filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                            option-label="Seleccione una cuenta contable"
+                                                            datatextfield="CodigoNombre"
+                                                            datavaluefield="AccountId"
+                                                            required
+                                                            validationMessage="Seleccione la cuenta contable"
+                                                            style="width: 100%">
+                                            <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" server-filtering="false">
+                                                <transport>
+                                                    <read url="@Url.Action("GetCuentaContableCuentaBanco","Accounting")" data="CuentaBancoSeleccion" />
+                                                </transport>
+                                            </datasource>
+                                        </kendo-dropdownlist>
+                                    }
+                                <span asp-validation-for="AccountId"></span>
+                                </div>
+                                
+                            </div>
 
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label asp-for="AccountId" class="control-label"></label>
-                                                <kendo-dropdownlist name="AccountId"
-                                                                    for="AccountId"
-                                                                    filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                    option-label="Seleccionar Cuenta"
-                                                                    datatextfield="Description"
-                                                                    datavaluefield="AccountId"
-                                                                    style="width: 100%;">
-                                                    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
-                                                        <transport>
-                                                            <read url="@Url.Action("GetAccountingDiary", "Accounting")" />
-                                                        </transport>
-                                                    </datasource>
-                                                </kendo-dropdownlist>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label asp-for="DateBeginReconciled" class="control-label" style="width: 100%;">Fecha de inicio</label>
-                                                <kendo-datetimepicker name="DateBeginReconciled"
-                                                                      for="DateBeginReconciled"
-                                                                      style="width: 100%;"
-                                                                      format="yyyy-MM-dd"
-                                                                      data-val-required="La fecha es requerida" required></kendo-datetimepicker>
-                                            </div>
-                                        </div>
 
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label asp-for="DateEndReconciled" class="control-label" style="width: 100%;">Fecha Final</label>
-                                                <kendo-datetimepicker name="DateEndReconciled"
-                                                                      for="DateEndReconciled"
-                                                                      style="width: 100%;"
-                                                                      format="yyyy-MM-dd"
-                                                                      data-val-required="La fecha es requerida" required></kendo-datetimepicker>
-                                            </div>
-                                        </div>
-                                    </div>@*
-
-                                        <div class="demo-section k-content">
-                                            <input id="files" name="files" type="file" data-role="upload" multiple="multiple" autocomplete="off" required>
-
-                                            <button>submit</button>
-                                        </div>
-                                    *@
-                                    <div class="row">
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label asp-for="CheckAccountId" class=" control-label" style="width:100%"></label>
-                                                @*<input asp-for="State" name="State" class="form-control" autocomplete="off" style="width:100%" />
-                                                *@<kendo-dropdownlist name="CheckAccountId"
-                                                                      for="@Model.CheckAccountId"
-                                                                      filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                      option-label="Seleccionar Numero de Cuenta"
-                                                                      datatextfield="CheckAccountNo"
-                                                                      datavaluefield="CheckAccountId"
-                                                                      style="min-width:100%;"
-                                                                      >
-                                                    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
-                                                        <transport>
-                                                            <read url="@Url.Action("GetCheckAccount", "CheckAccount")" />
-                                                        </transport>
-                                                    </datasource>
-                                                </kendo-dropdownlist>
-
-                                                <span asp-validation-for="CheckAccountId" class="text-danger k-invalid-msg" data-for="RTN"></span>
-                                            </div>
-
-                                        </div>
-                                    </div>
-                                    <div class="row">
-                                        <div class="col-md-12">
-                                            <button id="btnConciliacion" class="form-control btn-miboton" type="submit"> Guardar </button>
-                                        </div>
-                                    </div>
-
-                                </form>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="fchConciliacion">Fecha Conciliación:</label>
+                                    <kendo-datepicker name="fchConciliacion" style="min-width:100% "
+                                                      format="{0:dd/MM/yyyy}"
+                                                      value="@Model.FechaConciliacion"
+                                                      for="@Model.FechaConciliacion"
+                                                      readonly />
+                                    <span asp-validation-for="FechaConciliacion"></span>
+                                </div>
+                                
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="DateBeginReconciled">Desde:</label>
+                                    <kendo-datepicker name="DateBeginReconciled" style="min-width:100% "
+                                                      format="{0:dd/MM/yyyy}"
+                                                      value="@Model.DateBeginReconciled"
+                                                      for="@Model.DateBeginReconciled"
+                                                      required
+                                                      validationMessage="La fecha de inicio es requerida" />
+                                </div>
+                                <span asp-validation-for="DateBeginReconciled"></span>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label asp-for="DateBeginReconciled" class="control-label">Hasta:</label>
+                                    <kendo-datepicker name="DateEndReconciled" style="min-width:100% "
+                                                      format="{0:dd/MM/yyyy}"
+                                                      value="@Model.DateEndReconciled"
+                                                      for="@Model.DateEndReconciled"
+                                                      required
+                                                      validationMessage="La fecha final es requerida" />
+                                    <span asp-validation-for="DateEndReconciled"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label asp-for="SaldoBanco" class="control-label" style="min-width:100%">Saldo Banco:</label>
+                                    @*<input id="SaldoBanco" class="k-textbox" style="min-width:100%" asp-for="SaldoBanco" required validationMessage="Ingrese el saldo de Banco" />*@
+                                    <kendo-numerictextbox for="SaldoBanco" format="c2" min="0" spinners="false" />
+                                    <span asp-validation-for="SaldoBanco"></span>
+                                </div>
                             </div>
                         </div>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label asp-for="SaldoLibro" class="control-label" style="min-width:100%">Saldo Libro:</label>
+                                    <kendo-numerictextbox for="SaldoLibro" format="c2" readonly spinners="false" />
+                                    @*<kendo-numerictextbox for="SaldoLibroInicial" format="c2" readonly spinners="false" hidden/>*@
+                                    <input type="number" asp-for="SaldoLibroInicial"  hidden  />
+
+                                    @*<input style="min-width:100%" id="SaldoLibro" class="k-textbox" name="SaldoLibro" required validationMessage="Ingrese el saldo de Libro" for="@Model.SaldoLibro" value="@Model.SaldoLibro" readonly />*@
+                                    <span asp-validation-for="SaldoLibro"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label for="SaldoConciliado">Saldo Conciliado:</label>
+                                    @*<input style="min-width:100%" id="SaldoConciliado" class="k-textbox" name="SaldoConciliado" value="@Model.SaldoConciliado" readonly />*@
+                                    <kendo-numerictextbox for="SaldoConciliado" format="c2" readonly spinners="false"/>
+                                    <span  asp-validation-for="SaldoConciliado"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <label  class="control-label" style="min-width:100%">Estado</label>
+                                    <kendo-dropdownlist for="EstadoId" style="min-width:100%" enable="false" 
+                                                        datatextfield="NombreEstado"
+                                                        datavaluefield="IdEstado">
+                                        <datasource page-size=" 999" server-operation="true" type="DataSourceTagHelperType.WebApi" >
+                                            <transport >
+                                                <read url="@Url.Action("GetporGrupoEstado","Estados",new { GrupoId = 33})" />
+                                            </transport>
+                                        </datasource>
+                                    </kendo-dropdownlist>
+                                </div>
+                            </div>
+                            
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+
+                            </div>
+                            
+                        </div>
+                        <br />
+
+                        <div class="row">
+                            <div class="col-md-3">
+                                <h3>Saldo Libro</h3>
+                            </div>
+                            <div class="col-md-3"></div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <button name="btnIniciar" class="btn btn-primary" onclick="IniciarConciliacion()" style="width: 100%;">Iniciar Conciliacion</button>
+                                </div>
+
+                            </div>
+                            <div class="col-md-3">
+                                <div class="form-group">
+                                    <button name="btnCancelar" class="btn btn-danger" onclick="CancelarConciliacion()" style="min-width: 100%">Cancelar</button>                                    
+                                </div>
+                            </div>
+
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div id="grdSaldoLibro"></div>
+                            </div>
+                        </div>
+                        
                     </div>
                 </div>
 
             </div>
+            <div class="modal-footer">
+                @if (Model.EstadoId == 103)
+                {
+                    <div class="row">
+                        <div class="col-md-6">
+                            <button name="bntGuardarCerrar" onclick="GuardarConciliacion(true)" class="form-control btn-miboton">Guardar y Cerrar</button>
+                        </div>
+                        <div class="col-md-6">
+
+                            <button name="bntGuardar" onclick="GuardarConciliacion(false)" class="form-control btn-miboton">Guardar </button>
+                        </div>
+                    </div>
+                }
+                
+            </div>
         </div>
     </div>
 </div>
+
+
+
 <script>
-function SaveConciliacion(e) {
 
-            var notification = $("#notification").data("kendoNotification");
-           // e.preventDefault();
-    $("#btnConciliacion").hide();
-    $("#btnConciliacion").prop("disabled", true);
+    var montoConciliado = 0;
+    var datosLibro = [];
+    var linea = 1;
+    var lineaBanco = 1;
+    var removerPrimeraLineaBanco = true;
+    var removerPrimeraLineaFaltaLibro = true;
 
-           // var displayedData = $("#gridCountry").data().kendoGrid.dataSource.view();
-
-            var dataObject = {
-                'ConciliacionId': $("#ConciliacionId").val(),
-                'SaldoConciliado': $("#SaldoConciliado").val(),
-                'FechaConciliacion': $("#FechaConciliacion").getKendoDateTimePicker().value().toJSON(),
-                'DateBeginReconciled': $("#DateBeginReconciled").getKendoDateTimePicker().value().toJSON(),
-                'DateEndReconciled': $("#DateEndReconciled").getKendoDateTimePicker().value().toJSON(),
-                'CheckAccountId': $("#CheckAccountId").val(),
-                'BankId': $("#BankId").val(),
-                'BankName': $("#BankId").data("kendoDropDownList").text(),
-                'AccountId': $("#AccountId").val(),
-                'FechaCreacion': $("#FechaCreacion").val(),
-                'FechaModificacion': $("#FechaModificacion").val(),
-                'UsuarioCreacion': $("#UsuarioCreacion").val(),
-                'UsuarioModificacion': $("#UsuarioModificacion").val(),
-
-                // '_Country': displayedData
-            };
-
-           // console.log(JSON.stringify(dataObject));
-            //var form = $("#frmNumeracion");
-            // form.validate();
-
-    var validator = $("#ConciliacionBancaria").data("kendoValidator");
-                 var status = $(".status");
-
-                if (validator.validate()) {
-
-                    $.ajax({
-                        url: '@Url.Action("SaveConciliacion", "Conciliacion")',
-                        method: 'POST',
-                        datatype: "json",
-                        contentType: 'application/json',
-                        async: false,
-                        data: JSON.stringify(dataObject),
-                        success: function (data) {
-
-                        //notification.show({
-                        //    message: "Guardado correctamente!"
-                        //}, "upload-success");
-                        $.toast({
-                        heading: 'Satisfactorio',
-                        text: 'Datos guardados correctamente.',
-                        position: 'top-right',
-                        loaderBg: '#ff6849',
-                        icon: 'success',
-                        hideAfter: 30000,
-                        stack: 6
-                        });
-
-                            RefreshConciliacion();
-
-                            $('#myModalConciliacionUpload').modal('hide');
-    //myModalConciliacionUpload
+    $(document).ready(function () {
+        linea = 1;
+        lineaBanco = 1;
+        removerPrimeraLineaBanco = true;
+        removerPrimeraLineaFaltaLibro = true;
+        InicializarVentana();
+    });
 
 
 
+    function SaldoLibro(e) {
+        debugger;
+        if (e===true) {
+            var codigoCuenta = $("#AccountId").val();
+            var desde = kendo.toString(kendo.parseDate($("#DateBeginReconciled").val(), "dd/MM/yyyy"),"yyyy-MM-dd");
+            var hasta = kendo.toString(kendo.parseDate($("#DateEndReconciled").val(), "dd/MM/yyyy"), "yyyy-MM-dd");
+            $.ajax({
+                url: '@Url.Action("GetLineasAsientoContableCuentaRangoFechas", "JournalEntry")?Cuenta='+codigoCuenta+'&Desde='+desde+'&hasta='+hasta,
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                success: function (result) {
 
-                        },
-                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    datosLibro = result.map(r => ({
+                        LineaId: linea++,
+                        TransDate: kendo.parseDate(r.FechaTransaccion, "yyyy-MM-dd'T'HH:mm:ss"),
+                        PartyName: r.PartyName,
+                        Debit: r.Debit,
+                        Credit: r.Credit,
+                        TipoDoc: r.TipoDocumento,
+                        NumeroDocumento: r.NumeroDocumento,
+                        //LineaConciliacion: "",
+                        LineaConciliacion:false,
+                        JournalEntryId: r.JournalEntryId,
+                        JournalEntryLineId: r.JournalEntryLineId,
+                        ConciliacionLineaId: 0
+                    }));
+                    console.log(datosLibro);
+                    //debugger;
+                    $("#grdSaldoLibro").getKendoGrid().dataSource.data(datosLibro);
+                    TotalizarSaldoLibro();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+        } else {
+            return datosLibro;
+        }
+    }
 
-                        notification.show({
-                        title: "Validación",
-                        message: textStatus + ": " + XMLHttpRequest.responseText
-                        }, "error");
+    function InicializarVentana(e) {
 
+        $("#grdSaldoLibro").kendoGrid({
+            dataSource: {
+                data: window.datosLibros,
+                //batch: true,
+                schema: {
+                    model: {
+                        fields: {
+                            LineaId: { name: "LineaId", type: "number" , editable:false },
+                            TransDate: { name: "TransDate", type: "date", editable: false },
+                            TipoDoc: { name: "TipoDoc", type: "string", editable: false },
+                            NumeroDocumento: { name: "NumeroDocumento", type: "number", editable: false },
+                            PartyName: { name: 'PartyName', type: "string", editable : false},
+                            Debit: { name: "Debit", type: "number", editable: false },
+                            Credit: { name: "Credit", type: "number", editable: false },
+                            LineaConciliacion: { name: "LineaConciliacion", type : "boolean",editable : @Model.Editar},
+                            ConciliacionLineaId: { name: "ConciliacionLineaId", type: "number" }
                         }
-                        });
+                    }
+                },
 
-                        }
-                        else {
-                        status.text("Oops! There is invalid data in the form.")
-                        .removeClass("valid")
-                        .addClass("invalid");
-                        }
+                aggregate: [{ field: "Debit", aggregate: "sum" },
+                    { field: "Credit", aggregate: "sum" }    ]
+            },
+            columns: [
+                { field: "LineaId", title: "No.", width: 80, footerTemplate: "<div>Total </div><div>Total Circulante</div>" },
+                { field: "TransDate", title: "Fecha Transacción", width: 120, format: "{0:dd/MM/yyyy HH:mm:ss}" },
+                { field:"PartyName" , title : "Beneficiario" , width: 150},
+                { field: "Debit", title: "Debito", width: 100, format: "{0:c2}", attributes: { style: "text-align:right;" }, footerTemplate: "<div style='text-align:right'>#=totalColumnas(1)#</div><div style='text-align:right'>#=totalColumnas(3)#</div>" },
+                { field: "Credit", title: "Credito", width: 100, format: "{0:c2}", attributes: { style: "text-align:right;" }, footerTemplate: "<div style='text-align:right'>#=totalColumnas(2)#</div><div style='text-align:right'>#=totalColumnas(4)#</div>" },
+                { field: "TipoDoc", title: "Tipo Documento", width: 100 },
+                { field: "NumeroDocumento", title: "No Documento", width: 100 },
+                {
+                    template: '<input type="checkbox" #= LineaConciliacion ? \'checked="checked"\' : "" # class="chkbx k-checkbox"  />'
+                    , width: 110, title: "Conciliada"
+                },
+                { field: "ConciliacionLineaId", hidden: true },
+
+            ],
+            height: 400,
+            scrollable: true,
+            edit: EditadoSaldoLibro,
+        });
+
+        if (@Model.ConciliacionId !== 0) {
+            $("#BankId").val(@Model.BankId);
+            $("#AccountId").val(@Model.AccountId);
+            $("#CheckAccountId").val(@Model.CheckAccountId);
+            if (@Model.Editar === 0) {
+                $("#BankId").data("kendoDropDownList").enable(false);
+                $("#AccountId").data("kendoDropDownList").enable(false);
+                $("#CheckAccountId").data("kendoDropDownList").enable(false);
+                $("#DateBeginReconciled").data("kendoDatePicker").readonly();
+                $("#DateEndReconciled").data("kendoDatePicker").readonly();
+                $("#btnIniciar").prop("disabled", false);;
+                $("#btnCancelar").prop("disabled", false);;
+                $("#btnGuardar").prop("disabled", false);;
+                $("#grdSaldoLibro").getKendoGrid().options.editable = false;
+            } else if(@Model.Editar === 1) {
+                $("#BankId").data("kendoDropDownList").enable(true);
+                $("#AccountId").data("kendoDropDownList").enable(true);
+                $("#CheckAccountId").data("kendoDropDownList").enable(true);
+                $("#DateBeginReconciled").data("kendoDatePicker").readonly(false);
+                $("#DateEndReconciled").data("kendoDatePicker").readonly(false);
+                $("#btnIniciar").prop("disabled", true);;
+                $("#btnIniciar").text("Continuar Conciliacion");
+                $("#btnCancelar").prop("disabled", false);;
+                $("#btnGuardar").prop("disabled", false);;
+                $("#grdSaldoLibro").getKendoGrid().options.editable = false;
+            }
+
+            datosLibro = [];
+
+            var lineas = JSON.parse('@Html.Raw(Json.Serialize(@Model.ConciliacionLinea))');
+            var motivos = JSON.parse('@Html.Raw(Json.Serialize(@ViewData["motivos"]))');
+
+            lineas.forEach(r => {
+                if (r.JournalEntryId !== null && r.JournalEntryId !== 0) {
+                    var regLibro = {
+                        LineaId: window.linea++,
+                        TransDate: kendo.parseDate(r.TransDate, "yyyy-MM-dd'T'HH:mm:ss"),
+                        PartyName: r.PartyName,
+                        Debit: r.Debit,
+                        Credit: r.Credit,
+                        TipoDoc: r.TipoDocumento,
+                        NumeroDocumento: r.NumeroDocumento,
+                        //LineaConciliacion: r.Reconciled? "X":"N",
+                        LineaConciliacion: r.Reconciled,
+                        JournalEntryId: r.JournalEntryId,
+                        JournalEntryLineId: r.JournalEntryLineId,
+                        ConciliacionLineaId: r.ConciliacionLineaId
+                    };
+                    datosLibro.push(regLibro);
+                }
+            });
+            $("#grdSaldoLibro").getKendoGrid().dataSource.data(datosLibro);
+        }
+
+    }
 
 
-                        $("#btnConciliacion").show();
-                        $("#btnConciliacion").prop("disabled", false);
-                        }
+    $("#grdSaldoLibro .k-grid-content").on("change", "input.chkbx", function (e) {
+        var grid = $("#grdSaldoLibro").data("kendoGrid"),
+            dataItem = grid.dataItem($(e.target).closest("tr"));
+
+        dataItem.set("LineaConciliacion", this.checked);
+
+        EditadoSaldoLibro(e);
+    });
+
+  
+
+
+    function dirtyField(data, fieldName) {
+        var hasClass = $("[data-uid=" + data.uid + "]").find(".k-dirty-cell").length < 1;
+        if (data.dirty && data.dirtyFields[fieldName] && hasClass) {
+            return "<span class='k-dirty'></span>"
+        }
+        else {
+            return "";
+        }
+    }
+
+    function closeConciliacionBancaria() {
+        window.RefreshConciliacion();
+        $("#myModalConciliacionUpload").modal('hide');
+    }
+
+    function EditadoSaldoLibro(e) {
+        debugger;
+        var grid = $("#grdSaldoLibro").getKendoGrid();
+        var data = $("#grdSaldoLibro").getKendoGrid().dataSource.data();
+        var saldolibros = $("#SaldoLibroInicial").val();
+        //var saldolibros = $("#SaldoLibro").val();
+        saldolibros = parseFloat(saldolibros);
+        var saldobancos = $("#SaldoBanco").val();
+        var saldoconciliado = saldobancos - Math.abs(saldolibros);
+
+        montoConciliado = 0;
+        data.forEach(r => montoConciliado = r.LineaConciliacion ? montoConciliado + r.Debit - r.Credit : montoConciliado);
+        saldoconciliado = saldoconciliado - montoConciliado;
+        $("#SaldoConciliado").data("kendoNumericTextBox").value(saldoconciliado);
+        saldolibros += parseFloat(montoConciliado);
+
+        $("#SaldoLibro").data("kendoNumericTextBox").value(saldolibros);
+
+       
+    }
+
+    function totalColumnas(tiporesultado) {
+        var data = $("#grdSaldoLibro").getKendoGrid().dataSource.data();
+        var total = 0;
+
+        switch (tiporesultado) {
+            case 1: ///////Calcular el Total debitos                
+                data.forEach(r => total += r.Debit);
+                break;
+            case 2 : /// Calcular el total de Creditos
+                data.forEach(r => total += r.Credit);
+                break;
+            case 3: ////Calcular el total de debitos Circulantes
+                data.forEach(r => total = !r.LineaConciliacion ? total + r.Debit : total);
+                break;
+            case 4://///Calcular el total de creditos
+                data.forEach(r => total = !r.LineaConciliacion ? total + r.Credit : total);
+                break;
+            default:
+                break;
+        }
+        const formatter = new Intl.NumberFormat('es-HN', {
+            style: 'currency',
+            currency: 'Lps',
+            minimumFractionDigits: 2
+        });
+        return formatter.format(total);
+
+    }
+
+
+    function TotalizarSaldoLibro() {
+        var fecha = kendo.toString(kendo.parseDate($("#DateBeginReconciled").val(), "dd/MM/yyyy"), "yyyy-MM-dd");
+        var cuenta = $("#AccountId").val();
+        $.ajax({
+                url: '@Url.Action("GetSaldoLibrosCuenta", "Conciliacion")'+'?pfecha=' + fecha + '&pcuenta=' + cuenta ,
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+            success: function (result) {
+                debugger;
+                $("#SaldoLibro").data("kendoNumericTextBox").value(result);
+                var saldobancos = $("#SaldoBanco").val();
+                var saldoconciliado = saldobancos - Math.abs(result);
+                $("#SaldoConciliado").data("kendoNumericTextBox").value(saldoconciliado);
+                result = parseFloat(result);
+                $("#SaldoLibroInicial").val(result);
+                //$("#SaldoLibroInicial").data("kendoNumericTextBox").value(result);
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+
+
+
+
+    }
+
 </script>

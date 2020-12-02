@@ -1,6 +1,9 @@
 ﻿@using Kendo.Mvc.UI
 @{
-    ViewData["Title"] = "Tipos Documento";
+    ViewData["Title"] = "Tipos de Documentos Fiscales";
+    bool permisoAgregar, permisoEditar;
+    permisoAgregar = (bool)ViewData["permisoAgregar"];
+    permisoEditar = (bool)ViewData["permisoEditar"];
 }
 
 <script>
@@ -21,6 +24,12 @@
         $('#ModalTiposDocumento').modal('show');
         $("#IdTipoDocumento").val('0');
         $("#IdEstado").data("kendoDropDownList").value(0);
+
+        var validator = $("#frmTiposDocumentos").data("kendoValidator");
+        validator.hideMessages();
+        $('#ModalTiposDocumento').find(':input').not(':submit').val('');
+        
+
 
     }
 
@@ -56,34 +65,39 @@
 
 </script>
 
-<h3 class="text-themecolor">Tipos Documentos</h3>
+<h3 class="text-themecolor">Tipos Documentos Fiscales</h3>
 
 @(Html.Kendo().Grid<ERPMVC.Models.TiposDocumento>
     ()
     .Name("gridTiposDocumento")
     .Columns(columns =>
     {
-        columns.Command(command =>
+        if (permisoEditar)
         {
-            //command.Custom("Ver detalles").Click("Detalles");
-            command.Custom("Editar").Click("EditTipoDocumento");
-            command.Destroy().Text("Eliminar");
-        }).Width(150);
+            columns.Command(command =>
+            {
+                //command.Custom("Ver detalles").Click("Detalles");
+                command.Custom("Editar").Click("EditTipoDocumento").Text(" ").IconClass("fa fa-edit");
 
+            }).Title("Acciones").Width(100);
+        }
         columns.Bound(p => p.IdTipoDocumento).Width(170);
         columns.Bound(p => p.Codigo).Width(200);
         columns.Bound(p => p.Descripcion).Width(170);
         columns.Bound(p => p.Estado).Width(200);
         //columns.Bound(p => p.UsuarioModificacion).Width(200);
-      
+
     })
     .ToolBar(tools =>
     {
         //tools.Create();
-        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                      .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddTipoDocuemnto()" });
-        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+        if (permisoAgregar)
+        {
+            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                          .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddTipoDocuemnto()" });
+        }
+            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
 
 
 
@@ -130,3 +144,23 @@
 <div id="numTipoDocumento">
     @await Html.PartialAsync("pvwAddTiposDocumentos", new ERPMVC.DTO.TiposDocumentoDTO { IdTipoDocumento = 0 })
 </div>
+
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridTiposDocumento").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridTiposDocumento").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+</script>

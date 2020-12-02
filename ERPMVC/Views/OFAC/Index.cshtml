@@ -15,7 +15,8 @@
         console.log("Nombre recibido",nombre)
 
        // var dataObject = ["detenerflujoreadgrid"];
-     
+
+        var generar_alerta = false; 
 
         $.ajax({
             url: '@Url.Action("GetBlackListByParams", "BlackListCustomers")',
@@ -52,9 +53,26 @@
                  //   console.log('Lista Negra:' + gridListalengthNegra.length);
                     if (gridListalengthNegra.length > 0) {
                         $("#myModalListaNegra").modal('show');
+
+                        generar_alerta = true;
                     }
                     else {
                         $("#myModalListaNegra").modal('hide');
+
+                        if (AlertaBusca.val() == '1') { 
+                            $.toast({
+                                heading: 'En la Busqueda',
+                                text: ' No se encuentran resultados en la Lista Negra.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                showHideTransition: 'slide',
+                                hideAfter: 6000,
+                                stack: 6
+                            });                          
+                        }
+
+                        
                     }
              
             },
@@ -90,6 +108,7 @@
 
                 for (var i = 0; i < data.Data.length; i++) {
                     datasource.insert(data.Data[i]);
+                    generar_alerta = true;
                 }
 
                 // d2.async = false;
@@ -103,6 +122,19 @@
                     }
                     else {
                         $("#myModalOFAC").modal('hide');
+
+
+                        if (AlertaBusca.val() == '1') {
+                            $.toast({
+                                heading: 'En la Busqueda',
+                                text: ' No se encuentran resultados en OFAC.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                showHideTransition: 'slide',
+                                hideAfter: 6000,
+                                stack: 6
+                            });}                                             
                     }
                 
 
@@ -152,9 +184,22 @@
 
                 if (gridListalengthpeps.length > 0) {
                     $("#myModalPEPS").modal('show');
+                    generar_alerta = true;
                 }
                 else {
                     $("#myModalPEPS").modal('hide');
+                    if (AlertaBusca.val() == '1') {
+                        $.toast({
+                            heading: 'En la Busqueda',
+                            text: ' No se encuentran resultados en PEPS.',
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'success',
+                            showHideTransition: 'slide',
+                            hideAfter: 6000,
+                            stack: 6
+                        });}
+                                       
                     }
                 
             },
@@ -200,9 +245,24 @@
                 //console.log(gridListalengthONU.length);
                 if (gridListalengthONU.length > 0) {
                     $("#myModalListaONU").modal('show');
+                    generar_alerta = true;
                 }
                 else {
                     $("#myModalListaONU").modal('hide');
+                    
+                    if (AlertaBusca.val() == '1') {
+                        $.toast({
+                            heading: 'En la Busqueda',
+                            text: ' No se encuentran resultados en ONU.',
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'success',
+                            showHideTransition: 'slide',
+                            hideAfter: 6000,
+                            stack: 6
+                        });}
+                   
+                    
                 }
 
             },
@@ -215,6 +275,64 @@
 
             }
         });
+
+
+       
+        if (generar_alerta == true && AlertaBusca.val() == '1') {               
+           
+        var dataAlerta = {
+
+            'DocumentId': 1,
+            'DocumentName': 'Empleado',
+            //'AlertName':'',
+            //'Code': '',
+            //'Description':'',
+            //'ActionTakenId': 0,
+            //'ActionTakenName': '0',
+            //'IdEstado': 0,
+            //'Estado': '',
+            //'SujetaARos': 0,
+            //'FalsoPositivo': 0,
+            'CloseDate': '0001-01-01',
+            //'DescriptionAlert': '',
+            //'Type':'',
+            //'AlertType': '',
+            //'Observacion':'',
+        };
+
+        $.ajax({
+                                        url: '@Url.Action("GenerarAlerta", "Alert")',
+                                        method: 'POST',
+                                        datatype: "json",
+                                        contentType: "application/json",
+                                        async: false,
+                                        data: JSON.stringify(dataAlerta),
+                                        success: function (data) {
+                                            //$.toast({
+                                            //    heading: 'Satisfactorio',
+                                            //    text: ' Alerta guardados correctamente.',
+                                            //    position: 'top-right',
+                                            //    loaderBg: '#ff6849',
+                                            //    icon: 'success',
+                                            //    hideAfter: 30000,
+                                            //    stack: 6
+                                            //});
+                                        },
+                                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                                            notification.show({
+                                                title: "Validación",
+                                                message: textStatus + ": " + XMLHttpRequest.responseText
+                                            }, "error");
+
+                                        }
+                                    });
+        
+
+
+        }
+
+
 
 
         // sleep(3000);
@@ -294,6 +412,16 @@
                  }
                
         //Cambio de Marvin Guillen para validar el Nombre del Proveedore
+
+        ////Empleado___________________
+        //if (
+        //    $("#NombreEmpleado").val() != '') {
+        //    mfirstname = $("#NombreEmpleado").val();
+        //    mlastName = $("#NombreEmpleado").val();
+        //}
+        ////Fin Empleado___________________
+
+
        return {
             firstName: mfirstname,
            lastName: mlastName
@@ -315,8 +443,8 @@
         <!-- Modal content-->
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" onclick="ListaOfacClose();">&times;</button>
                 <h4 class="modal-title">Información Listados OFAC</h4>
+                <button type="button" class="close" onclick="ListaOfacClose();">&times;</button>
             </div>
             <div class="modal-body">
 
@@ -325,17 +453,17 @@
                    .Name("gridListaOFAC")
                    .Columns(columns =>
                    {
-                       columns.Bound(p => p.firstName).Width(100);
-                       columns.Bound(p => p.lastName).Width(150);
-                       columns.Bound(p => p.title).Width(100);
-                       columns.Bound(p => p.programList).Width(100);
-                       columns.Bound(p => p.remarks).Width(100);                      
-                       columns.Command(command =>
-                       {
-                           //command.Custom("Ver detalles").Click("Detalles");
-                           //command.Edit();
-                           // command.Destroy();
-                       }).Width(150);
+                       columns.Bound(p => p.firstName).Width(100).Title("Nombres");
+                       columns.Bound(p => p.lastName).Width(150).Title("Apellidos");
+                       columns.Bound(p => p.title).Width(100).Title("Título");
+                       columns.Bound(p => p.programList).Width(100).Title("Lista Programa");
+                       columns.Bound(p => p.remarks).Width(300).Title("Observaciones");
+                       //columns.Command(command =>
+                       //{
+                       //    //command.Custom("Ver detalles").Click("Detalles");
+                       //    //command.Edit();
+                       //    // command.Destroy();
+                       //}).Width(150);
 
                    })
                        .Filterable(f => f.Operators(o => o.ForString(s => s
@@ -390,7 +518,7 @@
                    .DataSource(dataSource =>
                        dataSource
                        .WebApi()
-                      // .AutoSync(false)
+                       // .AutoSync(false)
                        .ServerOperation(true)
                        .Model(model =>
                        {

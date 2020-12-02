@@ -1,11 +1,15 @@
 ﻿@using Kendo.Mvc.UI
 
 @{
-    ViewData["Title"] = "Punto Emision";
+    ViewData["Title"] = "Punto Emisión";
+    bool permisoAgregar, permisoEditar, permisoEliminar;
+    permisoAgregar = (bool)ViewData["permisoAgregar"];
+    permisoEditar = (bool)ViewData["permisoEditar"];
+    permisoEliminar = (bool)ViewData["permisoEliminar"];
 }
 
 <script>
-    
+
     function onsave(e) {
      //   console.log(new Date(e.model.FechaRecepcion).toISOString());
        // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
@@ -16,16 +20,24 @@
         data.FechaLimiteEmision = data.FechaLimiteEmision.toISOString('yyyy-MM-dd');
     }
 
-    function AddPuntoEmision() {       
+    function AddPuntoEmision() {
+
+         
 
          $('#ModalPuntoEmision').find(':input').not(':submit').val('');
-         $('#ModalPuntoEmision').modal('show');
+        $('#ModalPuntoEmision').modal('show');
+
+
+        var validator = $("#frmPuntoEmision").data("kendoValidator");
+        validator.hideMessages();
         $("#IdPuntoEmision").val('0');
+
+
         $("#BranchId").data("kendoDropDownList").value(0);
         $("#IdEstado").data("kendoDropDownList").value(0);
     }
 
-    
+
          function EditPuntoEmision(e) {
              e.preventDefault();
             var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
@@ -45,7 +57,7 @@
                     $("#numPuntoEmision").html('');
                     $("#numPuntoEmision").html(result);
 
-                
+
                     //$("#btnCAI").hide();
                     $('#ModalPuntoEmision').modal('show');
                 },
@@ -59,107 +71,142 @@
 
 <h3 class="text-themecolor">Punto Emisión</h3>
 
-@(     Html.Kendo().Grid<ERPMVC.Models.PuntoEmision>
-            ()
-            .Name("gridPuntoEmision")
+@( Html.Kendo().Grid<ERPMVC.Models.PuntoEmision>
+                ()
+                .Name("gridPuntoEmision")
 
-            .Columns(columns =>
-            {
-                columns.Command(command =>
+                .Columns(columns =>
                 {
-                    //command.Custom("Ver detalles").Click("Detalles");
-                    command.Custom("Editar").Click("EditPuntoEmision");
-                    command.Destroy().Text("Eliminar");
-                }).Width(250);
-                columns.Bound(p => p.BranchName).Width(200);
-                columns.Bound(p => p.IdPuntoEmision).Width(200);
-                columns.Bound(p => p.PuntoEmisionCod).Width(200);
-                columns.Bound(p => p.Estado).Width(200);
-                //columns.Bound(p => p.UsuarioModificacion).Width(200);
+                    if (permisoEditar == true || permisoEliminar == true)
+                    {
+                        columns.Command(command =>
+                        {
+                            //command.Custom("Ver detalles").Click("Detalles");
+                            if (permisoEditar)
+                            {
+                                command.Custom("Editar").Click("EditPuntoEmision").Text(" ").IconClass("fa fa-edit");
+                            }
+                            if (permisoEliminar)
+                            {
+                                command.Destroy().Text(" ").IconClass("fa fa-trash");
+                            }
 
+                        }).Width(150).Title("Acciones");
+                    }
+                    columns.Bound(p => p.IdPuntoEmision).Width(150);
+                    columns.Bound(p => p.BranchName).Width(250);
+                    columns.Bound(p => p.PuntoEmisionCod).Width(200);
+                    columns.Bound(p => p.Estado).Width(200);
+                    //columns.Bound(p => p.UsuarioModificacion).Width(200);
 
-            })
-                .Filterable(f => f.Operators(o => o.ForString(s => s
-                                       .Clear()
-                                       .Contains("Contiene")
-                                       .DoesNotContain("No contiene")
-                                       .EndsWith("Termina con")
-                                       .IsEqualTo("Es igual a")
-                                       .IsNotEqualTo("No es igual a")
-                                       .IsNull("Es nulo")
-                                       .StartsWith("Inicia con")
-
-
-                                 )
-                                 .ForNumber(n => n
-                                   .Clear()
-                                   .IsEqualTo("Es igual a")
-                                   .IsGreaterThan("Es mayor que")
-                                   .IsLessThan("Es menor que")
-                                   .IsNull("Es nulo")
-                                   .IsLessThanOrEqualTo("Es menor o igual que")
-                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                 )
-                                 .ForDate(d => d
-                                 .Clear()
-                                 .IsEqualTo("Es igual que")
-                                 .IsGreaterThan("Es mayor que")
-                                 .IsLessThan("Es menor que")
-                                 .IsLessThanOrEqualTo("Es menor o igual que")
-                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                 .IsNotEqualTo("No es igual que")
-                                  )
-                               ))
-            .ToolBar(tools =>
-            {
-                //tools.Create();
-                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                         .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddPuntoEmision()" });
-                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-            })
-            .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
-            .Sortable()
-            .Pageable()
-            .Filterable()
-            .Scrollable()
-            .Pdf(pdf => pdf.FileName("PuntoEmisionReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-            .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                .Excel(excel => excel.FileName("PuntoEmisionReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-            .DataSource(dataSource =>
-                dataSource
-                .WebApi()
-
-                .ServerOperation(true)
-                .Model(model =>
-                {
-                    model.Id(p => p.IdPuntoEmision);
-                    model.Field(p => p.IdPuntoEmision).Editable(false);
-                    model.Field(p => p.FechaCreacion).Editable(true);
-                    model.Field(p => p.PuntoEmisionCod).Editable(true);
-                    model.Field(p => p.UsuarioCreacion).Editable(false);
-                    model.Field(p => p.UsuarioModificacion).Editable(false);
 
                 })
-                .Events(events => events.Error("error_handler"))
-                .Read(read => read.Action("Get", "PuntoEmision"))
-                .Create(create => create.Action("Insert", "PuntoEmision"))
-                .Update(update => update.Action("Update", "PuntoEmision",new { IdPuntoEmision = "{0}" }).Type(HttpVerbs.Post))
-                .Destroy(destroy => destroy.Action("Delete", "PuntoEmision", new { IdPuntoEmision = "{0}" }).Type(HttpVerbs.Delete))
+                    .Filterable(f => f.Operators(o => o.ForString(s => s
+                                           .Clear()
+                                           .Contains("Contiene")
+                                           .DoesNotContain("No contiene")
+                                           .EndsWith("Termina con")
+                                           .IsEqualTo("Es igual a")
+                                           .IsNotEqualTo("No es igual a")
+                                           .IsNull("Es nulo")
+                                           .StartsWith("Inicia con")
 
-            )
-            .Events(e =>
-            {
-                e.Save("onsave");
 
-            })
+                                     )
+                                     .ForNumber(n => n
+                                       .Clear()
+                                       .IsEqualTo("Es igual a")
+                                       .IsGreaterThan("Es mayor que")
+                                       .IsLessThan("Es menor que")
+                                       .IsNull("Es nulo")
+                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                     )
+                                     .ForDate(d => d
+                                     .Clear()
+                                     .IsEqualTo("Es igual que")
+                                     .IsGreaterThan("Es mayor que")
+                                     .IsLessThan("Es menor que")
+                                     .IsLessThanOrEqualTo("Es menor o igual que")
+                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                     .IsNotEqualTo("No es igual que")
+                                      )
+                                   ))
+                .ToolBar(tools =>
+                {
+                    //tools.Create();
+                    if (permisoAgregar)
+                    {
+                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                 .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddPuntoEmision()" });
+                    }
+                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+                })
+                .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                .Sortable()
+                .Pageable()
+                .Filterable()
+                .Scrollable()
+                .Pdf(pdf => pdf.FileName("PuntoEmisionReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                    .Excel(excel => excel.FileName("PuntoEmisionReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                .DataSource(dataSource =>
+                    dataSource
+                    .WebApi()
+
+                    .ServerOperation(true)
+                    .Model(model =>
+                    {
+                        model.Id(p => p.IdPuntoEmision);
+                        model.Field(p => p.IdPuntoEmision).Editable(false);
+                        model.Field(p => p.FechaCreacion).Editable(true);
+                        model.Field(p => p.PuntoEmisionCod).Editable(true);
+                        model.Field(p => p.UsuarioCreacion).Editable(false);
+                        model.Field(p => p.UsuarioModificacion).Editable(false);
+
+                    })
+                    .Events(events => events.Error("error_handler"))
+                    .Read(read => read.Action("Get", "PuntoEmision"))
+                    .Create(create => create.Action("Insert", "PuntoEmision"))
+                    .Update(update => update.Action("Update", "PuntoEmision", new { IdPuntoEmision = "{0}" }).Type(HttpVerbs.Post))
+                    .Destroy(destroy => destroy.Action("Delete", "PuntoEmision", new { IdPuntoEmision = "{0}" }).Type(HttpVerbs.Delete))
+
+                )
+                .Events(e =>
+                {
+                    e.Save("onsave");
+
+                })
 )
 
 <div id="numPuntoEmision">
     @await Html.PartialAsync("pvwAddPuntoEmision", new ERPMVC.DTO.PuntoEmisionDTO { IdPuntoEmision = 0 })
 </div>
+
+
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridPuntoEmision").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridPuntoEmision").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+</script>

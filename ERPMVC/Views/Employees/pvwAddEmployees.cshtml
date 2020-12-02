@@ -1,68 +1,90 @@
 ﻿@model ERPMVC.DTO.EmployeesDTO
-
+@using System.Security.Claims
 @{ Layout = null;
-	var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
 // {"required","Valor requerido" }
 };
-	var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
+
+<script src="~/admp/assets/plugins/dropify/dist/js/dropify.min.js"></script>
+
+<link rel="stylesheet" href="~/admp/assets/plugins/dropify/dist/css/dropify.min.css">
+
 
 <script>
     $(document).ready(function () {
-        
+        $("#TelefonoAlert").hide();
+        $("#TelefonoContactoAlert").hide();
+        $("#Telefono").kendoMaskedTextBox({
+            mask: "(999) 0000-0000"
+        });
+        $("#TelefonoContacto").kendoMaskedTextBox({
+            mask: "(999) 0000-0000"
+        });
+        $("#AlertSalario").prop("hidden", true);
+        $("#AgregarSalarioCustom").prop("hidden", true)
         //$("#NombreEmpleado_validationMessage").css({ "width": "100%"})
-		//document.getElementById("FechaFinContrato").required = false;
-		var data = [
-			{ text: "Seleccionar Género", value: "0" },
-			{ text: "Masculino", value: "1" },
-			{ text: "Femenino", value: "2" }
-		];
+        //document.getElementById("FechaFinContrato").required = false;
+        var data = [
+            { text: "Masculino", value: "1" },
+            { text: "Femenino", value: "2" }
+        ];
 
-		// create DropDownList from input HTML element
-		$("#Genero").kendoDropDownList({
-			dataTextField: "text",
-			dataValueField: "value",
-			dataSource: data,
-			index: 0,
-			//change: onChange
-		});
-		//$("#Nota").text({
-		//    type: textarea
-		//})
-		var TipoSangre = [
-			{ text: "Seleccionar Tipo de Sangre", value: "0" },
-			{ text: "O-", value: "1" },
-			{ text: "O+", value: "2" },
-			{ text: "A-", value: "3" },
-			{ text: "A+", value: "4" },
-			{ text: "B-", value: "5" },
-			{ text: "B+", value: "6" },
-			{ text: "AB-", value: "7" },
-			{ text: "AB+", value: "8" },
-		];
+        // create DropDownList from input HTML element
+        $("#IdGenero").kendoDropDownList({
+            dataTextField: "text",
+            dataValueField: "value",
 
-		// create DropDownList from input HTML element
-		$("#TipoSangre").kendoDropDownList({
-			dataTextField: "text",
-			dataValueField: "value",
-			dataSource: TipoSangre,
-			index: 0,
-			//change: onChange
-		});
+            dataSource: data,
+            index: 0,
+            optionLabel: {
+                text: "Seleccionar Género",
+                value: ""
+            }
+            //change: onChange
+        });
+        //$("#Nota").text({
+        //    type: textarea
+        //})
+        var TipoSangre = [
+            { text: "O-", value: "1" },
+            { text: "O+", value: "2" },
+            { text: "A-", value: "3" },
+            { text: "A+", value: "4" },
+            { text: "B-", value: "5" },
+            { text: "B+", value: "6" },
+            { text: "AB-", value: "7" },
+            { text: "AB+", value: "8" },
+        ];
+
+        // create DropDownList from input HTML element
+        $("#IdTipoSangre").kendoDropDownList({
+            dataTextField: "text",
+            dataValueField: "value",
+            dataSource: TipoSangre,
+            index: 0,
+            optionLabel: {
+                text: "Seleccionar Tipo de Sangre",
+                value: ""
+            }
+            //change: onChange
+        });
         $("#GeneroAlert").prop("hidden", true);
         $("#TipoSangreAlert").prop("hidden", true);
         $("#IdentidadAlert").prop("hidden", true);
         $("#RTNAlert").prop("hidden", true);
-	});
+    });
 
-	function customFunction(input) {
+    function customFunction(input) {
 
-		if (input.attr('name') === "IdEmpleado" && input.val() === "0") {
-			return false;
-		}
+        if (input.attr('name') === "IdEmpleado" && input.val() === "0") {
+            return false;
+        }
 
     }
-    
+
 
     function GetDataUpload(e) {
         debugger;
@@ -101,7 +123,7 @@
                 'FechaEgreso': setFechaEgreso,
                 'Direccion': $("#Direccion").val(),
                 'Genero': $("#Genero").data("kendoDropDownList").text(),
-                'TipoSangre': $("#TipoSangre").data("kendoDropDownList").text(),
+                'TipoSangre': $("#IdTipoSangre").data("kendoDropDownList").text(),
                 'IdEstado': $("#IdEstado").val(),
                 'IdState': $("#IdState").val(),
                 'NombreContacto': $("#NombreContacto").val(),
@@ -131,51 +153,198 @@
             e.data = dataObject;
         }
     }
+
+    var onBegin = function () {
+        //alert("Begin");
+        $("#btnEmployees").prop("disabled", true);
+        var validator = $("#frmEmployees").data("kendoValidator");
+
+        if (!validator.validate()) {
+            $.toast({
+                heading: 'Error',
+                text: 'Complete los datos del formulario',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+
+
+        };
+    };
+
+
+
+    var onComplete = function (context) {
+        //alert("Complete");
+        //$('#ModalEmployees').modal('hide');
+
+    };
+
+    var onSuccess = function (context) {
+        //alert(context);
+        console.log(context);
+        $.toast({
+            heading: 'Satisfactorio',
+            text: 'Datos guardados correctamente.',
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'success',
+            hideAfter: 30000,
+            stack: 6
+        });
+        RefrescarGrid();
+        $('.dropify-clear').click();
+        console.log(context);
+        if (context.IdEmpleado == 0) {
+            $('#ModalEmployees').modal('hide');
+
+            $("#btnEmployees").prop("disabled", false);
+            return;
+        }
+
+        $("#btnEmployees").prop("disabled", false);
+         window.location.href = "@Url.Action("pvwEditEmployees", "Employees")?IdEmpleado=" + context.IdEmpleado;
+
+    };
+
+    var onFailed = function (context) {
+        // alert(context);
+        console.log(context);
+        $.toast({
+            heading: 'Error',
+            text: 'Error al Crear Empleado',
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'error',
+            hideAfter: 30000,
+            stack: 6
+        });
+        $("#btnEmployees").prop("disabled", false);
+
+    };
+
+
+    function EstadoName() {
+        if ($("#IdEstado").data("kendoDropDownList").value() == 0) {
+            $("#NombreEstado").val("");
+        }
+        else {
+            var Estado = $("#IdEstado").data("kendoDropDownList").text()
+            $("#NombreEstado").val(Estado);
+        }
+    }
+    function PuestoName() {
+        if ($("#IdPuesto").data("kendoDropDownList").value() == 0) {
+            $("#NombrePuesto").val("");
+        }
+        else {
+            var Estado = $("#IdPuesto").data("kendoDropDownList").text()
+            $("#NombrePuesto").val(Estado);
+        }
+    }
+
 </script>
 
 
 
 
+<div id="divPEPSFind">
+    @await Html.PartialAsync("~/Views/PEPS/PEPSFind.cshtml")
+</div>
+
+<div id="divBlackListFind">
+    @await Html.PartialAsync("~/Views/BlackListCustomers/BlackListFind.cshtml")
+</div>
+
+<div id="divONULISTFind">
+    @await Html.PartialAsync("~/Views/ONU/ONULISTFind.cshtml")
+</div>
+
+<div id="divOFACFind">
+    @await Html.PartialAsync("~/Views/OFAC/Index.cshtml")
+</div>
+
+
+
+
 <div id="ModalEmployees" class="modal fade" role="dialog">
-	<!-- Modal content-->
-	<div class="modal-dialog modal-lg">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
-				<h4 class="modal-title">Empleados</h4>
-			</div>
-			<div class="modal-body">
-				<div class="row" id="validation">
-					<div class="col-lg-12">
-						<div class="card">
-							<div class="card-body">
-								<form id="frmEmployees" kendo-validator="true"
-									  data-ajax="true"
-									  data-ajax-method="post"
-                                      data-ajax-begin="SaveEmployees" enctype="multipart/form-data"
-									  class="validation-wizard wizard-circle">
-									<div class="form-body">
-										<h3 class="card-title">Empleados</h3>
-										<hr>
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Empleado</h4>
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmEmployees" kendo-validator="true" asp-action="SaveEmployees" asp-controller="Employees"
+                                      data-ajax="true"
+                                      data-ajax-method="post" enctype="multipart/form-data"
+                                      data-ajax-begin="onBegin" data-ajax-complete="onComplete"
+                                      data-ajax-failure="onFailed" data-ajax-success="onSuccess"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
 
-										<div class="row">
-											<div class="col-sm-4 col-md-4">
-												<div class="form-group">
-													<label asp-for="IdEmpleado" class=" control-label" style="width:100%">Id Empleado</label>
-													<input type="text" asp-for="IdEmpleado" name="IdEmployees" class="form-control form-control-line" disabled="disabled" style="min-width:100%" />
-													<span asp-validation-for="IdEmpleado" class="text-danger"></span>
-												</div>
-											</div>
+                                        <div class="row">
+                                            <div class="col-sm-4 col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="IdEmpleado" class=" control-label" style="width:100%">Id Empleado</label>
+                                                    <input type="text" asp-for="IdEmpleado" name="IdEmployees" class="form-control form-control-line" disabled="disabled" style="min-width:100%" />
+                                                    <span asp-validation-for="IdEmpleado" class="text-danger"></span>
+                                                </div>
+                                            </div>
 
-											<div class="col-sm-4 col-md-4">
-												<div class="form-group">
-													<label asp-for="NombreEmpleado" class=" control-label" style="width:100%">Nombre de empleado</label>
-													<input type="text" asp-for="NombreEmpleado" name="NombreEmpleado" required data-required-msg="El Nombre del Empleado es requerido." class="form-control form-control-line" style="min-width:100%" maxlength="250" />
-													<span asp-validation-for="NombreEmpleado" class="text-danger"></span>
-												</div>
-											</div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="NombreEmpleado" class=" control-label" style="width:100%">Nombre de empleado</label>
+                                                    <div class="input-group">
+                                                        <input type="text" asp-for="NombreEmpleado" name="NombreEmpleado" required data-required-msg="El Nombre del Empleado es requerido." class="form-control form-control-line" style="min-width:80%;" maxlength="250" />
 
-											<div class="col-sm-4 col-md-4">
+                                                        <span class="input-group-btn">
+                                                            <button type="button" id="btnApoderado" style="min-width:10%;" onclick=" ValidarBusqueda(); return PeronIlicitas();" class="btn btn-info"><span class="glyphicon glyphicon-search"></span>LISTADOS</button>
+                                                        </span>
+                                                    </div>
+
+
+
+
+
+                                                    <input type="text" id="restsino" hidden class="form-control" style="min-width:85%;" />
+                                                    <script>
+                                                        var AlertaBusca = $("#restsino").val('0');
+
+                                                        function ValidarBusqueda() {                                                            
+                                                            debugger;
+                                                            //if ($("#NombreEmpleado").val() == '' && $("#IdCountry").val() == 0) {
+                                                            //    alert("LLenar el campo Nombre Empleado y seleccione el país para ver el listado")
+                                                            //    return false;
+                                                            //} else
+                                                            if ($("#NombreEmpleado").val() == '') {
+                                                                alert("LLenar el campo Nombre Empleado para ver el listado")
+                                                                return false;
+                                                            }
+                                                            //} else if ($("#IdCountry").val() == 0) {
+                                                            //    alert("Seleccione el país para ver el listado")
+                                                            //    return false;
+                                                            //}
+                                                            else {
+                                                                $("#restsino").val('1');
+                                                            }
+                                                        }
+
+
+
+                                                    </script>
+                                                    <span asp-validation-for="NombreEmpleado" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Identidad" class=" control-label" style="width:100%">Identidad</label>
                                                     <input type="text" asp-for="Identidad" name="Identidad" required data-required-msg="La Número de Identidad es requerido." onchange="ValidarIdentidad()" onkeypress="return SoloNumeros(event)" class="form-control form-control-line" autocomplete="off" style="min-width:100%" maxlength="15" />
@@ -183,20 +352,20 @@
                                                     @*<span id="IdentidadAlert" class="text-danger">El Número de Identidad ya Exíste!</span>*@
                                                     <span id="IdentidadAlert" class="text-danger"><span role="alert" class="k-icon k-i-warning"></span> El Número de Identidad ya Exíste!</span>
                                                 </div>
-											</div>
-										</div>
+                                            </div>
+                                        </div>
 
                                         <div class="row">
                                             <div class="col-md-3">
                                                 <div class="form-group">
                                                     <label asp-for="FechaNacimiento" class=" control-label" style="width:100%">Fecha Nacimiento</label>
                                                     @*<kendo-datepicker name="FechaNacimiento"
-                                                                      value="Model.FechaNacimiento"
-                                                                      format="dd/MM/yyyy"
-                                                                      style="width:100%;"
-                                                                      onchange="GenerarEdad()"
-                                                                      data-val-required="La fecha es requerida" />*@
-                                                    <input name="FechaNacimiento" asp-for="FechaNacimiento" onchange="GenerarEdad()" style="width:100%;" required data-required-msg="La Fecha de Nacimiento es requerida."/>
+                                                        value="Model.FechaNacimiento"
+                                                        format="dd/MM/yyyy"
+                                                        style="width:100%;"
+                                                        onchange="GenerarEdad()"
+                                                        data-val-required="La fecha es requerida" />*@
+                                                    <input name="FechaNacimiento" asp-for="FechaNacimiento" onchange="GenerarEdad()" style="width:100%;" required data-required-msg="La Fecha de Nacimiento es requerida." />
                                                     <span asp-validation-for="FechaNacimiento" class="text-danger"></span>
                                                 </div>
                                                 <script>
@@ -226,28 +395,34 @@
                                             </div>
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label asp-for="Genero" class=" control-label" style="width:100%">Género</label>
-                                                    <input asp-for="Genero" name="Genero" required data-required-msg="El Género es requerido." autocomplete="off" onchange="validarGenero()" style="min-width:100%" />
-                                                    <span asp-validation-for="Genero" class="text-danger"></span>
+                                                    <label class=" control-label" style="width:100%">Género</label>
+                                                    <input id="IdGenero" asp-for="Genero" data-val-required="El Género es requerido." onchange="validarGenero();" autocomplete="off" style="min-width:100%" />
+                                                    <input id="Genero" asp-for="GeneroName" data-validate="false" hidden="hidden" />
+
+                                                    @*<span asp-validation-for="Genero" class="text-danger"></span>*@
                                                     @*<span id="GeneroAlert" class="text-danger">El Género es requerido.</span>*@
                                                     <span id="GeneroAlert" class="text-danger"><span role="alert" class="k-icon k-i-warning"></span> El Género es requerido.</span>
                                                 </div>
                                             </div>
+
                                         </div>
                                         <div class="row">
-                                            <div class="col-md-4">
+                                            <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
-                                                    <label asp-for="TipoSangre" class=" control-label" style="width:100%">Tipo de Sangre</label>
-                                                    <input asp-for="TipoSangre" name="TipoSangre" autocomplete="off" onchange="validarTipoSangre()" maxlength="3" style="min-width:100%" />
-                                                    @*<span asp-validation-for="TipoSangre" class="text-danger"></span>*@
+                                                    <label class=" control-label" style="width:100%">Tipo de Sangre</label>
+                                                    <input id="IdTipoSangre" asp-for="TipoSangre" data-val-required="El Tipo de Sangre es requerido." onchange="validarTipoSangre();" autocomplete="off" style="min-width:100%" />
+                                                    <input id="TipoSangre" asp-for="TipoSangreName" data-validate="false" hidden="hidden" />
+
+                                                    <span asp-validation-for="TipoSangre" class="text-danger"></span>
                                                     @*<span id="TipoSangreAlert" role="alert" class="k-icon k-i-warning"><span class="text-danger"> El Tipo de Sangre es requerido.</span></span>*@
                                                     <span id="TipoSangreAlert" class="text-danger"><span role="alert" class="k-icon k-i-warning"></span> El Tipo de Sangre es requerido.</span>
                                                 </div>
                                             </div>
+
                                             <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Correo" class=" control-label" style="width:100%">Correo</label>
-                                                    <input type="email" asp-for="Correo" name="Correo" placeholder="e.g. myname@example.net" maxlength="150" data-email-msg="Formato del Correo no valido." data-val-required="El Correo es requerido." class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <input type="email" asp-for="Correo" name="Correo" placeholder="nombre@ejemplo.com" maxlength="150" data-email-msg="Formato del Correo no valido." data-val-required="El Correo es requerido." class="form-control" autocomplete="off" style="min-width:100%" />
                                                     <span asp-validation-for="Correo" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -255,8 +430,9 @@
                                             <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Telefono" class=" control-label" style="width:100%">Teléfono</label>
-                                                    <input type="text" asp-for="Telefono" onkeypress="return SoloNumeros(event)" name="Telefono" required data-required-msg="El Número de Teléfono es requerido." maxlength="12" class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <input type="text" asp-for="Telefono" onchange="validarTelefono()" name="Telefono" required data-required-msg="El Número de Teléfono es requerido." class="form-control" autocomplete="off" style="min-width:100%" />
                                                     <span asp-validation-for="Telefono" class="text-danger"></span>
+                                                    <span id="TelefonoAlert" class="text-danger"><span role="alert" class="k-icon k-i-warning"></span> Complete el número de teléfono.</span>
                                                 </div>
                                             </div>
                                         </div>
@@ -265,7 +441,7 @@
                                             <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Extension" class=" control-label" style="width:100%">Extensión</label>
-                                                    <input type="text" asp-for="Extension" name="Extension" required data-required-msg="El Número de Extensión es requerido." onkeypress="return SoloNumeros(event)" class="form-control" maxlength="7" autocomplete="off" style="min-width:100%" />
+                                                    <input type="text" asp-for="Extension" name="Extension"  onkeypress="return SoloNumeros(event)" class="form-control" maxlength="7" autocomplete="off" style="min-width:100%" />
                                                     <span asp-validation-for="Extension" class="text-danger"></span>
                                                 </div>
                                             </div>
@@ -301,7 +477,7 @@
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
                                                             <transport>
-                                                                <read url="@Url.Action("Get", "TipoPlanillas")" />
+                                                                <read url="@Url.Action("GetTipoPlanillas", "TipoPlanillas")" />
                                                             </transport>
                                                         </datasource>
                                                     </kendo-dropdownlist>
@@ -325,6 +501,7 @@
                                                                         option-label="Seleccionar Estado"
                                                                         datatextfield="NombreEstado"
                                                                         datavaluefield="IdEstado"
+                                                                        onchange="EstadoName();"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
                                                             <transport>
@@ -336,15 +513,17 @@
                                             </div>
                                         </div>
 
+                                        <input asp-for="NombreEstado" type="text" data-validate="false" name="NombreEstado" id="NombreEstado" hidden="hidden" />
+
                                         <div class="row">
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="FechaIngreso" class="control-label" style="width:100%">Fecha Ingreso</label>
                                                     @*<kendo-datepicker name="FechaIngreso"
-                                                                      format="dd/MM/yyyy"
-                                                                      style="width:100%;"
-                                                                      value="Model.FechaIngreso"
-                                                                      data-val-required="La fecha es requerida" />*@
+                                                        format="dd/MM/yyyy"
+                                                        style="width:100%;"
+                                                        value="Model.FechaIngreso"
+                                                        data-val-required="La fecha es requerida" />*@
                                                     <input id="FechaIngreso" name="FechaIngreso" asp-for="FechaIngreso" required data-required-msg="La Fecha de Ingreso es requerida." style="width:100%" />
                                                     <span asp-validation-for="FechaIngreso" class="text-danger"></span>
                                                 </div>
@@ -359,35 +538,13 @@
 
                                             <div class="col-md-4">
                                                 <div class="form-group">
-                                                    <label asp-for="IdPuesto" class="control-label">Puesto</label>
-                                                    <kendo-dropdownlist name="IdPuesto" required data-required-msg="El Puesto es requerido."
-                                                                        for="@Model.IdPuesto"
-                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                        option-label="Seleccionar puesto"
-                                                                        datatextfield="NombrePuesto"
-                                                                        datavaluefield="IdPuesto"
-                                                                        style="width: 100%;">
-                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
-                                                            <transport>
-                                                                <read url="@Url.Action("Get", "Puesto")" />
-                                                            </transport>
-                                                        </datasource>
-                                                    </kendo-dropdownlist>
-                                                    <span asp-validation-for="Puesto"></span>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div class="row">
-                                            <div class="col-md-4">
-                                                <div class="form-group">
                                                     <label asp-for="IdDepartamento" class="control-label">Área</label>
                                                     <kendo-dropdownlist name="IdDepartamento" required data-required-msg="El Área es requerida."
                                                                         for="@Model.IdDepartamento"
                                                                         filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                         option-label="Seleccionar Departamento"
                                                                         datatextfield="NombreDepartamento"
-                                                                        datavaluefield="IdDepartamento"
+                                                                        datavaluefield="IdDepartamento" onchange="refreshpuesto();"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
                                                             <transport>
@@ -398,11 +555,53 @@
                                                     <span asp-validation-for="IdDepartamento"></span>
                                                 </div>
                                             </div>
+
+                                        </div>
+                                        <script>
+                                            function GetIdDepartamento() {
+
+                                                return { 'IdDepartamento': $("#IdDepartamento").val() }
+                                            }
+
+                                            function refreshpuesto() {
+                                                $("#IdPuesto").data("kendoDropDownList").dataSource.read();
+                                            }
+                                        </script>
+
+                                        <input asp-for="NombrePuesto" type="text" data-validate="false" name="NombrePuesto" hidden="hidden" />
+
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="IdPuesto" class="control-label">Puesto</label>
+                                                    <kendo-dropdownlist name="IdPuesto" required data-required-msg="El Puesto es requerido."
+                                                                        for="@Model.IdPuesto"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar puesto"
+                                                                        datatextfield="NombrePuesto"
+                                                                        datavaluefield="IdPuesto" onchange="PuestoName();"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetPuestoByIdDepartamento", "Puesto")" data="GetIdDepartamento" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="Puesto"></span>
+                                                </div>
+                                            </div>
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Salario" class=" control-label" style="width:100%">Salario</label>
                                                     <div class="input-group">
-                                                        <input type="text" asp-for="Salario" name="Salario" required data-required-msg="El Salario es requerido." readonly autocomplete="off" class="form-control" style="min-width:80%" />
+                                                        @*<input type="text" asp-for="Salario" name="Salario" required data-required-msg="El Salario es requerido." readonly autocomplete="off" class="form-control" style="min-width:80%" />*@
+                                                        <kendo-numerictextbox name="Salario" class="readonly"
+                                                                              format="n2" spinners="false" decimals="2" tabindex="-1" enable="false"
+                                                                              min="0" data-val-required="El Salario es requerido." data-min-msg="El Salario no puede ser negativo."
+                                                                              style="min-width: 80%;text-align:right;padding-right: 3px;color:black;font-weight:500"
+                                                                              max="999999999"
+                                                                              step="1"
+                                                                              value="Convert.ToDouble(Model.Salario)" />
                                                         <span class="input-group-btn">
                                                             <button type="button" class="btn btn-info" onclick="AddSalarioEmpleado()">AÑADIR</button>
                                                         </span>
@@ -410,6 +609,11 @@
                                                     </div>
                                                 </div>
                                             </div>
+
+                                            <input asp-for="QtySalary" type="number" name="QtySalary" data-validate="false" id="QtySalaryFrm" class="form-control" style="min-width:100%" hidden="hidden" />
+                                            <input asp-for="DayApplication" type="datetime" name="DayApplication" data-validate="false" id="DayApplicationFrm" class="form-control" style="min-width:100%" hidden="hidden" />
+                                            @*<kendo-datepicker name="DayApplication" asp-for="ay" style="min-width: 100%;"
+                                                format="dd/MM/yyyy hh:mm"/>*@
 
                                             <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
@@ -421,7 +625,7 @@
                                                                         datatextfield="CurrencyName"
                                                                         datavaluefield="CurrencyId"
                                                                         style="width: 100%;">
-                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999999">
                                                             <transport>
                                                                 <read url="@Url.Action("GetCurrency", "Currency")" />
                                                             </transport>
@@ -599,7 +803,7 @@
                                                 <div class="form-group">
                                                     <label asp-for="FechaFinContrato" class="control-label" style="width:100%">Fecha final del contrato</label>
                                                     <kendo-datepicker name="FechaFinContrato" style="min-width: 100%;"
-                                                                      format="dd/MM/yyyy hh:mm"></kendo-datepicker>
+                                                                      format="dd/MM/yyyy" />
                                                     <span asp-validation-for="FechaFinContrato"></span>
                                                 </div>
                                             </div>
@@ -615,67 +819,110 @@
                                             </div>
                                             <div class="col-sm-4 col-md-4">
                                                 <div class="form-group">
-                                                    <label asp-for="TelefonoContacto" class=" control-label" style="width:100%">Telefono Contacto de Emergencia</label>
-                                                    <input type="text" asp-for="TelefonoContacto" maxlength="12" onkeypress="return SoloNumeros(event)" name="TelefonoContacto" class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <label asp-for="TelefonoContacto" class=" control-label" style="width:100%">Teléfono Contacto de Emergencia</label>
+                                                    <input type="text" asp-for="TelefonoContacto" onchange="validarTelefono()" name="TelefonoContacto" class="form-control" autocomplete="off" style="min-width:100%" />
                                                     <span asp-validation-for="TelefonoContacto" class="text-danger"></span>
+                                                    <span id="TelefonoContactoAlert" class="text-danger"><span role="alert" class="k-icon k-i-warning"></span> Complete el número de teléfono.</span>
+
                                                 </div>
                                             </div>
-
-
+                                            <div class="col-md-4" hidden>
+                                                <div class="form-group">
+                                                    @(Html.Kendo().Upload()
+                                                                                                                .Name("file")
+                                                                                                                .HtmlAttributes(new { aria_label = "Foto Empleado" })
+                                                    )
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="HorasExtra" class=" control-label" style="width:100%"></label>
+                                                    @(Html.Kendo().SwitchFor(m => m.HorasExtra).Name("HoraExtraSwitch").Events(e => e.Change("HorasExtrasChange")).Messages(msg => msg.Checked("Si").Unchecked("No")))
+                                                    <span asp-validation-for="HorasExtra" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <input type="text" id="HorasExtra" asp-for="HorasExtra" hidden />
+                                        </div>
+                                        <div class="row">
                                             <div class="col-sm-4 col-md-4">
-                                                <label asp-for="Foto" class=" control-label" style="width:100%">Foto del Empleado</label>
-                                                @*<kendo-upload asp-for="Foto" drop-zone="drop-zone1" name="files" on-upload="SaveEmployees">
-                                                    <async save-url="@Url.Action("SaveEmployees","Employees")" />
-                                                    <validation allowed-extensions='@new string[] { ".jpg",".png",".jpeg" }' max-file-size="10485760" />
-                                                </kendo-upload>*@
-                                                <input type="file" name="Foto" id="Foto"/>
+                                                <div class="card">
+                                                    <div class="card-body">
+                                                        <h4 class="card-title">Foto Empleado</h4>
+                                                        <input type="file" id="files" name="files" class="dropify" data-max-file-size="2M" accept=".jpg,.jpeg,.png,.gif" />
+                                                    </div>
+                                                </div>
+
                                             </div>
                                         </div>
-									</div>
-									<div class="row">
-										<div class="col-md-12">
-											<button id="btnEmployees" class="form-control btn-miboton" type="submit" > Guardar </button>
-										</div>
-									</div>
-								</form>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            <button id="btnEmployees" class="form-control btn-miboton" type="submit" > Guardar </button>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 <div id="myModalSalarioEmpleado" class="modal fade" role="dialog">
-	<!-- Modal content-->
-	<div class="modal-dialog modal-lg">
-		<div class="modal-content">
-			<div class="modal-header">
-				<button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
-				<h4 class="modal-title">Salario Empleado</h4>
-			</div>
-			<div class="modal-body">
-				<div class="row" id="validation">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Salario Empleado</h4>
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
 
-				</div>
-				<div class="row">
-					<div id="numEmployeesSalary">
-						@await Html.PartialAsync("pvwEmployeeSalary", new ERPMVC.DTO.EmployeeSalaryDTO { IdEmpleado = 0 })
-					</div>
-				</div>
-			</div>
-		</div>
-	</div>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+
+                </div>
+                <div class="row">
+                    <div id="numEmployeesSalary">
+                        @await Html.PartialAsync("pvwEmployeeSalary", new ERPMVC.DTO.EmployeeSalaryDTO { IdEmpleado = 0 }, new ViewDataDictionary(ViewData) { { "permisosEmployees", permisos } })
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
 <script>
-    //function onSelect(e) {
-    //    $.each(e.files, function (index, value) {
-    //        console.log("Name: " + value.name);
-    //        console.log("Size: " + value.size + " bytes");
-    //        console.log("Extension: " + value.extension);
-    //    });
-    //};
+    function HorasExtrasChange() {
+        if ($("#HoraExtraSwitch").is(':checked')) {
+            $("#HorasExtra").val(true);
+        }
+        else {
+            $("#HorasExtra").val(false);
+        }
+    }
+    function ValidarDoubleClick() {
+       
+        $("#frmEmployees").sumbit();
+    }
 
+    function validarTelefono() {
+        var cadena = $("#Telefono").val();
+        var cadenaContacto = $("#TelefonoContacto").val();
+        if (cadena.indexOf("_") > -1 == true) {
+            $("#TelefonoAlert").show();
+        }
+        else {
+            $("#TelefonoAlert").hide();
+        }
+        if (cadenaContacto.indexOf("_") > -1 == true) {
+            $("#TelefonoContactoAlert").show();
+        }
+        else {
+            $("#TelefonoContactoAlert").hide();
+        }
+    }
+</script>
+<script>
     function ValidarRTN() {
         var dataObject = {
             RTN: $("#RTN").val(),
@@ -699,7 +946,15 @@
                     }
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                    $.toast({
+                        heading: 'Error',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
                 }
             });
         }
@@ -731,7 +986,15 @@
                     }
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                    $.toast({
+                        heading: 'Error',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
                 }
             });
         }
@@ -741,27 +1004,51 @@
     }
 
     function GenerarEdad() {
-		var fecha = $("#FechaNacimiento").getKendoDatePicker().value().toJSON()
-		var fecha_value = new Date(fecha).getFullYear(fecha);
-        var fecha_valuem = new Date(fecha).getMonth(fecha) + 1;
-        var fecha_valued = new Date(fecha).getDate(fecha);
-        const fechaActual = new Date().getFullYear();
-        const fechaActualm = new Date().getMonth() + 1;
-        const fechaActuald = new Date().getDate();
+        //if () {
+        debugger;
+        if ($("#FechaNacimiento").val() != "") {
+            console.log("Fecha N", $("#FechaNacimiento").getKendoDatePicker().value());
+            //if ($("#FechaNacimiento").getKendoDatePicker().value() != null) {
+            //    var fecha = $("#FechaNacimiento").getKendoDatePicker().value().toJSON()
+            //}
+            //else {
+                var fechaN = $("#FechaNacimiento").val() // 10/11/2009
+                var anio = String(fechaN).substring(6, 10); //2009
+                var dia = String(fechaN).substring(0, 2); //10
+                var mes = String(fechaN).substring(3, 5); //11
 
-        let edad = fechaActual - fecha_value;
+                var FechaFormatiada = mes + '/' + dia + '/' + anio
+                var fecha = new Date(FechaFormatiada).toJSON();
+            //}
+            var fecha_value = new Date(fecha).getFullYear(fecha);
+            var fecha_valuem = new Date(fecha).getMonth(fecha) + 1;
+            var fecha_valued = new Date(fecha).getDate(fecha);
+            const fechaActual = new Date().getFullYear();
+            const fechaActualm = new Date().getMonth() + 1;
+            const fechaActuald = new Date().getDate();
 
-        if ((fecha_valuem == fechaActualm) && (fecha_valued > fechaActuald)) {
-            edad = (edad - 1);
-        } else
-            if (fecha_valuem > fechaActualm) {
+            let edad = fechaActual - fecha_value;
+
+            if ((fecha_valuem == fechaActualm) && (fecha_valued > fechaActuald)) {
                 edad = (edad - 1);
-			}
-		$("#edadcalculada").val(edad);
+            } else
+                if (fecha_valuem > fechaActualm) {
+                    edad = (edad - 1);
+                }
+            $("#edadcalculada").val(edad);
+        }
+        else {
+            $("#edadcalculada").val(null);
+        }
 	}
 
     function ValidacionFinContrato() {
-        if ($("#IdTipoContrato").data("kendoDropDownList").text() === "Temporal") {
+        if ($("#IdTipoContrato").data("kendoDropDownList").text() === "CONTRATO TEMPORAL"
+            || $("#IdTipoContrato").data("kendoDropDownList").text() === "Temporal"
+            || $("#IdTipoContrato").data("kendoDropDownList").text() === "Contrato Temporal"
+            || $("#IdTipoContrato").data("kendoDropDownList").text() === "temporal"
+            || $("#IdTipoContrato").data("kendoDropDownList").text() === "Contrato temporal"
+            || $("#IdTipoContrato").data("kendoDropDownList").text() === "contrato temporal") {
             $("#FechaFinContrato").attr("data-required-msg", "La Fecha Fin de Contrato es requerida.");
             $("#FechaFinContrato").attr("required", "required");
         }
@@ -772,27 +1059,41 @@
 	}
 
     function validarGenero() {
-        var Genero = $("#Genero").val();
-        console.log("Valor Genero", Genero);
-        if (Genero == 0 || $("#Genero").data("kendoDropDownList").text() == "Seleccionar Género") {
-            $("#GeneroAlert").show();
+        var Genero = $("#IdGenero").val();
+        var GeneroName = $("#IdGenero").data("kendoDropDownList").text();
+        if (Genero == "" || Genero == 0 || $("#IdGenero").data("kendoDropDownList").text() == "Seleccionar Género") {
+            $("#Genero").val("");
         }
         else {
-            $("#GeneroAlert").hide();
+            $("#Genero").val(GeneroName);
         }
     }
 
-	function validarTipoSangre() {
-        var TipoSangre = $("#TipoSangre").val();
-        if (TipoSangre == 0 || $("#TipoSangre").data("kendoDropDownList").text() == "Seleccionar Tipo de Sangre") {
-            $("#TipoSangreAlert").show();
+    function validarTipoSangre() {
+
+        var TipoSangre = $("#IdTipoSangre").val();
+        var TipoSangreName = $("#IdTipoSangre").data("kendoDropDownList").text();
+        if ($("#IdTipoSangre").data("kendoDropDownList").value() == "" || $("#IdTipoSangre").data("kendoDropDownList").value() == 0 || $("#IdTipoSangre").data("kendoDropDownList").text() == "Seleccionar Tipo de Sangre") {
+            $("#TipoSangre").val("");
         }
         else {
-            $("#TipoSangreAlert").hide();
+            $("#TipoSangre").val(TipoSangreName);
         }
     }
 
-	function AddSalarioEmpleado() {
+    function AddSalarioEmpleado() {
+        var displayedData = $("#gridEmployeeSalary").data().kendoGrid.dataSource.view();
+        if (displayedData.length >= 1 && $("#IdEmpleado").val() == 0) {
+            $("#AgregarSalario").prop("hidden", true);
+            $("#AgregarSalarioCustom").prop("hidden", false);
+            $("#AlertSalario").prop("hidden", false);
+        }
+        else {
+            $("#AgregarSalario").prop("hidden", false);
+            $("#AgregarSalarioCustom").prop("hidden", true);
+
+            $("#AlertSalario").prop("hidden", true);
+        }
         $('#myModalSalarioEmpleado').modal('show');
     }
 
@@ -829,7 +1130,8 @@
         $("#FechaNacimiento").kendoDatePicker({
             depth: "month",
             start: "decade",
-            format: "dd/MM/yyyy"
+            format: "dd/MM/yyyy",
+            max: new Date(),
         });
     });
     //var getDate = function (input) {
@@ -877,162 +1179,615 @@
     }
 
     function SaveEmployees(e) {
+
+        if (RefreshOFAC) {
+            var opcion = confirm("Este Empleado esta en listas OFAC, desea guardar?");
+            if (opcion == false) {
+                return
+            }
+        }
+
+
         debugger;
-		if ($('#TipoSangre').val() == 0) {
+		if ($('#IdTipoSangre').val() == 0) {
             $('#TipoSangreAlert').show();
         }
         if ($('#GeneroAlert').is(':hidden')) {
             if ($('#TipoSangreAlert').is(':hidden')) {
                 if ($('#IdentidadAlert').is(':hidden')) {
                     if ($('#RTNAlert').is(':hidden')) {
-                        var notification = $("#notification").data("kendoNotification");
+                        if ($('#TelefonoAlert').is(':hidden')) {
+                            if ($('#TelefonoContactoAlert').is(':hidden')) {
+                                var notification = $("#notification").data("kendoNotification");
 
-                        var displayedData = $("#gridEmployees").data().kendoGrid.dataSource.view();
-                        var displayedData1 = $("#gridEmployeeSalary").data().kendoGrid.dataSource.view();
-                        var id = 0;
-                        if ($("#IdEmpleado").val() == 0) {
-                            if (displayedData1.length > 0) {
-                                for (var i = 0; i < displayedData1.length; i++) {
-                                    if (displayedData1[i].EmployeeSalaryId > id)
-                                        displayedData1[i].EmployeeSalaryId = 0;
+                                var displayedData = $("#gridEmployees").data().kendoGrid.dataSource.view();
+                                var displayedData1 = $("#gridEmployeeSalary").data().kendoGrid.dataSource.view();
+                                var id = 0;
+                                if ($("#IdEmpleado").val() == 0) {
+                                    if (displayedData1.length > 0) {
+                                        for (var i = 0; i < displayedData1.length; i++) {
+                                            if (displayedData1[i].EmployeeSalaryId > id)
+                                                displayedData1[i].EmployeeSalaryId = 0;
 
+                                        }
+                                        id = 0;
+                                    }
                                 }
-                                id = 0;
-                            }
-                        }
-                        var setFechaEgreso = null;
-                        var setFechaFinContrato = null;
-                        if ($("#FechaEgreso").getKendoDatePicker().value() != null || $("#FechaEgreso").getKendoDatePicker().value() != undefined || $("#FechaEgreso").val() != "") {
-                            setFechaEgreso = $("#FechaEgreso").getKendoDatePicker().value().toJSON();
-                        }
-                        if ($("#FechaFinContrato").getKendoDatePicker().value() != null || $("#FechaFinContrato").getKendoDatePicker().value() != undefined || $("#FechaFinContrato").val() != "") {
-                            setFechaFinContrato = $("#FechaFinContrato").getKendoDatePicker().value().toJSON();
-                        }
+                                var setFechaEgreso = null;
+                                var setFechaFinContrato = null;
+                                if ($("#FechaEgreso").getKendoDatePicker().value() != null || $("#FechaEgreso").getKendoDatePicker().value() != undefined || $("#FechaEgreso").val() != "") {
+                                    setFechaEgreso = $("#FechaEgreso").getKendoDatePicker().value().toJSON();
+                                }
+                                if ($("#FechaFinContrato").getKendoDatePicker().value() != null || $("#FechaFinContrato").getKendoDatePicker().value() != undefined || $("#FechaFinContrato").val() != "") {
+                                    setFechaFinContrato = $("#FechaFinContrato").getKendoDatePicker().value().toJSON();
+                                }
 
-                        var _fechaNacimiento = $("#FechaNacimiento").getKendoDatePicker().value().toJSON()
-                        var _fechaIngreso = $("#FechaIngreso").getKendoDatePicker().value().toJSON()
-                        var upload = $("#Foto").data("kendoUpload"),
-                            files = upload.getFiles();
-                        var Foto1 = files[0].rawFile
-                        var dataObject = {
-                            'IdEmpleado': $("#IdEmpleado").val() === "" ? "0" : $("#IdEmpleado").val(),
-                            'NombreEmpleado': $("#NombreEmpleado").val(),
-                            'Correo': $("#Correo").val(),
-                            'FechaNacimiento': _fechaNacimiento,
-                            'FechaIngreso': _fechaIngreso,
-                            'Salario': Number($("#Salario").val()),
-                            'Identidad': $("#Identidad").val(),
-                            'FechaEgreso': setFechaEgreso,
-                            'Direccion': $("#Direccion").val(),
-                            'Genero': $("#Genero").data("kendoDropDownList").text(),
-                            'TipoSangre': $("#TipoSangre").data("kendoDropDownList").text(),
-                            'IdEstado': $("#IdEstado").val(),
-                            'IdState': $("#IdState").val(),
-                            'NombreContacto': $("#NombreContacto").val(),
-                            'TelefonoContacto': $("#TelefonoContacto").val(),
-                            'IdCountry': $("#IdCountry").val(),
-                            'IdCity': $("#IdCity").val(),
-                            'IdCurrency': $("#IdCurrency").val(),
-                            'IdActivoinactivo': $("#IdEstado").val(),
-                            'IdBank': $("#IdBank").val(),
-                            'CuentaBanco': $("#CuentaBanco").val(),
-                            'FechaFinContrato': setFechaFinContrato,
-                            'Telefono': $("#Telefono").val(),
-                            'Extension': $("#Extension").val(),
-                            'IdPuesto': $("#IdPuesto").val(),
-                            'IdSucursal': $("#IdSucursal").val(),
-                            'IdDepartamento': $("#IdDepartamento").val(),
-                            'IdTipoContrato': $("#IdTipoContrato").val(),
-                            'Notas': $("#Notas").val(),
-                            'IdBranch': $("#IdBranch").val(),
-                            
-                            //temporal
-                            'ApplicationUserId': 'FC405B7D-9FE3-43C9-97B5-D87A174CAB8A',
-                            'RTN': $("#RTN").val(),
-                            'Profesion': $("#Profesion").val(),
-                            'IdTipoPlanilla': $("#IdTipoPlanilla").val(),
-                            'BirthPlace': $("#BirthPlace").val(),
-                            //'_Employees': displayedData,
-                            '_EmployeeSalary': displayedData1,
-                        };
+                                var _fechaNacimiento = $("#FechaNacimiento").getKendoDatePicker().value().toJSON()
+                                var _fechaIngreso = $("#FechaIngreso").getKendoDatePicker().value().toJSON()
+                                var dataObject = {
+                                    'IdEmpleado': $("#IdEmpleado").val() === "" ? "0" : $("#IdEmpleado").val(),
+                                    'NombreEmpleado': $("#NombreEmpleado").val(),
+                                    'Correo': $("#Correo").val(),
+                                    'FechaNacimiento': _fechaNacimiento,
+                                    'FechaIngreso': _fechaIngreso,
+                                    'Salario': Number($("#Salario").val()),
+                                    'Identidad': $("#Identidad").val(),
+                                    'FechaEgreso': setFechaEgreso,
+                                    'Direccion': $("#Direccion").val(),
+                                    'Genero': $("#IdGenero").data("kendoDropDownList").text(),
+                                    'TipoSangre': $("#IdTipoSangre").data("kendoDropDownList").text(),
+                                    'IdEstado': $("#IdEstado").val(),
+                                    'IdState': $("#IdState").val(),
+                                    'NombreContacto': $("#NombreContacto").val(),
+                                    'TelefonoContacto': $("#TelefonoContacto").val(),
+                                    'IdCountry': $("#IdCountry").val(),
+                                    'IdCity': $("#IdCity").val(),
+                                    'IdCurrency': $("#IdCurrency").val(),
+                                    'IdActivoinactivo': $("#IdEstado").val(),
+                                    'IdBank': $("#IdBank").val(),
+                                    'CuentaBanco': $("#CuentaBanco").val(),
+                                    'FechaFinContrato': setFechaFinContrato,
+                                    'Telefono': $("#Telefono").val(),
+                                    'Extension': $("#Extension").val(),
+                                    'IdPuesto': $("#IdPuesto").val(),
+                                    'IdSucursal': $("#IdSucursal").val(),
+                                    'IdDepartamento': $("#IdDepartamento").val(),
+                                    'IdTipoContrato': $("#IdTipoContrato").val(),
+                                    'Notas': $("#Notas").val(),
+                                    'IdBranch': $("#IdBranch").val(),
+                                    //temporal
+                                    'ApplicationUserId': 'FC405B7D-9FE3-43C9-97B5-D87A174CAB8A',
+                                    'RTN': $("#RTN").val(),
+                                    'Profesion': $("#Profesion").val(),
+                                    'IdTipoPlanilla': $("#IdTipoPlanilla").val(),
+                                    'BirthPlace': $("#BirthPlace").val(),
+                                    //'_Employees': displayedData,
+                                    '_EmployeeSalary': displayedData1,
+                                };
 
-                        var validator = $("#frmEmployees").data("kendoValidator");
+                                var validator = $("#frmEmployees").data("kendoValidator");
 
-                        if (validator.validate()) {
+                                if (validator.validate()) {
 
-                            $.ajax({
-                                url: '@Url.Action("SaveEmployees", "Employees")',
-                                method: 'POST',
-                                datatype: "json",
-                                contentType: "application/json",
-                                async: false,
-                                data: { 'Foto': Foto1, '_EmployeesDTO': JSON.stringify(dataObject) },
-                                success: function (data) {
-                                    $.toast({
-                                        heading: 'Satisfactorio',
-                                        text: '<br/><br/> Datos guardados correctamente.',
-                                        position: 'top-right',
-                                        loaderBg: '#ff6849',
-                                        icon: 'success',
-                                        hideAfter: 30000,
-                                        stack: 6
+                                    $.ajax({
+                                        url: '@Url.Action("SaveEmployees", "Employees")',
+                                        method: 'POST',
+                                        datatype: "json",
+                                        contentType: "application/json",
+                                        async: false,
+                                        data: JSON.stringify(dataObject),
+                                        success: function (data) {
+                                            $.toast({
+                                                heading: 'Satisfactorio',
+                                                text: ' Datos guardados correctamente.',
+                                                position: 'top-right',
+                                                loaderBg: '#ff6849',
+                                                icon: 'success',
+                                                hideAfter: 30000,
+                                                stack: 6
+                                            });
+
+                                            console.log(data);
+                                            window.location.href = "@Url.Action("pvwEditEmployees", "Employees")?IdEmpleado=" + data.IdEmpleado;
+                                            //RefrescarGrid();
+
+                                            //$('#ModalEmployees').modal('hide');
+
+                                        },
+                                        error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                                            $.toast({
+                                                heading: 'Error',
+                                                text: textStatus + ": " + XMLHttpRequest.responseText,
+                                                position: 'top-right',
+                                                loaderBg: '#ff6849',
+                                                icon: 'error',
+                                                hideAfter: 30000,
+                                                stack: 6
+                                            });
+
+                                        }
                                     });
 
-                                    RefrescarGrid();
-
-                                    $('#ModalEmployees').modal('hide');
-
-                                },
-                                error: function (XMLHttpRequest, textStatus, errorThrown) {
-
-                                    notification.show({
-                                        title: "Validación",
-                                        message: textStatus + ": " + XMLHttpRequest.responseText
-                                    }, "error");
-
                                 }
-                            });
-
-                        }
-                        else {
-                            $("#btnEmployees").prop("disabled", false);
+                                else {
+                                    $("#btnEmployees").prop("disabled", false);
+                                }
+                            }
                         }
                     }
                 }
             }
         }
     }
-    //$("#NombreEmpleado").keyup(function (e) {
-    //    if ($("#NombreEmpleado").val() == "" || $("#Identidad").val() == "" || $("#FechaNacimiento").val() == "" || $("#LugarNacimiento").val() == ""
-    //        || $("#Genero").data("kendoDropDownList").value() == 0 || $("#TipoSangre").data("kendoDropDownList").value() == 0 || $("#Correo").val() == ""
-    //        || $("#Telefono").val() == "" || $("#Extension").val() == "" || $("#RTN").val() == "" || $("#Profesion").val() == ""
-    //        || $("#IdEstado").data("kendoDropDownList").value() == 0 || $("#FechaIngreso").val() == "" || $("#IdPuesto").data("kendoDropDownList").value() == 0
-    //        || $("#IdDepartamento").data("kendoDropDownList").value() == 0 || $("#Salario").val() == "" || $("#IdCurrency").data("kendoDropDownList").value() == 0
-    //        || $("#IdCountry").data("kendoDropDownList").value() == 0 || $("#IdState").data("kendoDropDownList").value() == 0 || $("#IdCity").data("kendoDropDownList").value() == 0
-    //        || $("#Direccion").val() == "" || $("#IdBank").data("kendoDropDownList").value() == 0 || $("#CuentaBanco").val() == "" || $("#IdBranch").data("kendoDropDownList").value() == 0
-    //        || $("#IdTipoContrato").data("kendoDropDownList").value() == 0) {
-    //        $("#Foto").data("kendoUpload").disable();
-    //    }
-    //    else {
-    //        $("#Foto").data("kendoUpload").enable();
-    //    }
-    //});
 
-    //$("#Identidad").keyup(function (e) {
-    //    if ($("#NombreEmpleado").val() == "" || $("#Identidad").val() == "" || $("#FechaNacimiento").val() == "" || $("#LugarNacimiento").val() == ""
-    //        || $("#Genero").data("kendoDropDownList").value() == 0 || $("#TipoSangre").data("kendoDropDownList").value() == 0 || $("#Correo").val() == ""
-    //        || $("#Telefono").val() == "" || $("#Extension").val() == "" || $("#RTN").val() == "" || $("#Profesion").val() == ""
-    //        || $("#IdEstado").data("kendoDropDownList").value() == 0 || $("#FechaIngreso").val() == "" || $("#IdPuesto").data("kendoDropDownList").value() == 0
-    //        || $("#IdDepartamento").data("kendoDropDownList").value() == 0 || $("#Salario").val() == "" || $("#IdCurrency").data("kendoDropDownList").value() == 0
-    //        || $("#IdCountry").data("kendoDropDownList").value() == 0 || $("#IdState").data("kendoDropDownList").value() == 0 || $("#IdCity").data("kendoDropDownList").value() == 0
-    //        || $("#Direccion").val() == "" || $("#IdBank").data("kendoDropDownList").value() == 0 || $("#CuentaBanco").val() == "" || $("#IdBranch").data("kendoDropDownList").value() == 0
-    //        || $("#IdTipoContrato").data("kendoDropDownList").value() == 0) {
-    //        $("#Foto").data("kendoUpload").disable();
-    //    }
-    //    else {
-    //        $("#Foto").data("kendoUpload").enable();
-    //    }
-    //});
+
+
+    $(document).ready(function () {
+        HorasExtrasChange();
+        $("#btnEmployees").click(function (event) {
+            if ($('#TelefonoContactoAlert').is(':hidden') && $('#TelefonoAlert').is(':hidden')) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        });
+
+            // Basic
+            $('.dropify-std').dropify();
+
+            // Translated
+            $('.dropify').dropify({
+                messages: {
+                    default: 'Arrastre un archivo de Imagen o click para cagar archivo',
+                    replace: 'Click para Reemplazar',
+                    remove: 'Quitar',
+                    error: 'Error'
+
+                }
+            });
+
+            // Used events
+            var drEvent = $('#input-file-events').dropify();
+
+            drEvent.on('dropify.beforeClear', function (event, element) {
+                return confirm("Esta seguro que desea eliminar el archivo \"" + element.file.name + "\" ?");
+            });
+
+            drEvent.on('dropify.afterClear', function (event, element) {
+                alert('Archivo eliminado');
+            });
+
+            drEvent.on('dropify.errors', function (event, element) {
+                console.log('Has Errors');
+            });
+
+            var drDestroy = $('#input-file-to-destroy').dropify();
+            drDestroy = drDestroy.data('dropify')
+            $('#toggleDropify').on('click', function (e) {
+                e.preventDefault();
+                if (drDestroy.isDropified()) {
+                    drDestroy.destroy();
+                } else {
+                    drDestroy.init();
+                }
+            })
+        });
+
+    var tmrReady = setInterval(isPageFullyLoaded, 100);
+
+    function isPageFullyLoaded() {
+        if (document.readyState == "loaded" || document.readyState == "complete") {
+            subclassForms();
+            clearInterval(tmrReady);
+
+        }
+
+    }
+
+    function submitDisabled(_form, currSubmit) {
+        return function () {
+            var mustSubmit = true;
+            if (currSubmit != null)
+                mustSubmit = currSubmit();
+
+            var els = _form.elements;
+            for (var i = 0; i < els.length; i++) {
+                if (els[i].type == "submit")
+                    if (mustSubmit)
+                        els[i].disabled = true;
+
+            }
+            return mustSubmit;
+
+        }
+
+    }
+
+
+
+    function subclassForms() {
+        for (var f = 0; f < document.forms.length; f++) {
+            var frm = document.forms[f];
+            frm.onsubmit = submitDisabled(frm, frm.onsubmit);
+
+        }
+
+    }
 </script>
 
 
+
+<script>
+    //Buscar en las listas
+
+        function DataONUListilicitas(nombre) {
+
+
+        debugger;
+            var mfirstname = $("#NombreEmpleado").val();
+            var mlastName = $("#NombreEmpleado").val();
+            var thirtname = $("#NombreEmpleado").val();
+
+
+        return {
+            FIRST_NAME: mfirstname,
+        SECOND_NAME: mlastName,
+        THIRD_NAME: thirtname,
+    };
+
+    }
+
+
+    function DataPEPSlist(nombre) {
+
+        debugger;
+        var mfirstname = $("#NombreEmpleado").val();
+
+
+        return {
+            Funcionario: mfirstname,
+        };
+
+    }
+
+
+    function DataBlackListilicitas(nombre) {
+        var mfirstname = $("#NombreEmpleado").val();
+
+
+
+        return {
+            CustomerName: mfirstname,
+
+        };
+
+    }
+
+    function DataOFAClist(nombre) {
+        debugger;
+        var mfirstname = $("#NombreEmpleado").val();
+        var mlastName = $("#NombreEmpleado").val();
+
+
+        return {
+            firstName: mfirstname,
+            lastName: mlastName
+        };
+
+    }
+
+
+    function PeronIlicitas(nombre) {
+        debugger;
+            var generar_alertas = false;
+
+            $.ajax({
+                url: '@Url.Action("GetBlackListByParams", "BlackListCustomers")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: DataBlackListilicitas(nombre),
+                success: function (GetBlackListByParams) {
+
+                    var gridListaNegra = $("#gridListaNegra").getKendoGrid();
+                    var datasource = gridListaNegra.dataSource;
+
+                    var raw = datasource._data;
+                    for (i = datasource._data.length - 1; i >= 0; i--) {
+                        var item = raw[i];
+                        datasource.remove(item);
+                    }
+
+                    for (var i = 0; i < GetBlackListByParams.Data.length; i++) {
+                        datasource.insert(GetBlackListByParams.Data[i]);
+                    }
+
+                    var gridListalengthNegra = $("#gridListaNegra").data().kendoGrid.dataSource.data();
+
+                    if (gridListalengthNegra.length > 0) {
+                        $("#myModalListaNegra").modal('show');
+
+                        generar_alertas = true;
+                    }
+                    else {
+                        $("#myModalListaNegra").modal('hide');
+
+                        if (AlertaBusca.val() == '1') {
+                            $.toast({
+                                heading: 'En la Busqueda',
+                                text: ' No se encuentran resultados en la Lista Negra.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                showHideTransition: 'slide',
+                                hideAfter: 6000,
+                                stack: 6
+                            });
+                        }
+
+
+                    }
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+
+                }
+            });
+
+
+            $.ajax({
+                url: '@Url.Action("GetPersonByName", "OFAC")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: DataOFAClist(nombre),
+                success: function (data) {
+
+                    var grid = $("#gridListaOFAC").getKendoGrid();
+                    var datasource = grid.dataSource;
+                    var raw = datasource._data;
+                    for (i = datasource._data.length - 1; i >= 0; i--) {
+                        var item = raw[i];
+                        datasource.remove(item);
+                    }
+
+                    for (var i = 0; i < data.Data.length; i++) {
+                        datasource.insert(data.Data[i]);
+                        generar_alertas = true;
+                    }
+
+                    var gridListaOFAClen = $("#gridListaOFAC").data().kendoGrid.dataSource.data();
+
+                    if (gridListaOFAClen.length > 0) {
+                        $("#myModalOFAC").modal('show');
+                    }
+                    else {
+                        $("#myModalOFAC").modal('hide');
+
+
+                        if (AlertaBusca.val() == '1') {
+                            $.toast({
+                                heading: 'En la Busqueda',
+                                text: ' No se encuentran resultados en OFAC.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                showHideTransition: 'slide',
+                                hideAfter: 6000,
+                                stack: 6
+                            });
+                        }
+                    }
+
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+
+                }
+            });
+
+
+            $.ajax({
+                url: '@Url.Action("GetByParams", "PEPS")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: DataPEPSlist(nombre),
+                success: function (data) {
+
+
+                    var gridListaPEPS = $("#gridListaPEPS").getKendoGrid();
+                    var datasource = gridListaPEPS.dataSource;
+
+                    var raw = datasource._data;
+                    for (i = datasource._data.length - 1; i >= 0; i--) {
+                        var item = raw[i];
+                        datasource.remove(item);
+                    }
+
+                    for (var i = 0; i < data.Data.length; i++) {
+                        datasource.insert(data.Data[i]);
+                    }
+
+                    var gridListalengthpeps = $("#gridListaPEPS").data().kendoGrid.dataSource.data();
+
+
+                    if (gridListalengthpeps.length > 0) {
+                        $("#myModalPEPS").modal('show');
+                        generar_alertas = true;
+                    }
+                    else {
+                        $("#myModalPEPS").modal('hide');
+                        if (AlertaBusca.val() == '1') {
+                            $.toast({
+                                heading: 'En la Busqueda',
+                                text: ' No se encuentran resultados en PEPS.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                showHideTransition: 'slide',
+                                hideAfter: 6000,
+                                stack: 6
+                            });
+                        }
+
+                    }
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+
+                }
+            });
+
+            $.ajax({
+                url: '@Url.Action("GetONUPersonByName", "ONU")',
+                method: 'GET',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: DataONUListilicitas(nombre),
+                success: function (data) {
+
+                    var gridListaONU = $("#gridListaONU").getKendoGrid();
+                    var datasource = gridListaONU.dataSource;
+
+                    var raw = datasource._data;
+                    for (i = datasource._data.length - 1; i >= 0; i--) {
+                        var item = raw[i];
+                        datasource.remove(item);
+                    }
+
+                    for (var i = 0; i < data.Data.length; i++) {
+                        datasource.insert(data.Data[i]);
+                    }
+
+
+                    var gridListalengthONU = $("#gridListaONU").data().kendoGrid.dataSource.data();
+
+                    if (gridListalengthONU.length > 0) {
+                        $("#myModalListaONU").modal('show');
+                        generar_alertas = true;
+                    }
+                    else {
+                        $("#myModalListaONU").modal('hide');
+
+                        if (AlertaBusca.val() == '1') {
+                            $.toast({
+                                heading: 'En la Busqueda',
+                                text: ' No se encuentran resultados en ONU.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                showHideTransition: 'slide',
+                                hideAfter: 6000,
+                                stack: 6
+                            });
+                        }
+
+
+                    }
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    $.toast({
+                        heading: 'Validación',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+
+                }
+            });
+
+
+
+            if (generar_alertas == true && AlertaBusca.val() == '1') {
+
+                var dataAlerta = {
+
+                    'DocumentId': 1,
+                    'DocumentName': 'Empleado',
+                    'Code': 'PERSON001',
+                    'PersonName': nombre,
+                    'CloseDate': '0001-01-01',
+
+                };
+
+                $.ajax({
+                    url: '@Url.Action("GenerarAlerta", "Alert")',
+                    method: 'POST',
+                    datatype: "json",
+                    contentType: "application/json",
+                    async: false,
+                    data: JSON.stringify(dataAlerta),
+                    success: function (data) {
+
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                        $.toast({
+                            heading: 'Validación',
+                            text: textStatus + ": " + XMLHttpRequest.responseText,
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 30000,
+                            stack: 6
+                        });
+
+                    }
+                });
+
+
+
+            }
+
+        
+    }
+
+
+
+
+
+
+
+</script>

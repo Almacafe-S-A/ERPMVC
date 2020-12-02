@@ -1,11 +1,13 @@
 ﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
 
 @{
-        ViewData["Title"] = "Póliza";
- }
+    ViewData["Title"] = "Pólizas";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
 
-    <h3 class="text-themecolor">Póliza</h3>
-    <script>
+<h3 class="text-themecolor">Pólizas</h3>
+<script>
 
     function onsave(e) {
     }
@@ -96,115 +98,137 @@
          }
 
 
-    </script>
+</script>
 
-    @(Html.Kendo().Grid<ERPMVC.Models.InsurancePolicy>()
-                                                                    .Name("gridInsurancePolicy")
-                                                                    .Columns(columns =>
-                                                                    {
-                                                                        columns.Command(command =>
+@(Html.Kendo().Grid<ERPMVC.Models.InsurancePolicy>()
+                                                                        .Name("gridInsurancePolicy")
+                                                                        .Columns(columns =>
                                                                         {
-                                                                            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditInsurancePolicy");
+                                                                            if (permisos.HasClaim("Contabilidad.Seguros.Polizas.Editar", "true"))
+                                                                            {
+                                                                                columns.Command(command =>
+                                                                                {
+                                                                                    command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditInsurancePolicy");
 
-                                                                        }).Width(100);
-                                                                        columns.Bound(p => p.InsurancePolicyId).Title("Codigo").Width(100).Visible(true);
-                                                                        columns.Bound(p => p.PolicyNumber).Title("N° Póliza").Width(130).Visible(false);
-                                                                        columns.Bound(p => p.InsurancesName).Title("Nombre Aseguradora").Width(180);
-                                                                        columns.Bound(p => p.CustomerName).Title("Cliente").Width(150);
-                                                                        columns.Bound(p => p.PolicyDate).Format("{0:dd/MM/yyyy}").Title("Fecha Emisión").Width(150);
-                                                                        columns.Bound(p => p.PolicyDueDate).Format("{0:dd/MM/yyyy}").Title("Fecha Vencimiento").Width(180);
-                                                                        columns.Bound(p => p.CustomerId).Title("Id").Width(150).Visible(false);
-                                                                        columns.Bound(p => p.DollarAmount).Format("{0:n2}").Title("Monto $").Width(150);
-                                                                        columns.Bound(p => p.LpsAmount).Format("{0:n2}").Title("Monto Lps").Width(150);
+                                                                                }).Title("Acciones").Width(100);
+                                                                            }
+                                                                            columns.Bound(p => p.InsurancePolicyId).Title("Id").Width(130);
+                                                                            columns.Bound(p => p.InsurancesName).Title("Aseguradora").Width(180);
+                                                                            columns.Bound(p => p.PolicyNumber).Title("N° Póliza").Width(130);
+                                                                            columns.Bound(p => p.Propias).ClientTemplate("#= Propias ? 'Contratado':'Endosado'#").Title("Tipo").Width(120);
+                                                                            columns.Bound(p => p.CustomerName).Title("Cliente").Width(150);
+                                                                            columns.Bound(p => p.PolicyDate).Format("{0:dd/MM/yyyy}").Title("Fecha Emisión").Width(200);
+                                                                            columns.Bound(p => p.PolicyDueDate).Format("{0:dd/MM/yyyy}").Title("Fecha Vencimiento").Width(200);
+                                                                            columns.Bound(p => p.CustomerId).Title("Id").Width(150).Visible(false);
+                                                                            columns.Bound(p => p.DollarAmount).Format("{0:n2}").Title("Monto $").Width(150);
+                                                                            columns.Bound(p => p.LpsAmount).Format("{0:n2}").Title("Monto Lps").Width(150);
+                                                                            columns.Bound(p => p.Estado).Title("Estado").Width(150);
+                                                                        })
+                                                                            .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                                                                   .Clear()
+                                                                                                   .Contains("Contiene")
+                                                                                                   .DoesNotContain("No contiene")
+                                                                                                   .EndsWith("Termina con")
+                                                                                                   .IsEqualTo("Es igual a")
+                                                                                                   .IsNotEqualTo("No es igual a")
+                                                                                                   .IsNull("Es nulo")
+                                                                                                   .StartsWith("Inicia con")
 
 
-
-
-                                                                    })
-                                                                        .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                                                             )
+                                                                                             .ForNumber(n => n
                                                                                                .Clear()
-                                                                                               .Contains("Contiene")
-                                                                                               .DoesNotContain("No contiene")
-                                                                                               .EndsWith("Termina con")
                                                                                                .IsEqualTo("Es igual a")
-                                                                                               .IsNotEqualTo("No es igual a")
+                                                                                               .IsGreaterThan("Es mayor que")
+                                                                                               .IsLessThan("Es menor que")
                                                                                                .IsNull("Es nulo")
-                                                                                               .StartsWith("Inicia con")
-
-
-                                                                                         )
-                                                                                         .ForNumber(n => n
-                                                                                           .Clear()
-                                                                                           .IsEqualTo("Es igual a")
-                                                                                           .IsGreaterThan("Es mayor que")
-                                                                                           .IsLessThan("Es menor que")
-                                                                                           .IsNull("Es nulo")
-                                                                                           .IsLessThanOrEqualTo("Es menor o igual que")
-                                                                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                                                         )
-                                                                                         .ForDate(d => d
-                                                                                         .Clear()
-                                                                                         .IsEqualTo("Es igual que")
-                                                                                         .IsGreaterThan("Es mayor que")
-                                                                                         .IsLessThan("Es menor que")
-                                                                                         .IsLessThanOrEqualTo("Es menor o igual que")
-                                                                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                                                         .IsNotEqualTo("No es igual que")
-                                                                                          )
-                                                                                       ))
-                                                                    .ToolBar(tools =>
-                                                                    {
-                                                                        // tools.Create();
-                                                                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                                                                                                   .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddInsurancePolicy();" });
-                                                                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                                                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-
-                                                                    })
-                                                                    .Editable(e => e.Mode(GridEditMode.PopUp))
-                                                                    .Sortable()
-                                                                    .AutoBind(true)
-                                                                    .Pageable()
-                                                                    .Filterable()
-                                                                    .Scrollable()
-                                                                    .Pdf(pdf => pdf.FileName("InsurancePolicyReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                                                        .Excel(excel => excel.FileName("InsurancePolicyReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                                                    .DataSource(dataSource =>
-                                                                        dataSource
-                                                                        .WebApi()
-
-                                                                        .ServerOperation(true)
-                                                                        .Model(model =>
+                                                                                               .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                                               .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                                             )
+                                                                                             .ForDate(d => d
+                                                                                             .Clear()
+                                                                                             .IsEqualTo("Es igual que")
+                                                                                             .IsGreaterThan("Es mayor que")
+                                                                                             .IsLessThan("Es menor que")
+                                                                                             .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                                             .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                                             .IsNotEqualTo("No es igual que")
+                                                                                              )
+                                                                                           ))
+                                                                        .ToolBar(tools =>
                                                                         {
-                                                                            model.Id(p => p.InsurancePolicyId);
-                                                                            model.Field(p => p.InsurancePolicyId).Editable(true);
+                                                                            // tools.Create();
+                                                                            if (permisos.HasClaim("Contabilidad.Seguros.Polizas.Agregar", "true"))
+                                                                            {
+                                                                                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                                                                                       .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddInsurancePolicy();" });
+                                                                            }
+                                                                                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                                                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                                                            
 
                                                                         })
-                                                                         .Events(events =>
-                                                                         {
-                                                                             events.Error("error_handler");
-                                                                             //events.upda("EditHandler");
-                                                                         })
-                                                                        .Read(read => read.Action("Get", "InsurancePolicy"))
-                                                                        .Create(create => create.Action("Insert", "InsurancePolicy"))
-                                                                        .Update(update => update.Action("Update", "InsurancePolicy", new { InsurancePolicyId = "{0}" }).Type(HttpVerbs.Put))
-                                                                    //.Destroy(destroy => destroy.Action("Delete", "TypeAccount", new { Num = "{1}" }).Type(HttpVerbs.Delete))
+                                                                        .Editable(e => e.Mode(GridEditMode.PopUp))
+                                                                        .Sortable()
+                                                                        .AutoBind(true)
+                                                                        .Pageable()
+                                                                        .Filterable()
+                                                                        .Scrollable()
+                                                                        .Pdf(pdf => pdf.FileName("InsurancePolicyReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                                                        .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                                                            .Excel(excel => excel.FileName("InsurancePolicyReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                                        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                                                        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                                                        .DataSource(dataSource =>
+                                                                            dataSource
+                                                                            .WebApi()
 
-                                                                    )
-                                                                        .Events(e =>
-                                                                        {
-                                                                            //  e.Save("onsave");
+                                                                            .ServerOperation(true)
+                                                                            .Model(model =>
+                                                                            {
+                                                                                model.Id(p => p.InsurancePolicyId);
+                                                                                model.Field(p => p.InsurancePolicyId).Editable(true);
 
-                                                                        })
-    )
+                                                                            })
+                                                                             .Events(events =>
+                                                                             {
+                                                                                 events.Error("error_handler");
+                                                                                 //events.upda("EditHandler");
+                                                                             })
+                                                                            .Read(read => read.Action("Get", "InsurancePolicy"))
+                                                                            .Create(create => create.Action("Insert", "InsurancePolicy"))
+                                                                            .Update(update => update.Action("Update", "InsurancePolicy", new { InsurancePolicyId = "{0}" }).Type(HttpVerbs.Put))
+                                                                        //.Destroy(destroy => destroy.Action("Delete", "TypeAccount", new { Num = "{1}" }).Type(HttpVerbs.Delete))
 
-    <div id="divInsurancePolicy">
-        @await Html.PartialAsync("pvwAddInsurancePolicy", new ERPMVC.DTO.InsurancePolicyDTO { InsurancePolicyId = 0, PolicyDate = DateTime.Now, PolicyDueDate = DateTime.Now })
-    </div>
+                                                                        )
+                                                                            .Events(e =>
+                                                                            {
+                                                                                //  e.Save("onsave");
+
+                                                                            })
+)
+
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridInsurancePolicy").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridInsurancePolicy").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar");
+    setRowButtonTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+</script>
+
+<div id="divInsurancePolicy">
+    @await Html.PartialAsync("pvwAddInsurancePolicy", new ERPMVC.DTO.InsurancePolicyDTO { InsurancePolicyId = 0, PolicyDate = DateTime.Now, PolicyDueDate = DateTime.Now },ViewData)
+</div>
 

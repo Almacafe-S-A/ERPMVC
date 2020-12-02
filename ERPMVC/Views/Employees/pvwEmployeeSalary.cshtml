@@ -1,7 +1,9 @@
 ﻿@model ERPMVC.DTO.EmployeeSalaryDTO
+@using System.Security.Claims
 @{
     ViewData["Title"] = "Empleado Salario";
     var estados = ViewData["Estados"] as IEnumerable<ERPMVC.Models.Estados>;
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisosEmployees"];
 }
 <script>
 function GetIdEmployees() {
@@ -10,121 +12,135 @@ function GetIdEmployees() {
             }
     }
 </script>
-<h3 class="text-themecolor">Empleado Salario</h3>
-
+<div class="box" id="AlertSalario">
+    <span class="text-danger"><span role="alert" class="k-icon k-i-warning"></span>  Un empleado nuevo solo se le puede asignar un solo salario!</span>
+</div>
 
 @(Html.Kendo().Grid<ERPMVC.DTO.EmployeeSalaryDTO>()
-                            .Name("gridEmployeeSalary")
-                            .Events(events => events
-                                .DataBinding("onDataBinding")
-                            )
-                            .Columns(columns =>
-                            {
-                                columns.Command(command =>
+                                .Name("gridEmployeeSalary")
+                                .Events(events => events
+                                    .DataBinding("onDataBinding")
+                                )
+                                .Columns(columns =>
                                 {
-                                    //   command.Custom("Ver detalles").Click("Detalles");
-                                    command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText("Actualizar").CancelText("Cancelar").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "" });
-                                    //command.Destroy().Text("Eliminar");
-                                }).Width(150);
-                                columns.Bound(p => p.EmployeeSalaryId).Width(100).Visible(false);
-                                columns.Bound(p => p.IdEmpleado).Title("Empleado").Width(150).Visible(false);
-                                columns.Bound(p => p.QtySalary).Title("Salario").Width(150).EditorTemplateName("EmployeeSalary");
-                                //columns.Bound(p => p.QtySalary).Format("{0:n2}").Title("Salario").Width(150);
-                                columns.Bound(p => p.DayApplication).Title("Dia de Aplicacion").Format("{0:dd/MM/yyyy HH:mm}").Width(190);
-                                columns.Bound(p => p.IdEstado).ClientTemplate("#if (IdEstado =='1') {#Activo#} else {#Inactivo#} #").Width(150);
-                                columns.Bound(p => p.CreatedDate).Title("Fecha creacion").Format("{0:dd/MM/yyyy HH:mm}").Width(150).Sortable(false);
+                                    
+                                        columns.Command(command =>
+                                        {
+                                            //   command.Custom("Ver detalles").Click("Detalles");
+                                            command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText(" ").CancelText(" ").HtmlAttributes(new { @class = "k-i-plus-sm", @onclick = "AlertaSalario(this)", @id = "botones"});
+                                            //command.Destroy().Text("Eliminar");
+                                        }).Title("Acciones").Width(85);
+                                    
+                                    columns.Bound(p => p.EmployeeSalaryId).Width(100).Visible(false);
+                                    columns.Bound(p => p.IdEmpleado).Title("Empleado").Width(150).Visible(false);
+                                    columns.Bound(p => p.QtySalary).Title("Salario").Format("{0:n2}").Width(150).EditorTemplateName("EmployeeSalary");
+                                    //columns.Bound(p => p.QtySalary).Format("{0:n2}").Title("Salario").Width(150);
+                                    columns.Bound(p => p.DayApplication).Title("Día de Aplicación").Format("{0:dd/MM/yyyy}").Width(190).EditorTemplateName("DayApplicationSalary");
+                                    columns.Bound(p => p.IdEstado).ClientTemplate("#if (IdEstado =='1') {#Activo#} else {#Inactivo#} #").Width(150).Title("Estado");
+                                    columns.Bound(p => p.CreatedDate).Title("Fecha creación").Format("{0:dd/MM/yyyy HH:mm}").Width(150);
+
+                                })
+                                    .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                    .Clear()
+                                                    .Contains("Contiene")
+                                                    .DoesNotContain("No contiene")
+                                                    .EndsWith("Termina con")
+                                                    .IsEqualTo("Es igual a")
+                                                    .IsNotEqualTo("No es igual a")
+                                                    .IsNull("Es nulo")
+                                                    .StartsWith("Inicia con")
 
 
-                            })
-                                .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                )
+                                                .ForNumber(n => n
                                                 .Clear()
-                                                .Contains("Contiene")
-                                                .DoesNotContain("No contiene")
-                                                .EndsWith("Termina con")
                                                 .IsEqualTo("Es igual a")
-                                                .IsNotEqualTo("No es igual a")
+                                                .IsGreaterThan("Es mayor que")
+                                                .IsLessThan("Es menor que")
                                                 .IsNull("Es nulo")
-                                                .StartsWith("Inicia con")
-
-
-                                            )
-                                            .ForNumber(n => n
-                                            .Clear()
-                                            .IsEqualTo("Es igual a")
-                                            .IsGreaterThan("Es mayor que")
-                                            .IsLessThan("Es menor que")
-                                            .IsNull("Es nulo")
-                                            .IsLessThanOrEqualTo("Es menor o igual que")
-                                            .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                            )
-                                            .ForDate(d => d
-                                            .Clear()
-                                            .IsEqualTo("Es igual que")
-                                            .IsGreaterThan("Es mayor que")
-                                            .IsLessThan("Es menor que")
-                                            .IsLessThanOrEqualTo("Es menor o igual que")
-                                            .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                            .IsNotEqualTo("No es igual que")
-                                            )
-                                        ))
-        .ToolBar(tools =>
-        {
-            //tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-            //       .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddHoursWorked()" });
-
-            tools.Create().Text("Agregar").HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "", @id = "AgregarSalario" });
-
-
-        })
-
-
-        .Editable(e => e.Mode(GridEditMode.InLine))
-        .Sortable()
-        .Pageable()
-        .Filterable()
-        .Scrollable()
-        .Pdf(pdf => pdf.FileName("UsuariosReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-        .ProxyURL(Url.Action("Export", "Home")).AllPages())
-            .Excel(excel => excel.FileName("UsuariosReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-        .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-        .DataSource(dataSource =>
-            dataSource
-
-            .WebApi()
-            .Sort(sort => sort.Add("CreatedDate").Descending())
-            .ServerOperation(true)
-            .Model(model =>
+                                                .IsLessThanOrEqualTo("Es menor o igual que")
+                                                .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                )
+                                                .ForDate(d => d
+                                                .Clear()
+                                                .IsEqualTo("Es igual que")
+                                                .IsGreaterThan("Es mayor que")
+                                                .IsLessThan("Es menor que")
+                                                .IsLessThanOrEqualTo("Es menor o igual que")
+                                                .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                .IsNotEqualTo("No es igual que")
+                                                )
+                                            ))
+            .ToolBar(tools =>
             {
-                model.Id(p => p.EmployeeSalaryId);
-                model.Field(p => p.EmployeeSalaryId).Editable(false);
-                model.Field(p => p.IdEmpleado).Editable(false);
-                model.Field(p => p.QtySalary).Editable(true);
-                model.Field(p => p.DayApplication).Editable(true);
-                model.Field(p => p.IdEstado).Editable(false).DefaultValue("1");
-                model.Field(p => p.CreatedDate).Editable(false);
+                //tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                //       .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddHoursWorked()" });
+                
+                    tools.Create().Text("Agregar").HtmlAttributes(new { @class = "k-i-plus-sm", @id = "AgregarSalario" });
+                    tools.Custom().IconClass("k-icon k-i-plus").Text(" Agregar").HtmlAttributes(new { @class = "k-i-plus-sm", @onclick = "AlertSalario()", @id = "AgregarSalarioCustom" });
+                
+
             })
-            .Events(events => events.Error("error_handler"))
-            .Read(read => read.Action("GetEmployeeSalaryByIdEmployees", "EmployeeSalary").Data("GetIdEmployees()"))
-            .Create(create => create.Action("PostEmployeeSalary", "EmployeeSalary").Type(HttpVerbs.Post).Data("GetData"))
-            .Update(update => update.Action("PutEmployeeSalary", "EmployeeSalary", new { id = "{0}" }).Type(HttpVerbs.Put).Data("GetDataUpdate"))
-            .Destroy(destroy => destroy.Action("DeleteEmployeeSalary", "EmployeeSalary", new { id = "{0}" }).Type(HttpVerbs.Delete))
-        )
-        .Events(e =>
-        {
-            e.Save("onSave");
-            e.Edit("onEdit");
-        })
+
+
+            .Editable(e => e.Mode(GridEditMode.InLine))
+            .Sortable()
+            .Pageable(s => s
+            .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+            .Empty("No hay datos."))
+            )
+            .Filterable()
+            .Scrollable()
+            .Pdf(pdf => pdf.FileName("Salario_Empleado_Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+            .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                .Excel(excel => excel.FileName("Salario_Empleado_Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+            .DataSource(dataSource =>
+                dataSource
+
+                .WebApi()
+                .Sort(sort => sort.Add("CreatedDate").Descending())
+                .ServerOperation(true)
+                .Model(model =>
+                {
+                    model.Id(p => p.EmployeeSalaryId);
+                    model.Field(p => p.EmployeeSalaryId).Editable(false);
+                    model.Field(p => p.IdEmpleado).Editable(false);
+                    model.Field(p => p.QtySalary).Editable(true);
+                    model.Field(p => p.DayApplication).Editable(true);
+                    model.Field(p => p.IdEstado).Editable(false).DefaultValue("1");
+                    model.Field(p => p.CreatedDate).Editable(false);
+                })
+                .Sort(s => s.Add(m => m.CreatedDate).Descending())
+                .Events(events => events.Error("error_handler"))
+                .Read(read => read.Action("GetEmployeeSalaryByIdEmployees", "EmployeeSalary").Data("GetIdEmployees()"))
+                .Create(create => create.Action("PostEmployeeSalary", "EmployeeSalary").Type(HttpVerbs.Post).Data("GetData"))
+                .Update(update => update.Action("PutEmployeeSalary", "EmployeeSalary", new { id = "{0}" }).Type(HttpVerbs.Put).Data("GetDataUpdate"))
+                .Destroy(destroy => destroy.Action("DeleteEmployeeSalary", "EmployeeSalary", new { id = "{0}" }).Type(HttpVerbs.Delete))
+            )
+            .Events(e =>
+            {
+                e.Save("onSave");
+                e.Edit("onEdit");
+            })
 )
 <script>
+    function AlertaSalario() {
+    }
     function onDataBinding() {
         var displayedData = $("#gridEmployeeSalary").data().kendoGrid.dataSource.view();
         if (displayedData.length >= 1 && $("#IdEmpleado").val() == 0) {
             $("#AgregarSalario").prop("hidden", true);
+            $("#AgregarSalarioCustom").prop("hidden", false);
         }
         else {
             $("#AgregarSalario").prop("hidden", false);
+            $("#AgregarSalarioCustom").prop("hidden", true);
+
+            $("#AlertSalario").prop("hidden", true);
+
         }
     }
 
@@ -184,27 +200,54 @@ function GetIdEmployees() {
 
     function onSave(data) {
         var QtySalary = $("#QtySalary").val();
+        var DayApplication = $("#DayApplication").getKendoDatePicker().value().toJSON();
         //e.preventDefault();
         //var element = e.target || e.srcElement;
         //var data = $("#gridEmployeeSalary").data("kendoGrid").dataItem($(element).closest("tr"));
         //var data = this.dataItem($(e.currentTarget).closest("tr"));
         if (data.model.EmployeeSalaryId == 0 || data.model.EmployeeSalaryId == null && data.model.IdEmpleado == 0) {
             //$("#Salario").data('kendoNumericTextBox').value(QtySalary);
-            $("#Salario").val(QtySalary);
+            $("#Salario").data("kendoNumericTextBox").value(QtySalary);
+            $("#QtySalaryFrm").val(QtySalary);
+            $("#DayApplicationFrm").val(DayApplication);
         }
-        else if (data.model.EmployeeSalaryId == 0 || data.model.EmployeeSalaryId == null && data.model.IdEmpleado > 0){
-            $("#Salario").val(QtySalary);
+        else if (data.model.EmployeeSalaryId == 0 || data.model.EmployeeSalaryId == null && data.model.IdEmpleado > 0) {
+            $("#Salario").data("kendoNumericTextBox").value(QtySalary);
+            $("#QtySalaryFrm").val(QtySalary);
         }
         if (data.model.IdEstado == 1 && data.model.IdEmpleado == 0) {
             //$("#Salario").data('kendoNumericTextBox').value(QtySalary);
-            $("#Salario").val(QtySalary);
+            $("#Salario").data("kendoNumericTextBox").value(QtySalary);
+            $("#QtySalaryFrm").val(QtySalary);
+            $("#DayApplicationFrm").val(DayApplication);
         }
-        else if (data.model.IdEstado == 1 && data.model.IdEmpleado > 0){
-            $("#Salario").val(QtySalary);
+        else if (data.model.IdEstado == 1 && data.model.IdEmpleado > 0) {
+            $("#Salario").data("kendoNumericTextBox").value(QtySalary);
+            $("#QtySalaryFrm").val(QtySalary);
         }
         $("#myModalSalarioEmpleado").modal('hide');
     }
     function onEdit(e) {
         //console.log("Editado");
     }
+</script>
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridEmployeeSalary").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridEmployeeSalary").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-add", "Agregar un nuevo registro");
+    setRowButtonTooltip(".k-grid-edit", "Editar registro");
+    setRowButtonTooltip(".k-grid-update", "Aceptar");
+    setRowButtonTooltip(".k-grid-cancel", "Cancelar");
 </script>

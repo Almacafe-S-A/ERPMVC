@@ -1,0 +1,190 @@
+﻿@model ERPMVC.DTO.ContextoRiesgoDTO
+
+@{ Layout = null;
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+// {"required","Valor requerido" }
+};
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+<div id="ModalContextoRiesgo" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Contexto de Riesgo</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmContextoRiesgo" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveContextoRiesgo"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label asp-for="IdContextoRiesgo" class=" control-label" style="min-width:100%"></label>
+                                                    <input type="text" asp-for="IdContextoRiesgo" name="IdContextoRiesgo" class="form-control" disabled="disabled" style="min-width:100%" />
+                                                    <span asp-validation-for="IdContextoRiesgo" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-6">
+                                                <div class="form-group">
+                                                    <label asp-for="TipoContexto" class=" control-label" style="min-width:100%"></label>
+                                                    <input type="text" asp-for="TipoContexto" maxlength="60" required data-required-msg="El Tipo Contexto es Requerido." onkeypress="return soloLetras(event)" name="TipoContexto" class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <span asp-validation-for="TipoContexto" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <div class="form-group">
+                                                    <label asp-for="Descripcion" class=" control-label" style="min-width:100%"></label>
+                                                    @*<input type="text" asp-for="Descripcion" required data-required-msg="La Descripción es Requerida." data-max-msg="La Descripcion debe ser Menor o Igual a 100." name="Descripcion" class="form-control" autocomplete="off" style="width:100%" />*@
+                                                    <textarea type="text" id="Descripcion" class="form-control" maxlength="1000" required data-required-msg="La Descripción es requerida." style="min-width:100%;" rows="6" cols="40" asp-for="Descripcion"></textarea>
+                                                    <span asp-validation-for="Descripcion" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button id="btnContextoRiesgo" class="form-control btn-miboton" onclick="SaveContextoRiesgo(this)" type="button"> Guardar </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        $("#TipoContexto").on('paste', function (e) {
+            e.preventDefault();
+        })
+    })
+
+    function SoloNumeros(e) {
+        key = e.keyCode || e.which;
+        tecla = String.fromCharCode(key).toLowerCase();
+        letras = "1234567890";
+        especiales = "8-37-39-46";
+
+        tecla_especial = false
+        for (var i in especiales) {
+            if (key == especiales[i]) {
+                tecla_especial = true;
+                break;
+            }
+        }
+
+        if (letras.indexOf(tecla) == -1 && !tecla_especial) {
+            return false;
+        }
+    }
+
+    function soloLetras(e) {
+        key = e.keyCode || e.which;
+        tecla = String.fromCharCode(key).toLowerCase();
+        letras = " áéíóúabcdefghijklmnñopqrstuvwxyz";
+        especiales = "8-37-39-46";
+
+        tecla_especial = false
+        for (var i in especiales) {
+            if (key == especiales[i]) {
+                tecla_especial = true;
+                break;
+            }
+        }
+
+        if (letras.indexOf(tecla) == -1 && !tecla_especial) {
+            return false;
+        }
+    }
+
+    function customFunction(input) {
+        if (input.attr('name') === "IdContextoRiesgo" && input.val() === "0") {
+            return false;
+        }
+    }
+
+    function SaveContextoRiesgo(e) {
+        var displayedData = $("#gridContextoRiesgo").data().kendoGrid.dataSource.view();
+        var notification = $("#notification").data("kendoNotification");
+
+        $("#btnContextoRiesgo").hide();
+        $("#btnContextoRiesgo").prop("disabled", true);
+
+        var dataObject = {
+            'IdContextoRiesgo': $("#IdContextoRiesgo").val() === "" ? "0" : $("#IdContextoRiesgo").val(),
+            'TipoContexto': $("#TipoContexto").val(),
+            'Descripcion': $("#Descripcion").val(),
+        };
+
+        var validator = $("#frmContextoRiesgo").data("kendoValidator");
+        var status = $(".status");
+
+        if (validator.validate()) {
+            $.ajax({
+                url: '@Url.Action("SaveContextoRiesgo", "ContextoRiesgo")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: '<br/>Datos guardados correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                    RefrescarGrid();
+                    $('#ModalContextoRiesgo').modal('hide');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $.toast({
+                        heading: 'Error',
+                        text: textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                }
+            });
+        }
+        else {
+            $.toast({
+                heading: 'Validación',
+                text: "Ingrese todos los datos en el formulario!",
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+        }
+
+        $("#btnContextoRiesgo").show();
+        $("#btnContextoRiesgo").prop("disabled", false);
+    }
+</script>

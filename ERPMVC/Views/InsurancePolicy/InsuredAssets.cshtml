@@ -1,0 +1,289 @@
+﻿@using System.Security.Claims
+
+@model ERPMVC.Models.InsuredAssets
+
+
+@{
+    Layout = null;
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
+
+
+
+<h3 class="text-themecolor">Activos Asegurados</h3>
+
+<script>
+
+
+    function dataBound(e) {
+        $.each(this.dataSource.data(), function () {
+            //console.log(Date.parse(this.OrderDate), Date.parse(this.ReceivedDate));
+            if (Date.parse(this.OrderDate) != Date.parse(this.ReceivedDate)) {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Recibido').hide();
+            }
+        })
+    }
+
+    function ClearSession() {
+        var dataObject = ["listadoproductosInsuranceEndorsement"];
+         $.ajax({
+            url: '@Url.Action("ClearSession", "Common")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+         });
+    }
+
+    function RefrescarGrid() {
+        var grid = $("#gridInsurancedAssets").getKendoGrid();
+        grid.dataSource.read();
+    }
+
+    function ShowReport(e) {
+                //e.preventDefault();
+       // var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        window.location.href = '@Url.Action("SFActivosAsegurados", "InsurancePolicy",new { InsurancePolicyId = Model.InsurancePolicyId })';
+    }
+
+    function AddAsset() {
+        debugger;
+        ClearSession();
+        var dataObject = {
+            Id: 0,
+            InsurancePolicyId: @Model.InsurancePolicyId,
+            editar : 1
+        };
+        debugger;
+        $.ajax({
+            url: '@Url.Action("pvwAddInsuredAssets", "InsurancePolicy")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+              //  console.log(result);
+                $("#divInsuredAsset").html('');
+                $("#divInsuredAsset").html(result);
+
+                //RefreshInvoiceDetail();
+                 $("#btnSaveInsuranceEndorsement").show();
+                 $('#ModalAddAsset').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    //alert(textStatus + ": " + XMLHttpRequest.responseText);
+                 alert("Error");
+
+              }
+        });
+
+
+    }
+
+    function EditEndoso(e) {
+        e.preventDefault();
+        debugger;
+        ClearSession();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            Id: dataItem.Id,
+            editar : 0
+        };
+
+
+        $.ajax({
+            url: '@Url.Action("pvwAddInsuredAssets", "InsurancePolicy")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#divInsuredAsset").html('');
+                $("#divInsuredAsset").html(result);
+
+                var txt = $(result);
+
+                 //RefreshInvoiceDetail();
+                 $("#btnSaveInsuranceEndorsement").hide();
+                 $('#ModalAddAsset').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+    }
+
+    function ImprimirCotizacion(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        window.location.href = '@Url.Action("SFActivosAsegurados", "InsurancePolicy",new { InsurancePolicyId = Model.InsurancePolicyId })';
+
+
+    }
+
+
+
+
+    function closecondition() {
+        $('#myModalConditions').modal('hide');
+    }
+
+
+</script>
+
+
+@(Html.Kendo().Grid<ERPMVC.Models.InsuredAssets>()
+                                              .Name("gridInsurancedAssets")
+                                              .Columns(columns =>
+                                              {
+
+                                                  columns.Command(command =>
+                                                  {
+                                                      command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditEndoso");
+                                                      //command.Destroy().Text("Eliminar").IconClass("fa fa-trash-alt").Text(" ");
+                                                      //command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirCotizacion");
+
+                                                  }).Title("Acciones").Width(100);
+
+                                                  columns.Bound(p => p.Id).Title("Id").Width(100);
+                                                  columns.Bound(p => p.Branch.BranchName).Title("Sucursal").Width(150);
+                                                  //columns.Bound(p => p.Warehouse.CategoriaActivo.Nombre).Title("Categoría").Width(150);
+                                                  columns.Bound(p => p.AssetName).Title("Activo").Width(150);
+                                                  columns.Bound(p => p.AssetInsuredValue).Format("{0:C2}").Title("Valor Asegurado").Width(150);
+                                                  columns.Bound(p => p.AssetDeductible).Format("{0:C2}").Title("Deducible Activo").Width(150);
+                                                  columns.Bound(p => p.MerchandiseInsuredValue).Format("{0:C2}").Title("Valor Mercaderia").Width(150);
+                                                  columns.Bound(p => p.MerchandiseDeductible).Format("{0:C2}").Title("Deducible Mercaderia").Width(150);
+                                                  columns.Bound(p => p.InsuredDiference).Format("{0:C2}").Title("Diferencia Asegurada").Width(150);
+                                                  columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy}").Title("Fecha").Width(100);
+                                                  columns.Bound(p => p.EstadoId).ClientTemplate("#if (EstadoId == 1) {#Activo#} else {#Inactivo#} #").Title("Estado").Width(150);
+                                              })
+                                                  .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                           .Clear()
+                                                           .Contains("Contiene")
+                                                           .DoesNotContain("No contiene")
+                                                           .EndsWith("Termina con")
+                                                           .IsEqualTo("Es igual a")
+                                                           .IsNotEqualTo("No es igual a")
+                                                           .IsNull("Es nulo")
+                                                           .StartsWith("Inicia con")
+
+
+                                                     )
+                                                     .ForNumber(n => n
+                                                       .Clear()
+                                                       .IsEqualTo("Es igual a")
+                                                       .IsGreaterThan("Es mayor que")
+                                                       .IsLessThan("Es menor que")
+                                                       .IsNull("Es nulo")
+                                                       .IsLessThanOrEqualTo("Es menor o igual que")
+                                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                     )
+                                                     .ForDate(d => d
+                                                     .Clear()
+                                                     .IsEqualTo("Es igual que")
+                                                     .IsGreaterThan("Es mayor que")
+                                                     .IsLessThan("Es menor que")
+                                                     .IsLessThanOrEqualTo("Es menor o igual que")
+                                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                     .IsNotEqualTo("No es igual que")
+                                                      )
+                                                   ))
+                                              .ToolBar(tools =>
+                                              {
+                                                  // tools.Create();
+
+                                                  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                     .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddAsset();" });
+
+                                                  //tools.Custom().Text("Reporte").IconClass("")
+                                                  //           .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ImprimirLibroCompras();" });
+                                                  tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                                  tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+                                                  tools.Custom().Text("Reporte Seguros Contratados")
+                                                                         .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ShowReport();" });
+
+                                              })
+                                               .Editable(e => e.Mode(GridEditMode.PopUp))
+                                                .Sortable()
+                                                .AutoBind(true)
+                                                .Pageable(s => s
+                                                    .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")
+                                                    .Empty("No hay datos."))
+                                                )
+                                                .Filterable()
+                                                .Scrollable()
+                                                // .ClientDetailTemplateId("template")
+                                                .Pdf(pdf => pdf.FileName("SegurosEndosadosReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                                  .Excel(excel => excel.FileName("SegurosEndosadosReporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                                .Events(e => e.DataBound("dataBound"))
+                                                .DataSource(dataSource =>
+
+                                               dataSource
+                                               //.Ajax()
+                                               .WebApi()
+                                                .ServerOperation(true)
+                                                .Model(model =>
+                                                {
+                                                    model.Id(p => p.Id);
+                                                    model.Field(p => p.InsurancePolicyId).Editable(true);
+
+
+                                                })
+                                                //.Sort(s => s.Add(m => m.FechaCreacion).Descending())
+                                                .Events(events =>
+                                                {
+                                                    events.Error("error_handler");
+                                                    //events.upda("EditHandler");
+
+                                                })
+                                                .Read(read => read.Action("GetByInsurancePolicy", "InsuredAssets",new { InsurancePolicyId = Model.InsurancePolicyId}))
+                                                .Create(create => create.Action("Insert", "InsuredAssets"))
+                                                .Update(update => update.Action("Update", "InsuredAssets", new { id = "{0}" }))
+                                                .Destroy(destroy => destroy.Action("Delete", "InsuredAssets", new { id = "{0}" }))
+                                          )
+)
+
+<div id="divInsuredAsset">
+    @await Html.PartialAsync("pvwAddInsuredAssets", new ERPMVC.Models.InsuredAssets { Id = 0, FechaCreacion = DateTime.Now })
+</div>
+
+<script>
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridInsurancedAssets").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridInsurancedAssets").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-button k-button-icontext k-grid-Agregar k-i-plus-sm", "Agregar un nuevo registro");
+    setRowButtonTooltip(".k-grid-Recibido", "Actualizar Recibido");
+    //setRowButtonTooltip(".k-grid-GenerarFactura", "Generar una factura fiscal!");
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+</script>
+

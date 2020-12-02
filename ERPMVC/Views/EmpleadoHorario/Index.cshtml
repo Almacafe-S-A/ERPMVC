@@ -1,0 +1,189 @@
+﻿@using System.Security.Claims
+@{
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
+<h3 class="text-themecolor">Horarios de Empleado</h3>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <div class="row">
+                <div id="grdConfiguracion"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        CrearGrid();
+    });
+
+    function CrearGrid() {
+        $("#grdConfiguracion").kendoGrid({
+            dataSource: {
+                transport: {
+                    read: "@Url.Action("GetHorariosEmpleados", "EmpleadoHorario")",
+                    update: { url: "@Url.Action("Guardar", "EmpleadoHorario")", type:"POST"},
+                    create: { url: "@Url.Action("Guardar", "EmpleadoHorario")", type:"POST"},
+                    parameterMap: function (datos, tipo) {
+                        if (tipo !== 'read') {
+                            //debugger;
+                            datos.EmpleadoId = datos.Empleado.IdEmpleado;
+                            datos.HorarioId = datos.HorarioEmpleado.Id;
+                            datos.IdEstado = datos.Estado.IdEstado;
+                            //debugger;
+                        }
+                        return datos;
+                    }
+                },
+                schema: {
+                    model: {
+                        id:"Id",
+                        fields: {
+                            Id: { type: "number", editable: true },
+                            EmpleadoId: { type: "number", editable: true },
+                            Empleado: { defaultValue:{ IdEmpleado: 0, NombreEmpleado: "" }, editable: true },
+                            HorarioId: { type: "number", editable: true },
+                            HorarioEmpleado: { defaultValue: {Id:0, Nombre:""}, editable: true },
+                            IdEstado: { type: "number", editable: true },
+                            Estado: { defaultValue: {IdEstado:1,NombreEstado:"Activo"}, editable: true }
+                        }
+                    }
+                },
+                requestEnd: function(e) {
+                    if (e.type !== "read") {
+                        $("#grdConfiguracion").data("kendoGrid").dataSource.read();
+                    }
+                }
+            },
+            toolbar: [
+                PermisoCreate()
+            ],
+            columns: [
+                {
+                    command: [
+                        PermisoEdit()
+                    ],
+                    width:60
+                },
+                { field: "Id", title: "Id. ", width: 80, hidden: true },
+                { field: "Empleado", title: "Empleado", width: 300, editor: editorEmpleado, template: "#= Empleado.NombreEmpleado #" },
+                { field: "HorarioEmpleado", title: "Horario", width: 300, editor:editorHorario, template: "#= HorarioEmpleado.Nombre #" },
+                { field: "Estado", title: "Estado", width: 100, editor: editorEstado, template: "#= Estado.NombreEstado #"}
+            ],
+            noRecords: {
+                template:"No hay horarios de empleado"
+            },
+            //height: 400,
+            scrollable: true,
+            editable: "inline"
+        });
+
+        function editorEstado(contenedor, opciones) {
+            $('<input data-bind="value:' + opciones.field + '"/>')
+                .appendTo(contenedor)
+                .kendoDropDownList({
+                    index:0,
+                    autoBind: true,
+                    dataTextField: "NombreEstado",
+                    dataValueField: "IdEstado",
+                    dataSource: {
+                        transport: {
+                            read: {
+                                type:"GET",
+                                url: '@Url.Action("GetGrupoEstadoI", "Estados")',
+                                dataType: "json"
+                            }
+                        },
+                        schema: {
+                            model: {
+                                fields: {
+                                    IdEstado: { type: "number" },
+                                    NombreEstado: {type:"string"}
+                                }
+                            }
+                        }
+                    }
+                });
+        }
+
+        function editorEmpleado(contenedor, opciones) {
+            $('<input name="' + opciones.field + '" />')
+                .appendTo(contenedor)
+                .kendoDropDownList({
+                    index:0,
+                    autoBind: true,
+                    dataTextField: "NombreEmpleado",
+                    dataValueField: "IdEmpleado",
+                    dataSource: {
+                        transport: {
+                            read: {
+                                type:"GET",
+                                url: '@Url.Action("GetEmployeesV2", "Employees")',
+                                dataType: "json"
+                            }
+                        },
+                        schema: {
+                            model: {
+                                fields: {
+                                    IdEmpleado: { type: "number" },
+                                    NombreEmpleado: {type:"string"}
+                                }
+                            }
+                        }
+                    },
+                    filter:"contains"
+                });
+        }
+
+        function editorHorario(contenedor, opciones) {
+            $('<input data-bind="value:' + opciones.field + '"/>')
+                .appendTo(contenedor)
+                .kendoDropDownList({
+                    index:0,
+                    autoBind: true,
+                    dataTextField: "Nombre",
+                    dataValueField: "Id",
+                    dataSource: {
+                        transport: {
+                            read: {
+                                type:"GET",
+                                url: '@Url.Action("GetHorarios", "Horario")',
+                                dataType: "json"
+                            }
+                        },
+                        schema: {
+                            model: {
+                                fields: {
+                                    Id: { type: "number" },
+                                    Nombre: {type:"string"}
+                                }
+                            }
+                        }
+                    }
+                });
+        }
+    }
+</script>
+<script type="text/javascript">
+    function PermisoCreate() {
+        var permisos = '@ViewData["permisos"]';
+       
+            Create = {
+                name: "create",
+                text: "Nuevo Asignación de Horario"
+            }
+            return Create
+        
+    }
+    function PermisoEdit() {
+        var permisos = '@ViewData["permisos"]';
+        
+            Edit = {
+                name: "edit",
+                text: { edit: "", update: "", cancel: "" }
+           }
+            return Edit
+        
+    }
+</script>

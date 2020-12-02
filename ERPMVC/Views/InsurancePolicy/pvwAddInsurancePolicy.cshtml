@@ -1,29 +1,42 @@
-﻿@model ERPMVC.DTO.InsurancePolicyDTO
+﻿@model ERPMVC.Models.InsurancePolicy
 @{ Layout = null;
     var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
-   {"required","Valor requerido" }
+   {"required","Requerido" }
 };
     var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
 }
 <script>
     //Retornar solo numeros
+
+    
     function soloNumeros(e) {
         var key = window.Event ? e.which : e.keyCode
         return ((key >= 48 && key <= 57) || (key == 8))
     }
     //Validación de Fechas
-    $("#PolicyDueDate").change(function () {
-        var FechaInicio = $("#PolicyDate").getKendoDateTimePicker().value().toJSON();
-        var FechaVencimiento = $("#PolicyDueDate").getKendoDateTimePicker().value().toJSON();
-        if (Date.parse(FechaInicio) >= Date.parse(FechaVencimiento)) {
-            alert("Fecha de Vencimiento no puede ser menor que la fecha de emisión.")
-            $("#PolicyDueDate").val('');
-        }
-    });
+    //$("#PolicyDueDate").change(function () {
+    //    var FechaInicio = $("#PolicyDate").getKendoDateTimePicker().value().toJSON();
+    //    var FechaVencimiento = $("#PolicyDueDate").getKendoDateTimePicker().value().toJSON();
+    //    if (Date.parse(FechaInicio) >= Date.parse(FechaVencimiento)) {
+    //        alert("Fecha de Vencimiento no puede ser menor que la fecha de emisión.")
+    //        $("#PolicyDueDate").val('');
+    //    }
+    //});
+    //$("#IdEstado").change(function () {
+        
+    //    var IdEstado = $("#IdEstado").val();
+    //    if (IdEstado != 0) {
+    //        var Estado = $("#IdEstado").data("kendoDropDownList").text();
+    //        $("#Status").val(Estado);
+    //    }
+    //    else {
+    //        $("#Status").val(null);
+    //    }
+    //});
     
 
     function SaveInsurancePolicy(e) {
-
+        debugger;
         var displayedData = $("#gridInsurancePolicy").data().kendoGrid.dataSource.view();
 
         //var formdata = new FormData($('#CustomerDocument').get(0));
@@ -31,8 +44,8 @@
         var dataObject = {
             'InsurancePolicyId': $("#InsurancePolicyId").val(),
             'PolicyNumber': $("#PolicyNumber").val(),
-            'PolicyDate': $("#PolicyDate").getKendoDateTimePicker().value().toJSON(),
-            'PolicyDueDate': $("#PolicyDueDate").getKendoDateTimePicker().value().toJSON(),
+            'PolicyDate': $("#PolicyDate").getKendoDatePicker().value().toJSON(),
+            'PolicyDueDate': $("#PolicyDueDate").getKendoDatePicker().value().toJSON(),
             'InsurancesId': $("#InsurancesId").val(),
             'InsurancesName': $("#InsurancesId").data("kendoDropDownList").text(),
             'CustomerId': $("#CustomerId").val(),
@@ -40,7 +53,7 @@
             'LpsAmount': $("#LpsAmount").val(),
             'DollarAmount': $("#DollarAmount").val(),
             'AttachmentURL': $("#AttachmentURL").val(),
-            'Status': $("#Status").val(),
+            'EstadoId': $("#EstadoId").data("kendoDropDownList").text(),
             '_InsurancePolicy': displayedData
 
         };
@@ -62,6 +75,8 @@
 
 
     }
+
+    function SetEstado() { $('#Estado').val($('#EstadoId').data("kendoDropDownList").text()) }
     
 </script>
 
@@ -71,187 +86,313 @@
         <!-- Modal content-->
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" onclick="closeInsurancePolicy();">&times;</button>
                 <h4 class="modal-title">Póliza</h4>
+                <button type="button" class="close" onclick="closeInsurancePolicy();">&times;</button>
             </div>
             <div class="modal-body">
-                <div class="box">
-                    Extensiones Permitidas: .pdf, .jpeg, .png y .txt
-                </div>
                 <div class="row" id="validation">
                     <div class="col-lg-12">
                         <div class="card">
                             <div class="card-body">
-                                <form id="InsuracesDocument" kendo-validator="true" kendo-messages="messages"
+                                <form id="InsuracesDocument" kendo-validator="true" kendo-messages="messages" asp-action="SaveInsurancePolicy" asp-controller="InsurancePolicy"
                                       data-ajax="true"
-                                      data-ajax-method="post"
-                                      data-ajax-begin="SaveInsurancePolicy">
+                                      data-ajax-method="post" enctype="multipart/form-data"
+                                      data-ajax-begin="onBegin" data-ajax-complete="onComplete"
+                                      data-ajax-failure="onFailed" data-ajax-success="onSuccess">
                                     <div class="row">
-                                        <div class="col-md-4">
-                                            <label asp-for="InsurancePolicyId" class="control-label">Id Póliza</label>
-                                            <kendo-numerictextbox name="InsurancePolicyId"
-                                                                  format="n"
-                                                                  min="0"
-                                                                  enable="false"
-                                                                  disabled
-                                                                  max="99999999"
-                                                                  step="1"
-                                                                  style="width: 100%;"
-                                                                  value="Model.InsurancePolicyId" />
-                                            <span asp-validation-for="InsurancePolicyId" class="text-danger"></span>
-                                        </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <div class="form-group">
-                                                <label asp-for="PolicyDate" class="control-label" style="width: 100%;">Fecha de Emisión</label>
-                                                <kendo-datetimepicker name="PolicyDate"
-                                                                      style="width: 100%;"
-                                                                      id="PolicyDate"
+                                                <label asp-for="InsurancePolicyId" class="control-label" style="min-width:100%">Id Póliza</label>
+                                                <input readonly class="k-textbox" asp-for="InsurancePolicyId" name="InsurancePolicyId" style="min-width:100%" />
+                                                <span asp-validation-for="InsurancePolicyId" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label asp-for="PolicyNumber" class="control-label" style="min-width: 100%;">Número de Póliza</label>
+                                                <input type="text" name="PolicyNumber" min="0" required maxlength="30" asp-for="PolicyNumber" class="k-textbox" style="min-width:100%" data-required-msg="El Número de Póliza es requerido." onKeyPress="return soloNumeros(event)" />
+
+                                            </div>
+                                        </div>
+                                        @if (Model.InsurancePolicyId > 0)
+                                        {
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="PolicyDate" class="control-label" style="min-width:100%">Fecha de Emisión</label>
+                                                    <kendo-datepicker name="PolicyDate" style="min-width: 100%;" for="PolicyDate"
+                                                                      format="dd/MM/yyyy" readonly
+                                                                      data-val-required="La Fecha de Emisión es requerida." onchange="setMinFechaFinal()"
+                                                                      />
+                                                    <span asp-validation-for="PolicyDate" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        }
+                                        else
+                                        {
+                                            <div class="col-md-3">
+                                                <div class="form-group">
+                                                    <label asp-for="PolicyDate" class="control-label" style="min-width:100%">Fecha de Emisión</label>
+                                                    <kendo-datepicker name="PolicyDate" style="min-width: 100%;" for="PolicyDate" max="DateTime.Now"
                                                                       format="dd/MM/yyyy"
-                                                                      required
-                                                                      data-val-required="La fecha es requerida"
-                                                                      value="Model.PolicyDate" />
-                                                <span asp-validation-for="PolicyDate" class="text-danger k-invalid-msg" data-for="PolicyDate"></span>
+                                                                      data-val-required="La Fecha de Emisión es requerida."  onchange="setMinFechaFinal()"
+                                                                      />
+                                                    <span asp-validation-for="PolicyDate" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                        }
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label asp-for="PolicyDueDate" class=" control-label" style="min-width:100%">Fecha de Vencimiento</label>
+                                                @if (Model.InsurancePolicyId > 0)
+                                                {
+                                                    <kendo-datepicker name="PolicyDueDate" style="min-width: 100%;"
+                                                                      format="dd/MM/yyyy" readonly for="PolicyDueDate"
+                                                                      data-val-required="La Fecha de Vencimiento es requerida."
+                                                                      min="@Model.PolicyDate"
+                                                                       />
+                                                }
+                                                else
+                                                {
+                                                    <kendo-datepicker name="PolicyDueDate" style="min-width: 100%;" for="PolicyDueDate"
+                                                                      format="dd/MM/yyyy" min="@DateTime.Now"
+
+                                                                      data-val-required="La Fecha de Vencimiento es requerida."
+                                                                      value="null" />
+                                                }
+                                                <span asp-validation-for="PolicyDueDate" class="text-danger"></span>
+
                                             </div>
                                         </div>
-                                        <div class="col-md-4">
+
+                                    </div>
+
+
+                                    <div class="row">
+                                        <div class="col-md-3">
                                             <div class="form-group">
-                                                <label asp-for="PolicyDueDate" class="control-label" style="width: 100%;">Fecha de Vencimiento</label>
-                                                <kendo-datetimepicker name="PolicyDueDate"
-                                                                      style="width: 100%;"
-                                                                      id="PolicyDueDate"
-                                                                      format="dd/MM/yyyy"
-                                                                      required
-                                                                      data-val-required="La fecha es requerida"
-                                                                      value="Model.PolicyDueDate" />
-                                                <span asp-validation-for="PolicyDueDate" class="text-danger k-invalid-msg" data-for="PolicyDueDate"></span>
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label asp-for="PolicyNumber" class="control-label" style="width: 100%;">Número de Póliza</label>
-                                                <input type="text" name="PolicyNumber" min="0" required maxlength="30" asp-for="PolicyNumber" class="form-control" style="min-width:100%" onKeyPress="return soloNumeros(event)" />
-                                            </div>
-                                        </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label asp-for="InsurancesId" class="control-label">Aseguradora</label>
+                                                <label asp-for="InsurancesId" class="control-label" style="min-width: 100%;">Aseguradora</label>
+                                                <input type="text" asp-for="InsurancesName" name="InsurancesName" hidden />
                                                 <kendo-dropdownlist name="InsurancesId" for="@Model.InsurancesId" filter="Kendo.Mvc.UI.FilterType.Contains"
                                                                     option-label="Seleccione la aseguradora"
                                                                     datatextfield="InsurancesName"
                                                                     datavaluefield="InsurancesId"
                                                                     required
+                                                                    data-required-msg="La Aseguradora es requerida."
+                                                                    onchange="SetInsuranceName()"
                                                                     class="form-control-line"
-                                                                    style="width: 100%;">
+                                                                    style="min-width: 100%;">
                                                     <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
                                                         <transport>
                                                             <read url="@Url.Action("Get", "Insurances")" />
                                                         </transport>
                                                     </datasource>
                                                 </kendo-dropdownlist>
+                                                <span asp-validation-for="InsurancesId" class="text-danger"></span>
                                             </div>
                                         </div>
-                                        <div class="col-md-4">
-                                            <div class="form-group">
-                                                <label asp-for="CustomerId" class="control-label"> Cliente</label>
-                                                <kendo-dropdownlist name="CustomerId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                    option-label="Seleccione el cliente"
-                                                                    datatextfield="CustomerName"
-                                                                    datavaluefield="CustomerId"
-                                                                    class="form-control-line"
-                                                                    required
-                                                                    style="width: 100%;">
-                                                    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="9999999">
-                                                        <transport>
-                                                            <read url="@Url.Action("GetCustomer", "Common")" />
-                                                        </transport>
-                                                    </datasource>
-                                                </kendo-dropdownlist>
-                                            </div>
-                                        </div>
-                                    </div>
 
-
-                                    <div class="row">
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <div class="form-group">
-                                                <label asp-for="Status" class=" control-label" style="width:100%">Estado</label>
-                                                <kendo-dropdownlist name="Status" for="@Model.Status"
-                                                                    filter="Kendo.Mvc.UI.FilterType.Contains"
-                                                                    option-label="Seleccionar Estado"
-                                                                    datatextfield="NombreEstado"
-                                                                    datavaluefield="IdEstado"
-                                                                    required
-                                                                    style="width: 100%;">
-                                                    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
-                                                        <transport>
-                                                            <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
-                                                        </transport>
-                                                    </datasource>
-                                                </kendo-dropdownlist>
-                                                <span asp-validation-for="Status" class="text-danger"></span>
+                                                <label asp-for="EstadoId" class=" control-label" style="min-width:100%">Estado</label>                                                
+                                                    <kendo-dropdownlist name="Status" for="EstadoId"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccionar Estado"
+                                                                        datatextfield="NombreEstado"
+                                                                        datavaluefield="IdEstado"
+                                                                        on-change="SetEstado"
+                                                                        data-required-msg="El Estado es requerido"
+                                                                        required
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <transport>
+                                                                <read url="@Url.Action("GetporGrupoEstado", "Estados", new {GrupoId = 32 })" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                
+                                                <span asp-validation-for="EstadoId" class="text-danger"></span>
                                             </div>
+                                            <input type="text" asp-for="Estado" hidden />
                                         </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <div class="form-group">
-                                                <label asp-for="LpsAmount" class="control-label" style="width:100%">Monto Lempiras</label>
+                                                <label asp-for="LpsAmount" class="control-label" style="min-width:100%">Monto Lempiras</label>
                                                 <kendo-numerictextbox name="LpsAmount"
                                                                       format="c2"
                                                                       min="0"
                                                                       spinners="false"
-                                                                      required
+                                                                      required data-required-msg="El Monto Lempiras es requerido."
                                                                       decimals="2"
                                                                       maxlength="9"
-                                                                      style="width:100%"
-                                                                      value="Model.LpsAmount" />
+                                                                      style="min-width:100%"
+                                                                      value="@Model.LpsAmount" />
                                                 <span asp-validation-for="LpsAmount" class="text-danger"></span>
                                             </div>
                                         </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <div class="form-group">
-                                                <label asp-for="DollarAmount" class="control-label" style="width:100%">Monto Dolares</label>
+                                                <label asp-for="DollarAmount" class="control-label" style="min-width:100%">Monto Dolares</label>
                                                 <kendo-numerictextbox name="DollarAmount"
-                                                                      format="'$.' #.## "
+                                                                      format="c2"
                                                                       min="0"
+                                                                      culture="en-US"
                                                                       spinners="false"
-                                                                      required
+                                                                      decimals="2"
+                                                                      required data-required-msg="El Monto Dolares es requerido."
                                                                       maxlength="20"
-                                                                      style="width:100%"
-                                                                      value="Model.DollarAmount" />
+                                                                      style="min-width:100%"
+                                                                      value="@Model.DollarAmount" />
                                                 <span asp-validation-for="DollarAmount" class="text-danger"></span>
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="row">
-                                        <div class="col-md-5">
-                                             <kendo-upload drop-zone="drop-zone1" name="files" on-upload="SaveInsurancePolicy">
-                                                <localization select="Seleccionar Archivos" cancel="Cancelar" drop-files-here="Soltar Archivo aquí" invalid-file-extension="Extensión de Archivo Invalido" retry="Reintentar" />
-                                                <files />
-                                                <async save-url="@Url.Action("SaveInsurancePolicy","InsurancePolicy")" />
-                                                <validation allowed-extensions='@new string[] { ".jpg",".png",".jpeg" }' max-file-size="10485760" />
-                                            </kendo-upload>
-                                        </div>
 
-                                        <script>
-                                                function GetDocumentName(dataName) {
-                                                    var fileName = "@Model.AttachementFileName";
-                                                    return fileName
+                                    <div class="row">
+
+                                        <div class="col-md-3">
+                                            <div class="form-group">
+                                                <label class="control-label">Propia</label>
+                                                @if (Model.InsurancePolicyId == 0)
+                                                {
+                                                    <kendo-switch name="Propias" enabled="true" for="Propias" on-change="SetPropia" checked="@Model.Propias">
+                                                        <messages checked="Si" unchecked="No" />
+                                                    </kendo-switch>
                                                 }
-                                                function GetDocumentExtension(dataExtension) {
-                                                    var fileName = "@Model.AttachementFileName";
-                                                    var fileExtension = fileName.substring(fileName.lastIndexOf('.') + 1);
-                                                    return fileExtension
+                                                else
+                                                {
+                                                    <kendo-switch name="Propias" enabled="true" for="Propias" on-change="SetPropia"  readonly="true" checked="@Model.Propias">
+                                                        <messages checked="Si" unchecked="No" />
+                                                    </kendo-switch>
                                                 }
-                                        </script>
+
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group" id="cliente" style=" display:none;">
+                                                <label class="control-label" style="min-width:100%;">Cliente</label>
+                                                <kendo-dropdownlist name="CustomerId" for="CustomerId"
+                                                                    filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                    option-label="Seleccionar Cliente"
+                                                                    datatextfield="CustomerName"
+                                                                    datavaluefield="CustomerId"
+                                                                    on-change="SetCliente"
+                                                                    style="width: 100%;">
+                                                    <datasource type="DataSourceTagHelperType.WebApi" server-operation="true" page-size="99999999">
+                                                        <transport>
+                                                            <read url="@Url.Action("Get", "Customer")" />
+                                                        </transport>
+                                                    </datasource>
+                                                </kendo-dropdownlist>
+                                                <input type="text" asp-for="CustomerName" value="@Model.CustomerName" hidden />
+                                            </div>
+                                            <div class="form-group" id="tasadeducible">
+                                                <label asp-for="ReductibleRate" class="control-label" style="min-width:100%">Tasa Deducible</label>
+                                                <kendo-numerictextbox name="ReductibleRate" for="ReductibleRate"
+                                                                      format="n2"
+                                                                      min="0"
+                                                                      max="100"
+                                                                      step="1"
+                                                                      onchange="SetCustomerName()"
+                                                                      spinners="false"
+                                                                      style="min-width:100%" />
+                                                <span asp-validation-for="LpsAmount" class="text-danger"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <div class="form-group" id="tasamercaderias">
+                                                <label asp-for="MerchandiseRate" class="control-label" style="min-width:100%">Tasa de Mercaderias</label>
+                                                <kendo-numerictextbox name="MerchandiseRate" for="MerchandiseRate"
+                                                                      format="n2"
+                                                                      min="0"
+                                                                      max="100"
+                                                                      step="1"
+                                                                      spinners="false"
+                                                                      style="min-width:100%" />
+                                                <span asp-validation-for="DollarAmount" class="text-danger"></span>
+                                            </div>
+                                            <div id="diferencial" class="form-group">
+                                                <label class="control-label">Diferencial Cambiario</label>
+                                                <kendo-switch name="Propias" enabled="true" for="ExchangeDifferential" checked="@Model.ExchangeDifferential">
+                                                    <messages checked="Si" unchecked="No" />
+                                                </kendo-switch>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-3" hidden>
+                                            <div class="form-group">
+                                                <label asp-for="InsuredTotal" class="control-label" style="min-width:100%">Total Asegurado</label>
+                                                <kendo-numerictextbox name="InsuredTotal" for="InsuredTotal"
+                                                                      format="c2"
+                                                                      min="0"
+                                                                      spinners="false"
+                                                                      decimals="2"
+                                                                      maxlength="20"
+                                                                      style="min-width:100%"
+                                                                      value="@Model.InsuredTotal" />
+                                                <span asp-validation-for="InsuredTotal" class="text-danger"></span>
+                                            </div>
+                                        </div>
                                     </div>
 
 
-                                    @*<div class="row">
+
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label class="control-label"> Extensiones Permitidas: .pdf, .jpeg, .png y .txt</label>
+                                                <kendo-upload drop-zone="drop-zone1" name="files" on-upload="SaveInsurancePolicy" multiple="false" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png,.gif" on-select="ReemplazarArchivo">
+                                                    <localization select="Adjuntar Archivo" cancel="Cancelar" drop-files-here="Soltar Archivo aquí" invalid-file-extension="Extensión de Archivo Invalido" retry="Reintentar" />
+                                                    <files />
+                                                    <validation max-file-size="10485760" />
+                                                </kendo-upload>
+                                            </div>
+
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="form-group">
+                                                <label class="control-label" style="min-width:100%">Archivo Adjunto</label>
+                                                <input type="text" asp-for="AttachementFileName" id="AttachementFileName" class="k-textbox" style="min-width:80%" readonly />
+                                                @if (Model.AttachementFileName != null)
+                                                {
+
+
+                                                    <button type="button" onclick="DescargarAdjunto()" class="btn btn-success">Descargar</button>
+
+
+                                                }
+                                                else
+                                                {
+                                                    <button type="button" onclick="DescargarAdjunto()" class="btn btn-success" disabled>Descargar</button>
+                                                }
+                                            </div>
+
+                                        </div>
+
+
+
+
+                                        <input type="text" asp-for="AttachmentURL" hidden />
+
+                                    </div>
+                                    <div class="modal-footer">
                                         <div class="col-md-12">
                                             <button id="btnInsurancePolicy" class="form-control btn-miboton" type="submit"> Guardar </button>
                                         </div>
-                                    </div>*@
+                                    </div>
 
                                 </form>
+                                @if (Model.InsurancePolicyId != 0)
+                                {
+                                    <div>
+                                        @if (Model.Propias)
+                                        {
+                                            @await Html.PartialAsync("InsuredAssets", new ERPMVC.Models.InsuredAssets { InsurancePolicyId = Model.InsurancePolicyId }, ViewData);
+                                        }
+                                        else
+                                        {
+                                            @await Html.PartialAsync("InsuranceEndorsement", new ERPMVC.Models.InsuranceEndorsement { InsurancePolicyId = Model.InsurancePolicyId }, ViewData);
+                                        }
+                                    </div>
+                                }
                             </div>
                         </div>
                     </div>
@@ -261,3 +402,150 @@
         </div>
     </div>
 </div>
+<script>
+
+    function SetCliente() {
+        var cliente = $("#CustomerId").data("kendoDropDownList").text()
+        $("#CustomerName").val(cliente);
+    }
+    function DescargarAdjunto() {       
+         var dataObject = {             
+             'tpath': '@Model.AttachmentURL'
+        };
+
+
+        console.log(dataObject.Path);
+        debugger;
+          var ajax = new XMLHttpRequest();
+         ajax.open("Post", '@Url.Action("DownloadFile", "Download")' , true);
+          ajax.responseType = "blob";
+          ajax.setRequestHeader("Content-Type", "application/json");
+                            ajax.onreadystatechange = function () {
+                                if (this.readyState == 4) {
+                                    //debugger;
+                                   // var blob = new Blob([this.response]);
+                                    var blob = new Blob([this.response], { type: "application/octet-stream" });
+                                    //var fileName = dataItem.DocumentName;
+                                    var fileName = '@Model.AttachementFileName';
+                                    saveAs(blob, fileName);
+                                    //application/octet-stream
+                                }
+        };
+        ajax.send(JSON.stringify(dataObject));
+
+
+        
+
+    }
+    $(function () {
+        var check = $("#Propias").data("kendoSwitch");
+        SetPropia(check.options);
+    });
+
+
+    function SetPropia (e) {
+        debugger;
+        console.log(e);
+        var propia = e.checked;
+        if (propia == true) {
+            $("#cliente").hide();
+            $("#diferencial").hide();
+            $("#tasamercaderias").show();
+            $("#tasadeducible").show();
+            $("#activos").show();
+        } else {
+            $("#cliente").show();
+            $("#diferencial").show();
+            $("#tasamercaderias").hide();
+            $("#tasadeducible").hide();
+            $("#endosos").show();
+        }
+    }
+
+    function ReemplazarArchivo() {
+        debugger;
+        var archivo = '@Model.AttachmentURL';
+
+        if ($("#AttachementFileName").val() != '') {
+            alert("Esta accion reemplazara su archivo anterior");
+
+        }
+    }
+
+    function SetInsuranceName() { $('#InsurancesName').val($('#InsurancesId').data("kendoDropDownList").text()) }
+
+    function SetCliente() { $('#CustomerName').val($('#CustomerId').data("kendoDropDownList").text()) }
+
+    
+
+    var onBegin = function () {
+        //alert("Begin");
+        $("#btnInsurancePolicy").attr("disabled", true);
+    };
+
+    var onComplete = function () {
+        var grid = $("#gridInsurancePolicy").getKendoGrid();
+        grid.dataSource.read();
+    };
+
+    
+
+    var onSuccess = function (context) {
+        console.log(context);
+        $.toast({
+            heading: 'Satisfactorio',
+            //text: 'Datos guardados correctamente, Generado asiento No.' + context.response,
+            text: 'Datos guardados correctamente',
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'success',
+            hideAfter: 30000,
+            stack: 6
+        });
+        $('#myModalInsurancePolicy').modal('hide');
+    };
+
+    var onFailed = function (context) {
+        console.log(context);
+        var error = context.responseText;        
+            $.toast({
+                heading: 'Error',
+                text: error,
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 30000,
+                stack: 6
+            });
+        
+        
+        $("#btnInsurancePolicy").attr("disabled", false);
+    };
+
+    //Validación de Fechas
+    function setMinFechaFinal() {
+        var _fechaInicioVigencia = "";
+        var _fechaFinalVigencia = "";
+        if ($("#PolicyDate").getKendoDatePicker().value() != null || $("#PolicyDate").getKendoDatePicker().value() != undefined || $("#PolicyDate").val() != "") {
+            _fechaInicioVigencia = $("#PolicyDate").getKendoDatePicker().value().toJSON()
+
+            $("#PolicyDueDate").kendoDatePicker("min", _fechaInicioVigencia)
+
+            if ($("#PolicyDueDate").getKendoDatePicker().value() != null || $("#PolicyDueDate").getKendoDatePicker().value() != undefined || $("#PolicyDueDate").val() != "") {
+                _fechaFinalVigencia = $("#PolicyDueDate").getKendoDatePicker().value().toJSON()
+                if (_fechaInicioVigencia > _fechaFinalVigencia) {
+                    $("#PolicyDueDate").val(null);
+                    $.toast({
+                        heading: 'Validación',
+                        text: "La Fecha de Vencimiento no puede ser menor que la Fecha Emisión!",
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+                }
+            }
+        }
+    }
+</script>

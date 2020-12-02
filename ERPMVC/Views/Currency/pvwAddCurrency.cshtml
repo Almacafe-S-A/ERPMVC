@@ -27,8 +27,8 @@
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
                 <h4 class="modal-title">Moneda</h4>
+                <button type="button" name="btnprueba" class="close" data-dismiss="modal">&times;</button>
             </div>
             <div class="modal-body">
                 <div class="row" id="validation">
@@ -41,7 +41,7 @@
                                       data-ajax-begin="SaveCurrency"
                                       class="validation-wizard wizard-circle">
                                     <div class="form-body">
-                                        <h3 class="card-title">Moneda</h3>
+                                        @*<h3 class="card-title">Moneda</h3>*@
                                         <hr>
                                         <div class="row">
                                             <div class="col-md-4">
@@ -55,8 +55,7 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="CurrencyName" class=" control-label" style="width:100%">Nombre Moneda</label>
-                                                    <input type="text" asp-for="CurrencyName" name="CurrencyName" data-val-required="El campo Nombre Moneda es requerido" class="form-control" style="width:100%" />
-
+                                                    <input type="text" asp-for="CurrencyName" name="CurrencyName"  onchange="onChangeCurrencyName()" data-val-required="El Nombre Moneda es requerido" class="form-control" style="width:100%" />
                                                 </div>
                                                 <span asp-validation-for="CurrencyName" style="width:100%" class="text-danger"></span>
                                             </div>
@@ -64,8 +63,7 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="CurrencyCode" class=" control-label" style="width:100%">Código Moneda</label>
-                                                    <input type="text" asp-for="CurrencyCode" name="CurrencyCode" data-val-required="El campo Código Moneda es requerido" class="form-control" autocomplete="off" style="width:100%" />
-
+                                                    <input type="text" asp-for="CurrencyCode" name="CurrencyCode" data-val-required="El Código Moneda es requerido" class="form-control" autocomplete="off" style="width:100%" />
                                                 </div>
                                                 <span asp-validation-for="CurrencyCode" style="width:100%" class="text-danger"></span>
                                             </div>
@@ -76,8 +74,7 @@
                                             <div class="col-md-4">
                                                 <div class="form-group">
                                                     <label asp-for="Description" class=" control-label" style="width:100%">Descripción</label>
-                                                    <input type="text" asp-for="Description" name="Description" data-val-required="El campo Descripción es requerido" class="form-control" autocomplete="off" style="width:100%" />
-                                                   
+                                                    <input type="text" asp-for="Description" name="Description" data-val-required="La Descripción es requerida" class="form-control" autocomplete="off" style="width:100%" />                     
                                                 </div>
                                                 <span asp-validation-for="Description" style="width:100%" class="text-danger"></span>
                                             </div>
@@ -91,14 +88,15 @@
                                                                         option-label="Seleccionar Estado"
                                                                         datatextfield="NombreEstado"
                                                                         datavaluefield="IdEstado"
-                                                                        data-val-required="El campo Estado es requerido"
+                                                                        data-val-required="El Estado es requerido"
                                                                         style="width: 100%;">
                                                         <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
                                                             <transport>
                                                                 <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
                                                             </transport>
                                                         </datasource>
-                                                    </kendo-dropdownlist>                                                  
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="IdEstado" class="text-danger"></span>
                                                 </div>
                                             </div>
 
@@ -122,12 +120,36 @@
 
 
 <script>
+
+    function soloLetras(e) {
+        key = e.keyCode || e.which;
+        tecla = String.fromCharCode(key).toLowerCase();
+        letras = " áéíóúabcdefghijklmnñopqrstuvwxyz";
+        especiales = "8-37-39-46";
+
+
+
+        tecla_especial = false
+        for (var i in especiales) {
+            if (key == especiales[i]) {
+                tecla_especial = true;
+                break;
+            }
+        }
+
+
+
+        if (letras.indexOf(tecla) == -1 && !tecla_especial) {
+            return false;
+        }
+    }
+
         function SaveCurrency(e) {
 
             var notification = $("#notification").data("kendoNotification");
            // e.preventDefault();
             $("#btnCurrency").hide();
-            $("#btnCurrency").prop("disabled", true);
+          
 
             var displayedData = $("#gridCurrency").data().kendoGrid.dataSource.view();
 
@@ -168,14 +190,15 @@
                             //}, "upload-success");
                             $.toast({
                                 heading: 'Satisfactorio',
-                                text: '<br/><br/>Datos guardados correctamente.',
+                                text: 'Datos guardados correctamente.',
                                 position: 'top-right',
                                 loaderBg: '#ff6849',
                                 icon: 'success',
-                                hideAfter: 30000,
+                                hideAfter: 3000,
                                 stack: 6
                             });
 
+                            
                             RefrescarGrid();
 
                             $('#ModalCurrency').modal('hide');
@@ -191,7 +214,7 @@
 
                         }
                     });
-
+                    //$("#btnCurrency").prop("disabled", true);
                 }
                 else {
                     notification.show({
@@ -210,6 +233,12 @@
             }
 
             $("#btnCurrency").show();
-            $("#btnCurrency").prop("disabled", false);
+            $("#btnCurrency").prop("disabled", true);
     }
+
+    function onChangeCurrencyName() {
+        $("#btnCurrency").prop("disabled", false);
+    }
+
+   
 </script>

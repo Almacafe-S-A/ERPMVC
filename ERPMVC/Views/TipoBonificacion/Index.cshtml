@@ -1,0 +1,137 @@
+﻿@{ 
+    ViewData["Title"] = "Tipo de Bonificaciones";
+
+}
+<h3 class="text-themecolor">Tipos de Bonificaciones</h3>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <div class="row">
+                <div id="grdConfiguracion"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+        CrearGrid();
+    });
+
+    function Validar(e) {
+        debugger;
+        if (e.model.Nombre === '') {
+            $.toast({
+                heading: 'Error',
+                text: ' Error: Nombre no puede estar en blanco',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'error',
+                hideAfter: 2000,
+                stack: 6
+            });
+            e.preventDefault();
+        }
+    }
+
+    function CrearGrid() {
+        $("#grdConfiguracion").kendoGrid({
+            dataSource: {
+                transport: {
+                    read: "@Url.Action("GetTiposBonificaciones", "TipoBonificacion")",
+                    update: { url: "@Url.Action("Guardar", "TipoBonificacion")", type:"POST"},
+                    create: { url: "@Url.Action("Guardar", "TipoBonificacion")", type:"POST"},
+                    parameterMap: function (datos, tipo) {
+                        if (tipo !== 'read') {
+                            //debugger;
+                            datos.EstadoId = datos.Estado.IdEstado;
+                            //debugger;
+                        }
+                        return datos;
+                    }
+                },
+                schema: {
+                    model: {
+                        id:"Id",
+                        fields: {
+                            Id: { type: "number", editable: true },
+                            Nombre: {type:"string", editable:true},
+                            EstadoId: { type: "number", editable: true },
+                            Estado: { defaultValue: {IdEstado:90,NombreEstado:"Activo"}, editable: true }
+                        }
+                    }
+                },
+                requestEnd: function(e) {
+                    if (e.type !== "read") {
+                        $("#grdConfiguracion").data("kendoGrid").dataSource.read();
+                    }
+                },
+                error: errorGrid
+            },
+            toolbar: [
+                { name: "create", text: "Nuevo Tipo de Bonificación" }
+            ],
+            columns: [
+                {
+                    command: [
+                        { name: "edit", text: { edit: "", update: "", cancel: "" }, visible: function (dataItem) { return dataItem.Id !== 1 }}
+                    ],
+                    width:30
+                },
+                { field: "Id", title: "Id. ", width: 80, hidden: true },
+                { field: "Nombre", title: "Nombre", width: 200 },
+                { field: "Estado", title: "Estado", width: 100, editor: editorEstado, template: "#= Estado.NombreEstado #"}
+            ],
+            noRecords: {
+                template:"No hay Tipos de Bonificaciones"
+            },
+            //height: 400,
+            scrollable: true,
+            editable: "inline",
+            save:Validar
+        });
+
+        function editorEstado(contenedor, opciones) {
+            $('<input data-bind="value:' + opciones.field + '"/>')
+                .appendTo(contenedor)
+                .kendoDropDownList({
+                    index:0,
+                    autoBind: true,
+                    dataTextField: "NombreEstado",
+                    dataValueField: "IdEstado",
+                    dataSource: {
+                        transport: {
+                            read: {
+                                type:"GET",
+                                url: '@Url.Action("GetEstadoByGrupo2", "Estados")',
+                                dataType: "json",
+                                data: {
+                                    GrupoEstadoId:30
+                                }
+                            }
+                        },
+                        schema: {
+                            model: {
+                                fields: {
+                                    IdEstado: { type: "number" },
+                                    NombreEstado: {type:"string"}
+                                }
+                            }
+                        }
+                    }
+                });
+        }
+    }
+
+    function errorGrid(e) {
+        $.toast({
+            heading: 'Error',
+            text: ' Error:' + e.status + " " + e.errorThrown + " " + e.xhr,
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'error',
+            hideAfter: 2000,
+            stack: 6
+        });
+    }
+</script>

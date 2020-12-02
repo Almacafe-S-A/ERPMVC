@@ -1,117 +1,41 @@
 ﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
 @{
-	ViewData["Title"] = "FixedAsset";
+    ViewData["Title"] = "Activos Fijos";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
+    <script>
+    function OnSave() {
+        console.log("Salvando");
+    }
 
-<h3 class="text-themecolor">Activos Fijos</h3>
-
-@* Telerik *@
-@(Html.Kendo().Grid<ERPMVC.Models.FixedAsset>()
-						.Name("gridFixedAsset")
-						.Columns(c =>
-						{
-							c.Command(cmd =>
-							{
-								cmd.Custom("Editar").Click("EditFixedAsset");
-								cmd.Destroy().Text("Eliminar");
-							}).Width(160);
-							c.Bound(p => p.FixedAssetId).Width(100);
-							c.Bound(p => p.FixedAssetName).Width(100).Title("Nombre");
-							c.Bound(p => p.FixedAssetDescription).Width(100).Title("Descripción");
-							c.Bound(p => p.AssetDate).ClientTemplate("#= kendo.toString(AssetDate, \"dd/MM/yyyy\") #") .Width(100).Title("Fecha");
-							c.Bound(p => p.FixedAssetCode).Width(100).Title("Código");
-							c.Bound(p => p.BranchName).Width(100).Title("Sucursal");
-							c.Bound(p => p.WarehouseName).Width(100).Title("Bodega");
-							c.Bound(p => p.CenterCostName).Width(100).Title("Centro Costo");
-							c.Bound(p => p.FixedActiveLife).Width(100).Title("Vida Útil");
-							c.Bound(p => p.Amount).Width(100).Title("Monto").Format("{0:C}");
-							c.Bound(p => p.Cost).Width(100).Title("Costo").Format("{0:C}");
-							c.Bound(p => p.ResidualValue).Width(100).Title("Valor Residual").Format("{0:C}");
-						})
-						.Filterable(f => f.Operators(o => o.ForString(s => s.Clear()
-																			.Contains("Contiene")
-																			.DoesNotContain("No contiene")
-																			.EndsWith("Termina con")
-																			.IsEqualTo("Es igual a")
-																			.IsNull("Es nulo")
-																			.StartsWith("Inicia con"))
-																			.ForNumber(n => n.Clear()
-																							 .IsEqualTo("Es igual a")
-																							 .IsGreaterThan("Es mayor que")
-																							 .IsNull("Es nulo")
-																							 .IsLessThanOrEqualTo("Es menor o igual que")
-																							 .IsGreaterThanOrEqualTo("Es mayor o igual que"))
-																			.ForDate(d => d.Clear()
-																						   .IsEqualTo("Es igual a")
-																						   .IsGreaterThan("Es mayor que")
-																						   .IsLessThan("Es menor que")
-																						   .IsLessThanOrEqualTo("Es menor o igual que")
-																						   .IsGreaterThanOrEqualTo("Es mayor o igual que")
-																						   .IsNotEqualTo("No es igual que"))
-													)
-						)
-						.ToolBar(tools =>
-						{
-							tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-							.HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddFixedAsset()" });
-							tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-							tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-						})
-						.Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
-						.Sortable()
-						.Pageable()
-						.Filterable()
-						.Scrollable()
-						.Pdf(pdf => pdf.FileName("ActivosFijosReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_" +
-							DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" +
-							DateTime.Now.Second + ".pdf")
-							.ProxyURL(Url.Action("Export", "Home")).AllPages())
-							.Excel(excel => excel.FileName("ActivosFijosReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-							+ DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-							.ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-						.DataSource(ds => ds
-						.WebApi()
-						.ServerOperation(true)
-						.Model(m =>
-						{
-							m.Id(p => p.FixedAssetId);
-							m.Field(p => p.FixedAssetId).Editable(false);
-						})
-						.Events(e => e.Error("error_handler"))
-						.Read(r => r.Action("Get", "FixedAsset"))
-						.Create(c => c.Action("Insert", "FixedAsset").Type(HttpVerbs.Post))
-						.Update(u => u.Action("Update", "FixedAsset", new { FixedAssetId = "{0}" }).Type(HttpVerbs.Post))
-						.Destroy(d => d.Action("Delete", "FixedAsset", new { FixedAssetId = "{0}" }).Type(HttpVerbs.Delete))
-					)
-					.Events(e =>
-					{
-						e.Save("OnSave");
-					})
-					.Resizable(conf => conf.Columns(true))
-)
-
-<script>
-	function AddFixedAsset() {
+    function AddFixedAsset() {
+        var validator = $("#frmFixedAsset").data("kendoValidator");
+        validator.hideMessages();
+        $("#btnFixedAsset").show();
+        $("#btnFixedAsset").prop("disabled", false);
 		$('#ModalFixedAsset').find(':input').not(':submit').val('');
 		$('#FixedAssetGroupId').data('kendoDropDownList').value(-1);
 		$('#BranchId').data('kendoDropDownList').value(-1);
-		$('#WarehouseId').data('kendoDropDownList').value(-1);
+		//$('#WarehouseId').data('kendoDropDownList').value(-1);
 		$('#CenterCostId').data('kendoDropDownList').value(-1);
-		$('#IdEstado').data('kendoDropDownList').value(-1);
+        $('#IdEstado').data('kendoDropDownList').value(87);
+        $('#Cost').data('kendoNumericTextBox').value(0);
 		var grid = $("#gridDepreciation").data("kendoGrid");
 		var newDataSource = new kendo.data.DataSource({
 			data: []
 		});
 		grid.setDataSource(newDataSource);
 		$('#ModalFixedAsset').modal('show');
-		$('#FixedAssetId').val('0');
+        $('#FixedAssetId').val('0');
+        RefrescarGrid();
+
 	}
 
-	function OnSave() {
-		console.log("Salvando");
-	}
 
-	function EditFixedAsset(e) {
+
+    function EditFixedAsset(e) {
+        debugger;
 		e.preventDefault();
 		var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
 		var dataObject = {
@@ -135,16 +59,216 @@
 				var errorMessage = xhr.status + ': ' + xhr.statusText
 				alert('Error - ' + errorMessage);
 			}
-		});
+        });
+        RefrescarGrid();
+
+    }
+
+
+    function DardeBaja(e) {
+        debugger;
+        if (!confirm("Esta seguro que desea darle de baja al activo esto tendra un efecto contable")) {
+            return;
+        }
+		e.preventDefault();
+		var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+		var dataObject = {
+			FixedAssetId: dataItem.FixedAssetId,
+			//editar: 0
+		};
+
+		$.ajax({
+			url: '@Url.Action("Delete", "FixedAsset")',
+			method: 'POST',
+			datatype: "json",
+			contentType: 'application/json',
+			async: false,
+			data: JSON.stringify(dataObject),
+			success: function (result) {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: 'Se ha dado de baja el activo',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+			},
+			error: function (xhr, status, error) {
+                var errorMessage = xhr.status + ': ' + xhr.statusText
+                console.log(xhr);
+                console.log(errorMessage);
+                $.toast({
+                    heading: 'Error ',
+                    text: 'Este activo no se puede dar de baja, '+ xhr.responseText,
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 30000,
+                    stack: 6
+                });
+			}
+        });
+        RefrescarGrid();
+
 	}
 
 	function RefrescarGrid() {
 		var grid = $("#gridFixedAsset").getKendoGrid();
-		grid.dataSource.read();		
-	}
+		grid.dataSource.read();
+    }
+
+    function ShowFixedAssetsToDepreciateReport() {
+                //e.preventDefault();
+        //var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+        window.location.href = '@Url.Action("SFFixedAssetsToDepreciate", "FixedAsset")';
+    }
+
+    </script>
+<h3 class="text-themecolor">Activos Fijos</h3>
+
+@* Telerik *@
+@(Html.Kendo().Grid<ERPMVC.Models.FixedAsset>()
+                            .Name("gridFixedAsset")
+                            .Columns(c =>
+                            {
+                                if (permisos.HasClaim("Contabilidad.Activos.Activos Fijos.Editar", "true") || permisos.HasClaim("Contabilidad.Activos.Activos Fijos.Eliminar", "true"))
+                                {
+                                    c.Command(cmd =>
+                                    {
+                                        if (permisos.HasClaim("Contabilidad.Activos.Activos Fijos.Editar", "true"))
+                                        {
+                                            cmd.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditFixedAsset");
+                                        }
+                                        if (permisos.HasClaim("Contabilidad.Activos.Activos Fijos.Eliminar", "true"))
+                                        {
+                                            //cmd.Destroy().Text(" ").IconClass("fa fa-trash-alt");
+                                            cmd.Custom("DardeBaja").Text(" ").IconClass("fa fa-trash").Click("DardeBaja");
+                                        }
+                                    }).Title("Acciones").Width(110);
+                                }
+                                c.Bound(p => p.FixedAssetId).Width(135);
+                                c.Bound(p => p.FixedAssetName).Width(150).Title("Nombre");
+                                c.Bound(p => p.FixedAssetDescription).Width(160).Title("Descripción");
+                                c.Bound(p => p.AssetDate).ClientTemplate("#= kendo.toString(AssetDate, \"dd/MM/yyyy\") #").Width(210).Title("Fecha de Adquisición");
+                                //c.Bound(p => p.FixedAssetCode).Width(130).Title("Código");
+                                c.Bound(p => p.BranchName).Width(130).Title("Sucursal");
+                                c.Bound(p => p.CenterCostName).Width(150).Title("Centro Costo");
+                                c.Bound(p => p.FixedActiveLife).Width(110).Title("Vida Útil");
+                                c.Bound(p => p.Amount).Width(210).Title("Valor Adquisición").Format("{0:C}");
+                                c.Bound(p => p.Cost).Width(190).Title("Costos Aadicionales").Format("{0:C}");
+                                c.Bound(p => p.ActiveTotalCost).Width(190).Title("Costo Total Activo").Format("{0:C}");
+                                c.Bound(p => p.AccumulatedDepreciation).Width(230).Title("Depreciacion Acumulada").Format("{0:C}");
+                                c.Bound(p => p.ResidualValuePercent).Width(230).Title("Valor Residual Porcentaje").Format("{0:n2}%");
+                                c.Bound(p => p.ResidualValue).Width(190).Title("Valor Residual").Format("{0:C}");
+                                c.Bound(p => p.NetValue).Width(150).Title("Valor en Libros").Format("{0:C}");
+                                c.Bound(p => p.Estado).Width(130).Title("Estado");
+                                //c.Bound(p => p.Cost).Width(230).Title("Costos Adicionales").Format("{0:C}");
+                                c.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy HH:mm:ss}").Width(100).Hidden();
+                            })
+                            .Filterable(f => f.Operators(o => o.ForString(s => s.Clear()
+                                                                                .Contains("Contiene")
+                                                                                .DoesNotContain("No contiene")
+                                                                                .EndsWith("Termina con")
+                                                                                .IsEqualTo("Es igual a")
+                                                                                .IsNull("Es nulo")
+                                                                                .StartsWith("Inicia con"))
+                                                                                .ForNumber(n => n.Clear()
+                                                                                                 .IsEqualTo("Es igual a")
+                                                                                                 .IsGreaterThan("Es mayor que")
+                                                                                                 .IsNull("Es nulo")
+                                                                                                 .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                                                 .IsGreaterThanOrEqualTo("Es mayor o igual que"))
+                                                                                .ForDate(d => d.Clear()
+                                                                                               .IsEqualTo("Es igual a")
+                                                                                               .IsGreaterThan("Es mayor que")
+                                                                                               .IsLessThan("Es menor que")
+                                                                                               .IsLessThanOrEqualTo("Es menor o igual que")
+                                                                                               .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                                                               .IsNotEqualTo("No es igual que"))
+                                                        )
+                            )
+                            .ToolBar(tools =>
+                            {
+                                if (permisos.HasClaim("Contabilidad.Activos.Activos Fijos.Agregar", "true"))
+                                {
+                                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                    .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddFixedAsset()" });
+                                }
+                                    tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                    tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                if (permisos.HasClaim("Contabilidad.Activos.Activos Fijos.Inventario de Activos por depreciar", "true"))
+                                {
+                                    tools.Custom().Text("Inventario de activos por depreciar")
+                               .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "ShowFixedAssetsToDepreciateReport();" });
+                                }
+                            })
+                            .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                            .Sortable()
+                            .Pageable(s => s
+                            .Messages(m => m.Display("Elementos mostrados {0} - {1} de {2}")))
+                            .Filterable()
+                            .Scrollable()
+                            .Pdf(pdf => pdf.FileName("Activos-Fijos-Reporte" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_" +
+                                DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" +
+                                DateTime.Now.Second + ".pdf")
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                .Excel(excel => excel.FileName("Activos-Fijos-Reporte_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                            .DataSource(ds => ds
+                            .WebApi()
+                            .ServerOperation(true)
+                            .Model(m =>
+                            {
+                                m.Id(p => p.FixedAssetId);
+                                m.Field(p => p.FixedAssetId).Editable(false);
+                            })
+                            .Sort(s => s.Add(m => m.FechaCreacion).Descending())
+                            .Events(e => e.Error("error_handler"))
+                            .Read(r => r.Action("Get", "FixedAsset"))
+                            .Create(c => c.Action("Insert", "FixedAsset").Type(HttpVerbs.Post))
+                            .Update(u => u.Action("Update", "FixedAsset").Type(HttpVerbs.Post))
+                            //.Destroy(d => d.Action("Delete", "FixedAsset", new { FixedAssetId = "{0}" }).Type(HttpVerbs.Delete))
+                        )
+                        .Events(e =>
+                        {
+                            e.Save("OnSave");
+                        })
+                        .Resizable(conf => conf.Columns(true))
+)
+
+
+
+<script>
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridFixedAsset").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridFixedAsset").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+
+
+    setToolbarTooltip(".k-grid-toolbar a.k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-delete", "Dar de baja");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+
 </script>
 
 
 <div id="numFixedAsset">
-	@await Html.PartialAsync("pvwFixedAsset", new ERPMVC.DTO.FixedAssetDTO { FixedAssetId = 0 })
+    @await Html.PartialAsync("pvwFixedAsset", new ERPMVC.DTO.FixedAssetDTO { FixedAssetId = 0, AssetDate = DateTime.Now })
 </div>

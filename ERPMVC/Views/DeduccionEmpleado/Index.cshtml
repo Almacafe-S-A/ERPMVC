@@ -1,0 +1,154 @@
+﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
+@{
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
+<h3 class="text-themecolor">Deducciones por Empleado</h3>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <div id="grdEmpleados"></div>
+        </div>
+    </div>
+</div>
+<div id="ModalDeduccion"></div>
+
+<script>
+
+    function crearGrid() {
+        $("#grdEmpleados").kendoGrid({
+            dataSource: {
+                //type:"Ajax",
+                transport: {
+                    read:"@Url.Action("GetEmpleadosDeducciones", "DeduccionEmpleado")"
+                },
+                schema: {
+                    model: {
+                        fields: {
+                            EmpleadoId: { name: "EmpleadoId", type: "number", editable: false },
+                            NombreEmpleado: { name: "NombreEmpleado", type: "string", editable: false },
+                            CantidadDeducciones: { name: "CantidadDeducciones", type: "number", editable: false },
+                            TotalDeducciones: { name: "TotalDeducciones", type: "number", editable: false },
+                            SalarioEmpleado: {type:"number", editable:false}
+                        }
+                    }
+                }
+            },
+            columns: [
+                {
+                    command: [
+                        PermisoEditar(),
+                        PermisoVerDetalle()
+                    ],
+                    width:100
+                },
+                { field: "EmpleadoId", title: "Id Empleado ", width: 80 },
+                { field: "NombreEmpleado", title: "NombreEmpleado", width: 200},
+                { field: "CantidadDeducciones", title: "Cantidad", width: 100 },
+                { field: "SalarioEmpleado", title: "Salario", width: 100, format: "{0:#,##0.00}" },
+                { field: "TotalDeducciones", title: "Total Deducciones", width: 100, format: "{0:#,##0.00}" },
+                { title: "Salario Neto", width: 100, template: '#= kendo.toString((SalarioEmpleado-TotalDeducciones),"n") #'}
+            ],
+            height: 400,
+            scrollable: true,
+            editable: false
+        });
+    }
+
+    function RefreshDeduccionEmpleado() {
+        $("#grdEmpleados").getKendoGrid().dataSource.read();
+    }
+
+    function editar_click(e) {
+        var registro = this.dataItem($(e.currentTarget).closest('tr'));
+        var parametros = {
+            codigoEmpleado: registro.EmpleadoId,
+            nombreEmpleado: registro.NombreEmpleado,
+            salarioEmpleado: registro.SalarioEmpleado
+        };
+        $.ajax({
+            url: '@Url.Action("EditarDeducciones", "DeduccionEmpleado")',
+            method: 'POST',
+            datatype: "json",
+            async: false,
+            data: parametros,//JSON.stringify(parametros),
+            success: function (result) {
+                $("#ModalDeduccion").html('');
+                $("#ModalDeduccion").html(result);
+                $('#DeduccionEmpleadoModalUpload').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+
+    }
+
+    function detalle_click(e) {
+        var registro = this.dataItem($(e.currentTarget).closest('tr'));
+        var parametros = {
+            codigoEmpleado: registro.EmpleadoId,
+            nombreEmpleado: registro.NombreEmpleado,
+            salarioEmpleado: registro.SalarioEmpleado
+        };
+        $.ajax({
+            url: '@Url.Action("VerDeducciones", "DeduccionEmpleado")',
+            method: 'POST',
+            datatype: "json",
+            async: false,
+            data: parametros,//JSON.stringify(parametros),
+            success: function (result) {
+                $("#ModalDeduccion").html('');
+                $("#ModalDeduccion").html(result);
+                $('#DeduccionEmpleadoModalUpload').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+
+    $(document).ready(function () {
+        crearGrid();
+    });
+</script>
+<script type="text/javascript">
+    function PermisoEditar() {
+        var permisos = '@ViewData["permisos"]';
+        Edit = {
+                name: "editar", click: editar_click, iconClass: "fa fa-edit", text: "",
+            }
+            return Edit
+        
+    }
+    function PermisoVerDetalle() {
+        var permisos = '@ViewData["permisos"]';
+      
+            Ver = {
+                name: "detalle", click: detalle_click, iconClass: "fa fa-list-alt", text: ""
+            }
+            return Ver
+       
+    }
+    function PermisoAgregarDeduccion() {
+        debugger;
+        var permisos = '@ViewData["permisos"]';
+        
+            Create = {
+                name: "create",
+                text: "Nueva Deducción"
+            }
+            return Create
+        
+    }
+    function PermisoEdit() {
+        var permisos = '@ViewData["permisos"]';
+       
+            Edit = {
+                name: "edit",
+                text: { edit: "", update: "", cancel: "" }
+            }
+            return Edit
+        
+    }
+</script>

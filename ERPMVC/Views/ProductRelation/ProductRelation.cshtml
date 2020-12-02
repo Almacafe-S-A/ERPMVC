@@ -1,8 +1,10 @@
 ﻿@using Kendo.Mvc.UI
 
 @{
-    ViewData["Title"] = "ProductRelationo";
-
+    ViewData["Title"] = "Relación Servicio";
+    bool permisoAgregar, permisoEditar;
+    permisoAgregar = (bool)ViewData["permisoAgregar"];
+    permisoEditar = (bool)ViewData["permisoEditar"];
 }
 
 <script>
@@ -96,7 +98,7 @@
 
 </script>
 
-<h3 class="text-themecolor">Relación de Producto con Sub Producto</h3>
+<h3 class="text-themecolor">Relación Servicio</h3>
 
 @(Html.Kendo().Grid<ERPMVC.Models.ProductRelation>
                   ()
@@ -105,16 +107,19 @@
 
                     .Columns(columns =>
                     {
-                        columns.Command(command =>
+                        if (permisoEditar)
                         {
-                            //command.Custom("Ver detalles").Click("Detalles");
-                            command.Custom("Editar").Click("EditProductRelation");
-                           // command.Destroy().Text("Eliminar");
-                        }).Width(250);
-                        columns.Bound(p => p.RelationProductId).Width(150);
-                        columns.Bound(p => p.SubProduct.ProductName).Width(170);
-                        columns.Bound(p => p.Product.ProductName).Width(170);
-
+                            columns.Command(command =>
+                            {
+                                //command.Custom("Ver detalles").Click("Detalles");
+                                command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditProductRelation");
+                                 command.Destroy().Text(" ").IconClass("fa fa-trash");
+                            }).Width(100).Title("Acciones");
+                        }
+                        columns.Bound(p => p.RelationProductId).Title("Id").Width(100);
+                        columns.Bound(p => p.Product.ProductName).Title("Servicio").Width(170);
+                        columns.Bound(p => p.SubProduct.ProductName).Title("SubServicio").Width(170);
+                        columns.Bound(p => p.Estado).Width(150);
 
                     })
 
@@ -123,13 +128,14 @@
                     {
 
                         //tools.Create();
-                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                              .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddProductRelation()" });
-                        tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                        tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-
+                        if (permisoAgregar)
+                        {
+                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                                          .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddProductRelation()" });
+                        }
+                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                        
                     })
                     .Editable(e => e.Mode(GridEditMode.PopUp))
                     .Sortable()
@@ -157,7 +163,7 @@
                     .Read(read => read.Action("GetProductRelation", "ProductRelation").Type(HttpVerbs.Get))
                    //.Create(create => create.Action("Insert", "ProductRelation").Type(HttpVerbs.Post))
                    //.Update(update => update.Action("Update", "ProductRelation").Type(HttpVerbs.Post))
-                   .Destroy(destroy => destroy.Action("Delete", "ProductRelation").Type(HttpVerbs.Post))
+                   .Destroy(destroy => destroy.Action("Delete", "ProductRelation"))
                     )
                     .Events(e =>
                     {
@@ -165,6 +171,33 @@
 
                     })
 )
+
+<script>
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridProductRelation").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridProductRelation").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-Destry", "Eliminar registro");
+
+
+</script>
 
 <div id="numProductRelation">
     @await Html.PartialAsync("pvwAddProductRelation", new ERPMVC.DTO.ProductRelationDTO { RelationProductId = 0 })

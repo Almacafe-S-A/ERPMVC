@@ -1,9 +1,10 @@
 ﻿@using Kendo.Mvc.UI
 @using Microsoft.AspNetCore.Http;
+@using System.Security.Claims
 
 @{
-    ViewData["Title"] = "Reglas de cobro";
-
+    ViewData["Title"] = "SubServicion Utilizados";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 
 <script>
@@ -77,6 +78,7 @@
                 BranchId = $(found).val();
                 console.log(BranchId);
                 $("#BranchId").data("kendoDropDownList").value(BranchId);
+                $("#IdEstado").data("kendoDropDownList").value(0);
 
                 //$("#btnCAI").hide();
                 $('#ModalScheduleSubservice').modal('show');
@@ -113,7 +115,7 @@
                 var found = $("#SubServiceId", txt);
                 subproducto = $(found).val();
 
-               
+
 
                 $("#SubServiceId").data("kendoDropDownList").value(subproducto);
                 //$("#btnCAI").hide();
@@ -135,79 +137,104 @@
 <h3 class="text-themecolor">Servicios utilizados en bodega</h3>
 
 @(Html.Kendo().Grid<ERPMVC.Models.SubServicesWareHouse>
-                              ()
+                                  ()
 
-                                .Name("gridSubServicesWareHouse")
+                                    .Name("gridSubServicesWareHouse")
 
-                                .Columns(columns =>
-                                {
-                                    columns.Command(command =>
+                                    .Columns(columns =>
                                     {
-                                      //command.Custom("Ver detalles").Click("Detalles");
-                                      //command.Destroy();
-                                      command.Custom("Editar").Click("EditSubServicesWareHouse");
-                                      // command.Destroy().Text("Eliminar");
+                                        if (permisos.HasClaim("Clientes.Subservicios Utilizados.Editar", "true"))
+                                        {
+                                            columns.Command(command =>
+                                            {
+                                                //command.Custom("Ver detalles").Click("Detalles");
+                                                //command.Destroy();
+                                                command.Custom("Editar").Click("EditSubServicesWareHouse").Text(" ").IconClass("fa fa-edit");
+                                                //command.Destroy().Text("Eliminar");
 
-                                    }).Width(250);
-                                    columns.Bound(p => p.SubServicesWareHouseId).Width(150);
-                                    columns.Bound(p => p.BranchId).Width(200);
-                                    columns.Bound(p => p.BranchName).Width(150);
-                                    columns.Bound(p => p.ServiceName).Width(170);
-                                    columns.Bound(p => p.SubServiceName).Width(170);
-                                    columns.Bound(p => p.SubServiceId).Width(150);
-                                    columns.Bound(p => p.SubServiceName).Width(170);
-                                    columns.Bound(p => p.StartTime).Format("{0:HH:mm:ss}").Width(150);
-                                    columns.Bound(p => p.EndTime).Format("{0:HH:mm:ss}").Width(150);
-                                    columns.Bound(p => p.QuantityHours).Width(170);
-                        //columns.Bound(p => p.Condition).Width(150);
+                                            }).Width(150).Title("Acciones");
+                                        }
+                                        columns.Bound(p => p.SubServicesWareHouseId).Width(150);
+                                        //columns.Bound(p => p.BranchId).Width(200);
+                                        columns.Bound(p => p.BranchName).Width(150);
+                                        columns.Bound(p => p.ServiceName).Width(170);
+                                        columns.Bound(p => p.SubServiceName).Width(170);
+                                        columns.Bound(p => p.SubServiceId).Width(150);
+                                        columns.Bound(p => p.SubServiceName).Width(170);
+                                        columns.Bound(p => p.StartTime).Format("{0:HH:mm:ss}").Width(150);
+                                        columns.Bound(p => p.EndTime).Format("{0:HH:mm:ss}").Width(150);
+                                        columns.Bound(p => p.QuantityHours).Width(200);
+                                        //columns.Bound(p => p.Condition).Width(150);
 
-                    })
-                                .ToolBar(tools =>
-                                {
+                                    })
+                                    .ToolBar(tools =>
+                                    {
 
-                        //tools.Create();
-                        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                                                        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddSubServicesWareHouse()" });
-                                    tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                                    tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                        //tools.Create();
+                                        if (permisos.HasClaim("Clientes.Subservicios Utilizados.Agregar", "true"))
+                                        {
+                                            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddSubServicesWareHouse()" });
+                                        }
+                                            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                        
+                                    })
+                                    .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                                    .Sortable()
+                                    .Pageable()
+                                    .Filterable()
+                                    .Scrollable()
+                                    .Pdf(pdf => pdf.FileName("SubServiciosUsadosBodegaReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                    .Excel(excel => excel.FileName("SubServiciosUsadosBodegaReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                                    + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                                    .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                                    .DataSource(dataSource =>
+                                    dataSource
+                                    .WebApi()
 
-                                })
-                                .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
-                                .Sortable()
-                                .Pageable()
-                                .Filterable()
-                                .Scrollable()
-                                .Pdf(pdf => pdf.FileName("SubServiciosUsadosBodegaReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                .Excel(excel => excel.FileName("SubServiciosUsadosBodegaReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                .DataSource(dataSource =>
-                                dataSource
-                                .WebApi()
+                                    .ServerOperation(true)
+                                    .Model(model =>
+                                    {
+                                        model.Id(p => p.SubServicesWareHouseId);
+                                        model.Field(p => p.SubServicesWareHouseId).Editable(false);
+                                    })
+                                    .Events(events => events.Error("error_handler"))
+                                    .Read(read => read.Action("Get", "SubServicesWareHouse"))
+                                    //.Create(create => create.Action("Insert", "Employees").Type(HttpVerbs.Post))
+                                    //.Update(update => update.Action("Update", "Employees").Type(HttpVerbs.Post))
+                                    .Destroy(destroy => destroy.Action("Delete", "SubServicesWareHouse").Type(HttpVerbs.Post))
+                                    //.Destroy(destroy => destroy.Action("Delete", "Employees", new { IdEmpleado = "{0}" }).Type(HttpVerbs.Delete))
+                                    )
+                                    .Events(e =>
+                                    {
+                                        e.Save("onsave");
 
-                                .ServerOperation(true)
-                                .Model(model =>
-                                {
-                                    model.Id(p => p.SubServicesWareHouseId);
-                                    model.Field(p => p.SubServicesWareHouseId).Editable(false);
-                                })
-                                .Events(events => events.Error("error_handler"))
-                                .Read(read => read.Action("Get", "SubServicesWareHouse"))
-                                //.Create(create => create.Action("Insert", "Employees").Type(HttpVerbs.Post))
-                                //.Update(update => update.Action("Update", "Employees").Type(HttpVerbs.Post))
-                                .Destroy(destroy => destroy.Action("Delete", "SubServicesWareHouse").Type(HttpVerbs.Post))
-                                //.Destroy(destroy => destroy.Action("Delete", "Employees", new { IdEmpleado = "{0}" }).Type(HttpVerbs.Delete))
-                                )
-                                .Events(e =>
-                                {
-                                    e.Save("onsave");
-
-                                })
+                                    })
 )
 
 <div id="numEmployees">
     @await Html.PartialAsync("pvwAddSubServicesWareHouse", new ERPMVC.DTO.SubServicesWareHouseDTO { SubServicesWareHouseId = 0, StartTime = DateTime.Now, EndTime = DateTime.Now, BranchId = Convert.ToInt64(Context.Session.GetString("BranchId")) })
 </div>
 
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridSubServicesWareHouse").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridSubServicesWareHouse").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    //setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+</script>

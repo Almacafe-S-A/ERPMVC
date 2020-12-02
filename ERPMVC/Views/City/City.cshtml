@@ -1,8 +1,12 @@
 ﻿@using Kendo.Mvc.UI
 
 @{
-    ViewData["Title"] = "City";
-
+    ViewData["Title"] = "Ciudad";
+    var Pais = ViewData["Pais"] as IEnumerable<ERPMVC.Models.Country>;
+    bool permisoAgregar, permisoEditar, permisoEliminar;
+    permisoAgregar = (bool)ViewData["permisoAgregar"];
+    permisoEditar = (bool)ViewData["permisoEditar"];
+    permisoEliminar = (bool)ViewData["permisoEliminar"];
 }
 
 <script>
@@ -22,6 +26,13 @@
         $('#ModalCity').find(':input').not(':submit').val('');
         $('#ModalCity').modal('show');
         $("#CityId").val('0');
+       
+
+        var validator = $("#frmCity").data("kendoValidator");
+        validator.hideMessages();
+        $('#ModalCity').find(':input').not(':submit').val('');
+        $("#CountryId").data("kendoDropDownList").value(0);
+        $("#StateId").data("kendoDropDownList").dataSource.read();
 
 
 
@@ -58,7 +69,52 @@
         });
     }
 
-
+    function DeleteCity(e) {
+        if (confirm('¿Esta seguro que desea eliminar este registro?')) {
+            e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                Id: dataItem.Id,
+                editar: 0
+            };
+            $.ajax({
+                url: '@Url.Action("Delete", "City")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    RefrescarGrid();
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    if (XMLHttpRequest.responseText == "No se puede eliminar este registro porque está siendo utilizado.") {
+                        $.toast({
+                            heading: 'Validación',
+                            text: "No se puede eliminar este registro porque está siendo utilizado.",
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 30000,
+                            stack: 6
+                        });
+                    }
+                    else {
+                        $.toast({
+                            heading: 'Error',
+                            text: textStatus + ": " + XMLHttpRequest.responseText,
+                            position: 'top-right',
+                            loaderBg: '#ff6849',
+                            icon: 'error',
+                            hideAfter: 30000,
+                            stack: 6
+                        });
+                    }
+                }
+            });
+        }
+    }
+    
 
 </script>
 
@@ -71,15 +127,27 @@
 
         .Columns(columns =>
         {
-            columns.Command(command =>
+            if (permisoEditar == true || permisoEliminar == true)
             {
-                //command.Custom("Ver detalles").Click("Detalles");
-                command.Custom("Editar").Click("EditCity");
-                command.Destroy().Text("Eliminar");
-            }).Width(250);
+                columns.Command(command =>
+                {
+                    //command.Custom("Ver detalles").Click("Detalles");
+                    if (permisoEditar)
+                    {
+                        command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCity");
+                    }
+                    if (permisoEliminar)
+                    {
+                        command.Custom("Eliminar").Text(" ").Click("DeleteCity").IconClass("fa fa-trash-alt");
+                    }
+                }).Title("Acciones").Width(70);
+            }
             columns.Bound(p => p.Id).Width(150);
             columns.Bound(p => p.Name).Width(170);
-            columns.Bound(p => p.StateId).Width(170);
+            //columns.Bound(p => p.StateId).Width(170);
+            columns.Bound(p => p.State.Name).Width(170);
+            columns.ForeignKey(p => p.CountryId, (System.Collections.IEnumerable)ViewData["Pais"], "Id", "Name").Title("País").Width(200);
+
         })
 
 
@@ -87,10 +155,14 @@
         {
 
             //tools.Create();
-            tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCity()" });
-            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+            if (permisoAgregar)
+            {
+                tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                            .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCity()" });
+            }
+                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
 
 
 
@@ -135,3 +207,23 @@
 <div id="numCity">
     @await Html.PartialAsync("pvwAddCity", new ERPMVC.DTO.CityDTO { Id = 0 })
 </div>
+
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridCity").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridCity").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+</script>

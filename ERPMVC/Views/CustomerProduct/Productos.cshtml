@@ -99,14 +99,15 @@
 <span id="spinner" style="display:none;"><i class="fas fa-spinner fa-spin"></i></span>
 <div id="loading"></div>
 
-<div id="CustProdModal" class="modal fade" role="dialog" data-backdrop="false" style="z-index:99999; position: fixed;">
-    <div class="modal-dialog modal-lg">
+<div id="CustProdModal" class="modal fade" style="min-width:90%" role="dialog">
+    <div class="modal-dialog modal-lg" >
 
         <!-- Modal content-->
         <div class="modal-content">
             <div class="modal-header">
-                <button type="button" class="close" onclick="closesalecustomerproduct();">&times;</button>
                 <h4 class="modal-title">Información Productos/Cliente</h4>
+                <button type="button" class="close" onclick="closesalecustomerproduct();">&times;</button>
+                
             </div>
             <div class="modal-body">
 
@@ -136,27 +137,24 @@
                                                     <hr />
                                                     <!-- ID -->
                                                     <div class="row">
-                                                        <div class="col-sm-12 col-md-12">
+                                                        <div class="col-md-4">
                                                             <div class="form-group">
                                                                 <label asp-for="CustomerProductId" class="control-label" style="width:100%">Código</label>
                                                                 <input asp-for="CustomerProductId" class="form-control" style="min-width:100%" disabled />
                                                                 <span asp-validation-for="CustomerProductId" class="text-danger"></span>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                    <!-- Cliente -->
-                                                    <div class="row">
-                                                        <div class="col-sm-12 col-md-12">
+
+                                                        <!-- Cliente -->
+                                                        <div class="col-md-4">
                                                             <div class="form-group">
                                                                 <label asp-for="CustomerName" class="control-label" style="width:100%">Nombre del Cliente</label>
                                                                 <input asp-for="CustomerName" id="CustomerNameProd" class="form-control" style="min-width:100%" disabled />
                                                                 <span asp-validation-for="CustomerName" class="text-danger"></span>
                                                             </div>
                                                         </div>
-                                                    </div>
-                                                    <!-- Producto -->
-                                                    <div class="row">
-                                                        <div class="col-sm-8 col-md-8">
+
+                                                        <div class="col-md-4">
                                                             <div class="form-group">
                                                                 <script>
                                                                     function getProductTypeId() {
@@ -169,6 +167,8 @@
                                                                                     option-label="Seleccionar Producto"
                                                                                     datatextfield="ProductName"
                                                                                     datavaluefield="SubproductId"
+                                                                                    required data-required-msg="El producto es requerido."
+                                                                                    onchange="ConsultaExsite();"                            
                                                                                     style="width: 100%;">
                                                                     <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
                                                                         <transport>
@@ -179,10 +179,12 @@
                                                                 <span asp-validation-for="SubProductId" class="text-danger"></span>
                                                             </div>
                                                         </div>
+
                                                     </div>
+                                                   
                                                     <!-- Estado -->
                                                     <div class="row">
-                                                        <div class="col-sm-8 col-md-8">
+                                                        <div class="col-md-4">
                                                             <div class="form-group">
                                                                 <label asp-for="IdEstado" class="control-label">Estado </label>
                                                                 <kendo-dropdownlist name="IdEstado2" for="@Model.IdEstado" filter="Kendo.Mvc.UI.FilterType.Contains"
@@ -190,6 +192,7 @@
                                                                                     option-label="Seleccionar Estado"
                                                                                     datatextfield="NombreEstado"
                                                                                     datavaluefield="IdEstado"
+                                                                                    required data-required-msg="El estado es requerido."
                                                                                     style="width: 100%;">
                                                                     <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
                                                                         <transport>
@@ -200,9 +203,7 @@
                                                                 <span asp-validation-for="IdEstado" class="text-danger"></span>
                                                             </div>
                                                         </div>
-                                                    </div>
 
-                                                    <div class="row">
                                                         <div class="col-md-4">
                                                             <label asp-for="SaldoProductoCertificado" class="control-label"></label>
                                                             <kendo-numerictextbox name="SaldoProductoCertificado"
@@ -230,6 +231,9 @@
                                                             <span asp-validation-for="SaldoProductoTotal" class="text-danger"></span>
                                                         </div>
                                                     </div>
+                                                   
+
+                                                   
 
                                                 </div>
                                             </div>
@@ -255,3 +259,61 @@
     </div>
 </div>
 
+<script>
+     //VALIDAR Name Product
+
+
+    function ConsultaExsite() {
+
+      
+
+         var CustomerProductId = $("#CustomerProductId").val();              
+        var CustomerId = $("#CustomerId").val();
+        var SubProductId = $("#SubProductId").val();      
+
+
+        if (SubProductId > 0) {
+            //alert(CustomerId)
+
+            $.ajax({
+                          url: '@Url.Action("GetProduct", "CustomerProduct")',
+                          method: 'GET',
+                          datatype: "json",
+                          contentType: 'application/json',
+                          async: false,
+                data: { 'CustomerProductId': CustomerProductId, 'CustomerId': CustomerId, 'SubProductId': SubProductId },
+                success: function (result) {
+                              
+                              if (result > 0) {
+                                  
+                                  $.toast({
+                                      heading: 'error',
+                                      text: 'Este producto ya esta registrado para este Cliente...!',
+                                      position: 'top-right',
+                                      loaderBg: '#ff6849',
+                                      icon: 'error',
+                                      showHideTransition: 'slide',
+                                      hideAfter: 6000,
+                                      stack: 6
+                                  });
+                                  $("#SubProductId").data("kendoDropDownList").value(0);
+                              }
+                      },
+                  //    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                  //    notification.show({
+                  //    title: "Validación",
+                  //    message: textStatus + ": " + XMLHttpRequest.responseText
+                  //   }, "error");
+                  //}
+               });               
+        }
+
+
+    }
+
+
+
+
+
+
+</script>

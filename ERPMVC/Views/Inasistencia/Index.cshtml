@@ -1,0 +1,274 @@
+﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
+@{
+    DateTime fecha = DateTime.Today;
+    bool todo = false;
+    if (TempData.ContainsKey("Fecha"))
+    {
+        fecha = (DateTime)TempData["Fecha"];
+    }
+    else if (ViewData.ContainsKey("Fecha"))
+    {
+        fecha = (DateTime)ViewData["Fecha"];
+    }
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
+<h3 class="text-themecolor">Revisión y Aprobación de Inasistencias</h3>
+<div class="container-fluid">
+    <div class="row">
+        <div class="col">
+            <div class="row">
+                <form id="frmBiometrico" kendo-validator="true" method="post" action="@Url.Action("PostFecha","Inasistencia")">
+                    <div class="form-group">
+                        <label for="Fecha">Fecha:</label>
+                        <input id="Fecha" name="Fecha" />
+                    </div>
+                    <div class="form-group">
+                        <input type="submit" value="Cargar" />
+                    </div>
+                </form>
+            </div>
+            <div class="row">
+                <h4>Inasistencias de @fecha.ToString("dd/MM/yyyy")</h4>
+                <div id="grdConfiguracion"></div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div class="modal fade" id="modalAceptarRechazar" tabindex="-1" role="dialog" style="position: absolute; top: 0; left: 40%; bottom: auto; right: auto; width: 300px;">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title">Inasistencia</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col">
+                                <label for="txtObservacion">Observación:</label>
+                                <input type="text" id="txtObservacion" value="" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <label for="cmbTipoInasistencia">Tipo Inasistencia:</label>
+                                <input id="cmbTipoInasistencia" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Cancelar</button>
+                    <button type="button" id="btnGuardarInasistencia" class="btn btn-primary">Guardar</button>
+                </div>
+            </div><!-- /.modal-content -->
+        </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+
+</div>
+
+<script>
+
+
+    function CrearGrid() {
+        $("#grdConfiguracion").kendoGrid({
+            dataSource: {
+                transport: {
+                    read: {
+                        url: "@Url.Action("GetInasistenciasFecha", "Inasistencia")",
+                        data: {
+                            fecha: '@fecha.ToString("yyyy-MM-dd")'
+                        }
+                    }
+                },
+                schema: {
+                    model: {
+                        id:"Id",
+                        fields: {
+                            Id: { type: "number", editable: false },
+                            Fecha: {type:"date", editable: false},
+                            Empleado: { defaultValue: {IdEmpleado:0,NombreEmpleado:''}, editable: false },
+                            Tipo: { defaultValue: { Id: 0, Nomnbre: "" }, editable: false },
+                            Comentario: {type:"string", editable:false},
+                            Estado: { defaultValue: {IdEstado:0,NombreEstado:""}, editable: false }
+                        }
+                    }
+                }
+            },
+            columns: [
+                {
+                    command: [
+                        PermisoAprobar(),
+                        PermisoRechazar()
+                    ],
+                    width:150
+                },
+                { field: "Id", title: "Id. ", width: 80, hidden: true },
+                { field: "Empleado", title: "Empleado", width: 200, template: '#= Empleado.NombreEmpleado #' },
+                { field: "Tipo", title: "Tipo Inasistencia", width: 100, template: '#= Tipo.Nombre #' },
+                { field: "Comentario", title: "Comentario", width: 200},
+                { field: "Estado", title: "Estado", width: 100, template: "#= Estado.NombreEstado #"}
+            ],
+            noRecords: {
+                template:"No hay inasistencias para la fecha estipulada."
+            },
+            //height: 400,
+            scrollable: true,
+            editable: false
+        });
+    }
+
+    function EditorFecha() {
+        $("#Fecha").kendoDatePicker({ dateInput: true, format: "dd/MM/yyyy" });
+    }
+
+    function EditorTipoInasistencia() {
+        $("#cmbTipoInasistencia")
+            .kendoDropDownList({
+                index:0,
+                autoBind: true,
+                dataTextField: "Nombre",
+                dataValueField: "Id",
+                dataSource: {
+                    transport: {
+                        read: {
+                            type:"GET",
+                            url: '@Url.Action("GetElementoByGrupoConfiguracionV2", "ElementoConfiguracion")?GrupoConfiguracionId=120',
+                            dataType: "json"
+                        }
+                    },
+                    schema: {
+                        model: {
+                            fields: {
+                                Id: { type: "number" },
+                                Nombre: {type:"string"}
+                            }
+                        }
+                    }
+                }
+            });
+    }
+
+    function Aprobar(e) {
+        e.preventDefault();
+        var registro = this.dataItem($(e.currentTarget).closest('tr'));
+        $("#txtObservacion").val("");
+        $("#modalAceptarRechazar").modal('show');
+        $('#btnGuardarInasistencia').click(function() {
+            var parametros = {
+                idInasistencia: registro.Id,
+                idTipo: $("#cmbTipoInasistencia").val(),
+                comentario: $("#txtObservacion").val()
+            };
+            debugger;
+            $.ajax({
+                url: '@Url.Action("AprobarInasistencia", "Inasistencia")',
+                method: 'POST',
+                datatype: "json",
+                async: false,
+                data: parametros,
+                success: function (result) {
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: 'Datos guardados correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 3000,
+                        stack: 6
+                    });
+                    RefreshGrid();
+                    $("#modalAceptarRechazar").modal('hide');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    $.toast({
+                        heading: 'Error',
+                        text: ' ' + textStatus + ": " + XMLHttpRequest.responseText,
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 3000,
+                        stack: 6
+                    });
+                    RefreshGrid();
+                }
+            });
+        });
+        @*debugger;
+        *@
+    }
+
+    function Rechazar(e) {
+        e.preventDefault();
+        var registro = this.dataItem($(e.currentTarget).closest('tr'));
+        var parametros = {
+            idInasistencia : registro.Id,
+            idTipo: registro.Tipo.id,
+            comentario: registro.Comentario
+        };
+        @*debugger;
+        $.ajax({
+            url: '@Url.Action("RechazarInasistencia", "Inasistencia")',
+            method: 'POST',
+            datatype: "json",
+            async: false,
+            data: parametros,
+            success: function (result) {
+                $.toast({
+                    heading: 'Satisfactorio',
+                    text: 'Datos guardados correctamente.',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'success',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                RefreshGrid();
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                $.toast({
+                    heading: 'Error',
+                    text: ' ' + textStatus + ": " + XMLHttpRequest.responseText,
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 3000,
+                    stack: 6
+                });
+                RefreshGrid();
+            }
+        });*@
+    }
+
+    function RefreshGrid() {
+        $("#grdConfiguracion").getKendoGrid().dataSource.read();
+    }
+
+    $(document).ready(function () {
+        EditorFecha();
+        CrearGrid();
+        EditorTipoInasistencia();
+    });
+</script>
+<script type="text/javascript">
+    function PermisoAprobar() {
+        var permisos = '@ViewData["permisos"]';
+       
+            AprobarInasistencias = {
+                name: "aprobar", iconClass: "fa fa-thumbs-up", text: "", click: Aprobar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 80 }
+            }
+            return AprobarInasistencias
+        
+    }
+    function PermisoRechazar() {
+        var permisos = '@ViewData["permisos"]';
+     
+            RechazarInasistencias = {
+                name: "rechazar", iconClass: "fa fa-thumbs-down", text: "", click: Rechazar, visible: function (dataItem) { return dataItem.Estado.IdEstado === 80 }
+            }
+            return RechazarInasistencias
+      
+    }
+</script>

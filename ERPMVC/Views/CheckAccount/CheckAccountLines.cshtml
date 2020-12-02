@@ -1,0 +1,529 @@
+﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
+@model ERPMVC.DTO.CheckAccountDTO
+
+
+@{
+    var messages = new Dictionary<string, string>() { { "custom", "Ingrese un valor correcto." },
+       { "required","Valor requerido" }};
+
+    var rules = new Dictionary<string, string>() { { "custom", "customFunction" } };
+}
+
+@{
+    ViewData["Title"] = "Cheques";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
+
+
+<div class="card">
+    <div class="card-body">
+        <form id="frmCheckAccount" kendo-validator="true" asp-controller="CheckAccount" asp-action="SaveCheckAccount" kendo-messages="messages"
+              data-ajax="true"
+              data-ajax-method="post" enctype="multipart/form-data"
+              data-ajax-begin="onBeginC" data-ajax-complete="onCompleteC"
+              data-ajax-failure="onFailedC" data-ajax-success="onSuccessC"
+              class="validation-wizard wizard-circle">
+            <div class="form-body">
+                <div class="row">
+                    <div class="col-md-12">
+
+                        <h3>Chequera @Model.CheckAccountId @Model.BankName Cta. @Model.AssociatedAccountNumber</h3>
+                    </div>
+
+                </div>
+                <hr />
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label asp-for="CheckAccountNo" class=" control-label" style="min-width:100%"></label>
+                            <input type="text" asp-for="CheckAccountNo" name="CheckAccountNo" style="min-width: 100%;" class="k-textbox" readonly maxlength="50" onKeyPress="return soloNumeros(event)" />
+
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label asp-for="NoInicial" class=" control-label" style="min-width:100%"></label>
+                            <input type="text" asp-for="NoInicial" name="NoInicial" class="k-textbox" required data-val-required="Número Inicial es requerido" readonly style="min-width:100%" maxlength="35" onKeyPress="return soloNumeros(event)" />
+
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label asp-for="NoFinal" class=" control-label" style="min-width:100%"></label>
+                            <input type="text" asp-for="NoFinal" name="NoFinal" class="k-textbox" required data-val-required="Número Final es requerido" style="min-width:100%" maxlength="35" readonly onKeyPress="return soloNumeros(event)" />
+
+                        </div>
+                    </div>
+
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label asp-for="NoInicial" class=" control-label" style="min-width:100%">No. Siguiente a Emitir</label>
+                            <input type="text" asp-for="NumeroActual" name="NoInicial" class="k-textbox" required data-val-required="Número Inicial es requerido" readonly style="min-width:100%" maxlength="35" onKeyPress="return soloNumeros(event)" />
+
+                        </div>
+                    </div>
+
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label asp-for="FechaIngreso" class="control-label" style="width: 100%;"></label>
+                            <kendo-datepicker name="FechaIngreso" for="FechaIngreso"
+                                              style="width: 100%;"
+                                              format="dd/MM/yyyy"
+                                              disabled
+                                              data-val-required="La fecha es requerida"
+                                              readonly />
+
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label asp-for="IdEstado" class="control-label">Estado</label>
+                            <kendo-dropdownlist name="IdEstado"
+                                                for="IdEstado"
+                                                filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                option-label="Seleccionar Estado"
+                                                datatextfield="NombreEstado"
+                                                enable="false"
+                                                id="Estado"
+                                                required data-required-msg="El estado es requerido."
+                                                datavaluefield="IdEstado"
+                                                style="width: 100%;">
+                                <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                    <transport>
+                                        <read url="@Url.Action("GetGrupoEstadoUno", "Estados")" />
+                                    </transport>
+                                </datasource>
+                            </kendo-dropdownlist>
+                            <span asp-validation-for="IdEstado" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="row">
+                    <div class="col-md-12">
+                        @(Html.Kendo().Grid<ERPMVC.Models.CheckAccountLines>
+                            ()
+                            .Name("gridCheckAccountLine")
+                            .Columns(columns =>
+                            {
+
+                                if (permisos.HasClaim("Bancos.Cheques.Anular", "true")
+                               || permisos.HasClaim("Bancos.Cheques.Imprimir", "true")
+                               || permisos.HasClaim("Bancos.Cheques.Reporte", "true"))
+                                {
+                                    columns.Command(command =>
+                                    {
+                                        if (permisos.HasClaim("Bancos.Cheques.Anular", "true"))
+                                        {
+                                            command.Custom("Editar").Text(" ").IconClass("fa fa-pencil").Click("EditarCheque");
+                                            command.Custom("Anular").Text(" ").IconClass("fa fa-close").Click("AnularCheque");
+                                        }
+                                        if (permisos.HasClaim("Contabilidad.Movimientos.Asiento Contable.Aprobar", "true"))
+                                        {
+                                            command.Custom("Aprobar").Text(" ").IconClass("fa fa-thumbs-up").Click("Aprobar");
+                                            command.Custom("Rechazar").Text(" ").IconClass("fa fa-thumbs-down").Click("Rechazar");
+
+                                        }
+                                        command.Custom("ImprimirCheque").Text(" ").IconClass("fa fa-print").Click("ImprimirCheque");
+                                        command.Custom("ImprimirReporteCheque").Text(" ").IconClass("fa fa-print").Click("ImprimirReporteCheque");
+
+                                    }).Title("Acciones").Width(200);
+                                }
+                                columns.Bound(o => o.Id).Title("Id").Width(80);
+                                columns.Bound(o => o.CheckNumber).Title("Numero").Width(120);
+                                columns.Bound(o => o.Date).Title("Fecha").Format("{0:dd/MM/yyyy}").Width(120);
+                                columns.Bound(o => o.PaytoOrderOf).Title("A Nombre").Width(250);
+                                columns.Bound(o => o.Ammount).Title("Monto").Format("{0:C}").Width(120);
+                                columns.Bound(o => o.Impreso).Title("Impreso").ClientTemplate("#= Impreso? 'Si':'No' #").Width(120);
+                                columns.Bound(o => o.Estado).Title("Estado").Width(120);
+                                columns.Bound(o => o.IdEstado).Visible(false);
+                                columns.Bound(o => o.AmountWords).Title("Cantidad en Letras").Width(250);
+                                columns.Bound(o => o.JournalEntrId).Title("No Asiento").Width(150);
+
+
+                            })
+                            .Filterable(f => f.Operators(o => o.ForString(s => s
+                            .Clear()
+                            .Contains("Contiene")
+                            .DoesNotContain("No contiene")
+                            .EndsWith("Termina con")
+                            .IsEqualTo("Es igual a")
+                            .IsNotEqualTo("No es igual a")
+                            .IsNull("Es nulo")
+                            .StartsWith("Inicia con")
+
+
+                            )
+                            .ForNumber(n => n
+                            .Clear()
+                            .IsEqualTo("Es igual a")
+                            .IsGreaterThan("Es mayor que")
+                            .IsLessThan("Es menor que")
+                            .IsNull("Es nulo")
+                            .IsLessThanOrEqualTo("Es menor o igual que")
+                            .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                            )
+                            .ForDate(d => d
+                            .Clear()
+                            .IsEqualTo("Es igual que")
+                            .IsGreaterThan("Es mayor que")
+                            .IsLessThan("Es menor que")
+                            .IsLessThanOrEqualTo("Es menor o igual que")
+                            .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                            .IsNotEqualTo("No es igual que")
+                            )
+                            ))
+                            .ToolBar(tools =>
+                            {
+                                if (permisos.HasClaim("Bancos.Cheques.Emitir", "true"))
+                                {
+                                    tools.Custom().Text("Emitir Cheque").IconClass("k-icon k-i-plus")
+                                                                                       .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCheck()" });
+                                }
+                                tools.Excel().HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a Excel");
+                                tools.Pdf().HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a PDF");
+
+                            })
+                            .Editable(e => e.Mode(GridEditMode.PopUp))
+                            .Sortable()
+                            .Pageable()
+                            .Filterable()
+                            .Scrollable()
+                            .Pdf(pdf => pdf.FileName("ChequesReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                            .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                            .Excel(excel => excel.FileName("ChequesReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                            .Events(e => e.DataBound("dataBound"))
+                            .DataSource(dataSource =>
+                            dataSource
+                            .WebApi()
+
+                            .ServerOperation(true)
+                            .Model(model =>
+                            {
+                                model.Id(o => o.Id);
+
+                            }).Sort(s => s.Add(m => m.Id).Descending())
+                            .Events(events => events.Error("error_handler"))
+                            .Read(read => read.Action("GetCheckAccountLinesByCheckAccountId", "CheckAccountLines", new { CheckAccountId = Model.CheckAccountId }))
+
+
+                            )
+                            .Events(e =>
+                            {
+
+                            })
+                            )
+
+
+                    </div>
+
+                </div>
+
+            </div>
+        </form>
+
+    </div>
+</div>
+
+
+
+<script>
+    function dataBound(e) {
+        $.each(this.dataSource.data(), function () {
+            if (Number(this.IdEstado) != 97) {
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Aprobar').hide();
+                $('[data-uid=' + this.uid + ']').find('.k-grid-Rechazar').hide();
+            }
+
+        })
+    }
+     function AnularCheque(e) {
+        debugger;
+         e.preventDefault();
+         var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+         
+         if (!confirm("Esta seguro que desea Anular este Cheque?")) {
+             return;
+         }
+
+        
+            var dataObject = {
+                CheckAccountId: dataItem.CheckAccountId,
+                Id: dataItem.Id,
+            };
+
+            $.ajax({
+                url: '@Url.Action("AnularCheque", "CheckAccount")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    $.toast({
+                                heading: 'Satisfactorio',
+                                text: 'Cheque Anulado Correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    console.log(XMLHttpRequest);
+                     $.toast({
+                                heading: 'Error',
+                                text: XMLHttpRequest.responseJSON.Result,
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'error',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+                }
+            });
+        RefrescarGrid();
+    }
+
+    function Aprobar(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        AprobarCheque(dataItem.Id, true);
+        RefrescarGrid();
+    }
+    function Rechazar(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        AprobarCheque(dataItem.Id, false);
+        RefrescarGrid();
+    }
+
+    function AprobarCheque(id , aprobacion) {
+        debugger;
+        var estado = 99;
+        if (aprobacion) {
+            estado = 98;
+        }
+            var dataObject = {
+                Id: id,
+                IdEstado : estado,
+            };
+
+            $.ajax({
+                url: '@Url.Action("AprobarCheque", "CheckAccount")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject, aprobacion),
+                success: function (result) {
+                    debugger;
+                    $.toast({
+                                heading: 'Satisfactorio',
+                                text: 'Cheque  Correctamente.',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'success',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    //alert(textStatus + ": " + XMLHttpRequest.responseText);
+                     $.toast({
+                                heading: 'Error',
+                                text: XMLHttpRequest.responseText,
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'error',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+                }
+            });
+        RefrescarGrid();
+    }
+         function AddCheck() {
+             clearsession();
+             debugger;
+             var estadochequera = '@Model.Estado'
+             if (estadochequera == 'Inactivo') {
+             $.toast({
+                                heading: 'Error',
+                                text: 'No se puedene emitir Cheques de una Chequera Inactiva',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'error',
+                                hideAfter: 30000,
+                                stack: 6
+             });
+            return;
+        }
+        var dataObject = {
+            CheckAccountId: @Model.CheckAccountId,
+            CheckNumber: @Model.NumeroActual,
+            Id: 0,
+            AccountManagement: {
+                AccountManagementId : @Model.AccountManagement.AccountManagementId
+            }
+        };
+        //console.log(dataItem.AccountManagementId);
+        $('#ModalCheck').find(':input').not(':submit').val('');
+        //$('#ModalCheckAccount').modal('show');
+        $("#CheckAccountId").val('0');
+
+         $.ajax({
+                url: '@Url.Action("pvwAddCheck", "CheckAccount")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+             async: false,
+             data: JSON.stringify(_pCheque = dataObject),
+                success: function (result) {
+                    $("#NumCheck").html('');
+                    $("#NumCheck").html(result);
+
+
+                    //$("#btnBlackListCustomers").hide();
+                    $('#ModalCheck').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+
+    }
+
+
+             function EditarCheque(e) {
+                    debugger;
+                    e.preventDefault();
+                 var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+                        var dataObject = {
+                            CheckAccountId: dataItem.CheckAccountId,
+                            Id: dataItem.Id,
+                            AccountManagement: {
+                                AccountManagementId: dataItem.AccountManagementId
+                            }
+                        };
+
+                       clearsession();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        if (dataItem.Estado == '@Model.Estado') {
+             $.toast({
+                                heading: 'Error',
+                                text: 'No se puedene emitrio Cheques de una Chequera Inactiva',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'error',
+                                hideAfter: 30000,
+                                stack: 6
+             });
+            
+            return;
+        }
+
+        //console.log(dataItem.AccountManagementId);
+        $('#ModalCheck').find(':input').not(':submit').val('');
+        //$('#ModalCheckAccount').modal('show');
+        $("#CheckAccountId").val('0');
+
+         $.ajax({
+                url: '@Url.Action("pvwAddCheck", "CheckAccount")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+             async: false,
+             data: JSON.stringify(_pCheque = dataObject),
+                success: function (result) {
+                    $("#NumCheck").html('');
+                    $("#NumCheck").html(result);
+
+
+                    //$("#btnBlackListCustomers").hide();
+                    $('#ModalCheck').modal('show');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+    }
+
+        function ImprimirCheque(e) {
+        debugger;
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            if (dataItem.Estado == "Emitido" || dataItem.Estado == "Aprobado" || dataItem.Estado == "Emitido - Reimpreso") {
+                var url = '@Url.Action("SFCheque", "CheckAccount")/' + dataItem.Id;
+                RefrescarGrid();
+                var win = window.open(url, '_blank');
+                win.focus();
+            } else {
+                $.toast({
+                    heading: 'Error',
+                    text: 'Solo se pueden imprimir los cheques de estado Emitido y Autorizado',
+                    position: 'top-right',
+                    loaderBg: '#ff6849',
+                    icon: 'error',
+                    hideAfter: 30000,
+                    stack: 6
+                });
+            } 
+
+
+
+
+    }
+    function ImprimirReporteCheque(e) {
+        debugger;
+             e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+
+
+            var url = '@Url.Action("SFVoucherCheque", "CheckAccount")/' + dataItem.Id;
+                var win = window.open(url, '_blank');
+                win.focus();
+
+
+    }
+
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridCheckAccountLine").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridCheckAccountLine").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setRowButtonTooltip(".k-grid-Anular", "Anular Cheque");
+    setRowButtonTooltip(".k-grid-ImprimirCheque", "Imprimir Cheque");
+    setRowButtonTooltip(".k-grid-ImprimirReporteCheque", "Imprimir Voucher");
+    setRowButtonTooltip(".k-grid-Editar", "Editar Cheque");
+    setRowButtonTooltip(".k-grid-Aprobar", "Aprobar Cheque");
+    setRowButtonTooltip(".k-grid-Rechazar", "Rechazar Cheque");
+
+
+
+</script>
+
+<div id="NumCheck">
+    @await Html.PartialAsync("pvwAddCheck", new ERPMVC.DTO.CheckAccountLinesDTO { CheckAccountId = Model.CheckAccountId, Id = 0 })
+
+</div>

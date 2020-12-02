@@ -1,0 +1,188 @@
+﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
+
+@{
+    ViewData["Title"] = "Riesgo de Clientes";
+
+
+
+}
+
+<script>
+
+    function Detalles(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        window.location.href = "@Url.Action("Details", "Customer")?CustomerId=" + dataItem.CustomerId;
+    };
+    function changesetearvalues() {
+        $("#CustomerTypeId").data("kendoDropDownList").value();
+        $("#test").val($("#CustomerTypeId").data("kendoDropDownList").value());
+        //console.log($("#CustomerTypeId").data("kendoDropDownList").value());
+
+    }
+</script>
+
+
+<h3 class="text-themecolor">Riesgo de Clientes</h3>
+
+
+@(Html.Kendo().Grid<ERPMVC.DTO.CustomerDTO>()
+                      .Name("grid")
+                      .Columns(columns =>
+                      {
+                          columns.Command(command =>
+                                                  {
+                                                      
+                                                          command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText(" ").CancelText(" ");
+                                                     
+                                                      
+
+                                                      //command.Destroy().Text(" ").IconClass("fa fa-trash");
+                                                  }).Width(120).Locked(true).Title("Acciones");
+                          columns.Bound(p => p.CustomerId).Width(120);
+                          columns.Bound(p => p.CustomerName).Width(300);
+                          //columns.Bound(p => p.Identidad).Width(250);
+                          columns.Bound(p => p.RTN).Width(200);
+                          columns.Bound(p => p.ValorSeveridadRiesgo).Width(250);
+                          columns.Bound(p => p.NivelSeveridad).Title("Nivel de Riesgo").Width(200).HtmlAttributes(new { @style = "background:#=ColorHexadecimal#;color:black;" });
+
+
+                      })
+                          .Filterable(f => f.Operators(o => o.ForString(s => s
+                                               .Clear()
+                                               .Contains("Contiene")
+                                               .DoesNotContain("No contiene")
+                                               .EndsWith("Termina con")
+                                               .IsEqualTo("Es igual a")
+                                         )
+                                         .ForDate(d => d
+                                         .Clear()
+                                         .IsEqualTo("Es igual que")
+                                         .IsGreaterThan("Es mayor que")
+                                         .IsLessThan("Es menor que")
+                                         .IsLessThanOrEqualTo("Es menor o igual que")
+                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                         .IsNotEqualTo("No es igual que")
+                                          )
+                                       ))
+                      .ToolBar(tools =>
+                      {
+                          
+                          tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a excel");
+                          tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a pdf");
+                      })
+                      .Editable(e => e.Mode(GridEditMode.InLine))
+                      .Sortable()
+                      .Pageable()
+                      .Filterable()
+                      .Scrollable()
+
+                      .Pdf(pdf => pdf.FileName("ClienteReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                       + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                       .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                         .Excel(excel => excel.FileName("ClienteReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                       + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                       .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                      .DataSource(dataSource =>
+                          dataSource
+                            .WebApi()
+                            .Events(q => q.RequestEnd("OnRequestEnd_TopLinePriceGrid"))
+                            .ServerOperation(true)
+                            .Model(model =>
+                            {
+                                model.Id(p => p.CustomerId);
+                                model.Field(p => p.CustomerId).Editable(false);
+                                model.Field(p => p.CustomerName).Editable(false);
+                                model.Field(p => p.RTN).Editable(false);
+                                model.Field(p => p.Identidad).Editable(false);
+                                model.Field(p => p.NivelSeveridad).Editable(false);
+                                model.Field(p => p.ValorSeveridadRiesgo).Editable(true);
+                            })
+                        .Events(events => events.Error("error_handler"))
+                        .Read(read => read.Action("Get", "Customer"))
+                        //.Create(create => create.Action("Post", "Customer").Data("GetData"))
+                        .Update(update => update.Action("PutRiesgo", "Customer", new { id = "{0}" }).Type(HttpVerbs.Post))
+                        //.Destroy(destroy => destroy.Action("Delete", "Customer", new { id = "{0}" }))
+                  )
+                    .Events(e =>
+                    {
+
+                            e.Save("onsave");
+                    })
+
+
+
+)
+
+
+
+<script>
+    function OnRequestEnd_TopLinePriceGrid(e) {
+        console.log(e.type);
+        if (e.type === "update" || e.type === "create") {
+            var grid = $('#grid').data('kendoGrid');
+
+
+            
+
+
+    //if (e.model.ForeignKey) {
+
+    //    //change the model value
+    //    e.model.ForeignKeyColumn = 2;
+    //    //get the currently selected value from the DDL
+    //    var currentlySelectedValue = $(e.container.find("#CostumerTypeId")[0]).data().kendoDropDownList.value();
+    //    //set the value to the model
+    //    e.model.set('CostumerTypeId', currentlySelectedValue);
+    //            }
+              grid.dataSource.read();
+        }
+    }
+
+
+    function onsave() {
+        $.toast({
+                          heading: 'Satisfactorio',
+                          text: 'Datos guardados correctamente.',
+                          position: 'top-right',
+                          loaderBg: '#ff6849',
+                          icon: 'success',
+                          showHideTransition: 'slide',
+                          hideAfter: 3000,
+                          stack: 6
+                      });
+
+    }
+    function GetData(data) {
+        if (data != null) {
+            data.CustomerTypeId = $("#test").val();
+        }
+    }
+</script>
+
+
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#grid").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#grid").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+
+    //setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setToolbarTooltip(".k-grid-toolbar a.k-grid-add", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-edit", "Editar Registro");
+    //setRowButtonTooltip(".k-grid-delete", "Eliminar Usuario");
+    setRowButtonTooltip(".k-grid-update", "Guardar");
+    setRowButtonTooltip(".k-grid-cancel", "Cancelar");
+    setRowButtonTooltip(".k-grid-Verdetalles", "Detalle Cliente");
+</script>

@@ -1,0 +1,370 @@
+﻿@model ERPMVC.DTO.GarantiaBancariaDTO
+
+<style>
+    .readonly {
+        pointer-events: none;
+    }
+</style>
+
+<div id="ModalGarantiaBancaria" class="modal fade" role="dialog">
+    <!-- Modal content-->
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Garantía Bancaria</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="row" id="validation">
+                    <div class="col-lg-12">
+                        <div class="card">
+                            <div class="card-body">
+                                <form id="frmGarantiaBancaria" kendo-validator="true"
+                                      data-ajax="true"
+                                      data-ajax-method="post"
+                                      data-ajax-begin="SaveGarantiaBancaria"
+                                      class="validation-wizard wizard-circle">
+                                    <div class="form-body">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Id" class=" control-label" style="min-width:100%">Id Garantía Bancaria</label>
+                                                    <input type="text" asp-for="Id" name="IdSeveridad" class="k-textbox" style="min-width:100%"  readonly/>
+                                                    <span asp-validation-for="Id" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="strign" class="control-label"></label>
+                                                    <input type="text" asp-for="strign" required data-required-msg="La Descripción es requerida." maxlength="100" name="strign" class="k-textbox" autocomplete="off" style="min-width:100%" />
+                                                    <span asp-validation-for="strign" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            @if (Model.Id > 0)
+                                            {
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label asp-for="FechaInicioVigencia" class="control-label" style="min-width:100%">Fecha de Apertura</label>
+                                                        <kendo-datepicker name="FechaInicioVigencia" style="min-width: 100%;" 
+                                                                          format="dd/MM/yyyy"  max="DateTime.Now"
+                                                                          data-val-required="La Fecha Inicio de Vigencia es requerida." onchange="setMinFechaFinal()"
+                                                                          value="@Model.FechaInicioVigencia" />
+                                                        <span asp-validation-for="FechaInicioVigencia" class="text-danger"></span>
+                                                    </div>
+                                                </div>
+                                            }
+                                            else
+                                            {
+                                                <div class="col-md-4">
+                                                    <div class="form-group">
+                                                        <label asp-for="FechaInicioVigencia" class="control-label" style="min-width:100%">Fecha de Apretura</label>
+                                                        <kendo-datepicker name="FechaInicioVigencia" style="min-width: 100%;" 
+                                                                          format="dd/MM/yyyy"
+                                                                          max="DateTime.Now"
+                                                                          data-val-required="La Fecha Inicio de Vigencia es requerida."  onchange="setMinFechaFinal()"
+                                                                          value="@Model.FechaInicioVigencia" />
+                                                        <span asp-validation-for="FechaInicioVigencia" class="text-danger"></span>
+                                                    </div>
+                                                </div>
+                                            }
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="FechaFianlVigencia" class=" control-label" style="min-width:100%">Fecha de Vencimiento</label>
+                                                    @if (Model.Id > 0)
+                                                    {
+                                                        <kendo-datepicker name="FechaFianlVigencia" style="min-width: 100%;" 
+                                                                          format="dd/MM/yyyy"
+                                                                          data-val-required="La Fecha Final de Vigencia es requerida."
+                                                                          min="@Model.FechaInicioVigencia"
+                                                                          value="@Model.FechaFianlVigencia" />
+                                                    }
+                                                    else
+                                                    {
+                                                        <kendo-datepicker name="FechaFianlVigencia" style="min-width: 100%;" 
+                                                                          format="dd/MM/yyyy"
+                                                                          data-val-required="La Fecha Final de Vigencia es requerida."
+                                                                          value="null" />
+                                                    }
+                                                    <span asp-validation-for="FechaFianlVigencia" class="text-danger"></span>
+
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4" hidden>
+                                                <div class="form-group">
+                                                    <label asp-for="NumeroCertificado" class=" control-label" style="min-width:100%"></label>
+                                                    <input type="text" maxlength="30" asp-for="NumeroCertificado" name="NumeroCertificado" disabled required data-required-msg="El Número de Certificado es requerido." class="form-control" autocomplete="off" style="min-width:100%" />
+                                                    <span asp-validation-for="NumeroCertificado" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="CostCenterId" class=" control-label" style="min-width:100%"></label>
+                                                    <kendo-dropdownlist name="CostCenterId" required data-required-msg="El Centro de Costo es Requerido."
+                                                                        for="@Model.CostCenterId"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione Centro de Costo!"
+                                                                        datatextfield="CostCenterName"
+                                                                        datavaluefield="CostCenterId"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <sorts>
+                                                                <sort field="CostCenterName" direction="asc" />
+                                                            </sorts>
+                                                            <transport>
+                                                                <read url="@Url.Action("GetCostCenter", "CostCenter")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="CostCenterId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="Monto" class=" control-label" style="min-width:100%"></label>
+                                                    <kendo-numerictextbox name="Monto"
+                                                                          spinners="false" decimals="2"
+                                                                          min="0" data-val-required="El Monto es requerido." data-min-msg="El Monto no puede ser negativo."
+                                                                          style="min-width: 100%;text-align:right;padding-right: 3px"
+                                                                          max="999999999"
+                                                                          step="1" onchange="TypeCurrencyValidation();"
+                                                                          value="Model.Monto" />
+                                                    <span asp-validation-for="Monto" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                        </div>
+
+                                        <div class="row">
+
+
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="CurrencyId" class="control-label" style="min-width:100%"></label>
+                                                    <kendo-dropdownlist name="CurrencyId" required data-required-msg="La Moneda es requerida."
+                                                                        for="@Model.CurrencyId"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"
+                                                                        option-label="Seleccione la Moneda!"
+                                                                        datatextfield="CurrencyName"
+                                                                        datavaluefield="CurrencyId"
+                                                                        style="width: 100%;" onchange="TypeCurrencyValidation();">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <sorts>
+                                                                <sort field="CurrencyName" direction="asc" />
+                                                            </sorts>
+                                                            <transport>
+                                                                <read url="@Url.Action("GetCurrency", "Currency")" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="CurrencyId" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4" hidden>
+                                                <div class="form-group">
+                                                    <label asp-for="Ajuste" class=" control-label" style="min-width:100%"></label>
+                                                    <kendo-numerictextbox name="Ajuste" class="readonly"
+                                                                          spinners="false" decimals="2" tabindex="-1"
+                                                                          min="0" data-val-required="El Ajuste es requerido." data-min-msg="El Ajuste no puede ser negativo."
+                                                                          style="min-width: 100%;text-align:right;padding-right: 3px"
+                                                                          max="999999999"
+                                                                          step="1"
+                                                                          value="Model.Ajuste" />
+                                                    <span asp-validation-for="Ajuste" class="text-danger"></span>
+                                                </div>
+                                            </div>
+                                            <div class="col-md-4">
+                                                <div class="form-group">
+                                                    <label asp-for="IdEstado" class=" control-label" style="min-width:100%">Estado</label>
+                                                    <kendo-dropdownlist name="IdEstado" required data-required-msg="El Estado es requerido."
+                                                                        for="IdEstado" enable= "false"
+                                                                        filter="Kendo.Mvc.UI.FilterType.Contains"                                                                        
+                                                                        datatextfield="NombreEstado"
+                                                                        datavaluefield="IdEstado"
+                                                                        style="width: 100%;">
+                                                        <datasource type="DataSourceTagHelperType.WebApi" server-operation="true">
+                                                            <sorts>
+                                                                <sort field="NombreEstado" direction="asc" />
+                                                            </sorts>
+                                                            <transport>
+                                                                <read url="@Url.Action("GetporGrupoEstado", "Estados", new { GrupoId = 32 })" />
+                                                            </transport>
+                                                        </datasource>
+                                                    </kendo-dropdownlist>
+                                                    <span asp-validation-for="IdEstado" class="text-danger"></span>
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                            @*<div class="row">
+                                           
+                                            </div>*@
+                                        <div class="row">
+                                            <div class="col-md-12">
+                                                <button id="btnGarantiaBancaria" class="form-control btn-miboton" type="submit"> Guardar </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    $(document).ready(function () {
+
+    });
+
+    function SaveGarantiaBancaria() {
+        //if (confirm('Esta seguro que desea agregar la fila?')) {
+        var notification = $("#notification").data("kendoNotification");
+        $("#btnGarantiaBancaria").hide();
+        $("#btnGarantiaBancaria").prop("disabled", true);
+
+        var _fechaInicioVigencia = "";
+        var _fechaFinalVigencia = "";
+        if ($("#FechaInicioVigencia").getKendoDatePicker().value() != null || $("#FechaInicioVigencia").getKendoDatePicker().value() != undefined || $("#FechaInicioVigencia").val() != "") {
+            _fechaInicioVigencia = $("#FechaInicioVigencia").getKendoDatePicker().value().toJSON();
+        }
+        if ($("#FechaFianlVigencia").getKendoDatePicker().value() != null || $("#FechaFianlVigencia").getKendoDatePicker().value() != undefined || $("#FechaFianlVigencia").val() != "") {
+            _fechaFinalVigencia = $("#FechaFianlVigencia").getKendoDatePicker().value().toJSON();
+        }
+
+        var dataObject = {
+            'Id': $("#Id").val() === "" ? "0" : $("#Id").val(),
+            'strign': $("#strign").val(),
+            'FechaInicioVigencia': _fechaInicioVigencia,
+            'FechaFianlVigencia': _fechaFinalVigencia,
+            'NumeroCertificado': $("#NumeroCertificado").val(),
+            'CostCenterId': $("#CostCenterId").val(),
+            'Monto': $("#Monto").val(),
+            'CurrencyId': $("#CurrencyId").val(),
+            'Ajuste': $("#Ajuste").val(),
+            'IdEstado': $("#IdEstado").val(),
+        };
+        
+        var validator = $("#frmGarantiaBancaria").data("kendoValidator");
+        var status = $(".status");
+
+        if (validator.validate()) {
+            $.ajax({
+                url: '@Url.Action("SaveGarantiaBancaria", "GarantiaBancaria")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (data) {
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: 'Datos guardados correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 4000,
+                        stack: 6
+                    });
+
+                    RefrescarGrid();
+                    $('#ModalGarantiaBancaria').modal('hide');
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+
+                    notification.show({
+                        title: "Validacion",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+                }
+            });
+        }
+        else {
+            status.text("Oops! There is invalid data in the form.")
+                .removeClass("valid")
+                .addClass("invalid");
+        }
+        $("#btnGarantiaBancaria").show();
+        $("#btnGarantiaBancaria").prop("disabled", false);
+        //}
+    }
+
+    function setMinFechaFinal() {
+        var _fechaInicioVigencia = "";
+        var _fechaFinalVigencia = "";
+        if ($("#FechaInicioVigencia").getKendoDatePicker().value() != null || $("#FechaInicioVigencia").getKendoDatePicker().value() != undefined || $("#FechaInicioVigencia").val() != "") {
+            _fechaInicioVigencia = $("#FechaInicioVigencia").getKendoDatePicker().value().toJSON()
+
+            $("#FechaFianlVigencia").kendoDatePicker("min", _fechaInicioVigencia)
+
+            if ($("#FechaFianlVigencia").getKendoDatePicker().value() != null || $("#FechaFianlVigencia").getKendoDatePicker().value() != undefined || $("#FechaFianlVigencia").val() != "") {
+                _fechaFinalVigencia = $("#FechaFianlVigencia").getKendoDatePicker().value().toJSON()
+                if (_fechaInicioVigencia > _fechaFinalVigencia) {
+                    $("#FechaFianlVigencia").val(null);
+                }
+            }
+        }
+    }
+
+    function TypeCurrencyValidation() {
+        var Currency = $("#CurrencyId").val();
+        if (Currency == 1) {
+            $("#Ajuste").data("kendoNumericTextBox").value(1);
+            return;
+        }
+        var Amount = $("#Monto").val();
+        if (Currency > 0 && Amount > 0) {
+            var CurrencyName = $("#CurrencyId").data("kendoDropDownList").text();
+            if (CurrencyName == "Dolar Americano" || CurrencyName == "Dolares Americanos" || CurrencyName == "Dolar") {
+                var dataObject = { CurrencyId: Currency };
+                $.ajax({
+                    url: '@Url.Action("ValidacionTipoMoneda", "GarantiaBancaria")',
+                    method: 'POST',
+                    datatype: "json",
+                    contentType: 'application/json',
+                    async: false,
+                    data: JSON.stringify(dataObject),
+                    success: function (data) {
+                        if (data != undefined) {
+                            var TasaDeCambio = 0, Ajuste = 0, Monto = 0;
+                            TasaDeCambio = data.ExchangeRateValue;
+                            Monto = $("#Monto").val();
+                            Ajuste = Number(TasaDeCambio);
+                            $("#Ajuste").data("kendoNumericTextBox").value(Ajuste);
+                        }
+                        else {
+                            $.toast({
+                                heading: 'Error',
+                                text: 'No se encontro la tasa de cambio de dolar de hoy, porfavor Ingrese la Tasa de Cambio primero',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'error',
+                                hideAfter: 30000,
+                                stack: 6
+                            });
+                            $("#Ajuste").data("kendoNumericTextBox").value(null);
+                        }
+                    },
+                    error: function (XMLHttpRequest, textStatus, errorThrown) {
+                        alert(textStatus + ": " + XMLHttpRequest.responseText);
+                    }
+                });
+            }
+            else {
+                $("#Ajuste").data("kendoNumericTextBox").value(0);
+                $("#Ajuste_validationMessage").prop("hidden", true);
+            }
+        }
+        else {
+            $("#Ajuste").data("kendoNumericTextBox").value();
+        }
+    }
+</script>
