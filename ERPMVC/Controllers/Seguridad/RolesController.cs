@@ -344,7 +344,7 @@ namespace ERPMVC.Controllers
             }
         }
 
-        [Authorize(Policy = "Seguridad.Listar Permisos")]
+        //[Authorize(Policy = "Seguridad.Listar Permisos")]
         [HttpGet("[action]")]
         public async Task<ActionResult<List<RolPermisoAsignacion>>> AsignacionPermisosRol([FromQuery(Name="idRol")]string idRol)
         {

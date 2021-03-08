@@ -122,22 +122,24 @@ namespace ERPMVC.Controllers
 
                         var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
                         //identity.AddClaims(secToken.Claims);
-                        var principal = new ClaimsPrincipal(identity);
+                        
 
                         HttpClient cliente = new HttpClient();
-                        cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + _userToken.Token);
+                        cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + _userToken.Token);                        
+                        var permisos = await cliente.GetAsync(baseadress + "api/Permisos/GetPermissionByUser");
+                        string userclaims = await permisos.Content.ReadAsStringAsync();
+                        IEnumerable<Claim> claims = JsonConvert.DeserializeObject<IEnumerable<CustomClaim>>(userclaims);
+                        identity.AddClaims(claims);
+
+                        var principal = new ClaimsPrincipal(identity);
+
+                        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
                         var resultado = await cliente.GetAsync(baseadress + "api/Reportes/CadenaConexionBD");
                         if (resultado.IsSuccessStatusCode)
                         {
                             var cadena = await resultado.Content.ReadAsStringAsync();
                             Utils.ConexionReportes = cadena;
                         }
-                        var permisos = await cliente.GetAsync(baseadress + "api/Permisos/GetPermissionByUser");
-                        string userclaims = await permisos.Content.ReadAsStringAsync();
-                        IEnumerable<Claim> claims = JsonConvert.DeserializeObject<IEnumerable<CustomClaim>>(userclaims);
-                        identity.AddClaims(claims);
-
-                        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
 
                         Utils.Cerrado = true;
