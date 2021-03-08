@@ -1,4 +1,6 @@
-﻿
+﻿@using Kendo.Mvc.UI
+@using System.Security.Claims
+
 @{
     ViewData["Title"] = "Roles";
     bool permisoAgregar, permisoEditar, permisoExportar;
@@ -6,121 +8,123 @@
     permisoEditar = true;
 }
 
-
-
 <h3 class="text-themecolor">Roles</h3>
 
-
 @(Html.Kendo().Grid<ERPMVC.Models.ApplicationRole>()
-                      .Name("gridRoles")
-                      .Columns(columns =>
-                      {
-                          if (permisoEditar)
-                          {
-                              columns.Command(command =>
-                              {
-                                  //   command.Custom("Ver detalles").Click("Detalles");
-                                  command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText(" ").CancelText(" ");
-                                  //command.Destroy().Text(" ").IconClass("fa fa-trash");
-                              }).Width(100).Title("Acciones");
-                          }
-                          columns.Bound(p => p.Id).Width(80).Visible(false);
-                          columns.Bound(p => p.Name).Title("Rol").Width(150);
-                          columns.Bound(p => p.NormalizedName).Title("Descripcion").Width(160).Visible(false);
-                          columns.Bound(p => p.ConcurrencyStamp).Width(150).Visible(false);
-                          columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy}").Width(150).Title("Creado");
-                          columns.Bound(p => p.FechaModificacion).Format("{0:dd/MM/yyyy}").Width(150).Title("Modificado");
-                          columns.Bound(p => p.IdEstado).Width(150).Title("Estado").ClientTemplate("#= IdEstado != 1 ? 'Inactivo' : 'Activo' #");
-                      })
-                          .Filterable(f => f.Operators(o => o.ForString(s => s
-                                           .Clear()
-                                           .Contains("Contiene")
-                                           .DoesNotContain("No contiene")
-                                           .EndsWith("Termina con")
-                                           .IsEqualTo("Es igual a")
-                                           .IsNotEqualTo("No es igual a")
-                                           .IsNull("Es nulo")
-                                           .StartsWith("Inicia con")
 
+        .Name("gridRoles")
+        .Columns(columns =>
+        {
+            if (permisoEditar){
+                columns.Command(command =>{
+                    command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText(" ").CancelText(" ");
+                    command.Custom("Clonar").Text(" ").IconClass("fa fa-clone").Click("cloneRol");
+                }).Width(100).Title("Acciones");
+            }
+            columns.Bound(p => p.Id).Width(80).Visible(false);
+            columns.Bound(p => p.Name).Title("Rol").Width(150);
+            columns.Bound(p => p.NormalizedName).Title("Descripcion").Width(160).Visible(false);
+            columns.Bound(p => p.ConcurrencyStamp).Width(150).Visible(false);
+            columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy}").Width(150).Title("Creado");
+            columns.Bound(p => p.FechaModificacion).Format("{0:dd/MM/yyyy}").Width(150).Title("Modificado");
+            columns.Bound(p => p.IdEstado).Width(150).Title("Estado").ClientTemplate("#= IdEstado != 1 ? 'Inactivo' : 'Activo' #");
+        })
+        .Filterable(f => f.Operators(o => o.ForString(s => s
+                    .Clear()
+                    .Contains("Contiene")
+                    .DoesNotContain("No contiene")
+                    .EndsWith("Termina con")
+                    .IsEqualTo("Es igual a")
+                    .IsNotEqualTo("No es igual a")
+                    .IsNull("Es nulo")
+                    .StartsWith("Inicia con")
+                )
+                .ForNumber(n => n
+                    .Clear()
+                    .IsEqualTo("Es igual a")
+                    .IsGreaterThan("Es mayor que")
+                    .IsLessThan("Es menor que")
+                    .IsNull("Es nulo")
+                    .IsLessThanOrEqualTo("Es menor o igual que")
+                    .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                )
+                .ForDate(d => d
+                    .Clear()
+                    .IsEqualTo("Es igual que")
+                    .IsGreaterThan("Es mayor que")
+                    .IsLessThan("Es menor que")
+                    .IsLessThanOrEqualTo("Es menor o igual que")
+                    .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                    .IsNotEqualTo("No es igual que")
+                )
+            )
+        )
+        .ToolBar(tools =>{
+            if (permisoAgregar)
+            {
+                tools.Create().Text("Agregar");
+            }
+            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+        })
+        .Editable(e => e.Mode(GridEditMode.InLine))
+        .Sortable()
+        .Pageable()
+        .Filterable()
+        .Scrollable()
+        .Pdf(pdf => pdf.FileName(
+                "RolesReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_" + DateTime.Now.Day + "_"
+                + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf"
+            ).ProxyURL(Url.Action("Export", "Home")).AllPages())
 
-                                     )
-                                     .ForNumber(n => n
-                                       .Clear()
-                                       .IsEqualTo("Es igual a")
-                                       .IsGreaterThan("Es mayor que")
-                                       .IsLessThan("Es menor que")
-                                       .IsNull("Es nulo")
-                                       .IsLessThanOrEqualTo("Es menor o igual que")
-                                       .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                     )
-                                     .ForDate(d => d
-                                     .Clear()
-                                     .IsEqualTo("Es igual que")
-                                     .IsGreaterThan("Es mayor que")
-                                     .IsLessThan("Es menor que")
-                                     .IsLessThanOrEqualTo("Es menor o igual que")
-                                     .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                     .IsNotEqualTo("No es igual que")
-                                      )
-                                   ))
-                      .ToolBar(tools =>
-                      {
-                          if (permisoAgregar)
-                          {
-                              tools.Create().Text("Agregar");
-                          }
-                              tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                              tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-                          
-                      })
-                       .Editable(e => e.Mode(GridEditMode.InLine))
-                       .Sortable()
-                       .Pageable()
-                       .Filterable()
-                       .Scrollable()
-                       .Pdf(pdf => pdf.FileName("RolesReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                       + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                       .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                         .Excel(excel => excel.FileName("RolesReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                       + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                       .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                       .DataSource(dataSource =>
-                          dataSource
-                            .WebApi()
-                            .ServerOperation(true)
-                            .Model(model =>
-                            {
-                                model.Id(p => p.Id);
-                                model.Field(p => p.Id).Editable(false);
-                                model.Field(p => p.Name).Editable(true);
-                                model.Field(p => p.NormalizedName).Editable(true);
-                                model.Field(p => p.ConcurrencyStamp).Editable(false);
-                                model.Field(p => p.FechaCreacion).Editable(false);
-                                model.Field(p => p.FechaModificacion).Editable(false);
-                                model.Field(p => p.IdEstado).DefaultValue(1).Editable(true);
-                            })
-                            .Events(events => events.Error("Error"))
-                            .Read(read => read.Action("GetRoles", "Roles"))
-                            .Create(create => create.Action("PostRol", "Roles"))
-                            .Update(update => update.Action("PutRol", "Roles", new { id = "{0}" }))
-                      //.Destroy(destroy => destroy.Action("DeleteRole", "Roles", new { id = "{0}" }))
-                      )
+        .Excel(excel => excel.FileName(
+                "RolesReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"+ DateTime.Now.Day + "_"
+                + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx"
+            ).Filterable(true).ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+
+        .DataSource(dataSource =>
+            dataSource
+            .WebApi()
+            .ServerOperation(true)
+            .Model(model =>{
+                    model.Id(p => p.Id);
+                    model.Field(p => p.Id).Editable(false);
+                    model.Field(p => p.Name).Editable(true);
+                    model.Field(p => p.NormalizedName).Editable(true);
+                    model.Field(p => p.ConcurrencyStamp).Editable(false);
+                    model.Field(p => p.FechaCreacion).Editable(false);
+                    model.Field(p => p.FechaModificacion).Editable(false);
+                    model.Field(p => p.IdEstado).DefaultValue(1).Editable(true);
+            })
+            .Events(events => events.Error("Error"))
+            .Read(read => read.Action("GetRoles", "Roles"))
+            .Create(create => create.Action("PostRol", "Roles"))
+            .Update(update => update.Action("PutRol", "Roles", new { id = "{0}" }))
+        )
 )
 
 
 <script>
+    function cloneRol(e) {
+        e.preventDefault();
+        let dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        $("#IdRolCloned").val(dataItem.Id)
+        $('#ModalCloneRolAndPermissions').modal('show');
+    }
+</script>
+
+<script>
     function Error(e) {
         console.log(e);
-                         $.toast({
-                            heading: 'Error',
-                            text: e.xhr.responseText,
-                            position: 'top-right',
-                            loaderBg: '#ff6849',
-                            icon: 'error',
-                            hideAfter: 30000,
-                            stack: 6
-                         });
-        
+        $.toast({
+            heading: 'Error',
+            text: e.xhr.responseText,
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'error',
+            hideAfter: 30000,
+            stack: 6
+        });
     }
 
     function setToolbarTooltip(btn_cl, btn_tooltip) {
@@ -143,5 +147,9 @@
     setToolbarTooltip(".k-grid-toolbar a.k-grid-add", "Agregar nuevo registro");
     setRowButtonTooltip(".k-grid-update", "Guardar");
     setRowButtonTooltip(".k-grid-cancel", "Cancelar");
-
+    setRowButtonTooltip(".k-grid-Clonar", "Clonar registro");
 </script>
+
+<div id="numRol">
+    @await Html.PartialAsync("pvwCloneRol")
+</div>

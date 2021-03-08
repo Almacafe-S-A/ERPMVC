@@ -1,157 +1,371 @@
 ﻿@using Kendo.Mvc.UI
-@{ 
-    ViewData["Title"] ="Feriados";
-}
-<h3 class="text-themecolor">Feriados</h3>
-<div class="container-fluid">
-    <div class="row">
-        <div class="col">
-            <div class="row">
-                <div id="grdConfiguracion"></div>
+    @{
+        ViewData["Title"] ="Feriados";
+    }
+    <h3 class="text-themecolor">Feriados</h3>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col">
+                <div class="row">
+                    <div id="grdConfiguracion"></div>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<script>
-    $(document).ready(function () {
-        CrearGrid();
-    });
-
-    function CrearGrid() {
-        $("#grdConfiguracion").kendoGrid({
-            dataSource: {
-                transport: {
-                    read: "@Url.Action("GetFeriados", "Feriado")",
-                    update: "@Url.Action("Guardar", "Feriado")",
-                    create: "@Url.Action("Guardar", "Feriado")",
-                    destroy: "@Url.Action("Delete", "Feriado")",
-                    parameterMap: function (datos, tipo) {
-                        if (tipo !== 'read') {
-                            datos.FechaInicio = kendo.toString(kendo.parseDate(datos.FechaInicio, "dd/MM/yyyy"), "yyyy-MM-dd");
-                            datos.FechaFin = kendo.toString(kendo.parseDate(datos.FechaFin, "dd/MM/yyyy"), "yyyy-MM-dd");
-                            datos.EstadoId = datos.Estado.IdEstado;
-                            debugger;
-                        }
-                        return datos;
-                    },
-                    
-                },
-                schema: {
-                    model: {
-                        id:"Id",
-                        fields: {
-                            Id: { type: "number", editable: true },
-                            Anio: { type: "number", editable: true },
-                            Nombre: { type: "string", editable: true },
-                            FechaInicio: { name:"FechaInicio", type: "date", editable: true, format: "{0:dd/MM/yyyy}" },
-                            FechaFin: { name: "FechaFin",type: "date", editable: true, format: "{0:dd/MM/yyyy}" },
-                            IdEstado: { type: "number", editable: true },
-                            Estado: { editable: true }
-                        }
-                    }
-                },
-                requestEnd: function(e) {
-                    if (e.type !== "read") {
-                        $("#grdConfiguracion").data("kendoGrid").dataSource.read();
-                    }
-                },
-                error: function (e) {
-                        console.log(e);
-                         $.toast({
-                                heading: 'Error',
-                                text: e.Request.ResponseText,
-                                position: 'top-right',
-                                loaderBg: '#ff6849',
-                                icon: 'success',
-                                hideAfter: 30000,
-                                stack: 6
-                            });
-                    }
-            },
-            toolbar: [
-                { name: "create", text: "Nuevo Feriado" }
-            ],
-            columns: [
-                {
-                    title:"Acciones",
-                    command: [
-                        { name: "edit", text: { edit: "", update: "", cancel: "" } },
-                        { name: "destroy", text:" "}
-                    ],
-                    width:60
-                },
-                { field: "Id", title: "Id. ", width: 80, hidden: true },
-                { field: "Anio", title: "Período", width: 100, editor: editorNumerico, format: "{0:####}" },
-                { field: "Nombre", title: "Nombre", width: 300 },
-                { field: "FechaInicio", title: "Fecha Inicio", width: 100, template: '#= kendo.toString(FechaInicio,"dd/MM/yyyy")#'},
-                { field: "FechaFin", title: "Fecha Final", width: 100, template: '#= kendo.toString(FechaFin,"dd/MM/yyyy")#'},
-                { field: "Idestado", hidden:true},
-                { field: "Estado", title: "Estado", width: 100, editor: editorEstado, template: "#= Estado.NombreEstado #"}
-            ],
-            noRecords: {
-                template:"No hay feriados"
-            },
-            //height: 400,
-            scrollable: true,
-            editable: "inline",
-            save: ValidarIngreso
+    <script>
+        $(document).ready(function () {
+            CrearGrid();
         });
 
-        function ValidarIngreso(e) {
-            //debugger;
-            var registro = e.model;
-            if (registro.FechaFin < registro.FechaInicio) {
-                alert('Fecha final no puede ser menor a fecha de inicio');
-                e.preventDefault();
-                return false;
-            }
-            //debugger;
-        }
-
-        function editorNumerico(contenedor, opciones) {
-            $('<input data-bind="value:' + opciones.field + '"/>')
-                .appendTo(contenedor)
-                .kendoNumericTextBox({ spinners: false, format:"####" });
-        }
-
-        function editorEstado(contenedor, opciones) {
-            $('<input data-bind="value:' + opciones.field + '"/>')
-                .appendTo(contenedor)
-                .kendoDropDownList({
-                    index:0,
-                    autoBind: true,
-                    dataTextField: "NombreEstado",
-                    dataValueField: "IdEstado",
-                    dataSource: {
-                        transport: {
-                            read: {
-                                type:"GET",
-                                url: '@Url.Action("GetGrupoEstadoI", "Estados")',
-                                dataType: "json"
+        function CrearGrid() {
+            $("#grdConfiguracion").kendoGrid({
+                dataSource: {
+                    transport: {
+                        read: "@Url.Action("GetFeriados", "Feriado")",
+                        update: "@Url.Action("Guardar", "Feriado")",
+                        create: "@Url.Action("Guardar", "Feriado")",
+                        destroy: "@Url.Action("Delete", "Feriado")",
+                        parameterMap: function (datos, tipo) {
+                            if (tipo !== 'read') {
+                                datos.FechaInicio = kendo.toString(kendo.parseDate(datos.FechaInicio, "dd/MM/yyyy"), "yyyy-MM-dd");
+                                datos.FechaFin = kendo.toString(kendo.parseDate(datos.FechaFin, "dd/MM/yyyy"), "yyyy-MM-dd");
+                                datos.EstadoId = datos.Estado.IdEstado;
+                                debugger;
                             }
+                            return datos;
                         },
-                        schema: {
-                            model: {
-                                fields: {
-                                    IdEstado: { type: "number" },
-                                    NombreEstado: {type:"string"}
-                                }
+
+                    },
+                    schema: {
+                        model: {
+                            id:"Id",
+                            fields: {
+                                Id: { type: "number", editable: true },
+                                Anio: { type: "number", editable: true },
+                                Nombre: { type: "string", editable: true },
+                                FechaInicio: { name:"FechaInicio", type: "date", editable: true, format: "{0:dd/MM/yyyy}" },
+                                FechaFin: { name: "FechaFin",type: "date", editable: true, format: "{0:dd/MM/yyyy}" },
+                                IdEstado: { type: "number", editable: true },
+                                Estado: { editable: true }
                             }
                         }
                     },
-                    change: cambioEstado
-                });
-        }
+                    requestEnd: function(e) {
+                        if (e.type !== "read") {
+                            $("#grdConfiguracion").data("kendoGrid").dataSource.read();
+                        }
+                    },
+                    error: function (e) {
+                            console.log(e);
+                             $.toast({
+                                    heading: 'Error',
+                                    text: e.Request.ResponseText,
+                                    position: 'top-right',
+                                    loaderBg: '#ff6849',
+                                    icon: 'success',
+                                    hideAfter: 30000,
+                                    stack: 6
+                                });
+                        }
+                },
+                toolbar: [
+                    { name: "create", text: "Nuevo Feriado" },
+                ],
+                columns: [
+                    {
+                        title:"Acciones",
+                        command: [
+                            { name: "edit", iconClass:"fa fa-edit", text: { edit: "", update: "", cancel: "" } },
+                            { name: "destroy", iconClass: "fa fa-trash", text:""}
+                        ],
+                        width:100
+                    },
+                    { field: "Id", title: "Id. ", width: 80, hidden: true },
+                    { field: "Anio", title: "Período", width: 100, editor: editorNumerico, format: "{0:####}" },
+                    { field: "Nombre", title: "Nombre", width: 250 },
+                    { field: "FechaInicio", title: "Fecha Inicio", width: 100, template: '#= kendo.toString(FechaInicio,"dd/MM/yyyy")#'},
+                    { field: "FechaFin", title: "Fecha Final", width: 100, template: '#= kendo.toString(FechaFin,"dd/MM/yyyy")#'},
+                    { field: "Idestado", hidden:true},
+                    { field: "Estado", title: "Estado", width: 100, editor: editorEstado, template: "#= Estado.NombreEstado #"}
+                ],
+                noRecords: {
+                    template:"No hay feriados"
+                },
+                //height: 400,
+                scrollable: true,
+                //editable: "inline",
+                editable: {
+                    mode: "inline",
+                    confirmation: ValidarBorrado
+                },
+                save: ValidarIngreso
+            });
 
-        function cambioEstado(e) {
-            //debugger;
-            var estado = e.sender.dataItem();
-            var grid = e.sender.element.closest(".k-grid").data("kendoGrid");
-            var fila = e.sender.element.closest("tr");
-            var registro = grid.dataItem(fila);
-            registro.set("IdEstado", estado.IdEstado);
-            registro.set("Estado", estado);
+            function ValidarBorrado(e) {
+                return "¿Esta seguro que desea eliminar este registro?";
+            }
+
+            function ValidarIngreso(e) {
+                //debugger;
+                var registro = e.model;
+                if (registro.FechaFin < registro.FechaInicio) {
+                    alert('Fecha final no puede ser menor a fecha de inicio');
+                    e.preventDefault();
+                    return false;
+                }
+                //debugger;
+            }
+
+            function editorNumerico(contenedor, opciones) {
+                $('<input data-bind="value:' + opciones.field + '"/>')
+                    .appendTo(contenedor)
+                    .kendoNumericTextBox({ spinners: false, format:"####" });
+            }
+
+            function editorEstado(contenedor, opciones) {
+                $('<input data-bind="value:' + opciones.field + '"/>')
+                    .appendTo(contenedor)
+                    .kendoDropDownList({
+                        index:0,
+                        autoBind: true,
+                        dataTextField: "NombreEstado",
+                        dataValueField: "IdEstado",
+                        dataSource: {
+                            transport: {
+                                read: {
+                                    type:"GET",
+                                    url: '@Url.Action("GetGrupoEstadoI", "Estados")',
+                                    dataType: "json"
+                                }
+                            },
+                            schema: {
+                                model: {
+                                    fields: {
+                                        IdEstado: { type: "number" },
+                                        NombreEstado: {type:"string"}
+                                    }
+                                }
+                            }
+                        },
+                        change: cambioEstado
+                    });
+            }
+
+            function cambioEstado(e) {
+                //debugger;
+                var estado = e.sender.dataItem();
+                var grid = e.sender.element.closest(".k-grid").data("kendoGrid");
+                var fila = e.sender.element.closest("tr");
+                var registro = grid.dataItem(fila);
+                registro.set("IdEstado", estado.IdEstado);
+                registro.set("Estado", estado);
+            }
+        }
+    </script>
+
+@*
+@using Kendo.Mvc.UI
+@using System.Security.Claims
+
+@{
+    ViewData["Title"] = "Feriados";
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+}
+
+<script>
+    function onsave(e) {
+        //   console.log(new Date(e.model.FechaRecepcion).toISOString());
+        // e.model.set('FechaRecepcion', new Date(e.model.FechaRecepcion).toISOString());
+    }
+
+    function caidata(data) {
+        data.FechaInicio = data.FechaInicio.toISOString('yyyy-MM-dd');
+        data.FechaFin = data.FechaFin.toISOString('yyyy-MM-dd');
+    }
+
+    function AddPuesto() {
+        $("#btnPuesto").show();
+        $("#btnPuesto").prop("disabled", false);
+
+        $('#ModalPuesto').find(':input').not(':submit').val('');
+        $('#ModalPuesto').modal('show');
+        $("#PuestoId").val('0');
+        $("#IdEstado").data("kendoDropDownList").value(0);
+        $("#IdDepartamento").data("kendoDropDownList").value(0);
+        var validator = $("#frmPuesto").data("kendoValidator");
+        validator.hideMessages();
+    }
+
+    function EditPuesto(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            IdPuesto: dataItem.IdPuesto,
+            editar: 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("Guardar", "Feriado")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                console.log('success', result)
+
+                $("#numPuesto").html('');
+                $("#numPuesto").html(result);
+
+
+                //$("#btnCAI").hide();
+                $('#ModalPuesto').modal('show');
+            },
+            error: function (XMLHttpRequest, textStatus, errorThrown) {
+                alert(textStatus + ": " + XMLHttpRequest.responseText);
+            }
+        });
+    }
+
+    function DeletePuesto(e) {
+        if (confirm('¿Esta seguro que desea eliminar este registro?')) {
+            e.preventDefault();
+            var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+            var dataObject = {
+                IdPuesto: dataItem.IdPuesto
+            };
+
+            $.ajax({
+                url: '@Url.Action("Delete", "Feriado")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+                    RefrescarGrid();
+
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
         }
     }
+
+    function RefrescarGrid() {
+        var grid = $("#gridFeriado").getKendoGrid();
+        grid.dataSource.read();
+    }
+
 </script>
+
+<h3 class="text-themecolor">Feriados</h3>
+
+@(Html.Kendo().Grid<ERPMVC.Models.Feriado>
+        ()
+            
+            .Name("gridFeriado")
+
+            .Columns(columns =>
+            {
+                if (true)
+                //(permisos.HasClaim("RRHH.Parametros.Puestos.Editar", "true")
+                // || permisos.HasClaim("RRHH.Parametros.Puestos.Eliminar", "true"))
+                {
+                    columns.Command(command =>
+                    {
+                        if (true /* permisos.HasClaim("RRHH.Parametros.Puestos.Editar", "true") */)
+                        {
+                            command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditPuesto");
+                        }
+                        if (true/* permisos.HasClaim("RRHH.Parametros.Puestos.Eliminar", "true" )*/)
+                        {
+                            command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash").Click("DeletePuesto");
+                        }
+                        //command.Destroy().Text(" ").IconClass("fa fa-trash");
+                    }).Width(200).Title("Acciones");
+                }
+                columns.Bound(p => p.Id).Width(150).Title("Codigo");
+                columns.Bound(p => p.Anio).Width(170).Title("Periodo");
+                columns.Bound(p => p.Nombre).Width(200).Title("Nombre");
+                columns.Bound(p => p.IdEstado).ClientTemplate("#if (IdEstado =='1') {#Activo#} else {#Inactivo#} #").Width(150).Title("Estado");
+                columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy HH:mm:ss}").Width(100).Hidden();
+
+
+            })
+
+            .ToolBar(tools =>
+            {
+                if (true /*permisos.HasClaim("RRHH.Parametros.Puestos.Agregar", "true") */ )
+                {
+                    tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                                                        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddPuesto()" });
+                }
+                tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+
+
+
+            })
+            .Editable(e => e.Mode(GridEditMode.PopUp))
+            .Sortable()
+            .Pageable()
+            .Filterable()
+            .Scrollable()
+            .Pdf(pdf => pdf.FileName("Reporte-Feriado_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+            .ProxyURL(Url.Action("Export", "Home")).AllPages())
+            .Excel(excel => excel.FileName("Reporte-Feriado_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+            .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+            .DataSource(dataSource =>
+                dataSource
+                .WebApi()
+
+                .ServerOperation(true)
+                .Model(model =>
+                {
+                    model.Id(p => p.Id);
+                    model.Field(p => p.Id).Editable(false);
+                })
+                .Sort(s => s.Add(m => m.FechaCreacion).Descending())
+                .Events(events => events.Error("error_handler"))
+                .Read(read => read.Action("GetFeriados", "Feriado"))
+                .Create(create => create.Action("Guardar", "Feriado").Type(HttpVerbs.Post))
+                .Update(update => update.Action("Guardar", "Feriado").Type(HttpVerbs.Post))
+                .Destroy(destroy => destroy.Action("Delete", "Feriado").Type(HttpVerbs.Post))
+            )
+            .Events(e =>
+            {
+                e.Save("onsave");
+
+            })
+)
+
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridFeriado").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridFeriado").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
+    setRowButtonTooltip(".k-grid-Eliminar", "Eliminar registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+</script>
+<div id="numPuesto">
+
+</div>
+
+*@
