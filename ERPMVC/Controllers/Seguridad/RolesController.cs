@@ -8,6 +8,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using ERPMVC.Helpers;
 using ERPMVC.Models;
+using ERPMVC.DTO;
 using Kendo.Mvc.Extensions;
 using Kendo.Mvc.UI;
 using Microsoft.AspNetCore.Authorization;
@@ -221,6 +222,27 @@ namespace ERPMVC.Controllers
             }
 
             return new ObjectResult(new DataSourceResult { Data = new[] { _role }, Total = 1 });
+        }
+
+        [HttpPost("[action]")]
+        public async Task<ActionResult<ApplicationRole>> CloneRol([FromBody] dynamic _role){
+            try{
+
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/Roles/CloneRole/", new { rolId = _role.IdRolSource, rolName = _role.Name });
+                if (result.IsSuccessStatusCode){
+                    return Ok();
+                }
+                else{
+                    return BadRequest($"Ocurrio un error");
+                }
+            }
+            catch (Exception ex){
+                _logger.LogError($"Ocurrio un error: { ex.ToString() }");
+                return BadRequest($"Ocurrio un error{ex.Message}");
+            }
         }
 
         [HttpPut("[action]")]

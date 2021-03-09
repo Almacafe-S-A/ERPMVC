@@ -119,12 +119,10 @@ namespace ERPMVC.Controllers
 
                         JwtSecurityTokenHandler handler = new JwtSecurityTokenHandler();
                         JwtSecurityToken secToken = handler.ReadJwtToken(_userToken.Token);
-                        
-                        var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
-                        identity.AddClaims(secToken.Claims);
-                        var principal = new ClaimsPrincipal(identity);
 
-                        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
+                        var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme);
+                        //identity.AddClaims(secToken.Claims);
+                        var principal = new ClaimsPrincipal(identity);
 
                         HttpClient cliente = new HttpClient();
                         cliente.DefaultRequestHeaders.Add("Authorization", "Bearer " + _userToken.Token);
@@ -134,26 +132,15 @@ namespace ERPMVC.Controllers
                             var cadena = await resultado.Content.ReadAsStringAsync();
                             Utils.ConexionReportes = cadena;
                         }
+                        var permisos = await cliente.GetAsync(baseadress + "api/Permisos/GetPermissionByUser");
+                        string userclaims = await permisos.Content.ReadAsStringAsync();
+                        IEnumerable<Claim> claims = JsonConvert.DeserializeObject<IEnumerable<CustomClaim>>(userclaims);
+                        identity.AddClaims(claims);
 
-                        
-                        
-                        var resultadoCierre = await cliente.GetAsync(baseadress + "api/CierreContable/UltimoCierre");
-                        string ultimoCierre = await resultadoCierre.Content.ReadAsStringAsync();
-                        BitacoraCierreContable cierre = JsonConvert.DeserializeObject<BitacoraCierreContable>(ultimoCierre);
-                        if (cierre!=null)
-                        {                            
-                            DateTime fechaactual = DateTime.Now;
-                            fechaactual = fechaactual.AddDays(-1);
-                            Utils.Cerrado = cierre.FechaCierre.Date >= fechaactual.Date;
-                        }
-                        else
-                        {
-                            Utils.Cerrado = true;
-                        }
-                        
+                        await HttpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, principal);
 
 
-
+                        Utils.Cerrado = true;
 
                         return RedirectToAction("Index", "Home");
 
@@ -179,7 +166,7 @@ namespace ERPMVC.Controllers
                     _message.Add(new MessageClassUtil { key = "Login", name = "error", mensaje = "Error en login" });
                     model.Failed = true;
                     var message = resultLogin.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                    
+
                     if (message.Length > 100)
                     {
                         _logger.LogError($"Ocurrio un error: { message }");
@@ -211,7 +198,6 @@ namespace ERPMVC.Controllers
 
 
         }
-
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult<ApplicationUser>> ChangePassword([FromBody]CambiarPassDTO _cambio)
         {
