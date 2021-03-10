@@ -4,155 +4,115 @@
     ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
 }
 
-<script>
-
-
-</script>
-
 @(Html.Kendo().Grid<ERPMVC.Models.ApplicationRole>()
-                          .Name("gridUsersRoles")
-                          .Columns(columns =>
-                          {
-                              columns.Bound(p => p.Name).Title("Rol").Width(150);
-                              columns.Bound(p => p.NormalizedName).Title("Descripcion").Width(150).Visible(false);
-                              columns.Bound(p => p.Id).Title("Rol Id").Width(150).Visible(false);
-                              columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy HH:mm:ss}").Width(250).Title("Fecha Asignación");
+    .Name("gridUsersRoles")
+    .Columns(columns =>
+    {
+        columns.Bound(p => p.Name).Title("Rol").Width(150);
+        columns.Bound(p => p.NormalizedName).Title("Descripcion").Width(150).Visible(false);
+        columns.Bound(p => p.Id).Title("Rol Id").Width(150).Visible(false);
+        columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy HH:mm:ss}").Width(250).Title("Fecha Asignación");
 
-                              //.ClientTemplate("#:RoleName#").EditorTemplateName("RoleId").Width(160)
-                              //.Filterable(filterable => filterable
-                              //                   .Extra(true)
-                              //                   .Operators(op => op.ForString(st => st.Clear().Contains("Contiene")))).Width(170).Width(160);
-                              //columns.Bound(p => p.RoleName).Width(150);
+    })
+    .Filterable(f => f.Operators(o => o.ForString(s => s
+            .Clear()
+            .Contains("Contiene")
+            .DoesNotContain("No contiene")
+            .EndsWith("Termina con")
+            .IsEqualTo("Es igual a")
+            .IsNotEqualTo("No es igual a")
+            .IsNull("Es nulo")
+            .StartsWith("Inicia con")
+        )
+        .ForNumber(n => n
+            .Clear()
+            .IsEqualTo("Es igual a")
+            .IsGreaterThan("Es mayor que")
+            .IsLessThan("Es menor que")
+            .IsNull("Es nulo")
+            .IsLessThanOrEqualTo("Es menor o igual que")
+            .IsGreaterThanOrEqualTo("Es mayor o igual que")
+        )
+        .ForDate(d => d
+            .Clear()
+            .IsEqualTo("Es igual que")
+            .IsGreaterThan("Es mayor que")
+            .IsLessThan("Es menor que")
+            .IsLessThanOrEqualTo("Es menor o igual que")
+            .IsGreaterThanOrEqualTo("Es mayor o igual que")
+            .IsNotEqualTo("No es igual que")
+        )
+    ))
+    .ToolBar(tools =>
+    {
+        tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+        .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddUserRol();" });
 
-                              //  columns.Command(command => {
-                              //command.Custom("Ver detalles").Click("Detalles");
-                              // command.Edit();
-                              //    command.Destroy();
-                              //  }).Width(250);
+    })
+    .Editable(e => e.Mode(GridEditMode.PopUp))
+    .Sortable()
+    .AutoBind(true)
+    .Pageable()
+    .Filterable()
+    .Scrollable()
+    .ClientDetailTemplateId("template")
+    .Pdf(pdf => pdf.FileName("UsersRolesReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+        .ProxyURL(Url.Action("Export", "Home"))
+        .AllPages()
+    )
+    .Excel(excel => excel.FileName("UsersRolesReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+        + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+        .ProxyURL(Url.Action("Export", "Home")).AllPages(true)
+    )
+    .DataSource(dataSource => dataSource
+        .WebApi()
+        .ServerOperation(true)
+        .Model(model =>
+        {
+            model.Id(p => p.Id);
+            model.Field(p => p.Id).Editable(true);
+            model.Field(p => p.Name).Editable(true);
+        })
+        .Sort(s => s.Add(m => m.Name).Ascending())
+        .Events(events =>
+        {
+            events.Error("error_handler");
 
-                          })
-                              .Filterable(f => f.Operators(o => o.ForString(s => s
-                                               .Clear()
-                                               .Contains("Contiene")
-                                               .DoesNotContain("No contiene")
-                                               .EndsWith("Termina con")
-                                               .IsEqualTo("Es igual a")
-                                               .IsNotEqualTo("No es igual a")
-                                               .IsNull("Es nulo")
-                                               .StartsWith("Inicia con")
-
-
-                                         )
-                                         .ForNumber(n => n
-                                           .Clear()
-                                           .IsEqualTo("Es igual a")
-                                           .IsGreaterThan("Es mayor que")
-                                           .IsLessThan("Es menor que")
-                                           .IsNull("Es nulo")
-                                           .IsLessThanOrEqualTo("Es menor o igual que")
-                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                         )
-                                         .ForDate(d => d
-                                         .Clear()
-                                         .IsEqualTo("Es igual que")
-                                         .IsGreaterThan("Es mayor que")
-                                         .IsLessThan("Es menor que")
-                                         .IsLessThanOrEqualTo("Es menor o igual que")
-                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                         .IsNotEqualTo("No es igual que")
-                                          )
-                                       ))
-                          .ToolBar(tools =>
-                          {
-                              //tools.Create();
-                              
-                                  tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
-                               .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddUserRol();" });
-                              
-                              //tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
-                              //tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
-
-
-                          })
-                           .Editable(e => e.Mode(GridEditMode.PopUp))//.TemplateName("popupPorRol"))
-                       .Sortable()
-                       .AutoBind(true)
-                       .Pageable()
-                       .Filterable()
-                       .Scrollable()
-                       .ClientDetailTemplateId("template")
-                       .Pdf(pdf => pdf.FileName("UsersRolesReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                       + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                       .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                         .Excel(excel => excel.FileName("UsersRolesReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                       + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                       .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                       //.Events(e=>e.Save("onsave"))
-                       .DataSource(dataSource =>
-
-                           dataSource
-                           //.Ajax()
-                           .WebApi()
-                            .ServerOperation(true)
-                            .Model(model =>
-                            {
-                                model.Id(p => p.Id);
-                                model.Field(p => p.Id).Editable(true);
-                                model.Field(p => p.Name).Editable(true);
-
-
-
-                            })
-                            .Sort(s => s.Add(m => m.Name).Ascending())
-                            .Events(events =>
-                            {
-                                events.Error("error_handler");
-                                //events.upda("EditHandler");
-
-                            })
-                            .Read(read => read.Action("GetRoles", "Roles"))
-                            .Create(create => create.Action("Insert", "UserRol"))
-                            .Update(update => update.Action("Update", "UserRol", new { id = "{0}" }))
-                            .Destroy(destroy => destroy.Action("Delete", "UserRol", new { id = "{0}" }))
-                      )
+        })
+        .Read(read => read.Action("GetRoles", "Roles"))
+        .Create(create => create.Action("Insert", "UserRol"))
+        .Update(update => update.Action("Update", "UserRol", new { id = "{0}" }))
+        .Destroy(destroy => destroy.Action("Delete", "UserRol", new { id = "{0}" }))
+    )
 )
-
-<script>
-
-</script>
 
 
 <script id="template" type="text/kendo-tmpl">
 
     @(Html.Kendo().Grid<ERPMVC.Models.ApplicationUserRole>()
-                              .Name("grid_#=Id#")
-                              .Columns(columns =>
-                              {
-                                  
-                                      columns.Command(command =>
-                                      {
-                                          // command.Destroy();
-                                          command.Custom("Delete").Text(" ").IconClass("fa fa-trash-alt").Click("EliminarUsuarioRol");
-                                      }).Width(50);
-                                  
-                                  columns.Bound(o => o.UserId).Title("ID").Width(80).Visible(false);
-                                  columns.Bound(o => o.RoleId).Visible(false);
-                                  columns.Bound(o => o.UserName).Title("Usuarios").Width(300);
-                                  columns.Bound(o => o.FechaCreacion).Format("{0:dd/MM/yyyy}").Width(150);
-                                  columns.Bound(o => o.FechaModificacion).Format("{0:dd/MM/yyyy}").Width(150);
-                              })
-                              .DataSource(dataSource => dataSource
-                                 .WebApi()
-                                 .ServerOperation(true)
-                                 //.PageSize(5)
-                                 .Read(read => read.Action("GetUsersByRoleId", "UserRol", new { RoleId = "#=Id#" }))
-                                  //.Destroy(destroy => destroy.Action("Delete", "UserRol", new { RoleId = "#=Id#" }))
-                                  .Destroy(destroy => destroy.Action("Delete", "UserRol", new { UserId = "{0}", RoleId = "{0}" }))
-                                 )
-                             //.Pageable()
-                             .Sortable()
-                             .ToClientTemplate())
+            .Name("grid_#=Id#")
+            .Columns(columns =>
+            {
+                columns.Command(command =>
+                {
+                    command.Custom("Delete").Text(" ").IconClass("fa fa-trash-alt").Click("EliminarUsuarioRol");
+                }).Width(50);
 
+                columns.Bound(o => o.UserId).Title("ID").Width(80).Visible(false);
+                columns.Bound(o => o.RoleId).Visible(false);
+                columns.Bound(o => o.UserName).Title("Usuarios").Width(300);
+                columns.Bound(o => o.FechaCreacion).Format("{0:dd/MM/yyyy}").Width(150);
+                columns.Bound(o => o.FechaModificacion).Format("{0:dd/MM/yyyy}").Width(150);
+            })
+            .DataSource(dataSource => dataSource
+                .WebApi()
+                .ServerOperation(true)
+                .Read(read => read.Action("GetUsersByRoleId", "UserRol", new { RoleId = "#=Id#" }))
+                .Destroy(destroy => destroy.Action("Delete", "UserRol", new { UserId = "{0}", RoleId = "{0}" }))
+                )
+            .Sortable()
+            .ToClientTemplate())
 </script>
 
 <script>

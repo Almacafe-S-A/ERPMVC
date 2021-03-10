@@ -1,8 +1,6 @@
 ﻿@*<input type="text" deshabilitar="Usuario" value="test" />*@
 @{
     ViewData["Title"] = "Usuarios";
-    //var branches = ViewData["Branches"] as IEnumerable<ERPMVC.Models.Branch>;
-
 }
 
 <h3 class="text-themecolor">Usuarios</h3>
@@ -20,25 +18,218 @@
 </div>
 
 
+@(Html.Kendo().Grid<ERPMVC.DTO.ApplicationUserDTO>()
+        .Name("gridUser")
+        .Columns(columns =>
+        {
+            columns.Command(command =>
+            {
+                command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText(" ").CancelText(" ");
+
+                command.Custom("Desbloquear").Text(" ").IconClass("fa fa-unlock").Click("Desbloquear");
+
+            }).Width(120).Locked(true).Title("Acciones");
+
+            columns.Bound(p => p.Id).Width(100).Visible(false);
+            columns.Bound(p => p.UserName).Title("Nombre de usuario").Width(250).Visible(false);
+            columns.Bound(p => p.Email).Title("Usuario ID").Width(200);
+            columns.Bound(p => p.PasswordHash).ClientTemplate("***************").Title("Contraseña").Width(170);
+            columns.Bound(p => p.LockoutEnd).Title("Bloqueado Hasta").Format("{0:dd/MM/yyyy}").Width(250);
+            columns.Bound(p => p.FechaCreacion).Title("Creado").Format("{0:dd/MM/yyyy}").Width(150);
+            columns.Bound(p => p.PhoneNumber).Title("Teléfono").Width(150);
+            columns.Bound(p => p.IsEnabled).Width(150).ClientTemplate("#= IsEnabled ? 'SI' : 'NO' #");
+
+        })
+        .Events(e => e.Edit("addmaskpassword"))
+        .Filterable(f => f.Operators(o => o.ForString(s => s
+                .Clear()
+                .Contains("Contiene")
+                .DoesNotContain("No contiene")
+                .EndsWith("Termina con")
+                .IsEqualTo("Es igual a")
+                .IsNotEqualTo("No es igual a")
+                .IsNull("Es nulo")
+                .StartsWith("Inicia con")
+            )
+            .ForNumber(n => n
+                .Clear()
+                .IsEqualTo("Es igual a")
+                .IsGreaterThan("Es mayor que")
+                .IsLessThan("Es menor que")
+                .IsNull("Es nulo")
+                .IsLessThanOrEqualTo("Es menor o igual que")
+                .IsGreaterThanOrEqualTo("Es mayor o igual que")
+            )
+            .ForDate(d => d
+                .Clear()
+                .IsEqualTo("Es igual que")
+                .IsGreaterThan("Es mayor que")
+                .IsLessThan("Es menor que")
+                .IsLessThanOrEqualTo("Es menor o igual que")
+                .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                .IsNotEqualTo("No es igual que")
+            )
+        ))
+        .ToolBar(tools =>
+        {
+            tools.Create().Text("Agregar Usuario");
+            tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a excel");
+            tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a pdf");
+        })
+
+        .Editable(e => e.Mode(GridEditMode.InLine))
+        .Sortable()
+        .Pageable()
+        .Filterable()
+        .Scrollable()
+
+        .Pdf(pdf => pdf
+            .FileName("UsuariosReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+            .ProxyURL(Url.Action("Export", "Home"))
+            .AllPages()
+        )
+
+        .Excel(excel => excel
+            .FileName("UsuariosReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+            + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx")
+            .Filterable(true)
+            .ProxyURL(Url.Action("Export", "Home")).AllPages(true)
+        )
+
+        .DataSource(dataSource => dataSource
+            .WebApi()
+            .ServerOperation(true)
+            .Model(model =>{
+                model.Id(p => p.Id);
+                model.Field(p => p.Id).Editable(false);
+                model.Field(p => p.UserName).Editable(false);
+                model.Field(p => p.Email).Editable(true);
+                model.Field(p => p.NormalizedEmail).Editable(false);
+                model.Field(p => p.PhoneNumber).Editable(true);
+                model.Field(p => p.PasswordHash).Editable(true);
+                model.Field(p => p.LastPasswordChangedDate).Editable(false);
+                model.Field(p => p.FechaModificacion).Editable(false);
+                model.Field(p => p.FechaCreacion).Editable(false);
+                model.Field(p => p.UsuarioCreacion).Editable(false);
+                model.Field(p => p.LockoutEnd).Editable(true);
+                model.Field(p => p.IsBlocked).Editable(false);
+                model.Field(p => p.UsuarioModificacion).Editable(false);
+            })
+            .Sort(s => s.Add(m => m.FechaCreacion).Descending())
+            .Events(events =>{
+                events.Error("error");
+                events.RequestEnd("onRequestEnd");
+            })
+            .Read(read => read.Action("GetUsers", "Usuario"))
+            .Create(create => create.Action("PostUsuario", "Usuario"))
+            .Update(update => update.Action("PutUsuario", "Usuario", new { id = "{0}" }))
+            .Destroy(destroy => destroy.Action("DeleteUsuario", "Usuario", new { id = "{0}" }))
+        )
+        .Events(e =>{
+            e.DataBound("onDataBound");
+            e.Save("onsave");
+        })
+        .Resizable(resize => resize.Columns(true))
+)
+
+<script>
+    function onRequestEnd(e) {
+        if (e.type == "update" && !e.response.Errors) {
+            $.toast({
+                heading: 'Satisfactorio',
+                text: 'Datos actualizados correctamente.',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'success',
+                hideAfter: 6000,
+                stack: 6
+            });
+            RefrescarGrid();
+            return;
+        } else if (e.type == "create" && !e.response.Errors) {
+            $.toast({
+                heading: 'Satisfactorio',
+                text: 'Datos guardados correctamente.',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'success',
+                hideAfter: 6000,
+                stack: 6
+            });
+            RefrescarGrid();
+            return;
+        }
+    }
+
+    function error(e) {
+        $.toast({
+            heading: 'Error',
+            text: e.errors,
+            position: 'top-right',
+            loaderBg: '#ff6849',
+            icon: 'error',
+            hideAfter: 30000,
+            stack: 6
+        });
+    }
+
+    function RefrescarGrid() {
+        var grid = $("#gridUser").getKendoGrid();
+        grid.dataSource.read();
+    }
+    
+    function onDataBound(e) {
+        let grid = $("#gridUser").data("kendoGrid");
+        let gridData = grid.dataSource.view();
+        for (let i = 0; i < gridData.length; i++) {
+            let currentUid = gridData[i].uid;
+            if (gridData[i].LockoutEnd === null) {
+                let block = document.querySelector("tr[data-uid= '" + currentUid + "'] td a.k-grid-Desbloquear");
+                block.style.display = "none";
+            }
+        }
+    }
+
+
+    function onsave(e) {
+        var grid = $("#gridUser").getKendoGrid();
+    }
+
+    function formatpass(PasswordHash) {
+        return '*************';
+    }
+
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridUser").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridUser").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setToolbarTooltip(".k-grid-toolbar a.k-grid-add", "Agregar Usuario");
+    setRowButtonTooltip(".k-grid-edit", "Editar Usuario");
+    setRowButtonTooltip(".k-grid-Desbloquear", "Desbloquear Usuario");
+    setRowButtonTooltip(".k-grid-update", "Guardar");
+    setRowButtonTooltip(".k-grid-cancel", "Cancelar");
+</script>
+
 
 <script>
     function addmaskpassword(e) {
         e.container.find(".k-edit-field:eq(2) > input").attr('type', 'password');
     }
 
-   
-
     function Desbloquear(e) {
 		e.preventDefault();
 		var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
-		var dataObject = {
-			Id: dataItem.Id,
-			//editar: 0
-        };
-
-        console.log(dataObject);
-        var Id = dataItem.Id
-        console.log(JSON.stringify(Id=dataItem.Id));
 		$.ajax({
 			url: '@Url.Action("Desbloquear", "Usuario")',
 			method: 'POST',
@@ -62,7 +253,7 @@
 			error: function (XMLHttpRequest, textStatus, errorThrown) {
 				 $.toast({
                             heading: 'Error',
-                            text: textStatus + ": " + XMLHttpRequest.responseText,
+                            text: textStatus + ": " + XMLHttpRequest,
                             position: 'top-right',
                             loaderBg: '#ff6849',
                             icon: 'error',
@@ -73,173 +264,4 @@
         });
 
 	}
-</script>
-
-@(Html.Kendo().Grid<ERPMVC.DTO.ApplicationUserDTO>()
-                                          .Name("gridUser")
-                                          .Columns(columns =>
-                                          {
-                                             
-                                                  columns.Command(command =>
-                                                  {
-                                                      //   command.Custom("Ver detalles").Click("Detalles");
-                                                      
-                                                          command.Edit().Text(" ").IconClass("fa fa-edit").UpdateText(" ").CancelText(" ");
-                                                      
-                                                      
-                                                          command.Custom("Desbloquear").Text(" ").IconClass("fa fa-unlock").Click("Desbloquear");
-                                                      
-
-                                                      //command.Destroy().Text(" ").IconClass("fa fa-trash");
-                                                  }).Width(120).Locked(true).Title("Acciones");
-                                              
-                                              columns.Bound(p => p.Id).Width(100).Visible(false);
-                                              columns.Bound(p => p.UserName).Title("Nombre de usuario").Width(250).Visible(false);
-                                              columns.Bound(p => p.Email).Title("Usuario ID").Width(200);
-                                              //columns.Bound(p => p.cambiarpassword).ClientTemplate("#= cambiarpassword ? 'SI' : 'NO' #").Title("Reestablecer ").Width(150);
-                                              columns.Bound(p => p.PasswordHash).ClientTemplate("***************").Title("Contraseña").Width(170);
-                                              //columns.Bound(p => p.BloquearHasta).Title("Bloquear Hasta").Format("{0:dd/MM/yyyy}").Width(250);
-                                              columns.Bound(p => p.LockoutEnd).Title("Bloqueado Hasta").Format("{0:dd/MM/yyyy}").Width(250);
-                                              columns.Bound(p => p.FechaCreacion).Title("Creado").Format("{0:dd/MM/yyyy}").Width(150);
-                                              // columns.Bound(p => p.NormalizedEmail).Title("Correo").Width(150);
-                                              columns.Bound(p => p.PhoneNumber).Title("Teléfono").Width(150);
-                                              columns.Bound(p => p.IsEnabled).Width(150).ClientTemplate("#= IsEnabled ? 'SI' : 'NO' #");
-                                              //columns.Bound(p => p.BranchId).Width(150);
-                                              //columns.Bound(p => p.Branch).ClientTemplate("#=Branch.BranchName#").Sortable(false).Width(180).Title("Sucursal");
-
-
-                                          })
-                                          .Events(e => e.Edit("addmaskpassword"))
-                                              .Filterable(f => f.Operators(o => o.ForString(s => s
-                                                               .Clear()
-                                                               .Contains("Contiene")
-                                                               .DoesNotContain("No contiene")
-                                                               .EndsWith("Termina con")
-                                                               .IsEqualTo("Es igual a")
-                                                               .IsNotEqualTo("No es igual a")
-                                                               .IsNull("Es nulo")
-                                                               .StartsWith("Inicia con")
-
-
-                                                         )
-                                                         .ForNumber(n => n
-                                                           .Clear()
-                                                           .IsEqualTo("Es igual a")
-                                                           .IsGreaterThan("Es mayor que")
-                                                           .IsLessThan("Es menor que")
-                                                           .IsNull("Es nulo")
-                                                           .IsLessThanOrEqualTo("Es menor o igual que")
-                                                           .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                         )
-                                                         .ForDate(d => d
-                                                         .Clear()
-                                                         .IsEqualTo("Es igual que")
-                                                         .IsGreaterThan("Es mayor que")
-                                                         .IsLessThan("Es menor que")
-                                                         .IsLessThanOrEqualTo("Es menor o igual que")
-                                                         .IsGreaterThanOrEqualTo("Es mayor o igual que")
-                                                         .IsNotEqualTo("No es igual que")
-                                                          )
-                                                       ))
-                                          .ToolBar(tools =>
-                                          {
-                                              
-                                                  tools.Create().Text("Agregar Usuario");
-                                              
-                                                  tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a excel");
-                                                  tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" }).Text("Exportar a pdf");
-                                              
-                                          })
-
-                                           .Editable(e => e.Mode(GridEditMode.InLine))
-                                           .Sortable()
-                                           .Pageable()
-                                           .Filterable()
-                                           .Scrollable()
-                                           .Pdf(pdf => pdf.FileName("UsuariosReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
-                                           .ProxyURL(Url.Action("Export", "Home")).AllPages())
-                                             .Excel(excel => excel.FileName("UsuariosReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
-                                           + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
-                                           .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
-                                           .DataSource(dataSource =>
-                                              dataSource
-
-                                                .WebApi()
-                                                .ServerOperation(true)
-                                                .Model(model =>
-                                                {
-                                                    model.Id(p => p.Id);
-                                                    model.Field(p => p.Id).Editable(false);
-                                                    model.Field(p => p.UserName).Editable(false);
-                                                    model.Field(p => p.Email).Editable(true);
-                                                    //model.Field(p => p.cambiarpassword).Editable(true).DefaultValue(null);
-                                                    model.Field(p => p.NormalizedEmail).Editable(false);
-                                                    model.Field(p => p.PhoneNumber).Editable(true);
-                                                    model.Field(p => p.PasswordHash).Editable(true);
-                                                    model.Field(p => p.LastPasswordChangedDate).Editable(false);
-                                                    model.Field(p => p.FechaModificacion).Editable(false);
-                                                    model.Field(p => p.FechaCreacion).Editable(false);
-                                                    model.Field(p => p.UsuarioCreacion).Editable(false);
-                                                    model.Field(p => p.LockoutEnd).Editable(true);
-                                                    model.Field(p => p.IsBlocked).Editable(false);
-
-
-                                                    model.Field(p => p.UsuarioModificacion).Editable(false);
-                                                    // model.Field(p => p.Branch).DefaultValue(
-                                                    //               ViewData["defaultbranch"] as ERPMVC.Models.Branch);
-
-
-                                                })
-                                                .Events(events => events.Error("error_handler"))
-                                                .Read(read => read.Action("GetUsers", "Usuario"))
-                                                .Create(create => create.Action("PostUsuario", "Usuario"))
-                                                .Update(update => update.Action("PutUsuario", "Usuario", new { id = "{0}" }))
-                                                .Destroy(destroy => destroy.Action("DeleteUsuario", "Usuario", new { id = "{0}" }))
-
-                                          ).Events(e =>
-                                            {
-                                                e.Save("onsave");
-
-                                            }).Resizable(resize => resize.Columns(true))
-)
-
-<script>    
-    function onsave(e) {
-        setTimeout(3000);
-         //$.toast({
-         //                               heading: 'Satisfactorio',
-         //                               text: 'Datos guardados correctamente.',
-         //                               position: 'top-right',
-         //                               loaderBg: '#ff6849',
-         //                               icon: 'success',
-         //                               hideAfter: 30000,
-         //                               stack: 6
-         //});
-        var grid = $("#gridUser").getKendoGrid();
-        //grid.refresh();
-        //grid.dataSource.read();
-    }
-    function formatpass(PasswordHash) {
-        return '*************';
-    }
-    function setToolbarTooltip(btn_cl, btn_tooltip) {
-        $("#gridUser").kendoTooltip({
-            filter: btn_cl,
-            content: btn_tooltip
-        });
-    }
-
-    function setRowButtonTooltip(btn_cl, btn_tooltip) {
-        $("#gridUser").kendoTooltip({
-            filter: btn_cl,
-            content: btn_tooltip
-        });
-    }
-    //setToolbarTooltip("k-button-Create","Agregar Usuario");
-    setToolbarTooltip(".k-grid-toolbar a.k-grid-add", "Agregar Usuario");
-    setRowButtonTooltip(".k-grid-edit", "Editar Usuario");
-    setRowButtonTooltip(".k-grid-Desbloquear", "Desbloquear Usuario");
-    setRowButtonTooltip(".k-grid-update", "Guardar");
-    setRowButtonTooltip(".k-grid-cancel", "Cancelar");
 </script>
