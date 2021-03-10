@@ -87,17 +87,20 @@
             .WebApi()
             .ServerOperation(true)
             .Model(model =>{
-                    model.Id(p => p.Id);
-                    model.Field(p => p.Id).Editable(false);
-                    model.Field(p => p.Name).Editable(true);
-                    model.Field(p => p.NormalizedName).Editable(true);
-                    model.Field(p => p.ConcurrencyStamp).Editable(false);
-                    model.Field(p => p.FechaCreacion).Editable(false);
-                    model.Field(p => p.FechaModificacion).Editable(false);
-                    model.Field(p => p.IdEstado).DefaultValue(1).Editable(true);
+                model.Id(p => p.Id);
+                model.Field(p => p.Id).Editable(false);
+                model.Field(p => p.Name).Editable(true);
+                model.Field(p => p.NormalizedName).Editable(true);
+                model.Field(p => p.ConcurrencyStamp).Editable(false);
+                model.Field(p => p.FechaCreacion).Editable(false);
+                model.Field(p => p.FechaModificacion).Editable(false);
+                model.Field(p => p.IdEstado).DefaultValue(1).Editable(true);
             })
             .Sort(s => s.Add(m => m.FechaCreacion).Descending())
-            .Events(events => events.Error("Error"))
+            .Events(events => {
+                events.RequestEnd("onRequestEnd");
+                events.Error("error");
+            })
             .Read(read => read.Action("GetRoles", "Roles"))
             .Create(create => create.Action("PostRol", "Roles"))
             .Update(update => update.Action("PutRol", "Roles", new { id = "{0}" }))
@@ -119,8 +122,35 @@
 </script>
 
 <script>
-    function Error(e) {
-        console.log(e);
+    function onRequestEnd(e) {
+        if (e.type == "update" && !e.response.Errors) {
+            $.toast({
+                heading: 'Satisfactorio',
+                text: 'Datos actualizados correctamente.',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'success',
+                hideAfter: 6000,
+                stack: 6
+            });
+            RefrescarGrid();
+            return;
+        } else if (e.type == "create" && !e.response.Errors) {
+            $.toast({
+                heading: 'Satisfactorio',
+                text: 'Datos guardados correctamente.',
+                position: 'top-right',
+                loaderBg: '#ff6849',
+                icon: 'success',
+                hideAfter: 6000,
+                stack: 6
+            });
+            RefrescarGrid();
+            return;
+        }
+    }
+
+    function error(e) {
         $.toast({
             heading: 'Error',
             text: e.xhr.responseText,

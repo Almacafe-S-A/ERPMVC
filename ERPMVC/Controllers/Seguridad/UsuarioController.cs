@@ -208,7 +208,7 @@ namespace ERPMVC.Controllers
                 string baseadress = config.Value.urlbase;
                 HttpClient _client = new HttpClient();
                 _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                _usuario.UsuarioCreacion = HttpContext.Session.GetString("token");
+                _usuario.UsuarioCreacion = HttpContext.Session.GetString("user");
                 _usuario.FechaCreacion = DateTime.Now;
                 _usuario.UsuarioModificacion = HttpContext.Session.GetString("user");
                 _usuario.UserName = _usuario.Email;
@@ -358,8 +358,6 @@ namespace ERPMVC.Controllers
                 {
                     _usuario.LockoutEnd = null;
                 }
-                
-
                 // TODO: Add insert logic here
                 string baseadress = config.Value.urlbase;
                 _usuario.UserName = _usuario.Email;
@@ -370,25 +368,18 @@ namespace ERPMVC.Controllers
                 var result = await _client.PutAsJsonAsync(baseadress + "api/Usuario/PutUsuario", _usuario);
                 string valorrespuesta = "";
 
-                if (result.IsSuccessStatusCode)
-                {
+                if (result.IsSuccessStatusCode){
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _usuario = JsonConvert.DeserializeObject<ApplicationUserDTO>(valorrespuesta);
                 }
-                else
-                {
-
+                else{
                     _usuario.PasswordHash = await result.Content.ReadAsStringAsync() + " El password debe tener mayusculas, minusculas y caracteres especiales!";
                     string error = await result.Content.ReadAsStringAsync();
                     return this.Json(new DataSourceResult
                     {
                         Errors = $"{error}"
                     });
-                    // return new ObjectResult(new DataSourceResult { Data = new[] { _usuario }, Total = 1 });
-                    //return await Task.Run(() => BadRequest($"Ocurrio un error{result.Content.ReadAsStringAsync()}"));
                 }
-
-
             }
             catch (Exception ex)
             {
