@@ -11,8 +11,7 @@
         columns.Bound(p => p.Name).Title("Rol").Width(150);
         columns.Bound(p => p.NormalizedName).Title("Descripcion").Width(150).Visible(false);
         columns.Bound(p => p.Id).Title("Rol Id").Width(150).Visible(false);
-        columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy HH:mm:ss}").Width(250).Title("Fecha Asignación");
-
+        columns.Bound(p => p.FechaCreacion).Format("{0:dd/MM/yyyy HH:mm:ss}").Width(250).Title("Fecha Creacion Rol");
     })
     .Filterable(f => f.Operators(o => o.ForString(s => s
             .Clear()
@@ -68,13 +67,12 @@
     .DataSource(dataSource => dataSource
         .WebApi()
         .ServerOperation(true)
-        .Model(model =>
-        {
+        .Model(model =>{
             model.Id(p => p.Id);
             model.Field(p => p.Id).Editable(true);
             model.Field(p => p.Name).Editable(true);
         })
-        .Sort(s => s.Add(m => m.Name).Ascending())
+        .Sort(s => s.Add(m => m.FechaCreacion).Descending())
         .Events(events =>
         {
             events.Error("error_handler");
@@ -87,26 +85,21 @@
     )
 )
 
-
 <script id="template" type="text/kendo-tmpl">
-
     @(Html.Kendo().Grid<ERPMVC.Models.ApplicationUserRole>()
             .Name("grid_#=Id#")
-            .Columns(columns =>
-            {
-                columns.Command(command =>
-                {
-                    command.Custom("Delete").Text(" ").IconClass("fa fa-trash-alt").Click("EliminarUsuarioRol");
-                }).Width(50);
-
+            .Columns(columns =>{
                 columns.Bound(o => o.UserId).Title("ID").Width(80).Visible(false);
                 columns.Bound(o => o.RoleId).Visible(false);
-                columns.Bound(o => o.UserName).Title("Usuarios").Width(300);
-                columns.Bound(o => o.FechaCreacion).Format("{0:dd/MM/yyyy}").Width(150);
-                columns.Bound(o => o.FechaModificacion).Format("{0:dd/MM/yyyy}").Width(150);
+                columns.Bound(o => o.UserName).Title("Usuarios").Width(100);
+                columns.Bound(o => o.FechaCreacion).Title("Fecha Asignación").Format("{0:dd/MM/yyyy HH:mm:ss}").Width(100);
+                columns.Command(command =>{
+                    command.Custom("Delete").Text(" ").IconClass("fa fa-trash-alt").Click("EliminarUsuarioRol");
+                }).Width(50);
             })
             .DataSource(dataSource => dataSource
                 .WebApi()
+                .Sort(s => s.Add(m => m.FechaCreacion).Descending())
                 .ServerOperation(true)
                 .Read(read => read.Action("GetUsersByRoleId", "UserRol", new { RoleId = "#=Id#" }))
                 .Destroy(destroy => destroy.Action("Delete", "UserRol", new { UserId = "{0}", RoleId = "{0}" }))
@@ -133,10 +126,10 @@
         padding: 0;
     }
 
-        .employee-details ul li {
-            margin: 0;
-            line-height: 1.7em;
-        }
+    .employee-details ul li {
+        margin: 0;
+        line-height: 1.7em;
+    }
 
     .employee-details label {
         display: inline-block;
@@ -157,5 +150,4 @@
     }
 
     setToolbarTooltip(".k-grid-Agregar", "Agregar Rol");
-
 </script>
