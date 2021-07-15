@@ -99,12 +99,11 @@ namespace ERPMVC.Controllers
                     _salesorderf = new SalesOrderDTO
                     {
                         ExpirationDate = DateTime.Now.AddDays(30),
-                        DeliveryDate = DateTime.Now,
-                        OrderDate = DateTime.Now
-,
+                       
+                        OrderDate = DateTime.Now,                       
                         editar = _salesorder.editar,
-                        SalesOrderId = _salesorder.SalesOrderId
-,
+                        IdEstado = 8 ,
+                        SalesOrderId = _salesorder.SalesOrderId,
                         BranchId = Convert.ToInt32(HttpContext.Session.GetString("BranchId"))
                     };
                 }
@@ -425,10 +424,10 @@ namespace ERPMVC.Controllers
                 try
                 {
 
-                    if (_SalesOrder.Total <= 0 || _SalesOrder.SubTotal <= 0)
-                    {
-                        return await Task.Run(() => BadRequest($"No se esta calculando correctamente los totales!"));
-                    }
+                    //if (_SalesOrder.Total <= 0 || _SalesOrder.SubTotal <= 0)
+                    //{
+                    //    return await Task.Run(() => BadRequest($"No se esta calculando correctamente los totales!"));
+                    //}
 
                     _SalesOrder.CustomerId = _SalesOrder.CustomerId == null ? 0 : _SalesOrder.CustomerId;
                     _SalesOrdermodel = mapper.Map<SalesOrderDTO, SalesOrder>(_SalesOrder);
@@ -481,24 +480,7 @@ namespace ERPMVC.Controllers
                                 client.Host = _config.Value.smtp;
                                 client.Port = Convert.ToInt32(_config.Value.port);
                                 client.EnableSsl = true;
-                                Email.DefaultSender = new SmtpSender(client);
-
-                                //var resultview = this.view.Render("Mail/Aprobacion",
-                                //   new DocumentoDTO
-                                //   {
-                                //       Title = "Cotización a aprobar",
-                                //       DocumentId = resultado.SalesOrderId.ToString()
-                                //   }
-                                //   );
-
-
-                                //var resultview = await _viewRenderService.RenderToStringAsync("Mail/Aprobacion",
-                                //    new DocumentoDTO
-                                //    {
-                                //        Title = "Cotización a aprobar",
-                                //        DocumentId = resultado.SalesOrderId.ToString()
-                                //    }
-                                //    );
+                                Email.DefaultSender = new SmtpSender(client);                             
 
 
                                 string completepath = Directory.GetCurrentDirectory() + "/Views/Shared/Page1.cshtml";
@@ -676,7 +658,7 @@ namespace ERPMVC.Controllers
                          .Where(q => q.CustomerConditionName.Contains("ayor")).Select(q => Convert.ToDouble(q.ValueToEvaluate)).FirstOrDefault();
 
 
-                    _customercontract.CustomerId = _SalesOrdermodel.CustomerId.Value;
+                    _customercontract.CustomerId = (long)_SalesOrdermodel.CustomerId;
                     _customercontract.CustomerName = _SalesOrdermodel.CustomerName;
                     _customercontract.ProductId = _SalesOrdermodel.ProductId;
                     _customercontract.ProductName = _SalesOrdermodel.ProductName;
@@ -914,7 +896,7 @@ namespace ERPMVC.Controllers
                                    {
                                        RTN = c.RTN,
                                        SalesOrderId = c.SalesOrderId,
-                                       SalesOrderName = "Id:" + c.SalesOrderId + "|| Nombre:" + c.SalesOrderName + "|| Fecha:" + c.OrderDate + "|| Total:" + c.Total,
+                                       SalesOrderName = "Id:" + c.SalesOrderId + "|| Nombre:" + c.SalesOrderName + "|| Fecha:" + c.OrderDate ,
                                        OrderDate = c.OrderDate,
                                    }).ToList();
 
@@ -979,7 +961,7 @@ namespace ERPMVC.Controllers
                                    {
                                        RTN = c.RTN,
                                        SalesOrderId = c.SalesOrderId,
-                                       SalesOrderName = "Id:" + c.SalesOrderId + "|| Nombre:" + c.SalesOrderName + "|| Fecha:" + c.OrderDate + "|| Total:" + c.Total,
+                                       SalesOrderName = "Id:" + c.SalesOrderId + "|| Nombre:" + c.SalesOrderName + "|| Fecha:" + c.OrderDate ,
                                        OrderDate = c.OrderDate,
                                    }).ToList();
 

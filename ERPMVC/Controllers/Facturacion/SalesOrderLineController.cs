@@ -114,43 +114,8 @@ namespace ERPMVC.Controllers
                     {
                         valorrespuesta1 = await (result1.Content.ReadAsStringAsync());
                         _SalesOrders = JsonConvert.DeserializeObject<List<SalesOrderLine>>(valorrespuesta1);
-
-                        //_SalesOrders = _SalesOrders.Where(q => q.SalesOrderId == _cotizacion.SalesOrderId).ToList();
-
                         if (_SalesOrders != null)
-
-
                         {
-                             double impuesto15=0;
-                            double impuesto18 = 0;
-                            double totalgravado15 = 0;
-                            double totalgravado18 = 0;
-
-                            foreach (var item in _SalesOrders) {
-                            if(item.TaxCode == "I.V.A")
-                                {
-
-                                    impuesto18 = impuesto18 + item.TaxAmount;
-                                    totalgravado18 = totalgravado18 + (item.Total - item.TaxAmount);
-                                }
-                                else
-                                {
-
-                                    impuesto15 = impuesto15 + item.TaxAmount;
-                                    totalgravado15 = totalgravado15 + (item.Total - item.TaxAmount);
-                                }
-
-                            }
-
-                            _cotizacion.Amount = _SalesOrders.Sum(x => x.Amount);
-                            _cotizacion.SubTotal = _SalesOrders.Sum(x => x.SubTotal);
-                            _cotizacion.Discount = _SalesOrders.Sum(x => x.DiscountAmount);
-                            _cotizacion.Tax = impuesto15;
-                            _cotizacion.Tax18 =impuesto18;
-                            _cotizacion.Total = _cotizacion.Freight + _SalesOrders.Sum(x => x.Total);
-                            _cotizacion.TotalGravado = totalgravado15;
-                            _cotizacion.TotalGravado18 = totalgravado18;
-
                             var result2 = await _client.PostAsJsonAsync(baseadress + "api/SalesOrder/Update", _cotizacion);
                             string valorrespuesta2 = "";
                             if (result2.IsSuccessStatusCode)
@@ -165,28 +130,6 @@ namespace ERPMVC.Controllers
 
                     
 
-                    //var result = await _client.GetAsync(baseadress + "api/SalesOrderLine/GetSalesOrderLineById/" + _SalesOrderLine.SalesOrderId);
-                    //string valorrespuesta = "";
-                    //if (result.IsSuccessStatusCode)
-                    //{
-                    //    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    //    _cotizacion = JsonConvert.DeserializeObject<SalesOrder>(valorrespuesta);
-
-                    //}
-
-                    //if (salesOrder != null)
-                    //{
-                    //    ListSalesOrderLine lines = new ListSalesOrderLine();
-                    //    lines = _context.SalesOrderLine.Where(x = x.SalesOrderId.Equals(salesOrderId)).ToList();
-
-                    //    update master data by its lines
-                    //    salesOrder.Amount = lines.Sum(x = x.Amount);
-                    //    salesOrder.SubTotal = lines.Sum(x = x.SubTotal);
-                    //    salesOrder.Discount = lines.Sum(x = x.DiscountAmount);
-                    //    salesOrder.Tax = lines.Sum(x = x.TaxAmount);
-                    //    salesOrder.Total = salesOrder.Freight + lines.Sum(x = x.Total);
-                    //    _context.SalesOrder.Update(salesOrder);
-                    //}
                 }
 
 
