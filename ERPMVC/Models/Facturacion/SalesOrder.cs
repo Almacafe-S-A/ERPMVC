@@ -11,9 +11,8 @@ namespace ERPMVC.Models
     public class SalesOrder
     {
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Display(Name = "Número de cotización")]
         public int SalesOrderId { get; set; }
-        [Display(Name = "Nombre Cliente")]
+        [Display(Name = "Nombre cotizacion")]
         public string SalesOrderName { get; set; }
 
         [Display(Name = "Tipo de contrato")]
@@ -31,8 +30,11 @@ namespace ERPMVC.Models
         [Display(Name = "RTN")]
         public string RTN { get; set; }
 
-        [Display(Name = "Teléfono")]
+        [Display(Name = "Telefono")]
         public string Tefono { get; set; }
+
+        public string Observacion { get; set; }
+
 
 
         //[EmailAddress(ErrorMessage ="Agregue una direccion de correo valida")]
@@ -42,88 +44,65 @@ namespace ERPMVC.Models
         [Display(Name = "Correo")]
         public string Correo { get; set; }
 
-        [Display(Name = "Dirección")]
+        [Display(Name = "Direccion")]
         public string Direccion { get; set; }
 
-        [Display(Name = "Sucursal")]
+        [Display(Name = "Id Sucursal")]
         public int BranchId { get; set; }
 
         [Display(Name = "Sucursal Nombre")]
         public string BranchName { get; set; }
 
-        [Display(Name = "Cliente")]
-      
-        public Int64? CustomerId { get; set; }
+        [Display(Name = "Cliente Id")]
+        public long CustomerId { get; set; }
 
-        [Display(Name = "Fecha de vencimiento")]
-        public DateTime ExpirationDate { get; set; }
-
-        [Display(Name ="Cliente")]
+        [Display(Name = "Nombre Cliente")]
         public string CustomerName { get; set; }
 
-        [Display(Name = "Fecha de cotización")]
+        public string Customer { get; set; }
+
+        public string Representante { get; set; }
         public DateTime OrderDate { get; set; }
+        public DateTime ExpirationDate { get; set; }
 
-        [Display(Name = "Fecha de entrega")]
-        public DateTime DeliveryDate { get; set; }
+        public int? PlazoMeses { get; set; }
+        /// <summary>
+        /// Precio Base del proucto a Almacenar
+        /// </summary>
+        public double? PrecioBaseProducto { get; set; }
 
-        [Display(Name = "Moneda")]
-        public int CurrencyId { get; set; }
+        public double? ComisionMin { get; set; }
 
-        [Display(Name = "Servicio")]
+        public double? ComisionMax { get; set; }
+
+        public double? PrecioServicio { get; set; }
+
+        public bool? PolizaPropia { get; set; }
+
+
+
+        [Display(Name = "Id")]
         public Int64 ProductId { get; set; }
 
         [Display(Name = "Nombre Producto")]
         public string ProductName { get; set; }
 
-        [Display(Name = "No. Ref. Cliente")]
+        [Display(Name = "Unidad de Medida")]
+        public Int64 UnitOfMeasureId { get; set; }
+        [ForeignKey("UnitOfMeasureId")]
+        [Display(Name = "Unidad de Medida")]
+        public string UnitOfMeasureName { get; set; }
+
+        [Display(Name = "Numero de referencia de cliente")]
         public string CustomerRefNumber { get; set; }
         [Display(Name = "Tipo de ventas")]
         public int SalesTypeId { get; set; }
-
-        [Display(Name = "Observación/Comentario")]
         public string Remarks { get; set; }
 
-      
-        [Display(Name = "Valor cotizado sin desc y sin imp")]
-        public double Amount { get; set; }
-
-        [Display(Name = "Sub Total")]
-        public double SubTotal { get; set; }
-
-        [Display(Name = "Descuento")]
-        public double Discount { get; set; }
-
-        [Display(Name = "Impuesto 15%")]
-        public double Tax { get; set; }
-
-        [Display(Name = "Impuesto 18%")]
-        public double Tax18 { get; set; }
-
-        [Display(Name = "Flete")]
-        public double Freight { get; set; }
-
-        [Display(Name = "Total exento")]
-        public double TotalExento { get; set; }
-
-        [Display(Name = "Total exonerado")]
-        public double TotalExonerado { get; set; }
-
-        [Display(Name = "Total Gravado 15%")]
-        public double TotalGravado { get; set; }
-
-        [Display(Name = "Total Gravado 18%")]
-        public double TotalGravado18 { get; set; }
-
-        public double Total { get; set; }
-
-        [Display(Name = "Estado")]
         public Int64 IdEstado { get; set; }
         public string Estado { get; set; }
 
         public string Impreso { get; set; }
-        [Display(Name = "Observación")]
-        public string Observacion { get; set; }
 
         public List<SalesOrderLine> SalesOrderLines { get; set; } = new List<SalesOrderLine>();
 
