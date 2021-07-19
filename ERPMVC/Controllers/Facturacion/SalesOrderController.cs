@@ -536,7 +536,7 @@ namespace ERPMVC.Controllers
                     }
                     else
                     {
-                        //  return await Update(_SalesOrder.SalesOrderId.ToString(), _SalesOrder);
+                          return await Update(_SalesOrder.SalesOrderId, _SalesOrder);
                     }
                 }
 

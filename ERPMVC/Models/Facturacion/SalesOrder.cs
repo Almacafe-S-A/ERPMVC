@@ -62,6 +62,11 @@ namespace ERPMVC.Models
         public string Customer { get; set; }
 
         public string Representante { get; set; }
+        public int? IncrementoAnual { get; set; }
+
+
+        public string CargoContactoRepresentante { get; set; }
+
         public DateTime OrderDate { get; set; }
         public DateTime ExpirationDate { get; set; }
 

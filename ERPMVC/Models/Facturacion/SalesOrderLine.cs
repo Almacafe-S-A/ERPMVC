@@ -64,5 +64,13 @@ namespace ERPMVC.Models
 
         [Display(Name = "Porcentaje")]
         public decimal? Porcentaje { get; set; }
+
+        public int TipoCobroId { get; set; }
+        [ForeignKey("TipoCobroId")]
+        public ElementoConfiguracion TipoCobro { get; set; }
+
+        public string TipoCobroName { get; set; }
+
+        public int PeriodoCobro { get; set; }
     }
 }
