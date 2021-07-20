@@ -62,7 +62,7 @@ namespace ERPMVC.Models
         public string Customer { get; set; }
 
         public string Representante { get; set; }
-        public int? IncrementoAnual { get; set; }
+        public double? IncrementoAnual { get; set; }
 
 
         public string CargoContactoRepresentante { get; set; }
