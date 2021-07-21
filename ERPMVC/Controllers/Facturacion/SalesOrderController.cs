@@ -55,7 +55,7 @@ namespace ERPMVC.Controllers
             this.view = view;
         }
 
-        [Authorize(Policy = "Ventas.Cotizaciones")]
+        [Authorize(Policy = "Clientes.Cotizaciones")]
         [CustomAuthorization]
         public IActionResult Index()
         {
@@ -63,7 +63,7 @@ namespace ERPMVC.Controllers
 
             try
             {
-                ViewData["permisoAprobar"] = _principal.HasClaim("Ventas.Cotizaciones", "true");
+                ViewData["permisoAprobar"] = _principal.HasClaim("Clientes.Cotizaciones", "true");
                 ViewData["permisos"] = _principal;
             }
             catch (Exception ex)
