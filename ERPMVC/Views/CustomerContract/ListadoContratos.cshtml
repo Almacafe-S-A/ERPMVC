@@ -1,0 +1,293 @@
+﻿@using System.Security.Claims
+@{
+    ClaimsPrincipal permisos = (ClaimsPrincipal)ViewData["permisos"];
+    ViewData["Title"] = "Contratos";
+}
+
+<h3 class="text-themecolor">Contratos de Clientes</h3>
+<script>
+
+      function clearsession() {
+            var dataObject = ["listadocontratos"];
+         $.ajax({
+            url: '@Url.Action("ClearSession","Common")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                  //  $('#myModalCustomerContract').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+          });
+    }
+
+     function AnularContrato(e) {
+         console.log('id', $("#AnularContrato").val())
+        console.log('observacion',$("#ObservacionAnular").val())
+
+
+        if (confirm('Esta seguro de anular esta cotización?')) {
+
+
+            var dataObject = {
+                CustomerContractId: $("#AnularContrato").val(),
+                Observcion: $("#ObservacionAnular").val(),
+
+                editar: 0
+            };
+
+            $.ajax({
+                url: '@Url.Action("Anular", "CustomerContract")',
+                method: 'POST',
+                datatype: "json",
+                contentType: 'application/json',
+                async: false,
+                data: JSON.stringify(dataObject),
+                success: function (result) {
+
+                    $('#ModalAnular').modal('hide');
+                    $.toast({
+                        heading: 'Satisfactorio',
+                        text: 'Cotización anulada correctamente.',
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'success',
+                        hideAfter: 7000,
+                        stack: 6
+                    });
+
+                    RefrescarGrid();
+
+                },
+                error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    notification.show({
+                        title: "Validación",
+                        message: textStatus + ": " + XMLHttpRequest.responseText
+                    }, "error");
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+                }
+            });
+
+        }
+
+        }
+
+    function Anular(e) {
+
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        $("#AnularContrato").val(dataItem.CustomerContractId)
+                $("#btnSaveCotizacion").show();
+                $('#ModalAnular').modal('show');
+
+            }
+
+    function AddCustomerContractSignature() {
+
+       //  clearsession();
+
+        var mcustomerid = GetCustomerId();
+       // console.log(mcustomerid);
+
+         var dataObject = {
+             CustomerContractId: 0,
+             CustomerId: mcustomerid.CustomerId,
+             editar : 1
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwCustomerContract", "CustomerContract")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#CustomerContract").html('');
+                $("#CustomerContract").html(result);
+                //RefreshCotizacionesDetail();
+                // $("#btnSaveCotizacion").show();
+                $('#myModalCustomerContract').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+
+
+    }
+
+
+    function EditCustomerContractSignature(e) {
+        e.preventDefault();
+
+       // clearsession();
+
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+        var dataObject = {
+            CustomerContractId: dataItem.CustomerContractId,
+            editar : 0
+        };
+
+        $.ajax({
+            url: '@Url.Action("pvwCustomerContract", "CustomerContract")',
+            method: 'POST',
+            datatype: "json",
+            contentType: 'application/json',
+            async: false,
+            data: JSON.stringify(dataObject),
+            success: function (result) {
+                $("#CustomerContract").html('');
+                $("#CustomerContract").html(result);
+
+                $('#myModalCustomerContract').modal('show');
+            },
+             error: function (XMLHttpRequest, textStatus, errorThrown) {
+                    alert(textStatus + ": " + XMLHttpRequest.responseText);
+              }
+        });
+    }
+
+
+      function ImprimirContrato(e) {
+        e.preventDefault();
+        var dataItem = this.dataItem($(e.currentTarget).closest("tr"));
+          var url = '@Url.Action("SFPrintContract", "CustomerContract")/' + dataItem.CustomerContractId;
+           var win = window.open(url, '_blank');
+           win.focus();
+    }
+
+
+</script>
+
+@(Html.Kendo().Grid<ERPMVC.Models.CustomerContract>()
+                              .Name("gridCustomerContract")
+                              .Columns(columns =>
+                              {
+                                  
+                                      columns.Command(command =>
+                                      {
+                                          
+                                              command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditCustomerContractSignature");
+                                          
+                                         
+                                              command.Custom("Imprimir").Text(" ").IconClass("fa fa-print").Click("ImprimirContrato");
+                                          
+                                         
+                                              command.Custom("Anular").Text(" ").IconClass("fa fa-ban").Click("Anular");
+                                          
+                                          // command.Custom("Ver detalles").Click("Detalles");
+                                          // command.Edit(); command.Destroy();
+                                      }).Title("Acciones").Width(150);
+                                  
+                                  columns.Bound(p => p.CustomerContractId).Width(100);
+                                  columns.Bound(p => p.CustomerId).Visible(false).Width(100);
+                                  columns.Bound(p => p.CustomerName).Width(150);
+                                  columns.Bound(p => p.CustomerManager).Width(230);
+                                  columns.Bound(p => p.Manager).Width(180);
+                                  columns.Bound(p => p.Estado).Width(100);
+                                  columns.Bound(p => p.Observcion).Title("Observación").Width(200);
+                                  columns.Bound(p => p.StorageTime).Width(250);
+
+
+                              })
+                                  .Filterable(f => f.Operators(o => o.ForString(s => s
+                                                       .Clear()
+                                                       .Contains("Contiene")
+                                                       .DoesNotContain("No contiene")
+                                                       .EndsWith("Termina con")
+                                                       .IsEqualTo("Es igual a")
+                                                       .IsNotEqualTo("No es igual a")
+                                                       .IsNull("Es nulo")
+                                                       .StartsWith("Inicia con")
+
+
+                                                 )
+                                                 .ForNumber(n => n
+                                                   .Clear()
+                                                   .IsEqualTo("Es igual a")
+                                                   .IsGreaterThan("Es mayor que")
+                                                   .IsLessThan("Es menor que")
+                                                   .IsNull("Es nulo")
+                                                   .IsLessThanOrEqualTo("Es menor o igual que")
+                                                   .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                 )
+                                                 .ForDate(d => d
+                                                 .Clear()
+                                                 .IsEqualTo("Es igual que")
+                                                 .IsGreaterThan("Es mayor que")
+                                                 .IsLessThan("Es menor que")
+                                                 .IsLessThanOrEqualTo("Es menor o igual que")
+                                                 .IsGreaterThanOrEqualTo("Es mayor o igual que")
+                                                 .IsNotEqualTo("No es igual que")
+                                                  )
+                                               ))
+                              .ToolBar(tools =>
+                              {
+                                  //tools.Create();
+                                  //tools.Custom().Text("Agregar").IconClass("k-icon k-i-plus")
+                                  //                          .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCustomerContractSignature();" });
+                                      tools.Excel().Text("Exportar a excel").HtmlAttributes(new { @class = "toolbar-field" });
+                                      tools.Pdf().Text("Exportar a pdf").HtmlAttributes(new { @class = "toolbar-field" });
+                                  
+
+                              })
+                              .Editable(e => e.Mode(GridEditMode.PopUp).ConfirmDelete("¿Esta seguro que desea eliminar este registro?"))
+                              .Sortable()
+                              .Pageable()
+                              .Filterable()
+                              .Scrollable()
+                              .Pdf(pdf => pdf.FileName("ClienteAreaReport" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                               + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".pdf")
+                               .ProxyURL(Url.Action("Export", "Home")).AllPages())
+                                 .Excel(excel => excel.FileName("ClienteAreaReport_" + DateTime.Now.Year + "_" + DateTime.Now.Month + "_"
+                               + DateTime.Now.Day + "_" + DateTime.Now.Hour + "_" + DateTime.Now.Minute + "_" + DateTime.Now.Second + ".xlsx").Filterable(true)
+                               .ProxyURL(Url.Action("Export", "Home")).AllPages(true))
+                              .DataSource(dataSource =>
+                                  dataSource
+                                    .WebApi()
+                                    .ServerOperation(true)
+                                    .Model(model =>
+                                    {
+                                        model.Id(p => p.CustomerId);
+                                        model.Field(p => p.CustomerId).Editable(false);
+                                    })
+                                    .Events(events => events.Error("error_handler"))
+                                    .Read(read => read.Action("Get", "CustomerContract"))
+                                    .Create(create => create.Action("Post", "CustomerContract"))
+                                    .Update(update => update.Action("Put", "CustomerContract", new { id = "{0}" }))
+                                    .Destroy(destroy => destroy.Action("Delete", "CustomerContract", new { id = "{0}" }))
+                              )
+                                .Events(e =>
+                                {
+                                    //e.Save("onsave");
+                                })
+)
+
+<div id="CustomerContract">
+    @await Html.PartialAsync("pvwCustomerContract", new ERPMVC.Models.CustomerContract { CustomerContractId = 0 })
+</div>
+
+<script>
+    function setToolbarTooltip(btn_cl, btn_tooltip) {
+        $("#gridCustomerContract").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    function setRowButtonTooltip(btn_cl, btn_tooltip) {
+        $("#gridCustomerContract").kendoTooltip({
+            filter: btn_cl,
+            content: btn_tooltip
+        });
+    }
+
+    setRowButtonTooltip(".k-grid-Imprimir", "Imprimir registro");
+    setRowButtonTooltip(".k-grid-Editar", "Editar registro");
+    setRowButtonTooltip(".k-grid-Anular", "Anular registro");
+</script>
