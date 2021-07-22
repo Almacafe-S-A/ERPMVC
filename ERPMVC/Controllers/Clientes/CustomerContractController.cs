@@ -45,6 +45,12 @@ namespace ERPMVC.Controllers
             return await Task.Run(() => PartialView());
         }
 
+        public async Task<ActionResult> ListadoContratos()
+        {
+            ViewData["permisos"] = _principal;
+            return await Task.Run(() => View());
+        }
+
         [HttpPost("[controller]/[action]")]
         public async Task<ActionResult> pvwCustomerContract([FromBody]CustomerContract _CustomerContractp)
         {
