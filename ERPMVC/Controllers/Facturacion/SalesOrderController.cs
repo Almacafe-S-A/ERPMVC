@@ -412,23 +412,16 @@ namespace ERPMVC.Controllers
 
         [HttpPost("[action]")]
         public async Task<ActionResult<SalesOrder>> SaveSalesOrder([FromBody]SalesOrderDTO _SalesOrder)
-        //  public async Task<ActionResult<SalesOrder>> SaveSalesOrder([FromBody]dynamic dto)
-        // public async Task<ActionResult<SalesOrder>> SaveSalesOrder(Newtonsoft.Json.Linq.JObject datos)
         {
-
-            //     _SalesOrder = JsonConvert.DeserializeObject<SalesOrderDTO>(dto.ToString());           
-
-            if (_SalesOrder != null)
+            if (_SalesOrder == null)
             {
-                SalesOrder _SalesOrdermodel = new SalesOrder();
+                Console.WriteLine("No llego Correctamente el Modelo");
+                return await Task.Run(() => BadRequest("Errror al guardar"));
+            }
+          
+            SalesOrder _SalesOrdermodel = new SalesOrder();
                 try
                 {
-
-                    //if (_SalesOrder.Total <= 0 || _SalesOrder.SubTotal <= 0)
-                    //{
-                    //    return await Task.Run(() => BadRequest($"No se esta calculando correctamente los totales!"));
-                    //}
-
                     _SalesOrder.CustomerId = _SalesOrder.CustomerId == null ? 0 : _SalesOrder.CustomerId;
                     _SalesOrdermodel = mapper.Map<SalesOrderDTO, SalesOrder>(_SalesOrder);
                     if (_SalesOrder.SalesOrderId == 0)
@@ -489,13 +482,7 @@ namespace ERPMVC.Controllers
                                 //var template = "Dear @Model.Name, You are totally @Model.Compliment. Ya que el nombre se encontro en los listados";
                                 var email = Email
                                     .From(_config.Value.emailsender)
-                                   //  .To("freddy.chinchilla@bi-dss.com")
-                                     .To("freddys18@yahoo.com")
-                                     .To("cumplimiento@almacafehn.com")
-                                     .CC("gerencia@almacafehn.com")
-                                     //.To("informatica@almacafehn.com")                                
-                                     //.To("mperez@almacafehn.com")
-                                     //  .To("jr@almacafehn.com")
+                                     .To("ccastillo@dev-agiles.com")
                                      .Subject($"La cotización {resultado.SalesOrderId} fue {_SalesOrder.Estado} " +
                                               $"por {_SalesOrder.UsuarioCreacion} !")
                                             .Body(url)
@@ -504,20 +491,9 @@ namespace ERPMVC.Controllers
                                          Title = "Cotización a aprobar",
                                          DocumentId = resultado.SalesOrderId.ToString(),
                                          url = url,
-                                         Fecha = DateTime.Now.ToString("dd/MM/yyyy") + " © BI.Todos los derechos reservados.",
+                                         Fecha = DateTime.Now.ToString("dd/MM/yyyy") + " © Desarrollos Agiles.Todos los derechos reservados.",
                                      })
-
-                                    //.UsingTemplateFromEmbedded("MailTemplate.Page1.cshtml",
-                                    //   new 
-                                    //   {
-                                    //       Title = "Cotización a aprobar",
-                                    //       DocumentId = resultado.SalesOrderId.ToString(),
-                                    //       url = url,
-                                    //       Fecha =DateTime.Now.ToString("dd/MM/yyyy") +" © BI.Todos los derechos reservados.",
-                                    //   },                                      
-                                    //      Assembly.Load("MailTemplate"))
-                                    //  .Body(resultview)                                     
-                                    //.UsingTemplate(template)                                  
+                                
                                     .SendAsync();
 
 
@@ -546,9 +522,7 @@ namespace ERPMVC.Controllers
                     throw ex;
                 }
 
-            }
-
-            return await Task.Run(() => BadRequest("No llego correctamente el modelo!"));
+            
         }
 
 
