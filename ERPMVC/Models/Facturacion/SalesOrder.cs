@@ -37,10 +37,7 @@ namespace ERPMVC.Models
 
 
 
-        //[EmailAddress(ErrorMessage ="Agregue una direccion de correo valida")]
-        [EmailAddress]
-        [RegularExpression(@"\w+([-+.']\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*", ErrorMessage = "Correo invalido")]
-        [DataType(DataType.EmailAddress)]
+        
         [Display(Name = "Correo")]
         public string Correo { get; set; }
 
@@ -54,7 +51,7 @@ namespace ERPMVC.Models
         public string BranchName { get; set; }
 
         [Display(Name = "Cliente Id")]
-        public long CustomerId { get; set; }
+        public long? CustomerId { get; set; }
 
         [Display(Name = "Nombre Cliente")]
         public string CustomerName { get; set; }

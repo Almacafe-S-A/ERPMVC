@@ -262,7 +262,7 @@
                                                                           $("#Tefono").val(result.Phone);
                                                                           var maskedtextbox = $("#Tefono").data("kendoMaskedTextBox");
                                                                           maskedtextbox.value($("#Tefono").val());
-                                                                          $("#CustomerRefNumber").val(result.CustomerRefNumber);
+                                                                          //$("#CustomerRefNumber").val(result.CustomerRefNumber);
                                                                           $("#Direccion").val(result.Address);
                                                                      },
                                                                       error: function (XMLHttpRequest, textStatus, errorThrown) {
@@ -277,18 +277,22 @@
                                                                 $("#Tefono").val(null);
                                                                 var maskedtextbox = $("#Tefono").data("kendoMaskedTextBox");
                                                                 maskedtextbox.value($("#Tefono").val());
-                                                                $("#CustomerRefNumber").val(null);
+                                                                $("#SalesOrderName").val(null);
+                                                                //$("#CustomerRefNumber").val(null);
                                                                 $("#Direccion").val(null);
                                                             }
+                                                            var validator = $("#frmSalesOrder").data("kendoValidator");
+                                                            validator.validate();
                                                         }
                             </script>
                             <label asp-for="CustomerId" class="control-label">Cliente</label>
-                            <kendo-dropdownlist name="CustomerId" for="@Model.CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains" required=" false"
+                            <kendo-dropdownlist name="CustomerId" for="CustomerId" filter="Kendo.Mvc.UI.FilterType.Contains" 
                                                 option-label="Nuevo Cliente"
                                                 datatextfield="CustomerName"
                                                 datavaluefield="CustomerId"
                                                 class="form-control-line"
                                                 onchange="SetCustomerName();"
+                                                value="@Model.CustomerId"
                                                 style="width: 100%;">
 
                                 <datasource type="DataSourceTagHelperType.WebApi" page-size="5000">
@@ -356,7 +360,7 @@
                         <div class="form-group">
                             <label asp-for="Correo" class="control-label" style="width:100%"></label>
                             @*<input type="email" asp-for="Correo" data-val-regex="Correo invalido" class="form-control required " style="min-width: 100%" />*@
-                            <input type="text" asp-for="Correo" placeholder="nombre@ejemplo.com" maxlength="150" data-email-msg="Formato del Correo no valido" class="k-textbox" style="min-width: 100%" />
+                            <input type="text" asp-for="Correo" placeholder="nombre@ejemplo.com" required maxlength="150" data-email-msg="Formato del Correo no valido"  data-val-required="Correo es Requerido" class="k-textbox" style="min-width: 100%" />
                             <span asp-validation-for="Correo" class="text-danger"></span>
                         </div>
                     </div>
@@ -423,6 +427,7 @@
                                                 for="TypeContractId" data-required-msg="El Tipo de Contrato es requerido."
                                                 datatextfield="Nombre"
                                                 datavaluefield="Id"
+                                                option-label="Seleccione el Tipo de Contrato"
                                                 value="@Model.TypeContractId"
                                                 onchange="Tipocontra()"
                                                 required
@@ -480,7 +485,7 @@
                                                 datatextfield="Nombre"
                                                 datavaluefield="Id"
                                                 required
-                                               
+                                                option-label="Seleccione el tipo de Facturación"
                                                 value="@Model.TypeInvoiceId"
                                                 on-data-bound="tipoFacturacion"
                                                 on-change="tipoFacturacion"
@@ -674,8 +679,7 @@
 <script>
                     $(document).ready(function () {
                         $("#TefonoAlert").hide();
-                        //tipoFacturacion();
-                       
+
                     });
 
                     function validarTefono() {
@@ -699,29 +703,15 @@
                     }
 
           function SaveCotizacion(e) {
-
-
             try {
-
-
-
-                var notification = $("#notification").data("kendoNotification");
-                // e.preventDefault();
-                //$("#btnSaveCotizacion").hide();
-                //$("#btnSaveCotizacion").prop("disabled", true);
-                ClienteListas();
-                var validadetalle = true;
-
+                ////////Validaciones////////////
+                $("#btnSaveCotizacion").prop("disabled", false);
                 var displayedData = $("#gridCotizacionesDetail").data().kendoGrid.dataSource.data();
                 for (var i = 0; i < displayedData.length; i++) {
                     break;
                     displayedData[i].SalesOrderLineId = 0;
-                    if (
-                        //displayedData[i].Quantity === 0
-                         displayedData[i].Price === 0
-                        //|| displayedData[i].Amount === 0
+                    if (displayedData[i].Price === 0
                         || displayedData[i].SubProductId === null || displayedData[i].SubProductId === 0) {
-
                         $.toast({
                             heading: 'Validación',
                             text: "Ingrese al detalle todos los datos requeridos",
@@ -732,9 +722,32 @@
                             stack: 6
                         });
                         validadetalle = false;
+                        return;
                     }
                 }
 
+                var validator = $("#frmSalesOrder").data("kendoValidator");
+                console.log(validator)
+
+                if (!validator.validate()) {
+                    $.toast({
+                        heading: 'Validación',
+                        text: "Ingrese los valores de los campos requeridos",
+                        position: 'top-right',
+                        loaderBg: '#ff6849',
+                        icon: 'error',
+                        hideAfter: 30000,
+                        stack: 6
+                    });
+
+                    return;
+                }
+
+
+                ///////////Validaciones/////////////
+
+
+                ClienteListas();
                 //RefreshOFAC();
                 //RefreshOFAC();
                 ClienteListas()
@@ -749,9 +762,6 @@
                 var confirmaexpecion = false;
                 var idEstado = 8;
                 var Estado = 'Pendiente';
-                //if ($("#IdEstado").val() != null) {
-                //    Estado = $("#IdEstado").data("kendoDropDownList").text();
-                //}
 
                 if (
                        gridListaPEPS.length > 0
@@ -760,11 +770,6 @@
                     || gridListaONU.length > 0
 
                 ) {
-
-                    // notification.show({
-                    //    title: "Validación",
-                    //    message: "No puede guardar una cotización para este cliente ya que aparece en los listados!"
-                    //}, "error");
 
 
                     if (confirm("¿Desea crear una excepción para este cliente y enviar a aprobación?, esto notificara a Gerencia y a cumplimiento")) {
@@ -814,12 +819,7 @@
 
                 }
 
-
-                // debugger;
-
-                if (validadetalle) {
-
-                    var dataObject = {
+                var dataObject = {
                         'SalesOrderId': $("#SalesOrderId").val() === "" ? "0" : $("#SalesOrderId").val(),
                         'SalesOrderName': $("#SalesOrderName").val(),
                         'BranchId': $("#BranchId").val(),
@@ -852,32 +852,12 @@
                         'TypeInvoiceName': $("#TypeInvoiceId").data("kendoDropDownList").text(),
                         'listadossancionados': listadoenqueaparece
                     };
-                    var validator = $("#frmSalesOrder").data("kendoValidator");
-                    if (Number($("#Total").val()) <= 0 || Number($("#SubTotal").val()) <= 0) {
-                        $.toast({
-                            heading: 'Error',
-                            text: '"No se estan calculando correctamente los totales!!"',
-                            position: 'top-right',
-                            loaderBg: '#ff6849',
-                            icon: 'error',
-                            hideAfter: 7000,
-                            stack: 6
-                        });
+                    console.log(dataObject);
 
-                        return;
-
-                    }
-
-
-
-
-                    if (displayedData.length > 0) {
-                        if (true) {
-                             $.ajax({
+                    $.ajax({
                                     url: '@Url.Action("SaveSalesOrder", "SalesOrder")',
                                     method: 'POST',
                                     datatype: "json",
-                                    //  contentType: "application/x-www-form-urlencoded; charset=UTF-8",
                                     contentType: 'application/json',
                                     async: false,
                                     data: JSON.stringify(dataObject),
@@ -894,9 +874,6 @@
                                             hideAfter: 3000,
                                             stack: 6
                                         });
-                                        //notification.show({
-                                        //    message: "Guardado correctamente!"
-                                        //}, "upload-success");
 
                                         RefreshCotizaciones();
                                         $('#myModalSalesOrder').modal('hide');
@@ -918,40 +895,6 @@
 
                                     }
                                 });
-                        }
-                        else {
-                            //$("#btnSaveCotizacion").show();
-                            //$("#btnSaveCotizacion").prop("disabled", false);
-                            $.toast({
-                                heading: 'Validación',
-                                text: "Hay datos invalidos en el formulario!",
-                                position: 'top-right',
-                                loaderBg: '#ff6849',
-                                icon: 'error',
-                                hideAfter: 30000,
-                                stack: 6
-                            });
-                        }
-                    }
-                    else {
-                        $.toast({
-                            heading: 'Validación',
-                            text: "Debe agregar los productos!",
-                            position: 'top-right',
-                            loaderBg: '#ff6849',
-                            icon: 'error',
-                            hideAfter: 30000,
-                            stack: 6
-                        });
-                        $("#btnSaveCotizacion").show();
-                        $("#btnSaveCotizacion").prop("disabled", false);
-                    }
-                }
-
-                else {
-                    $("#btnSaveCotizacion").show();
-                    $("#btnSaveCotizacion").prop("disabled", false);
-                }
 
             } catch (e) {
                 console.log(e);
