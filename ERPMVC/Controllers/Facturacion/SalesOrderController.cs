@@ -391,6 +391,10 @@ namespace ERPMVC.Controllers
                         _so.IdEstado = 6;
                         _so.Estado = "Aprobado";
                         var resultsalesorder = await Update(_so.SalesOrderId, _so);
+                        if (resultsalesorder.Result is BadRequestObjectResult)
+                        {
+                            return BadRequest(((BadRequestObjectResult)resultsalesorder.Result).Value);
+                        }
 
                         var value = (resultsalesorder.Result as ObjectResult).Value;
                         SalesOrder resultado = ((SalesOrder)(value));
