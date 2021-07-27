@@ -4,9 +4,7 @@
 
 <script>
 
-    completedorderlinemant = function (xhr) {
-        var plazo = $('#PlazoMeses').val();
-        $('#PeriodoCobro').val(plazo);
+    completedorderlinemant = function (xhr) {        
         $('#myModalSalesOrderLine').find(':input').not('#SalesOrderId :submit').val('0');
         $('#UnitOfMeasureId').data("kendoDropDownList").value('0');       
         $('#SubProductId').data("kendoDropDownList").value(0);
@@ -22,19 +20,36 @@
     }
 
 
-    function CalcularTotalDocumento() {
-        debugger;
-        return;
-    }
 
 
 
     function AddConceptoCotizacion(e) {
-       // e.preventDefault();
-        var notification = $("#notification").data("kendoNotification");
         if ($("#SubProductId").val() > 0) {
             try {
                 $("#btnActualizarCotizacionLinea").prop("disabled", true);
+                debugger
+                var subproductname = $("#SubProductId").data("kendoDropDownList").text();
+                var displayedData = $("#gridCotizacionesDetail").data().kendoGrid.dataSource.data();
+                if (displayedData.length > 0) {
+                    for (var i = 0; i < displayedData.length; i++) {
+                        if (displayedData[i].SubProductName.toLowerCase() == subproductname.toLowerCase() && subproductname.toLowerCase() != 'almacenaje') {
+                            $.toast({
+                                heading: 'Validación',
+                                text: 'Este subsrvicio ya existe en el detalle de la cotizacion',
+                                position: 'top-right',
+                                loaderBg: '#ff6849',
+                                icon: 'error',
+                                hideAfter: 30000,
+                                stack: 6
+
+                            }
+                            );
+                            return;
+                        }
+                    }
+
+
+                }
                 RefreshCotizacionesDetail();
 
             } catch (e) {
@@ -63,72 +78,9 @@
         numeric.value(valor);
         numeric.trigger('change');
         numeric = null;
-    }
-
-
-
-    function GetPercentage()
-    {
-        if ($("#TaxId").val() != null) {
-            var dataObject = { TaxId: $("#TaxId").val() };
-            $.ajax({
-                url: '@Url.Action("GetTaxById","Tax")',
-                method: 'GET',
-                datatype: "json",
-                contentType: 'application/json',
-                async: false,
-                data: dataObject,
-                success: function (result) {
-                    setearvalor("TaxPercentage", result.TaxPercentage);
-                    CalcularTotal();
-                },
-                error: function (XMLHttpRequest, textStatus, errorThrown) {
-                    alert(textStatus + ": " + XMLHttpRequest.responseText);
-                }
-            });
-        }
-
-    }
+    }    
 
     
-
-    function lockunidaddemedida() {
-        debugger;
-        return;
-        if ($("#TypeContractId").data("kendoDropDownList").text() === "Cobro por Comisión") {
-            $("#UnitOfMeasureId").data("kendoDropDownList").enable(false);
-            $("#UnitOfMeasureId").removeAttr("required");
-            $("#UnitOfMeasureId_validationMessage").text("");
-        }
-
-        else {
-            $("#UnitOfMeasureId").data("kendoDropDownList").enable(true);
-
-        }
-
-        
-    }
-
-
-
-
-
-    function CalcularTotal() {
-        //debugger;
-        var quantity = $("#Quantity").val();
-        var price = $("#Price").val();
-        var amount = quantity * price;
-        setearvalor("AmountLine", amount);
-        var DiscountAmount = amount * ($("#DiscountPercentage").val() / 100);
-        setearvalor("DiscountAmount", DiscountAmount);
-        var subtotal = amount - DiscountAmount;
-        var taxamount = subtotal * ($("#TaxPercentage").val() / 100) ;
-        setearvalor("TaxAmount", taxamount);
-        setearvalor("SubTotalLine", subtotal);
-        var Total = subtotal + taxamount;
-        setearvalor("TotalLine", Total);
-    }
-
 
     function agregarcondicionpopup() {
         var dataObject = { 'ConditionId': 0 };
@@ -229,7 +181,7 @@
                                                         auto-bind="false"
                                                         on-select="setsubproductname"
                                                         data-val-required="El Subservicio es requerido."
-                                                        style="width: 100%;">
+                                                        style="min-width: 100%;">
                                         <datasource type="DataSourceTagHelperType.WebApi">
                                             <transport>
                                                 <read url="@Url.Action("GetSubProductByProductId", "ProductRelation")" data="GetProductIdS()" />
@@ -296,7 +248,7 @@
                                                         datatextfield="UnitOfMeasureName"
                                                         datavaluefield="UnitOfMeasureId"
                                                         auto-bind="true"
-                                                        onchange="lockunidaddemedida()"
+                                                        
                                                         data-val-required="La Unidad de Medida es requerida."
                                                         style="width: 100%;">
                                         <datasource type="DataSourceTagHelperType.WebApi">
@@ -315,26 +267,28 @@
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label asp-for="Price" class="control-label" style="width:100%"></label>
-                                    <kendo-numerictextbox decimals="4" name="Price"
-                                                          format="n4"
+                                    <kendo-numerictextbox decimals="2" name="Price"
+                                                          format="n2"
                                                           min="0"
                                                           step="1"
                                                           data-val-required="El Precio es requerido."
-                                                          style="width:60%"
-                                                          value="Model.Price" />
+                                                          style="min-width:100%"
+                                                          spinners="false"
+                                                          value="@Model.Price" />
                                     <span asp-validation-for="Price" class="text-danger"></span>
                                 </div>
                             </div>
                             <div class="col-md-3">
                                 <div class="form-group">
                                     <label asp-for="Quantity" class="control-label" style="width:100%"></label>
-                                    <kendo-numerictextbox decimals="4" name="Quantity"
-                                                          format="n4"
+                                    <kendo-numerictextbox decimals="2" name="Quantity"
+                                                          format="n2"
                                                           min="0"
                                                           step="1"
                                                           data-val-required="El Precio es requerido."
-                                                          style="width:60%"
-                                                          value="Model.Quantity" />
+                                                          style="min-width: 100%"
+                                                          spinners="false"
+                                                          value="@Model.Quantity" />
                                     <span asp-validation-for="Quantity" class="text-danger"></span>
                                 </div>
                             </div>
@@ -367,8 +321,9 @@
                                                           format="d"
                                                           min="0"
                                                           step="1"
+                                                          spinners="false"
                                                           data-val-required="El Periodo Cobro es requerido."
-                                                          style="width:60%"
+                                                          style="min-width:100%"
                                                           value="Model.PeriodoCobro" />
                                     <span asp-validation-for="PeriodoCobro" class="text-danger"></span>
                                 </div>

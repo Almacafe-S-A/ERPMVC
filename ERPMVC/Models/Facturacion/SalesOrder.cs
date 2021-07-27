@@ -53,6 +53,12 @@ namespace ERPMVC.Models
         [Display(Name = "Cliente Id")]
         public long? CustomerId { get; set; }
 
+
+        public string FirmaAlmacafeCargo { get; set; }
+
+        public string FirmaAlmacafe { get; set; }
+
+
         [Display(Name = "Nombre Cliente")]
         public string CustomerName { get; set; }
 
