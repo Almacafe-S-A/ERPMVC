@@ -89,7 +89,7 @@ namespace ERPMVC.Controllers
                 {
                     _SalesOrders = JsonConvert.DeserializeObject<List<SalesOrderLine>>(HttpContext.Session.GetString("listadoproductos"));
                 }
-                if (_SalesOrderLine.SalesOrderId > 0 && _SalesOrderLine.SalesOrderLineId == 0 && _SalesOrderLine.Total > 0)
+                if (_SalesOrderLine.SalesOrderId > 0 && _SalesOrderLine.SalesOrderLineId == 0 && _SalesOrderLine.Price != 0   )
                 {
 
                     _SalesOrderLine.SalesOrderLineId = 0;
@@ -238,37 +238,24 @@ namespace ERPMVC.Controllers
         {
             try
             {
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
 
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/SalesOrderLine/Insert", _SalesOrderLine);
 
-                if (_SalesOrderLine.Quantity >0)
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
                 {
-                    // TODO: Add insert logic here
-                    string baseadress = _config.Value.urlbase;
-                    HttpClient _client = new HttpClient();
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _SalesOrderLine = JsonConvert.DeserializeObject<SalesOrderLine>(valorrespuesta);
 
-                        _client.DefaultRequestHeaders.Add("Authorization", "Bearer " +  HttpContext.Session.GetString("token"));
-                        var result = await _client.PostAsJsonAsync(baseadress + "api/SalesOrderLine/Insert", _SalesOrderLine);
-
-                        string valorrespuesta = "";
-                        if (result.IsSuccessStatusCode)
-                        {
-                            valorrespuesta = await (result.Content.ReadAsStringAsync());
-                            _SalesOrderLine = JsonConvert.DeserializeObject<SalesOrderLine>(valorrespuesta);
-
-                        }
-                        else
-                        {
-                            string request = await result.Content.ReadAsStringAsync();
-                            return BadRequest(request);
-                        }
-
-                  
                 }
                 else
                 {
-                    return BadRequest("Ingrese todos los datos!");
+                    string request = await result.Content.ReadAsStringAsync();
+                    return BadRequest(request);
                 }
-
             }
             catch (Exception ex)
             {
@@ -333,16 +320,16 @@ namespace ERPMVC.Controllers
                 }
 
 
-                //string baseadress = _config.Value.urlbase;
-                //HttpClient _client = new HttpClient();
-                //_client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                //var result = await _client.PostAsJsonAsync(baseadress + "api/SalesOrderLine/Delete", _rol);
-                //string valorrespuesta = "";
-                //if (result.IsSuccessStatusCode)
-                //{
-                //    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                //    _rol = JsonConvert.DeserializeObject<SalesOrderLine>(valorrespuesta);
-                //}
+                string baseadress = _config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.PostAsJsonAsync(baseadress + "api/SalesOrderLine/Delete", _salesorder);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _salesorder = JsonConvert.DeserializeObject<SalesOrderLine>(valorrespuesta);
+                }
 
             }
             catch (Exception ex)
