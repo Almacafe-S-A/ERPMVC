@@ -416,7 +416,7 @@ namespace ERPMVC.Controllers
             if (_SalesOrder == null)
             {
                 Console.WriteLine("No llego Correctamente el Modelo");
-                return await Task.Run(() => BadRequest("Errror al guardar"));
+                return await Task.Run(() => BadRequest("Error al guardar"));
             }
           
             SalesOrder _SalesOrdermodel = new SalesOrder();
@@ -429,9 +429,14 @@ namespace ERPMVC.Controllers
                         _SalesOrder.UsuarioCreacion = HttpContext.Session.GetString("user");
                         _SalesOrder.UsuarioModificacion = HttpContext.Session.GetString("user");
                         var resultsalesorder = await Insert(_SalesOrder);
+                        if (resultsalesorder.Result is BadRequestObjectResult)
+                        {
+                            return BadRequest(((BadRequestObjectResult)resultsalesorder.Result).Value);
+                        }
                         var value = (resultsalesorder.Result as ObjectResult).Value;
                         SalesOrder resultado = ((SalesOrder)(value));
-                        if (resultado.SalesOrderId > 0)
+                    
+                    if (resultado.SalesOrderId > 0)
                         {
 
                             if (_SalesOrder.IdEstado == 7 || _SalesOrder.IdEstado==5)
@@ -512,16 +517,22 @@ namespace ERPMVC.Controllers
                     }
                     else
                     {
-                          return await Update(_SalesOrder.SalesOrderId, _SalesOrder);
-                    }
+                            var resultsalesorder =  await Update(_SalesOrder.SalesOrderId, _SalesOrder);
+                            if (resultsalesorder.Result is BadRequestObjectResult)
+                            {
+                                return BadRequest(((BadRequestObjectResult)resultsalesorder.Result).Value);
+                            }
+                            return Ok(resultsalesorder);
+                            
+                }
                 }
 
                 catch (Exception ex)
                 {
                     _logger.LogError($"Ocurrio un error: { ex.ToString() }");
-                    throw ex;
+                    //throw ex;
                 }
-
+            return Ok();
             
         }
 
@@ -757,6 +768,12 @@ namespace ERPMVC.Controllers
                 {
                     valorrespuesta = await (result.Content.ReadAsStringAsync());
                     _SalesOrderLine = JsonConvert.DeserializeObject<SalesOrderDTO>(valorrespuesta);
+                    return Ok(_SalesOrderLine);
+                }
+                else
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    return BadRequest(valorrespuesta);
                 }
 
 
@@ -768,7 +785,7 @@ namespace ERPMVC.Controllers
             }
 
             // return new ObjectResult(new DataSourceResult { Data = new[] { _SalesOrderLine }, Total = 1 });
-            return Ok(_SalesOrderLine);
+           
         }
 
         [HttpPost("[action]")]
