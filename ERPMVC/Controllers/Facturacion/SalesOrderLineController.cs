@@ -192,6 +192,10 @@ namespace ERPMVC.Controllers
                             obj.DiscountAmount = _SalesOrderLine.DiscountAmount;
                             obj.DiscountPercentage = _SalesOrderLine.DiscountPercentage;
                             obj.Description = _SalesOrderLine.Description;
+                            obj.PeriodoCobro = _SalesOrderLine.PeriodoCobro;
+                            obj.TipoCobroId = _SalesOrderLine.TipoCobroId;
+                            obj.TipoCobroName = _SalesOrderLine.TipoCobroName;
+
 
                         }
 
