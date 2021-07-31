@@ -292,9 +292,9 @@ namespace ERPMVC.Controllers
                                    observa_e = "No.:" + c.clave_e 
                                             + "|| Placas:" + c.placas 
                                            + "  || Conductor:" + c.conductor 
-                                           + "|| Fecha:" + c.fecha_e 
-                                           + "|| Hora:" + c.hora_e
-                                           + "|| ProductoCod:" + c.clave_p,
+                                           + "|| Fecha:" + c.fecha_e.ToString("dd/MM/yyyy")
+                                           //+ "|| ProductoCod:" + c.clave_p
+                                           +"|| Producto: " + c.NombreProducto,
                                    Boleto_Sal = c.Boleto_Sal,
                                    peso_e = c.peso_e
                                    //CustomerId = c.CustomerId,

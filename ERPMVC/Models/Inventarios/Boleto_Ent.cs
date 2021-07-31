@@ -28,6 +28,9 @@ namespace ERPMVC.Models
         public string hora_e { get; set; }
         [Display(Name = "Identificador del vehículo")]
         public string placas { get; set; }
+
+        [NotMapped]
+        public string NombreProducto { get; set; }
         [Display(Name = "Nombre del conductor del vehiculo")]
         public string conductor { get; set; }
         [Display(Name = "Valor del peso de entrada")]
