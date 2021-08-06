@@ -833,12 +833,22 @@ namespace ERPMVC.Controllers
         // [HttpGet("[controller]/[action]/{SalesOrderId}")]
         //    [HttpGet("{SalesOrderId}")]
         [HttpGet]
-        public ActionResult SFCotizacion(Int32 id)
+        public async Task<ActionResult> SFCotizacion(Int32 id)
         {
+            SalesOrder _salesorderf = new SalesOrder();
+            string baseadress = _config.Value.urlbase;
+            HttpClient _client = new HttpClient();
+            _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+            var result = await _client.GetAsync(baseadress + "api/SalesOrder/GetById/" + id);
+            string valorrespuesta = "";
+            if (result.IsSuccessStatusCode)
+            {
+                valorrespuesta = await(result.Content.ReadAsStringAsync());
+                _salesorderf = JsonConvert.DeserializeObject<SalesOrderDTO>(valorrespuesta);
+            }
+            //SalesOrderDTO _salesorderdto = new SalesOrderDTO { SalesOrderId = id, }; //token = HttpContext.Session.GetString("token") };
 
-            SalesOrderDTO _salesorderdto = new SalesOrderDTO { SalesOrderId = id, }; //token = HttpContext.Session.GetString("token") };
-
-            return View(_salesorderdto);
+            return View(_salesorderf);
         }
 
 
