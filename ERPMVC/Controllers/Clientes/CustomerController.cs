@@ -313,6 +313,10 @@ namespace ERPMVC.Controllers
 
                     string json = JsonConvert.SerializeObject(_customer);
                     var resultsalesorder = await Post(_customer);
+                    if (resultsalesorder.Result is BadRequestObjectResult)
+                    {
+                        return BadRequest(((BadRequestObjectResult)resultsalesorder.Result).Value);
+                    }
                     var value = (resultsalesorder.Result as ObjectResult).Value;
                     _customer = ((Customer)(value));
 
@@ -380,10 +384,11 @@ namespace ERPMVC.Controllers
                     if (_customerq.CustomerId > 0)
                     {
                         string error = await result.Content.ReadAsStringAsync();
-                        return this.Json(new DataSourceResult
-                        {
-                            Errors = $"El RTN del cliente ya existe!"
-                        });
+
+                        return BadRequest($"El Cliente {_customerq.CustomerName} ya tiene registrado el RTN {_customer.RTN}");
+                        
+
+
                     }
                     else
                     {
