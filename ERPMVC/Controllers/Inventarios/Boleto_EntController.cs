@@ -154,7 +154,7 @@ namespace ERPMVC.Controllers
                             else
                             {
                                 _Boleto_Ent.ProductId = _subproduct.SubproductId;
-                                _Boleto_Ent.UnitOfMeasureId = _subproduct.UnitOfMeasureId.Value;
+                                _Boleto_Ent.UnitOfMeasureId = _subproduct.UnitOfMeasureId == null ? 0 : _subproduct.UnitOfMeasureId.Value;
                             }
                             
                         }
