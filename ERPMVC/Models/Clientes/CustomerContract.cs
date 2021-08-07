@@ -63,63 +63,15 @@ namespace ERPMVC.Models
         [Display(Name = "Bodegas")]
         public string WareHouses { get; set; }
 
-        [Display(Name = "Valor documento certificado de deposito")]
-        public double ValueCD { get; set; }
-        [Display(Name = "Valor del seguro")]
-        public double ValueSecure { get; set; }
-
-        [Display(Name = "Valor de la bascula")]
-        public double ValueBascula { get; set; }
-
-
-        [Display(Name = "Salario Delegado")]
-        public double DelegateSalary { get; set; }
-
-        [Display(Name = "Bodega Habilitada Requerimientos")]
-        public string WarehouseRequirements { get; set; }
-
-        [Display(Name = "Resolución")]
-        public string Resolution { get; set; }
-
-        [Display(Name = "Mercancías")]
-        public string Mercancias { get; set; }
-
-        [Display(Name = "Banda transportadora")]
-        public double BandaTransportadora { get; set; }
-
-        [Display(Name = "Horas Extras")]
-        public double ExtraHours { get; set; }
-
-        [Display(Name = "Alimentación")]
-        public double FoodPayment { get; set; }
-
-        [Display(Name = "Transporte")]
-        public double Transport { get; set; }
-
-        [Display(Name = "Porcentaje/Comisión")]
-        public double Porcentaje1 { get; set; }
-
-        [Display(Name = "Porcentaje 2/Comisión")]
-        public double Porcentaje2 { get; set; }
-
+        
         [Display(Name = "Fecha de contrato")]
         public DateTime FechaContrato { get; set; }
 
-        [Display(Name = "Montacargas")]
-        public double MontaCargas { get; set; }
+        public DateTime FechaInicioContrato { get; set; }
 
-        [Display(Name = "Mulas Hidráulicas")]
-        public double MulasHidraulicas { get; set; }
+        public DateTime FechaVencimiento { get; set; }
 
-        [Display(Name = "Papelería")]
-        public double Papeleria { get; set; }
-
-
-        [Display(Name = "Valor/Comisión 1")]
-        public double Valor1 { get; set; }
-
-        [Display(Name = "Valor/Comisión 2")]
-        public double Valor2 { get; set; }
+      
 
         //[EmailAddress(ErrorMessage ="Agregue una direccion de correo valida")]
         [EmailAddress]

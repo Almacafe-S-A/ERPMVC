@@ -388,8 +388,8 @@ namespace ERPMVC.Controllers
                 string Contrato = "";
                 switch (_customercontract.ProductName)
                 {
-                    case "Almacenaje Fiscal":
-                    case "Almacenaje General":
+                    case "Almacen Fiscal":
+                    case "Almacen General":
                         Contrato = "ContratoAlmacenaje.docx";
                         break;
                     case "Bodega Habilitada":

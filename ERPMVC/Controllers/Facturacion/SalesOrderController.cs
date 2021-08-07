@@ -587,25 +587,7 @@ namespace ERPMVC.Controllers
                         _customercontract.UnitOfMeasureName = _SalesOrdermodel.SalesOrderLines
                         .Where(q => q.SubProductName.Contains("Almacenaje")).Select(q => q.UnitOfMeasureName).FirstOrDefault();
 
-                        _customercontract.ValueSecure = _SalesOrdermodel.SalesOrderLines
-                               .Where(q => q.SubProductName.Contains("Seguro")).Select(q => q.Price).FirstOrDefault();
-
-                        _customercontract.ValueBascula = _SalesOrdermodel.SalesOrderLines
-                                               .Where(q => q.SubProductName.Contains("Bascula")).Select(q => q.Price).FirstOrDefault();
-                        _customercontract.BandaTransportadora = _SalesOrdermodel.SalesOrderLines
-                                                       .Where(q => q.SubProductName.Contains("Banda")).Select(q => q.Price).FirstOrDefault();
-                        _customercontract.MontaCargas = _SalesOrdermodel.SalesOrderLines
-                                                     .Where(q => q.SubProductName.Contains("Monta carga")).Select(q => q.Price).FirstOrDefault();
-                        _customercontract.Papeleria = _SalesOrdermodel.SalesOrderLines
-                                 .Where(q => q.SubProductName.Contains("Papeleria")).Select(q => q.Price).FirstOrDefault();
-                        _customercontract.ExtraHours = _SalesOrdermodel.SalesOrderLines
-                                .Where(q => q.SubProductName.Contains("Horas Extras")).Select(q => q.Price).FirstOrDefault();
-
-                        _customercontract.FoodPayment = _SalesOrdermodel.SalesOrderLines
-                               .Where(q => q.SubProductName.Contains("Alimentacion")).Select(q => q.Price).FirstOrDefault();
-
-                        _customercontract.Transport = _SalesOrdermodel.SalesOrderLines
-                             .Where(q => q.SubProductName.Contains("Transporte")).Select(q => q.Price).FirstOrDefault();
+                       
                     }
                     catch (Exception)
                     {
@@ -634,19 +616,7 @@ namespace ERPMVC.Controllers
 
                     _logger.LogInformation($"Despues de consultar las condiciones del cliente Cantidad de condiciones: {_cclist.Count}");
 
-                    _customercontract.Porcentaje1 = _cclist
-                           .Where(q => q.CustomerConditionName.Contains("enor")).Select(q => q.ValueDecimal).FirstOrDefault();
-
-                    _customercontract.Valor1 = _cclist
-                         .Where(q => q.CustomerConditionName.Contains("enor")).Select(q => Convert.ToDouble(q.ValueToEvaluate)).FirstOrDefault();
-
-                    _customercontract.Porcentaje2 = _cclist
-                           .Where(q => q.CustomerConditionName.Contains("ayor")).Select(q => q.ValueDecimal).FirstOrDefault();
-
-                    _customercontract.Valor2 = _cclist
-                         .Where(q => q.CustomerConditionName.Contains("ayor")).Select(q => Convert.ToDouble(q.ValueToEvaluate)).FirstOrDefault();
-
-
+                   
                     _customercontract.CustomerId = (long)_SalesOrdermodel.CustomerId;
                     _customercontract.CustomerName = _SalesOrdermodel.CustomerName;
                     _customercontract.ProductId = _SalesOrdermodel.ProductId;
