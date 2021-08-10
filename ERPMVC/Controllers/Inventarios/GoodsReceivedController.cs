@@ -384,55 +384,56 @@ namespace ERPMVC.Controllers
 
         [HttpPost("[controller]/[action]")]
        public async Task<ActionResult<GoodsReceived>> SaveGoodsReceived([FromBody]GoodsReceivedDTO _GoodsReceived)
-          // public async Task<ActionResult<GoodsReceived>> SaveGoodsReceived([FromBody]dynamic _GoodsReceived)
         {
             try
             {
-                if (_GoodsReceived != null)
+                if (_GoodsReceived == null)
                 {
-
-                    
-                    GoodsReceived _listGoodsReceived = new GoodsReceived();
-                   // _listGoodsReceived = JsonConvert.DeserializeObject<GoodsReceived>(_GoodsReceived.ToString());
-                    string baseadress = config.Value.urlbase;
-                    HttpClient _client = new HttpClient();
-                    _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
-                    var result = await _client.GetAsync(baseadress + "api/GoodsReceived/GetGoodsReceivedById/" + _GoodsReceived.GoodsReceivedId);
-                    string valorrespuesta = "";
-                    _GoodsReceived.FechaModificacion = DateTime.Now;
-                    _GoodsReceived.UsuarioModificacion = HttpContext.Session.GetString("user");
-                    if (result.IsSuccessStatusCode)
-                    {
-                        valorrespuesta = await (result.Content.ReadAsStringAsync());
-                        _listGoodsReceived = JsonConvert.DeserializeObject<GoodsReceived>(valorrespuesta);
-                    }
-
-                    if (_listGoodsReceived == null)
-                    {
-                        _listGoodsReceived = new GoodsReceived();
-                    }
-
-                    if (_listGoodsReceived.GoodsReceivedId == 0)
-                    {
-                        _GoodsReceived.FechaCreacion = DateTime.Now;
-                        _GoodsReceived.UsuarioCreacion = HttpContext.Session.GetString("user");
-                        var insertresult = await Insert(_GoodsReceived);
-                        var value = (insertresult.Result as ObjectResult).Value;
-                        _GoodsReceived = ((GoodsReceivedDTO)(value));
-                        if (_GoodsReceived.GoodsReceivedId == 0)
-                        {
-                            return await Task.Run(() => BadRequest("No se genero el documento!"));
-                        }
-                        
-                        return Ok(_GoodsReceived);
-                    }
-                    else
-                    {
-                        //var updateresult = await Update(_GoodsReceived.GoodsReceivedId, _GoodsReceived);
-                    }
-
-                   
+                    return BadRequest("No llego correctamente el modelo!");                   
                 }
+
+                GoodsReceived _listGoodsReceived = new GoodsReceived();
+                // _listGoodsReceived = JsonConvert.DeserializeObject<GoodsReceived>(_GoodsReceived.ToString());
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/GoodsReceived/GetGoodsReceivedById/" + _GoodsReceived.GoodsReceivedId);
+                string valorrespuesta = "";
+                _GoodsReceived.FechaModificacion = DateTime.Now;
+                _GoodsReceived.UsuarioModificacion = HttpContext.Session.GetString("user");
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _listGoodsReceived = JsonConvert.DeserializeObject<GoodsReceived>(valorrespuesta);
+                }
+
+                if (_listGoodsReceived == null)
+                {
+                    _listGoodsReceived = new GoodsReceived();
+                }
+
+                if (_listGoodsReceived.GoodsReceivedId == 0)
+                {
+                    _GoodsReceived.FechaCreacion = DateTime.Now;
+                    _GoodsReceived.UsuarioCreacion = HttpContext.Session.GetString("user");
+                    var insertresult = await Insert(_GoodsReceived);
+                    var value = (insertresult.Result as ObjectResult).Value;
+                    _GoodsReceived = ((GoodsReceivedDTO)(value));
+                    if (_GoodsReceived.GoodsReceivedId == 0)
+                    {
+                        return await Task.Run(() => BadRequest("No se genero el documento!"));
+                    }
+
+                    return Ok(_GoodsReceived);
+                }
+                else
+                {
+                    //var updateresult = await Update(_GoodsReceived.GoodsReceivedId, _GoodsReceived);
+                }
+
+                return Ok(_GoodsReceived);
+
+
 
             }
             catch (Exception ex)
@@ -441,7 +442,6 @@ namespace ERPMVC.Controllers
                 throw ex;
             }
 
-            return BadRequest("No llego correctamente el modelo!");
         }
 
         // POST: GoodsReceived/Insert
