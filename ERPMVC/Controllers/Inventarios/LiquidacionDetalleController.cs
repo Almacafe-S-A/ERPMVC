@@ -87,30 +87,9 @@ namespace ERPMVC.Controllers.Inventarios
             List<LiquidacionLine> liquidacionLines = _Liquidacion.detalleliquidacion;
             decimal totalfob = _Liquidacion.detalleliquidacion.Sum(s => s.TotalFOB);
             decimal total = totalfob + _Liquidacion.Seguro + _Liquidacion.Otros + _Liquidacion.Flete;
-            /*liquidacionLines = (from liquidacions in liquidacionLines
-                                select new LiquidacionLine()
-                                {
-                                    Id = liquidacions.Id,
-                                    GoodsReceivedLine = liquidacions.GoodsReceivedLine,
-                                    SubProductId = liquidacions.SubProductId,
-                                    SubProductName = liquidacions.SubProductName,
-                                    Cantidad = liquidacions.Cantidad,
-                                    TotalFOB = liquidacions.TotalFOB,
-                                    TotalCIB = total / (totalfob * liquidacions.TotalFOB),
-                                    TotalCIFLPS = total / (totalfob * liquidacions.TotalFOB) * _Liquidacion.TasaCambio,
-                                    ValorDerechosImportacion = total / (totalfob * liquidacions.TotalFOB) * _Liquidacion.TasaCambio * _Liquidacion.DerechosImportacion,
-                                    TotalCIFDerechosImp = (total / (totalfob * liquidacions.TotalFOB) * _Liquidacion.TasaCambio * _Liquidacion.DerechosImportacion) +
-                                        total / (totalfob * liquidacions.TotalFOB) * _Liquidacion.TasaCambio,
-                                    ValorSelectivoConsumo = ((total / (totalfob * liquidacions.TotalFOB) * _Liquidacion.TasaCambio * _Liquidacion.DerechosImportacion) +
-                                        total / (totalfob * liquidacions.TotalFOB) * _Liquidacion.TasaCambio) * _Liquidacion.SelectivoConsumo,
-                                    OtrosImpuestos = 0,
-                                    TotalImpuestoVentas = total / (totalfob * liquidacions.TotalFOB) * _Liquidacion.TasaCambio * _Liquidacion.DerechosImportacion,
-                                    TotalDerechosmasImpuestos = (total / (totalfob * liquidacions.TotalFOB) * _Liquidacion.TasaCambio * _Liquidacion.DerechosImportacion) +
-                                        total / (totalfob * liquidacions.TotalFOB) * _Liquidacion.TasaCambio + (((total / (totalfob * liquidacions.TotalFOB) * _Liquidacion.TasaCambio * _Liquidacion.DerechosImportacion) +
-                                        total / (totalfob * liquidacions.TotalFOB) * _Liquidacion.TasaCambio) * _Liquidacion.SelectivoConsumo
-            */
             try
             {
+                decimal totalciflpsitems = 0;
                 foreach (var item in liquidacionLines)
                 {
                     var totalCIF = total / item.TotalFOB * totalfob;
@@ -119,12 +98,17 @@ namespace ERPMVC.Controllers.Inventarios
                     var totalciflps = totalCIF * _Liquidacion.TasaCambio;
 
                     item.ValorDerechosImportacion = item.TotalCIFLPS * _Liquidacion.DerechosImportacion;
-                    item.TotalCIFDerechosImp = item.ValorDerechosImportacion * item.TotalCIFLPS;
+                    item.TotalCIFDerechosImp = item.ValorDerechosImportacion + item.TotalCIFLPS;
                     item.ValorSelectivoConsumo = item.TotalCIFDerechosImp * _Liquidacion.SelectivoConsumo;
                     item.OtrosImpuestos = 0;
-                    item.TotalImpuestoVentas = item.TotalCIB * _Liquidacion.ImpuestoSobreVentas;
-                    item.TotalDerechosmasImpuestos = item.TotalCIFDerechosImp + item.TotalImpuestoVentas;
-                    item.TotalFinal = item.TotalCIFLPS + item.ValorDerechosImportacion + item.TotalDerechosmasImpuestos;
+                    item.TotalImpuestoVentas = (item.TotalCIFDerechosImp+ item.ValorSelectivoConsumo) * _Liquidacion.ImpuestoSobreVentas;
+                    item.TotalDerechosmasImpuestos = item.TotalCIFLPS + item.ValorDerechosImportacion+item.OtrosImpuestos+item.TotalImpuestoVentas + item.ValorSelectivoConsumo;
+                    item.TotalFinal = item.TotalCIFLPS + item.TotalDerechosmasImpuestos;
+                    totalciflpsitems += item.TotalCIFLPS;
+                }
+                    foreach (var item in liquidacionLines)
+                {
+                    item.OtrosImpuestos = (_Liquidacion.Otros / totalciflpsitems)* item.TotalCIFLPS ;
                 }
             }
             catch (DivideByZeroException)

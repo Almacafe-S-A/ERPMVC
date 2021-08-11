@@ -101,6 +101,15 @@ namespace ERPMVC.Controllers
 
                     //_client.DefaultRequestHeaders.Add("SalesOrderId", _salesorder.SalesOrderId.ToString());
                     //_client.DefaultRequestHeaders.Add("SalesOrderId", _SalesOrderLine.SalesOrderId.ToString());
+                    if (_ControlPalletsLinep.ControlPalletsLineId== 0&&_ControlPalletsLinep.SubProductId!=null)
+                    {
+                        var insertresult = await Insert( _ControlPalletsLinep);
+                    }
+                    else
+                    {
+                        var updateresult = await Update(_ControlPalletsLinep.ControlPalletsLineId, _ControlPalletsLinep);
+
+                    }
 
                     _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
                     var result = await _client.GetAsync(baseadress + "api/ControlPalletsLine/GetControlPalletsLineByControlPalletId/" + _ControlPalletsLinep.ControlPalletsId);
@@ -309,17 +318,17 @@ namespace ERPMVC.Controllers
                 }
 
 
-                //string baseadress = config.Value.urlbase;
-                //HttpClient _client = new HttpClient();
-                //_client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
 
-                //var result = await _client.PostAsJsonAsync(baseadress + "api/ControlPalletsLine/Delete", _ControlPalletsLine);
-                //string valorrespuesta = "";
-                //if (result.IsSuccessStatusCode)
-                //{
-                //    valorrespuesta = await (result.Content.ReadAsStringAsync());
-                //    _ControlPalletsLine = JsonConvert.DeserializeObject<ControlPalletsLine>(valorrespuesta);
-                //}
+                var result = await _client.PostAsJsonAsync(baseadress + "api/ControlPalletsLine/Delete", _ControlPalletsLine);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await (result.Content.ReadAsStringAsync());
+                    _ControlPalletsLine = JsonConvert.DeserializeObject<ControlPalletsLine>(valorrespuesta);
+                }
 
             }
             catch (Exception ex)

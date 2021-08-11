@@ -9,14 +9,19 @@
 
     function GetControlPalletsId() {
         debugger;
+        CambioOpciones();
+
         if ($("#Totallinea").val() > 0 || @Model.ControlPalletsId > 0 || $("#Cantidad").val() > 0 ) {
             var displayedData = $("#gridControlPalletsDetail").data().kendoGrid.dataSource.data();
-            var pesado = $("#pesado").data("kendoSwitch").check();
+            var pesado = $("#ProductoPesado").data("kendoSwitch").check();
             var id = -999999;
             var producto = $("#SubProductIddet").val() ;
             var bodega = $("#WarehouseIddet").val();
+            var uom = $("#UnitofMeasureIddet").val();
+            
             // debugger;
             var controllineid = Number($("#ControlPalletsLineId").val());
+            var nuevo = controllineid == 0;
             if (controllineid <= 0) {
                 if (displayedData.length > 0) {
                     for (var i = 0; i < displayedData.length; i++) {
@@ -51,13 +56,13 @@
             }
             
             var total = 0;
-            var producto = '';
             if (pesado) {
                 total = $("#Totallinea").val();
                 
             } else {
                 total = $("#Cantidad").val();
             }
+            id = nuevo ? 0 : id;
 
              return {
                  'ControlPalletsLineId': id,
@@ -66,11 +71,11 @@
                  'Ancho': $("#Ancho").val(),
                  'Otros': $("#Otros").val(),                 
                  'SubProductId': pesado ? $("#SubProductId").val() : $("#SubProductIddet").val(),
-                 'SubProductName': pesado ? $("#SubProductId").data("kendoDropDownList").text(): $("#SubProductIddet").data("kendoDropDownList").text(),
+                 'SubProductName': producto == "" ? $("#SubProductId").data("kendoDropDownList").text() : $("#SubProductIddet").data("kendoDropDownList").text(),
                  'WarehouseId': pesado ? $("#WarehouseId").val() : $("#WarehouseIddet").val(),
-                 'WarehouseName': pesado ? $("#WarehouseId").data("kendoDropDownList").text() : $("#WarehouseIddet").data("kendoDropDownList").text(),
+                 'WarehouseName': bodega == "" ? $("#WarehouseId").data("kendoDropDownList").text() : $("#WarehouseIddet").data("kendoDropDownList").text(),
                  'UnitofMeasureId': pesado ? $("#UnitOfMeasureId").val() : $("#UnitofMeasureIddet").val(),
-                 'UnitofMeasureName': pesado ? $("#UnitOfMeasureId").data("kendoDropDownList").text() :$("#UnitofMeasureIddet").data("kendoDropDownList").text(),
+                 'UnitofMeasureName': uom == "" ? $("#UnitOfMeasureId").data("kendoDropDownList").text() : $("#UnitofMeasureIddet").data("kendoDropDownList").text(),
                  'Qty': $("#Cantidad").val(),
                  'Observacion' : $("#Observacion").val(),
                  'Totallinea': total,
@@ -97,7 +102,7 @@
     function AddCotizacionDetalle() {
         var notification = $("#notification").data("kendoNotification");
         $('#myModalControlPalletsLine').find(':input').not('#ControlPalletsId :submit').val('0');
-        var pesado = $("#pesado").data("kendoSwitch").check();
+        var pesado = $("#ProductoPesado").data("kendoSwitch").check();
 
         if ($("#WeightBallotddl").val() == 0 && pesado) {
 
@@ -211,7 +216,7 @@
                 }
             });
 
-            $("#frmControlPalletsLine :input").prop("disabled", true);
+            //$("#frmControlPalletsLine :input").prop("disabled", true);
         }
         else {
             $("#ControlPalletsLineId").val(dataItem.ControlPalletsLineId);
@@ -278,6 +283,8 @@
             grid.dataSource.remove(dataItem);
             //Sync it with the grid
             //grid.dataSource.sync();
+            RefreshControlPalletsDetail();
+            record = 0;
 
             CalcularTotalDocumento()
             GetBoletaPeso()
@@ -301,41 +308,42 @@
                                                                   .Name("gridControlPalletsDetail")
                                                                   .Columns(columns =>
                                                                   {
-                                                                      if (Model.editar == 1)
+                                                                      if (Model.Estado!="Recibido")
                                                                       {
-                                                                         
-                                                                              columns.Command(command =>
-                                                                              {                                                                                 
-                                                                                      command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");                                                                               
-                                                                                      command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditControlPalletDetalle");
-                                                                              }).Title("Acciones").Width(100);
-                                                                      }                                                                      
+
+                                                                          columns.Command(command =>
+                                                                          {
+                                                                              command.Custom("Eliminar").Text(" ").IconClass("fa fa-trash-alt").Click("Delete");
+                                                                              command.Custom("Editar").Text(" ").IconClass("fa fa-edit").Click("EditControlPalletDetalle");
+                                                                          }).Title("Acciones").Width(100);
+                                                                      }
+                                                                      columns.Bound(p => p.Linea).Title("Linea").ClientTemplate("#= RowNum() #").Width(120);
                                                                       columns.Bound(p => p.ControlPalletsId).Title("Id Control").Width(150).Visible(false);
-                                                                      columns.Bound(p => p.ControlPalletsLineId).Title("Id Linea").Width(120);
+                                                                      columns.Bound(p => p.ControlPalletsLineId).Title("Id Linea").Width(120).Visible(false);
                                                                       columns.Bound(p => p.SubProductName).Title("Producto").Width(250);
                                                                       columns.Bound(p => p.UnitofMeasureName).Title("Unidad").Width(200);
                                                                       columns.Bound(p => p.WarehouseName).Title("Bodega").Width(200);
                                                                       columns.Bound(p => p.SubProductId).Visible(false);
                                                                       columns.Bound(p => p.UnitofMeasureId).Visible(false);
                                                                       columns.Bound(p => p.WarehouseId).Visible(false);
-                                                                      columns.Bound(p => p.Qty).Width(100).Title("Cant");
+                                                                      columns.Bound(p => p.Qty).Width(100).Title("Cant").Visible(!Model.ProductoPesado);
 
-                                                                      columns.Bound(p => p.Alto).Title("Alto").Width(150);
-                                                                      columns.Bound(p => p.Ancho).Title("Ancho").Width(150);
-                                                                      columns.Bound(p => p.Otros).Title("Otros").Width(150);
+                                                                      columns.Bound(p => p.Alto).Title("Alto").Width(150).Visible(Model.ProductoPesado );
+                                                                      columns.Bound(p => p.Ancho).Title("Ancho").Width(150).Visible(Model.ProductoPesado);
+                                                                      columns.Bound(p => p.Otros).Title("Otros").Width(150).Visible(Model.ProductoPesado );
                                                                       columns.Bound(p => p.Totallinea).Title("Total Linea").Width(150);
-                                                                      columns.Bound(p => p.cantidadPoliEtileno).Width(240);
-                                                                      columns.Bound(p => p.cantidadYute).Width(240);
+                                                                      columns.Bound(p => p.cantidadPoliEtileno).Width(240).Visible(Model.ProductoPesado);
+                                                                      columns.Bound(p => p.cantidadYute).Width(240).Visible(Model.ProductoPesado);
                                                                       columns.Bound(p => p.Observacion).Width(200).Title("Observacion");
                                                                   })
                                                                   .ToolBar(tools =>
                                                                   {
-                                                                      if (Model.editar == 1)
+                                                                      if (Model.Estado != "Recibido")
                                                                       {
-                                                                          
-                                                                              tools.Custom().Text("Agregar Producto").IconClass("k-icon k-i-plus")
-                                                                          .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacionDetalle();" });
-                                                                          
+
+                                                                          tools.Custom().Text("Agregar Producto").IconClass("k-icon k-i-plus")
+                                                                      .HtmlAttributes(new { @class = "k-i-plus-sm", onclick = "AddCotizacionDetalle();" });
+
                                                                       }
 
                                                                   })
@@ -392,5 +400,11 @@
     setToolbarTooltip(".k-grid-Agregar", "Agregar nuevo registro");
     setRowButtonTooltip(".k-grid-Editar", "Editar registro");
     setRowButtonTooltip(".k-grid-delete", "Eliminar registro");
+    var record = 0;
+    function RowNum() {
+
+        return ++record;
+    }
+
 
 </script>
