@@ -60,6 +60,10 @@ namespace ERPMVC.Models
         [Display(Name = "Total Sacos")]
         public int TotalSacos { get; set; }
 
+        public string Observacion { get; set; }
+
+        public bool ProductoPesado { get; set; }
+
         [Display(Name = "Total Sacos Yute")]
         public int TotalSacosYute { get; set; }
 

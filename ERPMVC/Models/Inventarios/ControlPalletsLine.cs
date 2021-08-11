@@ -12,6 +12,8 @@ namespace ERPMVC.Models
         [Key, DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Display(Name = "Id Linea")]
         public Int64 ControlPalletsLineId { get; set; }
+
+        public int? Linea { get; set; }
         [Display(Name = "Id Control")]
         public Int64 ControlPalletsId { get; set; }
         public int Alto { get; set; }
@@ -27,7 +29,7 @@ namespace ERPMVC.Models
 
         public string UnitofMeasureName { get; set; }
 
-        public decimal? Qty { get; set; }
+        public double? Qty { get; set; }
 
 
         public int? WarehouseId { get; set; }

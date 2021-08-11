@@ -48,13 +48,26 @@ namespace ERPMVC.Controllers
         }
 
         [HttpGet]
-        public ActionResult SFControlPallets(Int32 id)
+        public async Task<ActionResult<ControlPallets>> SFControlPallets(Int32 id)
         {
+            ControlPallets _ControlPallets = new ControlPallets();
             try
             {
-                ControlPalletsDTO _ControlPalletsDTO = new ControlPalletsDTO { ControlPalletsId = id, }; //token = HttpContext.Session.GetString("token") };
 
-                return View(_ControlPalletsDTO);
+                string baseadress = config.Value.urlbase;
+                HttpClient _client = new HttpClient();
+                _client.DefaultRequestHeaders.Add("Authorization", "Bearer " + HttpContext.Session.GetString("token"));
+                var result = await _client.GetAsync(baseadress + "api/ControlPallets/GetControlPalletsById/" + id);
+                string valorrespuesta = "";
+                if (result.IsSuccessStatusCode)
+                {
+                    valorrespuesta = await(result.Content.ReadAsStringAsync());
+                    _ControlPallets = JsonConvert.DeserializeObject<ControlPallets>(valorrespuesta);
+
+                }
+                
+
+                return View(_ControlPallets);
 
             }
             catch (Exception ex)
@@ -331,8 +344,9 @@ namespace ERPMVC.Controllers
                         DocumentDate = DateTime.Now,
                         editar = 1,
                         EsIngreso = _ControlPalletsId.EsIngreso,
-                        EsSalida = _ControlPalletsId.EsSalida
-                   ,
+                        EsSalida = _ControlPalletsId.EsSalida,
+                        ProductoPesado = true,
+                   
                         BranchId = Convert.ToInt64(HttpContext.Session.GetString("BranchId"))
                     };
                 }
@@ -395,6 +409,8 @@ namespace ERPMVC.Controllers
                 UnitOfMeasureName = dto.UnitOfMeasureName,
                 WarehouseId = dto.WarehouseId,
                 WarehouseName = dto.WarehouseName,
+                Observacion = dto.Observacion,
+                ProductoPesado = dto.ProductoPesado,
                 _Boleto_Ent = dto._Boleto_Ent
             };
             controlPallets._ControlPalletsLine = new List<ControlPalletsLine>();
@@ -442,19 +458,30 @@ namespace ERPMVC.Controllers
                 {
                     ControlPallets _listControlPallets = new ControlPallets();
                     string baseadress = config.Value.urlbase;
-                    HttpClient _client = new HttpClient();                
-                    _ControlPalletsDTO.FechaModificacion = DateTime.Now;
-                    _ControlPalletsDTO.UsuarioModificacion = HttpContext.Session.GetString("user");
-                    _ControlPalletsDTO.FechaCreacion = DateTime.Now;
-                    _ControlPalletsDTO.UsuarioCreacion = HttpContext.Session.GetString("user");
-                    var insertresult = await Insert(_ControlPalletsDTO);
+                    HttpClient _client = new HttpClient();
 
-                    var statuscode = (insertresult.Result as ObjectResult).StatusCode;
-                    //_ControlPalletsDTO = ((ControlPalletsDTO)(value));
-                    if (statuscode != 200)
+                    if (_ControlPalletsDTO.ControlPalletsId == 0)
                     {
-                        return await Task.Run(() => BadRequest("No se genero correctamente el control!"));
+                        _ControlPalletsDTO.FechaCreacion = DateTime.Now;
+                        _ControlPalletsDTO.UsuarioCreacion = HttpContext.Session.GetString("user");
+                        var insertresult = await Insert(_ControlPalletsDTO);
+                        //_ControlPalletsDTO = ((ControlPalletsDTO)(value));
+                        if (insertresult.Result is BadRequestResult)
+                        {
+                            return await Task.Run(() => BadRequest(insertresult.Result.ToString()));
+                        }
                     }
+                    else
+                    {
+                        _ControlPalletsDTO.FechaModificacion = DateTime.Now;
+                        _ControlPalletsDTO.UsuarioModificacion = HttpContext.Session.GetString("user");
+                        var insertresult = await Update(_ControlPalletsDTO);
+                        //_ControlPalletsDTO = ((ControlPalletsDTO)(value));
+                        if (insertresult.Result is BadRequestResult)
+                        {
+                            return await Task.Run(() => BadRequest(insertresult.Result.ToString()));
+                        }
+                    }             
                 }
                 else
                 {
@@ -486,16 +513,10 @@ namespace ERPMVC.Controllers
                 _ControlPallets.UsuarioModificacion = HttpContext.Session.GetString("user");
                 var result = await _client.PostAsJsonAsync(baseadress + "api/ControlPallets/Insert", _ControlPallets);
                 string valorrespuesta = "";
-                if (result.IsSuccessStatusCode)
+                if (!result.IsSuccessStatusCode)
                 {
-                    //valorrespuesta = await (result.Content.ReadAsStringAsync());
-                    //_ControlPallets = JsonConvert.DeserializeObject<ControlPalletsDTO>(valorrespuesta);
+                    return BadRequest(result);
                 }
-                else
-                {
-                    return BadRequest();
-                }
-
             }
             catch (Exception ex)
             {
@@ -504,11 +525,10 @@ namespace ERPMVC.Controllers
             }
 
             return Ok(_ControlPallets);
-            // return new ObjectResult(new DataSourceResult { Data = new[] { _ControlPallets }, Total = 1 });
         }
 
         [HttpPut("{id}")]
-        public async Task<ActionResult<ControlPallets>> Update(Int64 id, ControlPallets _ControlPallets)
+        public async Task<ActionResult<ControlPallets>> Update( ControlPallets _ControlPallets)
         {
             try
             {
