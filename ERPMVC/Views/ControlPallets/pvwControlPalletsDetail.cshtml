@@ -21,6 +21,7 @@
 
             // debugger;
             var controllineid = Number($("#ControlPalletsLineId").val());
+            var control = @Model.ControlPalletsId;
             var nuevo = controllineid == 0;
             if (controllineid <= 0) {
                 if (displayedData.length > 0) {
@@ -62,8 +63,7 @@
             } else {
                 total = $("#Cantidad").val();
             }
-            var controlid = @Model.ControlPalletsId;
-            id = nuevo ? 0 : id;
+            id = nuevo && control > 0  ? 0 : id;
 
              return {
                  'ControlPalletsLineId': id,
@@ -98,6 +98,8 @@
         grid.dataSource.read();
         grid.refresh();
         record = 0;
+        CalcularTotal();
+        CalcularTotalDocumento();
     }
 
 
@@ -314,6 +316,15 @@
                 async: false,
                 data: JSON.stringify(dataItem),
                 success: function (data) {
+                    var grid = $("#gridControlPalletsDetail").data("kendoGrid");
+                    grid.dataSource.remove(dataItem);
+                    //Sync it with the grid
+                    //grid.dataSource.sync();
+                    RefreshControlPalletsDetail();
+                    grid.refresh();
+                    record = 0;
+                    CalcularTotal();
+                    CalcularTotalDocumento();
                 },
                 error: function (XMLHttpRequest, textStatus, errorThrown) {
 
@@ -326,11 +337,7 @@
                 }
             });
 
-            var grid = $("#gridControlPalletsDetail").data("kendoGrid");
-            grid.dataSource.remove(dataItem);
-            //Sync it with the grid
-            //grid.dataSource.sync();
-            RefreshControlPalletsDetail();
+            
             
 
             CalcularTotalDocumento()
