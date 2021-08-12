@@ -101,7 +101,7 @@ namespace ERPMVC.Controllers
 
                     //_client.DefaultRequestHeaders.Add("SalesOrderId", _salesorder.SalesOrderId.ToString());
                     //_client.DefaultRequestHeaders.Add("SalesOrderId", _SalesOrderLine.SalesOrderId.ToString());
-                    if (_ControlPalletsLinep.ControlPalletsLineId== 0&&_ControlPalletsLinep.SubProductId!=null)
+                    if (_ControlPalletsLinep.ControlPalletsLineId== 0&&_ControlPalletsLinep.Totallinea>0)
                     {
                         var insertresult = await Insert( _ControlPalletsLinep);
                     }
